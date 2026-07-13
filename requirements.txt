@@ -5,3 +5,6 @@ openpyxl>=3.1.0
 PyYAML>=6.0
 requests>=2.31.0
 streamlit>=1.30.0
+# React frontend backend (server.py)
+fastapi>=0.110.0
+uvicorn>=0.29.0

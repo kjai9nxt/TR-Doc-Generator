@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.9"
+  version: "1.10"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -50,6 +50,10 @@ meta:
              slides + dropped slides (cover/closing ignored); surfaced in sync (extraction_warnings),
              GET /api/extraction-check, offline eval, and the UI. Verified: all 9 real decks OK.
              Remaining: CI (parked, user to decide platform)."
+    - "1.10 — GitHub Actions CI (.github/workflows/ci.yml): offline-eval (golden regression, no API)
+              + frontend-build (Vite) run on every push/PR; live-eval is manual (workflow_dispatch,
+              needs OPENROUTER_API_KEY secret). requirements.txt fixed to include fastapi + uvicorn
+              (server.py deps were missing). Offline eval verified to pass from committed files only."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> guardrails -> time -> judge -> revise -> render .docx"

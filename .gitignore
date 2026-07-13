@@ -12,3 +12,7 @@ knowledge_base/course_structure.json
 knowledge_base/_tmp_export.pptx
 __pycache__/
 *.pyc
+
+# Frontend (installed deps + build output — never commit)
+frontend/node_modules/
+frontend/dist/
