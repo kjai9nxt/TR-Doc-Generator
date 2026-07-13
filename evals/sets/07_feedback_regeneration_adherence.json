@@ -1,0 +1,47 @@
+{
+  "id": "feedback_regeneration_adherence",
+  "title": "Feedback → Regeneration Adherence",
+  "guideline_refs": [8],
+  "capability_status": "implemented",
+  "capability_note": "Live again: Guided mode was restored on 2026-07-13, so a user can regenerate a chunk with a reason (server /api/guided/{id}/regenerate). The reason is also recorded by the self-evolution store.",
+  "grader": "llm_judge",
+  "applies_to": "regenerated_chunk",
+  "description": "When a user regenerates content with a stated reason, the new content must actually address that reason — not a random reroll, and not ignoring the instruction.",
+  "criterion": "The regenerated chunk visibly satisfies the user's reason while preserving correctness and scope.",
+  "rubric": {
+    "5": "Reason fully addressed; rest intact and still correct.",
+    "3": "Reason partially addressed.",
+    "1": "Reason ignored, or change unrelated to the reason."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "fra-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"reason": "Make the analogy concrete — use a real-world example", "before_analogy": "TCP is like a reliable abstraction layer", "after_analogy": "TCP is like registered post: you get a delivery confirmation for every letter."},
+      "rationale": "Analogy became concrete/everyday, exactly as asked."
+    },
+    {
+      "id": "fra-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"reason": "Shorten this section to ~9 minutes", "before_minutes": 16, "after_minutes": 9},
+      "rationale": "Length reduced to the requested budget."
+    },
+    {
+      "id": "fra-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"reason": "Make the analogy concrete", "before_analogy": "TCP is like a reliable abstraction layer", "after_analogy": "TCP is like a dependable conceptual guarantee mechanism"},
+      "rationale": "Still abstract — reason not addressed."
+    },
+    {
+      "id": "fra-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"reason": "Add a diagram description for the handshake", "change_made": "reworded the title only, no visual guidance added"},
+      "rationale": "Change is unrelated to the stated reason."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "content_relevance",
+  "title": "Content Relevance at Every Level",
+  "guideline_refs": [6],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "applies_to": "per_slide",
+  "description": "Every slide's content, analogy, and visual guidance must stay on-topic for that slide's heading and the session's takeaways. No tangents, no padding, no unrelated trivia.",
+  "criterion": "Each content block advances the slide's stated heading/subheading; nothing off-topic or filler.",
+  "rubric": {
+    "5": "Every block directly supports the slide's point.",
+    "3": "Mostly relevant, one weak/padding bullet.",
+    "1": "A slide contains an off-topic tangent or filler block."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "cr-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"heading": "Why TCP needs a handshake", "bullets": ["Both sides agree on starting sequence numbers", "Confirms peer is reachable before sending data"]},
+      "rationale": "Both bullets are about the handshake's purpose."
+    },
+    {
+      "id": "cr-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"heading": "Why TCP needs a handshake", "bullets": ["Both sides agree on sequence numbers", "The internet was invented in 1969 by ARPANET"]},
+      "rationale": "Second bullet is unrelated trivia — off-topic."
+    },
+    {
+      "id": "cr-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"heading": "Flow control", "bullets": ["Sliding window limits in-flight data", "We will now move on to the next exciting topic"]},
+      "rationale": "Second bullet is filler, adds no information."
+    }
+  ]
+}

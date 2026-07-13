@@ -1,0 +1,33 @@
+{
+  "id": "market_coverage_completeness",
+  "title": "Market Coverage & Completeness (GFG / TutorialsPoint / Scaler)",
+  "guideline_refs": [19],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "grader_note": "Optionally augmented with a live web check (harness model.enable_web_market_check). Off by default; the judge uses trained knowledge of standard syllabi.",
+  "applies_to": "final_tr_doc",
+  "description": "The final doc must match or exceed the depth of mainstream references (GeeksforGeeks, TutorialsPoint, Scaler, standard university syllabi) for the topic. Nothing important for the topic should be missing.",
+  "criterion": "All standard sub-topics a learner would expect for this session are covered; no glaring omission versus mainstream references.",
+  "rubric": {
+    "5": "Matches/exceeds mainstream depth; no important omission.",
+    "3": "Covers the core but misses one commonly-taught sub-topic.",
+    "1": "Misses multiple standard sub-topics; thinner than mainstream references."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "mc-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"topic": "TCP & UDP", "covered": ["3-way handshake", "connection teardown", "flow control", "congestion control", "reliability", "UDP characteristics", "TCP vs UDP", "use-cases"]},
+      "rationale": "Covers the full standard TCP/UDP syllabus."
+    },
+    {
+      "id": "mc-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"topic": "TCP & UDP", "covered": ["3-way handshake", "UDP is connectionless"]},
+      "rationale": "Missing flow control, congestion control, reliability, comparison — far thinner than GFG/Scaler."
+    }
+  ]
+}

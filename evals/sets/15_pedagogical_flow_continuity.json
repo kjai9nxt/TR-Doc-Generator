@@ -1,0 +1,32 @@
+{
+  "id": "pedagogical_flow_continuity",
+  "title": "Pedagogical Flow & Continuity (no sudden jumps)",
+  "guideline_refs": [17],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "applies_to": "final_tr_doc",
+  "description": "The session must flow smoothly: each concept builds on the previous one and hands off to the next. Nothing appears abruptly without the groundwork having been laid.",
+  "criterion": "No slide introduces a concept that depends on an idea not yet covered; each section connects logically to the next.",
+  "rubric": {
+    "5": "Seamless build-up; every dependency is introduced before it is used.",
+    "3": "Mostly smooth, one mild jump.",
+    "1": "A concept appears out of nowhere; a hard dependency is used before it is taught."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "pf-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"order": ["What is a connection?", "Opening it: 3-way handshake", "Keeping data ordered: sequence numbers", "Recovering loss: retransmission"]},
+      "rationale": "Each step depends only on what came before."
+    },
+    {
+      "id": "pf-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"order": ["Fast retransmit on 3 duplicate ACKs", "What is an ACK?", "What is TCP?"]},
+      "rationale": "Uses duplicate-ACK fast-retransmit before ACK or TCP is even defined — abrupt jump."
+    }
+  ]
+}

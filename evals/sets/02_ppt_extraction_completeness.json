@@ -1,0 +1,43 @@
+{
+  "id": "ppt_extraction_completeness",
+  "title": "PPT Deck Extraction Completeness",
+  "guideline_refs": [2, 3],
+  "capability_status": "implemented",
+  "automated_check": "pptx_ingest.completeness_report() / deck_completeness(): deterministic per-deck metrics (slide count, interior empty slides, dropped-vs-source, body coverage). Cover + last-two slides are excluded (design/closing). Surfaced in sync (extraction_warnings), GET /api/extraction-check, and the offline eval. Verified all 9 real decks OK.",
+  "grader": "hybrid",
+  "applies_to": "knowledge_base",
+  "description": "Every already-created session deck (Google Slides → pptx) must be fully ingested into the knowledge base: all slide titles, body text, tables and notes captured, so the agent understands the current flow of each past session.",
+  "criterion": "For each ingested deck, extracted slide count and text coverage match the source deck; no slide silently dropped; tables and speaker notes captured.",
+  "rubric": {
+    "5": "All slides, body text, tables, and notes extracted; deck flow reconstructable.",
+    "3": "All slides captured but some tables/notes thin.",
+    "1": "Slides missing, or a deck failed to ingest and was skipped silently."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "pec-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"deck": "Session 7 — Routing", "source_slides": 14},
+      "extracted": {"slides": 14, "has_tables": true, "has_notes": true},
+      "rationale": "Slide counts match; tables and notes present."
+    },
+    {
+      "id": "pec-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"deck": "Session 7 — Routing", "source_slides": 14},
+      "extracted": {"slides": 9, "has_tables": false, "has_notes": true},
+      "rationale": "5 slides and all tables missing — extraction incomplete."
+    },
+    {
+      "id": "pec-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"deck": "Session 9 — DNS", "source_slides": 11},
+      "extracted": {"slides": 0, "error": "export timed out", "surfaced_to_user": false},
+      "rationale": "Deck failed to ingest and the failure was NOT surfaced — silent gap in course memory."
+    }
+  ]
+}

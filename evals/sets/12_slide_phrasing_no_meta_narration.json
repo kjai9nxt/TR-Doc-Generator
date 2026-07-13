@@ -1,0 +1,47 @@
+{
+  "id": "slide_phrasing_no_meta_narration",
+  "title": "Slide Phrasing — No Meta-Narration / No Session Cross-Talk",
+  "guideline_refs": [13],
+  "capability_status": "implemented",
+  "grader": "hybrid",
+  "applies_to": "per_slide_content",
+  "description": "Main slide content must read as slide text, not as spoken narration. It must NOT contain phrases like 'in the previous session', 'in the next session', 'as we saw earlier', 'now let us look at', 'in this slide we will'. Such connective narration belongs to the speaker while teaching (or to speaker_notes), never in the slide bullets/headings. Recap belongs only in the dedicated recap block, not inside slide content.",
+  "criterion": "No cross-session references or spoken-narration phrases in headings/subheadings/content bullets/tables. (speaker_notes MAY narrate.)",
+  "banned_in_slide_content": ["in the previous session", "in the last session", "in the next session", "in the coming session", "as we saw earlier", "now let us", "now we will", "in this slide", "we will see", "let's move on"],
+  "rubric": {
+    "5": "No meta-narration or cross-session phrases anywhere in slide content.",
+    "3": "One borderline connective phrase.",
+    "1": "Slide content narrates or references previous/next sessions."
+  },
+  "pass_threshold": 5,
+  "cases": [
+    {
+      "id": "spm-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"field": "bullets", "value": ["TCP guarantees in-order delivery", "Lost segments are retransmitted"]},
+      "rationale": "Clean slide text, no narration."
+    },
+    {
+      "id": "spm-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"field": "bullets", "value": ["As we saw in the previous session, IP is connectionless", "Now let us look at how TCP fixes this"]},
+      "rationale": "Cross-session reference + spoken narration inside slide content."
+    },
+    {
+      "id": "spm-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"field": "heading", "value": "In this slide we will understand the handshake"},
+      "rationale": "'In this slide we will…' is meta-narration in a heading."
+    },
+    {
+      "id": "spm-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"field": "speaker_notes", "value": "Building on IP from earlier, walk through why TCP adds reliability."},
+      "rationale": "Narration is allowed in speaker_notes, not in slide content."
+    }
+  ]
+}

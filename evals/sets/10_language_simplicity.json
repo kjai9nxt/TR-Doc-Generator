@@ -1,0 +1,39 @@
+{
+  "id": "language_simplicity",
+  "title": "Easy, Simple Language",
+  "guideline_refs": [11],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "applies_to": "final_tr_doc",
+  "description": "The TR doc must use easy, plain language a learner can follow on first read. Avoid needlessly formal or heavy vocabulary; explain any necessary jargon.",
+  "criterion": "Plain words over ornate ones; short clauses; every technical term is explained on first use.",
+  "rubric": {
+    "5": "Consistently plain and clear; jargon explained.",
+    "3": "Mostly clear, occasional heavy phrasing.",
+    "1": "Dense/ornate language or unexplained jargon that blocks understanding."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "ls-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"text": "TCP checks that data arrived. If a piece is missing, it sends it again."},
+      "rationale": "Plain, short, clear."
+    },
+    {
+      "id": "ls-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"text": "TCP furnishes a reliability abstraction by leveraging retransmission heuristics contingent upon acknowledgement telemetry."},
+      "rationale": "Ornate, heavy vocabulary — hard to follow."
+    },
+    {
+      "id": "ls-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"text": "Nagle's algorithm coalesces MSS-sized segments (no prior definition of MSS or Nagle given)."},
+      "rationale": "Unexplained jargon (MSS, Nagle) on first use."
+    }
+  ]
+}

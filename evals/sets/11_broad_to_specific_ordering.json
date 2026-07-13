@@ -1,0 +1,32 @@
+{
+  "id": "broad_to_specific_ordering",
+  "title": "Broad → Specific Ordering",
+  "guideline_refs": [12],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "applies_to": "final_tr_doc",
+  "description": "The doc must move from the broad picture to specifics: motivation/overview first, then mechanism, then fine detail. It must not open with a narrow detail before the big picture is set.",
+  "criterion": "Early slides establish the 'what/why' at a high level; detail deepens as the doc progresses.",
+  "rubric": {
+    "5": "Clear broad→specific arc across sections.",
+    "3": "Mostly ordered, one slide out of place.",
+    "1": "Opens on a narrow detail, or detail precedes the overview."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "bts-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"slide_titles": ["What problem does TCP solve?", "The 3-way handshake", "Sequence & ACK numbers", "Retransmission timers in detail"]},
+      "rationale": "Big picture → mechanism → fine detail."
+    },
+    {
+      "id": "bts-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"slide_titles": ["Retransmission timeout calculation (RTO = SRTT + 4·RTTVAR)", "What is TCP?", "Why reliability matters"]},
+      "rationale": "Opens on a narrow formula before defining TCP — inverted order."
+    }
+  ]
+}

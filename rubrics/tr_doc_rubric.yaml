@@ -1,0 +1,93 @@
+# ============================================================================
+#  TR DOC RUBRIC
+#  Used by the LLM-as-judge grader (graders/llm_judge.py). Each dimension is
+#  scored 1-5. Weighted sum is normalised to /100. Gates in harness.yaml decide
+#  pass/fail.
+# ============================================================================
+
+scale:
+  1: "Fails — unusable, major errors."
+  2: "Weak — significant gaps or errors."
+  3: "Acceptable — meets the bar with minor issues."
+  4: "Strong — clearly good, negligible issues."
+  5: "Excellent — recording-ready, nothing to fix."
+
+# Each dimension tags the eval guideline(s) it enforces: [G#]. Process guidelines
+# (G2/G3 extraction, G5 chunk count, G8 feedback, G9 self-evolution) are NOT scored
+# here — they are not per-doc quality; they live only in evals/sets/.
+dimensions:
+  - id: technical_accuracy
+    weight: 20
+    question: >
+      Is every fact correct AND grounded in the curriculum / known material? RFC
+      numbers, field sizes, port numbers, thresholds, acronym expansions, protocol
+      behaviour. No invented facts; no contradiction with what earlier sessions
+      established. Any incorrect or invented fact caps this at 2. [G7]
+  - id: coverage
+    weight: 15
+    question: >
+      Does the doc cover ALL of the session's key takeaways and nothing beyond their
+      scope? It must NOT re-teach a prior session's concept (a brief recap is fine) and
+      must NOT teach a future session's topic. Missing a takeaway caps at 2; scope creep,
+      re-teaching a prior topic, or future-topic leakage caps at 3. [G1,G4,G18]
+  - id: pedagogy
+    weight: 12
+    question: >
+      Sound ordering (problem -> idea -> mechanism -> comparison -> use) AND broad ->
+      specific (big picture before narrow detail)? Concepts motivated before defined;
+      terms introduced after the gap is felt; smooth flow with no sudden jumps (nothing
+      used before it is taught). [G12,G17]
+  - id: recording_time
+    weight: 12
+    question: >
+      Is the session realistically recordable in <= 40 minutes (when the limit is on),
+      based on the deterministic time estimate provided as ground truth? Over budget
+      caps at 2. [G10]
+  - id: slide_content_style
+    weight: 10
+    question: >
+      Does slide CONTENT read as slide text, not spoken narration? It must NOT contain
+      "in the previous/next session", "as we saw", "now let us", "in this slide we will"
+      and similar (those belong in speaker_notes). Points must be CONCISE (bullets <= 12
+      words, no long dense sentences, headings are short phrases) and every block must
+      stay on-topic for its slide (no tangents/filler). [G6,G13,G16]
+  - id: clarity_and_analogies
+    weight: 8
+    question: >
+      Easy to understand on first read? Are analogies simple, everyday, relatable,
+      non-distracting (one clean mapping) and non-repeating? Is jargon explained on
+      first use and the language plain? [G11,G14,G15]
+  - id: content_recency
+    weight: 6
+    question: >
+      Is the content up to date? No deprecated/superseded standard or version presented
+      as current (e.g. SSL for TLS, "HTTP/1.1 is the latest", Python 2 for new work).
+      Legacy items, if mentioned, are labelled as legacy. Presenting outdated info as
+      current caps this at 2. [G20]
+  - id: format_compliance
+    weight: 7
+    question: >
+      Exact layout IN ORDER: session title; recap = previous session's KEY TAKEAWAYS
+      (omitted only for Session 1); agenda (<= takeaways); one section breaker PER
+      agenda item in agenda order; key takeaways; upcoming session name; closing
+      "Thank You | All the Best". EVERY slide must carry ALL SIX fields — heading,
+      subheading, content, analogy, visual_guidance, speaker_notes. A missing slide
+      field or a wrong-order/missing section caps this at 2.
+  - id: market_parity
+    weight: 5
+    question: >
+      Does depth/accuracy match or exceed Scaler, GeeksforGeeks, TutorialsPoint, and
+      standard syllabi for this topic? Nothing important for the topic is missing. [G19]
+  - id: language_quality
+    weight: 5
+    question: >
+      Grammar, spelling (Indian English), consistent terminology, no filler. [G11]
+
+output_contract: |
+  Return JSON:
+  {
+    "scores": { "<dimension_id>": {"score": <1-5>, "justification": "<str>"}, ... },
+    "weighted_total": <0-100>,
+    "blocking_issues": ["<str>", ...],   // must-fix before acceptance
+    "suggested_fixes": ["<str>", ...]    // actionable, for the revision pass
+  }

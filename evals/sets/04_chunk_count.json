@@ -1,0 +1,46 @@
+{
+  "id": "chunk_count",
+  "title": "Chunk / Section Count = Agendas + 1 (recap+agenda opener)",
+  "guideline_refs": [5],
+  "capability_status": "implemented",
+  "grader": "deterministic",
+  "applies_to": "doc_structure",
+  "description": "The number of content chunks must equal the number of agenda items, plus ONE extra leading chunk that carries the recap of the previous session and the agenda of the current one. (Chunk-granular generation is dormant after Guided mode was removed; the same rule is checked structurally on the one-shot doc: one section per agenda item + a recap/agenda opener.)",
+  "criterion": "sections == len(agenda); a recap+agenda opener exists (recap null only for Session 1); agenda count <= key-takeaway count.",
+  "rubric": {
+    "5": "sections == agenda count, opener present and correct.",
+    "3": "off by structure only (e.g. two takeaways merged into one section) but all covered.",
+    "1": "section count != agenda count, or opener/recap missing when required."
+  },
+  "pass_threshold": 5,
+  "cases": [
+    {
+      "id": "cc-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"session_no": 10, "agenda_count": 5, "sections": 5, "opener": {"recap": true, "agenda": true}},
+      "rationale": "5 agenda items → 5 sections + 1 recap/agenda opener. Correct."
+    },
+    {
+      "id": "cc-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"session_no": 1, "agenda_count": 4, "sections": 4, "opener": {"recap": false, "agenda": true}},
+      "rationale": "Session 1: recap correctly omitted; agenda opener + 4 sections."
+    },
+    {
+      "id": "cc-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"session_no": 10, "agenda_count": 5, "sections": 3, "opener": {"recap": true, "agenda": true}},
+      "rationale": "5 agenda items but only 3 sections — chunk count mismatch."
+    },
+    {
+      "id": "cc-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"session_no": 10, "agenda_count": 5, "sections": 5, "opener": {"recap": false, "agenda": true}},
+      "rationale": "Mid-course session missing the recap in the opener chunk."
+    }
+  ]
+}

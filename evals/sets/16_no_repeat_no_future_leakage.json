@@ -1,0 +1,39 @@
+{
+  "id": "no_repeat_no_future_leakage",
+  "title": "No Prior-Session Repetition, No Future-Session Leakage",
+  "guideline_refs": [18],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "applies_to": "final_tr_doc",
+  "description": "The doc must not re-teach content already covered in earlier sessions (a brief recap is fine, re-teaching is not), and must not teach topics that belong to future sessions.",
+  "criterion": "No full re-explanation of a prior session's concept; no coverage of a topic scheduled for a later session.",
+  "rubric": {
+    "5": "Builds on prior sessions without re-teaching; stays within this session's scope.",
+    "3": "Minor overlap with a prior session, or a one-line forward mention.",
+    "1": "Re-teaches a full prior-session concept, or teaches a future-session topic."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "nrf-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"this_session": "TCP & UDP", "prior_taught": ["IP addressing"], "future_topics": ["TLS/HTTPS"], "doc_mentions": ["assumes IP is known (recap only)", "TCP handshake", "UDP"]},
+      "rationale": "Uses IP as assumed knowledge; stays on TCP/UDP; no TLS."
+    },
+    {
+      "id": "nrf-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"this_session": "TCP & UDP", "prior_taught": ["IP addressing"], "doc_mentions": ["full re-explanation of IPv4 header, subnetting, CIDR across two slides"]},
+      "rationale": "Re-teaches an entire prior-session topic (IP addressing)."
+    },
+    {
+      "id": "nrf-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"this_session": "TCP & UDP", "future_topics": ["TLS/HTTPS"], "doc_mentions": ["a full section on the TLS handshake and certificates"]},
+      "rationale": "Teaches TLS, which belongs to a future session — leakage."
+    }
+  ]
+}

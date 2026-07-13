@@ -1,0 +1,37 @@
+# ============================================================================
+#  EVAL SET
+#  Regression + acceptance cases for the TR Doc Generator. Run with:
+#     python -m evals.run_eval            # offline: fixture through graders
+#     python -m evals.run_eval --live     # calls the API for `generate` cases
+# ============================================================================
+
+# Golden reference: the hand-verified Session 15 doc. Every grader/guardrail
+# MUST pass on it. This is the offline regression anchor (no API needed).
+golden:
+  json: "evals/golden/session_15_golden.json"
+  session_no: 15
+  expect:
+    guardrails_pass: true
+    time_within_budget: true
+    # When --live, the judge should score the golden at least this high.
+    rubric_min_total: 85
+
+# Live generation cases — exercise the full pipeline on real sessions.
+generate_cases:
+  - session_no: 1        # first session: recap MUST be omitted
+    expect: {recap_present: false, upcoming_present: true, guardrails_pass: true, time_within_budget: true}
+  - session_no: 9        # mid-course: full structure
+    expect: {recap_present: true, upcoming_present: true, guardrails_pass: true, time_within_budget: true}
+  - session_no: 15       # matches the golden — compare against reference
+    expect: {recap_present: true, upcoming_present: true, guardrails_pass: true, time_within_budget: true}
+  - session_no: 31       # final session: upcoming MAY be null
+    expect: {recap_present: true, guardrails_pass: true, time_within_budget: true}
+
+# Adversarial checks — properties every generated doc must hold.
+invariants:
+  - "agenda bullet count <= session key-takeaway count"
+  - "estimated recording minutes <= 40"
+  - "5 <= slide count <= 12"
+  - "every slide has heading, subheading, and content"
+  - "recap present iff session_no > 1"
+  - "no analogy repeated across slides in the same doc"

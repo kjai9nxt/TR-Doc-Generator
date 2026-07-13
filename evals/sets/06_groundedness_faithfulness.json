@@ -1,0 +1,39 @@
+{
+  "id": "groundedness_faithfulness",
+  "title": "Groundedness / Faithfulness to Curriculum + Prior Sessions",
+  "guideline_refs": [7],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "applies_to": "final_tr_doc",
+  "description": "Generated content must be faithful to the curriculum for this session and coherent with what earlier sessions already taught (via the ingested decks). No hallucinated facts, no contradictions with prior sessions.",
+  "criterion": "Every claim is supported by the curriculum/known material; no invented facts; consistent with prior-session definitions.",
+  "rubric": {
+    "5": "Fully grounded; consistent with prior sessions; no invented facts.",
+    "3": "Grounded but one unsupported minor claim.",
+    "1": "A hallucinated fact, wrong value, or contradiction with a prior session."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "gf-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"claim": "TCP uses a 3-way handshake: SYN, SYN-ACK, ACK.", "prior_sessions_define": {"port": "16-bit"}},
+      "rationale": "Standard, correct, curriculum-grounded."
+    },
+    {
+      "id": "gf-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"claim": "TCP uses a 4-way handshake to open a connection."},
+      "rationale": "Factually wrong (open is 3-way; 4-way is close) — hallucination."
+    },
+    {
+      "id": "gf-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"claim": "A port number is 32 bits wide.", "prior_sessions_define": {"port": "16-bit"}},
+      "rationale": "Contradicts what an earlier session established (16-bit ports)."
+    }
+  ]
+}

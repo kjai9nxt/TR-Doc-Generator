@@ -1,0 +1,78 @@
+{
+  "id": "document_structure_layout",
+  "title": "Document Structure & Layout (exact skeleton + mandatory slide fields)",
+  "guideline_refs": [21],
+  "guideline_note": "Rule 21, added by the user on 2026-07-13: the TR doc must follow the exact ordered layout and every slide must carry all six fields.",
+  "capability_status": "implemented",
+  "grader": "deterministic",
+  "applies_to": "final_tr_doc",
+  "description": "The doc must follow this exact order: (1) Session name/title; (2) Recap of the previous session, whose bullets ARE the previous session's key takeaways (omitted only for Session 1); (3) Agenda of the current session; (4) one section breaker PER agenda item, in agenda order; (5) slides; (6) Key Takeaways; (7) Next session name; (8) closing 'Thank You | All the Best'. EVERY slide must contain all six fields: heading, subheading, content, analogy, visual_guidance, speaker_notes.",
+  "criterion": "Order correct; recap present with prev-session takeaways (non-first); one section per agenda item; every slide has all six fields; ends with upcoming-session name + 'Thank You | All the Best'.",
+  "required_slide_fields": ["heading", "subheading", "content", "analogy", "visual_guidance", "speaker_notes"],
+  "expected_order": ["session_title", "recap(prev key takeaways)", "agenda", "section_breaker_per_agenda", "slides", "key_takeaways", "upcoming_session", "closing"],
+  "rubric": {
+    "5": "Exact order; recap = prev takeaways; one section per agenda item; all six slide fields present everywhere; correct closing.",
+    "3": "Order correct but one slide missing one field, or recap paraphrased instead of using the takeaways.",
+    "1": "Wrong order, a missing structural block, sections != agenda items, or a slide missing a required field."
+  },
+  "pass_threshold": 5,
+  "cases": [
+    {
+      "id": "dsl-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "session_no": 10,
+        "order": ["session_title", "recap", "agenda", "section:1", "section:2", "section:3", "key_takeaways", "upcoming_session", "closing"],
+        "recap_bullets_are_prev_takeaways": true,
+        "agenda_count": 3,
+        "sections": 3,
+        "every_slide_has_six_fields": true,
+        "closing": "Thank You  |  All the Best"
+      },
+      "rationale": "Full skeleton in order; recap = prev takeaways; 3 agenda → 3 sections; all six fields on every slide; correct closing."
+    },
+    {
+      "id": "dsl-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "session_no": 1,
+        "order": ["session_title", "agenda", "section:1", "section:2", "key_takeaways", "upcoming_session", "closing"],
+        "recap_present": false,
+        "agenda_count": 2,
+        "sections": 2,
+        "every_slide_has_six_fields": true
+      },
+      "rationale": "Session 1 correctly omits recap; rest of the skeleton intact."
+    },
+    {
+      "id": "dsl-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"session_no": 10, "slide_missing": {"n": 2, "field": "analogy"}, "every_slide_has_six_fields": false},
+      "rationale": "Slide 2 has no analogy — a required field is missing."
+    },
+    {
+      "id": "dsl-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"session_no": 10, "agenda_count": 4, "sections": 2},
+      "rationale": "4 agenda items but only 2 section breakers — not one section per agenda item."
+    },
+    {
+      "id": "dsl-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"session_no": 10, "recap_present": true, "recap_bullets_are_prev_takeaways": false, "recap_bullets": ["A brand-new summary unrelated to the previous session's takeaways"]},
+      "rationale": "Recap does not carry the previous session's key takeaways."
+    },
+    {
+      "id": "dsl-bad-4",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"session_no": 10, "closing": "That's all folks", "order_tail": ["key_takeaways", "closing"], "upcoming_session": null},
+      "rationale": "Missing next-session name and wrong closing (must be 'Thank You | All the Best')."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Secrets — never commit the API key
+.env
+*.key
+
+# Generated / runtime
+outputs/
+logs/
+knowledge_base/decks/*.json
+knowledge_base/manifest.json
+knowledge_base/sync_state.json
+knowledge_base/course_structure.json
+knowledge_base/_tmp_export.pptx
+__pycache__/
+*.pyc

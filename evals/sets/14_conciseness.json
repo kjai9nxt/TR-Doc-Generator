@@ -1,0 +1,41 @@
+{
+  "id": "conciseness",
+  "title": "Concise & Precise Points",
+  "guideline_refs": [16],
+  "capability_status": "implemented",
+  "grader": "hybrid",
+  "applies_to": "per_slide_content",
+  "description": "Points and sentences must be short and precise. Enforced caps: bullets <= 12 words; text blocks <= 2 sentences of <= 18 words each; headings/titles <= 8-word phrases (no period); table cells <= 8 words.",
+  "criterion": "No bullet > 12 words; no sentence > 18 words; headings are phrases; no filler words.",
+  "rubric": {
+    "5": "All lines within caps; crisp.",
+    "3": "One or two lines slightly over.",
+    "1": "Multiple long, dense sentences / paragraph-style bullets."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "cn-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"bullets": ["Three-way handshake opens the connection", "Sequence numbers keep data in order"]},
+      "max_words_seen": 6,
+      "rationale": "Both bullets well under 12 words."
+    },
+    {
+      "id": "cn-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"bullets": ["The three-way handshake is the process by which the two endpoints agree on their respective initial sequence numbers and confirm mutual reachability before any application data is transmitted across the connection"]},
+      "max_words_seen": 31,
+      "rationale": "31-word bullet — far over the 12-word cap."
+    },
+    {
+      "id": "cn-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"heading": "In this section we are going to carefully understand the complete handshake process."},
+      "rationale": "Heading is a full sentence with filler, not a <=8-word phrase."
+    }
+  ]
+}

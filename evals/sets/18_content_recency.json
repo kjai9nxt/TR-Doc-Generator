@@ -1,0 +1,55 @@
+{
+  "id": "content_recency",
+  "title": "Content Recency / Up-to-Date (no outdated info)",
+  "guideline_refs": [20],
+  "guideline_note": "Rule 20, added by the user on 2026-07-13: cross-check that the content reflects the LATEST standards/versions and does not present old, deprecated, or superseded information as current.",
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "grader_note": "Best when the live web market check is enabled (harness model.enable_web_market_check=true); otherwise the judge relies on the model's trained knowledge, which has a cutoff — so 'latest' is verified as-of that cutoff. Flag anything clearly deprecated or superseded.",
+  "applies_to": "final_tr_doc",
+  "description": "Facts, versions, standards, tools, and recommendations must reflect the CURRENT state of the topic. Deprecated/obsolete material must not be presented as current; if legacy is mentioned, it must be labelled as legacy/historical, not as the present standard.",
+  "criterion": "No superseded standard/version presented as current; current versions named where relevant; deprecated items explicitly marked as deprecated/legacy.",
+  "rubric": {
+    "5": "Reflects current standards/versions; any legacy item is clearly labelled as legacy.",
+    "3": "Mostly current, but one dated detail not flagged as legacy.",
+    "1": "Presents a deprecated/superseded standard or version as the current one."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "recency-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"topic": "Web security", "text": "TLS 1.3 (RFC 8446) is the current version; TLS 1.0/1.1 are deprecated (RFC 8996), and SSL is obsolete."},
+      "rationale": "Names the current standard and correctly labels the old ones as deprecated/obsolete."
+    },
+    {
+      "id": "recency-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"topic": "HTTP", "text": "HTTP/2 and HTTP/3 (over QUIC) are current; HTTP/1.1 is still widely used but older."},
+      "rationale": "Current versions named; legacy correctly framed."
+    },
+    {
+      "id": "recency-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"topic": "Web security", "text": "SSL 3.0 is the standard protocol for securing web traffic."},
+      "rationale": "SSL is deprecated/insecure and superseded by TLS — presenting it as the standard is outdated."
+    },
+    {
+      "id": "recency-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"topic": "HTTP", "text": "HTTP/1.1 is the latest version of the HTTP protocol."},
+      "rationale": "Ignores HTTP/2 and HTTP/3 — stale claim presented as current."
+    },
+    {
+      "id": "recency-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"topic": "Python", "text": "Use Python 2 for all new backend services."},
+      "rationale": "Python 2 is end-of-life — recommending it for new work is outdated."
+    }
+  ]
+}

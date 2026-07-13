@@ -1,0 +1,39 @@
+{
+  "id": "takeaway_coverage",
+  "title": "Key-Takeaway Full Coverage (no gaps, no scope creep)",
+  "guideline_refs": [1, 4],
+  "capability_status": "implemented",
+  "grader": "hybrid",
+  "applies_to": "final_tr_doc",
+  "description": "The generated TR doc must teach EVERY key takeaway of the session as per the curriculum, and must NOT introduce scope beyond them.",
+  "criterion": "Each key takeaway is covered by at least one section/slide; no section teaches material outside the takeaway set.",
+  "rubric": {
+    "5": "All takeaways covered with dedicated content; zero scope creep.",
+    "3": "All covered but one is thin, or one minor out-of-scope aside.",
+    "1": "A takeaway is missing entirely, or a whole section is out of scope."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "tc-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"takeaways": ["TCP handshake", "Flow control", "Congestion control", "UDP vs TCP", "When to use UDP"], "sections": ["The 3-way handshake", "Flow control (sliding window)", "Congestion control", "TCP vs UDP", "Choosing UDP"]},
+      "rationale": "1:1 mapping, all five covered, nothing extra."
+    },
+    {
+      "id": "tc-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"takeaways": ["TCP handshake", "Flow control", "Congestion control", "UDP vs TCP", "When to use UDP"], "sections": ["The 3-way handshake", "Flow control", "TCP vs UDP", "Choosing UDP"]},
+      "rationale": "'Congestion control' takeaway is missing — must fail (gap)."
+    },
+    {
+      "id": "tc-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"takeaways": ["TCP handshake", "Flow control"], "sections": ["The 3-way handshake", "Flow control", "QUIC and HTTP/3 deep dive"]},
+      "rationale": "QUIC/HTTP-3 is out of scope for this session — scope creep, must fail."
+    }
+  ]
+}

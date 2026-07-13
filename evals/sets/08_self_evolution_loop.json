@@ -1,0 +1,33 @@
+{
+  "id": "self_evolution_loop",
+  "title": "Self-Evolution / Learning-from-Feedback Loop",
+  "guideline_refs": [9],
+  "capability_status": "implemented",
+  "capability_note": "Implemented on 2026-07-13 via a per-course learned-rules store (src/learning.py, knowledge_base/learned_rules.json). A regeneration reason is distilled into a durable rule and injected into EVERY future generation for the course (context_builder.build_guided_base). View at GET /api/learned-rules. NOTE: it learns from explicit human feedback (regeneration reasons), not yet from automatic per-dimension defect trends.",
+  "grader": "hybrid",
+  "applies_to": "agent_behaviour_over_time",
+  "description": "Over a course, feedback given on earlier TR docs (e.g. 'analogies too long', 'you keep leaking future topics') should measurably change later generations without repeating the same instruction each time.",
+  "criterion": "A correction applied to session N's doc is reflected automatically in session N+k's generation (defect rate for that issue trends down across the course).",
+  "rubric": {
+    "5": "Recurring feedback is internalised; the same defect does not reappear in later sessions.",
+    "3": "Some feedback persisted (e.g. within a session) but not across sessions.",
+    "1": "No cross-run learning; the same defect recurs despite repeated feedback."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "sel-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"feedback_on_session": 5, "instruction": "analogies must be one sentence", "later_session": 12, "later_analogy_sentences": 1},
+      "rationale": "The one-sentence-analogy rule learned at S5 held at S12 without re-instructing."
+    },
+    {
+      "id": "sel-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"feedback_on_session": 5, "instruction": "analogies must be one sentence", "later_session": 12, "later_analogy_sentences": 4},
+      "rationale": "Same defect recurs despite feedback — the learned rule was not applied. This is now a genuine FAIL case (the loop should prevent it)."
+    }
+  ]
+}

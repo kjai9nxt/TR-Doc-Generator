@@ -1,0 +1,302 @@
+# ============================================================================
+#  TR DOC GENERATOR — HARNESS FILE
+#  Single source of truth for the automation. The agent reads THIS file on
+#  every run instead of re-analyzing the whole project. Update this file to
+#  change behaviour — do not hardcode anything in the Python.
+# ============================================================================
+
+meta:
+  name: "TR Doc Generator Agent"
+  version: "1.9"
+  owner: "AI Full-Stack Curriculum"
+  purpose: >
+    Generate a recording-ready TR (Teaching Reference) document for a single
+    course session, following the exact house format, keeping every session
+    recordable within 40 minutes, technically correct, market-competitive,
+    and pedagogically ordered.
+  # Changelog — keep this current as the project evolves.
+  changelog:
+    - "1.0 — core pipeline: parse xlsx, generate, guardrails, time gate, LLM judge, docx output."
+    - "1.1 — course memory from PowerPoint decks (pptx ingest + persistent KB + lexical RAG)."
+    - "1.2 — inputs switched to two live Google Sheets (structure + session details); strict
+             template validation, join-on-Session-Name, change-detection sync, interactive wizard."
+    - "1.3 — provider-aware LLM client (OpenRouter serving Claude Sonnet 5); Streamlit web frontend (app.py)."
+    - "1.4 — React frontend + FastAPI backend (server.py, ./start.sh); truncation logging + bigger
+             max_tokens (gen 32k, judge 8k); Haiku judge + prompt caching; concision caps; user
+             40-minute enforce_time toggle; JSON-parse retry; dropdown hides sessions that already
+             have decks; Guided mode removed (dormant in src); eval pipeline persists results to
+             evals/cases/; 17 eval SETS added (evals/sets/) from the 19 TR-Doc Eval Guidelines."
+    - "1.5 — added eval set #18 content_recency (guideline 20, user-added): flag outdated/deprecated
+             info presented as current; best with model.enable_web_market_check. 18 sets, 20 guidelines."
+    - "1.6 — judge rubric (rubrics/tr_doc_rubric.yaml) realigned to the eval guidelines: 8 -> 10
+             dimensions (added slide_content_style [G6,G13,G16] and content_recency [G20]; extended
+             coverage [G18], pedagogy [G12], technical_accuracy [G7], clarity/analogies [G11,G14,G15]).
+             Weights re-summed to 100. Judge auto-picks up new dims (no code change)."
+    - "1.7 — document structure rule (guideline 21): mandatory exact layout (title -> recap=prev
+             key takeaways -> agenda -> one section per agenda item -> slides -> key takeaways ->
+             next session -> 'Thank You | All the Best'); ALL SIX slide fields now REQUIRED on every
+             slide (heading/subheading/content/analogy/visual_guidance/speaker_notes) — enforced in
+             guardrails, format_spec, system_prompt, judge format_compliance, and eval set #19.
+             Golden slide 3 got an analogy so it complies. 19 eval sets, 21 guidelines."
+    - "1.8 — Guided mode RE-ENABLED (server /api/guided/* + React UI) so feedback (G8) works.
+             Web market+recency check LIVE via OpenRouter ':online' on the judge (enable_web_market_check
+             now true). Self-evolution: per-course learned-rules store (src/learning.py) — regeneration
+             reasons become durable rules injected into all future generations; GET /api/learned-rules.
+             RAG upgraded token-overlap -> BM25 (src/pptx_ingest.retrieve). Eval sets 04/07/08 flipped
+             to 'implemented'. PENDING: rubric gate rebalancing, automated PPT-extraction measure, CI."
+    - "1.9 — rubric gates rebalanced from live data (min_total 85->90, per_dim 3->4, revise_below
+             75->82) + anti-saturation judge instruction. Automated PPT-extraction-completeness
+             measure (pptx_ingest.completeness_report/deck_completeness): flags INTERIOR empty
+             slides + dropped slides (cover/closing ignored); surfaced in sync (extraction_warnings),
+             GET /api/extraction-check, offline eval, and the UI. Verified: all 9 real decks OK.
+             Remaining: CI (parked, user to decide platform)."
+  architecture:
+    entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
+    flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> guardrails -> time -> judge -> revise -> render .docx"
+    inputs: "two Google Sheets (links given at startup) + past Google Slides decks"
+    output: "Word .docx (+ .md preview + .grade.json report) in outputs/"
+
+# ----------------------------------------------------------------------------
+# MODEL / API
+# ----------------------------------------------------------------------------
+model:
+  # Provider: "openrouter" (OpenAI-compatible HTTP) or "anthropic" (native SDK).
+  provider: "openrouter"
+  base_url: "https://openrouter.ai/api/v1"
+  api_key_env: "OPENROUTER_API_KEY"   # env var holding the key (see .env)
+  # Model ids use the provider's naming. OpenRouter's Claude Sonnet slug:
+  generator: "anthropic/claude-sonnet-5"   # drafting + revision
+  judge: "anthropic/claude-haiku-4.5"      # LLM-as-judge grader — Haiku: ~3x faster/cheaper than Sonnet for scoring
+  prompt_caching: true              # cache the large static system prompt across generate/revise/judge calls
+  max_tokens: 32000                 # docs run ~14.5k tokens; 16k left no margin and truncated mid-JSON
+  judge_max_tokens: 8000            # judge emits 8 dimensions + justifications; 4k truncated mid-JSON
+  temperature: 0.4                  # low-ish: correctness over creativity
+  # Live market + recency check via OpenRouter's ":online" web search on the JUDGE
+  # call (uses this same OPENROUTER_API_KEY; small extra per-call cost). When true,
+  # the judge web-verifies the market_parity and content_recency dimensions against
+  # GFG/TutorialsPoint/Scaler and current standards. Set false to save cost/latency.
+  enable_web_market_check: true
+
+# ----------------------------------------------------------------------------
+# HARD CONSTRAINTS  (enforced by guardrails — a run FAILS if violated)
+# ----------------------------------------------------------------------------
+constraints:
+  recording:
+    max_minutes: 40                 # absolute ceiling
+    target_minutes: 36              # aim below the ceiling for safety margin
+    speaking_words_per_minute: 130  # narration pace for time estimation
+    seconds_per_slide_overhead: 15  # transition + settle time per slide
+    # A TR doc is a SKELETON the instructor elaborates on when recording.
+    # Calibrated against the golden Session 15 (1399 skeleton words -> ~38 min
+    # recording across 8 slides). Raising this makes the 40-min gate stricter.
+    elaboration_factor: 2.9
+  agenda:
+    # Agenda bullets must not exceed the number of key-takeaway lines.
+    max_bullets_rule: "<= key_takeaways_count"
+  slides:
+    min: 5
+    max: 12                         # split content across more slides, don't cram
+  language:
+    variety: "Indian English"
+    grammar: "must be error-free"
+
+# ----------------------------------------------------------------------------
+# REQUIRED DOCUMENT STRUCTURE  (order matters — used by structural grader)
+# ----------------------------------------------------------------------------
+structure:
+  # Each element: id, required?, and how it must appear.
+  - id: session_title
+    required: true
+    style: "Heading 1"
+    pattern: "Session {N} : {SessionName}"
+  - id: recap
+    required_if: "not_first_session"
+    style: "Heading 2"
+    pattern: "RECAP: Session {N-1} : {PrevSessionName}"
+    note: "Skip entirely for session 1."
+  - id: agenda
+    required: true
+    style: "Heading 2"
+    pattern: "Agenda for Today's Session"
+    body: "bullet list, count <= key_takeaways_count"
+  - id: sections
+    required: true
+    repeat: true
+    breaker_style: "Heading 2"
+    breaker_pattern: "--------------------------------------- SECTION {i}: {SectionName} ---------------------------------------"
+    children:
+      - id: slide
+        style: "Heading 3"
+        pattern: "Slide {n}: {SlideTitle}"
+        fields:                     # per-slide fields, in this order
+          - {label: "Heading:", required: true}
+          - {label: "Subheading:", required: true}
+          - {label: "Content:", required: true}
+          - {label: "Analogy:", required: false}          # include when it aids understanding
+          - {label: "Visual Guidance:", required: false}  # NOT mandatory
+          - {label: "Speaker Notes:", required: false}    # NOT mandatory
+        tables_allowed: true         # comparison/spec tables encouraged
+  - id: key_takeaways
+    required: true
+    style: "Heading 2"
+    pattern: "Key Takeaways"
+    body: "mirror the session's key takeaways from the course structure"
+  - id: upcoming_session
+    required: true
+    pattern: "Upcoming Session : {NextSessionName}"
+    note: "Omit the name only if this is the final session of the course."
+  - id: closing
+    required: true
+    pattern: "Thank You  |  All the Best"
+
+# ----------------------------------------------------------------------------
+# PEDAGOGY RULES  (fed into the generation system prompt)
+# ----------------------------------------------------------------------------
+pedagogy:
+  - "Motivate every concept before defining it — never jump straight to a definition."
+  - "Order concepts so each builds on the previous (problem -> idea -> mechanism -> comparison -> real use)."
+  - "Introduce a new term only after the learner feels the gap it fills."
+  - "Use one concrete analogy per non-trivial concept; keep analogies everyday and Indian-context friendly."
+  - "Prefer a comparison table when contrasting 2+ items (e.g. TCP vs UDP)."
+  - "Close each section implicitly leading into the next."
+  - "Cover every key takeaway of the session — none skipped, none padded beyond scope."
+
+# ----------------------------------------------------------------------------
+# MARKET PARITY  (content depth benchmark)
+# ----------------------------------------------------------------------------
+market_reference_platforms:
+  - "Scaler / Scaler Topics"
+  - "GeeksforGeeks (GFG)"
+  - "TutorialsPoint"
+  - "JavaTpoint"
+  - "Standard university CN/CS syllabi"
+market_rule: >
+  Depth and accuracy must match or exceed these platforms for the same topic —
+  correct terminology, standard values (RFC numbers, field sizes, thresholds),
+  and the comparisons a learner would find there — without exceeding the
+  40-minute recording budget.
+
+# ----------------------------------------------------------------------------
+# CONTEXT SOURCES  (what the agent reads to stay consistent with prior sessions)
+# ----------------------------------------------------------------------------
+context:
+  # PRIMARY inputs are two Google Sheets the user provides as links at startup:
+  #  1. course_structure  — the curriculum
+  #  2. session_details    — Session Name -> Google Slides (PPT) link
+  # The agent syncs both on every run, validates their templates, and ingests
+  # the linked Google Slides into the persistent knowledge base (incremental).
+  knowledge_base_dir: "knowledge_base"
+  rag_top_k: 6                                 # relevant prior slides to retrieve
+  sync_poll_seconds: 60                        # --watch mode poll interval
+  sync_max_workers: 6                          # parallel Google Slides downloads during sync
+  # Offline/dev fallbacks (used only if no sheet links are configured):
+  course_structure_glob: "inputs/course/*.xlsx"
+  past_ppts_glob: "inputs/past_ppts/*.pptx"
+  past_docs_glob: "inputs/past_docs/*.docx"
+  # Column names for the offline .xlsx fallback loader ('module' is optional).
+  structure_columns:
+    module: "Modules"
+    topic: "Topic Name"
+    session_no: "Session"
+    session_name: "Session Name"
+    key_takeaways: "Key Takeaways"
+
+# ----------------------------------------------------------------------------
+# SHEET TEMPLATES  (strict — a sheet that does not match is DISCARDED)
+# Column names from Memory Templates/. Matching is trimmed + case-insensitive,
+# but the SET must match exactly: no missing columns, no extra columns.
+# ----------------------------------------------------------------------------
+sheet_templates:
+  match_mode: "exact_set"          # exact set of columns; trimmed, case-insensitive
+  course_structure:
+    label: "Course Curriculum Structure"
+    required_columns: ["Topic Name", "Session", "Session Name", "Key Takeaways"]
+    join_key: "Session Name"       # links the two sheets together
+  session_details:
+    label: "Session Details"
+    required_columns: ["Session Name", "PPT Link"]
+    join_key: "Session Name"
+  guide_file: "harness/sheet_templates.md"
+
+# ----------------------------------------------------------------------------
+# INTERFACE  (how a user drives the agent)
+# ----------------------------------------------------------------------------
+interface:
+  web:
+    tool: "streamlit"
+    file: "app.py"
+    launch: "streamlit run app.py"
+    steps: ["Connect sheets (validate + sync)", "Pick session + generate (live progress)",
+            "Review grades + download .docx"]
+  cli:
+    file: "run.py"
+    commands:
+      - "python run.py                 # interactive wizard: enter links, sync, generate"
+      - "python run.py --session N      # sync + generate one session"
+      - "python run.py --sync           # re-sync with saved links, print changelog"
+      - "python run.py --watch          # poll both sheets, log changes"
+      - "python run.py --template-guide  # print the required sheet template"
+      - "python run.py --list           # list sessions from the synced structure"
+
+# ----------------------------------------------------------------------------
+# QUALITY GATES  (thresholds the graders must clear to accept a doc)
+# ----------------------------------------------------------------------------
+gates:
+  structural_pass: true             # ALL required elements present (hard gate)
+  time_within_budget: true          # estimated minutes <= max_minutes (hard gate)
+  # Rebalanced 2026-07-13 from a 3-session live probe (Sessions 10/17/24 all scored
+  # 100/100, every dimension 5/5). The old 85/3 bar had huge headroom — "accepted"
+  # was near-automatic. Raised so acceptance means RECORDING-READY, not just "okay":
+  rubric_min_total: 90              # LLM-judge weighted score out of 100 (was 85)
+  rubric_min_per_dimension: 4       # every dimension >= 4/5 — no merely-"acceptable" weak spots (was 3)
+  # Each generate/revise call to the model takes ~1-2 minutes, so keep rounds low.
+  max_revision_rounds: 1            # at most one repair pass
+  # Revise a clear miss (< this) once; marginal near-misses (82-89) are shipped
+  # flagged-not-accepted rather than burning a slow extra round for a small delta.
+  rubric_revise_below: 82           # revise only if weighted score < this (was 75)
+
+# ----------------------------------------------------------------------------
+# OUTPUT
+# ----------------------------------------------------------------------------
+output:
+  dir: "outputs"
+  docx_filename: "Session {N} _ {SessionName}.docx"
+  also_write_markdown: true
+  write_grade_report: true
+
+# ----------------------------------------------------------------------------
+# EVALS
+#   Two layers:
+#   (a) per-generation grading — guardrails + time_grader + llm_judge (rubric
+#       above) run on EVERY generated doc, producing the .grade.json report.
+#   (b) eval SETS — evals/sets/*.json, one per dimension, derived from the 19
+#       "TR Doc Eval Guidelines". Each has a rubric + good/bad (polarity) cases.
+#       The runner (evals/run_eval.py) persists results to evals/cases/.
+# ----------------------------------------------------------------------------
+evals:
+  set: "evals/eval_set.yaml"              # golden + live regression cases
+  sets_dir: "evals/sets"                  # per-dimension eval sets (index.json lists them)
+  results_dir: "evals/cases"              # generated result reports land here
+  golden: "evals/golden/session_15_golden.json"
+  runner: "python -m evals.run_eval [--live]"
+  # 17 dimensions covering all 19 guidelines. status: implemented | dormant | not_implemented
+  dimensions:
+    - {id: curriculum_takeaway_extraction, guidelines: [1],        status: implemented,     grader: deterministic}
+    - {id: ppt_extraction_completeness,    guidelines: [2, 3],     status: implemented,     grader: hybrid}
+    - {id: takeaway_coverage,              guidelines: [1, 4],     status: implemented,     grader: hybrid}
+    - {id: chunk_count,                    guidelines: [5],        status: implemented,     grader: deterministic}
+    - {id: content_relevance,              guidelines: [6],        status: implemented,     grader: llm_judge}
+    - {id: groundedness_faithfulness,      guidelines: [7],        status: implemented,     grader: llm_judge}
+    - {id: feedback_regeneration_adherence,guidelines: [8],        status: implemented,     grader: llm_judge}
+    - {id: self_evolution_loop,            guidelines: [9],        status: implemented,     grader: hybrid}
+    - {id: recording_time_budget,          guidelines: [10],       status: implemented,     grader: deterministic}
+    - {id: language_simplicity,            guidelines: [11],       status: implemented,     grader: llm_judge}
+    - {id: broad_to_specific_ordering,     guidelines: [12],       status: implemented,     grader: llm_judge}
+    - {id: slide_phrasing_no_meta_narration, guidelines: [13],     status: implemented,     grader: hybrid}
+    - {id: analogy_quality,                guidelines: [14, 15],   status: implemented,     grader: llm_judge}
+    - {id: conciseness,                    guidelines: [16],       status: implemented,     grader: hybrid}
+    - {id: pedagogical_flow_continuity,    guidelines: [17],       status: implemented,     grader: llm_judge}
+    - {id: no_repeat_no_future_leakage,    guidelines: [18],       status: implemented,     grader: llm_judge}
+    - {id: market_coverage_completeness,   guidelines: [19],       status: implemented,     grader: llm_judge}
+    - {id: content_recency,                guidelines: [20],       status: implemented,     grader: llm_judge}
+    - {id: document_structure_layout,      guidelines: [21],       status: implemented,     grader: deterministic}

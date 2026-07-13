@@ -1,0 +1,39 @@
+{
+  "id": "recording_time_budget",
+  "title": "40-Minute Recording Budget (when enforced)",
+  "guideline_refs": [10],
+  "capability_status": "implemented",
+  "grader": "deterministic",
+  "applies_to": "final_tr_doc",
+  "description": "When the user selects the 40-minute limit, the generated TR doc must be teachable within 40 minutes per the calibrated time estimator (skeleton words × elaboration factor + per-slide overhead).",
+  "criterion": "estimated_minutes <= 40 when enforce_time is on. (Aim ~36 for margin; far under ~25 may signal thin content — soft warning, not a fail.)",
+  "rubric": {
+    "5": "28-40 min — full and within budget.",
+    "3": "20-28 min (a little thin) or 40-42 (marginal).",
+    "1": "> 42 min when the limit is on."
+  },
+  "pass_threshold": 3,
+  "cases": [
+    {
+      "id": "rtb-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"enforce_time": true, "estimated_minutes": 36.6, "slides": 8},
+      "rationale": "Within budget with margin (matches golden Session 15)."
+    },
+    {
+      "id": "rtb-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"enforce_time": true, "estimated_minutes": 53.8, "slides": 11},
+      "rationale": "Over the 40-min ceiling with the limit on — must fail and trigger revision."
+    },
+    {
+      "id": "rtb-neutral-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"enforce_time": false, "estimated_minutes": 58.0, "slides": 13},
+      "rationale": "Limit OFF — time is reported but does not gate; passes by design."
+    }
+  ]
+}

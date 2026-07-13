@@ -1,0 +1,42 @@
+{
+  "id": "curriculum_takeaway_extraction",
+  "title": "Curriculum → Key-Takeaway Extraction",
+  "guideline_refs": [1],
+  "capability_status": "implemented",
+  "grader": "deterministic",
+  "applies_to": "curriculum_parse",
+  "description": "The agent must read the Course Curriculum Structure sheet and extract the correct, complete set of key takeaways for the target session — same count, same wording, no merging or dropping.",
+  "criterion": "Extracted key takeaways for the session exactly match the sheet's 'Key Takeaways' cell (count and content), trimmed.",
+  "rubric": {
+    "5": "All takeaways extracted, exact count, no reordering or paraphrase.",
+    "3": "All present but minor whitespace/case normalisation only.",
+    "1": "A takeaway is dropped, merged, split, or invented."
+  },
+  "pass_threshold": 5,
+  "cases": [
+    {
+      "id": "cte-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"sheet_cell": "TCP handshake; Flow control; Congestion control; UDP vs TCP; When to use UDP", "session_no": 10},
+      "extracted": ["TCP handshake", "Flow control", "Congestion control", "UDP vs TCP", "When to use UDP"],
+      "rationale": "5 in the cell, 5 extracted, verbatim."
+    },
+    {
+      "id": "cte-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"sheet_cell": "TCP handshake; Flow control; Congestion control; UDP vs TCP; When to use UDP", "session_no": 10},
+      "extracted": ["TCP handshake", "Flow and congestion control", "UDP vs TCP", "When to use UDP"],
+      "rationale": "Merged 'Flow control' + 'Congestion control' into one → 4 instead of 5. Must fail."
+    },
+    {
+      "id": "cte-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"sheet_cell": "Symmetric encryption; Asymmetric encryption", "session_no": 6},
+      "extracted": ["Symmetric encryption", "Asymmetric encryption", "Digital signatures"],
+      "rationale": "Invented a third takeaway not in the curriculum. Must fail."
+    }
+  ]
+}
