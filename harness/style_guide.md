@@ -57,5 +57,6 @@ Each section should feel like it hands off to the next.
 ## What NOT to do
 - No filler ("In this slide we will see..."). Get to the substance.
 - No content beyond the session's key takeaways (scope creep breaks the 40-min budget).
-- No repeated analogies across slides.
+- No repeated analogies across slides — and no reused domain/theme either (if one
+  slide uses postal mail, another must not use couriers/postcards; switch domains).
 - No unexplained jargon.

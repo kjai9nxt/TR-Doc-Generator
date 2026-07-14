@@ -37,6 +37,12 @@ export default function App() {
   const [approved, setApproved] = useState({})
   const guidedPollRef = useRef(null)
 
+  // Eval-sets (System B) run on the finished doc
+  const [evalReport, setEvalReport] = useState(null)
+  const [evalRunning, setEvalRunning] = useState(false)
+  const [evalErr, setEvalErr] = useState(null)
+  const evalPollRef = useRef(null)
+
   useEffect(() => {
     api.status().then((s) => {
       setStatus(s)
@@ -76,7 +82,7 @@ export default function App() {
   }
 
   function startGenerate() {
-    setGenerating(true); setResult(null); setGenErr(null); setLogs([])
+    setGenerating(true); setResult(null); setGenErr(null); setLogs([]); setEvalReport(null); setEvalErr(null)
     api.generate(sel, useJudge, enforceTime).then(({ job_id }) => {
       pollRef.current = setInterval(async () => {
         try {
@@ -93,7 +99,7 @@ export default function App() {
   }
 
   function startGuided() {
-    setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({})
+    setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null)
     api.guidedStart(sel, useJudge).then(({ guided_id }) => {
       setGuidedId(guided_id)
       guidedPollRef.current = setInterval(async () => {
@@ -125,6 +131,19 @@ export default function App() {
       .catch((e) => { setBusyAction(false); setGenErr(e.message) })
   }
 
+  function runEvalSets() {
+    setEvalRunning(true); setEvalReport(null); setEvalErr(null)
+    api.evalSets(result.session_no, true, enforceTime).then(({ job_id }) => {
+      evalPollRef.current = setInterval(async () => {
+        try {
+          const job = await api.job(job_id)
+          if (job.status === 'done') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalReport(job.result) }
+          else if (job.status === 'error') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(job.error) }
+        } catch (e) { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(e.message) }
+      }, 1500)
+    }).catch((e) => { setEvalRunning(false); setEvalErr(e.message) })
+  }
+
   useEffect(() => {
     guidedPollRef.current && clearInterval(guidedPollRef.current)
     setGuidedId(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({})
@@ -134,6 +153,7 @@ export default function App() {
     pollRef.current && clearInterval(pollRef.current)
     syncPollRef.current && clearInterval(syncPollRef.current)
     guidedPollRef.current && clearInterval(guidedPollRef.current)
+    evalPollRef.current && clearInterval(evalPollRef.current)
   }, [])
 
   const selSession = sessions.find((s) => s.number === sel)
@@ -364,7 +384,8 @@ export default function App() {
           <h2><span className="num">3</span> Result</h2>
           <div className="metrics">
             <Metric label="Accepted" value={result.accepted ? '✅ Yes' : '⚠️ Review'} />
-            <Metric label="Est. recording" value={`${result.time.estimated_minutes} min`} sub={`budget ${result.time.max_minutes}`} />
+            <Metric label="Est. recording" value={`${result.time.estimated_minutes} min`}
+                    sub={enforceTime ? `budget ${result.time.max_minutes}` : 'limit off'} />
             <Metric label="Slides" value={result.time.slide_count} />
             {result.judge && <Metric label="Rubric" value={`${result.judge.weighted_total}/100`} />}
           </div>
@@ -375,16 +396,37 @@ export default function App() {
             </div>
           )}
           <a className="primary download" href={api.downloadUrl(result.session_no)}>⬇️ Download Word (.docx)</a>
+
           {result.judge?.scores && (
-            <details className="rubric">
-              <summary>Rubric breakdown</summary>
-              {Object.entries(result.judge.scores).map(([dim, o]) => (
-                <div key={dim} className="dim"><b>{dim}</b> — {o.score}/5<div className="just">{o.justification}</div></div>
-              ))}
+            <details className="panel rubric" open>
+              <summary>Rubric — judge score <b>{result.judge.weighted_total}/100</b>
+                <span className="muted"> ({Object.keys(result.judge.scores).length} dimensions)</span>
+              </summary>
+              <div className="scorelist">
+                {Object.entries(result.judge.scores).map(([dim, o]) => (
+                  <div key={dim} className="scorerow">
+                    <div className="scorehead"><ScoreChip score={o.score} /><span className="dimname">{pretty(dim)}</span></div>
+                    <div className="just">{o.justification}</div>
+                  </div>
+                ))}
+              </div>
             </details>
           )}
+
+          <div className="panel evalsets">
+            <div className="evalhead">
+              <div><b>Eval sets</b> <span className="muted">— score this doc against all {19} quality dimensions</span></div>
+              <button className="ghostbtn" disabled={evalRunning} onClick={runEvalSets}>
+                {evalRunning ? 'Running…' : '🧪 Run eval sets'}
+              </button>
+            </div>
+            {evalRunning && <Busy label="Scoring against the eval sets… (deterministic + LLM, ~1–2 min)" />}
+            {evalErr && <div className="alert error"><pre>{evalErr}</pre></div>}
+            {evalReport && <EvalReport report={evalReport} />}
+          </div>
+
           {result.markdown && (
-            <details className="preview" open>
+            <details className="panel preview" open>
               <summary>Preview the TR doc</summary>
               <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{result.markdown}</ReactMarkdown></div>
             </details>
@@ -397,6 +439,39 @@ export default function App() {
 
 function Busy({ label }) {
   return <div className="busyrow"><span className="spinner" /> {label}</div>
+}
+
+function pretty(id) {
+  return id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function ScoreChip({ score, max = 5 }) {
+  const cls = score >= 4 ? 'good' : score >= 3 ? 'mid' : 'bad'
+  return <span className={`chip ${cls}`}>{score}/{max}</span>
+}
+
+function EvalReport({ report }) {
+  return (
+    <div className="evalreport">
+      <div className="evalsummary">
+        <span className={`badge ${report.overall_pass ? 'good' : 'bad'}`}>
+          {report.overall_pass ? 'PASS' : 'REVIEW'}
+        </span>
+        <span><b>{report.passed}</b>/{report.scored} sets passed</span>
+        <span className="muted">· {report.skipped} skipped</span>
+      </div>
+      {report.sets.map((s) => (
+        <div key={s.id} className={`setrow ${s.skipped ? 'skip' : (s.passed ? 'pass' : 'fail')}`}>
+          <div className="setmain">
+            {s.skipped ? <span className="chip skip">skip</span> : <ScoreChip score={s.score} />}
+            <span className="dimname">{pretty(s.id)}</span>
+            {!s.skipped && <span className="tag">{s.grader}</span>}
+          </div>
+          <div className="just">{s.skipped ? s.reason : s.detail}</div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function Metric({ label, value, sub }) {

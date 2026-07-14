@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.10"
+  version: "1.13"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -54,6 +54,24 @@ meta:
               + frontend-build (Vite) run on every push/PR; live-eval is manual (workflow_dispatch,
               needs OPENROUTER_API_KEY secret). requirements.txt fixed to include fastapi + uvicorn
               (server.py deps were missing). Offline eval verified to pass from committed files only."
+    - "1.11 — EVAL-SET RUNNER built (evals/run_sets.py): scores ONE generated doc against all 19
+              sets — 6 deterministic (structure, chunk count, time, conciseness, slide phrasing,
+              extraction), ~10 LLM-judge (qualitative), 3 skipped (need sheet/regen/cross-session).
+              pipeline now persists the doc JSON (.doc.json) so re-scoring needs no regeneration.
+              First run (S10) caught a real defect the single judge missed: analogy_quality 2/5 —
+              analogies repeated across slides. CLI: python -m evals.run_sets --session N [--no-llm]."
+    - "1.12 — analogy-repetition defect fixed (prompt now bans reusing a domain/theme; guardrails
+              hard-fails exact-duplicate analogy) → S10 analogy_quality 2->4, 16/16. Wired 2 of the
+              3 skipped eval sets: curriculum_takeaway_extraction (deterministic, doc vs curriculum
+              takeaways, alnum-normalised) + feedback_regeneration_adherence (LLM-scores Guided
+              regeneration events logged to src/regen_log.py). Only self_evolution_loop still skipped
+              (longitudinal). Verified: curriculum 5/5; regen scorer good=5 / bad=1."
+    - "1.13 — (a) 40-min limit OFF now DROPS recording_time entirely: judge excludes it from the
+              rubric + renormalises /100 (llm_judge.grade(enforce_time=)); eval runner skips the
+              recording_time_budget set. (b) Eval-set runner WIRED into the platform: POST /api/eval-sets
+              (background job) + 'Run eval sets' button on the result screen (runs with LLM ON by
+              default, so no more 'no llm' skips). (c) UI polish: color-coded score chips, rubric
+              score-list, and an eval-set report (pass/fail/skip rows) — replaces the clumsy layout."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> guardrails -> time -> judge -> revise -> render .docx"
@@ -72,7 +90,7 @@ model:
   generator: "anthropic/claude-sonnet-5"   # drafting + revision
   judge: "anthropic/claude-haiku-4.5"      # LLM-as-judge grader — Haiku: ~3x faster/cheaper than Sonnet for scoring
   prompt_caching: true              # cache the large static system prompt across generate/revise/judge calls
-  max_tokens: 32000                 # docs run ~14.5k tokens; 16k left no margin and truncated mid-JSON
+  max_tokens: 32000                 # ceiling; docs use ~14.5k out (~2x margin, no truncation risk)
   judge_max_tokens: 8000            # judge emits 8 dimensions + justifications; 4k truncated mid-JSON
   temperature: 0.4                  # low-ish: correctness over creativity
   # Live market + recency check via OpenRouter's ":online" web search on the JUDGE
@@ -273,16 +291,19 @@ output:
 #   Two layers:
 #   (a) per-generation grading — guardrails + time_grader + llm_judge (rubric
 #       above) run on EVERY generated doc, producing the .grade.json report.
-#   (b) eval SETS — evals/sets/*.json, one per dimension, derived from the 19
+#   (b) eval SETS — evals/sets/*.json, one per dimension, derived from the
 #       "TR Doc Eval Guidelines". Each has a rubric + good/bad (polarity) cases.
-#       The runner (evals/run_eval.py) persists results to evals/cases/.
+#       Runner: evals/run_sets.py scores ONE generated doc against every set
+#       (deterministic where exact; LLM-judge for qualitative; skips sets that
+#       need inputs a single doc can't provide). Persists to evals/cases/.
 # ----------------------------------------------------------------------------
 evals:
   set: "evals/eval_set.yaml"              # golden + live regression cases
   sets_dir: "evals/sets"                  # per-dimension eval sets (index.json lists them)
   results_dir: "evals/cases"              # generated result reports land here
   golden: "evals/golden/session_15_golden.json"
-  runner: "python -m evals.run_eval [--live]"
+  runner: "python -m evals.run_eval [--live]"          # golden regression / live pipeline
+  sets_runner: "python -m evals.run_sets --session N [--no-llm]"  # score a doc vs all sets
   # 17 dimensions covering all 19 guidelines. status: implemented | dormant | not_implemented
   dimensions:
     - {id: curriculum_takeaway_extraction, guidelines: [1],        status: implemented,     grader: deterministic}

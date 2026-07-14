@@ -11,13 +11,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src import config, llm  # noqa: E402
 
 
-def _rubric_text() -> str:
+def _rubric_text(exclude: tuple = ()) -> str:
     r = config.rubric()
     lines = ["SCALE:"]
     for k, v in r["scale"].items():
         lines.append(f"  {k} = {v}")
     lines.append("\nDIMENSIONS (id, weight, question):")
     for d in r["dimensions"]:
+        if d["id"] in exclude:
+            continue
         lines.append(f"  [{d['id']}] weight={d['weight']}\n    {d['question'].strip()}")
     lines.append("\nOUTPUT CONTRACT:\n" + r["output_contract"])
     return "\n".join(lines)
@@ -34,10 +36,14 @@ JUDGE_SYSTEM = (
 )
 
 
-def grade(doc: dict, session, time_estimate: dict) -> dict:
+def grade(doc: dict, session, time_estimate: dict, *, enforce_time: bool = True) -> dict:
     h = config.harness()
     m = h["model"]
     judge_model = m["judge"]
+    # When the user turns OFF the 40-minute limit, the recording_time dimension is
+    # DROPPED entirely — not shown, not scored, not weighted (the remaining dimensions
+    # are renormalised to /100). So the toggle removes it from grading altogether.
+    exclude = () if enforce_time else ("recording_time",)
     web_note = ""
     # Live web check for market_parity + content_recency: OpenRouter's ":online"
     # variant gives the judge web search (uses the existing OpenRouter key). Only
@@ -51,16 +57,17 @@ def grade(doc: dict, session, time_estimate: dict) -> dict:
             "TutorialsPoint, and Scaler, and (b) the CURRENT standards/versions. Penalise "
             "anything missing versus mainstream references, and any deprecated/superseded "
             "info presented as current. Note in the justification what you verified.")
+    # Only feed the recording-time estimate when that dimension is actually graded.
+    time_block = "" if not enforce_time else (
+        "DETERMINISTIC RECORDING-TIME ESTIMATE (ground truth for the recording_time dimension):\n"
+        + json.dumps(time_estimate, indent=2) + "\n\n")
     prompt = f"""RUBRIC
-{_rubric_text()}
+{_rubric_text(exclude)}
 
 SESSION KEY TAKEAWAYS (coverage must match these):
 {json.dumps(session.key_takeaways, indent=2)}
 
-DETERMINISTIC RECORDING-TIME ESTIMATE (ground truth for the recording_time dimension):
-{json.dumps(time_estimate, indent=2)}
-
-TR DOC TO GRADE (JSON):
+{time_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
 {web_note}
 
@@ -72,14 +79,19 @@ Grade now. Return only the contract JSON."""
     )
     result = llm.extract_json(raw)
 
-    # recompute weighted total defensively from per-dimension scores
-    dims = {d["id"]: d["weight"] for d in config.rubric()["dimensions"]}
+    # Drop the excluded dimension from the scores entirely (so it isn't shown/gated).
+    for ex in exclude:
+        result.get("scores", {}).pop(ex, None)
+
+    # recompute weighted total defensively over the ACTIVE dimensions (renormalised)
+    dims = {d["id"]: d["weight"] for d in config.rubric()["dimensions"]
+            if d["id"] not in exclude}
     tot_w = sum(dims.values())
     acc = 0.0
     for did, w in dims.items():
         sc = result.get("scores", {}).get(did, {}).get("score", 0)
         acc += (sc / 5.0) * w
-    result["weighted_total"] = round(acc / tot_w * 100, 1)
+    result["weighted_total"] = round(acc / tot_w * 100, 1) if tot_w else 0.0
     return result
 
 

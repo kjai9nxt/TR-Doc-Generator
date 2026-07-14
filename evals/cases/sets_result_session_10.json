@@ -1,0 +1,139 @@
+{
+  "session_no": 10,
+  "session_name": "Understanding TCP and UDP",
+  "overall_pass": true,
+  "scored": 7,
+  "passed": 7,
+  "skipped": 12,
+  "sets": [
+    {
+      "id": "curriculum_takeaway_extraction",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "all 5 takeaways extracted verbatim"
+    },
+    {
+      "id": "ppt_extraction_completeness",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 4,
+      "passed": true,
+      "detail": "9 deck(s), 0 with issues"
+    },
+    {
+      "id": "takeaway_coverage",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "chunk_count",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "agenda=5, sections=5, recap=yes"
+    },
+    {
+      "id": "content_relevance",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "groundedness_faithfulness",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "feedback_regeneration_adherence",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "no regeneration recorded — regenerate a chunk in Guided mode first"
+    },
+    {
+      "id": "self_evolution_loop",
+      "grader": "skip",
+      "skipped": true,
+      "reason": "needs behaviour compared across multiple sessions (longitudinal)"
+    },
+    {
+      "id": "recording_time_budget",
+      "grader": "deterministic",
+      "score": 3,
+      "threshold": 3,
+      "passed": true,
+      "detail": "estimated 17.2 min (budget 40, within=True)"
+    },
+    {
+      "id": "language_simplicity",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "broad_to_specific_ordering",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "slide_phrasing_no_meta_narration",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "no meta-narration in slide content"
+    },
+    {
+      "id": "analogy_quality",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "conciseness",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 4,
+      "passed": true,
+      "detail": "no over-length lines"
+    },
+    {
+      "id": "pedagogical_flow_continuity",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "no_repeat_no_future_leakage",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "market_coverage_completeness",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "content_recency",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "document_structure_layout",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "exact layout + all six slide fields"
+    }
+  ],
+  "generated_at": "2026-07-14T08:06:38"
+}

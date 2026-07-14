@@ -81,6 +81,14 @@ def check(doc: dict, session, is_first: bool, is_last: bool) -> GuardrailResult:
             if not s.get(req) or not str(s.get(req)).strip():
                 fails.append(f"{tag}: missing '{req}' (required on every slide).")
 
+    # --- no repeated analogy across slides (exact match; backstop for the
+    #     no-repeat rule — the LLM eval set also catches same-theme reuse) ---
+    analogies = [str(s.get("analogy", "")).strip().lower() for s in slides if s.get("analogy")]
+    dupes = sorted({a for a in analogies if analogies.count(a) > 1})
+    if dupes:
+        fails.append(f"Duplicate analogy reused across {len(dupes)} slide group(s) — "
+                     f"each slide needs a distinct analogy.")
+
     passed = len(fails) == 0
     if gates.get("structural_pass") is True and not passed:
         pass  # already reflected in fails

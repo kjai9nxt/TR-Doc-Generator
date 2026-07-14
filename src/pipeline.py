@@ -36,7 +36,7 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
     judge_ok = True
     rubric_total = 100
     if use_judge:
-        jr = llm_judge.grade(doc, session, te)
+        jr = llm_judge.grade(doc, session, te, enforce_time=enforce_time)
         report["judge"] = jr
         rubric_total = jr.get("weighted_total", 0)
         judge_ok, judge_reasons = llm_judge.passes_gates(jr)
@@ -116,6 +116,9 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     out_dir = config.ROOT / out["dir"]
     docx_path = docx_writer.write_docx(doc, out_dir / safe)
     log(f"Wrote {docx_path}")
+    # Persist the doc JSON so the eval-set runner can re-score it without regenerating.
+    (out_dir / (safe.rsplit(".", 1)[0] + ".doc.json")).write_text(
+        json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
 
     if out.get("also_write_markdown"):
         md = docx_writer.write_markdown(doc, out_dir / (safe.rsplit(".", 1)[0] + ".md"))
@@ -186,6 +189,8 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True, on_event=Non
     out_dir = config.ROOT / out["dir"]
     docx_path = docx_writer.write_docx(doc, out_dir / safe)
     log(f"Wrote {docx_path}")
+    (out_dir / (safe.rsplit(".", 1)[0] + ".doc.json")).write_text(
+        json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
     if out.get("also_write_markdown"):
         docx_writer.write_markdown(doc, out_dir / (safe.rsplit(".", 1)[0] + ".md"))
     if out.get("write_grade_report"):

@@ -41,9 +41,14 @@ session.
 - **Broad → specific.** Start with the big picture, then go into detail. Never open
   on a narrow detail/formula before the overview is set.
 - Introduce a term only after the learner feels the gap it fills.
-- One everyday, Indian-context analogy per non-trivial concept (no repeats).
-  Analogies must be **simple, relatable, and non-distracting** — one clean mapping,
-  1-2 sentences. No niche or elaborate analogies that need their own explanation.
+- One everyday, Indian-context analogy per non-trivial concept. Analogies must be
+  **simple, relatable, and non-distracting** — one clean mapping, 1-2 sentences. No
+  niche or elaborate analogies that need their own explanation.
+- **Never repeat an analogy — and never reuse the same DOMAIN/THEME across slides.**
+  If one slide uses postal mail (postcard/courier/registered post), NO other slide
+  may use any mail/delivery analogy — pick a genuinely different everyday domain
+  (trains, queues, electricity, cooking, banking, traffic, etc.). Each slide's
+  analogy must be recognisably distinct from every other slide's.
 - Use a comparison TABLE whenever contrasting 2+ things.
 - Keep prior sessions in mind: don't re-teach what earlier sessions covered;
   build on it and reference it naturally in the recap and transitions.

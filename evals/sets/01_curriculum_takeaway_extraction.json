@@ -37,6 +37,14 @@
       "input": {"sheet_cell": "Symmetric encryption; Asymmetric encryption", "session_no": 6},
       "extracted": ["Symmetric encryption", "Asymmetric encryption", "Digital signatures"],
       "rationale": "Invented a third takeaway not in the curriculum. Must fail."
+    },
+    {
+      "id": "cte-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"sheet_cell": "Symmetric encryption; Asymmetric encryption", "session_no": 6},
+      "extracted": ["Symmetric encryption"],
+      "rationale": "Missed a takeaway from the curriculum. Must fail."
     }
   ]
 }

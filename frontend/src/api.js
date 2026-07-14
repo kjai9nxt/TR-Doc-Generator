@@ -48,4 +48,7 @@ export const api = {
   guidedFinalize: (id) => req(`/guided/${id}/finalize`, { method: 'POST' }),
 
   learnedRules: () => req('/learned-rules'),
+
+  evalSets: (session_no, use_llm, enforce_time) =>
+    req('/eval-sets', { method: 'POST', body: JSON.stringify({ session_no, use_llm, enforce_time }) }),
 }

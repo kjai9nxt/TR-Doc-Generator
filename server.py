@@ -55,6 +55,12 @@ class GenerateBody(BaseModel):
     enforce_time: bool = True
 
 
+class EvalSetsBody(BaseModel):
+    session_no: int
+    use_llm: bool = True
+    enforce_time: bool = True
+
+
 class GuidedStartBody(BaseModel):
     session_no: int
     use_judge: bool = True
@@ -186,6 +192,38 @@ def generate(body: GenerateBody):
     return {"job_id": job_id}
 
 
+def _run_eval_sets(job_id: str, session_no: int, use_llm: bool, enforce_time: bool):
+    try:
+        from evals import run_sets
+        sessions = course_loader.load_sessions(None)
+        _, cur, _ = course_loader.neighbours(session_no, sessions)
+        out = config.harness()["output"]
+        safe = out["docx_filename"].format(N=cur.number, SessionName=cur.name).replace("/", "-")
+        doc_path = config.ROOT / out["dir"] / (safe.rsplit(".", 1)[0] + ".doc.json")
+        if not doc_path.exists():
+            raise RuntimeError("No generated doc found for this session — generate it first.")
+        doc = json.loads(doc_path.read_text(encoding="utf-8"))
+        report = run_sets.run_on_doc(doc, cur, use_llm=use_llm, enforce_time=enforce_time)
+        with _lock:
+            JOBS[job_id].update(status="done", result=report)
+    except Exception as e:
+        with _lock:
+            JOBS[job_id].update(status="error", error=str(e))
+
+
+@app.post("/api/eval-sets")
+def eval_sets(body: EvalSetsBody):
+    if body.use_llm and config.api_key() is None:
+        raise HTTPException(status_code=400, detail={"message": "No API key configured in .env"})
+    job_id = uuid.uuid4().hex[:12]
+    with _lock:
+        JOBS[job_id] = {"status": "running", "logs": [], "result": None, "error": None}
+    threading.Thread(target=_run_eval_sets,
+                     args=(job_id, body.session_no, body.use_llm, body.enforce_time),
+                     daemon=True).start()
+    return {"job_id": job_id}
+
+
 @app.get("/api/jobs/{job_id}")
 def job_status(job_id: str):
     with _lock:
@@ -253,6 +291,7 @@ def _guided_regenerate(gid: str, index: int, reason: str):
         with _lock:
             prior = [c["fragment"] for c in GUIDED[gid]["chunks"][:index]]
             session_no = GUIDED[gid]["session_no"]
+            before_md = GUIDED[gid]["chunks"][index]["markdown"]   # pre-regeneration content
         # Self-evolution: a human reason for regenerating is durable feedback —
         # remember it so future sessions of this course avoid the same issue.
         try:
@@ -262,6 +301,12 @@ def _guided_regenerate(gid: str, index: int, reason: str):
             pass
         _guided_log(gid, f"Regenerating chunk {index + 1}: {GUIDED[gid]['labels'][index]} …")
         chunk = _gen_one(gid, index, prior, reason)
+        # Log the before/reason/after so the feedback_regeneration_adherence eval can score it.
+        try:
+            from src import regen_log
+            regen_log.record(session_no, reason, before_md, chunk["markdown"])
+        except Exception:
+            pass
         with _lock:
             GUIDED[gid]["chunks"][index] = chunk
             GUIDED[gid]["status"] = "reviewing"
