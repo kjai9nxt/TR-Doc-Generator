@@ -1,0 +1,34 @@
+# Render Blueprint — deploys the TR Doc Generator backend, which serves the admin
+# app at /admin and all /api endpoints. FREE plan: data persistence comes from a
+# free Turso (libSQL) cloud DB, so nothing is lost when the free instance redeploys.
+#
+# After connecting the repo, set these SECRET env vars in the Render dashboard
+# (marked sync:false, so they are NOT stored in git):
+#   OPENROUTER_API_KEY    your OpenRouter key
+#   GOOGLE_CLIENT_ID      OAuth Web client id for @nxtwave.co.in
+#   TURSO_DATABASE_URL    libsql://<your-db>.turso.io   (from https://turso.tech)
+#   TURSO_AUTH_TOKEN      your Turso token
+#
+# Note: generated .docx files live on the (ephemeral) instance disk and are
+# regenerated on demand; all TRACKING data (runs, users, teams, cost) is in Turso
+# and persists. If you later want persistent .docx too, add object storage or a
+# paid disk (set TR_DATA_DIR instead of Turso).
+services:
+  - type: web
+    name: tr-doc-generator
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/auth/config
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false

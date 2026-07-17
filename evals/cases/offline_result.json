@@ -1,51 +1,192 @@
 {
   "kind": "offline",
-  "generated_at": "2026-07-14T07:58:25",
+  "generated_at": "2026-07-17T07:17:40",
   "overall_pass": true,
   "extraction": {
-    "ok": true,
-    "decks_checked": 9,
-    "decks_with_issues": 0,
+    "ok": false,
+    "decks_checked": 17,
+    "decks_with_issues": 6,
     "decks": [
       {
         "session_no": 1,
-        "source_file": "Fundamentals of Computer Networks",
-        "n_slides": 48,
+        "source_file": "Understanding Binary System",
+        "n_slides": 36,
         "source_slides": null,
         "empty_slides": [
           1,
-          47,
-          48
+          35,
+          36
         ],
         "interior_empty_slides": [],
-        "with_body": 42,
-        "with_notes": 0,
-        "with_tables": 0,
-        "body_coverage": 0.875,
+        "with_body": 30,
+        "with_notes": 31,
+        "with_tables": 9,
+        "body_coverage": 0.833,
         "ok": true,
         "issues": []
       },
       {
         "session_no": 2,
-        "source_file": "Web Request & Network Models",
-        "n_slides": 54,
+        "source_file": "Introduction to Operating System",
+        "n_slides": 63,
         "source_slides": null,
         "empty_slides": [
           1,
-          53,
-          54
+          62,
+          63
         ],
         "interior_empty_slides": [],
-        "with_body": 48,
-        "with_notes": 0,
-        "with_tables": 0,
+        "with_body": 56,
+        "with_notes": 58,
+        "with_tables": 3,
         "body_coverage": 0.889,
         "ok": true,
         "issues": []
       },
       {
         "session_no": 3,
-        "source_file": "Web Essentials – WWW, HTTP, DNS",
+        "source_file": "OS Functions and Services",
+        "n_slides": 77,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          76,
+          77
+        ],
+        "interior_empty_slides": [],
+        "with_body": 70,
+        "with_notes": 71,
+        "with_tables": 2,
+        "body_coverage": 0.909,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 4,
+        "source_file": "OS Structures & Case Studies",
+        "n_slides": 66,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          63,
+          65,
+          66
+        ],
+        "interior_empty_slides": [
+          63
+        ],
+        "with_body": 58,
+        "with_notes": 58,
+        "with_tables": 0,
+        "body_coverage": 0.879,
+        "ok": false,
+        "issues": [
+          "1 interior slide(s) with no title/body/table: [63]"
+        ]
+      },
+      {
+        "session_no": 5,
+        "source_file": "Linux Shell & Basic Commands",
+        "n_slides": 33,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          29,
+          30,
+          32,
+          33
+        ],
+        "interior_empty_slides": [
+          29,
+          30
+        ],
+        "with_body": 23,
+        "with_notes": 29,
+        "with_tables": 2,
+        "body_coverage": 0.697,
+        "ok": false,
+        "issues": [
+          "2 interior slide(s) with no title/body/table: [29, 30]"
+        ]
+      },
+      {
+        "session_no": 6,
+        "source_file": "Working with the File System",
+        "n_slides": 46,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          42,
+          43,
+          45,
+          46
+        ],
+        "interior_empty_slides": [
+          42,
+          43
+        ],
+        "with_body": 36,
+        "with_notes": 43,
+        "with_tables": 4,
+        "body_coverage": 0.783,
+        "ok": false,
+        "issues": [
+          "2 interior slide(s) with no title/body/table: [42, 43]"
+        ]
+      },
+      {
+        "session_no": 7,
+        "source_file": "Working With Files",
+        "n_slides": 41,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          37,
+          38,
+          40,
+          41
+        ],
+        "interior_empty_slides": [
+          37,
+          38
+        ],
+        "with_body": 29,
+        "with_notes": 38,
+        "with_tables": 5,
+        "body_coverage": 0.707,
+        "ok": false,
+        "issues": [
+          "2 interior slide(s) with no title/body/table: [37, 38]"
+        ]
+      },
+      {
+        "session_no": 8,
+        "source_file": "Miscellaneous Commands",
+        "n_slides": 38,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          35,
+          36,
+          37,
+          38
+        ],
+        "interior_empty_slides": [
+          35,
+          36
+        ],
+        "with_body": 28,
+        "with_notes": 35,
+        "with_tables": 5,
+        "body_coverage": 0.737,
+        "ok": false,
+        "issues": [
+          "2 interior slide(s) with no title/body/table: [35, 36]"
+        ]
+      },
+      {
+        "session_no": 9,
+        "source_file": "Process Concept, States & PCB",
         "n_slides": 80,
         "source_slides": null,
         "empty_slides": [
@@ -55,87 +196,128 @@
         ],
         "interior_empty_slides": [],
         "with_body": 73,
-        "with_notes": 0,
+        "with_notes": 64,
+        "with_tables": 4,
+        "body_coverage": 0.912,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 10,
+        "source_file": "Threads, Multithreading & Concurrency",
+        "n_slides": 69,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          68,
+          69
+        ],
+        "interior_empty_slides": [],
+        "with_body": 62,
+        "with_notes": 59,
+        "with_tables": 5,
+        "body_coverage": 0.899,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 11,
+        "source_file": "Process Control & Operations",
+        "n_slides": 47,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          46,
+          47
+        ],
+        "interior_empty_slides": [],
+        "with_body": 40,
+        "with_notes": 38,
+        "with_tables": 3,
+        "body_coverage": 0.851,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 12,
+        "source_file": "Scheduling Concepts, Criteria & Types",
+        "n_slides": 72,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          69,
+          71,
+          72
+        ],
+        "interior_empty_slides": [
+          69
+        ],
+        "with_body": 64,
+        "with_notes": 62,
+        "with_tables": 4,
+        "body_coverage": 0.889,
+        "ok": false,
+        "issues": [
+          "1 interior slide(s) with no title/body/table: [69]"
+        ]
+      },
+      {
+        "session_no": 13,
+        "source_file": "Scheduling Algorithms I: FCFS, SJF, SRTF & Round Robin",
+        "n_slides": 60,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          59,
+          60
+        ],
+        "interior_empty_slides": [],
+        "with_body": 53,
+        "with_notes": 44,
+        "with_tables": 17,
+        "body_coverage": 0.883,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 14,
+        "source_file": "Scheduling Algorithms II: Priority, HRRN & Multilevel Queues",
+        "n_slides": 64,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          63,
+          64
+        ],
+        "interior_empty_slides": [],
+        "with_body": 57,
+        "with_notes": 48,
+        "with_tables": 14,
+        "body_coverage": 0.891,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 15,
+        "source_file": "Concurrency & The Critical-Section Problem",
+        "n_slides": 80,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          79,
+          80
+        ],
+        "interior_empty_slides": [],
+        "with_body": 73,
+        "with_notes": 68,
         "with_tables": 0,
         "body_coverage": 0.912,
         "ok": true,
         "issues": []
       },
       {
-        "session_no": 4,
-        "source_file": "Internet Communication Protocols",
-        "n_slides": 53,
-        "source_slides": null,
-        "empty_slides": [
-          1,
-          52,
-          53
-        ],
-        "interior_empty_slides": [],
-        "with_body": 46,
-        "with_notes": 0,
-        "with_tables": 0,
-        "body_coverage": 0.868,
-        "ok": true,
-        "issues": []
-      },
-      {
-        "session_no": 5,
-        "source_file": "REST APIs, Cookies & Sessions",
-        "n_slides": 71,
-        "source_slides": null,
-        "empty_slides": [
-          1,
-          70,
-          71
-        ],
-        "interior_empty_slides": [],
-        "with_body": 64,
-        "with_notes": 0,
-        "with_tables": 0,
-        "body_coverage": 0.901,
-        "ok": true,
-        "issues": []
-      },
-      {
-        "session_no": 6,
-        "source_file": "Understanding TLS and HTTPS",
-        "n_slides": 75,
-        "source_slides": null,
-        "empty_slides": [
-          1,
-          74,
-          75
-        ],
-        "interior_empty_slides": [],
-        "with_body": 68,
-        "with_notes": 0,
-        "with_tables": 0,
-        "body_coverage": 0.907,
-        "ok": true,
-        "issues": []
-      },
-      {
-        "session_no": 7,
-        "source_file": "Remote Logging & Network Management",
-        "n_slides": 61,
-        "source_slides": null,
-        "empty_slides": [
-          1,
-          60,
-          61
-        ],
-        "interior_empty_slides": [],
-        "with_body": 54,
-        "with_notes": 0,
-        "with_tables": 0,
-        "body_coverage": 0.885,
-        "ok": true,
-        "issues": []
-      },
-      {
-        "session_no": 8,
-        "source_file": "Multimedia Networking & VoIP",
+        "session_no": 16,
+        "source_file": "Synchronization Tools: Semaphores, Mutex & Monitors",
         "n_slides": 70,
         "source_slides": null,
         "empty_slides": [
@@ -144,28 +326,28 @@
           70
         ],
         "interior_empty_slides": [],
-        "with_body": 63,
-        "with_notes": 0,
-        "with_tables": 1,
-        "body_coverage": 0.9,
+        "with_body": 65,
+        "with_notes": 7,
+        "with_tables": 5,
+        "body_coverage": 0.929,
         "ok": true,
         "issues": []
       },
       {
-        "session_no": 9,
-        "source_file": "Introduction to Transport Layer",
-        "n_slides": 83,
+        "session_no": 17,
+        "source_file": "Classic Synchronization Problems & IPC",
+        "n_slides": 69,
         "source_slides": null,
         "empty_slides": [
           1,
-          82,
-          83
+          68,
+          69
         ],
         "interior_empty_slides": [],
-        "with_body": 76,
-        "with_notes": 0,
-        "with_tables": 2,
-        "body_coverage": 0.916,
+        "with_body": 64,
+        "with_notes": 12,
+        "with_tables": 7,
+        "body_coverage": 0.928,
         "ok": true,
         "issues": []
       }

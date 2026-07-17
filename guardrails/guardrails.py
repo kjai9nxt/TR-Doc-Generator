@@ -25,7 +25,8 @@ def _slides(doc: dict) -> list[dict]:
     return [s for sec in doc.get("sections", []) for s in sec.get("slides", [])]
 
 
-def check(doc: dict, session, is_first: bool, is_last: bool) -> GuardrailResult:
+def check(doc: dict, session, is_first: bool, is_last: bool,
+          *, rich: bool = False) -> GuardrailResult:
     h = config.harness()
     con = h["constraints"]
     gates = h["gates"]
@@ -66,10 +67,12 @@ def check(doc: dict, session, is_first: bool, is_last: bool) -> GuardrailResult:
 
     # --- slide count ---
     slides = _slides(doc)
+    # Depth mode (40-min limit off) allows more slides for worked examples etc.
+    slide_max = con["slides"].get("max_rich", con["slides"]["max"]) if rich else con["slides"]["max"]
     if len(slides) < con["slides"]["min"]:
         fails.append(f"Only {len(slides)} slides (min {con['slides']['min']}).")
-    if len(slides) > con["slides"]["max"]:
-        fails.append(f"{len(slides)} slides (max {con['slides']['max']}) — split content, don't cram.")
+    if len(slides) > slide_max:
+        fails.append(f"{len(slides)} slides (max {slide_max}) — split content, don't cram.")
 
     # --- per-slide required fields ---
     # House rule: EVERY slide must carry all six fields (heading, subheading,

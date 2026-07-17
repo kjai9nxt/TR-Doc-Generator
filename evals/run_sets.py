@@ -26,16 +26,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from src import config, course_loader, pipeline, llm, pptx_ingest, regen_log  # noqa: E402
+from src import config, course_loader, pipeline, llm, pptx_ingest, regen_log, learning  # noqa: E402
 from graders import time_grader  # noqa: E402
 
 SETS_DIR = ROOT / "evals" / "sets"
 CASES_DIR = ROOT / "evals" / "cases"
 _WORD = re.compile(r"[a-z0-9']+", re.I)
 
-SKIP = {
-    "self_evolution_loop": "needs behaviour compared across multiple sessions (longitudinal)",
-}
+# self_evolution_loop is now MEASURED (longitudinally, against the prior session's
+# saved eval result) — handled specially in run_on_doc, not skipped outright.
+SKIP: dict[str, str] = {}
 
 
 def _load_sets() -> list[dict]:
@@ -252,11 +252,85 @@ Did AFTER address the reason? Score now."""
 
 
 # --------------------------------------------------------------------------- #
-def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool = True) -> dict:
+# Self-evolution (longitudinal): compare THIS session's failures against the most
+# recent EARLIER session's saved eval result. A defect that appeared before and is
+# gone now = the agent learned; a defect present in BOTH = it recurred (fail).
+# --------------------------------------------------------------------------- #
+def _prior_eval_result(session_no: int):
+    """Most recent saved sets_result for a session < session_no, or None."""
+    best = None
+    for p in glob.glob(str(CASES_DIR / "sets_result_session_*.json")):
+        m = re.search(r"session_(\d+)\.json$", p)
+        if not m:
+            continue
+        n = int(m.group(1))
+        if n < session_no and (best is None or n > best[0]):
+            try:
+                best = (n, json.loads(Path(p).read_text()))
+            except Exception:
+                pass
+    return best  # (n, report) or None
+
+
+def _fail_ids(report: dict) -> set:
+    return {s["id"] for s in report.get("sets", [])
+            if not s.get("skipped") and not s.get("passed") and s["id"] != "self_evolution_loop"}
+
+
+def _score_self_evolution(session, current_fail_ids: set, thr: int) -> dict:
+    """Longitudinal, deterministic. Uses the prior session's saved eval result +
+    the current learned-rules store as evidence of cross-session learning."""
+    sid = "self_evolution_loop"
+    n_rules = len(learning.rules())
+    prior = _prior_eval_result(session.number)
+    if prior is None:
+        return {"id": sid, "grader": "longitudinal", "skipped": True,
+                "reason": (f"no earlier session's eval result saved yet — run evals on an "
+                           f"earlier session to measure cross-session learning "
+                           f"({n_rules} rule(s) currently learned)")}
+    pn, prep = prior
+    prior_fails = _fail_ids(prep)
+    recurring = sorted(prior_fails & current_fail_ids)
+    fixed = sorted(prior_fails - current_fail_ids)
+    if recurring:
+        score = 1
+        detail = (f"defect(s) recurred despite prior signal (S{pn}→S{session.number}): "
+                  f"{recurring}; fixed: {fixed or 'none'}; {n_rules} rule(s) learned")
+    elif prior_fails:
+        score = 5
+        detail = (f"all {len(prior_fails)} prior defect(s) resolved, none recurred "
+                  f"(S{pn}→S{session.number}): {fixed}; {n_rules} rule(s) learned")
+    else:
+        score = 5
+        detail = (f"prior session S{pn} was clean — no defect to recur; "
+                  f"{n_rules} rule(s) learned")
+    return {"id": sid, "grader": "longitudinal", "score": score,
+            "threshold": thr, "passed": score >= thr, "detail": detail}
+
+
+def _learn_from_failures(session, scored: list) -> int:
+    """Phase 2 self-evolution: turn eval-set FAILURES into durable rules (LLM runs
+    only — distillation calls the model). Honors the self_evolution config."""
+    cfg = config.harness().get("self_evolution", {}) or {}
+    if not cfg.get("enabled", True) or not cfg.get("learn_from_eval_sets", True):
+        return 0
+    reasons = [f"{r['id']}: {r['detail']}" for r in scored
+               if not r["passed"] and r["id"] != "self_evolution_loop"]
+    if not reasons:
+        return 0
+    return learning.learn_from_issues(session.number, reasons, source="eval_set")
+
+
+def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool = True,
+               learn: bool = True) -> dict:
     results = []
+    self_evo_thr = 4
     for sset in _load_sets():
         sid = sset["id"]
         thr = sset.get("pass_threshold", 4)
+        if sid == "self_evolution_loop":
+            self_evo_thr = thr        # scored last — it needs every other set's current result
+            continue
         if sid in SKIP:
             results.append({"id": sid, "grader": "skip", "skipped": True,
                             "reason": SKIP[sid]})
@@ -265,6 +339,13 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
         if sid == "recording_time_budget" and not enforce_time:
             results.append({"id": sid, "grader": "skip", "skipped": True,
                             "reason": "40-minute limit is OFF for this run — not assessed"})
+            continue
+        # Depth mode (limit off): the doc is intentionally fuller, so the
+        # deterministic per-line concision caps do not apply — skip rather than
+        # false-fail (and avoid feeding a bogus rule into self-evolution).
+        if sid == "conciseness" and not enforce_time:
+            results.append({"id": sid, "grader": "skip", "skipped": True,
+                            "reason": "depth mode (40-min limit OFF) — concision caps relaxed, not assessed"})
             continue
         # Feedback adherence: score a recorded Guided-mode regeneration, if any.
         if sid == "feedback_regeneration_adherence":
@@ -305,6 +386,21 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
         results.append({"id": sid, "grader": grader, "score": score,
                         "threshold": thr, "passed": score >= thr, "detail": detail})
 
+    # Phase 2 — self-evolution from System B: distil this run's FAILURES into durable
+    # rules (before scoring self_evolution_loop, so the rule count reflects them).
+    learned = 0
+    if learn and use_llm:
+        try:
+            scored_so_far = [r for r in results if not r.get("skipped")]
+            learned = _learn_from_failures(session, scored_so_far)
+        except Exception:
+            learned = 0
+
+    # self_evolution_loop — measured longitudinally against the prior session's result.
+    current_fail_ids = {r["id"] for r in results
+                        if not r.get("skipped") and not r["passed"]}
+    results.append(_score_self_evolution(session, current_fail_ids, self_evo_thr))
+
     scored = [r for r in results if not r.get("skipped")]
     passed = [r for r in scored if r["passed"]]
     return {
@@ -314,6 +410,7 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
         "scored": len(scored),
         "passed": len(passed),
         "skipped": len(results) - len(scored),
+        "learned_rules_added": learned,
         "sets": results,
     }
 
@@ -339,11 +436,13 @@ if __name__ == "__main__":
     ap.add_argument("--no-time-limit", action="store_true",
                     help="40-min limit off — skip the recording_time set")
     ap.add_argument("--regenerate", action="store_true", help="regenerate the doc even if saved")
+    ap.add_argument("--no-learn", action="store_true",
+                    help="do not turn eval-set failures into durable learned rules")
     args = ap.parse_args()
 
     doc, session = _load_or_make_doc(args.session, args.regenerate)
     report = run_on_doc(doc, session, use_llm=not args.no_llm,
-                        enforce_time=not args.no_time_limit)
+                        enforce_time=not args.no_time_limit, learn=not args.no_learn)
 
     print(f"\n== EVAL SETS · Session {session.number}: {session.name} ==")
     for r in report["sets"]:
@@ -354,6 +453,9 @@ if __name__ == "__main__":
             print(f"  {mark} {r['id']:34} {r['score']}/5 (>= {r['threshold']}) [{r['grader']}] — {r['detail'][:80]}")
     print(f"\n  RESULT: {report['passed']}/{report['scored']} passed"
           f" ({report['skipped']} skipped) → {'PASS' if report['overall_pass'] else 'FAIL'}")
+    if report.get("learned_rules_added"):
+        print(f"  🧠 self-evolution: learned {report['learned_rules_added']} new rule(s) "
+              f"from this run's failures → applied to future generations")
 
     CASES_DIR.mkdir(parents=True, exist_ok=True)
     report["generated_at"] = datetime.now().isoformat(timespec="seconds")

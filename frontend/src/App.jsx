@@ -1,15 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { api } from './api'
+import { api, setAuthToken, setOnUnauthorized } from './api'
 
 export default function App() {
+  // --- Auth (Google Sign-In, @nxtwave.co.in only) ---
+  const [authCfg, setAuthCfg] = useState(null)   // {client_id, allowed_domain, configured, auth_disabled}
+  const [user, setUser] = useState(null)         // {email, name, picture, is_admin}
+  const [authErr, setAuthErr] = useState(null)
+
   const [status, setStatus] = useState(null)
   const [guide, setGuide] = useState('')
   const [showGuide, setShowGuide] = useState(false)
 
   const [courseLink, setCourseLink] = useState('')
   const [detailsLink, setDetailsLink] = useState('')
+  const [refDate, setRefDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [courseType, setCourseType] = useState('semester')
+  const [courseName, setCourseName] = useState('Computer Networks')
   const [syncing, setSyncing] = useState(false)
   const [syncOut, setSyncOut] = useState(null)
   const [syncErr, setSyncErr] = useState(null)
@@ -43,14 +51,63 @@ export default function App() {
   const [evalErr, setEvalErr] = useState(null)
   const evalPollRef = useRef(null)
 
+  // Self-evolution: durable rules the agent has learned from feedback + defects
+  const [learned, setLearned] = useState(null)
+  function refreshLearned() { api.learnedRules().then((d) => setLearned(d.rules || [])).catch(() => {}) }
+  // Reload after a result appears or an eval run finishes — both can add rules.
+  useEffect(() => { if (result) refreshLearned() }, [result, evalReport])
+
+  // The user's own history (grouped by course) + their teams' shared docs.
+  const [history, setHistory] = useState(null)
+  const [teams, setTeams] = useState(null)
+  function refreshMine() {
+    api.myHistory().then(setHistory).catch(() => {})
+    api.myTeams().then((d) => setTeams(d.teams || [])).catch(() => {})
+  }
+  useEffect(() => { if (user) refreshMine() }, [result, user])
+
+  // Auth bootstrap: figure out whether login is required, and restore a session.
   useEffect(() => {
+    setOnUnauthorized(() => { setAuthToken(''); setUser(null) })
+    api.authConfig().then((cfg) => {
+      setAuthCfg(cfg)
+      if (cfg.auth_disabled) {
+        setUser({ email: 'dev@local', name: 'Dev (auth off)', is_admin: true })
+        return
+      }
+      const tok = localStorage.getItem('tr_auth_token')
+      if (tok) {
+        setAuthToken(tok)
+        api.me().then(setUser).catch(() => setAuthToken(''))
+      }
+    }).catch(() => {})
+  }, [])
+
+  // Load status + saved settings once signed in.
+  useEffect(() => {
+    if (!user) return
     api.status().then((s) => {
       setStatus(s)
       if (s.saved_links?.course) setCourseLink(s.saved_links.course)
       if (s.saved_links?.details) setDetailsLink(s.saved_links.details)
-    })
+      if (s.settings?.reference_date) setRefDate(s.settings.reference_date)
+      if (s.settings?.course_type) setCourseType(s.settings.course_type)
+      if (s.settings?.course_name) setCourseName(s.settings.course_name)
+    }).catch(() => {})
     // Sessions appear ONLY after a successful Connect & Sync — never before.
-  }, [])
+  }, [user])
+
+  function onSignIn(credential) {
+    setAuthErr(null)
+    setAuthToken(credential)
+    api.login(credential)
+      .then((u) => setUser(u))
+      .catch((e) => { setAuthToken(''); setAuthErr(e.message || 'Sign-in failed.') })
+  }
+  function signOut() {
+    setAuthToken(''); setUser(null); setStatus(null); setHistory(null); setTeams(null)
+    if (window.google?.accounts?.id) window.google.accounts.id.disableAutoSelect()
+  }
 
   async function loadGuide() {
     if (!guide) { const g = await api.templateGuide(); setGuide(g.markdown) }
@@ -59,7 +116,7 @@ export default function App() {
 
   function doSync() {
     setSyncing(true); setSyncErr(null); setSyncOut(null); setSyncLogs([])
-    api.sync(courseLink, detailsLink).then(({ job_id }) => {
+    api.sync(courseLink, detailsLink, refDate, courseType, courseName).then(({ job_id }) => {
       syncPollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -164,6 +221,10 @@ export default function App() {
   const guidedActive = guided && gStatus !== 'done' && gStatus !== 'error'
   const allApproved = guided?.chunks?.length > 0 && guided.chunks.every((_, i) => approved[i])
 
+  // --- Auth gate: block the whole app until a valid @nxtwave.co.in login ---
+  if (!authCfg) return <div className="app"><p className="sub">Loading…</p></div>
+  if (!user) return <LoginGate cfg={authCfg} onSignIn={onSignIn} err={authErr} />
+
   return (
     <div className="app">
       <header className="topbar">
@@ -178,6 +239,11 @@ export default function App() {
             <span className="pill ghost">v{status.version}</span>
           </div>
         )}
+        <div className="userbox">
+          {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
+          <span className="uemail">{user.email}{user.is_admin && <span className="pill admin">admin</span>}</span>
+          <button className="link" onClick={signOut}>Sign out</button>
+        </div>
       </header>
 
       <p className="sub">Generate a recording-ready Word TR doc for one session, in sync with your two Google Sheets.</p>
@@ -190,6 +256,27 @@ export default function App() {
       {/* STEP 1 */}
       <section className="card">
         <h2><span className="num">1</span> Connect your sheets</h2>
+        <div className="settingsrow">
+          <div className="settingcol">
+            <label>Course name</label>
+            <input value={courseName} onChange={(e) => setCourseName(e.target.value)}
+                   placeholder="e.g. Computer Networks" />
+            <span className="hint">Groups your docs, history & team by course.</span>
+          </div>
+          <div className="settingcol">
+            <label>Reference date (recency baseline)</label>
+            <input type="date" value={refDate} onChange={(e) => setRefDate(e.target.value)} />
+            <span className="hint">The agent treats info as current as of this date.</span>
+          </div>
+          <div className="settingcol">
+            <label>Course type</label>
+            <select value={courseType} onChange={(e) => setCourseType(e.target.value)}>
+              <option value="semester">Semester — deep theoretical dive</option>
+              <option value="interview">Interview-targeted</option>
+            </select>
+            <span className="hint">Both help clear interviews; semester goes deeper on theory.</span>
+          </div>
+        </div>
         <label>Course Curriculum Structure — Google Sheet link</label>
         <input value={courseLink} onChange={(e) => setCourseLink(e.target.value)}
                placeholder="https://docs.google.com/spreadsheets/d/.../edit" />
@@ -388,6 +475,10 @@ export default function App() {
                     sub={enforceTime ? `budget ${result.time.max_minutes}` : 'limit off'} />
             <Metric label="Slides" value={result.time.slide_count} />
             {result.judge && <Metric label="Rubric" value={`${result.judge.weighted_total}/100`} />}
+            {result.cost?.totals && (
+              <Metric label="Cost" value={`$${(result.cost.totals.cost || 0).toFixed(4)}`}
+                      sub={`${(result.cost.totals.total_tokens || 0).toLocaleString()} tok`} />
+            )}
           </div>
           {!result.accepted && result.issues?.length > 0 && (
             <div className="alert warn">
@@ -425,6 +516,10 @@ export default function App() {
             {evalReport && <EvalReport report={evalReport} />}
           </div>
 
+          {result.cost?.calls?.length > 0 && <CostBreakdown cost={result.cost} />}
+
+          {learned && <LearnedRules rules={learned} sessionNo={result.session_no} />}
+
           {result.markdown && (
             <details className="panel preview" open>
               <summary>Preview the TR doc</summary>
@@ -433,7 +528,203 @@ export default function App() {
           )}
         </section>
       )}
+
+      {/* MY HISTORY — everything this user has generated, grouped by course */}
+      {history?.courses?.length > 0 && <MyHistory history={history} />}
+
+      {/* MY TEAMS — docs the team is building together, per course */}
+      {teams?.length > 0 && <MyTeams teams={teams} />}
     </div>
+  )
+}
+
+function MyHistory({ history }) {
+  const s = history.summary || {}
+  return (
+    <section className="card">
+      <h2>📚 My TR Docs — History</h2>
+      <div className="metrics">
+        <Metric label="Docs generated" value={s.total_runs || 0} />
+        <Metric label="Approved" value={s.approved_docs || 0} />
+        <Metric label="Total cost" value={`$${(s.total_cost || 0).toFixed(4)}`} />
+        <Metric label="Total tokens" value={(s.total_tokens || 0).toLocaleString()} />
+      </div>
+      {history.courses.map((c, i) => (
+        <div key={i} className="coursegroup">
+          <div className="coursehead">📗 {c.course}
+            <span className="muted"> — {c.summary.total_runs} doc(s) · ${(c.summary.total_cost || 0).toFixed(4)}</span>
+          </div>
+          <RunTable runs={c.runs} />
+        </div>
+      ))}
+    </section>
+  )
+}
+
+function MyTeams({ teams }) {
+  return (
+    <section className="card">
+      <h2>👥 My Teams</h2>
+      {teams.map((t, i) => (
+        <div key={i} className="coursegroup">
+          <div className="coursehead">🧩 {t.team.name}
+            <span className="muted"> — {t.team.course || 'no course'} · {t.members.length} member(s): {t.members.join(', ')}</span>
+          </div>
+          {t.courses.length === 0
+            ? <div className="just" style={{ padding: '4px 2px' }}>No docs built by the team yet.</div>
+            : t.courses.map((c, j) => <RunTable key={j} runs={c.runs} />)}
+        </div>
+      ))}
+    </section>
+  )
+}
+
+function RunTable({ runs }) {
+  const [open, setOpen] = useState(null)
+  return (
+    <div className="scorelist">
+      <div className="setrow dashhead">
+        <div className="setmain">
+          <span className="dashcell grow">Session · by</span>
+          <span className="dashcell">Status</span>
+          <span className="dashcell">Rubric</span>
+          <span className="dashcell">Cost</span>
+          <span className="dashcell">Output</span>
+        </div>
+      </div>
+      {runs.map((r, i) => {
+        const isOpen = open === i
+        const done = r.status === 'done'
+        return (
+          <div key={i} className="setrow dashrow">
+            <div className="setmain">
+              <span className="dashcell grow dashclick" onClick={() => setOpen(isOpen ? null : i)}>
+                <span className="tw">{isOpen ? '▾' : '▸'}</span> S{r.session_no}: {r.title}
+                {r.enforce_time === false && <span className="tag" style={{ marginLeft: 6 }}>depth</span>}
+                <span className="uref"> · {r.user_email || 'unknown'}</span>
+              </span>
+              <span className="dashcell">
+                {r.status === 'running' ? <span className="chip mid">● {r.stage || 'running'}</span>
+                  : r.status === 'error' ? <span className="chip bad">error</span>
+                  : r.accepted ? <span className="chip good">✓</span> : <span className="chip bad">review</span>}
+              </span>
+              <span className="dashcell">{r.rubric != null ? `${r.rubric}` : '—'}</span>
+              <span className="dashcell">${((r.cost || {}).cost || 0).toFixed(4)}</span>
+              <span className="dashcell">
+                {done ? <a href={api.downloadUrl(r.session_no)}>⬇️ .docx</a> : '—'}
+              </span>
+            </div>
+            {isOpen && <CostBreakdown cost={{ totals: r.cost, calls: r.calls }} embedded ts={r.ts} rounds={r.rounds} />}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function LoginGate({ cfg, onSignIn, err }) {
+  const btnRef = useRef(null)
+  const [scriptReady, setScriptReady] = useState(!!window.google?.accounts?.id)
+
+  // Load the Google Identity Services script once.
+  useEffect(() => {
+    if (window.google?.accounts?.id) { setScriptReady(true); return }
+    const existing = document.getElementById('gsi-script')
+    if (existing) { existing.addEventListener('load', () => setScriptReady(true)); return }
+    const s = document.createElement('script')
+    s.src = 'https://accounts.google.com/gsi/client'
+    s.async = true; s.defer = true; s.id = 'gsi-script'
+    s.onload = () => setScriptReady(true)
+    document.head.appendChild(s)
+  }, [])
+
+  // Initialise + render the Google button once the script and client id are ready.
+  useEffect(() => {
+    if (!scriptReady || !cfg?.client_id || !btnRef.current) return
+    try {
+      window.google.accounts.id.initialize({
+        client_id: cfg.client_id,
+        callback: (resp) => onSignIn(resp.credential),
+        hd: cfg.allowed_domain,          // hint Google to prefer the org domain
+        auto_select: false,
+      })
+      window.google.accounts.id.renderButton(btnRef.current,
+        { theme: 'filled_blue', size: 'large', text: 'signin_with', shape: 'pill' })
+    } catch (e) { /* GIS not ready yet */ }
+  }, [scriptReady, cfg, onSignIn])
+
+  return (
+    <div className="app logingate">
+      <div className="card loginbox">
+        <div className="brand big">📝 <b>TR Doc Generator</b></div>
+        <p className="sub">Sign in to continue.</p>
+        {!cfg.configured ? (
+          <div className="alert warn">
+            <b>Google Sign-In isn’t configured yet.</b>
+            <p>Set <code>GOOGLE_CLIENT_ID</code> in <code>.env</code> (OAuth client for
+            the <code>{cfg.allowed_domain}</code> workspace), then restart the backend.
+            For local dev only, you can set <code>AUTH_DISABLED=1</code> to bypass login.</p>
+          </div>
+        ) : (
+          <>
+            <div ref={btnRef} className="gsi-btn" />
+            <p className="hint">Only <b>@{cfg.allowed_domain}</b> Google accounts are allowed.</p>
+          </>
+        )}
+        {err && <div className="alert error"><pre>{err}</pre></div>}
+      </div>
+    </div>
+  )
+}
+
+function CostBreakdown({ cost, embedded, ts, rounds }) {
+  const calls = cost.calls || []
+  const t = cost.totals || {}
+  const body = (
+    <div className="scorelist">
+      {ts && <div className="just" style={{ padding: '2px 2px 6px' }}>Generated {ts.replace('T', ' ')}{rounds ? ` · ${rounds} round(s)` : ''}</div>}
+      <div className="setrow dashhead">
+        <div className="setmain">
+          <span className="dashcell grow">Call</span>
+          <span className="dashcell">Model</span>
+          <span className="dashcell">In</span>
+          <span className="dashcell">Out</span>
+          <span className="dashcell">Total</span>
+          <span className="dashcell">Cost</span>
+        </div>
+      </div>
+      {calls.map((c, i) => (
+        <div key={i} className="setrow">
+          <div className="setmain">
+            <span className="dashcell grow"><span className="tag">{c.label || 'call'}</span></span>
+            <span className="dashcell mono">{(c.model || '').replace('anthropic/', '')}</span>
+            <span className="dashcell">{(c.prompt_tokens || 0).toLocaleString()}</span>
+            <span className="dashcell">{(c.completion_tokens || 0).toLocaleString()}</span>
+            <span className="dashcell">{(c.total_tokens || 0).toLocaleString()}</span>
+            <span className="dashcell">${(c.cost || 0).toFixed(4)}</span>
+          </div>
+        </div>
+      ))}
+      <div className="setrow dashtotal">
+        <div className="setmain">
+          <span className="dashcell grow"><b>Total</b></span>
+          <span className="dashcell" />
+          <span className="dashcell">{(t.prompt_tokens || 0).toLocaleString()}</span>
+          <span className="dashcell">{(t.completion_tokens || 0).toLocaleString()}</span>
+          <span className="dashcell">{(t.total_tokens || 0).toLocaleString()}</span>
+          <span className="dashcell"><b>${(t.cost || 0).toFixed(4)}</b></span>
+        </div>
+      </div>
+    </div>
+  )
+  if (embedded) return <div className="costembed">{body}</div>
+  return (
+    <details className="panel">
+      <summary>💰 Cost breakdown
+        <span className="muted"> — ${(t.cost || 0).toFixed(4)} · {(t.total_tokens || 0).toLocaleString()} tokens · {calls.length} call(s)</span>
+      </summary>
+      {body}
+    </details>
   )
 }
 
@@ -471,6 +762,38 @@ function EvalReport({ report }) {
         </div>
       ))}
     </div>
+  )
+}
+
+function LearnedRules({ rules, sessionNo }) {
+  const newCount = rules.filter((r) => r.session_no === sessionNo).length
+  const srcLabel = { regeneration: 'human', judge: 'auto · judge', eval_set: 'auto · eval', feedback: 'human' }
+  return (
+    <details className="panel learned" open={newCount > 0}>
+      <summary>
+        🧠 What the agent has learned
+        <span className="muted"> — {rules.length} rule{rules.length === 1 ? '' : 's'} applied to every future generation</span>
+        {newCount > 0 && <span className="chip good" style={{ marginLeft: 8 }}>+{newCount} this run</span>}
+      </summary>
+      {rules.length === 0 ? (
+        <div className="just" style={{ padding: '6px 2px' }}>
+          Nothing learned yet. As generations and eval runs surface defects, durable rules appear here and are injected into later sessions automatically.
+        </div>
+      ) : (
+        <div className="scorelist">
+          {rules.map((r, i) => (
+            <div key={i} className={`setrow ${r.session_no === sessionNo ? 'pass' : ''}`}>
+              <div className="setmain">
+                <span className="tag">{srcLabel[r.source] || r.source || 'rule'}</span>
+                <span className="dimname">{r.text}</span>
+                {r.session_no === sessionNo && <span className="chip good">new</span>}
+              </div>
+              {r.session_no != null && <div className="just">learned at Session {r.session_no}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </details>
   )
 }
 

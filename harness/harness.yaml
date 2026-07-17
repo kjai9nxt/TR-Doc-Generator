@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.13"
+  version: "1.19"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -72,9 +72,99 @@ meta:
               (background job) + 'Run eval sets' button on the result screen (runs with LLM ON by
               default, so no more 'no llm' skips). (c) UI polish: color-coded score chips, rubric
               score-list, and an eval-set report (pass/fail/skip rows) — replaces the clumsy layout."
+    - "1.14 — LOOPING + SELF-EVOLUTION closed (manager feedback). (a) The revision loop is now a
+              REAL iterate-until-acceptable loop: max_revision_rounds 1->3, pipeline keeps the BEST
+              draft across rounds (never returns a regression) and a convergence guard stops early
+              when a revision fails to lift the rubric. (b) SELF-EVOLUTION now fires automatically:
+              defects that SURVIVE the loop are distilled (learning.distill_rule, fast judge model)
+              into short general rules and saved to knowledge_base/learned_rules.json, which are
+              injected into every future generation — closing System A (judge) -> memory. New
+              self_evolution config block (enabled/learn_from_judge/distill/max_rules);
+              learning.learn_from_issues() is the entry point. Verified offline (scripted loop:
+              depth>1, best-draft, plateau-stop, dedup, disabled-no-op; golden S15 still PASS)."
+    - "1.15 — self-evolution completed across all three signals + made VISIBLE + MEASURED.
+              (Phase 2) eval-set FAILURES now become durable rules too: run_sets._learn_from_failures
+              distils failing sets into rules (LLM runs only; self_evolution.learn_from_eval_sets,
+              --no-learn to disable; report.learned_rules_added). (Phase 3) the previously-SKIPPED
+              self_evolution_loop eval is now MEASURED longitudinally (run_sets._score_self_evolution):
+              compares this session's failing sets vs the most recent earlier session's saved eval
+              result — recurrence=fail(1), prior-defect-now-gone=pass(5), skips until history exists.
+              (Phase 4) React result card shows a 'What the agent has learned' panel (LearnedRules)
+              via GET /api/learned-rules, tagging each rule human/auto and badging rules learned
+              THIS run. Verified offline (longitudinal 4 cases, failure-learning, run_on_doc
+              integration; golden S15 offline eval still PASS; frontend build OK)."
+    - "1.16 — DEPTH MODE: turning the 40-minute limit OFF now produces a fuller, teaching-complete
+              doc instead of the same terse skeleton. New harness/depth_mode.md (config.depth_mode())
+              is appended to the generation prompt when the limit is off — it OVERRIDES the concision
+              caps (explanatory prose in content, define-then-explain, REQUIRED worked examples,
+              'why it works' reasoning, richer speaker notes) and allows extra slides beyond
+              one-per-takeaway (constraints.slides.max_rich=18). Wired: guardrails.check(rich=) uses
+              the higher slide ceiling; generator.revise(enforce_time=) drops the '40-min budget'
+              line when off; llm_judge adds a depth-mode note so conciseness/slide-style judge filler
+              not brevity; run_sets skips the deterministic conciseness set when the limit is off (so
+              a rich doc is not false-failed or fed to self-evolution). Limit ON = unchanged concise
+              skeleton. Motivated by an agent-vs-hand-tuned S18 comparison (agent doc was correct but
+              thin: no worked examples, no formal defs, missing deadlock/starvation/livelock)."
+    - "1.17 — COST TRACKING + DASHBOARD. src/llm.py now captures per-call token usage AND the real
+              OpenRouter dollar cost (request payload sets usage.include=true; anthropic path records
+              tokens only). Per-run accumulator (llm.reset_usage/usage_records/usage_totals); each
+              complete() call is labelled (generate/revise/judge/distill). pipeline.run resets at
+              start, and at the end logs a run record via new src/gen_log.py -> outputs/
+              generation_log.json (session, accepted, rubric, est_min, enforce_time, slides, cost
+              totals + per-call breakdown) and returns cost in its result. Backend: GET /api/dashboard
+              (all runs newest-first + summary: total runs/approved/cost/tokens); generate job result
+              now carries cost. Frontend: Cost metric + expandable per-call breakdown on the result
+              card, and a new 'Generated TR Docs — Dashboard' section (approved count, total cost/
+              tokens, per-doc rows, click a row for its token/cost breakdown). Verified live: S19 doc
+              cost $0.2457 (generate $0.2239 Sonnet + judge $0.0218 Haiku:online), 50726 tokens,
+              logged + served by /api/dashboard; frontend build OK."
+    - "1.18 — RECENCY DATE + COURSE TYPE, GOOGLE LOGIN, MULTI-USER ADMIN DASHBOARD. (a) Connect step
+              now asks a reference date (default today, editable) + course type (semester=deep theory
+              / interview-targeted); saved via src/app_settings.py (knowledge_base/app_settings.json,
+              set on /api/sync, shown in /api/status) and injected into every generation by
+              context_builder.recency_and_course_type_block() — recency 'current as of DATE, no
+              deprecated-as-current', semester goes deep theoretically, BOTH must end helping clear
+              interview questions. (b) Google Sign-In (OAuth) restricted to @nxtwave.co.in: src/auth.py
+              verifies the Google ID token (google-auth) + enforces verified email + domain; new auth
+              block here (allowed_domain, admin_emails=[khushi.jain@nxtwave.co.in]); GOOGLE_CLIENT_ID
+              via .env; server deps current_user/require_admin protect sync/generate/eval-sets/
+              dashboard/guided/download/learned-rules; endpoints /api/auth/{config,login,me}; frontend
+              LoginGate (GIS button) gates the whole app, Bearer token on every call, sign-out.
+              AUTH_DISABLED=1 env = local-dev bypass (never deploy). (c) Per-user attribution: each
+              gen_log run records the user email (pipeline.run(user=)); /api/dashboard shows the
+              caller's OWN runs; admin-only /api/admin/dashboard shows ALL runs + per-user rollup;
+              React AdminDashboard (org-wide totals, per-user table, every-run detail) shown only to
+              admins. Verified: domain/admin logic, 401 gating over HTTP (dashboard/generate/admin all
+              401 without token; status/auth-config public), AUTH_DISABLED bypass, admin view; date+
+              course-type prompt injection (semester vs interview); frontend npm build OK. NOTE: real
+              Google sign-in needs the user's GOOGLE_CLIENT_ID + app origin registered; deploy as ONE
+              shared instance for the admin 'watch everyone' view to be meaningful."
+    - "1.19 — MULTI-USER PLATFORM: SQLite + per-course/team tracking + LIVE status + SEPARATE ADMIN APP.
+              (a) src/db.py (SQLite at knowledge_base/tr_app.db, thread-safe short-lived conns): tables
+              users/teams/team_members/runs; one-time import of outputs/generation_log.json; query +
+              per day/week/month aggregation + per-user rollups. (b) Runs now have a LIVE lifecycle:
+              server creates a run row (status=running) on /api/generate, streams stage from pipeline
+              on_event (db.update_stage), finishes it (done/error + cost/rubric/etc). Attributed to
+              user + active course (app_settings.course_name, new connect field) + the user's team for
+              that course. (c) 'course' is a LIGHT grouping label (one active KB/sheet-set still). (d)
+              Teams are ADMIN-managed. (e) Endpoints: /api/dashboard + /api/my/history (own runs grouped
+              by course, with downloadable outputs) + /api/my/teams (team's shared docs); admin-only
+              /api/admin/{overview,runs,live,users,teams(+CRUD)} with analytics (timeseries, models,
+              acceptance/cost, connector health, per-user) and live tracking. (f) Agent app: DROPPED the
+              inline admin dashboard; added 'My TR Docs — History' (by course, download links, per-gen
+              tokens+cost kept) + 'My Teams' shared view + course-name field on connect. (g) SEPARATE
+              ADMIN APP: self-contained admin-frontend/index.html (own Google login, admin-only) served
+              at GET /admin (also hostable standalone; supports a cross-origin API base via
+              localStorage tr_admin_api) — overview metrics + day/week/month bar chart, live runs
+              (5s auto-refresh: who/course/session/stage), all runs by date with output links, users,
+              and team management (create/add-remove members/assign course/delete). Verified: db layer
+              (users/teams/lifecycle/analytics), all endpoints over HTTP (401-gated; AUTH_DISABLED
+              bypass), /admin serves, agent+admin builds OK, offline eval still PASS. DEPLOY as ONE
+              shared backend; add the app's origin (e.g. http://localhost:8000 for /admin) to the OAuth
+              client's Authorized JS origins."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
-    flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> guardrails -> time -> judge -> revise -> render .docx"
+    flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
     inputs: "two Google Sheets (links given at startup) + past Google Slides decks"
     output: "Word .docx (+ .md preview + .grade.json report) in outputs/"
 
@@ -118,6 +208,7 @@ constraints:
   slides:
     min: 5
     max: 12                         # split content across more slides, don't cram
+    max_rich: 18                    # higher ceiling when the 40-min limit is OFF (depth mode)
   language:
     variety: "Indian English"
     grammar: "must be error-free"
@@ -271,11 +362,39 @@ gates:
   # was near-automatic. Raised so acceptance means RECORDING-READY, not just "okay":
   rubric_min_total: 90              # LLM-judge weighted score out of 100 (was 85)
   rubric_min_per_dimension: 4       # every dimension >= 4/5 — no merely-"acceptable" weak spots (was 3)
-  # Each generate/revise call to the model takes ~1-2 minutes, so keep rounds low.
-  max_revision_rounds: 1            # at most one repair pass
+  # Each generate/revise call to the model takes ~1-2 minutes. The loop now
+  # ITERATES until the doc is accepted (or a round fails to improve the rubric —
+  # see pipeline's convergence guard), up to this ceiling, keeping the best draft.
+  max_revision_rounds: 3            # up to three repair passes; early-exit on pass/plateau (was 1)
   # Revise a clear miss (< this) once; marginal near-misses (82-89) are shipped
   # flagged-not-accepted rather than burning a slow extra round for a small delta.
   rubric_revise_below: 82           # revise only if weighted score < this (was 75)
+
+# ----------------------------------------------------------------------------
+# SELF-EVOLUTION — the cross-run learning loop.
+#   Intra-run revision (the loop above) fixes THIS doc. Self-evolution distils
+#   the defects that SURVIVE the loop into short, durable rules (src/learning.py
+#   -> knowledge_base/learned_rules.json) that are injected into EVERY future
+#   generation (context_builder.build_guided_base). So the same class of mistake
+#   is not repeated across sessions — the agent improves as it is used.
+# ----------------------------------------------------------------------------
+self_evolution:
+  enabled: true
+  learn_from_judge: true            # surviving guardrail/judge/time defects (per-generation) -> durable rules
+  learn_from_eval_sets: true        # eval-set FAILURES (evals/run_sets.py, System B) -> durable rules (LLM runs only)
+  distill: true                     # LLM-rewrite each raw defect into a general, reusable DO/DON'T rule
+  max_rules: 40                     # cap on injected rules (oldest trimmed first; also in learning.py)
+
+# ----------------------------------------------------------------------------
+# AUTH — Google Sign-In, restricted to the org domain.
+#   Only @nxtwave.co.in Google accounts may log in (verified via OAuth, not just
+#   typed). admin_emails see the global "all runs" dashboard; everyone else sees
+#   only their own generations. Set GOOGLE_CLIENT_ID in .env (see README).
+# ----------------------------------------------------------------------------
+auth:
+  allowed_domain: "nxtwave.co.in"
+  admin_emails:
+    - "khushi.jain@nxtwave.co.in"
 
 # ----------------------------------------------------------------------------
 # OUTPUT

@@ -49,7 +49,7 @@ def _find_course_file() -> Path:
 
 
 def _cache_path() -> Path:
-    return config.ROOT / config.harness()["context"]["knowledge_base_dir"] / "course_structure.json"
+    return config.DATA_ROOT / config.harness()["context"]["knowledge_base_dir"] / "course_structure.json"
 
 
 def load_sessions_from_cache() -> list[Session] | None:

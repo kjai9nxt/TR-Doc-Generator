@@ -19,13 +19,13 @@ import threading
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from src import (config, sheets, sync, course_loader, pipeline, pptx_ingest,
-                 context_builder, generator, docx_writer)
+                 context_builder, generator, docx_writer, app_settings, auth, db)
 
 app = FastAPI(title="TR Doc Generator API")
 
@@ -40,6 +40,8 @@ JOBS: dict[str, dict] = {}
 GUIDED: dict[str, dict] = {}
 _lock = threading.Lock()
 
+db.init()   # create the SQLite schema + one-time import of the legacy JSON log
+
 
 # --------------------------------------------------------------------------- #
 # models
@@ -47,6 +49,9 @@ _lock = threading.Lock()
 class SyncBody(BaseModel):
     course_link: str
     details_link: str
+    reference_date: str | None = None      # recency baseline (default today)
+    course_type: str | None = None         # "semester" | "interview"
+    course_name: str | None = None         # grouping label for runs/teams
 
 
 class GenerateBody(BaseModel):
@@ -71,6 +76,80 @@ class RegenerateBody(BaseModel):
     reason: str | None = None
 
 
+class LoginBody(BaseModel):
+    credential: str
+
+
+class TeamCreateBody(BaseModel):
+    name: str
+    course: str | None = None
+
+
+class MemberBody(BaseModel):
+    email: str
+
+
+class CourseBody(BaseModel):
+    course: str
+
+
+# --------------------------------------------------------------------------- #
+# auth — Google Sign-In restricted to the org domain
+# --------------------------------------------------------------------------- #
+def current_user(authorization: str = Header(default="")) -> dict:
+    """FastAPI dependency: resolve the signed-in user from the Bearer token.
+    Set AUTH_DISABLED=1 in the env to bypass for LOCAL DEV ONLY (never deploy
+    with it)."""
+    if config.auth_disabled():
+        dom = config.auth().get("allowed_domain", "nxtwave.co.in")
+        return {"email": f"dev@{dom}", "name": "Dev (auth disabled)",
+                "picture": None, "is_admin": True}
+    token = ""
+    if authorization.lower().startswith("bearer "):
+        token = authorization[7:].strip()
+    try:
+        user = auth.verify_credential(token)
+    except auth.AuthError as e:
+        raise HTTPException(status_code=401, detail={"message": str(e)})
+    try:
+        db.upsert_user(user["email"], user.get("name"), user.get("is_admin", False))
+    except Exception:
+        pass
+    return user
+
+
+def require_admin(user: dict = Depends(current_user)) -> dict:
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail={"message": "Admin access only."})
+    return user
+
+
+@app.get("/api/auth/config")
+def auth_config():
+    """Public: what the frontend needs to start Google Sign-In."""
+    return {
+        "client_id": config.google_client_id(),
+        "allowed_domain": config.auth().get("allowed_domain"),
+        "configured": config.google_client_id() is not None,
+        "auth_disabled": config.auth_disabled(),
+    }
+
+
+@app.post("/api/auth/login")
+def auth_login(body: LoginBody):
+    try:
+        return auth.verify_credential(body.credential)
+    except auth.AuthError as e:
+        raise HTTPException(status_code=401, detail={"message": str(e)})
+
+
+@app.get("/api/auth/me")
+def auth_me(user: dict = Depends(current_user)):
+    """Resolve the current user from the stored token (used to restore a session
+    on page reload)."""
+    return user
+
+
 # --------------------------------------------------------------------------- #
 # status / guide
 # --------------------------------------------------------------------------- #
@@ -83,6 +162,7 @@ def status():
         "model": m.get("generator"),
         "key_ok": config.api_key() is not None,
         "saved_links": {"course": c, "details": d},
+        "settings": app_settings.load(),
         "version": config.harness()["meta"]["version"],
     }
 
@@ -119,7 +199,11 @@ def _run_sync(job_id: str, course_link: str, details_link: str):
 
 
 @app.post("/api/sync")
-def do_sync(body: SyncBody):
+def do_sync(body: SyncBody, user: dict = Depends(current_user)):
+    # Persist the recency date + course type chosen at connect time so generation
+    # (context_builder) can use them later.
+    app_settings.save(reference_date=body.reference_date, course_type=body.course_type,
+                      course_name=body.course_name)
     job_id = uuid.uuid4().hex[:12]
     with _lock:
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,
@@ -151,14 +235,31 @@ def sessions():
 # --------------------------------------------------------------------------- #
 # generate (background job + polling)
 # --------------------------------------------------------------------------- #
-def _run_generation(job_id: str, session_no: int, use_judge: bool, enforce_time: bool):
+def _run_generation(job_id: str, session_no: int, use_judge: bool, enforce_time: bool,
+                    user_email: str | None = None):
     def on_event(msg: str):
         with _lock:
             JOBS[job_id]["logs"].append(msg)
+        try:
+            db.update_stage(job_id, msg.strip()[:120])   # live stage for the admin view
+        except Exception:
+            pass
     try:
         result = pipeline.run(session_no, use_judge=use_judge, do_sync=False,
-                              enforce_time=enforce_time, on_event=on_event)
+                              enforce_time=enforce_time, on_event=on_event, user=user_email)
         final = result["history"][-1]
+        cost = result.get("cost") or {}
+        try:
+            db.finish_run(
+                job_id, status="done", accepted=final.get("accepted"),
+                rubric=(final.get("judge") or {}).get("weighted_total"),
+                est_minutes=final.get("time", {}).get("estimated_minutes"),
+                rounds=len(result.get("history", [])),
+                slides=final.get("time", {}).get("slide_count"),
+                cost=cost.get("totals"), calls=cost.get("calls"),
+                docx_path=result.get("docx"))
+        except Exception:
+            pass
         with _lock:
             JOBS[job_id].update(status="done", result={
                 "session_no": session_no,
@@ -168,8 +269,13 @@ def _run_generation(job_id: str, session_no: int, use_judge: bool, enforce_time:
                 "issues": final.get("issues", []),
                 "docx_name": Path(result["docx"]).name,
                 "markdown": _read_markdown(result["docx"]),
+                "cost": result.get("cost"),
             })
     except Exception as e:
+        try:
+            db.finish_run(job_id, status="error", error=str(e))
+        except Exception:
+            pass
         with _lock:
             JOBS[job_id].update(status="error", error=str(e))
 
@@ -180,14 +286,30 @@ def _read_markdown(docx_path: str) -> str:
 
 
 @app.post("/api/generate")
-def generate(body: GenerateBody):
+def generate(body: GenerateBody, user: dict = Depends(current_user)):
     if config.api_key() is None:
         raise HTTPException(status_code=400, detail={"message": "No API key configured in .env"})
     job_id = uuid.uuid4().hex[:12]
     with _lock:
         JOBS[job_id] = {"status": "running", "logs": [], "result": None, "error": None}
+    # Record the run in the DB up-front (status=running) so it shows live, with
+    # the user's course + team attribution.
+    try:
+        email = user.get("email")
+        course = app_settings.course_name()
+        try:
+            title = course_loader.get_session(body.session_no).name
+        except Exception:
+            title = f"Session {body.session_no}"
+        db.create_run(job_id, user_email=email, course=course,
+                      team_id=db.team_for_user_course(email, course),
+                      session_no=body.session_no, title=title,
+                      enforce_time=body.enforce_time)
+    except Exception:
+        pass
     threading.Thread(target=_run_generation,
-                     args=(job_id, body.session_no, body.use_judge, body.enforce_time),
+                     args=(job_id, body.session_no, body.use_judge, body.enforce_time,
+                           user.get("email")),
                      daemon=True).start()
     return {"job_id": job_id}
 
@@ -199,7 +321,7 @@ def _run_eval_sets(job_id: str, session_no: int, use_llm: bool, enforce_time: bo
         _, cur, _ = course_loader.neighbours(session_no, sessions)
         out = config.harness()["output"]
         safe = out["docx_filename"].format(N=cur.number, SessionName=cur.name).replace("/", "-")
-        doc_path = config.ROOT / out["dir"] / (safe.rsplit(".", 1)[0] + ".doc.json")
+        doc_path = config.DATA_ROOT / out["dir"] / (safe.rsplit(".", 1)[0] + ".doc.json")
         if not doc_path.exists():
             raise RuntimeError("No generated doc found for this session — generate it first.")
         doc = json.loads(doc_path.read_text(encoding="utf-8"))
@@ -212,7 +334,7 @@ def _run_eval_sets(job_id: str, session_no: int, use_llm: bool, enforce_time: bo
 
 
 @app.post("/api/eval-sets")
-def eval_sets(body: EvalSetsBody):
+def eval_sets(body: EvalSetsBody, user: dict = Depends(current_user)):
     if body.use_llm and config.api_key() is None:
         raise HTTPException(status_code=400, detail={"message": "No API key configured in .env"})
     job_id = uuid.uuid4().hex[:12]
@@ -340,6 +462,7 @@ def _guided_finalize(gid: str):
                 "issues": final.get("issues", []),
                 "docx_name": Path(result["docx"]).name,
                 "markdown": _read_markdown(result["docx"]),
+                "cost": result.get("cost"),
             })
     except Exception as e:
         with _lock:
@@ -365,7 +488,7 @@ def _guided_view(state: dict) -> dict:
 
 
 @app.post("/api/guided/start")
-def guided_start(body: GuidedStartBody):
+def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     if config.api_key() is None:
         raise HTTPException(status_code=400, detail={"message": "No API key configured in .env"})
     sessions = course_loader.load_sessions(None)
@@ -436,24 +559,170 @@ def extraction_check():
 
 
 @app.get("/api/learned-rules")
-def learned_rules():
+def learned_rules(user: dict = Depends(current_user)):
     from src import learning
     return {"rules": learning.rules()}
 
 
 @app.delete("/api/learned-rules")
-def clear_learned_rules():
+def clear_learned_rules(user: dict = Depends(require_admin)):
     from src import learning
     learning._save({"rules": []})
     return {"ok": True}
 
 
+def _rollup(runs: list) -> dict:
+    approved = [r for r in runs if r.get("accepted")]
+    return {
+        "total_runs": len(runs),
+        "approved_docs": len(approved),
+        "total_cost": round(sum((r.get("cost") or {}).get("cost", 0) or 0 for r in runs), 6),
+        "total_tokens": sum((r.get("cost") or {}).get("total_tokens", 0) or 0 for r in runs),
+    }
+
+
+def _group_by_course(runs: list) -> list:
+    by: dict = {}
+    for r in runs:
+        by.setdefault(r.get("course") or "Uncategorised", []).append(r)
+    return [{"course": c, "runs": rs, "summary": _rollup(rs)}
+            for c, rs in sorted(by.items())]
+
+
+# ---- the signed-in user's own data (agent app) ----
+@app.get("/api/dashboard")
+def dashboard(user: dict = Depends(current_user)):
+    """The signed-in user's OWN runs + roll-up (agent app cost dashboard)."""
+    runs = db.runs(user_email=user.get("email"))
+    return {"runs": runs, "summary": _rollup(runs), "is_admin": user.get("is_admin", False)}
+
+
+@app.get("/api/my/history")
+def my_history(user: dict = Depends(current_user)):
+    """The user's complete generation history, grouped by course, with the docx
+    filename so the UI can offer downloads of the final outputs."""
+    runs = db.runs(user_email=user.get("email"))
+    return {"courses": _group_by_course(runs), "summary": _rollup(runs)}
+
+
+@app.get("/api/my/teams")
+def my_teams(user: dict = Depends(current_user)):
+    """Teams the user belongs to, each with the docs the team is building together
+    (all members' runs) grouped by course."""
+    email = user.get("email")
+    out = []
+    for t in db.teams_for_user(email):
+        members = t.get("members", [])
+        team_runs = [r for r in db.runs(team_id=t["id"])]
+        # also fold in members' runs for the team's course (belt-and-suspenders)
+        out.append({"team": t, "courses": _group_by_course(team_runs),
+                    "summary": _rollup(team_runs), "members": members})
+    return {"teams": out}
+
+
+# ---- admin analytics + live tracking (separate admin app) ----
+@app.get("/api/admin/overview")
+def admin_overview(user: dict = Depends(require_admin)):
+    return {
+        "summary": db.summary(),
+        "daily": db.timeseries("day"),
+        "weekly": db.timeseries("week"),
+        "monthly": db.timeseries("month"),
+        "per_user": db.per_user(),
+        "live": db.live_runs(),
+        "connectors": _connectors(),
+    }
+
+
+@app.get("/api/admin/runs")
+def admin_runs(user: dict = Depends(require_admin), course: str | None = None,
+               user_email: str | None = None, status: str | None = None):
+    return {"runs": db.runs(course=course, user_email=user_email, status=status)}
+
+
+@app.get("/api/admin/live")
+def admin_live(user: dict = Depends(require_admin)):
+    return {"live": db.live_runs()}
+
+
+@app.get("/api/admin/users")
+def admin_users(user: dict = Depends(require_admin)):
+    return {"users": db.users(), "per_user": db.per_user()}
+
+
+def _connectors() -> list:
+    """Health of the external integrations the pipeline depends on."""
+    m = config.harness()["model"]
+    c, d = sync.last_links()
+    try:
+        warns = len(pptx_ingest.completeness_report().get("decks", []))
+    except Exception:
+        warns = None
+    return [
+        {"name": "LLM provider", "detail": f"{m.get('provider')} · {m.get('generator')}",
+         "ok": config.api_key() is not None},
+        {"name": "Judge model", "detail": m.get("judge"), "ok": config.api_key() is not None},
+        {"name": "Curriculum Sheet", "detail": "linked" if c else "not linked", "ok": bool(c)},
+        {"name": "Session Details Sheet", "detail": "linked" if d else "not linked", "ok": bool(d)},
+        {"name": "Google Slides ingest", "detail": f"{warns} deck(s) known" if warns is not None else "n/a",
+         "ok": True},
+        {"name": "Google Sign-In", "detail": "configured" if config.google_client_id() else "not configured",
+         "ok": config.google_client_id() is not None or config.auth_disabled()},
+    ]
+
+
+# ---- team management (admin-managed) ----
+@app.get("/api/admin/teams")
+def admin_list_teams(user: dict = Depends(require_admin)):
+    return {"teams": db.teams(), "users": [u["email"] for u in db.users()]}
+
+
+@app.post("/api/admin/teams")
+def admin_create_team(body: TeamCreateBody, user: dict = Depends(require_admin)):
+    tid = db.create_team(body.name, body.course, user.get("email"))
+    return {"id": tid}
+
+
+@app.post("/api/admin/teams/{team_id}/members")
+def admin_add_member(team_id: int, body: MemberBody, user: dict = Depends(require_admin)):
+    db.add_member(team_id, body.email.strip().lower())
+    return {"ok": True}
+
+
+@app.delete("/api/admin/teams/{team_id}/members/{email}")
+def admin_remove_member(team_id: int, email: str, user: dict = Depends(require_admin)):
+    db.remove_member(team_id, email.strip().lower())
+    return {"ok": True}
+
+
+@app.post("/api/admin/teams/{team_id}/course")
+def admin_set_course(team_id: int, body: CourseBody, user: dict = Depends(require_admin)):
+    db.set_team_course(team_id, body.course)
+    return {"ok": True}
+
+
+@app.delete("/api/admin/teams/{team_id}")
+def admin_delete_team(team_id: int, user: dict = Depends(require_admin)):
+    db.delete_team(team_id)
+    return {"ok": True}
+
+
+@app.get("/admin")
+def admin_page():
+    """Serve the standalone admin app (it authenticates via Google itself and
+    talks to the /api/admin/* endpoints). Also hostable separately."""
+    p = config.ROOT / "admin-frontend" / "index.html"
+    if not p.exists():
+        raise HTTPException(status_code=404, detail="Admin app not found.")
+    return FileResponse(str(p), media_type="text/html")
+
+
 @app.get("/api/download/{session_no}")
-def download(session_no: int):
+def download(session_no: int, user: dict = Depends(current_user)):
     out = config.harness()["output"]
     s = course_loader.get_session(session_no)
     fname = out["docx_filename"].format(N=s.number, SessionName=s.name).replace("/", "-")
-    path = config.ROOT / out["dir"] / fname
+    path = config.DATA_ROOT / out["dir"] / fname
     if not path.exists():
         raise HTTPException(status_code=404, detail="Generate the doc first.")
     return FileResponse(

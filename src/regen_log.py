@@ -6,7 +6,7 @@ import json
 
 from . import config
 
-STORE = config.ROOT / "knowledge_base" / "regen_events.json"
+STORE = config.KB_DIR / "regen_events.json"
 _MAX = 100
 
 

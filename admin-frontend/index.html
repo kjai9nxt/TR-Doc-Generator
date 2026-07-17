@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TR Doc Generator — Admin</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root { --bg:#0f1216; --card:#171b21; --card2:#1e242c; --line:#2a313b; --fg:#e7edf3;
+    --muted:#93a1b0; --ok:#2fbf71; --err:#e0576b; --warn:#e0b45a; --accent:#6ea8fe; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:22px 18px 60px; }
+  h1 { font-size:20px; margin:0; } h2 { font-size:15px; margin:22px 0 10px; }
+  .top { display:flex; align-items:center; gap:12px; }
+  .top .who { margin-left:auto; color:var(--muted); font-size:12.5px; display:flex; align-items:center; gap:8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:14px; }
+  .metrics { display:flex; gap:10px; flex-wrap:wrap; }
+  .metric { flex:1 1 120px; background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .mv { font-size:20px; font-weight:700; } .ml { color:var(--muted); font-size:12px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; }
+  td.r,th.r { text-align:right; }
+  .chip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
+  .chip.ok{background:rgba(47,191,113,.18);color:#63d69a;} .chip.bad{background:rgba(224,87,107,.18);color:#f0899a;}
+  .chip.run{background:rgba(110,168,254,.18);color:#9cc2ff;} .chip.warn{background:rgba(224,180,90,.18);color:#e0b45a;}
+  .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+  .tab { padding:7px 14px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--fg); cursor:pointer; font-size:13px; }
+  .tab.active { background:var(--accent); color:#08101e; border-color:var(--accent); font-weight:600; }
+  button { font:inherit; } .btn { padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:var(--card2); color:var(--fg); cursor:pointer; }
+  .btn.primary { background:var(--accent); color:#08101e; border-color:var(--accent); font-weight:600; }
+  .btn.sm { padding:3px 8px; font-size:12px; }
+  .muted { color:var(--muted); }
+  input,select { background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:7px 9px; font:inherit; }
+  .bars { display:flex; align-items:flex-end; gap:6px; height:120px; padding-top:8px; }
+  .bar { flex:1; background:var(--accent); border-radius:4px 4px 0 0; min-height:2px; position:relative; }
+  .bar span { position:absolute; bottom:-18px; left:0; right:0; text-align:center; font-size:10px; color:var(--muted); white-space:nowrap; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .center { min-height:70vh; display:flex; align-items:center; justify-content:center; }
+  .loginbox { text-align:center; }
+  .err { background:rgba(224,87,107,.12); border:1px solid var(--err); border-radius:8px; padding:10px; margin-top:10px; color:#f2a1ad; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="center muted">Loading…</div></div>
+
+<script>
+const API = (localStorage.getItem('tr_admin_api') || '').replace(/\/$/, '') // optional cross-origin backend base
+let TOKEN = localStorage.getItem('tr_auth_token') || ''
+let CFG = null, ME = null, TAB = 'overview', UNIT = 'day'
+const app = document.getElementById('app')
+const h = (s) => (s==null?'':String(s))
+const esc = (s) => h(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+const money = (n) => '$' + (Number(n||0)).toFixed(4)
+const num = (n) => (Number(n||0)).toLocaleString()
+
+async function api(path, opts={}) {
+  const res = await fetch(`${API}/api${path}`, {
+    headers: { 'Content-Type':'application/json', ...(TOKEN?{Authorization:`Bearer ${TOKEN}`}:{}) },
+    ...opts,
+  })
+  const data = await res.json().catch(()=>({}))
+  if (!res.ok) { const m = (data.detail&&data.detail.message)||data.detail||`HTTP ${res.status}`; throw new Error(typeof m==='string'?m:JSON.stringify(m)) }
+  return data
+}
+
+async function boot() {
+  try { CFG = await api('/auth/config') } catch(e){ app.innerHTML = `<div class="err">Cannot reach backend. ${esc(e.message)}</div>`; return }
+  if (CFG.auth_disabled) { ME = { email:'dev@local', is_admin:true, name:'Dev (auth off)' }; return render() }
+  if (TOKEN) { try { ME = await api('/auth/me'); return render() } catch(e){ TOKEN=''; localStorage.removeItem('tr_auth_token') } }
+  renderLogin()
+}
+
+function renderLogin() {
+  app.innerHTML = `<div class="center"><div class="card loginbox">
+    <h1>🛡️ TR Doc Generator — Admin</h1>
+    <p class="muted">Admin sign-in (only @${esc(CFG.allowed_domain)} admins).</p>
+    ${CFG.configured ? '<div id="gbtn" style="display:flex;justify-content:center;margin:16px 0"></div>'
+      : '<div class="err">Google Sign-In not configured. Set GOOGLE_CLIENT_ID in .env (or AUTH_DISABLED=1 for local).</div>'}
+    <div id="loginerr"></div>
+  </div></div>`
+  if (CFG.configured && window.google) {
+    google.accounts.id.initialize({ client_id: CFG.client_id, hd: CFG.allowed_domain,
+      callback: async (r) => {
+        TOKEN = r.credential; localStorage.setItem('tr_auth_token', TOKEN)
+        try { ME = await api('/auth/me'); if(!ME.is_admin){ document.getElementById('loginerr').innerHTML='<div class="err">This account is not an admin.</div>'; TOKEN=''; return } render() }
+        catch(e){ document.getElementById('loginerr').innerHTML = `<div class="err">${esc(e.message)}</div>`; TOKEN='' }
+      }})
+    google.accounts.id.renderButton(document.getElementById('gbtn'), { theme:'filled_blue', size:'large', shape:'pill' })
+  }
+}
+
+function signOut(){ TOKEN=''; localStorage.removeItem('tr_auth_token'); ME=null; if(window.google?.accounts?.id) google.accounts.id.disableAutoSelect(); boot() }
+
+function header() {
+  return `<div class="top"><h1>🛡️ TR Doc Generator — Admin</h1>
+    <div class="who">${esc(ME.email)}${ME.is_admin?' · admin':''} <button class="btn sm" onclick="signOut()">Sign out</button></div></div>
+    <div class="tabs">
+      ${['overview','live','runs','users','teams'].map(t=>`<div class="tab ${TAB===t?'active':''}" onclick="go('${t}')">${t[0].toUpperCase()+t.slice(1)}</div>`).join('')}
+    </div><div id="view"><div class="muted" style="padding:20px">Loading…</div></div>`
+}
+function go(t){ TAB=t; document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active', el.textContent.toLowerCase()===t)); loadView() }
+function render(){ if(!ME.is_admin){ app.innerHTML=`<div class="err">Admin access only.</div>`; return } app.innerHTML=`<div>${header()}</div>`; loadView() }
+
+async function loadView(){
+  const v = document.getElementById('view'); v.innerHTML = '<div class="muted" style="padding:20px">Loading…</div>'
+  try {
+    if (TAB==='overview') return v.innerHTML = viewOverview(await api('/admin/overview'))
+    if (TAB==='live')     { v.innerHTML = viewLive(await api('/admin/live')); return }
+    if (TAB==='runs')     return v.innerHTML = viewRuns(await api('/admin/runs'))
+    if (TAB==='users')    return v.innerHTML = viewUsers(await api('/admin/users'))
+    if (TAB==='teams')    return v.innerHTML = await viewTeams()
+  } catch(e){ v.innerHTML = `<div class="err">${esc(e.message)}</div>` }
+}
+
+function metric(v,l){ return `<div class="metric"><div class="mv">${v}</div><div class="ml">${l}</div></div>` }
+function statusChip(r){
+  if(r.status==='running') return `<span class="chip run">● ${esc(r.stage||'running')}</span>`
+  if(r.status==='error') return '<span class="chip bad">error</span>'
+  return r.accepted ? '<span class="chip ok">✓ accepted</span>' : '<span class="chip warn">review</span>'
+}
+
+function viewOverview(d){
+  const s=d.summary, ts=({day:d.daily,week:d.weekly,month:d.monthly}[UNIT])||d.daily
+  const max=Math.max(1,...ts.map(x=>x.runs))
+  const bars = ts.slice(-30).map(x=>`<div class="bar" style="height:${Math.round(100*x.runs/max)}%" title="${x.bucket}: ${x.runs} runs, ${money(x.cost)}"><span>${esc(x.bucket.slice(5))}</span></div>`).join('')
+  return `
+   <div class="card"><div class="metrics">
+     ${metric(s.total_runs,'Total runs')}${metric(s.done,'Completed')}${metric(s.running,'Running now')}
+     ${metric(s.approved,'Approved')}${metric(s.acceptance_rate+'%','Acceptance')}${metric(s.avg_rubric,'Avg rubric')}
+     ${metric(money(s.total_cost),'Total cost')}${metric(num(s.total_tokens),'Total tokens')}
+   </div></div>
+   <div class="card"><div class="row"><h2 style="margin:0">Generations over time</h2>
+     <div class="row" style="margin-left:auto">${['day','week','month'].map(u=>`<button class="btn sm ${UNIT===u?'primary':''}" onclick="UNIT='${u}';loadView()">${u}</button>`).join('')}</div></div>
+     <div class="bars">${bars||'<span class="muted">no data</span>'}</div>
+   </div>
+   <div class="card"><h2>Connector health</h2><table><tbody>
+     ${d.connectors.map(c=>`<tr><td>${c.ok?'🟢':'🔴'} ${esc(c.name)}</td><td class="muted">${esc(c.detail)}</td></tr>`).join('')}
+   </tbody></table></div>
+   <div class="card"><h2>Models used</h2><table><thead><tr><th>Model</th><th class="r">Calls</th><th class="r">Tokens</th><th class="r">Cost</th></tr></thead><tbody>
+     ${s.models.map(m=>`<tr><td>${esc(m.model)}</td><td class="r">${num(m.calls)}</td><td class="r">${num(m.tokens)}</td><td class="r">${money(m.cost)}</td></tr>`).join('')||'<tr><td class="muted">none</td></tr>'}
+   </tbody></table></div>
+   <div class="card"><h2>Per user</h2>${userTable(d.per_user)}</div>`
+}
+
+function userTable(rows){
+  return `<table><thead><tr><th>User</th><th class="r">Runs</th><th class="r">Approved</th><th class="r">Tokens</th><th class="r">Cost</th><th>Courses</th></tr></thead><tbody>
+   ${rows.map(u=>`<tr><td>${esc(u.user)}</td><td class="r">${u.runs}</td><td class="r">${u.approved}</td><td class="r">${num(u.tokens)}</td><td class="r">${money(u.cost)}</td><td class="muted">${esc((u.courses||[]).join(', '))}</td></tr>`).join('')||'<tr><td class="muted">none</td></tr>'}
+  </tbody></table>`
+}
+
+function viewLive(d){
+  const rows = d.live
+  setTimeout(()=>{ if(TAB==='live') loadView() }, 5000)  // auto-refresh
+  return `<div class="card"><div class="row"><h2 style="margin:0">Live generations</h2><span class="muted" style="margin-left:auto">auto-refreshes every 5s</span></div>
+   ${rows.length? `<table><thead><tr><th>User</th><th>Course</th><th>Session</th><th>Stage</th><th>Started</th></tr></thead><tbody>
+     ${rows.map(r=>`<tr><td>${esc(r.user_email||'?')}</td><td>${esc(r.course||'')}</td><td>S${r.session_no}: ${esc(r.title||'')}</td><td>${statusChip(r)}</td><td class="muted">${esc((r.ts||'').replace('T',' '))}</td></tr>`).join('')}
+   </tbody></table>` : '<p class="muted">No generations in progress right now.</p>'}</div>`
+}
+
+function viewRuns(d){
+  return `<div class="card"><h2>All runs (${d.runs.length})</h2>
+   <table><thead><tr><th>When</th><th>User</th><th>Course</th><th>Session</th><th>Status</th><th class="r">Rubric</th><th class="r">Cost</th><th>Output</th></tr></thead><tbody>
+   ${d.runs.map(r=>`<tr>
+     <td class="muted">${esc((r.ts||'').replace('T',' '))}</td><td>${esc(r.user_email||'?')}</td><td>${esc(r.course||'')}</td>
+     <td>S${r.session_no}: ${esc(r.title||'')}</td><td>${statusChip(r)}</td>
+     <td class="r">${r.rubric!=null?r.rubric:'—'}</td><td class="r">${money((r.cost||{}).cost)}</td>
+     <td>${r.status==='done'?`<a href="${API}/api/download/${r.session_no}">.docx</a>`:'—'}</td>
+   </tr>`).join('')||'<tr><td class="muted">no runs</td></tr>'}
+   </tbody></table></div>`
+}
+
+function viewUsers(d){ return `<div class="card"><h2>Users (${d.users.length})</h2>
+   <table><thead><tr><th>Email</th><th>Name</th><th>Admin</th><th>Last seen</th></tr></thead><tbody>
+   ${d.users.map(u=>`<tr><td>${esc(u.email)}</td><td>${esc(u.name||'')}</td><td>${u.is_admin?'✓':''}</td><td class="muted">${esc((u.last_seen||'').replace('T',' '))}</td></tr>`).join('')}
+   </tbody></table></div>
+   <div class="card"><h2>Activity per user</h2>${userTable(d.per_user)}</div>` }
+
+async function viewTeams(){
+  const d = await api('/admin/teams')
+  const opts = d.users.map(e=>`<option value="${esc(e)}">${esc(e)}</option>`).join('')
+  return `<div class="card"><h2>Create team</h2>
+    <div class="row">
+      <input id="tname" placeholder="Team name" />
+      <input id="tcourse" placeholder="Course (e.g. Computer Networks)" />
+      <button class="btn primary" onclick="createTeam()">Create</button>
+    </div></div>
+   ${d.teams.map(t=>`<div class="card">
+      <div class="row"><b>${esc(t.name)}</b> <span class="muted">— course:</span>
+        <input id="c_${t.id}" value="${esc(t.course||'')}" style="width:180px" />
+        <button class="btn sm" onclick="setCourse(${t.id})">Set course</button>
+        <button class="btn sm" style="margin-left:auto" onclick="delTeam(${t.id})">Delete team</button>
+      </div>
+      <table style="margin-top:8px"><thead><tr><th>Members</th><th></th></tr></thead><tbody>
+       ${(t.members||[]).map(m=>`<tr><td>${esc(m)}</td><td class="r"><button class="btn sm" onclick="rmMember(${t.id},'${esc(m)}')">remove</button></td></tr>`).join('')||'<tr><td class="muted">no members</td></tr>'}
+      </tbody></table>
+      <div class="row" style="margin-top:8px"><select id="m_${t.id}">${opts}</select>
+        <button class="btn sm" onclick="addMember(${t.id})">Add member</button>
+        <span class="muted">or</span><input id="me_${t.id}" placeholder="type an @${esc(CFG.allowed_domain)} email" style="width:240px"/>
+        <button class="btn sm" onclick="addMemberTyped(${t.id})">Add typed</button>
+      </div>
+   </div>`).join('')||'<div class="card muted">No teams yet.</div>'}`
+}
+async function createTeam(){ const name=document.getElementById('tname').value.trim(); if(!name)return; await api('/admin/teams',{method:'POST',body:JSON.stringify({name,course:document.getElementById('tcourse').value.trim()})}); loadView() }
+async function setCourse(id){ await api(`/admin/teams/${id}/course`,{method:'POST',body:JSON.stringify({course:document.getElementById('c_'+id).value.trim()})}); loadView() }
+async function addMember(id){ await api(`/admin/teams/${id}/members`,{method:'POST',body:JSON.stringify({email:document.getElementById('m_'+id).value})}); loadView() }
+async function addMemberTyped(id){ const e=document.getElementById('me_'+id).value.trim(); if(!e)return; await api(`/admin/teams/${id}/members`,{method:'POST',body:JSON.stringify({email:e})}); loadView() }
+async function rmMember(id,email){ await api(`/admin/teams/${id}/members/${encodeURIComponent(email)}`,{method:'DELETE'}); loadView() }
+async function delTeam(id){ if(!confirm('Delete this team?'))return; await api(`/admin/teams/${id}`,{method:'DELETE'}); loadView() }
+
+window.go=go; window.signOut=signOut; window.loadView=loadView; window.createTeam=createTeam
+window.setCourse=setCourse; window.addMember=addMember; window.addMemberTyped=addMemberTyped; window.rmMember=rmMember; window.delTeam=delTeam
+window.UNIT=UNIT
+setTimeout(boot, 400)  // give the GIS script a moment to load
+</script>
+</body>
+</html>

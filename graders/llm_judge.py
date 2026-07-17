@@ -57,6 +57,14 @@ def grade(doc: dict, session, time_estimate: dict, *, enforce_time: bool = True)
             "TutorialsPoint, and Scaler, and (b) the CURRENT standards/versions. Penalise "
             "anything missing versus mainstream references, and any deprecated/superseded "
             "info presented as current. Note in the justification what you verified.")
+    # Depth mode (40-min limit off): the doc is INTENDED to be fuller — explanatory
+    # prose, worked examples, extra slides. Judge clarity/filler, not brevity.
+    depth_note = "" if enforce_time else (
+        "\n\nDEPTH MODE: the 40-minute limit is OFF, so this doc is deliberately fuller "
+        "(explanatory prose in content, worked examples, extra slides). Do NOT penalise "
+        "length or the absence of terse bullets. For the conciseness and slide-content-style "
+        "dimensions, penalise only genuine filler, redundancy, or off-topic text — reward "
+        "clear, complete teaching. Still penalise meta-narration in slide content.")
     # Only feed the recording-time estimate when that dimension is actually graded.
     time_block = "" if not enforce_time else (
         "DETERMINISTIC RECORDING-TIME ESTIMATE (ground truth for the recording_time dimension):\n"
@@ -69,13 +77,13 @@ SESSION KEY TAKEAWAYS (coverage must match these):
 
 {time_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
-{web_note}
+{web_note}{depth_note}
 
 Grade now. Return only the contract JSON."""
     raw = llm.complete(
         system=JUDGE_SYSTEM, user=prompt,
         model=judge_model, max_tokens=m.get("judge_max_tokens", 8000),
-        temperature=0.0,
+        temperature=0.0, label="judge",
     )
     result = llm.extract_json(raw)
 

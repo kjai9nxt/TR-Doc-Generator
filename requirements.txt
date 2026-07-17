@@ -8,3 +8,7 @@ streamlit>=1.30.0
 # React frontend backend (server.py)
 fastapi>=0.110.0
 uvicorn>=0.29.0
+# Google Sign-In (OAuth) — verify ID tokens server-side
+google-auth>=2.28.0
+# Turso / libSQL cloud DB (only used when TURSO_DATABASE_URL is set; free host + persistent data)
+libsql-experimental>=0.0.37

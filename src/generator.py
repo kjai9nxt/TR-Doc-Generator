@@ -19,7 +19,7 @@ def _system() -> str:
     ])
 
 
-def _complete_json(user_prompt: str, *, tries: int = 2) -> dict:
+def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate") -> dict:
     """Call the generator and parse its JSON, RETRYING on a parse failure.
 
     Models occasionally emit slightly malformed JSON (a missing comma, stray
@@ -32,6 +32,7 @@ def _complete_json(user_prompt: str, *, tries: int = 2) -> dict:
         raw = llm.complete(
             system=_system(), user=user_prompt + (_STRICT_NUDGE if attempt else ""),
             model=m["generator"], max_tokens=m["max_tokens"], temperature=m["temperature"],
+            label=label,
         )
         try:
             return llm.extract_json(raw)
@@ -66,20 +67,25 @@ def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
         regen_block = (f"\nREGENERATE — the human REJECTED your previous version of this "
                        f"chunk for this reason. Address it specifically:\n{reason}\n")
     user_prompt = f"{base_context}\n{approved_block}{regen_block}\n{instruction}"
-    return _complete_json(user_prompt)
+    return _complete_json(user_prompt, label="generate_chunk")
 
 
-def revise(user_prompt: str, prev_doc_json: str, issues: list[str]) -> dict:
-    """Repair a draft given concrete failures from guardrails + graders."""
+def revise(user_prompt: str, prev_doc_json: str, issues: list[str],
+           *, enforce_time: bool = True) -> dict:
+    """Repair a draft given concrete failures from guardrails + graders.
+
+    When enforce_time is False the 40-minute budget is not a constraint, so we do
+    NOT tell the model to trim to it (that would fight depth mode)."""
     issue_block = "\n".join(f"- {i}" for i in issues)
+    budget_line = (" and stay within the 40-minute recording budget" if enforce_time
+                   else "")
     revise_prompt = f"""{user_prompt}
 
 You previously produced this draft:
 {prev_doc_json}
 
-It FAILED review for these reasons — fix EVERY one, keep everything else intact,
-and stay within the 40-minute recording budget:
+It FAILED review for these reasons — fix EVERY one, keep everything else intact{budget_line}:
 {issue_block}
 
 Return the corrected TR doc JSON only."""
-    return _complete_json(revise_prompt)
+    return _complete_json(revise_prompt, label="revise")

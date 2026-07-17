@@ -24,6 +24,53 @@ class TruncationError(RuntimeError):
     a re-run would truncate identically; the fix is a larger max_tokens."""
 
 
+# --------------------------------------------------------------------------- #
+# Token/cost accounting. Every complete() call appends a record here; pipeline
+# resets at the start of a run and reads the total at the end. OpenRouter returns
+# the real dollar cost per call (we request it via usage.include), so no price
+# table or second API call is needed. NOTE: this is a process-wide accumulator —
+# fine for this app (one generation at a time); reset_usage() scopes it per run.
+# --------------------------------------------------------------------------- #
+_USAGE: list[dict] = []
+
+
+def reset_usage() -> None:
+    _USAGE.clear()
+
+
+def usage_records() -> list[dict]:
+    return list(_USAGE)
+
+
+def usage_totals() -> dict:
+    """Aggregate the records collected since the last reset."""
+    recs = _USAGE
+    return {
+        "prompt_tokens": sum(r.get("prompt_tokens") or 0 for r in recs),
+        "completion_tokens": sum(r.get("completion_tokens") or 0 for r in recs),
+        "total_tokens": sum(r.get("total_tokens") or 0 for r in recs),
+        "cost": round(sum(r.get("cost") or 0.0 for r in recs), 6),
+        "calls": len(recs),
+    }
+
+
+def _record_usage(label: str, model: str, usage: dict | None) -> None:
+    """Append one call's usage. Tolerates both OpenAI-style (prompt_tokens) and
+    Anthropic-style (input_tokens) keys; cost is present only for OpenRouter."""
+    if not usage:
+        return
+    prompt = usage.get("prompt_tokens", usage.get("input_tokens"))
+    completion = usage.get("completion_tokens", usage.get("output_tokens"))
+    total = usage.get("total_tokens")
+    if total is None and (prompt is not None or completion is not None):
+        total = (prompt or 0) + (completion or 0)
+    _USAGE.append({
+        "label": label, "model": model,
+        "prompt_tokens": prompt, "completion_tokens": completion,
+        "total_tokens": total, "cost": usage.get("cost"),
+    })
+
+
 def _log_truncation(*, provider: str, model: str, finish_reason, max_tokens: int,
                     usage, content: str) -> None:
     """Record a truncated (max_tokens) response to logs/llm_debug.log so the cause
@@ -80,7 +127,8 @@ def _key_or_raise() -> str:
 # OpenAI-compatible providers (OpenRouter)
 # --------------------------------------------------------------------------- #
 def _complete_openai_compatible(system: str, user: str, *, model: str, max_tokens: int,
-                                temperature: float, base_url: str, retries: int) -> str:
+                                temperature: float, base_url: str, retries: int,
+                                label: str = "") -> str:
     url = base_url.rstrip("/") + "/chat/completions"
     headers = {
         "Authorization": f"Bearer {_key_or_raise()}",
@@ -104,6 +152,8 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
         "temperature": temperature,
         "messages": [{"role": "system", "content": system_content},
                      {"role": "user", "content": user}],
+        # Ask OpenRouter to include the real dollar cost in the response usage.
+        "usage": {"include": True},
     }
     last = None
     for attempt in range(retries):
@@ -118,6 +168,7 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
                                     finish_reason="length", max_tokens=max_tokens,
                                     usage=data.get("usage"), content=content)
                     raise _truncation_error(max_tokens)
+                _record_usage(label, model, data.get("usage"))
                 return content
             last = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:400]}")
             if resp.status_code in (400, 401, 403, 404):
@@ -134,7 +185,7 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
 # native Anthropic SDK
 # --------------------------------------------------------------------------- #
 def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
-                        temperature: float, retries: int) -> str:
+                        temperature: float, retries: int, label: str = "") -> str:
     try:
         import anthropic
     except ImportError as e:
@@ -159,6 +210,11 @@ def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
                                 finish_reason="max_tokens", max_tokens=max_tokens,
                                 usage=getattr(resp, "usage", None), content=text)
                 raise _truncation_error(max_tokens)
+            u = getattr(resp, "usage", None)
+            if u is not None:
+                # Native SDK has no cost field; record tokens (cost stays None).
+                _record_usage(label, model, {"input_tokens": getattr(u, "input_tokens", None),
+                                             "output_tokens": getattr(u, "output_tokens", None)})
             return text
         except TruncationError:
             raise  # retrying would truncate identically — surface it now
@@ -169,16 +225,17 @@ def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
 
 
 def complete(system: str, user: str, *, model: str, max_tokens: int,
-             temperature: float, retries: int = 3) -> str:
+             temperature: float, retries: int = 3, label: str = "") -> str:
     m = config.harness()["model"]
     provider = m.get("provider", "openrouter").lower()
     if provider == "anthropic":
         return _complete_anthropic(system, user, model=model, max_tokens=max_tokens,
-                                   temperature=temperature, retries=retries)
+                                   temperature=temperature, retries=retries, label=label)
     # openrouter / openai-compatible
     return _complete_openai_compatible(
         system, user, model=model, max_tokens=max_tokens, temperature=temperature,
-        base_url=m.get("base_url", "https://openrouter.ai/api/v1"), retries=retries)
+        base_url=m.get("base_url", "https://openrouter.ai/api/v1"), retries=retries,
+        label=label)
 
 
 # --------------------------------------------------------------------------- #

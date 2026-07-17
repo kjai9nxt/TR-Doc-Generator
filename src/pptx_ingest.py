@@ -26,7 +26,7 @@ from pptx import Presentation
 
 from . import config
 
-KB_DIR = config.ROOT / "knowledge_base"
+KB_DIR = config.KB_DIR
 DECKS_DIR = KB_DIR / "decks"
 MANIFEST = KB_DIR / "manifest.json"
 

@@ -10,6 +10,13 @@ ROOT = Path(__file__).resolve().parent.parent
 HARNESS_PATH = ROOT / "harness" / "harness.yaml"
 RUBRIC_PATH = ROOT / "rubrics" / "tr_doc_rubric.yaml"
 
+# All RUNTIME data (SQLite DB, knowledge base, generated outputs, sync state) lives
+# under DATA_ROOT. Locally this is the repo; in a deployment (e.g. Render) set the
+# env var TR_DATA_DIR to a PERSISTENT disk path so data survives redeploys.
+DATA_ROOT = Path(os.environ.get("TR_DATA_DIR") or ROOT)
+KB_DIR = DATA_ROOT / "knowledge_base"
+OUTPUTS_DIR = DATA_ROOT / "outputs"
+
 
 @lru_cache(maxsize=1)
 def harness() -> dict:
@@ -40,6 +47,11 @@ def style_guide() -> str:
     return read_text("harness/style_guide.md")
 
 
+def depth_mode() -> str:
+    """Rich-generation instructions, appended only when the 40-min limit is OFF."""
+    return read_text("harness/depth_mode.md")
+
+
 def _load_dotenv() -> None:
     """Load KEY=VALUE lines from the project .env into the environment (once),
     without adding a dependency. Existing env vars take precedence."""
@@ -57,6 +69,25 @@ def _load_dotenv() -> None:
 
 
 _PLACEHOLDERS = {"paste-your-key-here", "sk-ant-...", "sk-or-v1-...", ""}
+
+
+def auth() -> dict:
+    """Auth policy from the harness (allowed domain, admin emails)."""
+    return harness().get("auth", {}) or {}
+
+
+def google_client_id() -> str | None:
+    """OAuth client id for Google Sign-In (from .env: GOOGLE_CLIENT_ID)."""
+    _load_dotenv()
+    cid = (os.environ.get("GOOGLE_CLIENT_ID") or "").strip()
+    return cid or None
+
+
+def auth_disabled() -> bool:
+    """LOCAL-DEV login bypass. Reads AUTH_DISABLED from the environment OR .env.
+    NEVER enable this in a deployed/shared setting."""
+    _load_dotenv()
+    return (os.environ.get("AUTH_DISABLED") or "").strip().lower() in ("1", "true", "yes")
 
 
 def api_key() -> str | None:

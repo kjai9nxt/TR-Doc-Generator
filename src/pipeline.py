@@ -17,13 +17,25 @@ def _log(msg: str):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def _score_key(accepted: bool, report: dict) -> tuple:
+    """Rank a draft so the loop can keep the BEST one across rounds. Ordered by:
+    accepted, then hard gates (guardrails, time), then rubric total, then fewest
+    issues. Higher tuple = better."""
+    rubric = report.get("judge", {}).get("weighted_total", 0) or 0
+    gr_ok = 1 if report.get("guardrails", {}).get("passed") else 0
+    time_ok = 1 if report.get("time", {}).get("within_budget", True) else 0
+    n_issues = len(report.get("issues", []) or [])
+    return (1 if accepted else 0, gr_ok, time_ok, rubric, -n_issues)
+
+
 def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bool,
              enforce_time: bool = True):
     """Run all graders/guardrails on a draft. Returns (accepted, report, issues).
 
     enforce_time=False keeps the recording-time estimate in the report but stops it
-    from gating acceptance or triggering a revision (the '40-min limit' UI toggle)."""
-    gr = guardrails.check(doc, session, is_first, is_last)
+    from gating acceptance or triggering a revision (the '40-min limit' UI toggle).
+    It also puts generation in DEPTH MODE (richer doc, higher slide ceiling)."""
+    gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time)
     te = time_grader.estimate(doc)
     report = {"guardrails": gr.as_dict(), "time": te}
     issues = list(gr.failures)
@@ -55,7 +67,7 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
 
 
 def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: bool = True,
-        enforce_time: bool = True, on_event=None) -> dict:
+        enforce_time: bool = True, on_event=None, user: str | None = None) -> dict:
     def log(msg: str):
         _log(msg)
         if on_event:
@@ -86,15 +98,22 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
             "(aim ~36). Be concise and use MORE slides rather than denser ones. Exceeding "
             "40 minutes fails the run.\n")
     else:
-        user_prompt += (
-            "\n(Recording-time limit relaxed for this run — still write concisely, but "
-            "completeness may take priority over the 40-minute budget.)\n")
+        # Limit OFF -> DEPTH MODE: append the rich-generation instructions that
+        # override the concision caps (worked examples, reasoning, extra slides).
+        user_prompt += "\n" + config.depth_mode() + "\n"
+
+    from src import llm
+    llm.reset_usage()      # start counting tokens/cost for THIS generation
 
     log("Generating draft 1 … (this LLM step takes ~1-2 minutes)")
     doc = generator.generate(user_prompt)
 
     max_rounds = config.harness()["gates"]["max_revision_rounds"]
     history = []
+    # Keep the BEST draft across rounds so a revision that makes things worse can
+    # never become the returned doc. best = (score_key, doc, report).
+    best = None
+    prev_rubric = None
     for rnd in range(max_rounds + 1):
         log(f"Grading draft {rnd + 1} …" + (" (judging quality, ~40s)" if use_judge else ""))
         accepted, report, issues, should_revise = evaluate(
@@ -105,15 +124,46 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
         log(f"Round {rnd}: accepted={accepted} | est={te['estimated_minutes']}min "
              f"| guardrails={'ok' if report['guardrails']['passed'] else 'FAIL'}"
              + (f" | rubric={report.get('judge',{}).get('weighted_total','-')}" if use_judge else ""))
-        if not should_revise or rnd == max_rounds:
+
+        key = _score_key(accepted, report)
+        if best is None or key > best[0]:
+            best = (key, doc, report)
+
+        if accepted or not should_revise or rnd == max_rounds:
             break
+        # Convergence guard: if the previous revision didn't lift the rubric, stop
+        # spending slow LLM calls on a plateau — keep the best draft we have.
+        cur_rubric = report.get("judge", {}).get("weighted_total")
+        if prev_rubric is not None and cur_rubric is not None and cur_rubric <= prev_rubric:
+            log(f"No rubric improvement ({prev_rubric}→{cur_rubric}); stopping revisions.")
+            break
+        prev_rubric = cur_rubric
         log(f"Revising (round {rnd + 1}) to fix {len(issues)} issue(s) … (~1-2 minutes)")
-        doc = generator.revise(user_prompt, json.dumps(doc, ensure_ascii=False), issues)
+        doc = generator.revise(user_prompt, json.dumps(doc, ensure_ascii=False), issues,
+                               enforce_time=enforce_time)
+
+    # Return the best draft seen, not necessarily the last (avoid regressions).
+    _, doc, best_report = best
+    if best_report is not history[-1]:
+        log(f"Keeping best draft (round {best_report['round']}) over a weaker later revision.")
+
+    # --- Self-evolution: distil the defects that SURVIVED the loop into durable,
+    # cross-session rules so future sessions don't repeat them. Best-effort. ---
+    surviving = best_report.get("issues") or []
+    if surviving:
+        try:
+            from src import learning
+            n = learning.learn_from_issues(cur.number, surviving, source="judge")
+            if n:
+                log(f"Self-evolution: learned {n} new rule(s) from surviving defects "
+                    f"→ apply to all future sessions.")
+        except Exception as e:
+            log(f"⚠ Self-evolution skipped: {e}")
 
     out = config.harness()["output"]
     fname = out["docx_filename"].format(N=cur.number, SessionName=cur.name)
     safe = fname.replace("/", "-")
-    out_dir = config.ROOT / out["dir"]
+    out_dir = config.DATA_ROOT / out["dir"]
     docx_path = docx_writer.write_docx(doc, out_dir / safe)
     log(f"Wrote {docx_path}")
     # Persist the doc JSON so the eval-set runner can re-score it without regenerating.
@@ -130,10 +180,35 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
                                        ensure_ascii=False, indent=2), encoding="utf-8")
         log(f"Wrote {rep_path}")
 
-    final = history[-1]
+    final = best_report      # the chosen (best) draft's report, not necessarily the last
+
+    # --- Cost/token accounting for the dashboard (best-effort) ---
+    cost = {"totals": llm.usage_totals(), "calls": llm.usage_records()}
+    n_slides = sum(len(sec.get("slides", [])) for sec in doc.get("sections", []))
+    try:
+        from src import gen_log
+        gen_log.record({
+            "session_no": cur.number,
+            "title": cur.name,
+            "user": user,
+            "docx": str(docx_path),
+            "accepted": final["accepted"],
+            "rubric": final.get("judge", {}).get("weighted_total"),
+            "est_minutes": final["time"]["estimated_minutes"],
+            "enforce_time": enforce_time,
+            "rounds": len(history),
+            "slides": n_slides,
+            "cost": cost["totals"],
+            "calls": cost["calls"],
+        })
+    except Exception as e:
+        log(f"⚠ Cost logging skipped: {e}")
+
+    c = cost["totals"]
     log(f"DONE. accepted={final['accepted']}  "
-         f"est_minutes={final['time']['estimated_minutes']}")
-    return {"doc": doc, "history": history, "docx": str(docx_path)}
+        f"est_minutes={final['time']['estimated_minutes']}  "
+        f"cost=${c.get('cost', 0):.4f} ({c.get('total_tokens', 0)} tokens)")
+    return {"doc": doc, "history": history, "docx": str(docx_path), "cost": cost}
 
 
 # --------------------------------------------------------------------------- #
@@ -186,7 +261,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True, on_event=Non
 
     out = config.harness()["output"]
     safe = out["docx_filename"].format(N=cur.number, SessionName=cur.name).replace("/", "-")
-    out_dir = config.ROOT / out["dir"]
+    out_dir = config.DATA_ROOT / out["dir"]
     docx_path = docx_writer.write_docx(doc, out_dir / safe)
     log(f"Wrote {docx_path}")
     (out_dir / (safe.rsplit(".", 1)[0] + ".doc.json")).write_text(

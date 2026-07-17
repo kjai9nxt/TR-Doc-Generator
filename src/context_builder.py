@@ -93,6 +93,35 @@ def past_ppts_context(cur: Session) -> str:
     return "\n\n".join(parts)
 
 
+def recency_and_course_type_block() -> str:
+    """Inject the recency baseline + the course-type teaching strategy the user
+    chose at connect time (src/app_settings). Both course types must ultimately
+    help the learner clear interview questions; a semester course additionally
+    goes deep on theory."""
+    from . import app_settings
+    ref = app_settings.reference_date()
+    ct = app_settings.course_type()
+    if ct == "interview":
+        type_line = (
+            "COURSE TYPE: INTERVIEW-TARGETED. Prioritise the concepts, patterns, and "
+            "Q&A that clear interviews. Keep theory to what is needed to answer well; "
+            "lead with what gets asked and how to answer it crisply.")
+    else:
+        type_line = (
+            "COURSE TYPE: SEMESTER. Go DEEP theoretically — formal definitions, "
+            "derivations/why-it-works, internals, and edge cases — as a semester course "
+            "demands. Depth is expected here.")
+    return (
+        "=== RECENCY & COURSE TYPE ===\n"
+        f"Treat all information as current AS OF {ref}. Do NOT present deprecated, "
+        "superseded, or outdated tools/versions/practices as current; prefer the latest "
+        f"stable standards known as of {ref}, and note when something recently changed.\n"
+        f"{type_line}\n"
+        "IN BOTH CASES: the doc must ultimately help the learner CLEAR INTERVIEW "
+        "QUESTIONS on this topic — frame each major concept so it also answers the "
+        "questions an interviewer would ask.")
+
+
 def build_guided_base(prev: Session | None, cur: Session, nxt: Session | None) -> str:
     """The shared context block (course + target + prev/next + course memory),
     WITHOUT a final 'produce the doc' instruction. One-shot generation appends the
@@ -115,6 +144,8 @@ def build_guided_base(prev: Session | None, cur: Session, nxt: Session | None) -
     return f"""COURSE: Computer Networks
 MODULE: {cur.module}
 TOPIC: {cur.topic}
+
+{recency_and_course_type_block()}
 
 === TARGET SESSION ===
 Session {cur.number}: {cur.name}
