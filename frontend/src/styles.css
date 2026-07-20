@@ -177,6 +177,10 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .uref { font-size: 12px; color: var(--muted); }
 .admincard { border-color: rgba(224,166,58,.4); }
 
+/* download + google doc row */
+.dlrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.gdoclink { display: inline-block; margin-top: 10px; font-weight: 600; color: var(--accent, #6ea8fe); }
+
 /* history / teams course groups */
 .coursegroup { margin-top: 16px; }
 .coursehead { font-weight: 700; font-size: 14px; padding: 6px 0; border-bottom: 1px solid var(--line); }

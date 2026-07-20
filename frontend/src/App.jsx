@@ -109,6 +109,36 @@ export default function App() {
     if (window.google?.accounts?.id) window.google.accounts.id.disableAutoSelect()
   }
 
+  // Create a Google Doc of the final TR doc in the SIGNED-IN user's own Drive
+  // (they own it -> only they can edit). Uses a one-time Drive token via GIS.
+  const [gdoc, setGdoc] = useState(null)          // { session_no, link }
+  const [gdocBusy, setGdocBusy] = useState(false)
+  function createGoogleDoc(session_no) {
+    if (authCfg?.auth_disabled) {
+      alert('Creating a Google Doc needs Google sign-in. Turn AUTH_DISABLED off and sign in with your @nxtwave.co.in account.')
+      return
+    }
+    if (!authCfg?.client_id || !window.google?.accounts?.oauth2) {
+      alert('Google library not ready — refresh the page and sign in, then try again.')
+      return
+    }
+    setGdocBusy(true)
+    try {
+      const tc = window.google.accounts.oauth2.initTokenClient({
+        client_id: authCfg.client_id,
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: (resp) => {
+          if (!resp || !resp.access_token) { setGdocBusy(false); alert('Google Drive permission was not granted.'); return }
+          api.createGdoc(session_no, resp.access_token)
+            .then((d) => { setGdoc({ session_no, link: d.link }); if (d.link) window.open(d.link, '_blank', 'noopener') })
+            .catch((e) => alert(e.message))
+            .finally(() => setGdocBusy(false))
+        },
+      })
+      tc.requestAccessToken()
+    } catch (e) { setGdocBusy(false); alert('Could not start Google authorization: ' + e.message) }
+  }
+
   async function loadGuide() {
     if (!guide) { const g = await api.templateGuide(); setGuide(g.markdown) }
     setShowGuide((v) => !v)
@@ -139,7 +169,7 @@ export default function App() {
   }
 
   function startGenerate() {
-    setGenerating(true); setResult(null); setGenErr(null); setLogs([]); setEvalReport(null); setEvalErr(null)
+    setGenerating(true); setResult(null); setGenErr(null); setLogs([]); setEvalReport(null); setEvalErr(null); setGdoc(null)
     api.generate(sel, useJudge, enforceTime).then(({ job_id }) => {
       pollRef.current = setInterval(async () => {
         try {
@@ -486,7 +516,17 @@ export default function App() {
               <ul>{result.issues.map((i, k) => <li key={k}>{i}</li>)}</ul>
             </div>
           )}
-          <a className="primary download" href={api.downloadUrl(result.session_no)}>⬇️ Download Word (.docx)</a>
+          <div className="dlrow">
+            <button className="primary download" onClick={() => api.downloadDoc(result.session_no).catch((e) => alert(e.message))}>⬇️ Download Word (.docx)</button>
+            <button className="ghostbtn" disabled={gdocBusy} onClick={() => createGoogleDoc(result.session_no)}>
+              {gdocBusy ? 'Creating Google Doc…' : '📄 Create Google Doc'}
+            </button>
+          </div>
+          {gdoc?.session_no === result.session_no && gdoc.link && (
+            <a className="gdoclink" href={gdoc.link} target="_blank" rel="noreferrer">
+              🔗 Open in Google Docs — you have edit access
+            </a>
+          )}
 
           {result.judge?.scores && (
             <details className="panel rubric" open>
@@ -611,7 +651,7 @@ function RunTable({ runs }) {
               <span className="dashcell">{r.rubric != null ? `${r.rubric}` : '—'}</span>
               <span className="dashcell">${((r.cost || {}).cost || 0).toFixed(4)}</span>
               <span className="dashcell">
-                {done ? <a href={api.downloadUrl(r.session_no)}>⬇️ .docx</a> : '—'}
+                {done ? <a href="#" onClick={(e) => { e.preventDefault(); api.downloadDoc(r.session_no).catch((err) => alert(err.message)) }}>⬇️ .docx</a> : '—'}
               </span>
             </div>
             {isOpen && <CostBreakdown cost={{ totals: r.cost, calls: r.calls }} embedded ts={r.ts} rounds={r.rounds} />}

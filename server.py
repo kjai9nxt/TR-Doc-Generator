@@ -93,6 +93,10 @@ class CourseBody(BaseModel):
     course: str
 
 
+class GdocBody(BaseModel):
+    access_token: str        # short-lived Google Drive token from the frontend (GIS)
+
+
 # --------------------------------------------------------------------------- #
 # auth — Google Sign-In restricted to the org domain
 # --------------------------------------------------------------------------- #
@@ -705,6 +709,25 @@ def admin_set_course(team_id: int, body: CourseBody, user: dict = Depends(requir
 def admin_delete_team(team_id: int, user: dict = Depends(require_admin)):
     db.delete_team(team_id)
     return {"ok": True}
+
+
+@app.post("/api/gdoc/{session_no}")
+def create_gdoc(session_no: int, body: GdocBody, user: dict = Depends(current_user)):
+    """Upload the generated .docx to the SIGNED-IN user's Google Drive as a native
+    Google Doc and return its link. The file is created with the user's own Drive
+    token, so the user owns it and is the only editor — edit access is theirs alone."""
+    out = config.harness()["output"]
+    s = course_loader.get_session(session_no)
+    fname = out["docx_filename"].format(N=s.number, SessionName=s.name).replace("/", "-")
+    path = config.DATA_ROOT / out["dir"] / fname
+    if not path.exists():
+        raise HTTPException(status_code=404, detail={"message": "Generate the doc first."})
+    from src import gdrive
+    try:
+        res = gdrive.upload_as_gdoc(path, f"Session {s.number} _ {s.name}", body.access_token)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail={"message": f"Google Drive upload failed: {e}"})
+    return {"id": res.get("id"), "link": res.get("webViewLink"), "name": res.get("name")}
 
 
 @app.get("/admin")

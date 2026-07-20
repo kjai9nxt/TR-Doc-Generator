@@ -94,6 +94,21 @@ function renderLogin() {
 
 function signOut(){ TOKEN=''; localStorage.removeItem('tr_auth_token'); ME=null; if(window.google?.accounts?.id) google.accounts.id.disableAutoSelect(); boot() }
 
+async function downloadDoc(ev, session_no){
+  ev.preventDefault()
+  try {
+    const res = await fetch(`${API}/api/download/${session_no}`, { headers: TOKEN?{Authorization:`Bearer ${TOKEN}`}:{} })
+    if(!res.ok) throw new Error('HTTP '+res.status)
+    const blob = await res.blob()
+    const cd = res.headers.get('Content-Disposition')||''
+    const m = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(cd)
+    const name = m ? decodeURIComponent(m[1].replace(/"$/,'')) : `Session_${session_no}.docx`
+    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+  } catch(e){ alert('Download failed: '+e.message) }
+}
+window.downloadDoc = downloadDoc
+
 function header() {
   return `<div class="top"><h1>🛡️ TR Doc Generator — Admin</h1>
     <div class="who">${esc(ME.email)}${ME.is_admin?' · admin':''} <button class="btn sm" onclick="signOut()">Sign out</button></div></div>
@@ -167,7 +182,7 @@ function viewRuns(d){
      <td class="muted">${esc((r.ts||'').replace('T',' '))}</td><td>${esc(r.user_email||'?')}</td><td>${esc(r.course||'')}</td>
      <td>S${r.session_no}: ${esc(r.title||'')}</td><td>${statusChip(r)}</td>
      <td class="r">${r.rubric!=null?r.rubric:'—'}</td><td class="r">${money((r.cost||{}).cost)}</td>
-     <td>${r.status==='done'?`<a href="${API}/api/download/${r.session_no}">.docx</a>`:'—'}</td>
+     <td>${r.status==='done'?`<a href="#" onclick="downloadDoc(event, ${r.session_no})">.docx</a>`:'—'}</td>
    </tr>`).join('')||'<tr><td class="muted">no runs</td></tr>'}
    </tbody></table></div>`
 }

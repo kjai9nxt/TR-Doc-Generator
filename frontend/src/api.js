@@ -50,6 +50,8 @@ export const api = {
   me: () => req('/auth/me'),
   myHistory: () => req('/my/history'),
   myTeams: () => req('/my/teams'),
+  createGdoc: (session_no, access_token) =>
+    req(`/gdoc/${session_no}`, { method: 'POST', body: JSON.stringify({ access_token }) }),
   status: () => req('/status'),
   templateGuide: () => req('/template-guide'),
   sync: (course_link, details_link, reference_date, course_type, course_name) =>
@@ -59,6 +61,28 @@ export const api = {
     req('/generate', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),
   job: (id) => req(`/jobs/${id}`),
   downloadUrl: (session_no) => `/api/download/${session_no}`,
+
+  // Download the .docx via fetch so the auth token is sent (a plain <a href>
+  // navigation can't carry the Authorization header, so it would 401).
+  downloadDoc: async (session_no) => {
+    const res = await fetch(`/api/download/${session_no}`, {
+      headers: { ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+    })
+    if (!res.ok) {
+      if (res.status === 401) onUnauthorized()
+      const d = await res.json().catch(() => ({}))
+      throw new Error((d.detail && (d.detail.message || d.detail)) || `Download failed (HTTP ${res.status})`)
+    }
+    const blob = await res.blob()
+    const cd = res.headers.get('Content-Disposition') || ''
+    const m = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(cd)
+    const name = m ? decodeURIComponent(m[1].replace(/"$/, '')) : `Session_${session_no}.docx`
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = name
+    document.body.appendChild(a); a.click(); a.remove()
+    URL.revokeObjectURL(url)
+  },
 
   // Guided mode: generate all chunks -> review each -> finalize
   guidedStart: (session_no, use_judge) =>
