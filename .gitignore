@@ -15,6 +15,8 @@ knowledge_base/regen_events.json
 __pycache__/
 *.pyc
 
-# Frontend (installed deps + build output — never commit)
+# Frontend installed deps — never commit
 frontend/node_modules/
-frontend/dist/
+# NOTE: frontend/dist/ IS committed on purpose. Render's Python build does not run
+# a Node build, so the server serves this pre-built output. Rebuild it whenever the
+# frontend source changes:  cd frontend && npm run build   (then commit the result).

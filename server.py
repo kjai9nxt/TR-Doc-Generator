@@ -22,6 +22,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from src import (config, sheets, sync, course_loader, pipeline, pptx_ingest,
@@ -751,6 +752,17 @@ def download(session_no: int, user: dict = Depends(current_user)):
     return FileResponse(
         str(path), filename=fname,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+
+# Serve the built React frontend (Vite output) at the site root. This is mounted
+# LAST so every /api/* and /admin route above is matched first; anything else
+# (/, /assets/*, etc.) is served from frontend/dist. html=True returns index.html
+# for the root. In local `npm run dev` the Vite server serves the UI instead, and
+# this mount is simply unused. If frontend/dist is missing (never built), skip the
+# mount so the API/admin still boot.
+_FRONTEND_DIST = config.ROOT / "frontend" / "dist"
+if (_FRONTEND_DIST / "index.html").exists():
+    app.mount("/", StaticFiles(directory=str(_FRONTEND_DIST), html=True), name="frontend")
 
 
 if __name__ == "__main__":
