@@ -301,7 +301,8 @@ context:
   knowledge_base_dir: "knowledge_base"
   rag_top_k: 6                                 # relevant prior slides to retrieve
   sync_poll_seconds: 60                        # --watch mode poll interval
-  sync_max_workers: 6                          # parallel Google Slides downloads during sync
+  sync_max_workers: 3                          # parallel Google Slides downloads during sync
+                                               # (kept low so peak memory fits a 512 MB host, e.g. Render free)
   # Offline/dev fallbacks (used only if no sheet links are configured):
   course_structure_glob: "inputs/course/*.xlsx"
   past_ppts_glob: "inputs/past_ppts/*.pptx"

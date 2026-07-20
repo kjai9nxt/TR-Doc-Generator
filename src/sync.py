@@ -148,61 +148,66 @@ def sync(course_link: str, details_link: str, *, verbose: bool = True, on_event=
             continue
         tasks.append((key, name, link, session_no))
 
-    # download + hash all decks in PARALLEL (the slow part is network I/O); one
-    # download per deck, bytes reused for extraction (no double download).
+    # Download AND extract each deck inside the worker, so the multi-MB .pptx
+    # bytes are released the moment the worker returns (only the small extracted
+    # text is written to disk — never held in memory across decks). This caps
+    # peak memory to ~`workers` decks instead of ALL of them, which is what a
+    # 512 MB host (e.g. Render free) can survive. Workers touch only distinct
+    # per-session files + read-only prev_decks; all shared bookkeeping happens in
+    # the single main-thread loop below, so no locking is needed.
     def _fetch(task):
         key, name, link, session_no = task
+        deck_key = f"session_{session_no:02d}"
         try:
             chash, data = gslides.content_hash(link)
-            return (task, chash, data, None)
         except Exception as e:
-            return (task, None, None, str(e))
+            return (task, None, "error", str(e))
+        old = prev_decks.get(key)
+        unchanged = old and old.get("link") == link and old.get("content_hash") == chash \
+            and (pptx_ingest.DECKS_DIR / f"{deck_key}.json").exists()
+        if unchanged:
+            return (task, chash, "cached", None)
+        try:
+            deck = gslides.extract_from_bytes(data, session_no, name, link)
+        except Exception as e:
+            return (task, chash, "error", f"extract failed: {e}")
+        data = None  # free the raw .pptx bytes before writing the extracted JSON
+        pptx_ingest.DECKS_DIR.mkdir(parents=True, exist_ok=True)
+        (pptx_ingest.DECKS_DIR / f"{deck_key}.json").write_text(
+            json.dumps(deck, ensure_ascii=False, indent=2), encoding="utf-8")
+        return (task, chash, "ingested", None)
 
     workers = config.harness()["context"].get("sync_max_workers", 6)
-    fetched = []
     total = len(tasks)
     if total:
-        emit(f"Downloading {total} deck(s) in parallel…")
+        emit(f"Syncing {total} deck(s)…")
     with ThreadPoolExecutor(max_workers=workers) as ex:
         futures = {ex.submit(_fetch, t): t for t in tasks}
         done_n = 0
         for fut in as_completed(futures):
             done_n += 1
-            result = fut.result()
-            task, _, _, err = result
-            _, name, _, session_no = task
-            mark = "⚠ unreadable" if err else "✓ downloaded"
-            emit(f"[{done_n}/{total}] {mark} — Session {session_no}: {name}")
-            fetched.append(result)
-
-    # apply results sequentially (fast: change-detection + local writes only)
-    for task, chash, data, err in fetched:
-        key, name, link, session_no = task
-        deck_key = f"session_{session_no:02d}"
-        if err:
-            res.errors.append(f"Session {session_no} ('{name}'): {err}")
-            new_decks[key] = prev_decks.get(key, {})  # keep old record if any
-            continue
-
-        old = prev_decks.get(key)
-        unchanged = old and old.get("link") == link and old.get("content_hash") == chash \
-            and (pptx_ingest.DECKS_DIR / f"{deck_key}.json").exists()
-        if unchanged:
-            res.decks_cached += 1
-        else:
-            deck = gslides.extract_from_bytes(data, session_no, name, link)
-            (pptx_ingest.DECKS_DIR).mkdir(parents=True, exist_ok=True)
-            (pptx_ingest.DECKS_DIR / f"{deck_key}.json").write_text(
-                json.dumps(deck, ensure_ascii=False, indent=2), encoding="utf-8")
-            res.decks_ingested += 1
-            if old is None:
-                res.changelog.append(f"+ Ingested deck for session {session_no}: {name}")
-            elif old.get("link") != link:
-                res.changelog.append(f"~ Session {session_no} deck link changed -> re-ingested")
-            else:
-                res.changelog.append(f"~ Session {session_no} deck content edited -> re-ingested")
-        new_decks[key] = {"link": link, "content_hash": chash,
-                          "session_no": session_no, "deck_key": deck_key}
+            task, chash, status, err = fut.result()
+            key, name, link, session_no = task
+            deck_key = f"session_{session_no:02d}"
+            if status == "error":
+                emit(f"[{done_n}/{total}] ⚠ unreadable — Session {session_no}: {name}")
+                res.errors.append(f"Session {session_no} ('{name}'): {err}")
+                new_decks[key] = prev_decks.get(key, {})  # keep old record if any
+                continue
+            emit(f"[{done_n}/{total}] ✓ synced — Session {session_no}: {name}")
+            if status == "cached":
+                res.decks_cached += 1
+            else:  # ingested
+                res.decks_ingested += 1
+                old = prev_decks.get(key)
+                if old is None:
+                    res.changelog.append(f"+ Ingested deck for session {session_no}: {name}")
+                elif old.get("link") != link:
+                    res.changelog.append(f"~ Session {session_no} deck link changed -> re-ingested")
+                else:
+                    res.changelog.append(f"~ Session {session_no} deck content edited -> re-ingested")
+            new_decks[key] = {"link": link, "content_hash": chash,
+                              "session_no": session_no, "deck_key": deck_key}
 
     # decks removed from the sheet
     for key, old in prev_decks.items():
