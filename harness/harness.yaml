@@ -301,8 +301,9 @@ context:
   knowledge_base_dir: "knowledge_base"
   rag_top_k: 6                                 # relevant prior slides to retrieve
   sync_poll_seconds: 60                        # --watch mode poll interval
-  sync_max_workers: 3                          # parallel Google Slides downloads during sync
-                                               # (kept low so peak memory fits a 512 MB host, e.g. Render free)
+  sync_max_workers: 1                          # decks parsed ONE at a time — image-heavy python-pptx
+                                               # decks each spike RAM, and >1 in memory OOM-kills a 512 MB
+                                               # host (Render free). Slower, but the sync actually finishes.
   # Offline/dev fallbacks (used only if no sheet links are configured):
   course_structure_glob: "inputs/course/*.xlsx"
   past_ppts_glob: "inputs/past_ppts/*.pptx"
