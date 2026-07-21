@@ -42,6 +42,14 @@ GUIDED: dict[str, dict] = {}
 _lock = threading.Lock()
 
 db.init()   # create the SQLite schema + one-time import of the legacy JSON log
+# On an ephemeral host (Render free + Turso) the disk is wiped on every restart,
+# so bring the previously-synced knowledge base back from the DB. No-op locally.
+try:
+    _restored = db.kb_restore()
+    if _restored:
+        print(f"[startup] restored {_restored} knowledge-base file(s) from cloud storage")
+except Exception as _e:
+    print(f"[startup] knowledge-base restore skipped: {_e}")
 
 
 # --------------------------------------------------------------------------- #

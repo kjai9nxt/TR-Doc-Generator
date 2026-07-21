@@ -233,6 +233,17 @@ def sync(course_link: str, details_link: str, *, verbose: bool = True, on_event=
     except Exception as e:
         res.extraction_warnings.append(f"extraction check skipped: {e}")
 
+    # Persist the freshly-synced KB (course structure + extracted decks) so it
+    # survives an ephemeral disk (Render free) and the app never re-syncs after a
+    # restart. No-op unless a cloud DB is configured; best effort, never fatal.
+    try:
+        from . import db
+        saved = db.kb_backup()
+        if saved:
+            emit(f"Saved {saved} knowledge-base file(s) to cloud storage.")
+    except Exception as e:
+        emit(f"(knowledge-base cloud backup skipped: {e})")
+
     res.sessions = len(sessions_norm)
     if verbose:
         _print_report(res)

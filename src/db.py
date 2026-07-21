@@ -103,6 +103,11 @@ _SCHEMA = [
     "CREATE INDEX IF NOT EXISTS idx_runs_course ON runs(course)",
     "CREATE INDEX IF NOT EXISTS idx_runs_status ON runs(status)",
     "CREATE INDEX IF NOT EXISTS idx_runs_ts     ON runs(ts)",
+    # Persisted knowledge base: relative KB path -> file text. Lets the synced
+    # course structure + extracted decks survive an ephemeral disk (Render free),
+    # so the app never has to re-sync after a restart. See kb_backup/kb_restore.
+    """CREATE TABLE IF NOT EXISTS kb_files (
+         path TEXT PRIMARY KEY, content TEXT, updated_at TEXT)""",
 ]
 
 
@@ -331,6 +336,87 @@ def per_user() -> list[dict]:
         e["cost"] = round(e["cost"], 6)
         res.append(e)
     return sorted(res, key=lambda x: -x["cost"])
+
+
+# --------------------------------------------------------------------------- #
+# knowledge-base persistence (so a synced KB survives an ephemeral disk)
+# --------------------------------------------------------------------------- #
+# The small TEXT files a sync produces. Everything here is text-only (no images),
+# so it fits comfortably in the DB. The big .pptx bytes are NEVER stored — sync
+# already discards them after extracting text.
+_KB_TOP_FILES = ("course_structure.json", "sync_state.json", "manifest.json",
+                 "app_settings.json", "learned_rules.json", "regen_events.json")
+
+
+def _kb_local_files() -> list[str]:
+    """KB-relative paths (posix) that currently exist on disk and are worth
+    persisting: the allow-listed top-level JSON files + every extracted deck."""
+    kb = config.KB_DIR
+    out = [name for name in _KB_TOP_FILES if (kb / name).exists()]
+    decks = kb / "decks"
+    if decks.is_dir():
+        out += [f"decks/{f.name}" for f in sorted(decks.glob("*.json"))]
+    return out
+
+
+def kb_backup() -> int:
+    """Snapshot the current KB text files into the DB. No-op unless a cloud DB
+    (Turso) is in use — on a persistent disk the files already survive. Best
+    effort: never raises, so a storage hiccup can't fail a sync."""
+    if not _use_turso():
+        return 0
+    kb = config.KB_DIR
+    paths = _kb_local_files()
+    if not paths:
+        return 0
+    ts = _now()
+    n = 0
+    for rel in paths:
+        try:
+            content = (kb / rel).read_text(encoding="utf-8")
+        except Exception:
+            continue
+        try:
+            _exec("INSERT OR REPLACE INTO kb_files (path, content, updated_at) VALUES (?,?,?)",
+                  (rel, content, ts))
+            n += 1
+        except Exception:
+            continue
+    # Drop rows whose file is gone locally (e.g. a deck removed from the sheet).
+    try:
+        ph = ",".join("?" * len(paths))
+        _exec(f"DELETE FROM kb_files WHERE path NOT IN ({ph})", tuple(paths))
+    except Exception:
+        pass
+    return n
+
+
+def kb_restore() -> int:
+    """Write any KB files stored in the DB back to disk (only when missing, so a
+    fresh local sync is never clobbered). No-op unless a cloud DB is in use.
+    Called once at startup so an ephemeral host recovers its synced KB."""
+    if not _use_turso():
+        return 0
+    kb = config.KB_DIR
+    try:
+        rows = _query("SELECT path, content FROM kb_files")
+    except Exception:
+        return 0
+    n = 0
+    for r in rows:
+        rel = (r.get("path") or "").lstrip("/")
+        if not rel:
+            continue
+        dest = kb / rel
+        if dest.exists():
+            continue
+        try:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(r.get("content") or "", encoding="utf-8")
+            n += 1
+        except Exception:
+            continue
+    return n
 
 
 # --------------------------------------------------------------------------- #
