@@ -5,7 +5,9 @@ code path serves both local .pptx files and Google Slides links.
 """
 from __future__ import annotations
 import hashlib
+import io
 import re
+import zipfile
 from pathlib import Path
 
 import requests
@@ -13,6 +15,39 @@ import requests
 from . import pptx_ingest
 
 _ID_RE = re.compile(r"/presentation/d/([a-zA-Z0-9-_]+)")
+
+# 1-byte stand-in written in place of each stripped media blob.
+_MEDIA_PLACEHOLDER = b"\x00"
+
+
+def _strip_media(data: bytes) -> bytes:
+    """Return a copy of the .pptx (a zip) with every ``ppt/media/*`` blob replaced
+    by a 1-byte placeholder.
+
+    A deck's TEXT — titles, bodies, tables, speaker notes — lives entirely in the
+    XML parts, which we leave untouched, so extraction is byte-for-byte identical.
+    Only the image/video/audio binaries are dropped, and ``extract_deck`` never
+    reads those. An image-heavy deck shrinks from tens of MB to a few KB, which is
+    what lets a 512 MB host (Render free) parse it without running out of memory.
+
+    Entry names, extensions and every other part are preserved, so all
+    relationships + [Content_Types].xml stay valid and python-pptx opens the file
+    cleanly. If the zip is malformed or anything unexpected happens, the ORIGINAL
+    bytes are returned unchanged — correctness always wins over the memory saving.
+    """
+    try:
+        src = io.BytesIO(data)
+        out = io.BytesIO()
+        with zipfile.ZipFile(src) as zin, \
+                zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
+            for item in zin.infolist():
+                if item.filename.startswith("ppt/media/"):
+                    zout.writestr(item.filename, _MEDIA_PLACEHOLDER)
+                else:
+                    zout.writestr(item, zin.read(item.filename))
+        return out.getvalue()
+    except Exception:
+        return data
 
 
 def presentation_id(link: str) -> str:
@@ -47,7 +82,11 @@ def extract_from_bytes(data: bytes, session_no: int | None, session_name: str,
     pptx_ingest.KB_DIR.mkdir(parents=True, exist_ok=True)
     tag = session_no if session_no is not None else abs(hash(link)) % 100000
     tmp = pptx_ingest.KB_DIR / f"_tmp_{tag}.pptx"
-    tmp.write_bytes(data)
+    # Drop image blobs BEFORE parsing — the text is unaffected but the file (and
+    # so python-pptx's in-memory footprint) shrinks enough to fit a 512 MB host.
+    # The content hash was already taken upstream on the ORIGINAL bytes, so edit
+    # detection is unaffected.
+    tmp.write_bytes(_strip_media(data))
     try:
         deck = pptx_ingest.extract_deck(tmp)
     finally:
