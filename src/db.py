@@ -230,11 +230,46 @@ def finish_run(run_id: str, *, status: str, accepted: bool | None = None,
          docx_path, error, _now(), run_id))
 
 
+# A run still marked "running" this long after its last update almost certainly
+# died or was abandoned mid-way (a real generation finishes in a few minutes), so
+# we surface it separately from genuinely in-progress runs.
+ABANDONED_AFTER_MIN = 20
+
+
+def _duration_min(r: dict):
+    """Wall-clock minutes from run start (ts) to last update (updated). For a
+    finished run that is its total generation time; None if unparseable."""
+    try:
+        d = (datetime.fromisoformat(r["updated"]) - datetime.fromisoformat(r["ts"])).total_seconds() / 60
+        return round(d, 2) if d >= 0 else None
+    except Exception:
+        return None
+
+
+def _is_abandoned(r: dict) -> bool:
+    if r.get("status") != "running":
+        return False
+    try:
+        last = datetime.fromisoformat(r.get("updated") or r.get("ts"))
+        return (datetime.now(timezone.utc) - last).total_seconds() > ABANDONED_AFTER_MIN * 60
+    except Exception:
+        return False
+
+
 def _shape_run(d: dict) -> dict:
     d["accepted"] = None if d.get("accepted") is None else bool(d["accepted"])
     d["enforce_time"] = None if d.get("enforce_time") is None else bool(d["enforce_time"])
     d["cost"] = json.loads(d.pop("cost_json", None) or "{}")
     d["calls"] = json.loads(d.pop("calls_json", None) or "[]")
+    d["duration_min"] = _duration_min(d)
+    d["abandoned"] = _is_abandoned(d)
+    # A single, UI-friendly outcome: completed | approved | failed | abandoned | running
+    if d["status"] == "done":
+        d["outcome"] = "approved" if d["accepted"] else "completed"
+    elif d["status"] == "error":
+        d["outcome"] = "failed"
+    else:
+        d["outcome"] = "abandoned" if d["abandoned"] else "running"
     return d
 
 
@@ -295,6 +330,9 @@ def summary() -> dict:
     rs = runs(limit=100000)
     done = [r for r in rs if r["status"] == "done"]
     approved = [r for r in done if r["accepted"]]
+    abandoned = [r for r in rs if r["abandoned"]]
+    in_progress = [r for r in rs if r["status"] == "running" and not r["abandoned"]]
+    durations = [r["duration_min"] for r in done if r["duration_min"] is not None]
     by_model: dict = {}
     for r in rs:
         for call in r["calls"]:
@@ -306,11 +344,15 @@ def summary() -> dict:
     return {
         "total_runs": len(rs),
         "done": len(done),
-        "running": len([r for r in rs if r["status"] == "running"]),
+        "running": len(in_progress),                 # genuinely in progress
+        "in_progress": len(in_progress),
+        "abandoned": len(abandoned),                 # started, never completed
         "errors": len([r for r in rs if r["status"] == "error"]),
         "approved": len(approved),
+        "completion_rate": round(100 * len(done) / len(rs), 1) if rs else 0,
         "acceptance_rate": round(100 * len(approved) / len(done), 1) if done else 0,
         "avg_rubric": round(sum((r["rubric"] or 0) for r in done) / len(done), 1) if done else 0,
+        "avg_duration_min": round(sum(durations) / len(durations), 1) if durations else 0,
         "total_cost": round(sum((r["cost"] or {}).get("cost", 0) or 0 for r in rs), 6),
         "total_tokens": sum((r["cost"] or {}).get("total_tokens", 0) or 0 for r in rs),
         "models": sorted(by_model.values(), key=lambda x: -x["cost"]),
@@ -321,17 +363,28 @@ def per_user() -> list[dict]:
     out: dict = {}
     for r in runs(limit=100000):
         who = r["user_email"] or "unknown"
-        e = out.setdefault(who, {"user": who, "runs": 0, "approved": 0, "cost": 0.0,
-                                 "tokens": 0, "courses": set(), "last": r["ts"]})
+        e = out.setdefault(who, {"user": who, "runs": 0, "completed": 0, "approved": 0,
+                                 "abandoned": 0, "failed": 0, "cost": 0.0, "tokens": 0,
+                                 "courses": set(), "_durations": [], "last": r["ts"]})
         e["runs"] += 1
+        if r["status"] == "done":
+            e["completed"] += 1
+            if r["duration_min"] is not None:
+                e["_durations"].append(r["duration_min"])
         if r["accepted"]:
             e["approved"] += 1
+        if r["abandoned"]:
+            e["abandoned"] += 1        # left mid-way, never completed
+        if r["status"] == "error":
+            e["failed"] += 1
         e["cost"] += (r["cost"] or {}).get("cost", 0) or 0
         e["tokens"] += (r["cost"] or {}).get("total_tokens", 0) or 0
         if r["course"]:
             e["courses"].add(r["course"])
     res = []
     for e in out.values():
+        ds = e.pop("_durations")
+        e["avg_duration_min"] = round(sum(ds) / len(ds), 1) if ds else 0
         e["courses"] = sorted(e["courses"])
         e["cost"] = round(e["cost"], 6)
         res.append(e)

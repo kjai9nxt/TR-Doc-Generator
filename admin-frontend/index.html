@@ -25,6 +25,19 @@
   .chip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
   .chip.ok{background:rgba(47,191,113,.18);color:#63d69a;} .chip.bad{background:rgba(224,87,107,.18);color:#f0899a;}
   .chip.run{background:rgba(110,168,254,.18);color:#9cc2ff;} .chip.warn{background:rgba(224,180,90,.18);color:#e0b45a;}
+  .chip.done{background:rgba(147,161,176,.16);color:#c3ced8;}
+  .bar { position:relative; }
+  .bar .bar-app { position:absolute; left:0; right:0; bottom:0; background:var(--ok); border-radius:0 0 4px 4px; }
+  .legend { display:flex; gap:16px; font-size:12px; color:var(--muted); margin-left:auto; align-items:center; }
+  .legend i { display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:5px; vertical-align:-1px; }
+  .funnel { display:flex; align-items:stretch; gap:0; flex-wrap:wrap; }
+  .fstep { flex:1 1 130px; background:var(--card2); border:1px solid var(--line); padding:14px 16px; position:relative; }
+  .fstep:first-child { border-radius:10px 0 0 10px; }
+  .fstep:last-child { border-radius:0 10px 10px 0; }
+  .fstep + .fstep { border-left:none; }
+  .fstep .fv { font-size:22px; font-weight:800; } .fstep .fl { color:var(--muted); font-size:12px; }
+  .fstep .fr { font-size:11px; color:var(--accent); font-weight:700; margin-top:2px; }
+  .fstep.bad .fv { color:#f0899a; } .fstep.warn .fv { color:#e0b45a; }
   .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
   .tab { padding:7px 14px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--fg); cursor:pointer; font-size:13px; }
   .tab.active { background:var(--accent); color:#08101e; border-color:var(--accent); font-weight:600; }
@@ -131,24 +144,51 @@ async function loadView(){
 }
 
 function metric(v,l){ return `<div class="metric"><div class="mv">${v}</div><div class="ml">${l}</div></div>` }
+function fstep(v,l,rate,cls){ return `<div class="fstep ${cls||''}"><div class="fv">${v}</div><div class="fl">${l}</div>${rate!=null?`<div class="fr">${rate}</div>`:''}</div>` }
 function statusChip(r){
-  if(r.status==='running') return `<span class="chip run">● ${esc(r.stage||'running')}</span>`
-  if(r.status==='error') return '<span class="chip bad">error</span>'
-  return r.accepted ? '<span class="chip ok">✓ accepted</span>' : '<span class="chip warn">review</span>'
+  const o = r.outcome || r.status
+  if(o==='running') return `<span class="chip run">● ${esc(r.stage||'running')}</span>`
+  if(o==='abandoned') return '<span class="chip warn">⚠ abandoned</span>'
+  if(o==='failed'||o==='error') return '<span class="chip bad">✗ failed</span>'
+  if(o==='approved') return '<span class="chip ok">✓ approved</span>'
+  return '<span class="chip done">✓ completed</span>'   // done, not approved
 }
+function dur(m){ return (m==null)?'—':(m<1?`${Math.round(m*60)}s`:`${(+m).toFixed(1)}m`) }
 
 function viewOverview(d){
   const s=d.summary, ts=({day:d.daily,week:d.weekly,month:d.monthly}[UNIT])||d.daily
   const max=Math.max(1,...ts.map(x=>x.runs))
-  const bars = ts.slice(-30).map(x=>`<div class="bar" style="height:${Math.round(100*x.runs/max)}%" title="${x.bucket}: ${x.runs} runs, ${money(x.cost)}"><span>${esc(x.bucket.slice(5))}</span></div>`).join('')
+  const bars = ts.slice(-30).map(x=>{
+    const hRuns = Math.round(100*x.runs/max)
+    const appPct = x.runs ? Math.round(100*x.approved/x.runs) : 0
+    return `<div class="bar" style="height:${Math.max(hRuns,2)}%" title="${x.bucket} — ${x.runs} created, ${x.approved} approved, ${money(x.cost)}">
+      <div class="bar-app" style="height:${appPct}%"></div><span>${esc(x.bucket.slice(5))}</span></div>`
+  }).join('')
   return `
-   <div class="card"><div class="metrics">
-     ${metric(s.total_runs,'Total runs')}${metric(s.done,'Completed')}${metric(s.running,'Running now')}
-     ${metric(s.approved,'Approved')}${metric(s.acceptance_rate+'%','Acceptance')}${metric(s.avg_rubric,'Avg rubric')}
-     ${metric(money(s.total_cost),'Total cost')}${metric(num(s.total_tokens),'Total tokens')}
-   </div></div>
+   <div class="card"><h2 style="margin-top:0">At a glance</h2>
+     <div class="metrics">
+       ${metric(s.total_runs,'Generations started')}${metric(s.done,'Completed')}${metric(s.approved,'Approved')}
+       ${metric(s.errors,'Failed')}${metric(s.abandoned,'Abandoned midway')}${metric(s.in_progress,'Running now')}
+     </div>
+     <div class="metrics" style="margin-top:10px">
+       ${metric(s.completion_rate+'%','Completion rate')}${metric(s.acceptance_rate+'%','Approval rate')}
+       ${metric(dur(s.avg_duration_min),'Avg generation time')}${metric(s.avg_rubric,'Avg rubric /100')}
+       ${metric(money(s.total_cost),'Total cost')}${metric(num(s.total_tokens),'Total tokens')}
+     </div>
+   </div>
+   <div class="card"><h2 style="margin-top:0">Completion funnel</h2>
+     <div class="funnel">
+       ${fstep(s.total_runs,'Started', null)}
+       ${fstep(s.done,'Completed', s.completion_rate+'% of started')}
+       ${fstep(s.approved,'Approved', s.acceptance_rate+'% of completed')}
+       ${fstep(s.errors,'Failed', null,'bad')}
+       ${fstep(s.abandoned,'Abandoned', null,'warn')}
+     </div>
+     <p class="muted" style="margin:10px 0 0;font-size:12px">“Abandoned” = a generation that started but was still unfinished ${20}+ min later (process died or the user left).</p>
+   </div>
    <div class="card"><div class="row"><h2 style="margin:0">Generations over time</h2>
-     <div class="row" style="margin-left:auto">${['day','week','month'].map(u=>`<button class="btn sm ${UNIT===u?'primary':''}" onclick="UNIT='${u}';loadView()">${u}</button>`).join('')}</div></div>
+     <div class="legend"><span><i style="background:var(--accent)"></i>Created</span><span><i style="background:var(--ok)"></i>Approved</span></div>
+     <div class="row" style="margin-left:14px">${['day','week','month'].map(u=>`<button class="btn sm ${UNIT===u?'primary':''}" onclick="UNIT='${u}';loadView()">${u}</button>`).join('')}</div></div>
      <div class="bars">${bars||'<span class="muted">no data</span>'}</div>
    </div>
    <div class="card"><h2>Connector health</h2><table><tbody>
@@ -161,8 +201,10 @@ function viewOverview(d){
 }
 
 function userTable(rows){
-  return `<table><thead><tr><th>User</th><th class="r">Runs</th><th class="r">Approved</th><th class="r">Tokens</th><th class="r">Cost</th><th>Courses</th></tr></thead><tbody>
-   ${rows.map(u=>`<tr><td>${esc(u.user)}</td><td class="r">${u.runs}</td><td class="r">${u.approved}</td><td class="r">${num(u.tokens)}</td><td class="r">${money(u.cost)}</td><td class="muted">${esc((u.courses||[]).join(', '))}</td></tr>`).join('')||'<tr><td class="muted">none</td></tr>'}
+  return `<table><thead><tr><th>User</th><th class="r">Started</th><th class="r">Completed</th><th class="r">Approved</th><th class="r">Abandoned</th><th class="r">Avg time</th><th class="r">Cost</th><th>Courses</th></tr></thead><tbody>
+   ${rows.map(u=>`<tr><td>${esc(u.user)}</td><td class="r">${u.runs}</td><td class="r">${u.completed??0}</td><td class="r">${u.approved}</td>
+     <td class="r">${(u.abandoned||0)>0?`<span class="chip warn">${u.abandoned}</span>`:'0'}</td>
+     <td class="r">${dur(u.avg_duration_min)}</td><td class="r">${money(u.cost)}</td><td class="muted">${esc((u.courses||[]).join(', '))}</td></tr>`).join('')||'<tr><td class="muted">none</td></tr>'}
   </tbody></table>`
 }
 
@@ -177,10 +219,11 @@ function viewLive(d){
 
 function viewRuns(d){
   return `<div class="card"><h2>All runs (${d.runs.length})</h2>
-   <table><thead><tr><th>When</th><th>User</th><th>Course</th><th>Session</th><th>Status</th><th class="r">Rubric</th><th class="r">Cost</th><th>Output</th></tr></thead><tbody>
+   <table><thead><tr><th>When</th><th>User</th><th>Course</th><th>Session</th><th>Outcome</th><th class="r">Time</th><th class="r">Rubric</th><th class="r">Cost</th><th>Output</th></tr></thead><tbody>
    ${d.runs.map(r=>`<tr>
      <td class="muted">${esc((r.ts||'').replace('T',' '))}</td><td>${esc(r.user_email||'?')}</td><td>${esc(r.course||'')}</td>
      <td>S${r.session_no}: ${esc(r.title||'')}</td><td>${statusChip(r)}</td>
+     <td class="r">${dur(r.duration_min)}</td>
      <td class="r">${r.rubric!=null?r.rubric:'—'}</td><td class="r">${money((r.cost||{}).cost)}</td>
      <td>${r.status==='done'?`<a href="#" onclick="downloadDoc(event, ${r.session_no})">.docx</a>`:'—'}</td>
    </tr>`).join('')||'<tr><td class="muted">no runs</td></tr>'}

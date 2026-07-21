@@ -375,6 +375,18 @@ def _guided_log(gid: str, msg: str):
     with _lock:
         if gid in GUIDED:
             GUIDED[gid]["logs"].append(msg)
+    try:
+        db.update_stage(gid, msg.strip()[:120])   # live stage for the admin view
+    except Exception:
+        pass
+
+
+def _guided_db_error(gid: str, e: Exception):
+    """Mark this guided run as failed in the DB (so it still shows in the dashboard)."""
+    try:
+        db.finish_run(gid, status="error", error=str(e))
+    except Exception:
+        pass
 
 
 def _chunk_spec(state: dict, index: int):
@@ -418,6 +430,7 @@ def _guided_generate_all(gid: str):
     except Exception as e:
         with _lock:
             GUIDED[gid].update(status="error", error=str(e))
+        _guided_db_error(gid, e)
 
 
 def _guided_regenerate(gid: str, index: int, reason: str):
@@ -450,6 +463,7 @@ def _guided_regenerate(gid: str, index: int, reason: str):
     except Exception as e:
         with _lock:
             GUIDED[gid].update(status="error", error=str(e), regen_index=None)
+        _guided_db_error(gid, e)
 
 
 def _guided_finalize(gid: str):
@@ -477,9 +491,22 @@ def _guided_finalize(gid: str):
                 "markdown": _read_markdown(result["docx"]),
                 "cost": result.get("cost"),
             })
+        cost = result.get("cost") or {}
+        try:
+            db.finish_run(
+                gid, status="done", accepted=final.get("accepted"),
+                rubric=(final.get("judge") or {}).get("weighted_total"),
+                est_minutes=final.get("time", {}).get("estimated_minutes"),
+                rounds=len(result.get("history", [])),
+                slides=final.get("time", {}).get("slide_count"),
+                cost=cost.get("totals"), calls=cost.get("calls"),
+                docx_path=result.get("docx"))
+        except Exception:
+            pass
     except Exception as e:
         with _lock:
             GUIDED[gid].update(status="error", error=str(e))
+        _guided_db_error(gid, e)
 
 
 def _guided_view(state: dict) -> dict:
@@ -518,6 +545,17 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
             "chunks": [], "regen_index": None, "use_judge": body.use_judge,
             "logs": [], "result": None, "error": None,
         }
+    # Record the run in the DB up-front (status=running) so guided generations
+    # show live and persist in the dashboard, exactly like one-shot runs.
+    try:
+        email = user.get("email")
+        course = app_settings.course_name()
+        db.create_run(gid, user_email=email, course=course,
+                      team_id=db.team_for_user_course(email, course),
+                      session_no=body.session_no, title=cur.name,
+                      enforce_time=True)
+    except Exception:
+        pass
     threading.Thread(target=_guided_generate_all, args=(gid,), daemon=True).start()
     return {"guided_id": gid}
 
