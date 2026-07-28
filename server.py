@@ -536,6 +536,10 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     labels = ["Opening (recap + agenda)"] + [
         f"Key takeaway {i + 1}: {kt[:70]}" for i, kt in enumerate(cur.key_takeaways)]
     gid = uuid.uuid4().hex[:12]
+    # Start token/cost accounting for THIS guided doc (chunks + regens + judge),
+    # mirroring what pipeline.run() does for one-shot generations.
+    from src import llm
+    llm.reset_usage()
     with _lock:
         GUIDED[gid] = {
             "status": "generating_all", "session_no": body.session_no,

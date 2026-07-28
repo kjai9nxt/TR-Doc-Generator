@@ -26,8 +26,9 @@ session.
 7. **Market parity.** Match or exceed the depth/accuracy of Scaler, GeeksforGeeks,
    TutorialsPoint and standard university syllabi for this topic.
 8. **Be concise — this is a slide skeleton, not an essay.** Bullets ≤ 12 words,
-   `text` blocks ≤ 2 short sentences (≤ 18 words each), headings/titles are phrases
-   (≤ 8 words, no period), table cells ≤ 8 words. One idea per bullet. Cut filler
+   `text` blocks ≤ 2 short sentences (≤ 18 words each), every slide `heading` and
+   `subheading` is a **3-4 word label (HARD MAXIMUM 4 WORDS, never more)**, `title`
+   ≤ 8 words, no periods on any of them, table cells ≤ 8 words. One idea per bullet. Cut filler
    ("basically", "in order to", "it is important to note"). If a line has a comma +
    "and", split it. Long, dense sentences are a defect — prefer more, shorter lines.
 9. **Use current, up-to-date content.** Reflect the latest standards/versions. Never
@@ -100,6 +101,12 @@ Return ONLY a single JSON object, no prose around it:
 - **Every slide MUST include all six fields: `heading`, `subheading`, `content`,
   `analogy`, `visual_guidance`, `speaker_notes`.** None may be omitted or empty —
   a missing field fails the run.
+- **`heading` / `subheading`: 3-4 words MAXIMUM (hard cap — 5+ words fails the run).**
+  They are short slide labels, not sentences. No verbs-with-objects sentences, no
+  questions longer than 4 words, no periods. Count the words before you emit them.
+  Good: "Why SCTP Exists", "Multi-Streaming Explained", "IntServ vs DiffServ",
+  "Two QoS Approaches". Bad: "Two Problems TCP Could Not Solve" (6),
+  "How the Internet Works by Default" (6). This cap applies in EVERY mode.
 - **`recap.bullets` = the previous session's KEY TAKEAWAYS** (stated concisely),
   not a fresh summary. Omit the whole recap only for Session 1.
 - **Layout order:** session title → recap (prev session's key takeaways) → agenda →

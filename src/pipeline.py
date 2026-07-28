@@ -272,5 +272,12 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True, on_event=Non
         rep_path = out_dir / (safe.rsplit(".", 1)[0] + ".grade.json")
         rep_path.write_text(json.dumps({"session": cur.number, "history": history},
                                        ensure_ascii=False, indent=2), encoding="utf-8")
-    log(f"DONE. accepted={accepted}  est_minutes={report['time']['estimated_minutes']}")
-    return {"doc": doc, "history": history, "docx": str(docx_path)}
+    # Cost of THIS guided doc: usage has been accumulating since /api/guided/start
+    # (every chunk generation + regeneration), so the totals here cover the whole
+    # guided run, not just this grading call.
+    from src import llm
+    cost = {"totals": llm.usage_totals(), "calls": llm.usage_records()}
+    c = cost["totals"]
+    log(f"DONE. accepted={accepted}  est_minutes={report['time']['estimated_minutes']}  "
+        f"cost=${c.get('cost', 0) or 0:.4f} ({c.get('total_tokens', 0)} tokens)")
+    return {"doc": doc, "history": history, "docx": str(docx_path), "cost": cost}

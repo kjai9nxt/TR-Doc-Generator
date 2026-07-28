@@ -15,7 +15,11 @@ glance. Enforce these caps:
   If a bullet needs a comma-plus-conjunction, split it into two bullets.
 - **`text` blocks: ≤ 2 short sentences,** each ≤ 18 words. Prefer bullets/tables over
   `text` — reach for a paragraph only when a list genuinely won't do.
-- **`heading` / `subheading` / `title`: a phrase, not a sentence** (≤ 8 words, no period).
+- **`heading` / `subheading`: 3-4 words, HARD MAXIMUM 4** — a short slide label, never a
+  sentence, no period. 5 words is a failure. Prefer 3. ("Why SCTP Exists",
+  "IntServ vs DiffServ", "Scheduling and Shaping" — not "Two Problems TCP Could Not Solve".)
+  This cap holds in depth mode too.
+- **`title`: a phrase, not a sentence** (≤ 8 words, no period).
 - **Table cells: ≤ 8 words.** Keywords, not prose.
 - Cut filler words ("basically", "in order to", "it is important to note that").
   Write "TCP guarantees order" — not "It is important to understand that TCP is a

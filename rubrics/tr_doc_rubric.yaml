@@ -49,7 +49,8 @@ dimensions:
       Does slide CONTENT read as slide text, not spoken narration? It must NOT contain
       "in the previous/next session", "as we saw", "now let us", "in this slide we will"
       and similar (those belong in speaker_notes). Points must be CONCISE (bullets <= 12
-      words, no long dense sentences, headings are short phrases) and every block must
+      words, no long dense sentences, and every slide heading/subheading a 3-4 word label
+      — 5+ words caps this dimension at 2) and every block must
       stay on-topic for its slide (no tangents/filler). [G6,G13,G16]
   - id: clarity_and_analogies
     weight: 8

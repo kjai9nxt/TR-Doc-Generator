@@ -5,8 +5,8 @@
   "capability_status": "implemented",
   "grader": "hybrid",
   "applies_to": "per_slide_content",
-  "description": "Points and sentences must be short and precise. Enforced caps: bullets <= 12 words; text blocks <= 2 sentences of <= 18 words each; headings/titles <= 8-word phrases (no period); table cells <= 8 words.",
-  "criterion": "No bullet > 12 words; no sentence > 18 words; headings are phrases; no filler words.",
+  "description": "Points and sentences must be short and precise. Enforced caps: bullets <= 12 words; text blocks <= 2 sentences of <= 18 words each; slide heading/subheading <= 4 words each (hard cap, no period); slide title <= 8-word phrase; table cells <= 8 words.",
+  "criterion": "No bullet > 12 words; no sentence > 18 words; heading/subheading <= 4 words; title <= 8 words; no filler words.",
   "rubric": {
     "5": "All lines within caps; crisp.",
     "3": "One or two lines slightly over.",
@@ -35,7 +35,21 @@
       "polarity": "bad",
       "expected": "fail",
       "input": {"heading": "In this section we are going to carefully understand the complete handshake process."},
-      "rationale": "Heading is a full sentence with filler, not a <=8-word phrase."
+      "rationale": "Heading is a full sentence with filler, not a <=4-word label."
+    },
+    {
+      "id": "cn-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"heading": "Why was SCTP Created?", "subheading": "Two Problems TCP Could Not Solve"},
+      "rationale": "Subheading is 6 words — over the 4-word heading/subheading cap."
+    },
+    {
+      "id": "cn-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"heading": "Why SCTP Exists", "subheading": "Two Gaps TCP Left"},
+      "rationale": "Both are 3-4 word labels — within the cap."
     }
   ]
 }

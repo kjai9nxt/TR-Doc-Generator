@@ -84,6 +84,18 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
             if not s.get(req) or not str(s.get(req)).strip():
                 fails.append(f"{tag}: missing '{req}' (required on every slide).")
 
+    # --- heading / subheading word cap ---
+    # A heading is a slide LABEL, not a sentence: hard 4-word cap (house rule).
+    # Enforced in BOTH modes — depth mode adds body depth, never longer headings.
+    hcap = con.get("headings", {}).get("max_words", 4)
+    for s in slides:
+        for fld in ("heading", "subheading"):
+            words = str(s.get(fld) or "").split()
+            if len(words) > hcap:
+                fails.append(
+                    f"Slide {s.get('n', '?')}: {fld} has {len(words)} words "
+                    f"(max {hcap}) — \"{s.get(fld)}\". Shorten to a {hcap}-word label.")
+
     # --- no repeated analogy across slides (exact match; backstop for the
     #     no-repeat rule — the LLM eval set also catches same-theme reuse) ---
     analogies = [str(s.get("analogy", "")).strip().lower() for s in slides if s.get("analogy")]

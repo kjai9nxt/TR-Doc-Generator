@@ -28,8 +28,8 @@ deterministic and lets graders inspect fields directly.
         {
           "n": 1,
           "title": "Why SCTP Exists — TCP's Two Problems",
-          "heading": "Why was SCTP Created?",
-          "subheading": "Two Problems TCP Could Not Solve",
+          "heading": "Why SCTP Exists",              // 3-4 words MAX
+          "subheading": "Two Gaps TCP Left",         // 3-4 words MAX
           "content": [                         // ordered blocks
             {"type": "text", "text": "..."},
             {"type": "bullets", "items": ["...", "..."]},
@@ -87,6 +87,10 @@ The breaker uses the same dash-wrapped form as the golden doc:
 `heading`, `subheading`, `content`, `analogy`, `visual_guidance`, `speaker_notes`
 are **all REQUIRED on every slide** — none may be omitted or left empty. (A missing
 field is a hard guardrail failure.)
+
+`heading` and `subheading` are **3-4 word labels — hard maximum 4 words each** (no
+period). A 5-word heading or subheading is a hard guardrail failure, in every mode
+including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 
 ## Notes
 - `recap.bullets` = the previous session's key takeaways, stated concisely.

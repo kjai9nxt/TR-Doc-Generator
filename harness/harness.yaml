@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.19"
+  version: "1.20"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -162,6 +162,16 @@ meta:
               bypass), /admin serves, agent+admin builds OK, offline eval still PASS. DEPLOY as ONE
               shared backend; add the app's origin (e.g. http://localhost:8000 for /admin) to the OAuth
               client's Authorized JS origins."
+    - "1.20 — 4-WORD HEADINGS + PER-RUN COST IN THE APP. (a) Slide `heading` and `subheading` are now
+              capped at 4 WORDS each (constraints.headings.max_words), down from the loose ≤8-word
+              phrase rule: stated in system_prompt/style_guide/format_spec, hard-enforced in
+              guardrails (a longer heading is a FAILURE and feeds the revision pass), applied in
+              DEPTH MODE too (depth_mode explicitly exempts the heading cap from its concision
+              override), and measured by the deterministic conciseness eval set. Golden S15 headings
+              shortened to comply. `title` keeps the ≤8-word phrase cap. (b) Cost of the CURRENT
+              generation is now shown in the app while/after it runs: a sticky side panel (React
+              CostSidePanel) showing this doc's $ cost, tokens and call count only. Guided mode now
+              accounts cost too (usage reset on /api/guided/start; pipeline.finalize returns cost)."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
@@ -209,6 +219,12 @@ constraints:
     min: 5
     max: 12                         # split content across more slides, don't cram
     max_rich: 18                    # higher ceiling when the 40-min limit is OFF (depth mode)
+  headings:
+    # A slide `heading`/`subheading` is a LABEL, not a sentence. Hard 4-word cap,
+    # enforced by guardrails and applied in DEPTH MODE too (depth adds body
+    # depth, never longer headings). `title` keeps the looser phrase cap.
+    max_words: 4
+    title_max_words: 8
   language:
     variety: "Indian English"
     grammar: "must be error-free"

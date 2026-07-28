@@ -22,9 +22,11 @@ document that is merely correct-but-thin is a FAILURE here.
 
 ## What changes in this mode
 
-1. **Concision caps are OVERRIDDEN.** The STYLE GUIDE's per-element word limits
-   (bullets ≤12 words, `text` ≤2 sentences, ≤8-word headings, etc.) DO NOT apply.
-   Ignore them. `content` should be explanatory prose — one or more short
+1. **Concision caps are OVERRIDDEN — EXCEPT the heading cap.** The STYLE GUIDE's
+   per-element word limits (bullets ≤12 words, `text` ≤2 sentences, table cells,
+   etc.) DO NOT apply. Ignore them. **The one exception: every slide `heading` and
+   `subheading` stays 3-4 words, hard maximum 4 — depth means richer bodies, never
+   longer headings.** `content` should be explanatory prose — one or more short
    paragraphs that actually teach the idea — followed by bullets/tables for
    structure. Write to teach, not to fit a stopwatch (there is no time limit in
    this mode). Still no filler or repetition.
@@ -59,6 +61,7 @@ document that is merely correct-but-thin is a FAILURE here.
 
 - Every slide still carries all six fields (heading, subheading, content,
   analogy, visual_guidance, speaker_notes).
+- `heading` / `subheading` stay 3-4 words each (hard max 4) — unchanged by depth mode.
 - Slide `content` still must NOT contain spoken narration or meta-narration
   ("in this slide…", "in the previous/next session…") — that belongs in
   speaker_notes.

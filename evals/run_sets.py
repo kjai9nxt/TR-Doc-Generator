@@ -81,8 +81,16 @@ def _chk_conciseness(doc, session, sset):
                 for sent in re.split(r"(?<=[.!?])\s+", b.get("text", "")):
                     if _wc(sent) > 18:
                         viol.append(f"slide {s.get('n')} sentence {_wc(sent)}w")
-        if _wc(s.get("heading")) > 8 or _wc(s.get("title")) > 8:
-            viol.append(f"slide {s.get('n')} heading/title >8w")
+        # heading/subheading are 4-word labels; title keeps the ≤8-word phrase cap.
+        # Counted by whitespace (same as guardrails), so a hyphenated label like
+        # "Cookie-Based 4-Way Handshake" is 3 words, not 5.
+        hcap = config.harness()["constraints"].get("headings", {})
+        for fld, cap in (("heading", hcap.get("max_words", 4)),
+                         ("subheading", hcap.get("max_words", 4)),
+                         ("title", hcap.get("title_max_words", 8))):
+            n = len(str(s.get(fld) or "").split())
+            if n > cap:
+                viol.append(f"slide {s.get('n')} {fld} {n}w >{cap}w")
     score = 5 if not viol else (3 if len(viol) <= 2 else 1)
     return score, ("no over-length lines" if not viol else f"{len(viol)} over-length: {viol[:6]}")
 

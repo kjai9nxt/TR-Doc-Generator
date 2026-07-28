@@ -25,7 +25,7 @@
           "n": 1,
           "title": "Why SCTP Exists — TCP's Two Problems",
           "heading": "Why was SCTP Created?",
-          "subheading": "Two Problems TCP Could Not Solve",
+          "subheading": "Two Gaps TCP Left",
           "content": [
             {"type": "text", "text": "Problem 1 — Head-of-Line (HOL) Blocking: TCP delivers data as one ordered stream. If one segment is lost, all segments behind it wait — even if they already arrived correctly. Example: three images are requested; image 2's packet is lost, so image 3 is stuck waiting even though it arrived fine."},
             {"type": "text", "text": "Problem 2 — Single Path Dependency: TCP binds a connection to one IP address per side. If that path fails, the entire connection drops and must restart. This is critical in telecom signaling, where availability cannot be interrupted."}
@@ -37,7 +37,7 @@
         {
           "n": 2,
           "title": "SCTP — What It Is & Key Features",
-          "heading": "SCTP — Stream Control Transmission Protocol",
+          "heading": "Stream Control Transmission Protocol",
           "subheading": "A Smarter Transport Protocol",
           "content": [
             {"type": "text", "text": "SCTP is a connection-oriented, reliable Transport Layer protocol — like TCP, but with two extra capabilities."},
@@ -68,8 +68,8 @@
         {
           "n": 3,
           "title": "SCTP 4-Way Handshake & Comparison",
-          "heading": "SCTP Handshake and Where It Sits",
-          "subheading": "4-Way Handshake with a Cookie",
+          "heading": "SCTP Handshake Basics",
+          "subheading": "Cookie-Based 4-Way Handshake",
           "content": [
             {"type": "table", "columns": ["Step", "Message", "Direction", "Purpose"], "rows": [
               ["1", "INIT", "Client -> Server", "Request association; share IPs & stream count"],
@@ -102,7 +102,7 @@
           "n": 4,
           "title": "What is QoS & Its Parameters",
           "heading": "Quality of Service (QoS)",
-          "subheading": "Not All Traffic is Equal",
+          "subheading": "Traffic Is Not Equal",
           "content": [
             {"type": "text", "text": "On the same network a video call needs smooth, real-time delivery — delay kills it — while a background software update can wait a few seconds. Without QoS the network treats both identically and the video call suffers."},
             {"type": "text", "text": "QoS = the ability of a network to manage traffic and give different levels of service to different data types, so critical, time-sensitive apps like voice and video get the resources they need."},
@@ -151,7 +151,7 @@
           "n": 6,
           "title": "Best Effort — The Default Behaviour",
           "heading": "Best Effort",
-          "subheading": "How the Internet Works by Default",
+          "subheading": "Internet Default Behaviour",
           "content": [
             {"type": "text", "text": "By default the internet makes no guarantee about how or when a packet is delivered — this is Best Effort delivery."},
             {"type": "bullets", "items": [
@@ -168,8 +168,8 @@
         {
           "n": 7,
           "title": "IntServ & DiffServ",
-          "heading": "Two Approaches to Network-Wide QoS",
-          "subheading": "Integrated Services vs Differentiated Services",
+          "heading": "Two Network-Wide QoS Approaches",
+          "subheading": "IntServ vs DiffServ",
           "content": [
             {"type": "text", "text": "IntServ (per-flow reservation): the application reserves resources along the whole path before sending, using RSVP (PATH downstream, RESV upstream, each router reserving). Problem: every router stores state for every flow — not scalable."},
             {"type": "text", "text": "DiffServ (per-class treatment): no per-flow tracking. The edge router marks each packet with a 6-bit DSCP value in the IP header; core routers only read the label and forward — highly scalable."},
@@ -193,7 +193,7 @@
         {
           "n": 8,
           "title": "QoS in Switched Networks",
-          "heading": "QoS in Switched Networks (Local Network)",
+          "heading": "QoS in Switched Networks",
           "subheading": "How Switches Prioritise Traffic",
           "content": [
             {"type": "text", "text": "QoS also works inside a local network — your college, office, or data centre — using Ethernet switches and the IEEE 802.1p standard."},

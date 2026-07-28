@@ -168,8 +168,11 @@ export default function App() {
     }).catch((e) => { setSyncing(false); setSyncErr({ kind: e.kind, message: e.message }) })
   }
 
+  // Side panel showing the cost of the CURRENT generation only (dismissable).
+  const [showCost, setShowCost] = useState(true)
+
   function startGenerate() {
-    setGenerating(true); setResult(null); setGenErr(null); setLogs([]); setEvalReport(null); setEvalErr(null); setGdoc(null)
+    setGenerating(true); setResult(null); setGenErr(null); setLogs([]); setEvalReport(null); setEvalErr(null); setGdoc(null); setShowCost(true)
     api.generate(sel, useJudge, enforceTime).then(({ job_id }) => {
       pollRef.current = setInterval(async () => {
         try {
@@ -185,18 +188,31 @@ export default function App() {
     }).catch((e) => { setGenerating(false); setGenErr(e.message) })
   }
 
+  // Poll guided state ONLY while it's in a transient state (generating_all,
+  // regenerating, assembling). We STOP as soon as it reaches a stable state:
+  // 'reviewing' waits for the user, so continuing to poll would re-render the
+  // chunk list every 1.5s and make the text flicker/blink while you read it.
+  // Polling is resumed explicitly when the user regenerates or finalizes.
+  function pollGuided(gid) {
+    clearInterval(guidedPollRef.current)
+    const tick = async () => {
+      try {
+        const st = await api.guidedState(gid)
+        setGuided(st)
+        if (st.status === 'reviewing') { clearInterval(guidedPollRef.current) }
+        else if (st.status === 'done') { clearInterval(guidedPollRef.current); setResult(st.result) }
+        else if (st.status === 'error') { clearInterval(guidedPollRef.current); setGenErr(st.error) }
+      } catch (e) { clearInterval(guidedPollRef.current); setGenErr(e.message) }
+    }
+    guidedPollRef.current = setInterval(tick, 1500)
+    tick()   // fetch immediately so the UI reacts without a 1.5s lag
+  }
+
   function startGuided() {
-    setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null)
+    setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null); setShowCost(true)
     api.guidedStart(sel, useJudge).then(({ guided_id }) => {
       setGuidedId(guided_id)
-      guidedPollRef.current = setInterval(async () => {
-        try {
-          const st = await api.guidedState(guided_id)
-          setGuided(st)
-          if (st.status === 'done') { clearInterval(guidedPollRef.current); setResult(st.result) }
-          else if (st.status === 'error') { clearInterval(guidedPollRef.current); setGenErr(st.error) }
-        } catch (e) { clearInterval(guidedPollRef.current); setGenErr(e.message) }
-      }, 1500)
+      pollGuided(guided_id)
     }).catch((e) => setGenErr(e.message))
   }
 
@@ -209,12 +225,13 @@ export default function App() {
     api.guidedRegenerate(guidedId, index, reason).then(() => {
       setRegenFor(null); setRegenReason(''); setBusyAction(false)
       setApproved((a) => { const c = { ...a }; delete c[index]; return c })
+      pollGuided(guidedId)   // resume polling to watch regenerating -> reviewing
     }).catch((e) => { setBusyAction(false); setGenErr(e.message) })
   }
 
   function finalizeGuided() {
     setBusyAction(true)
-    api.guidedFinalize(guidedId).then(() => setBusyAction(false))
+    api.guidedFinalize(guidedId).then(() => { setBusyAction(false); pollGuided(guidedId) })  // watch assembling -> done
       .catch((e) => { setBusyAction(false); setGenErr(e.message) })
   }
 
@@ -277,6 +294,17 @@ export default function App() {
       </header>
 
       <p className="sub">Generate a recording-ready Word TR doc for one session, in sync with your two Google Sheets.</p>
+
+      {/* Cost of the TR doc being generated right now — sticky side panel
+          (falls back to a normal block on narrow screens). */}
+      {showCost && (generating || guidedActive || result) && (
+        <CostSidePanel
+          cost={result?.cost}
+          sessionNo={result?.session_no ?? sel}
+          pending={!result && (generating || guidedActive)}
+          onClose={() => setShowCost(false)}
+        />
+      )}
 
       <button className="link" onClick={loadGuide}>
         {showGuide ? '▲ Hide' : '▼ Show'} the required sheet template
@@ -714,6 +742,40 @@ function LoginGate({ cfg, onSignIn, err }) {
         {err && <div className="alert error"><pre>{err}</pre></div>}
       </div>
     </div>
+  )
+}
+
+// Side panel with the cost of the CURRENT generation only — nothing cumulative.
+// Sticky on the right of the content column on wide screens; a normal block on
+// narrow ones (see .costside in styles.css).
+function CostSidePanel({ cost, sessionNo, pending, onClose }) {
+  const t = cost?.totals || {}
+  const calls = t.calls || (cost?.calls || []).length
+  const hasCost = t.cost != null      // native Anthropic SDK reports tokens but no $
+  return (
+    <aside className="costside" aria-label="Cost of this generation">
+      <div className="csidehead">
+        <span className="csidetitle">💰 This TR Doc</span>
+        <button className="csideclose" onClick={onClose} title="Hide">×</button>
+      </div>
+      {pending ? (
+        <div className="csidepending"><span className="spinner" /> Generating…
+          <div className="csidenote">Cost shows here as soon as the doc is ready.</div>
+        </div>
+      ) : (
+        <>
+          <div className="csideval">{hasCost ? `$${t.cost.toFixed(4)}` : '—'}</div>
+          <div className="csidesub">
+            {hasCost ? 'cost of this generation' : 'this provider does not report $ cost'}
+          </div>
+          <div className="csiderows">
+            <div><span>Session</span><b>{sessionNo ?? '—'}</b></div>
+            <div><span>Tokens</span><b>{(t.total_tokens || 0).toLocaleString()}</b></div>
+            <div><span>LLM calls</span><b>{calls || 0}</b></div>
+          </div>
+        </>
+      )}
+    </aside>
   )
 }
 
