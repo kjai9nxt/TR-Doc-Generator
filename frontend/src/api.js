@@ -85,8 +85,8 @@ export const api = {
   },
 
   // Guided mode: generate all chunks -> review each -> finalize
-  guidedStart: (session_no, use_judge) =>
-    req('/guided/start', { method: 'POST', body: JSON.stringify({ session_no, use_judge }) }),
+  guidedStart: (session_no, use_judge, enforce_time) =>
+    req('/guided/start', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),
   guidedState: (id) => req(`/guided/${id}`),
   guidedRegenerate: (id, index, reason) =>
     req(`/guided/${id}/regenerate`, { method: 'POST', body: JSON.stringify({ index, reason }) }),

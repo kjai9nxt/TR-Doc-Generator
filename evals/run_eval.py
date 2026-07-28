@@ -35,16 +35,20 @@ def _slides(doc):
     return [s for sec in doc.get("sections", []) for s in sec.get("slides", [])]
 
 
-def check_invariants(doc, session, is_first, is_last):
+def check_invariants(doc, session, is_first, is_last, *, enforce_time: bool = True):
+    """enforce_time=False (the user's 40-minute limit turned off) => the recording
+    budget and the concise-mode slide ceiling are not invariants for this doc; the
+    estimate is still computed and reported, just not failed on."""
     slides = _slides(doc)
     fails = []
     if len(doc.get("agenda", [])) > session.key_takeaways_count:
         fails.append("agenda > key takeaways")
     te = time_grader.estimate(doc)
-    if not te["within_budget"]:
+    if enforce_time and not te["within_budget"]:
         fails.append(f"time {te['estimated_minutes']} > 40")
-    if not (5 <= len(slides) <= 12):
-        fails.append(f"slide count {len(slides)} out of [5,12]")
+    slide_max = 12 if enforce_time else config.harness()["constraints"]["slides"].get("max_rich", 18)
+    if not (5 <= len(slides) <= slide_max):
+        fails.append(f"slide count {len(slides)} out of [5,{slide_max}]")
     for s in slides:
         for req in ("heading", "subheading", "content",
                     "analogy", "visual_guidance", "speaker_notes"):

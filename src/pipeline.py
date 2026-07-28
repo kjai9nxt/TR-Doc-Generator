@@ -20,10 +20,15 @@ def _log(msg: str):
 def _score_key(accepted: bool, report: dict) -> tuple:
     """Rank a draft so the loop can keep the BEST one across rounds. Ordered by:
     accepted, then hard gates (guardrails, time), then rubric total, then fewest
-    issues. Higher tuple = better."""
+    issues. Higher tuple = better.
+
+    With the 40-minute limit OFF the time term is neutral (always 1) — otherwise a
+    deliberately fuller depth-mode draft would be ranked below a thinner one for
+    busting a budget that does not apply to this run."""
     rubric = report.get("judge", {}).get("weighted_total", 0) or 0
     gr_ok = 1 if report.get("guardrails", {}).get("passed") else 0
-    time_ok = 1 if report.get("time", {}).get("within_budget", True) else 0
+    enforced = report.get("time_enforced", True)
+    time_ok = 1 if (not enforced or report.get("time", {}).get("within_budget", True)) else 0
     n_issues = len(report.get("issues", []) or [])
     return (1 if accepted else 0, gr_ok, time_ok, rubric, -n_issues)
 
@@ -37,7 +42,9 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
     It also puts generation in DEPTH MODE (richer doc, higher slide ceiling)."""
     gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time)
     te = time_grader.estimate(doc)
-    report = {"guardrails": gr.as_dict(), "time": te}
+    # time_enforced travels with the report so downstream consumers (draft ranking,
+    # the UI, the dashboard) know the estimate is informational on this run.
+    report = {"guardrails": gr.as_dict(), "time": te, "time_enforced": enforce_time}
     issues = list(gr.failures)
     time_ok = te["within_budget"] or not enforce_time
     if enforce_time and not te["within_budget"]:
@@ -91,16 +98,10 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     is_first, is_last = prev is None, nxt is None
     log(f"Session {cur.number}: {cur.name}  ({cur.key_takeaways_count} key takeaways)")
 
-    user_prompt = context_builder.build_user_prompt(prev, cur, nxt)
-    if enforce_time:
-        user_prompt += (
-            "\nHARD TIME LIMIT: the entire session MUST be recordable within 40 minutes "
-            "(aim ~36). Be concise and use MORE slides rather than denser ones. Exceeding "
-            "40 minutes fails the run.\n")
-    else:
-        # Limit OFF -> DEPTH MODE: append the rich-generation instructions that
-        # override the concision caps (worked examples, reasoning, extra slides).
-        user_prompt += "\n" + config.depth_mode() + "\n"
+    # Limit ON -> hard 40-min instruction; OFF -> DEPTH MODE (rich generation, no
+    # time constraint anywhere in the prompt).
+    user_prompt = (context_builder.build_user_prompt(prev, cur, nxt)
+                   + context_builder.time_mode_block(enforce_time))
 
     from src import llm
     llm.reset_usage()      # start counting tokens/cost for THIS generation
@@ -236,9 +237,14 @@ def assemble_doc(cur, nxt, opening: dict, sections: list[dict]) -> dict:
     return doc
 
 
-def finalize(session_no: int, doc: dict, *, use_judge: bool = True, on_event=None) -> dict:
+def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
+             enforce_time: bool = True, on_event=None) -> dict:
     """Grade an assembled guided doc ONCE (no auto-revise — the human already gated
-    each chunk) and render the .docx + .md + grade report. Same result shape as run()."""
+    each chunk) and render the .docx + .md + grade report. Same result shape as run().
+
+    enforce_time mirrors the one-shot path: when the user left the 40-minute limit OFF,
+    the recording-time dimension is dropped from the rubric and the budget does not
+    gate acceptance (the estimate is still reported)."""
     def log(msg: str):
         _log(msg)
         if on_event:
@@ -252,10 +258,12 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True, on_event=Non
     is_first, is_last = prev is None, nxt is None
 
     log("Grading the assembled doc …" + (" (judging quality, ~15s)" if use_judge else ""))
-    accepted, report, issues, _ = evaluate(doc, cur, is_first, is_last, use_judge=use_judge)
+    accepted, report, issues, _ = evaluate(doc, cur, is_first, is_last, use_judge=use_judge,
+                                           enforce_time=enforce_time)
     report["round"] = 0
     history = [report]
-    log(f"accepted={accepted} | est={report['time']['estimated_minutes']}min "
+    log(f"accepted={accepted} | est={report['time']['estimated_minutes']}min"
+        f"{'' if enforce_time else ' (40-min limit OFF — not graded on time)'} "
         f"| guardrails={'ok' if report['guardrails']['passed'] else 'FAIL'}"
         + (f" | rubric={report.get('judge',{}).get('weighted_total','-')}" if use_judge else ""))
 

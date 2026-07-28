@@ -201,7 +201,7 @@ DETERMINISTIC = {
 # --------------------------------------------------------------------------- #
 # generic LLM-judge for qualitative sets
 # --------------------------------------------------------------------------- #
-def _llm_score(doc, session, sset) -> tuple[int, str]:
+def _llm_score(doc, session, sset, *, enforce_time: bool = True) -> tuple[int, str]:
     h = config.harness()
     m = h["model"]
     model = m["judge"]
@@ -212,13 +212,20 @@ def _llm_score(doc, session, sset) -> tuple[int, str]:
             model += ":online"
         web = "\nUse a web search to verify current standards/versions and mainstream coverage."
     rubric = "\n".join(f"  {k} = {v}" for k, v in sset.get("rubric", {}).items())
+    # Depth mode (40-min limit OFF): the doc is deliberately fuller. Length is not a
+    # defect on this run — only genuine filler is.
+    depth = "" if enforce_time else (
+        "\nDEPTH MODE: the 40-minute recording limit is OFF for this doc, so it is "
+        "deliberately fuller (explanatory prose, worked examples, extra slides). Do NOT "
+        "penalise length, extra slides, or the absence of terse bullets — penalise only "
+        "genuine filler, redundancy, or off-topic text.")
     system = ("You are a strict curriculum-doc reviewer scoring ONE quality dimension. "
               "Return ONLY JSON: {\"score\": <1-5>, \"justification\": \"<one sentence>\"}. "
               "Be discriminating; reserve 5 for genuinely nothing-to-improve.")
     user = f"""DIMENSION: {sset['title']}
 WHAT TO CHECK: {sset.get('criterion', sset.get('description',''))}
 SCORING RUBRIC:
-{rubric}{web}
+{rubric}{web}{depth}
 
 SESSION KEY TAKEAWAYS:
 {json.dumps(session.key_takeaways, ensure_ascii=False)}
@@ -381,7 +388,7 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
             grader = "deterministic"
         elif use_llm:
             try:
-                score, detail = _llm_score(doc, session, sset)
+                score, detail = _llm_score(doc, session, sset, enforce_time=enforce_time)
                 grader = "llm_judge"
             except Exception as e:
                 results.append({"id": sid, "grader": "llm_judge", "skipped": True,

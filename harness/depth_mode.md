@@ -9,6 +9,12 @@ This is a HARD OVERRIDE of the STYLE GUIDE's brevity rules. In this mode the
 document must be substantially FULLER and DEEPER than the default skeleton — a
 document that is merely correct-but-thin is a FAILURE here.
 
+**HARD RULE 1 of the system prompt (the 40-minute ceiling) DOES NOT APPLY in this
+mode.** There is no recording-time limit: the session may run as long as teaching
+the topic properly takes. Do not trim, compress, or drop material to fit any
+duration, and do not mention a time budget. Recording time is not graded on this
+run — length is judged only as depth versus filler.
+
 ## Concrete targets (aim for all of these)
 
 - **13–18 slides total.** Do NOT stop at one slide per key takeaway. A rich

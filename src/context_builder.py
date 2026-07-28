@@ -171,6 +171,28 @@ def build_user_prompt(prev: Session | None, cur: Session, nxt: Session | None) -
             + f"\nNow produce the TR doc JSON for Session {cur.number}: {cur.name}.\n")
 
 
+def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
+    """The generation tail that depends on the user's 40-minute toggle.
+
+    ON  -> the hard time limit (the whole session must fit the budget).
+    OFF -> DEPTH MODE: the rich-generation instructions that override the concision
+           caps. The 40-minute ceiling (HARD RULE 1 of the system prompt) does not
+           apply at all in this mode — it is not mentioned, generated for, or graded.
+
+    Used by BOTH generation modes (one-shot whole doc and guided per-chunk) so the
+    toggle behaves identically in each.
+    """
+    if not enforce_time:
+        return "\n" + config.depth_mode() + "\n"
+    if guided:
+        return ("\nHARD TIME LIMIT: the WHOLE session must be recordable within 40 minutes "
+                "(aim ~36), so keep this chunk proportionate to its share of the session. "
+                "Be concise and use MORE slides rather than denser ones.\n")
+    return ("\nHARD TIME LIMIT: the entire session MUST be recordable within 40 minutes "
+            "(aim ~36). Be concise and use MORE slides rather than denser ones. Exceeding "
+            "40 minutes fails the run.\n")
+
+
 # --------------------------------------------------------------------------- #
 # Guided (chunk-by-chunk) instructions. Each returns the tail appended to the
 # shared base for ONE chunk, telling the model exactly which small JSON fragment

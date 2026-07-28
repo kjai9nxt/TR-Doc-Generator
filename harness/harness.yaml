@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.20"
+  version: "1.21"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -172,6 +172,18 @@ meta:
               generation is now shown in the app while/after it runs: a sticky side panel (React
               CostSidePanel) showing this doc's $ cost, tokens and call count only. Guided mode now
               accounts cost too (usage reset on /api/guided/start; pipeline.finalize returns cost)."
+    - "1.21 — 40-MIN TOGGLE NOW HONOURED EVERYWHERE (bug: docs generated with the limit OFF were
+              still graded on it, dragging the overall score down). (a) GUIDED MODE ignored the
+              toggle completely — it never reached the server: POST /api/guided/start now takes
+              enforce_time, chunks generate under the time limit OR in DEPTH MODE, and
+              pipeline.finalize(enforce_time=) forwards it so the judge drops recording_time and the
+              budget stops gating acceptance (db.create_run was hardcoded True there too, so the
+              dashboard mislabelled guided runs). (b) Draft ranking (pipeline._score_key) no longer
+              demotes an over-budget draft when the limit is OFF (report carries time_enforced).
+              (c) depth_mode.md now EXPLICITLY overrides HARD RULE 1 (the 40-minute ceiling) instead
+              of only implying it. (d) Eval-set LLM scorers get the depth-mode note so they do not
+              penalise length; run_eval invariants skip the time + 12-slide ceiling when the limit is
+              off. (e) One prompt builder for both modes: context_builder.time_mode_block()."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"

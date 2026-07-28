@@ -78,6 +78,7 @@ class EvalSetsBody(BaseModel):
 class GuidedStartBody(BaseModel):
     session_no: int
     use_judge: bool = True
+    enforce_time: bool = True
 
 
 class RegenerateBody(BaseModel):
@@ -474,10 +475,12 @@ def _guided_finalize(gid: str):
             chunks = state["chunks"]
             cur, nxt, session_no = state["cur"], state["nxt"], state["session_no"]
             use_judge = state["use_judge"]
+            enforce_time = state.get("enforce_time", True)
         opening = chunks[0]["fragment"]
         sections = [c["fragment"].get("section", c["fragment"]) for c in chunks[1:]]
         doc = pipeline.assemble_doc(cur, nxt, opening, sections)
         result = pipeline.finalize(session_no, doc, use_judge=use_judge,
+                                   enforce_time=enforce_time,
                                    on_event=lambda m: _guided_log(gid, m))
         final = result["history"][-1]
         with _lock:
@@ -518,6 +521,7 @@ def _guided_view(state: dict) -> dict:
         "status": state["status"],
         "index": state["index"],
         "total": state["total"],
+        "enforce_time": state.get("enforce_time", True),
         "labels": labels,
         "chunks": chunks,
         "regen_index": state.get("regen_index"),
@@ -540,13 +544,19 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # mirroring what pipeline.run() does for one-shot generations.
     from src import llm
     llm.reset_usage()
+    # The 40-minute toggle applies to guided runs exactly as it does to one-shot:
+    # ON  -> every chunk is generated under the hard time limit and the doc is graded on it;
+    # OFF -> chunks are generated in DEPTH MODE and recording time is never graded.
+    base_context = (context_builder.build_guided_base(prev, cur, nxt)
+                    + context_builder.time_mode_block(body.enforce_time, guided=True))
     with _lock:
         GUIDED[gid] = {
             "status": "generating_all", "session_no": body.session_no,
             "prev": prev, "cur": cur, "nxt": nxt,
-            "base_context": context_builder.build_guided_base(prev, cur, nxt),
+            "base_context": base_context,
             "total": 1 + len(cur.key_takeaways), "index": 0, "labels": labels,
             "chunks": [], "regen_index": None, "use_judge": body.use_judge,
+            "enforce_time": body.enforce_time,
             "logs": [], "result": None, "error": None,
         }
     # Record the run in the DB up-front (status=running) so guided generations
@@ -557,7 +567,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
         db.create_run(gid, user_email=email, course=course,
                       team_id=db.team_for_user_course(email, course),
                       session_no=body.session_no, title=cur.name,
-                      enforce_time=True)
+                      enforce_time=body.enforce_time)
     except Exception:
         pass
     threading.Thread(target=_guided_generate_all, args=(gid,), daemon=True).start()

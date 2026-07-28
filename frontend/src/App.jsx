@@ -210,7 +210,7 @@ export default function App() {
 
   function startGuided() {
     setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null); setShowCost(true)
-    api.guidedStart(sel, useJudge).then(({ guided_id }) => {
+    api.guidedStart(sel, useJudge, enforceTime).then(({ guided_id }) => {
       setGuidedId(guided_id)
       pollGuided(guided_id)
     }).catch((e) => setGenErr(e.message))
@@ -448,6 +448,7 @@ export default function App() {
                 <b> review each</b>, <b>approve</b> it or <b>regenerate</b> with a reason
                 (that reason also teaches the agent for future sessions). All chunks must be
                 approved before <b>Create final TR Doc</b>.
+                {enforceTime ? ' Forced to fit the 40-minute budget.' : ' 40-minute limit is OFF.'}
               </div>
 
               {guidedGenAll && (
