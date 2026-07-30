@@ -1037,9 +1037,36 @@ def download(session_no: int, user: dict = Depends(current_user)):
 # for the root. In local `npm run dev` the Vite server serves the UI instead, and
 # this mount is simply unused. If frontend/dist is missing (never built), skip the
 # mount so the API/admin still boot.
+class _SpaStatic(StaticFiles):
+    """StaticFiles that sets the cache policy a hashed-asset SPA needs.
+
+    Starlette sends only etag/last-modified, no Cache-Control. With no explicit
+    policy browsers apply HEURISTIC caching and may reuse index.html without
+    revalidating — and since index.html is what names the content-hashed bundle, a
+    stale copy keeps requesting the OLD JS/CSS. That is why a deploy could look like
+    it "did not reflect" even though the server was already serving the new files
+    (verified: the live bundle was byte-identical to the local build while the
+    browser still rendered the previous UI).
+
+      index.html (and any SPA fallback) -> no-cache: always revalidate. Cheap, because
+        the ETag makes the revalidation a 304.
+      /assets/<name>-<hash>.<ext>       -> immutable for a year: the filename changes
+        whenever the content does, so it can never go stale.
+    """
+
+    async def get_response(self, path: str, scope):
+        resp = await super().get_response(path, scope)
+        p = (path or "").replace("\\", "/").lower()
+        if p.startswith("assets/") and "-" in p.rsplit("/", 1)[-1]:
+            resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        else:
+            resp.headers["Cache-Control"] = "no-cache"
+        return resp
+
+
 _FRONTEND_DIST = config.ROOT / "frontend" / "dist"
 if (_FRONTEND_DIST / "index.html").exists():
-    app.mount("/", StaticFiles(directory=str(_FRONTEND_DIST), html=True), name="frontend")
+    app.mount("/", _SpaStatic(directory=str(_FRONTEND_DIST), html=True), name="frontend")
 
 
 if __name__ == "__main__":

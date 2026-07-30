@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.27"
+  version: "1.28"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -337,6 +337,25 @@ meta:
               verified twice-in-a-row gives classified:0, and verified on a simulated pre-upgrade
               store that the three raw notes become standalone rules with the original wording kept
               in `raw` and the Rollback one correctly scoped to its course."
+    - "1.28 — A DEPLOY COULD LOOK LIKE IT 'DID NOT REFLECT' WHILE THE SERVER WAS ALREADY CORRECT.
+              Reported as the sheet-template side panel not appearing on the published link. It was
+              not a deploy problem: the live bundle was verified BYTE-IDENTICAL to the local build
+              (same md5) with the fixed CSS, yet the browser still rendered the previous UI.
+              Starlette's StaticFiles sends only etag/last-modified and NO Cache-Control, so browsers
+              apply heuristic caching and can reuse index.html without revalidating — and index.html
+              is what names the content-hashed bundle, so a stale copy keeps requesting the OLD
+              JS/CSS indefinitely. New server._SpaStatic sets the policy a hashed-asset SPA needs:
+              index.html (and the SPA fallback) 'no-cache' so it always revalidates (cheap — the ETag
+              makes it a 304), and /assets/<name>-<hash>.<ext> 'public, max-age=31536000, immutable'
+              since those filenames change whenever their content does. Verified: no-cache on
+              index.html, immutable on the asset, If-None-Match still 304.
+              Also fixed in the same pass: .tmplside was positioned as right: calc(50% + 490px) with
+              a fixed 262px width but docked from 1420px, where the gutter beside the 940px centred
+              column is only 240px — so between 1420 and 1520px its left edge landed at -42px and it
+              rendered OFF-SCREEN (invisible, not merely misplaced). It is now anchored to the
+              viewport (left: 16px) and sized to the gutter, width: min(300px, calc(50vw - 506px)),
+              which keeps a 20px gap at every width and can never clip. Below 1420px it still falls
+              back to an in-flow card by design — there is no room for a side panel there."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
