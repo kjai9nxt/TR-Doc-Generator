@@ -814,6 +814,30 @@ def clear_learned_rules(user: dict = Depends(require_admin)):
     return {"ok": True}
 
 
+@app.post("/api/learned-rules/migrate")
+def migrate_learned_rules(user: dict = Depends(require_admin)):
+    """Re-distil + scope the rule store IN PLACE (the deployed equivalent of
+    `python3 -m src.learning`).
+
+    Needed because learned_rules.json is runtime data and gitignored, so a deploy
+    does NOT carry the locally-migrated store: the instance restores the older
+    snapshot from kb_files, whose rules are the raw reviewer notes with no `scope`.
+    Under the new code those are treated as house style AND injected at system level
+    with precedence over the style guide — so raw, typo-laden, slide-specific notes
+    would carry more weight than before, on every course. This endpoint distils them
+    into standalone rules and classifies each as house vs subject-matter.
+
+    Idempotent: rules that already have `raw` are not re-distilled and rules that
+    already have `scope` are not re-classified, so calling it twice is a no-op.
+    Costs a few cheap judge-model calls (one per unmigrated rule).
+    """
+    from src import learning
+    distil = learning.distil_existing()
+    scope = learning.scope_existing(app_settings.course_name())
+    return {"ok": True, "distil": distil, "scope": scope,
+            "rules": learning.rules()}
+
+
 @app.delete("/api/learned-rules/{index}")
 def delete_learned_rule(index: int, user: dict = Depends(current_user)):
     """Drop ONE rule. These are injected with precedence over the style guide now, so

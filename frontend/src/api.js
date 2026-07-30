@@ -94,6 +94,7 @@ export const api = {
 
   learnedRules: () => req('/learned-rules'),
   deleteLearnedRule: (index) => req(`/learned-rules/${index}`, { method: 'DELETE' }),
+  migrateLearnedRules: () => req('/learned-rules/migrate', { method: 'POST' }),
 
   dashboard: () => req('/dashboard'),
 

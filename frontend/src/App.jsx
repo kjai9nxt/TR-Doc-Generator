@@ -685,7 +685,8 @@ export default function App() {
           {result.cost?.calls?.length > 0 && <CostBreakdown cost={result.cost} />}
 
           {learned && <LearnedRules rules={learned} sessionNo={result.session_no}
-                                    course={learnedCourse} onChanged={refreshLearned} />}
+                                    course={learnedCourse} isAdmin={!!user.is_admin}
+                                    onChanged={refreshLearned} />}
 
           {result.markdown && (
             <details className="panel preview" open>
@@ -987,16 +988,31 @@ function EvalReport({ report }) {
   )
 }
 
-function LearnedRules({ rules, sessionNo, course, onChanged }) {
+function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
   const newCount = rules.filter((r) => r.session_no === sessionNo).length
   const applied = rules.filter((r) => r.applies !== false).length
+  // Rules stored before the upgrade have no scope and were never distilled. They are
+  // still injected (as house style), so flag them and offer the one-click migration —
+  // a deploy cannot carry the locally-migrated store, since it is gitignored.
+  const unmigrated = rules.filter((r) => !r.scope).length
   const srcLabel = { regeneration: 'human', judge: 'auto · judge', eval_set: 'auto · eval', feedback: 'human' }
   const [busy, setBusy] = useState(null)
+  const [migrating, setMigrating] = useState(false)
   function remove(i, text) {
     if (!window.confirm(`Stop applying this rule to future generations?\n\n${text}`)) return
     setBusy(i)
     api.deleteLearnedRule(i).then(() => onChanged && onChanged())
       .catch((e) => alert(e.message)).finally(() => setBusy(null))
+  }
+  function migrate() {
+    setMigrating(true)
+    api.migrateLearnedRules()
+      .then((d) => {
+        onChanged && onChanged()
+        alert(`Migrated.\nDistilled: ${d.distil.merged} merged, ${d.distil.after} kept.\n`
+              + `Scoped: ${d.scope.global} house, ${d.scope.course} course-specific.`)
+      })
+      .catch((e) => alert(e.message)).finally(() => setMigrating(false))
   }
   return (
     <details className="panel learned" open={newCount > 0}>
@@ -1016,6 +1032,19 @@ function LearnedRules({ rules, sessionNo, course, onChanged }) {
             curriculum's subject matter and apply only there — a greyed row was learned
             on a different course and is not being applied now.
           </div>
+          {unmigrated > 0 && (
+            <div className="alert warn">
+              <b>{unmigrated} rule{unmigrated === 1 ? '' : 's'} predate the current format.</b>
+              <div>They are stored as the raw note you typed and are being applied to
+              <b> every</b> course. Migrating distils each into a standalone instruction
+              and marks it house-style or course-specific. Your original wording is kept.</div>
+              {isAdmin
+                ? <button className="ghostbtn" disabled={migrating} onClick={migrate}>
+                    {migrating ? 'Migrating…' : '🔧 Distil & scope them'}
+                  </button>
+                : <div className="hint">An admin needs to run this.</div>}
+            </div>
+          )}
           {rules.map((r, i) => (
             <div key={i} className={`setrow ${r.session_no === sessionNo ? 'pass' : ''}`}
                  style={r.applies === false ? { opacity: 0.45 } : undefined}>

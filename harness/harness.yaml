@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.26"
+  version: "1.27"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -323,6 +323,20 @@ meta:
               Operating Systems. GET /api/learned-rules returns the full store with an `applies`
               flag + the active course, and the UI shows a house/course tag and greys out rules
               learned on another course, so nothing is hidden — only not applied."
+    - "1.27 — RULE-STORE MIGRATION IS REACHABLE ON THE DEPLOYED APP. learned_rules.json is runtime
+              data and gitignored, so a deploy does NOT carry the locally-migrated store: the
+              instance restores the older snapshot from kb_files, whose rules are the raw reviewer
+              notes with no `scope`. Under 1.23-1.26 those are treated as house style AND injected at
+              SYSTEM level with precedence over the style guide — so a deploy would have made raw,
+              typo-laden, slide-specific notes ('yo missed to add sytem model also zny…') carry MORE
+              weight than before, on every course. There is no shell on the host to run
+              `python3 -m src.learning`, so: new admin-only POST /api/learned-rules/migrate runs
+              distil_existing + scope_existing in place, and the UI surfaces a warning + a one-click
+              'Distil & scope them' button whenever any stored rule still lacks `scope`. Idempotent
+              (rules with `raw` are not re-distilled, rules with `scope` are not re-classified);
+              verified twice-in-a-row gives classified:0, and verified on a simulated pre-upgrade
+              store that the three raw notes become standalone rules with the original wording kept
+              in `raw` and the Rollback one correctly scoped to its course."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
