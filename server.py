@@ -41,7 +41,12 @@ JOBS: dict[str, dict] = {}
 GUIDED: dict[str, dict] = {}
 _lock = threading.Lock()
 
-db.init()   # create the SQLite schema + one-time import of the legacy JSON log
+# Load .env FIRST. src.db chooses its backend (local SQLite vs cloud Turso) from
+# TURSO_DATABASE_URL on every call, so if .env were loaded lazily (by the first
+# config lookup a request happens to make) the backend would flip mid-process: the
+# schema created here would land in one database and later reads/writes in the other.
+config.load_env()
+db.init()   # create the schema on the configured backend + import the legacy JSON log
 # On an ephemeral host (Render free + Turso) the disk is wiped on every restart,
 # so bring the previously-synced knowledge base back from the DB. No-op locally.
 try:
@@ -50,6 +55,14 @@ try:
         print(f"[startup] restored {_restored} knowledge-base file(s) from cloud storage")
 except Exception as _e:
     print(f"[startup] knowledge-base restore skipped: {_e}")
+# Guided-run checkpoints are rehydrated lazily (on the first request for that id),
+# not eagerly — we only drop the ones too old for anyone to come back to.
+try:
+    _purged = db.purge_guided(72)
+    if _purged:
+        print(f"[startup] purged {_purged} stale guided-run checkpoint(s)")
+except Exception as _e:
+    print(f"[startup] guided-checkpoint purge skipped: {_e}")
 
 
 # --------------------------------------------------------------------------- #
@@ -382,12 +395,140 @@ def _guided_log(gid: str, msg: str):
         pass
 
 
+# --------------------------------------------------------------------------- #
+# Guided state is checkpointed to the DB after every mutation and rehydrated on
+# demand, so a server restart mid-review (a redeploy, or a free host spinning the
+# instance down while the human reviews chunks) no longer orphans the run with
+# "Unknown guided session" and throw away the chunks already generated.
+#
+# Only JSON-safe fields are stored. prev/cur/nxt are Session objects, rebuilt from
+# session_no on rehydrate; base_context is a plain string and IS stored (rebuilding
+# it would re-run the KB sync + RAG retrieval).
+# --------------------------------------------------------------------------- #
+_GUIDED_PERSIST_KEYS = (
+    "status", "session_no", "base_context", "total", "index", "labels", "chunks",
+    "regen_index", "use_judge", "enforce_time", "logs", "result", "error",
+    "last_error", "user_email",
+)
+
+
+def _guided_snapshot(state: dict) -> dict:
+    return {k: state.get(k) for k in _GUIDED_PERSIST_KEYS}
+
+
+def _guided_save(gid: str) -> None:
+    """Checkpoint the run. The snapshot is taken under the lock, then written
+    OUTSIDE it — a cloud DB write is network I/O and must not block polling."""
+    with _lock:
+        state = GUIDED.get(gid)
+        if not state:
+            return
+        snap = _guided_snapshot(state)
+    db.save_guided(gid, snap, user_email=snap.get("user_email"),
+                   session_no=snap.get("session_no"))
+
+
+def _guided_rehydrate(gid: str) -> dict | None:
+    """Rebuild an in-flight guided run from its DB checkpoint after a restart.
+
+    Returns the live state (already installed in GUIDED) or None if there is no
+    checkpoint for this id. Work that was interrupted mid-flight is resumed:
+      • generating_all -> the generation thread is relaunched; it continues from the
+        last chunk that was checkpointed, so nothing is regenerated.
+      • regenerating / assembling -> back to `reviewing`, since the thread doing
+        that work died with the old process. The user just clicks again.
+    """
+    snap = db.load_guided(gid)
+    if not snap:
+        return None
+    session_no = snap.get("session_no")
+    try:
+        sessions = course_loader.load_sessions(None)
+        prev, cur, nxt = course_loader.neighbours(session_no, sessions)
+    except Exception as e:
+        # Don't fail silently: without this line a failed restore looks identical to
+        # "no such run", which is exactly what made the original bug hard to see.
+        print(f"[guided] cannot restore {gid} (session {session_no}): {e!r}")
+        return None
+
+    resume_generation = False
+    with _lock:
+        if gid in GUIDED:            # another request rehydrated it first
+            return GUIDED[gid]
+        state = dict(snap)
+        state.update(prev=prev, cur=cur, nxt=nxt)
+        state.setdefault("chunks", [])
+        state.setdefault("logs", [])
+        state["logs"] = list(state["logs"]) + [
+            "⟳ Server restarted — this guided run was restored from its last checkpoint."]
+        state["regen_index"] = None
+        if state.get("status") == "generating_all":
+            if len(state["chunks"]) >= (state.get("total") or 0):
+                state["status"] = "reviewing"
+            else:
+                resume_generation = True
+        elif state.get("status") in ("regenerating", "assembling"):
+            state["status"] = "reviewing"
+            state["logs"].append(
+                "The step running when the server restarted did not finish — "
+                "please click it again.")
+        state["index"] = len(state["chunks"])
+        GUIDED[gid] = state
+
+    _guided_save(gid)
+    if resume_generation:
+        threading.Thread(target=_guided_generate_all, args=(gid,), daemon=True).start()
+    return GUIDED[gid]
+
+
+def _guided_require(gid: str) -> dict:
+    """The live state for `gid`, restoring it from the DB checkpoint if this process
+    doesn't have it. 404 only when there is genuinely no such run anywhere."""
+    with _lock:
+        state = GUIDED.get(gid)
+    if state:
+        return state
+    state = _guided_rehydrate(gid)
+    if state:
+        return state
+    raise HTTPException(
+        status_code=404,
+        detail={"kind": "guided_gone",
+                "message": ("This guided run is no longer available on the server and "
+                            "could not be restored. Start a new guided run.")})
+
+
 def _guided_db_error(gid: str, e: Exception):
     """Mark this guided run as failed in the DB (so it still shows in the dashboard)."""
     try:
         db.finish_run(gid, status="error", error=str(e))
     except Exception:
         pass
+
+
+def _guided_step_failed(gid: str, e: Exception, what: str) -> None:
+    """A REVIEW-PHASE step (regenerate / finalize) failed — recover, don't die.
+
+    These two steps used to set status='error', which is a TERMINAL state: the UI
+    hides the whole review panel for it, so the chunks (one paid LLM call each)
+    became unreachable and neither Regenerate nor 'Create final TR Doc' could be
+    clicked again — the run was over. But nothing about the run is actually broken:
+    one LLM call failed (truncated output, unparseable JSON, a transient HTTP
+    error — see logs/llm_debug.log, this happens regularly). So we go back to
+    'reviewing' with the previous chunk intact and report the failure as a
+    NON-FATAL `last_error` the user can act on by clicking again.
+
+    status='error' is now reserved for the initial generate-all phase, where there
+    is no earlier state worth returning to.
+    """
+    msg = f"{what} failed: {e}"
+    with _lock:
+        state = GUIDED.get(gid)
+        if not state:
+            return
+        state.update(status="reviewing", regen_index=None, last_error=msg)
+    _guided_log(gid, f"⚠ {msg} — nothing was lost; you can try again.")
+    _guided_save(gid)
 
 
 def _chunk_spec(state: dict, index: int):
@@ -425,12 +566,20 @@ def _guided_generate_all(gid: str):
             with _lock:
                 GUIDED[gid]["chunks"].append(chunk)
                 GUIDED[gid]["index"] = len(GUIDED[gid]["chunks"])
+            # Checkpoint per chunk: an LLM call each, so a restart must never cost
+            # more than the one chunk that was in flight.
+            _guided_save(gid)
         with _lock:
             GUIDED[gid]["status"] = "reviewing"
         _guided_log(gid, "All chunks generated — review each, then create the final doc.")
+        _guided_save(gid)
     except Exception as e:
+        # Terminal here (unlike regenerate/finalize): a run whose chunks are
+        # incomplete has no earlier state worth returning the user to.
         with _lock:
-            GUIDED[gid].update(status="error", error=str(e))
+            if gid in GUIDED:
+                GUIDED[gid].update(status="error", error=str(e))
+        _guided_save(gid)
         _guided_db_error(gid, e)
 
 
@@ -461,10 +610,11 @@ def _guided_regenerate(gid: str, index: int, reason: str):
             GUIDED[gid]["status"] = "reviewing"
             GUIDED[gid]["regen_index"] = None
         _guided_log(gid, "Chunk updated.")
+        _guided_save(gid)
     except Exception as e:
-        with _lock:
-            GUIDED[gid].update(status="error", error=str(e), regen_index=None)
-        _guided_db_error(gid, e)
+        # The chunk that was there before is still in place, so this is recoverable:
+        # back to review with a message, NOT a terminal error that strands the run.
+        _guided_step_failed(gid, e, f"Regenerating chunk {index + 1}")
 
 
 def _guided_finalize(gid: str):
@@ -494,6 +644,7 @@ def _guided_finalize(gid: str):
                 "markdown": _read_markdown(result["docx"]),
                 "cost": result.get("cost"),
             })
+        _guided_save(gid)
         cost = result.get("cost") or {}
         try:
             db.finish_run(
@@ -507,8 +658,9 @@ def _guided_finalize(gid: str):
         except Exception:
             pass
     except Exception as e:
-        with _lock:
-            GUIDED[gid].update(status="error", error=str(e))
+        # Assembly/grading failed, but every approved chunk is still here — send the
+        # user back to review so they can fix a chunk and click Create again.
+        _guided_step_failed(gid, e, "Creating the final TR doc")
         _guided_db_error(gid, e)
 
 
@@ -527,6 +679,9 @@ def _guided_view(state: dict) -> dict:
         "regen_index": state.get("regen_index"),
         "result": state.get("result"),
         "error": state.get("error"),
+        # A step that failed but left the run usable (see _guided_step_failed). The
+        # UI shows this as a warning INSIDE the review panel, not as a dead end.
+        "last_error": state.get("last_error"),
         "logs": state.get("logs", []),
     }
 
@@ -556,9 +711,12 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
             "base_context": base_context,
             "total": 1 + len(cur.key_takeaways), "index": 0, "labels": labels,
             "chunks": [], "regen_index": None, "use_judge": body.use_judge,
-            "enforce_time": body.enforce_time,
+            "enforce_time": body.enforce_time, "user_email": user.get("email"),
             "logs": [], "result": None, "error": None,
         }
+    # Checkpoint before any chunk is generated, so even a restart during the very
+    # first LLM call leaves a resumable run rather than an orphaned id.
+    _guided_save(gid)
     # Record the run in the DB up-front (status=running) so guided generations
     # show live and persist in the dashboard, exactly like one-shot runs.
     try:
@@ -576,21 +734,20 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
 
 @app.get("/api/guided/{gid}")
 def guided_state(gid: str):
+    state = _guided_require(gid)      # restores from the checkpoint if needed
     with _lock:
-        state = GUIDED.get(gid)
-        if not state:
-            raise HTTPException(status_code=404, detail="Unknown guided session")
         return _guided_view(state)
 
 
 @app.post("/api/guided/{gid}/regenerate")
 def guided_regenerate(gid: str, body: RegenerateBody):
+    state = _guided_require(gid)
     with _lock:
-        state = GUIDED.get(gid)
-        if not state:
-            raise HTTPException(status_code=404, detail="Unknown guided session")
         if state["status"] != "reviewing":
-            raise HTTPException(status_code=409, detail="Not in the review phase.")
+            raise HTTPException(
+                status_code=409,
+                detail=f"Another step ({state['status']}) is still running — "
+                       f"wait for it to finish, then regenerate.")
         if not (0 <= body.index < len(state["chunks"])):
             raise HTTPException(status_code=400, detail="Chunk index out of range.")
     reason = (body.reason or "").strip()
@@ -600,6 +757,8 @@ def guided_regenerate(gid: str, body: RegenerateBody):
     with _lock:
         state["status"] = "regenerating"
         state["regen_index"] = body.index
+        state["last_error"] = None      # this attempt supersedes the previous failure
+    _guided_save(gid)
     threading.Thread(target=_guided_regenerate, args=(gid, body.index, reason),
                      daemon=True).start()
     return {"ok": True}
@@ -607,13 +766,19 @@ def guided_regenerate(gid: str, body: RegenerateBody):
 
 @app.post("/api/guided/{gid}/finalize")
 def guided_finalize(gid: str):
+    state = _guided_require(gid)
     with _lock:
-        state = GUIDED.get(gid)
-        if not state:
-            raise HTTPException(status_code=404, detail="Unknown guided session")
         if state["status"] != "reviewing":
-            raise HTTPException(status_code=409, detail="Not in the review phase.")
+            raise HTTPException(
+                status_code=409,
+                detail=f"Another step ({state['status']}) is still running — "
+                       f"wait for it to finish, then create the final doc.")
+        if not state.get("chunks"):
+            raise HTTPException(status_code=409,
+                                detail="This run has no generated chunks to assemble.")
         state["status"] = "assembling"
+        state["last_error"] = None
+    _guided_save(gid)
     threading.Thread(target=_guided_finalize, args=(gid,), daemon=True).start()
     return {"ok": True}
 
@@ -625,8 +790,21 @@ def extraction_check():
 
 @app.get("/api/learned-rules")
 def learned_rules(user: dict = Depends(current_user)):
+    """Every stored rule, each flagged with whether it applies to the ACTIVE course.
+
+    `rules` is the full store (so nothing is hidden from the reviewer) and `applies`
+    marks the subset actually injected right now — a subject-matter rule learned on
+    another course is listed but not applied. Indices line up with the DELETE route.
+    """
     from src import learning
-    return {"rules": learning.rules()}
+    course = app_settings.course_name()
+    # Compare by text, not identity: applicable_rules() re-reads the store, so its
+    # dicts are different objects from rules()'.
+    applies = {r.get("text") for r in learning.applicable_rules(course)}
+    return {
+        "course": course,
+        "rules": [{**r, "applies": r.get("text") in applies} for r in learning.rules()],
+    }
 
 
 @app.delete("/api/learned-rules")
@@ -634,6 +812,21 @@ def clear_learned_rules(user: dict = Depends(require_admin)):
     from src import learning
     learning._save({"rules": []})
     return {"ok": True}
+
+
+@app.delete("/api/learned-rules/{index}")
+def delete_learned_rule(index: int, user: dict = Depends(current_user)):
+    """Drop ONE rule. These are injected with precedence over the style guide now, so
+    a rule that was distilled too narrowly (one that names a specific topic, say)
+    would otherwise be pushed at every future session with no way to retract it."""
+    from src import learning
+    data = learning._load()
+    rs = data.get("rules", [])
+    if not (0 <= index < len(rs)):
+        raise HTTPException(status_code=404, detail="No such rule.")
+    removed = rs.pop(index)
+    learning._save(data)
+    return {"ok": True, "removed": removed.get("text"), "remaining": len(rs)}
 
 
 def _rollup(runs: list) -> dict:

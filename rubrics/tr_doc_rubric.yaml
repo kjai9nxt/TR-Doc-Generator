@@ -26,10 +26,16 @@ dimensions:
   - id: coverage
     weight: 15
     question: >
-      Does the doc cover ALL of the session's key takeaways and nothing beyond their
-      scope? It must NOT re-teach a prior session's concept (a brief recap is fine) and
-      must NOT teach a future session's topic. Missing a takeaway caps at 2; scope creep,
-      re-teaching a prior topic, or future-topic leakage caps at 3. [G1,G4,G18]
+      Does the doc cover ALL of the session's key takeaways AND the standard SUB-CONCEPTS
+      inside each one? A syllabus line names a topic, not its whole scope: for each
+      takeaway, enumerate the sub-concepts an exam would test and check each has a slide.
+      ("Page Faults" implies the causes — first-reference/demand-load, swapped-out,
+      copy-on-write, illegal access — and minor vs major faults, not only definition +
+      handling steps + service time.) A SILENTLY missing commonly-tested sub-concept is
+      the most serious failure here and caps this at 2; a deferral named explicitly in the
+      text does not. Also: nothing beyond the takeaways' scope, no re-teaching a prior
+      session's concept (a brief recap is fine), no future-session topic. Missing a whole
+      takeaway caps at 2; scope creep, re-teaching, or future leakage caps at 3. [G1,G4,G18]
   - id: pedagogy
     weight: 12
     question: >
@@ -46,18 +52,31 @@ dimensions:
   - id: slide_content_style
     weight: 10
     question: >
-      Does slide CONTENT read as slide text, not spoken narration? It must NOT contain
-      "in the previous/next session", "as we saw", "now let us", "in this slide we will"
-      and similar (those belong in speaker_notes). Points must be CONCISE (bullets <= 12
-      words, no long dense sentences, and every slide heading/subheading a 3-4 word label
-      — 5+ words caps this dimension at 2) and every block must
-      stay on-topic for its slide (no tangents/filler). [G6,G13,G16]
+      Does slide CONTENT read as tight slide text, not prose or spoken narration? Each
+      `content` text block must be <= 35 words / 1-2 sentences — one framing or definition
+      sentence, with the detail carried by bullets and tables; a 60-90 word paragraph as
+      slide content caps this at 2 (in depth mode too). No redundancy: bullets must not
+      restate their lead-in sentence, and must not restate a table on the same slide.
+      Slide-visible text must carry NO second person ("you"/"your") and NO navigational
+      phrases ("last/previous/next session", "as we saw earlier", "in the previous/next
+      slide", "in this slide we will", "now let us", "moving on") — every slide stands
+      alone, and Recap/Agenda/Upcoming/closing are the only places a cross-reference is
+      allowed. No filler ("and all", "basically"). Bullets <= 12 words; every slide
+      heading/subheading a 3-4 word label (5+ words caps this at 2). Every block stays
+      on-topic for its slide (no tangents). [G6,G13,G16]
   - id: clarity_and_analogies
     weight: 8
     question: >
       Easy to understand on first read? Are analogies simple, everyday, relatable,
-      non-distracting (one clean mapping) and non-repeating? Is jargon explained on
-      first use and the language plain? [G11,G14,G15]
+      non-distracting (one clean mapping) and non-repeating? Crucially, does each analogy
+      CORRELATE rather than merely illustrate — does it end with an explicit tie-back
+      naming the concept ("<everyday scene> — just as / exactly as <how the concept
+      works>")? An analogy that paints a picture and leaves the mapping implicit is
+      incomplete and caps this at 3. Does it also match the concept STRUCTURALLY (a cycle
+      needs a circular-dependency scene, not a queue)? Are speaker notes <= 2 sentences —
+      one teaching cue plus one exam/interview hook, with no restatement of the slide body
+      and no "close by…"? Is jargon explained on first use and the language plain?
+      [G11,G14,G15]
   - id: content_recency
     weight: 6
     question: >
@@ -68,12 +87,16 @@ dimensions:
   - id: format_compliance
     weight: 7
     question: >
-      Exact layout IN ORDER: session title; recap = previous session's KEY TAKEAWAYS
-      (omitted only for Session 1); agenda (<= takeaways); one section breaker PER
-      agenda item in agenda order; key takeaways; upcoming session name; closing
-      "Thank You | All the Best". EVERY slide must carry ALL SIX fields — heading,
-      subheading, content, analogy, visual_guidance, speaker_notes. A missing slide
-      field or a wrong-order/missing section caps this at 2.
+      Exact layout IN ORDER: session title; recap = ALL of the previous session's agenda
+      items in its "topic: subtopics" format (omitted only for Session 1); agenda; one
+      section breaker PER agenda item in agenda order; key takeaways; upcoming session
+      name; closing "Thank You | All the Best". The agenda must be NUMBERED 1..N and each
+      item must be the curriculum's key-takeaway line VERBATIM — identical to key takeaway
+      i, not summarised or reworded (these lines are exempt from every word cap, so a long
+      one must still be copied whole). A reworded agenda item, an unnumbered agenda, or a
+      recap missing any of the prior session's agenda items caps this at 2. EVERY slide
+      must carry ALL SIX fields — heading, subheading, content, analogy, visual_guidance,
+      speaker_notes. A missing slide field or a wrong-order/missing section caps this at 2.
   - id: market_parity
     weight: 5
     question: >

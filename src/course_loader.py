@@ -22,10 +22,18 @@ class Session:
     module: str
     topic: str
     key_takeaways: list[str] = field(default_factory=list)
+    # The PREVIOUS session's takeaways, filled in by neighbours(). The recap must
+    # reproduce all of them, and guardrails check that — but guardrails only receive
+    # the target session, so the count has to travel with it.
+    prev_key_takeaways: list[str] = field(default_factory=list)
 
     @property
     def key_takeaways_count(self) -> int:
         return len(self.key_takeaways)
+
+    @property
+    def prev_key_takeaways_count(self) -> int:
+        return len(self.prev_key_takeaways)
 
 
 def _split_takeaways(raw: str | None) -> list[str]:
@@ -133,4 +141,8 @@ def neighbours(number: int, sessions: list[Session] | None = None):
     """Return (prev, current, next) — prev/next may be None at course edges."""
     sessions = sessions or load_sessions()
     by_no = {s.number: s for s in sessions}
-    return by_no.get(number - 1), by_no[number], by_no.get(number + 1)
+    prev, cur, nxt = by_no.get(number - 1), by_no[number], by_no.get(number + 1)
+    # Carry the previous session's takeaways on `cur` so downstream graders that only
+    # get the target session can still check the recap covers all of them.
+    cur.prev_key_takeaways = list(prev.key_takeaways) if prev else []
+    return prev, cur, nxt

@@ -52,9 +52,16 @@ def depth_mode() -> str:
     return read_text("harness/depth_mode.md")
 
 
-def _load_dotenv() -> None:
+def load_env() -> None:
     """Load KEY=VALUE lines from the project .env into the environment (once),
-    without adding a dependency. Existing env vars take precedence."""
+    without adding a dependency. Existing env vars take precedence.
+
+    Call this ONCE at process start, before anything reads an env var, so every
+    later lookup sees the same environment. It matters for TURSO_DATABASE_URL in
+    particular: src.db picks its backend (local SQLite vs cloud Turso) from that
+    variable on every call, so loading .env lazily made the backend flip
+    mid-process — the schema created at startup landed in one database while
+    later reads/writes went to the other."""
     env_path = ROOT / ".env"
     if not env_path.exists():
         return
@@ -78,7 +85,7 @@ def auth() -> dict:
 
 def google_client_id() -> str | None:
     """OAuth client id for Google Sign-In (from .env: GOOGLE_CLIENT_ID)."""
-    _load_dotenv()
+    load_env()
     cid = (os.environ.get("GOOGLE_CLIENT_ID") or "").strip()
     return cid or None
 
@@ -86,14 +93,14 @@ def google_client_id() -> str | None:
 def auth_disabled() -> bool:
     """LOCAL-DEV login bypass. Reads AUTH_DISABLED from the environment OR .env.
     NEVER enable this in a deployed/shared setting."""
-    _load_dotenv()
+    load_env()
     return (os.environ.get("AUTH_DISABLED") or "").strip().lower() in ("1", "true", "yes")
 
 
 def api_key() -> str | None:
     """Return the API key for the configured provider. Looks up the harness-named
     env var first, then common fallbacks, so an existing .env keeps working."""
-    _load_dotenv()
+    load_env()
     names = [harness().get("model", {}).get("api_key_env", "OPENROUTER_API_KEY"),
              "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY"]
     for name in names:

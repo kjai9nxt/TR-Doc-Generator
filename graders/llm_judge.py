@@ -69,6 +69,27 @@ def grade(doc: dict, session, time_estimate: dict, *, enforce_time: bool = True)
     time_block = "" if not enforce_time else (
         "DETERMINISTIC RECORDING-TIME ESTIMATE (ground truth for the recording_time dimension):\n"
         + json.dumps(time_estimate, indent=2) + "\n\n")
+    # Close the self-evolution loop: the judge is also the VERIFIER that the rules
+    # learned from the reviewer's earlier corrections were actually applied. Without
+    # this, nothing ever checked, so a rule could be silently ignored on every run
+    # and the reviewer had to catch it by hand each time. A violation goes into
+    # blocking_issues, which fails the gate -> triggers a revision round -> and is
+    # re-learned (bumping that rule's hit count).
+    rules_note = ""
+    try:
+        from src import learning
+        block = learning.learned_rules_block()
+        if block:
+            rules_note = (
+                "\n\nREVIEWER-ENFORCED RULES — these were learned from corrections a human "
+                "made to EARLIER docs in this course, and the writer was required to follow "
+                "them here. Check EACH one against the doc. For every rule that was NOT "
+                "followed, add a specific entry to `blocking_issues` naming the rule and "
+                "where the doc breaks it. Also reflect the violation in the most relevant "
+                "dimension's score. If a rule genuinely does not apply to this doc, ignore "
+                f"it silently.\n\n{block}")
+    except Exception:
+        pass
     prompt = f"""RUBRIC
 {_rubric_text(exclude)}
 
@@ -77,7 +98,7 @@ SESSION KEY TAKEAWAYS (coverage must match these):
 
 {time_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
-{web_note}{depth_note}
+{web_note}{depth_note}{rules_note}
 
 Grade now. Return only the contract JSON."""
     raw = llm.complete(

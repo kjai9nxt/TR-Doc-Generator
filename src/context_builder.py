@@ -15,7 +15,7 @@ from pathlib import Path
 
 import docx as docxlib
 
-from . import config, pptx_ingest, learning
+from . import config, pptx_ingest
 from .course_loader import Session
 
 
@@ -161,8 +161,13 @@ Agenda must have at most {cur.key_takeaways_count} bullets.
 === COURSE MEMORY — PRIOR SESSIONS (from ingested PowerPoint decks) ===
 Build on this; do NOT re-teach it. Use it for an accurate recap and smooth transitions.
 {past}
-
-{learning.learned_rules_block()}"""
+"""
+# NOTE: the reviewer-enforced (learned) rules are deliberately NOT included here.
+# They are injected at SYSTEM level by generator._learned() instead, for two reasons:
+#   1. authority — as a soft list at the tail of this user prompt they lost every
+#      conflict with the system prompt's "HARD RULES", so corrections were ignored;
+#   2. freshness — guided mode freezes this base block once per run, so feedback
+#      given mid-run never reached the remaining chunks.
 
 
 def build_user_prompt(prev: Session | None, cur: Session, nxt: Session | None) -> str:
@@ -199,18 +204,29 @@ def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
 # to emit. Section indices / boilerplate are filled at assembly, not here.
 # --------------------------------------------------------------------------- #
 def opening_instruction(cur: Session, prev: Session | None) -> str:
-    recap_rule = ("This is the FIRST session — set \"recap\" to null."
-                  if prev is None else
-                  f"\"recap\" must summarise Session {prev.number} — {prev.name} "
-                  f"in 2-4 crisp bullets.")
+    if prev is None:
+        recap_rule = 'This is the FIRST session — set "recap" to null.'
+    else:
+        prev_items = "\n".join(f"  {i + 1}. {k}" for i, k in enumerate(prev.key_takeaways))
+        recap_rule = (
+            f'"recap" must carry ALL {len(prev.key_takeaways)} agenda items of Session '
+            f'{prev.number} — {prev.name}, one bullet each, in order, in the same '
+            f'"topic: subtopics" format shown here and copied VERBATIM:\n{prev_items}\n'
+            f"Do NOT summarise them, do NOT drop any, do NOT shorten them.")
+    agenda_items = "\n".join(f"  {i + 1}. {k}" for i, k in enumerate(cur.key_takeaways))
     return f"""GUIDED MODE — produce ONLY the OPENING of this doc as JSON, nothing else:
 {{
   "recap": {{ "prev_session_no": <int>, "prev_session_name": "<str>",
              "bullets": ["<str>", ...] }} | null,
-  "agenda": ["<str>", ...]     // at most {cur.key_takeaways_count} bullets, one per key takeaway, in order
+  "agenda": ["<str>", ...]     // exactly {cur.key_takeaways_count} items, numbered, verbatim
 }}
 {recap_rule}
-The agenda bullets must map one-to-one onto the key takeaways (same order).
+
+The agenda is NOT yours to word. Emit these {cur.key_takeaways_count} lines EXACTLY as
+written, numbered "1." .. "{cur.key_takeaways_count}.", in this order — not summarised,
+not re-titled, not one word changed:
+{agenda_items}
+Word caps do not apply to agenda or recap lines: copy them exactly even if they run long.
 Return ONLY this JSON object."""
 
 
@@ -228,5 +244,12 @@ def takeaway_instruction(cur: Session, idx: int) -> str:
 }}
 This section must teach EXACTLY this key takeaway and nothing from the others:
   "{takeaway}"
+The section "name" must be this takeaway line VERBATIM (it is also the agenda item).
+
+COVERAGE: this line names a topic, not its whole scope. Before writing, list the
+sub-concepts an exam would test on it and give EACH one a slide — a commonly-tested
+sub-concept that is silently missing is the most serious failure here. If one genuinely
+belongs to a later session, say so explicitly rather than dropping it.
+
 Slide numbers ("n") continue consecutively AFTER the already-approved slides shown above.
 Do not repeat anything already covered in the approved chunks. Return ONLY this JSON object."""

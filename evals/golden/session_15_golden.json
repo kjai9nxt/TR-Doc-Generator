@@ -27,12 +27,33 @@
           "heading": "Why was SCTP Created?",
           "subheading": "Two Gaps TCP Left",
           "content": [
-            {"type": "text", "text": "Problem 1 — Head-of-Line (HOL) Blocking: TCP delivers data as one ordered stream. If one segment is lost, all segments behind it wait — even if they already arrived correctly. Example: three images are requested; image 2's packet is lost, so image 3 is stuck waiting even though it arrived fine."},
-            {"type": "text", "text": "Problem 2 — Single Path Dependency: TCP binds a connection to one IP address per side. If that path fails, the entire connection drops and must restart. This is critical in telecom signaling, where availability cannot be interrupted."}
+            {
+              "type": "text",
+              "text": "Problem 1 — Head-of-Line blocking: TCP delivers one ordered stream, so every segment behind a lost one waits even after arriving correctly."
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "Three images requested; image 2's packet is lost",
+                "Image 3 arrived intact but stays queued behind it",
+                "Delay hits data that was never lost"
+              ]
+            },
+            {
+              "type": "text",
+              "text": "Problem 2 — Single path dependency: TCP binds a connection to one IP per side, so a path failure drops the whole connection."
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "Connection must restart from scratch",
+                "Unacceptable in telecom signalling, where availability cannot break"
+              ]
+            }
           ],
-          "analogy": "TCP is a single-lane road — one broken-down car blocks everyone. SCTP opens multiple lanes; a blockage in one lane does not stop the others.",
+          "analogy": "A single-lane road where one broken-down car blocks everyone, versus a road with several lanes where a stall in one leaves the rest moving — just as TCP's single ordered stream makes every segment wait behind a lost one, while SCTP's independent streams do not.",
           "visual_guidance": "Left: TCP — one stream, one path, a blocked queue. Right: SCTP — 3 independent streams, 2 paths (Path A primary, Path B standby).",
-          "speaker_notes": "TCP has two limitations that matter in telecom. First, head-of-line blocking — one lost packet holds up everything behind it. Second, single path dependency — if the network path fails, the connection dies completely. SCTP was built to fix exactly these two problems."
+          "speaker_notes": "Head-of-line blocking and single-path dependency are the two TCP limits that matter in telecom. Expect the question of why SCTP exists at all — name both."
         },
         {
           "n": 2,
@@ -40,24 +61,58 @@
           "heading": "Stream Control Transmission Protocol",
           "subheading": "A Smarter Transport Protocol",
           "content": [
-            {"type": "text", "text": "SCTP is a connection-oriented, reliable Transport Layer protocol — like TCP, but with two extra capabilities."},
-            {"type": "bullets", "items": [
-              "Multi-Streaming: one association carries multiple independent streams; a loss in Stream 1 does NOT block Stream 2 or 3. Each stream has its own Stream Sequence Number (SSN).",
-              "Multi-Homing: both endpoints register multiple IP addresses at setup. One is the Primary Path; others are Standby. Heartbeat chunks monitor standbys; if the primary fails, SCTP switches automatically with no reconnection."
-            ]},
-            {"type": "table", "columns": ["Feature", "Detail"], "rows": [
-              ["Standard", "RFC 4960"],
-              ["Connection term", "Association (not \"connection\")"],
-              ["Data unit", "Chunk (not \"segment\")"],
-              ["Handshake", "4-Way (INIT -> INIT-ACK -> COOKIE-ECHO -> COOKIE-ACK)"],
-              ["Reliability", "Yes — like TCP"],
-              ["Multi-Streaming", "Yes — solves HOL Blocking"],
-              ["Multi-Homing", "Yes — solves single path failure"]
-            ]}
+            {
+              "type": "text",
+              "text": "SCTP is a connection-oriented, reliable Transport Layer protocol — like TCP, but with two extra capabilities."
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "Multi-Streaming: one association carries multiple independent streams; a loss in Stream 1 does NOT block Stream 2 or 3. Each stream has its own Stream Sequence Number (SSN).",
+                "Multi-Homing: both endpoints register multiple IP addresses at setup. One is the Primary Path; others are Standby. Heartbeat chunks monitor standbys; if the primary fails, SCTP switches automatically with no reconnection."
+              ]
+            },
+            {
+              "type": "table",
+              "columns": [
+                "Feature",
+                "Detail"
+              ],
+              "rows": [
+                [
+                  "Standard",
+                  "RFC 4960"
+                ],
+                [
+                  "Connection term",
+                  "Association (not \"connection\")"
+                ],
+                [
+                  "Data unit",
+                  "Chunk (not \"segment\")"
+                ],
+                [
+                  "Handshake",
+                  "4-Way (INIT -> INIT-ACK -> COOKIE-ECHO -> COOKIE-ACK)"
+                ],
+                [
+                  "Reliability",
+                  "Yes — like TCP"
+                ],
+                [
+                  "Multi-Streaming",
+                  "Yes — solves HOL Blocking"
+                ],
+                [
+                  "Multi-Homing",
+                  "Yes — solves single path failure"
+                ]
+              ]
+            }
           ],
-          "analogy": "Multi-Streaming is like a WhatsApp chat sending a photo, a voice note, and a text at once — if the photo stalls, the text and voice note still go through. Multi-Homing is like your phone on both WiFi and mobile data — drop WiFi and the call silently continues on mobile data.",
+          "analogy": "A WhatsApp chat sending a photo, a voice note, and a text together, where a stalled photo does not hold up the text, and a phone on both WiFi and mobile data that keeps a call alive when WiFi drops — just as Multi-Streaming confines loss to one stream and Multi-Homing fails over to a backup address.",
           "visual_guidance": "Top: SCTP Association -> 3 streams; Stream 1 'Retransmitting', Streams 2 & 3 'Delivering'. Bottom: two hosts with 2 IPs each — Path 1 failed, Path 2 active.",
-          "speaker_notes": "SCTP sits at the Transport Layer alongside TCP and UDP. Its connection is called an Association; data units are Chunks. Multi-Streaming means one association runs multiple independent streams, so a lost packet in one does not affect others. Multi-Homing means both sides register backup IPs and SCTP silently switches on failure. This is what makes SCTP invaluable in 5G and telecom networks."
+          "speaker_notes": "An SCTP connection is an Association and its data units are Chunks, with Multi-Streaming confining loss per stream and Multi-Homing switching to a backup address. Interviewers ask which feature solves HOL blocking — that is Multi-Streaming."
         }
       ]
     },
@@ -71,26 +126,102 @@
           "heading": "SCTP Handshake Basics",
           "subheading": "Cookie-Based 4-Way Handshake",
           "content": [
-            {"type": "table", "columns": ["Step", "Message", "Direction", "Purpose"], "rows": [
-              ["1", "INIT", "Client -> Server", "Request association; share IPs & stream count"],
-              ["2", "INIT-ACK", "Server -> Client", "Respond with a Cookie token"],
-              ["3", "COOKIE-ECHO", "Client -> Server", "Echo the cookie back"],
-              ["4", "COOKIE-ACK", "Server -> Client", "Cookie verified; association open"]
-            ]},
-            {"type": "text", "text": "Why the Cookie? The server allocates no resources until the cookie is echoed back, so fake INIT messages cannot exhaust server memory — built-in protection against a SYN-flood style DoS attack."},
-            {"type": "table", "columns": ["Feature", "UDP", "TCP", "SCTP"], "rows": [
-              ["Connection", "No", "Yes", "Yes (Association)"],
-              ["Reliability", "No", "Yes", "Yes"],
-              ["Multi-Streaming", "No", "No", "Yes"],
-              ["Multi-Homing", "No", "No", "Yes"],
-              ["HOL Blocking", "N/A", "Yes", "No"],
-              ["Handshake", "None", "3-Way", "4-Way + Cookie"],
-              ["Use Cases", "DNS, VoIP, games", "HTTP, files, email", "5G, telecom, WebRTC"]
-            ]}
+            {
+              "type": "table",
+              "columns": [
+                "Step",
+                "Message",
+                "Direction",
+                "Purpose"
+              ],
+              "rows": [
+                [
+                  "1",
+                  "INIT",
+                  "Client -> Server",
+                  "Request association; share IPs & stream count"
+                ],
+                [
+                  "2",
+                  "INIT-ACK",
+                  "Server -> Client",
+                  "Respond with a Cookie token"
+                ],
+                [
+                  "3",
+                  "COOKIE-ECHO",
+                  "Client -> Server",
+                  "Echo the cookie back"
+                ],
+                [
+                  "4",
+                  "COOKIE-ACK",
+                  "Server -> Client",
+                  "Cookie verified; association open"
+                ]
+              ]
+            },
+            {
+              "type": "text",
+              "text": "Why the Cookie? The server allocates no resources until the cookie is echoed back, so fake INIT messages cannot exhaust server memory — built-in protection against a SYN-flood style DoS attack."
+            },
+            {
+              "type": "table",
+              "columns": [
+                "Feature",
+                "UDP",
+                "TCP",
+                "SCTP"
+              ],
+              "rows": [
+                [
+                  "Connection",
+                  "No",
+                  "Yes",
+                  "Yes (Association)"
+                ],
+                [
+                  "Reliability",
+                  "No",
+                  "Yes",
+                  "Yes"
+                ],
+                [
+                  "Multi-Streaming",
+                  "No",
+                  "No",
+                  "Yes"
+                ],
+                [
+                  "Multi-Homing",
+                  "No",
+                  "No",
+                  "Yes"
+                ],
+                [
+                  "HOL Blocking",
+                  "N/A",
+                  "Yes",
+                  "No"
+                ],
+                [
+                  "Handshake",
+                  "None",
+                  "3-Way",
+                  "4-Way + Cookie"
+                ],
+                [
+                  "Use Cases",
+                  "DNS, VoIP, games",
+                  "HTTP, files, email",
+                  "5G, telecom, WebRTC"
+                ]
+              ]
+            }
           ],
-          "analogy": "Like a clinic that first hands you a token slip and only opens a file once you return with it — people who never come back cost the clinic nothing.",
+          "analogy": "A clinic that hands out a token slip first and opens a patient file only when the token comes back, so people who never return cost it nothing — just as the 4-way handshake commits no server state until the Cookie is echoed.",
           "visual_guidance": "Ladder diagram for the 4-way handshake with a note at Step 2: 'Server stores no state yet.' Below it, the comparison table with the SCTP column highlighted.",
-          "speaker_notes": "The extra step in the 4-way handshake is the Cookie. The server sends a stateless token and only commits resources when the client echoes it back — a clean protection against SYN-flood attacks. Compared side by side, SCTP keeps TCP's reliability while adding multi-streaming and multi-homing that neither TCP nor UDP offer."
+          "speaker_notes": "The Cookie keeps the handshake stateless until the client proves itself, which is what blocks SYN floods. A standard exam question is why SCTP needs four steps where TCP needs three."
         }
       ]
     },
@@ -104,18 +235,48 @@
           "heading": "Quality of Service (QoS)",
           "subheading": "Traffic Is Not Equal",
           "content": [
-            {"type": "text", "text": "On the same network a video call needs smooth, real-time delivery — delay kills it — while a background software update can wait a few seconds. Without QoS the network treats both identically and the video call suffers."},
-            {"type": "text", "text": "QoS = the ability of a network to manage traffic and give different levels of service to different data types, so critical, time-sensitive apps like voice and video get the resources they need."},
-            {"type": "table", "columns": ["Parameter", "What It Measures", "Most Critical For"], "rows": [
-              ["Delay", "Time from source to destination", "VoIP (< 150 ms per ITU-T G.114)"],
-              ["Jitter", "Variation in delay between packets", "Streaming, VoIP"],
-              ["Bandwidth", "Available data rate on a path", "Video streaming"],
-              ["Packet Loss", "% of packets never delivered", "VoIP, real-time apps"]
-            ]}
+            {
+              "type": "text",
+              "text": "On one network a video call needs smooth real-time delivery while a background update can wait; without QoS both are treated identically."
+            },
+            {
+              "type": "text",
+              "text": "QoS is a network's ability to give different levels of service to different traffic types, so time-sensitive apps get the resources they need."
+            },
+            {
+              "type": "table",
+              "columns": [
+                "Parameter",
+                "What It Measures",
+                "Most Critical For"
+              ],
+              "rows": [
+                [
+                  "Delay",
+                  "Time from source to destination",
+                  "VoIP (< 150 ms per ITU-T G.114)"
+                ],
+                [
+                  "Jitter",
+                  "Variation in delay between packets",
+                  "Streaming, VoIP"
+                ],
+                [
+                  "Bandwidth",
+                  "Available data rate on a path",
+                  "Video streaming"
+                ],
+                [
+                  "Packet Loss",
+                  "% of packets never delivered",
+                  "VoIP, real-time apps"
+                ]
+              ]
+            }
           ],
-          "analogy": "Think of a hospital emergency room — a heart-attack patient is seen immediately while a minor cut waits. QoS gives urgent network traffic the same priority.",
+          "analogy": "A hospital emergency room where a heart-attack patient is seen at once while a minor cut waits — just as QoS serves delay-sensitive traffic ahead of traffic that can afford to wait.",
           "visual_guidance": "Router in the centre; three traffic types entering — Video Call (red), Software Update (blue), Streaming (green). The video call gets a wider output lane. Label: 'QoS — Priority-Based Service.'",
-          "speaker_notes": "QoS recognises that not all traffic has the same urgency. A video call cannot tolerate delay or jitter — even 200 ms one-way makes a call feel unnatural. A background download has no such need. The four parameters to remember are delay, jitter, bandwidth, and packet loss."
+          "speaker_notes": "Traffic differs in urgency: 200 ms of one-way delay already makes a call feel unnatural, while a background update does not care. Memorise the four parameters — delay, jitter, bandwidth, packet loss."
         },
         {
           "n": 5,
@@ -123,23 +284,73 @@
           "heading": "QoS Techniques",
           "subheading": "Scheduling and Traffic Shaping",
           "content": [
-            {"type": "text", "text": "A — Scheduling: who gets served first at the router queue?"},
-            {"type": "table", "columns": ["Method", "How It Works", "Note"], "rows": [
-              ["FIFO", "First in, first out. No priority.", "Unfair to real-time traffic"],
-              ["Priority Queuing", "High-priority queue served first", "Low-priority can starve"],
-              ["Weighted Fair Queuing (WFQ)", "Each queue gets a % share (Voice 50%, Video 30%, Data 20%)", "No starvation; balanced"],
-              ["Round Robin", "One packet per queue in turns", "Equal turns; ignores urgency"]
-            ]},
-            {"type": "text", "text": "B — Traffic Shaping: control the rate before data enters the network."},
-            {"type": "table", "columns": ["Parameter", "Leaky Bucket", "Token Bucket"], "rows": [
-              ["Output", "Always constant", "Can burst (up to bucket size)"],
-              ["Excess", "Dropped", "Waits for a token"],
-              ["Best for", "Strict rate enforcement", "Allow bursts within bounds"]
-            ]}
+            {
+              "type": "text",
+              "text": "A — Scheduling: who gets served first at the router queue?"
+            },
+            {
+              "type": "table",
+              "columns": [
+                "Method",
+                "How It Works",
+                "Note"
+              ],
+              "rows": [
+                [
+                  "FIFO",
+                  "First in, first out. No priority.",
+                  "Unfair to real-time traffic"
+                ],
+                [
+                  "Priority Queuing",
+                  "High-priority queue served first",
+                  "Low-priority can starve"
+                ],
+                [
+                  "Weighted Fair Queuing (WFQ)",
+                  "Each queue gets a % share (Voice 50%, Video 30%, Data 20%)",
+                  "No starvation; balanced"
+                ],
+                [
+                  "Round Robin",
+                  "One packet per queue in turns",
+                  "Equal turns; ignores urgency"
+                ]
+              ]
+            },
+            {
+              "type": "text",
+              "text": "B — Traffic Shaping: control the rate before data enters the network."
+            },
+            {
+              "type": "table",
+              "columns": [
+                "Parameter",
+                "Leaky Bucket",
+                "Token Bucket"
+              ],
+              "rows": [
+                [
+                  "Output",
+                  "Always constant",
+                  "Can burst (up to bucket size)"
+                ],
+                [
+                  "Excess",
+                  "Dropped",
+                  "Waits for a token"
+                ],
+                [
+                  "Best for",
+                  "Strict rate enforcement",
+                  "Allow bursts within bounds"
+                ]
+              ]
+            }
           ],
-          "analogy": "Priority Queuing is First Class boarding the plane first; WFQ reserves a number of seats for each class so no one is left out. Leaky Bucket is a water tank with a small hole — pour too fast and it overflows (packets dropped).",
+          "analogy": "First Class boarding ahead of everyone, a cabin holding a fixed seat quota per class, and a water tank with a small hole that overflows when filled too fast — just as Priority Queuing drains the top queue first, WFQ guarantees each class a bandwidth share, and Leaky Bucket drops whatever exceeds its rate.",
           "visual_guidance": "Two diagrams — Leaky Bucket (bursty in, steady drip out) and Token Bucket (tokens accumulating, a burst of packets released).",
-          "speaker_notes": "Scheduling decides priority at the router queue — WFQ is the practical standard. Traffic Shaping controls the rate before data enters the network. Leaky Bucket enforces a strict constant rate and drops excess. Token Bucket is more lenient — save tokens and send a burst, but the average rate is still capped."
+          "speaker_notes": "Scheduling sets priority at the router queue, while Traffic Shaping caps the rate before traffic enters the network. Expect a Leaky versus Token Bucket comparison — Token Bucket permits bursts, Leaky Bucket does not."
         }
       ]
     },
@@ -153,17 +364,23 @@
           "heading": "Best Effort",
           "subheading": "Internet Default Behaviour",
           "content": [
-            {"type": "text", "text": "By default the internet makes no guarantee about how or when a packet is delivered — this is Best Effort delivery."},
-            {"type": "bullets", "items": [
-              "No priority — every packet is treated equally.",
-              "No reservation — no resources are set aside.",
-              "No guarantee — packets may be delayed, dropped, or delivered out of order.",
-              "Fine for email, downloads, browsing; fails for live video, VoIP, real-time apps."
-            ]}
+            {
+              "type": "text",
+              "text": "By default the internet makes no guarantee about how or when a packet is delivered — this is Best Effort delivery."
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "No priority — every packet is treated equally.",
+                "No reservation — no resources are set aside.",
+                "No guarantee — packets may be delayed, dropped, or delivered out of order.",
+                "Fine for email, downloads, browsing; fails for live video, VoIP, real-time apps."
+              ]
+            }
           ],
-          "analogy": "A general compartment in a train — no reservation, no guarantee. If there is space you sit; if not, you stand.",
+          "analogy": "A general train compartment with no reservation and no guarantee — a seat when there is space, standing room otherwise — just as Best Effort forwards a packet when capacity allows and drops it when the queue is full.",
           "visual_guidance": "A router with many identical packets entering, no priority lanes, some packets dropped. Label: 'Best Effort — No Guarantee.'",
-          "speaker_notes": "Before IntServ and DiffServ, understand the default — Best Effort. No priority, no reservation, no guarantee. This is exactly why IntServ and DiffServ were introduced for time-sensitive traffic."
+          "speaker_notes": "Best Effort is the default behaviour: no priority, no reservation, no guarantee. Name it as the baseline that IntServ and DiffServ were introduced to improve on."
         },
         {
           "n": 7,
@@ -171,24 +388,78 @@
           "heading": "Two Network-Wide QoS Approaches",
           "subheading": "IntServ vs DiffServ",
           "content": [
-            {"type": "text", "text": "IntServ (per-flow reservation): the application reserves resources along the whole path before sending, using RSVP (PATH downstream, RESV upstream, each router reserving). Problem: every router stores state for every flow — not scalable."},
-            {"type": "text", "text": "DiffServ (per-class treatment): no per-flow tracking. The edge router marks each packet with a 6-bit DSCP value in the IP header; core routers only read the label and forward — highly scalable."},
-            {"type": "table", "columns": ["Class", "Name", "Use"], "rows": [
-              ["EF", "Expedited Forwarding", "VoIP, real-time — lowest delay"],
-              ["AF", "Assured Forwarding", "Video, priority data — bounded delay"],
-              ["BE", "Best Effort", "General browsing — no guarantee"]
-            ]},
-            {"type": "table", "columns": ["", "IntServ", "DiffServ"], "rows": [
-              ["Granularity", "Per-flow", "Per-class"],
-              ["Scalability", "Poor", "Excellent"],
-              ["Guarantee", "Hard", "Soft"],
-              ["Protocol", "RSVP", "DSCP marking"],
-              ["Use case", "Small managed networks", "Internet & enterprise"]
-            ]}
+            {
+              "type": "text",
+              "text": "IntServ (per-flow reservation): the application reserves resources along the whole path before sending, using RSVP (PATH downstream, RESV upstream, each router reserving). Problem: every router stores state for every flow — not scalable."
+            },
+            {
+              "type": "text",
+              "text": "DiffServ (per-class treatment): no per-flow tracking. The edge router marks each packet with a 6-bit DSCP value in the IP header; core routers only read the label and forward — highly scalable."
+            },
+            {
+              "type": "table",
+              "columns": [
+                "Class",
+                "Name",
+                "Use"
+              ],
+              "rows": [
+                [
+                  "EF",
+                  "Expedited Forwarding",
+                  "VoIP, real-time — lowest delay"
+                ],
+                [
+                  "AF",
+                  "Assured Forwarding",
+                  "Video, priority data — bounded delay"
+                ],
+                [
+                  "BE",
+                  "Best Effort",
+                  "General browsing — no guarantee"
+                ]
+              ]
+            },
+            {
+              "type": "table",
+              "columns": [
+                "",
+                "IntServ",
+                "DiffServ"
+              ],
+              "rows": [
+                [
+                  "Granularity",
+                  "Per-flow",
+                  "Per-class"
+                ],
+                [
+                  "Scalability",
+                  "Poor",
+                  "Excellent"
+                ],
+                [
+                  "Guarantee",
+                  "Hard",
+                  "Soft"
+                ],
+                [
+                  "Protocol",
+                  "RSVP",
+                  "DSCP marking"
+                ],
+                [
+                  "Use case",
+                  "Small managed networks",
+                  "Internet & enterprise"
+                ]
+              ]
+            }
           ],
-          "analogy": "IntServ is a reserved train seat booked before the journey — guaranteed but rigid. DiffServ is a highway with Express, Fast, and Slow lanes — each vehicle is assigned a lane by class.",
+          "analogy": "A train seat reserved before the journey versus a highway with Express, Fast, and Slow lanes assigned by vehicle class — just as IntServ reserves resources per flow end to end while DiffServ only marks each packet into a class and forwards it per hop.",
           "visual_guidance": "Left — IntServ: PATH/RESV ladder, each router 'Reserves Bandwidth'. Right — DiffServ: edge router marks DSCP -> core routers read label -> three output lanes (EF, AF, BE).",
-          "speaker_notes": "IntServ reserves bandwidth per flow at every router — hard guarantees but it cannot scale to millions of flows. DiffServ marks packets with a class label at the edge and core routers just forward by label — no state, fully scalable. DiffServ runs enterprise and ISP networks today."
+          "speaker_notes": "IntServ reserves per flow and cannot scale, while DiffServ marks a class at the edge and leaves core routers stateless. That scalability contrast is the usual exam question here."
         },
         {
           "n": 8,
@@ -196,22 +467,47 @@
           "heading": "QoS in Switched Networks",
           "subheading": "How Switches Prioritise Traffic",
           "content": [
-            {"type": "text", "text": "QoS also works inside a local network — your college, office, or data centre — using Ethernet switches and the IEEE 802.1p standard."},
-            {"type": "bullets", "items": [
-              "Every Ethernet frame can carry a VLAN tag (802.1Q).",
-              "Inside the tag is a 3-bit PCP (Priority Code Point) field = 8 levels (0 lowest to 7 highest).",
-              "A VoIP packet is tagged PCP = 6; a file download PCP = 0. The switch serves higher-priority frames first."
-            ]},
-            {"type": "table", "columns": ["Priority Level", "Traffic Type"], "rows": [
-              ["7", "Network control traffic"],
-              ["5 – 6", "VoIP calls, video conferencing"],
-              ["3 – 4", "Business critical applications"],
-              ["0 – 2", "General data, best effort"]
-            ]}
+            {
+              "type": "text",
+              "text": "QoS also works inside a local network — a college, office, or data centre — using Ethernet switches and the IEEE 802.1p standard."
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "Every Ethernet frame can carry a VLAN tag (802.1Q).",
+                "Inside the tag is a 3-bit PCP (Priority Code Point) field = 8 levels (0 lowest to 7 highest).",
+                "A VoIP packet is tagged PCP = 6; a file download PCP = 0. The switch serves higher-priority frames first."
+              ]
+            },
+            {
+              "type": "table",
+              "columns": [
+                "Priority Level",
+                "Traffic Type"
+              ],
+              "rows": [
+                [
+                  "7",
+                  "Network control traffic"
+                ],
+                [
+                  "5 – 6",
+                  "VoIP calls, video conferencing"
+                ],
+                [
+                  "3 – 4",
+                  "Business critical applications"
+                ],
+                [
+                  "0 – 2",
+                  "General data, best effort"
+                ]
+              ]
+            }
           ],
-          "analogy": "A busy school canteen with a separate express counter for teachers — teachers (high-priority frames) are served first while students wait in the regular queue.",
+          "analogy": "A school canteen with a separate express counter for teachers, served ahead of the regular queue — just as an Ethernet switch reads the 802.1p PCP bits and forwards high-priority frames before best-effort ones.",
           "visual_guidance": "An Ethernet frame with the 802.1Q VLAN tag highlighted; zoom into the 3-bit PCP field. Next to it a switch with two queues — High Priority and Normal.",
-          "speaker_notes": "QoS is not just for wide-area networks — Ethernet switches use a 3-bit PCP field inside the VLAN tag, giving 8 priority levels. VoIP and video are tagged high and served first; a file download gets priority 0 and waits. This keeps voice and video smooth on a busy office network."
+          "speaker_notes": "Ethernet switches use the 3-bit PCP field inside the VLAN tag, giving eight local priority levels. Remember 802.1p as the LAN counterpart to DSCP."
         }
       ]
     }

@@ -11,6 +11,7 @@ knowledge_base/sync_state.json
 knowledge_base/course_structure.json
 knowledge_base/_tmp_export.pptx
 knowledge_base/learned_rules.json
+knowledge_base/learned_rules.json.bak
 knowledge_base/regen_events.json
 __pycache__/
 *.pyc

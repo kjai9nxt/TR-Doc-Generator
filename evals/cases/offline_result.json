@@ -1,6 +1,6 @@
 {
   "kind": "offline",
-  "generated_at": "2026-07-28T13:45:37",
+  "generated_at": "2026-07-30T15:50:11",
   "overall_pass": true,
   "extraction": {
     "ok": false,
@@ -356,16 +356,29 @@
   "golden": {
     "session_no": 15,
     "pass": true,
-    "guardrails_pass": true,
+    "guardrails_pass": false,
     "guardrail_failures": [],
+    "grandfathered_failures": [
+      "Agenda has 4 items but the curriculum has 7 key takeaways — emit one agenda item per takeaway, verbatim.",
+      "Agenda item 1 was reworded. Expected the curriculum line verbatim:\n    expected: SCTP: Stream Control Transmission Protocol\n    got:      SCTP — Features, Multi-Streaming & Multi-Homing",
+      "Agenda item 2 was reworded. Expected the curriculum line verbatim:\n    expected: SCTP Features: Multi-Streaming, Multi-Homing\n    got:      SCTP vs TCP vs UDP",
+      "Agenda item 3 was reworded. Expected the curriculum line verbatim:\n    expected: SCTP vs TCP vs UDP\n    got:      Quality of Service (QoS) — Parameters & Techniques",
+      "Agenda item 4 was reworded. Expected the curriculum line verbatim:\n    expected: Quality of Service (QoS): Parameters - Delay, Jitter, Bandwidth, Loss\n    got:      IntServ, DiffServ & Switched Networks",
+      "Agenda item 1 and key takeaway 1 differ — they must be the same text.\n    agenda:   SCTP — Features, Multi-Streaming & Multi-Homing\n    takeaway: SCTP is a reliable, connection-oriented transport protocol (RFC 4960) using Associations and Chunks.",
+      "Agenda item 2 and key takeaway 2 differ — they must be the same text.\n    agenda:   SCTP vs TCP vs UDP\n    takeaway: Multi-Streaming solves HOL blocking; Multi-Homing solves single-path failure.",
+      "Agenda item 3 and key takeaway 3 differ — they must be the same text.\n    agenda:   Quality of Service (QoS) — Parameters & Techniques\n    takeaway: SCTP's 4-way handshake adds a Cookie for built-in DoS protection.",
+      "Agenda item 4 and key takeaway 4 differ — they must be the same text.\n    agenda:   IntServ, DiffServ & Switched Networks\n    takeaway: QoS manages traffic via four parameters: delay, jitter, bandwidth, and packet loss.",
+      "4 agenda item(s) are not numbered — number them 1..4 to mirror the numbered Key Takeaways.",
+      "Recap has 3 bullet(s) but the previous session had 5 agenda items — the recap must carry ALL of them, verbatim, in its 'topic: subtopics' format."
+    ],
     "warnings": [],
     "invariant_failures": [],
     "metrics": {
-      "estimated_minutes": 37.2,
+      "estimated_minutes": 35.4,
       "max_minutes": 40,
       "within_budget": true,
       "slide_count": 8,
-      "spoken_words": 4582
+      "spoken_words": 4338
     }
   }
 }

@@ -92,7 +92,29 @@ field is a hard guardrail failure.)
 period). A 5-word heading or subheading is a hard guardrail failure, in every mode
 including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 
+## Agenda / Recap / Key Takeaways — exact text rules
+- `agenda[i]` is **byte-identical to `key_takeaways[i]`**, both numbered `1.`..`N.`
+  and in the same order. Copied from the curriculum: not summarised, not re-titled,
+  not one word changed. The section breaker for item *i* uses that same text.
+- `recap.bullets` = **ALL of the previous session's agenda items**, in the same
+  `topic: subtopics` format they had there — not a fresh summary, not a subset.
+- These three lists are **exempt from every word cap**. Copy them exactly even when
+  they run long; never trim one to fit a cap.
+
+## Per-slide content rules
+- `content` text blocks: **≤ 35 words, 1-2 sentences** — one definition or framing
+  sentence, with the detail carried by bullets/tables. A 60-90 word paragraph is a
+  hard failure, in every mode including depth mode.
+- No redundancy on a slide: bullets must not restate the lead-in sentence, and must
+  not restate a table on the same slide. Pick one carrier per piece of information.
+- `speaker_notes`: **≤ 2 sentences** — one teaching cue + one exam/interview hook.
+- `analogy`: ends with an explicit tie-back naming the concept ("… — just as <how
+  the concept works>"), and matches the concept structurally.
+- Slide-visible text (`title`, `heading`, `subheading`, `content`, `analogy`) carries
+  **no second person** ("you"/"your") and **no navigational phrases** ("last
+  session", "as we saw earlier", "in the next slide", …). `speaker_notes` may keep a
+  lighter continuity voice but still no "you".
+
 ## Notes
-- `recap.bullets` = the previous session's key takeaways, stated concisely.
 - Tables are first-class: use them for any 2+ way comparison or spec sheet.
 - Keep prose in `content` tight — this is a teaching reference, not an essay.

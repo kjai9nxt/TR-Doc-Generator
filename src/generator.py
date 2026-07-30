@@ -8,6 +8,12 @@ _STRICT_NUDGE = (
     "\n\nIMPORTANT: Respond with STRICT, valid JSON ONLY — no prose before or after it, "
     "and make sure EVERY array item and object property is separated by a comma.")
 
+_SHRINK_NUDGE = (
+    "\n\nYOUR PREVIOUS ATTEMPT WAS CUT OFF because it was too long to finish. Produce the "
+    "SAME JSON but SMALLER so it completes: use FEWER slides (3-4 is fine for one key "
+    "takeaway), keep every bullet under 12 words, and keep speaker_notes to 2-3 sentences "
+    "per slide. Completeness of the JSON matters more than volume of prose.")
+
 
 def _system() -> str:
     # System prompt = generation contract + format spec + style guide, so the
@@ -19,18 +25,36 @@ def _system() -> str:
     ])
 
 
+def _learned() -> str:
+    """The reviewer-enforced rules, read FRESH on every call.
+
+    Read here rather than baked into the prompt text by the caller: guided mode
+    freezes its base_context at /guided/start, so a rule learned from the reviewer's
+    feedback on chunk 2 was missing from the prompt for chunks 3..N — the model
+    repeated, in the same session, the exact mistake it had just been corrected on.
+    Building it per call means feedback applies from the very next chunk onward.
+    """
+    try:
+        from . import learning
+        return learning.learned_rules_block()
+    except Exception:
+        return ""
+
+
 def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate") -> dict:
     """Call the generator and parse its JSON, RETRYING on a parse failure.
 
     Models occasionally emit slightly malformed JSON (a missing comma, stray
     prose). A fresh sample almost always parses; on the retry we also append a
     strict-JSON nudge. Truncation is NOT retried here (it raises TruncationError
-    from llm.complete — a bigger max_tokens is the fix, not a re-sample)."""
+    from llm.complete — a bigger max_tokens is the fix, not a re-sample); the one
+    exception is a single guided chunk, see generate_chunk."""
     m = config.harness()["model"]
     last = None
     for attempt in range(tries):
         raw = llm.complete(
-            system=_system(), user=user_prompt + (_STRICT_NUDGE if attempt else ""),
+            system=_system(), system_extra=_learned(),
+            user=user_prompt + (_STRICT_NUDGE if attempt else ""),
             model=m["generator"], max_tokens=m["max_tokens"], temperature=m["temperature"],
             label=label,
         )
@@ -67,7 +91,17 @@ def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
         regen_block = (f"\nREGENERATE — the human REJECTED your previous version of this "
                        f"chunk for this reason. Address it specifically:\n{reason}\n")
     user_prompt = f"{base_context}\n{approved_block}{regen_block}\n{instruction}"
-    return _complete_json(user_prompt, label="generate_chunk")
+    try:
+        return _complete_json(user_prompt, label="generate_chunk")
+    except llm.TruncationError:
+        # A whole-doc truncation is unrecoverable (re-sampling truncates the same
+        # way), but ONE chunk that ran long is: it only has to cover a single key
+        # takeaway, so asking for fewer, tighter slides genuinely fits. Worth the
+        # retry — an unhandled truncation here used to abandon a guided run that
+        # already had several paid chunks in it.
+        llm.log_debug("CHUNK TRUNCATED — retrying with a concision nudge", user_prompt[-800:])
+        return _complete_json(
+            user_prompt + _SHRINK_NUDGE, tries=1, label="generate_chunk_retry")
 
 
 def revise(user_prompt: str, prev_doc_json: str, issues: list[str],

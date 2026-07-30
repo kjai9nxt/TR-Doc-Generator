@@ -17,25 +17,40 @@ run — length is judged only as depth versus filler.
 
 ## Concrete targets (aim for all of these)
 
+**Depth means BREADTH OF COVERAGE, not fatter slides.** Get there by covering more
+sub-concepts on more slides — never by writing longer paragraphs or longer speaker
+notes. A 90-word paragraph is still a defect in this mode.
+
 - **13–18 slides total.** Do NOT stop at one slide per key takeaway. A rich
   session needs multiple slides per takeaway plus dedicated worked-example and
   compare/contrast slides.
-- **Each slide's `content` = a substantive explanation:** typically 3–6 sentences
-  of real teaching prose that explain the idea, followed by supporting
-  bullets/tables. One-line bullets alone are NOT acceptable in this mode.
+- **Enumerate the sub-concepts and give each its own slide.** For every key takeaway,
+  list the sub-concepts an exam would test and cover each one — this is where the
+  extra slides come from. A missing commonly-tested sub-concept is the most serious
+  failure in this mode too.
+- **Each slide's `content` stays tight:** a `text` block is still ≤ 35 words / 1-2
+  sentences (one framing or definition sentence), with the detail carried by richer
+  bullets and tables. In this mode bullets may be longer and more numerous than the
+  12-word skeleton cap, and tables may have more rows — but the framing sentence
+  does not become a paragraph.
 - **Overall length: aim for ~2,200–3,000 words** of skeleton content (roughly
-  double the concise skeleton). Depth, not padding.
+  double the concise skeleton), reached through MORE slides and fuller bullet/table
+  detail. Depth, not padding, and not longer prose blocks.
 
 ## What changes in this mode
 
-1. **Concision caps are OVERRIDDEN — EXCEPT the heading cap.** The STYLE GUIDE's
-   per-element word limits (bullets ≤12 words, `text` ≤2 sentences, table cells,
-   etc.) DO NOT apply. Ignore them. **The one exception: every slide `heading` and
-   `subheading` stays 3-4 words, hard maximum 4 — depth means richer bodies, never
-   longer headings.** `content` should be explanatory prose — one or more short
-   paragraphs that actually teach the idea — followed by bullets/tables for
-   structure. Write to teach, not to fit a stopwatch (there is no time limit in
-   this mode). Still no filler or repetition.
+1. **Some concision caps are overridden — but NOT these five.** The STYLE GUIDE's
+   bullet ≤12-word cap and table-cell cap DO NOT apply; write bullets and tables as
+   full as the teaching needs. Write to teach, not to fit a stopwatch (there is no
+   time limit in this mode). Still no filler or repetition.
+   **These five hold in this mode exactly as in the default mode:**
+   - `heading` / `subheading` stay 3-4 words, hard maximum 4;
+   - a `content` text block stays ≤ 35 words / 1-2 sentences (depth goes into
+     bullets, tables and extra slides — never into a paragraph);
+   - `speaker_notes` stay ≤ 2 sentences;
+   - no second person and no navigational phrases (see the STYLE GUIDE's Voice rules);
+   - agenda items are the verbatim numbered key takeaways, and the recap carries all
+     of the previous session's agenda items.
 
 2. **Define, then explain (broad → specific).** For each core concept, give the
    precise/textbook definition FIRST, then translate it into plain language and
@@ -59,18 +74,21 @@ run — length is judged only as depth versus filler.
    one bullet per key takeaway — extra depth goes into slides within a section, not
    into new agenda items.) Use the higher depth-mode slide ceiling.
 
-6. **Richer speaker notes (4–7 sentences).** Tell the instructor what to
-   emphasise, the common student traps or misconceptions, and any interview/exam
-   relevance — not just a restatement of the slide.
+6. **Speaker notes stay at 2 sentences.** Depth does NOT mean longer notes. One core
+   teaching cue (the trap or misconception to flag) plus one exam/interview hook —
+   and stop. No restating the slide, no "close by…".
 
 ## What does NOT change
 
 - Every slide still carries all six fields (heading, subheading, content,
   analogy, visual_guidance, speaker_notes).
 - `heading` / `subheading` stay 3-4 words each (hard max 4) — unchanged by depth mode.
+- `content` text blocks stay ≤ 35 words / 1-2 sentences; `speaker_notes` stay ≤ 2
+  sentences. Neither cap is relaxed here.
 - Slide `content` still must NOT contain spoken narration or meta-narration
   ("in this slide…", "in the previous/next session…") — that belongs in
-  speaker_notes.
+  speaker_notes. No second person ("you"/"your") anywhere, notes included.
+- Analogies still end with an explicit tie-back naming the concept.
 - Content stays accurate, grounded in the source material, on-topic, and free of
   future-session leakage. Analogies stay distinct across slides (no reused
   domain/theme).

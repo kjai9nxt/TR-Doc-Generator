@@ -328,5 +328,37 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
   .costside { position: static; left: auto; top: auto; width: auto; margin: 0 0 16px; }
   .csiderows { flex-direction: row; gap: 22px; border-top: none; padding-top: 0; }
 }
+/* ---------- Sheet-templates side panel ----------
+   Reference material you keep open while filling in the two sheet links, so it
+   docks in the LEFT gutter (the cost panel owns the right one) and scrolls on its
+   own. Needs 1420px for a 940px column + two ~250px gutters; below that it becomes
+   a normal card in the flow so nothing is pushed off-screen. */
+.tmplside {
+  position: fixed; z-index: 15;
+  top: 104px; right: calc(50% + 490px); width: 262px;
+  max-height: calc(100vh - 140px); display: flex; flex-direction: column;
+  background: linear-gradient(180deg, var(--card), #131824);
+  border: 1px solid var(--line); border-radius: var(--r);
+  padding: 14px 14px 16px; box-shadow: var(--sh);
+}
+.tsidehead { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: 0 0 auto; }
+.tsidetitle { font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
+.tsidebody {
+  margin-top: 10px; min-height: 0; flex: 1 1 auto;
+  max-height: none; padding: 12px 14px; font-size: 12.5px; line-height: 1.6;
+}
+.tsidebody h1 { font-size: 15px; margin: 14px 0 8px; }
+.tsidebody h2 { font-size: 13.5px; margin: 16px 0 8px; }
+.tsidebody table { font-size: 11px; }
+.tsidebody th, .tsidebody td { padding: 5px 7px; font-size: 11px; }
+.tsidebody code { font-size: 11px; }
+@media (max-width: 1419px) {
+  .tmplside {
+    position: static; right: auto; top: auto; width: auto;
+    max-height: none; margin: 0 0 16px;
+  }
+  .tsidebody { max-height: 420px; }
+}
+
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
 .tw { display: inline-block; width: 1em; color: var(--muted); }

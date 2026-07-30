@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.21"
+  version: "1.26"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -184,6 +184,145 @@ meta:
               of only implying it. (d) Eval-set LLM scorers get the depth-mode note so they do not
               penalise length; run_eval invariants skip the time + 12-slide ceiling when the limit is
               off. (e) One prompt builder for both modes: context_builder.time_mode_block()."
+    - "1.22 — GUIDED RUNS SURVIVE A RESTART (bug: 'Unknown guided session' killed a run mid-review
+              and threw away every generated chunk). Guided state lived ONLY in the server process,
+              but a guided run spans a long human review during which the app makes no requests —
+              long enough for a free host to spin the instance down, or a redeploy/restart to land.
+              (a) New guided_sessions table + db.save_guided/load_guided/delete_guided/purge_guided;
+              the run is checkpointed after every mutation (per chunk, so a restart costs at most the
+              chunk in flight) and rehydrated on demand (_guided_require/_guided_rehydrate): Session
+              objects rebuilt from session_no, base_context restored (no KB re-sync), an interrupted
+              generation resumed from the last saved chunk, an interrupted regenerate/finalize reset
+              to 'reviewing'. Stale checkpoints purged at startup (>72h). (b) The UI keeps the guided
+              id in localStorage and offers Resume/Discard for an unfinished run; a truly dead run
+              (kind='guided_gone') now clears itself instead of leaving a red dead-end. (c) Two
+              latent DB bugs found while fixing this: `.env` was loaded LAZILY, so db.init() created
+              the schema on one backend while post-auth requests used the other — server.py now calls
+              config.load_env() (renamed from _load_dotenv) BEFORE db.init(); and a set
+              TURSO_DATABASE_URL with libsql-experimental missing made _connect() raise inside every
+              best-effort try/except, so all tracking writes vanished silently — db now falls back to
+              local SQLite with a printed warning."
+    - "1.23 — THE SELF-EVOLUTION LOOP ACTUALLY CLOSES, and a failed review step no longer kills a
+              guided run. Three reported bugs, two root causes.
+              (a) 'Regenerate does nothing' + 'Create final TR Doc does nothing': _guided_regenerate
+              and _guided_finalize set status='error' on ANY exception, which is TERMINAL — the UI
+              hides the review panel for it, so the chunks (one paid LLM call each) became
+              unreachable and neither button could be clicked again. But nothing was broken except
+              one LLM call: logs/llm_debug.log shows truncated/unparseable JSON happening regularly.
+              Both steps now return to 'reviewing' with a non-fatal `last_error` shown INSIDE the
+              panel, chunks intact, retry by clicking again (_guided_step_failed). status='error'
+              is reserved for the generate-all phase. A truncated CHUNK is also retried once with a
+              concision nudge (a whole-doc truncation still isn't — it would truncate identically).
+              Frontend: busyAction released in finally() so a hung request can't leave every review
+              button disabled; chunks stay visible on error; the double-regenerate 409 race is
+              blocked; stale errors cleared on retry.
+              (b) 'It ignores my feedback and repeats the same mistake': four separate breaks.
+              1. DISTIL — record_feedback stored the reason VERBATIM, so a hurried deictic note
+              ('remove analogy from this') was injected into later sessions where 'this' means
+              nothing. Human feedback now goes through distill_feedback() (typos inferred, deictics
+              stripped); the original wording is kept in the rule's `raw` field.
+              2. DEDUPE — dedup was exact-text only, so the same request typed three ways became
+              three rules that diluted the block and evicted older ones. The distil call now gets
+              the existing rules and folds a restatement into one of them (hits++), with a
+              keyword-overlap VETO because the model would otherwise merge unrelated rules.
+              3. INJECT — the rules sat at the tail of the USER prompt under a soft 'LEARNED
+              PREFERENCES' header while the system prompt declared 'HARD RULES (a violation fails
+              the run)', so any conflict was resolved against the reviewer. They now go in the
+              SYSTEM prompt as a separate UNCACHED block (llm._system_blocks keeps the big static
+              prefix cached), declare precedence over the style/field guidance, and system_prompt.md
+              has a RULE PRECEDENCE section. Building them per call also fixes guided mode freezing
+              base_context at /guided/start — feedback on chunk 2 never reached chunks 3..N, so the
+              model repeated, in the same run, the mistake it had just been corrected on.
+              4. VERIFY — nothing ever checked compliance. The judge now receives the rules and puts
+              each violation in blocking_issues, which fails the gate -> forces a revision round ->
+              and re-learns the rule, raising its hit count. Rules raised more than once are marked
+              '[RAISED N× — you keep getting this wrong]' in the prompt.
+              Also: trimming at the 40-rule cap drops the LEAST-REINFORCED rule, not the oldest;
+              `python3 -m src.learning` re-distils an existing store in place (13 raw rules -> 7
+              general ones here, .bak kept); and single rules can be deleted (DELETE
+              /api/learned-rules/{index} + ✕ in the UI) since they now outrank the style guide."
+    - "1.24 — SIX REVIEWER RULES ON OUTPUT QUALITY, encoded as DETERMINISTIC GATES rather than
+              prompt text (each one was already implied by the prompt and still came back wrong,
+              which is the whole lesson of 1.23: a rule only in the prompt is one the model can
+              talk itself out of). New constraints.{content,speaker_notes,analogy,voice,coverage}
+              + agenda/recap blocks, all enforced in guardrails.check and scored by the rubric:
+              (1) COVERAGE — a syllabus line names a topic, not its scope. The prompt now requires
+              enumerating each takeaway's exam-testable sub-concepts and giving each a slide, with a
+              closing self-check pass; a silently missing sub-concept caps the coverage dimension at
+              2, while a deferral NAMED in the text does not.
+              (2) CONTENT — a `content` text block is <=35 words / <=2 sentences: one framing
+              sentence, detail in bullets/tables. Bullets may not restate their lead-in, and may not
+              restate a table on the same slide.
+              (3) VOICE — no second person anywhere (slide-visible text AND speaker notes; this
+              REVERSES the old style guide, which required 'you'), no filler ('and all'), and no
+              navigational phrases in slide-visible text ('last session', 'as we saw earlier', 'in
+              the next slide', …) so every slide stands alone. Recap/Agenda/Upcoming/closing are the
+              only places a cross-reference is allowed; notes may keep a lighter continuity voice.
+              (4) ANALOGY — must CORRELATE, not just illustrate: an explicit tie-back naming the
+              concept ('… — just as <how the concept works>'), matched against a tight list of
+              mapping connectives (bare 'like' does not count), plus a structural-match requirement.
+              (5) SPEAKER NOTES — 2 sentences, hard cap: one teaching cue + one exam/interview hook.
+              Uses an abbreviation-aware sentence splitter so 'i.e.' / 'G.114' / 'TCP.' cannot cause
+              a false failure that the revision loop could never satisfy.
+              (6) FORMATTING — agenda numbered 1..N and each item BYTE-IDENTICAL to the curriculum's
+              key-takeaway line (and to key_takeaways[i]); recap carries ALL of the previous
+              session's agenda items in 'topic: subtopics' form. Agenda/recap/takeaway lines are
+              explicitly EXEMPT from every word cap, since otherwise the verbatim rule and the
+              12-word bullet cap contradict each other — the exact conflict that made the model
+              paraphrase the agenda for three sessions running. Session now carries
+              prev_key_takeaways so graders can check recap completeness.
+              DEPTH MODE was reconciled, not left contradicting: it used to demand 3-6 sentence
+              prose blocks and 4-7 sentence notes. Depth now means BREADTH — more slides covering
+              more sub-concepts, fuller bullets/tables — while the content, notes, voice, analogy
+              and agenda rules hold unchanged. Measured against the existing outputs, the new gates
+              fire 64x on missing analogy tie-backs, 41x on over-long notes, 32x on prose content
+              blocks and 15x on agenda/recap formatting.
+              Two things surfaced while wiring this up: (a) the offline eval loaded whatever course
+              was SYNCED, so after the switch from Computer Networks to Operating Systems the golden
+              was graded against a different Session 15's takeaways (and CI, with no cache, used the
+              xlsx and disagreed) — eval_set.yaml now PINS the golden's course_file; (b) the golden
+              itself predates these rules. Its 25 mechanical violations are fixed in place (analogy
+              tie-backs, 2-sentence notes, second person, prose blocks split into bullets with no
+              content lost); the remaining 11 need it RE-AUTHORED from 4 grouped sections into 7
+              verbatim ones, which is an authoring decision, so it is exempted from those two gates
+              only, by explicit substring, printed as GRANDFATHERED on every run.
+              UI: the sheet templates moved from an inline collapsible (which pushed the whole form
+              down the page) to a docked left-gutter side panel mirroring the cost panel."
+    - "1.25 — SELF-EVOLUTION NOW SURVIVES ON THE PUBLISHED APP (the 1.23 loop was correct but its
+              memory was not durable in deployment, so on the hosted link it silently reset).
+              learned_rules.json and regen_events.json are written by the app WHILE IT IS USED, but
+              they live on the instance disk and the only DB backup ran at the end of a sync
+              (kb_backup, called just from sync.sync). On Render free the disk is wiped whenever the
+              instance spins down or redeploys, so a rule learned from a reviewer's regeneration
+              survived ONLY if a Connect & Sync happened to run before the instance died —
+              otherwise kb_restore brought back the older snapshot and the next TR doc was generated
+              with no memory of the feedback. New db.kb_put(name) persists ONE allow-listed KB file
+              immediately; learning._save() and regen_log.record() call it on every write
+              (best-effort, never breaks a generation). No-op on a persistent disk, where the file
+              already survives. Verified against a simulated ephemeral host: feedback -> disk wiped
+              -> restart -> kb_restore -> the rule is back in the injected prompt block; with
+              kb_put disabled the same scenario loses it, which is what was happening in production."
+    - "1.26 — LEARNED RULES ARE NOW TWO-TIER, not one global pile and not purely per-course.
+              The store was global while its docstring claimed per-course, so after the switch from
+              Computer Networks to Operating Systems a rule like 'Expand Rollback and Starvation
+              content' was being injected into Computer Networks documents. But scoping EVERYTHING
+              per course is the wrong fix: of the 7 rules learned so far, 6 are house style (copy the
+              agenda verbatim, tie analogies back to the concept, no analogy on an example slide),
+              so per-course scoping would make every new course start from zero on style and force
+              the reviewer to re-give the same feedback — the exact repetition problem this system
+              exists to prevent. So each rule now carries scope=global|course plus the course it was
+              learned on: global (house style) is injected for every course, course (subject matter
+              naming a specific topic/algorithm/protocol) only for its own. The distil call now
+              returns the classification as a second line (SCOPE: global|course) at no extra cost;
+              learning.applicable_rules(course) does the filtering and learned_rules_block() uses it;
+              dedup only collapses against rules that CO-APPLY, so two courses may hold similar
+              subject-matter rules. New self_evolution.scope_rules toggle reverts to the old
+              inject-everything behaviour. learning.classify_scope/scope_existing migrate a store
+              written before scoping (`python3 -m src.learning` now re-distils AND scopes); on the
+              real store it classified 6 house + 1 course, correctly binding the Rollback rule to
+              Operating Systems. GET /api/learned-rules returns the full store with an `applies`
+              flag + the active course, and the UI shows a house/course tag and greys out rules
+              learned on another course, so nothing is hidden — only not applied."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
@@ -227,6 +366,16 @@ constraints:
   agenda:
     # Agenda bullets must not exceed the number of key-takeaway lines.
     max_bullets_rule: "<= key_takeaways_count"
+    # The agenda is an INDEX of the session, not a rewrite of it. Each item is the
+    # key-takeaway line copied VERBATIM from the curriculum and numbered, so agenda,
+    # section breakers and the Key Takeaways list all read identically.
+    numbered: true
+    text_must_equal_key_takeaway: true
+  recap:
+    # Not a fresh 2-4 line summary: the recap reloads the PREVIOUS session's agenda —
+    # every item of it — in the same "topic: subtopics" shape it had there.
+    must_cover_all_prev_agenda_items: true
+    format: "topic: subtopics"
   slides:
     min: 5
     max: 12                         # split content across more slides, don't cram
@@ -237,6 +386,52 @@ constraints:
     # depth, never longer headings). `title` keeps the looser phrase cap.
     max_words: 4
     title_max_words: 8
+  content:
+    # Slide `content` is what appears ON the slide, so it cannot be prose. One framing
+    # sentence, then let bullets/tables carry the detail. Applies in DEPTH MODE too:
+    # depth comes from MORE slides covering more sub-concepts, never fatter paragraphs.
+    max_words_per_text_block: 35
+    max_sentences_per_text_block: 2
+    no_restating_lead_in_bullets: true
+    no_table_restated_as_bullets: true
+  speaker_notes:
+    # One core teaching cue + one exam/interview hook. Nothing else.
+    max_sentences: 2
+  analogy:
+    # An analogy that paints a picture and leaves the mapping implicit is incomplete:
+    # it must end by naming the concept it maps onto, and it must match the concept
+    # STRUCTURALLY (a cycle needs a circular-dependency scene, not a queue).
+    require_explicit_tie_back: true
+    # Deliberately tight: these are MAPPING phrases, not illustration markers. A
+    # bare "Like a school library shared by every student" is what we are rejecting,
+    # so "like" on its own is not in the list.
+    tie_back_connectives: ["just as", "exactly as", "just like", "in the same way",
+                           "same way as", "same way that", "which is how",
+                           "which is exactly how", "mirrors how", "maps onto",
+                           "corresponds to"]
+  voice:
+    # Slide-visible text is READ, not spoken, and every slide must stand alone.
+    allow_second_person: false          # reverses the old style-guide rule
+    banned_second_person: ["you", "your", "yours", "youre", "yourself", "yourselves"]
+    banned_filler: ["and all", "basically", "in order to",
+                    "it is important to note", "needless to say"]
+    # Navigational / cross-reference phrases. Banned in SLIDE-VISIBLE text only —
+    # Recap / Agenda / Upcoming Session / closing are structural and may reference
+    # other sessions, and speaker_notes may keep a lighter continuity voice.
+    banned_navigation: ["last session", "previous session", "next session",
+                        "upcoming session", "as we saw earlier", "as we discussed",
+                        "as discussed earlier", "introduced earlier", "seen earlier",
+                        "in the previous slide", "in the next slide", "in this slide",
+                        "we will see", "we saw", "let us", "moving on",
+                        "recall that", "now that we", "earlier we", "coming up"]
+  coverage:
+    # The most serious failure mode is a SILENTLY missing sub-concept: a syllabus line
+    # like "Page Faults" implies causes (first-reference/demand-load, swapped-out,
+    # copy-on-write, illegal access) and minor vs major faults — not just definition +
+    # handling steps + service time.
+    enumerate_sub_concepts: true
+    self_check_pass: true
+    deferrals_must_be_named: true
   language:
     variety: "Indian English"
     grammar: "must be error-free"
@@ -410,6 +605,13 @@ gates:
 # ----------------------------------------------------------------------------
 self_evolution:
   enabled: true
+  # Two-tier rule scope. A learned rule is either HOUSE STYLE (how any TR doc should
+  # be written — injected for every course) or SUBJECT MATTER (about one curriculum's
+  # topics — injected only for that course). Scoping everything per course would make
+  # a new course start from zero on house style, which is the exact repetition problem
+  # this system exists to prevent; scoping nothing leaks one course's topics into
+  # another. Set false to go back to injecting every rule everywhere.
+  scope_rules: true
   learn_from_judge: true            # surviving guardrail/judge/time defects (per-generation) -> durable rules
   learn_from_eval_sets: true        # eval-set FAILURES (evals/run_sets.py, System B) -> durable rules (LLM runs only)
   distill: true                     # LLM-rewrite each raw defect into a general, reusable DO/DON'T rule

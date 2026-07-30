@@ -38,6 +38,16 @@ export default function App() {
   // Guided mode: generate all chunks -> review each -> finalize
   const [mode, setMode] = useState('oneshot')
   const [guidedId, setGuidedId] = useState(null)
+  // The id of a guided run this browser started but never finished. The server
+  // checkpoints guided runs, so one left behind by a reload or a server restart can
+  // be resumed instead of stranding chunks that cost an LLM call each. Read once at
+  // mount (before any state reset can clear it) and offered as an explicit Resume.
+  const [resumableGid, setResumableGid] = useState(() => localStorage.getItem('tr_guided_id') || null)
+  function rememberGuided(gid) {
+    if (gid) localStorage.setItem('tr_guided_id', gid)
+    else localStorage.removeItem('tr_guided_id')
+    setResumableGid(gid)
+  }
   const [guided, setGuided] = useState(null)
   const [regenReason, setRegenReason] = useState('')
   const [regenFor, setRegenFor] = useState(null)
@@ -53,7 +63,12 @@ export default function App() {
 
   // Self-evolution: durable rules the agent has learned from feedback + defects
   const [learned, setLearned] = useState(null)
-  function refreshLearned() { api.learnedRules().then((d) => setLearned(d.rules || [])).catch(() => {}) }
+  const [learnedCourse, setLearnedCourse] = useState('')
+  function refreshLearned() {
+    api.learnedRules()
+      .then((d) => { setLearned(d.rules || []); setLearnedCourse(d.course || '') })
+      .catch(() => {})
+  }
   // Reload after a result appears or an eval run finishes — both can add rules.
   useEffect(() => { if (result) refreshLearned() }, [result, evalReport])
 
@@ -97,6 +112,7 @@ export default function App() {
     // Sessions appear ONLY after a successful Connect & Sync — never before.
   }, [user])
 
+
   function onSignIn(credential) {
     setAuthErr(null)
     setAuthToken(credential)
@@ -139,8 +155,14 @@ export default function App() {
     } catch (e) { setGdocBusy(false); alert('Could not start Google authorization: ' + e.message) }
   }
 
+  // The sheet templates live in a side panel, not inline: they are reference material
+  // you keep open while filling the two link fields in Step 1, and as an inline
+  // collapsible they pushed the whole form down the page every time you opened them.
   async function loadGuide() {
-    if (!guide) { const g = await api.templateGuide(); setGuide(g.markdown) }
+    if (!guide) {
+      try { const g = await api.templateGuide(); setGuide(g.markdown) }
+      catch (e) { setGuide(`Could not load the template guide: ${e.message}`) }
+    }
     setShowGuide((v) => !v)
   }
 
@@ -193,6 +215,19 @@ export default function App() {
   // 'reviewing' waits for the user, so continuing to poll would re-render the
   // chunk list every 1.5s and make the text flicker/blink while you read it.
   // Polling is resumed explicitly when the user regenerates or finalizes.
+  // The server restores an interrupted guided run from its checkpoint, so a
+  // 'guided_gone' error means the run is truly unrecoverable. Clear the dead run
+  // instead of leaving a stuck screen with a red box, so 'Generate all chunks'
+  // comes back and the user can start over.
+  function handleGuidedError(e) {
+    clearInterval(guidedPollRef.current)
+    setGenErr(e.message)
+    if (e.kind === 'guided_gone') {
+      setGuidedId(null); setGuided(null); setApproved({}); setRegenFor(null); setRegenReason('')
+      rememberGuided(null)      // nothing left to resume
+    }
+  }
+
   function pollGuided(gid) {
     clearInterval(guidedPollRef.current)
     const tick = async () => {
@@ -200,9 +235,11 @@ export default function App() {
         const st = await api.guidedState(gid)
         setGuided(st)
         if (st.status === 'reviewing') { clearInterval(guidedPollRef.current) }
-        else if (st.status === 'done') { clearInterval(guidedPollRef.current); setResult(st.result) }
+        else if (st.status === 'done') {
+          clearInterval(guidedPollRef.current); setResult(st.result); rememberGuided(null)
+        }
         else if (st.status === 'error') { clearInterval(guidedPollRef.current); setGenErr(st.error) }
-      } catch (e) { clearInterval(guidedPollRef.current); setGenErr(e.message) }
+      } catch (e) { handleGuidedError(e) }
     }
     guidedPollRef.current = setInterval(tick, 1500)
     tick()   // fetch immediately so the UI reacts without a 1.5s lag
@@ -212,27 +249,57 @@ export default function App() {
     setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null); setShowCost(true)
     api.guidedStart(sel, useJudge, enforceTime).then(({ guided_id }) => {
       setGuidedId(guided_id)
+      rememberGuided(guided_id)
       pollGuided(guided_id)
     }).catch((e) => setGenErr(e.message))
   }
 
+  // Pick an unfinished guided run back up (after a reload, or after the server was
+  // restarted/spun down mid-review). The chunks come back from the server's
+  // checkpoint, so nothing already generated has to be paid for again.
+  function resumeGuided() {
+    const gid = resumableGid
+    if (!gid) return
+    setGenErr(null); setResult(null); setEvalReport(null); setEvalErr(null)
+    setBusyAction(true)
+    api.guidedState(gid).then((st) => {
+      setBusyAction(false)
+      if (st.status === 'done' || st.status === 'error') {
+        rememberGuided(null)
+        setGenErr(st.status === 'error'
+          ? `That guided run had already failed: ${st.error || 'unknown error'}`
+          : 'That guided run had already finished — nothing left to resume.')
+        return
+      }
+      setMode('guided'); setGuidedId(gid); setGuided(st); setApproved({}); setShowCost(true)
+      if (st.status !== 'reviewing') pollGuided(gid)
+    }).catch((e) => { setBusyAction(false); handleGuidedError(e) })
+  }
+
   function approveChunk(i) { setApproved((a) => ({ ...a, [i]: true })) }
 
+  // busyAction disables EVERY button in the review panel (approve, regenerate,
+  // create-final), so it must never be left stuck on: a request that neither
+  // resolves nor rejects would make the whole panel look unclickable. Clearing it in
+  // finally() guarantees release on every path.
   function regenerateChunk(index) {
     const reason = regenReason.trim()
-    if (!reason) return
+    if (!reason || !guidedId) return
+    setGenErr(null)          // don't leave a previous attempt's error on screen
     setBusyAction(true)
     api.guidedRegenerate(guidedId, index, reason).then(() => {
-      setRegenFor(null); setRegenReason(''); setBusyAction(false)
+      setRegenFor(null); setRegenReason('')
       setApproved((a) => { const c = { ...a }; delete c[index]; return c })
       pollGuided(guidedId)   // resume polling to watch regenerating -> reviewing
-    }).catch((e) => { setBusyAction(false); setGenErr(e.message) })
+    }).catch(handleGuidedError).finally(() => setBusyAction(false))
   }
 
   function finalizeGuided() {
+    if (!guidedId) return
+    setGenErr(null)
     setBusyAction(true)
-    api.guidedFinalize(guidedId).then(() => { setBusyAction(false); pollGuided(guidedId) })  // watch assembling -> done
-      .catch((e) => { setBusyAction(false); setGenErr(e.message) })
+    api.guidedFinalize(guidedId).then(() => pollGuided(guidedId))  // watch assembling -> done
+      .catch(handleGuidedError).finally(() => setBusyAction(false))
   }
 
   function runEvalSets() {
@@ -307,9 +374,9 @@ export default function App() {
       )}
 
       <button className="link" onClick={loadGuide}>
-        {showGuide ? '▲ Hide' : '▼ Show'} the required sheet template
+        📋 {showGuide ? 'Hide' : 'Show'} the required sheet templates
       </button>
-      {showGuide && <div className="card guide"><ReactMarkdown remarkPlugins={[remarkGfm]}>{guide}</ReactMarkdown></div>}
+      {showGuide && <TemplateSidePanel markdown={guide} onClose={() => setShowGuide(false)} />}
 
       {/* STEP 1 */}
       <section className="card">
@@ -443,6 +510,18 @@ export default function App() {
                   🚦 Generate all chunks
                 </button>
               )}
+              {!guidedId && resumableGid && (
+                <div className="hint">
+                  You have an <b>unfinished guided run</b>. Its chunks are saved on the
+                  server, so you can carry on where you left off.{' '}
+                  <button className="ghostbtn" disabled={busyAction} onClick={resumeGuided}>
+                    ↩ Resume it
+                  </button>{' '}
+                  <button className="ghostbtn" onClick={() => rememberGuided(null)}>
+                    Discard
+                  </button>
+                </div>
+              )}
               <div className="hint">
                 Generates <b>every chunk first</b> (one per key takeaway), then you
                 <b> review each</b>, <b>approve</b> it or <b>regenerate</b> with a reason
@@ -459,12 +538,25 @@ export default function App() {
                 </div>
               )}
 
-              {guided?.chunks?.length > 0 && (guidedReviewing || guidedAssembling || gStatus === 'done') && (
+              {/* gStatus === 'error' is included so a run that died during
+                  generate-all still SHOWS the chunks it produced (each one cost an
+                  LLM call) instead of hiding them behind a bare red box. */}
+              {guided?.chunks?.length > 0 && (guidedReviewing || guidedAssembling || gStatus === 'done' || gStatus === 'error') && (
                 <div className="guided">
                   {guidedReviewing && (
                     <div className="gprogress">
                       Review each chunk — <b>Approve</b> or <b>Regenerate</b>.
                       <span className="gcount"> · {guided.chunks.filter((_, i) => approved[i]).length}/{guided.chunks.length} approved</span>
+                    </div>
+                  )}
+                  {/* A step that failed but left the run intact. Shown here, inside the
+                      panel, so it reads as "that click didn't work, try again" rather
+                      than tearing the review screen down. */}
+                  {guided.last_error && guidedReviewing && (
+                    <div className="alert warn">
+                      <b>That step didn’t complete — nothing was lost.</b>
+                      <pre>{guided.last_error}</pre>
+                      Your chunks are all still here. Click the same button again to retry.
                     </div>
                   )}
                   {gStatus === 'done' && (
@@ -496,7 +588,12 @@ export default function App() {
                                 <textarea rows={3} value={regenReason} onChange={(e) => setRegenReason(e.target.value)}
                                           placeholder="e.g. Make the analogy concrete, and shorten this to ~9 minutes." />
                                 <div className="gactions">
-                                  <button className="primary" disabled={busyAction || !regenReason.trim()} onClick={() => regenerateChunk(i)}>Regenerate</button>
+                                  {/* Also blocked while ANOTHER chunk is regenerating —
+                                      the server only runs one step at a time and would
+                                      reject the second click with a 409. */}
+                                  <button className="primary"
+                                          disabled={busyAction || gStatus === 'regenerating' || !regenReason.trim()}
+                                          onClick={() => regenerateChunk(i)}>Regenerate</button>
                                   <button className="ghostbtn" disabled={busyAction} onClick={() => { setRegenFor(null); setRegenReason('') }}>Cancel</button>
                                 </div>
                               </div>
@@ -587,7 +684,8 @@ export default function App() {
 
           {result.cost?.calls?.length > 0 && <CostBreakdown cost={result.cost} />}
 
-          {learned && <LearnedRules rules={learned} sessionNo={result.session_no} />}
+          {learned && <LearnedRules rules={learned} sessionNo={result.session_no}
+                                    course={learnedCourse} onChanged={refreshLearned} />}
 
           {result.markdown && (
             <details className="panel preview" open>
@@ -746,6 +844,27 @@ function LoginGate({ cfg, onSignIn, err }) {
   )
 }
 
+// Sheet templates as a docked side panel on the LEFT of the content column, so you
+// can read the required columns while filling in the two links in Step 1. Wide
+// screens get a fixed, independently-scrolling panel in the left gutter; narrower
+// screens (no gutter) fall back to a normal card in the flow — see .tmplside in
+// styles.css. Mirrors CostSidePanel, which occupies the right gutter.
+function TemplateSidePanel({ markdown, onClose }) {
+  return (
+    <aside className="tmplside" aria-label="Required sheet templates">
+      <div className="tsidehead">
+        <span className="tsidetitle">📋 Sheet templates</span>
+        <button className="csideclose" onClick={onClose} title="Hide">×</button>
+      </div>
+      {markdown
+        ? <div className="md tsidebody">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+          </div>
+        : <div className="csidepending"><span className="spinner" /> Loading…</div>}
+    </aside>
+  )
+}
+
 // Side panel with the cost of the CURRENT generation only — nothing cumulative.
 // Sticky on the right of the content column on wide screens; a normal block on
 // narrow ones (see .costside in styles.css).
@@ -868,14 +987,22 @@ function EvalReport({ report }) {
   )
 }
 
-function LearnedRules({ rules, sessionNo }) {
+function LearnedRules({ rules, sessionNo, course, onChanged }) {
   const newCount = rules.filter((r) => r.session_no === sessionNo).length
+  const applied = rules.filter((r) => r.applies !== false).length
   const srcLabel = { regeneration: 'human', judge: 'auto · judge', eval_set: 'auto · eval', feedback: 'human' }
+  const [busy, setBusy] = useState(null)
+  function remove(i, text) {
+    if (!window.confirm(`Stop applying this rule to future generations?\n\n${text}`)) return
+    setBusy(i)
+    api.deleteLearnedRule(i).then(() => onChanged && onChanged())
+      .catch((e) => alert(e.message)).finally(() => setBusy(null))
+  }
   return (
     <details className="panel learned" open={newCount > 0}>
       <summary>
         🧠 What the agent has learned
-        <span className="muted"> — {rules.length} rule{rules.length === 1 ? '' : 's'} applied to every future generation</span>
+        <span className="muted"> — {applied} of {rules.length} rule{rules.length === 1 ? '' : 's'} applied to <b>{course || 'this course'}</b></span>
         {newCount > 0 && <span className="chip good" style={{ marginLeft: 8 }}>+{newCount} this run</span>}
       </summary>
       {rules.length === 0 ? (
@@ -884,13 +1011,30 @@ function LearnedRules({ rules, sessionNo }) {
         </div>
       ) : (
         <div className="scorelist">
+          <div className="just" style={{ padding: '2px 2px 8px' }}>
+            <b>House</b> rules apply to every course. <b>Course</b> rules are about one
+            curriculum's subject matter and apply only there — a greyed row was learned
+            on a different course and is not being applied now.
+          </div>
           {rules.map((r, i) => (
-            <div key={i} className={`setrow ${r.session_no === sessionNo ? 'pass' : ''}`}>
+            <div key={i} className={`setrow ${r.session_no === sessionNo ? 'pass' : ''}`}
+                 style={r.applies === false ? { opacity: 0.45 } : undefined}>
               <div className="setmain">
                 <span className="tag">{srcLabel[r.source] || r.source || 'rule'}</span>
+                <span className="tag" title={r.scope === 'course'
+                  ? `Subject-matter rule — applies only to ${r.course || 'its course'}`
+                  : 'House-style rule — applies to every course'}>
+                  {r.scope === 'course' ? `course · ${r.course || '?'}` : 'house'}
+                </span>
                 <span className="dimname">{r.text}</span>
+                {r.hits > 1 && <span className="chip mid" title="you have asked for this more than once">×{r.hits}</span>}
                 {r.session_no === sessionNo && <span className="chip good">new</span>}
+                {/* These rules now outrank the style guide, so a badly-generalised one
+                    has to be removable — otherwise it is pushed at every session. */}
+                <button className="link" disabled={busy === i} title="Remove this rule"
+                        onClick={() => remove(i, r.text)}>✕</button>
               </div>
+              {r.raw && <div className="just">you wrote: “{r.raw}”</div>}
               {r.session_no != null && <div className="just">learned at Session {r.session_no}</div>}
             </div>
           ))}

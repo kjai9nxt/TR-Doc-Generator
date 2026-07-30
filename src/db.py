@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from . import config
 
@@ -34,14 +34,39 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+_TURSO_UNAVAILABLE_WARNED = False
+
+
+def _turso_driver():
+    """The libSQL driver, or None if it isn't installed. A cloud URL is only usable
+    with the driver present; without it we must fall back to the local file rather
+    than raise on every call. That mattered: `.env` here carries the deploy's
+    TURSO_DATABASE_URL, so on a machine without `libsql-experimental` every write
+    raised inside a best-effort try/except and vanished silently."""
+    global _TURSO_UNAVAILABLE_WARNED
+    try:
+        import libsql_experimental as libsql   # pip install libsql-experimental
+        return libsql
+    except Exception:
+        if not _TURSO_UNAVAILABLE_WARNED:
+            _TURSO_UNAVAILABLE_WARNED = True
+            print("[db] TURSO_DATABASE_URL is set but the libsql-experimental driver "
+                  "is not installed — falling back to the local SQLite file at "
+                  f"{DB_PATH}. Install it (pip install -r requirements.txt) to use "
+                  "the cloud DB.")
+        return None
+
+
 def _use_turso() -> bool:
-    return bool((os.environ.get("TURSO_DATABASE_URL") or "").strip())
+    if not (os.environ.get("TURSO_DATABASE_URL") or "").strip():
+        return False
+    return _turso_driver() is not None
 
 
 def _connect():
     """Open a fresh connection to whichever backend is configured."""
     if _use_turso():
-        import libsql_experimental as libsql   # pip install libsql-experimental
+        libsql = _turso_driver()
         return libsql.connect(
             database=os.environ["TURSO_DATABASE_URL"],
             auth_token=os.environ.get("TURSO_AUTH_TOKEN"))
@@ -108,6 +133,16 @@ _SCHEMA = [
     # so the app never has to re-sync after a restart. See kb_backup/kb_restore.
     """CREATE TABLE IF NOT EXISTS kb_files (
          path TEXT PRIMARY KEY, content TEXT, updated_at TEXT)""",
+    # In-flight GUIDED runs. A guided run spans a long human review (approve /
+    # regenerate each chunk), during which the app makes NO requests — long enough
+    # for a free host to spin the instance down, or for a redeploy/restart to land.
+    # The state used to live only in the server process, so any restart orphaned the
+    # run ("Unknown guided session") and threw away every generated chunk. It is now
+    # checkpointed here after every mutation and rehydrated on demand.
+    """CREATE TABLE IF NOT EXISTS guided_sessions (
+         id TEXT PRIMARY KEY, ts TEXT, updated TEXT, user_email TEXT,
+         session_no INTEGER, state_json TEXT)""",
+    "CREATE INDEX IF NOT EXISTS idx_guided_updated ON guided_sessions(updated)",
 ]
 
 
@@ -394,6 +429,60 @@ def per_user() -> list[dict]:
 # --------------------------------------------------------------------------- #
 # knowledge-base persistence (so a synced KB survives an ephemeral disk)
 # --------------------------------------------------------------------------- #
+# in-flight guided sessions (checkpoint / rehydrate across a server restart)
+# --------------------------------------------------------------------------- #
+def save_guided(gid: str, state: dict, *, user_email: str | None = None,
+                session_no: int | None = None) -> bool:
+    """Checkpoint one guided run's JSON-safe state. Best effort: a storage hiccup
+    must never break the run in progress, so this returns False instead of raising."""
+    try:
+        _exec("""INSERT INTO guided_sessions (id, ts, updated, user_email, session_no, state_json)
+                 VALUES (?,?,?,?,?,?)
+                 ON CONFLICT(id) DO UPDATE SET
+                   updated=excluded.updated, state_json=excluded.state_json""",
+              (gid, _now(), _now(), user_email, session_no,
+               json.dumps(state, ensure_ascii=False)))
+        return True
+    except Exception:
+        return False
+
+
+def load_guided(gid: str) -> dict | None:
+    """The saved state for one guided run, or None if it was never saved//purged."""
+    try:
+        rows = _query("SELECT state_json FROM guided_sessions WHERE id=?", (gid,))
+    except Exception:
+        return None
+    if not rows:
+        return None
+    try:
+        return json.loads(rows[0].get("state_json") or "null")
+    except Exception:
+        return None
+
+
+def delete_guided(gid: str) -> None:
+    try:
+        _exec("DELETE FROM guided_sessions WHERE id=?", (gid,))
+    except Exception:
+        pass
+
+
+def purge_guided(older_than_hours: int = 72) -> int:
+    """Drop checkpoints nobody can resume any more. Called at startup so the table
+    can't grow without bound. Returns the number of rows removed (0 on error)."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=older_than_hours)) \
+        .isoformat(timespec="seconds")
+    try:
+        rows = _query("SELECT id FROM guided_sessions WHERE updated < ?", (cutoff,))
+        for r in rows:
+            _exec("DELETE FROM guided_sessions WHERE id=?", (r["id"],))
+        return len(rows)
+    except Exception:
+        return 0
+
+
+# --------------------------------------------------------------------------- #
 # The small TEXT files a sync produces. Everything here is text-only (no images),
 # so it fits comfortably in the DB. The big .pptx bytes are NEVER stored — sync
 # already discards them after extracting text.
@@ -410,6 +499,34 @@ def _kb_local_files() -> list[str]:
     if decks.is_dir():
         out += [f"decks/{f.name}" for f in sorted(decks.glob("*.json"))]
     return out
+
+
+def kb_put(name: str) -> bool:
+    """Persist ONE allow-listed KB file to the DB, immediately.
+
+    kb_backup() only runs at the end of a sync, which is fine for the synced
+    artefacts (they only change during a sync) but NOT for the files the app writes
+    while it is being used: learned_rules.json and regen_events.json. On an
+    ephemeral host those were written to a disk that is wiped when the free instance
+    spins down or redeploys, so a rule learned from the reviewer's feedback survived
+    only if a Connect & Sync happened to run before the instance died — otherwise the
+    self-evolution loop silently reset and the next doc repeated the same mistake.
+    Called from learning._save() / regen_log.record(); best effort, never raises.
+    """
+    if not _use_turso():
+        return False                      # persistent disk: the file already survives
+    if name not in _KB_TOP_FILES:
+        return False
+    try:
+        content = (config.KB_DIR / name).read_text(encoding="utf-8")
+    except Exception:
+        return False
+    try:
+        _exec("INSERT OR REPLACE INTO kb_files (path, content, updated_at) VALUES (?,?,?)",
+              (name, content, _now()))
+        return True
+    except Exception:
+        return False
 
 
 def kb_backup() -> int:

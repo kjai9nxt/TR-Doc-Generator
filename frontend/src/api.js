@@ -93,6 +93,7 @@ export const api = {
   guidedFinalize: (id) => req(`/guided/${id}/finalize`, { method: 'POST' }),
 
   learnedRules: () => req('/learned-rules'),
+  deleteLearnedRule: (index) => req(`/learned-rules/${index}`, { method: 'DELETE' }),
 
   dashboard: () => req('/dashboard'),
 

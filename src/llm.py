@@ -123,12 +123,29 @@ def _key_or_raise() -> str:
     return key
 
 
+def _system_blocks(system: str, system_extra: str = ""):
+    """The `system` payload: one cached static block + an optional uncached tail.
+
+    Both providers accept a list of text blocks here, and both take cache_control on
+    a block. When caching is off we just concatenate, since there is nothing to
+    protect from invalidation.
+    """
+    extra = (system_extra or "").strip()
+    if not config.harness()["model"].get("prompt_caching"):
+        return f"{system}\n\n{extra}" if extra else system
+    blocks = [{"type": "text", "text": system,
+               "cache_control": {"type": "ephemeral"}}]
+    if extra:
+        blocks.append({"type": "text", "text": extra})
+    return blocks
+
+
 # --------------------------------------------------------------------------- #
 # OpenAI-compatible providers (OpenRouter)
 # --------------------------------------------------------------------------- #
 def _complete_openai_compatible(system: str, user: str, *, model: str, max_tokens: int,
                                 temperature: float, base_url: str, retries: int,
-                                label: str = "") -> str:
+                                label: str = "", system_extra: str = "") -> str:
     url = base_url.rstrip("/") + "/chat/completions"
     headers = {
         "Authorization": f"Bearer {_key_or_raise()}",
@@ -141,11 +158,13 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
     # identical across generate/revise (and separately across judge calls).
     # A cache_control breakpoint lets Anthropic reuse it (5-min TTL) instead of
     # reprocessing ~10k tokens every call — cheaper, and faster to first token.
-    if config.harness()["model"].get("prompt_caching"):
-        system_content = [{"type": "text", "text": system,
-                           "cache_control": {"type": "ephemeral"}}]
-    else:
-        system_content = system
+    #
+    # system_extra goes in a SEPARATE block AFTER the breakpoint: the learned rules
+    # need system-level authority, but they change whenever the reviewer gives
+    # feedback, so putting them inside the cached block would invalidate the cache
+    # on every correction. This way the big static prefix stays cached and only the
+    # short volatile tail is re-read.
+    system_content = _system_blocks(system, system_extra)
     payload = {
         "model": model,
         "max_tokens": max_tokens,
@@ -185,7 +204,8 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
 # native Anthropic SDK
 # --------------------------------------------------------------------------- #
 def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
-                        temperature: float, retries: int, label: str = "") -> str:
+                        temperature: float, retries: int, label: str = "",
+                        system_extra: str = "") -> str:
     try:
         import anthropic
     except ImportError as e:
@@ -193,11 +213,7 @@ def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
     client = anthropic.Anthropic(api_key=_key_or_raise())
     # Cache the large static system prompt across calls (see note in the
     # OpenRouter path). Native SDK takes cache_control on a system text block.
-    if config.harness()["model"].get("prompt_caching"):
-        system_param = [{"type": "text", "text": system,
-                         "cache_control": {"type": "ephemeral"}}]
-    else:
-        system_param = system
+    system_param = _system_blocks(system, system_extra)
     last = None
     for attempt in range(retries):
         try:
@@ -225,17 +241,22 @@ def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
 
 
 def complete(system: str, user: str, *, model: str, max_tokens: int,
-             temperature: float, retries: int = 3, label: str = "") -> str:
+             temperature: float, retries: int = 3, label: str = "",
+             system_extra: str = "") -> str:
+    """`system_extra` is appended to the system prompt as a separate, UNCACHED block
+    — for instructions that must carry system-level authority but change between
+    calls (the reviewer-enforced rules)."""
     m = config.harness()["model"]
     provider = m.get("provider", "openrouter").lower()
     if provider == "anthropic":
         return _complete_anthropic(system, user, model=model, max_tokens=max_tokens,
-                                   temperature=temperature, retries=retries, label=label)
+                                   temperature=temperature, retries=retries, label=label,
+                                   system_extra=system_extra)
     # openrouter / openai-compatible
     return _complete_openai_compatible(
         system, user, model=model, max_tokens=max_tokens, temperature=temperature,
         base_url=m.get("base_url", "https://openrouter.ai/api/v1"), retries=retries,
-        label=label)
+        label=label, system_extra=system_extra)
 
 
 # --------------------------------------------------------------------------- #

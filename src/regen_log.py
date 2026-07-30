@@ -29,6 +29,14 @@ def record(session_no, reason: str, before: str, after: str) -> None:
     })
     STORE.parent.mkdir(parents=True, exist_ok=True)
     STORE.write_text(json.dumps(data[-_MAX:], ensure_ascii=False, indent=2), encoding="utf-8")
+    # Same reason as learning._save(): on an ephemeral host this file is wiped when the
+    # instance spins down, and the sync-time backup may never run in between — which
+    # would leave the feedback_regeneration_adherence eval set with nothing to score.
+    try:
+        from . import db
+        db.kb_put(STORE.name)
+    except Exception:
+        pass
 
 
 def events(session_no=None) -> list[dict]:
