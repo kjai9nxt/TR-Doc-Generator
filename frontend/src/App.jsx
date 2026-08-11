@@ -806,7 +806,13 @@ function MyHistory({ history }) {
       <div className="metrics">
         <Metric label="Docs generated" value={s.total_runs || 0} />
         <Metric label="Approved" value={s.approved_docs || 0} />
-        <Metric label="Total cost" value={`$${(s.total_cost || 0).toFixed(4)}`} />
+        {/* "Total cost" was read as the price of ONE document — it is the running total
+            across every generation. Labelled explicitly, with the per-doc average next to
+            it, so the number that matters for a single run is visible directly. */}
+        <Metric label="Cost — all runs" value={`$${(s.total_cost || 0).toFixed(4)}`}
+                sub={`${s.total_runs || 0} generation(s)`} />
+        <Metric label="Avg per doc"
+                value={`$${(s.total_runs ? (s.total_cost || 0) / s.total_runs : 0).toFixed(4)}`} />
         <Metric label="Total tokens" value={(s.total_tokens || 0).toLocaleString()} />
       </div>
       {history.courses.map((c, i) => (

@@ -193,7 +193,7 @@ function viewOverview(d){
      <div class="metrics" style="margin-top:10px">
        ${metric(s.completion_rate+'%','Completion rate')}${metric(s.acceptance_rate+'%','Approval rate')}
        ${metric(dur(s.avg_duration_min),'Avg generation time')}${metric(s.avg_rubric,'Avg rubric /100')}
-       ${metric(money(s.total_cost),'Total cost')}${metric(num(s.total_tokens),'Total tokens')}
+       ${metric(money(s.total_cost),'Cost — all runs')}${metric(money(s.done?s.total_cost/s.done:0),'Avg per doc')}${metric(num(s.total_tokens),'Total tokens')}
      </div>
      <div class="metrics" style="margin-top:10px">
        ${metric(s.avg_pages?`${s.avg_pages}p`:'—','Avg length')}
