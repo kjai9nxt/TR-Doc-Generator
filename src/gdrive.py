@@ -29,9 +29,21 @@ _GDOC_MIME = "application/vnd.google-apps.document"
 def upload_as_gdoc(docx_path: str | Path, name: str, access_token: str) -> dict:
     """Upload docx_path to the token owner's Drive as a Google Doc named `name`.
     Returns {"id", "webViewLink", "name"}. Raises RuntimeError on API failure."""
+    return upload_as_gdoc_bytes(Path(docx_path).read_bytes(), name, access_token)
+
+
+def upload_as_gdoc_bytes(docx_bytes: bytes, name: str, access_token: str) -> dict:
+    """Same, from bytes already in hand.
+
+    Needed because the .docx is not always on this instance's disk: an ephemeral host
+    wipes the outputs directory on restart, so the copy may come back from the database
+    instead (see src/outputs.py). Without this the recovered document could be
+    downloaded but not turned into a Google Doc — half a fix.
+    """
     if not access_token:
         raise RuntimeError("Missing Google Drive access token.")
-    docx_bytes = Path(docx_path).read_bytes()
+    if not docx_bytes:
+        raise RuntimeError("The generated document is empty.")
     meta = {"name": name, "mimeType": _GDOC_MIME}   # target type => Drive converts
     boundary = "tr-doc-generator-boundary-7f3a"
     body = b"".join([

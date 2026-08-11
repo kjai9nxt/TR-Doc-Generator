@@ -26,8 +26,13 @@ export default function App() {
 
   const [sessions, setSessions] = useState([])
   const [sel, setSel] = useState(null)
-  const [useJudge, setUseJudge] = useState(true)
-  const [enforceTime, setEnforceTime] = useState(true)
+  // Generation policy comes from the harness via /api/status — the LLM quality check
+  // and the 40-minute budget are always on, and every doc is page-capped. The literals
+  // here are only the fallback for a status response that predates the `policy` field.
+  const policy = status?.policy || {
+    judge_always_on: true, time_always_enforced: true,
+    max_minutes: 40, max_pages: 16, target_pages: 14,
+  }
 
   const [logs, setLogs] = useState([])
   const [generating, setGenerating] = useState(false)
@@ -129,7 +134,39 @@ export default function App() {
   // (they own it -> only they can edit). Uses a one-time Drive token via GIS.
   const [gdoc, setGdoc] = useState(null)          // { session_no, link }
   const [gdocBusy, setGdocBusy] = useState(false)
-  function createGoogleDoc(session_no) {
+  // Download/Google-Doc failures are shown IN the result card next to the copy-out
+  // fallback, not as an alert() the user dismisses and then has nothing to act on.
+  const [dlErr, setDlErr] = useState(null)
+  const [copied, setCopied] = useState(false)
+  // Feedback on a FINISHED doc. Guided mode could teach the agent (via a regeneration
+  // reason); one-shot mode could not, so half the reviewers had no way to correct it.
+  const [fbText, setFbText] = useState('')
+  const [fbBusy, setFbBusy] = useState(false)
+  const [fbDone, setFbDone] = useState(null)   // { rule, merged, message }
+  const [fbErr, setFbErr] = useState(null)
+  function sendFeedback(session_no) {
+    setFbBusy(true); setFbErr(null); setFbDone(null)
+    api.submitFeedback(session_no, fbText)
+      .then((d) => { setFbDone(d); setFbText(''); refreshLearned() })
+      .catch((e) => setFbErr(e.message))
+      .finally(() => setFbBusy(false))
+  }
+  async function copyMarkdown(r) {
+    // Prefer the markdown already in the result; fall back to fetching it, which also
+    // works after a page reload (the server can recover it from the run's stored copy).
+    let text = r?.markdown
+    if (!text) {
+      try { text = (await api.preview(r.session_no, r.run_id, r.docx_name)).markdown }
+      catch (e) { setDlErr(e.message); return }
+    }
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true); setTimeout(() => setCopied(false), 2500)
+    } catch {
+      setDlErr('Clipboard access was blocked by the browser — select the preview text below and copy it manually.')
+    }
+  }
+  function createGoogleDoc(session_no, run_id, name) {
     if (authCfg?.auth_disabled) {
       alert('Creating a Google Doc needs Google sign-in. Turn AUTH_DISABLED off and sign in with your @nxtwave.co.in account.')
       return
@@ -145,7 +182,7 @@ export default function App() {
         scope: 'https://www.googleapis.com/auth/drive.file',
         callback: (resp) => {
           if (!resp || !resp.access_token) { setGdocBusy(false); alert('Google Drive permission was not granted.'); return }
-          api.createGdoc(session_no, resp.access_token)
+          api.createGdoc(session_no, resp.access_token, run_id, name)
             .then((d) => { setGdoc({ session_no, link: d.link }); if (d.link) window.open(d.link, '_blank', 'noopener') })
             .catch((e) => alert(e.message))
             .finally(() => setGdocBusy(false))
@@ -195,7 +232,7 @@ export default function App() {
 
   function startGenerate() {
     setGenerating(true); setResult(null); setGenErr(null); setLogs([]); setEvalReport(null); setEvalErr(null); setGdoc(null); setShowCost(true)
-    api.generate(sel, useJudge, enforceTime).then(({ job_id }) => {
+    api.generate(sel, true, policy.time_always_enforced).then(({ job_id }) => {
       pollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -247,7 +284,7 @@ export default function App() {
 
   function startGuided() {
     setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null); setShowCost(true)
-    api.guidedStart(sel, useJudge, enforceTime).then(({ guided_id }) => {
+    api.guidedStart(sel, true, policy.time_always_enforced).then(({ guided_id }) => {
       setGuidedId(guided_id)
       rememberGuided(guided_id)
       pollGuided(guided_id)
@@ -304,7 +341,7 @@ export default function App() {
 
   function runEvalSets() {
     setEvalRunning(true); setEvalReport(null); setEvalErr(null)
-    api.evalSets(result.session_no, true, enforceTime).then(({ job_id }) => {
+    api.evalSets(result.session_no, true, policy.time_always_enforced).then(({ job_id }) => {
       evalPollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -463,14 +500,15 @@ export default function App() {
               <ul>{selSession.takeaways.map((k, i) => <li key={i}>{k}</li>)}</ul>
             </details>
           )}
-          <label className="check">
-            <input type="checkbox" checked={useJudge} onChange={(e) => setUseJudge(e.target.checked)} />
-            Run the LLM quality judge (rubric /100)
-          </label>
-          <label className="check">
-            <input type="checkbox" checked={enforceTime} onChange={(e) => setEnforceTime(e.target.checked)} />
-            Keep within the 40-minute recording limit
-          </label>
+          {/* These used to be checkboxes. They are policy now, not preferences: an
+              ungraded doc also skips the revision loop and the agent's learning step,
+              and a session with no time budget is not a session anyone can record. So
+              the app states what will happen instead of offering to switch it off. */}
+          <div className="policy">
+            <span className="pchip">✓ LLM quality check on every generation</span>
+            <span className="pchip">✓ {policy.max_minutes}-minute session</span>
+            <span className="pchip">✓ Max {policy.max_pages} pages (target {policy.target_pages})</span>
+          </div>
 
           <div className="mode">
             <label className={`modeopt ${mode === 'oneshot' ? 'on' : ''}`}>
@@ -492,7 +530,7 @@ export default function App() {
               </button>
               <div className="hint">
                 The model drafts, grades, and (if needed) revises the whole doc — ~<b>2–4 min</b>.
-                {enforceTime ? ' Forced to fit the 40-minute budget.' : ' 40-minute limit is OFF.'}
+                {` Fitted to the ${policy.max_minutes}-minute budget and ${policy.max_pages} pages.`}
               </div>
               {(generating || logs.length > 0) && (
                 <>
@@ -527,7 +565,7 @@ export default function App() {
                 <b> review each</b>, <b>approve</b> it or <b>regenerate</b> with a reason
                 (that reason also teaches the agent for future sessions). All chunks must be
                 approved before <b>Create final TR Doc</b>.
-                {enforceTime ? ' Forced to fit the 40-minute budget.' : ' 40-minute limit is OFF.'}
+                {` Fitted to the ${policy.max_minutes}-minute budget and ${policy.max_pages} pages.`}
               </div>
 
               {guidedGenAll && (
@@ -628,7 +666,11 @@ export default function App() {
           <div className="metrics">
             <Metric label="Accepted" value={result.accepted ? '✅ Yes' : '⚠️ Review'} />
             <Metric label="Est. recording" value={`${result.time.estimated_minutes} min`}
-                    sub={enforceTime ? `budget ${result.time.max_minutes}` : 'limit off'} />
+                    sub={`budget ${result.time.max_minutes}`} />
+            {result.pages && (
+              <Metric label="Length" value={`~${result.pages.estimated_pages} pages`}
+                      sub={`max ${result.pages.max_pages}`} />
+            )}
             <Metric label="Slides" value={result.time.slide_count} />
             {result.judge && <Metric label="Rubric" value={`${result.judge.weighted_total}/100`} />}
             {result.cost?.totals && (
@@ -643,16 +685,66 @@ export default function App() {
             </div>
           )}
           <div className="dlrow">
-            <button className="primary download" onClick={() => api.downloadDoc(result.session_no).catch((e) => alert(e.message))}>⬇️ Download Word (.docx)</button>
-            <button className="ghostbtn" disabled={gdocBusy} onClick={() => createGoogleDoc(result.session_no)}>
+            <button className="primary download" onClick={() => api.downloadDoc(result.session_no, result.run_id, result.docx_name).catch((e) => setDlErr(e.message))}>⬇️ Download Word (.docx)</button>
+            <button className="ghostbtn" disabled={gdocBusy} onClick={() => createGoogleDoc(result.session_no, result.run_id, result.docx_name)}>
               {gdocBusy ? 'Creating Google Doc…' : '📄 Create Google Doc'}
             </button>
+            {/* Last-resort escape hatch. A reviewer once had BOTH the download and the
+                Google Doc fail on a finished document and copied it out of the preview
+                by hand. Both paths are fixed, but the copy button stays: no one should
+                ever be one broken button away from losing an hour of review. */}
+            <button className="ghostbtn" onClick={() => copyMarkdown(result)}>
+              {copied ? '✓ Copied' : '📋 Copy full text'}
+            </button>
           </div>
+          {dlErr && (
+            <div className="alert error">
+              <b>Could not produce the file.</b>
+              <pre>{dlErr}</pre>
+              Your document is not lost — use <b>Copy full text</b> above, or the preview
+              at the bottom of this page.
+            </div>
+          )}
           {gdoc?.session_no === result.session_no && gdoc.link && (
             <a className="gdoclink" href={gdoc.link} target="_blank" rel="noreferrer">
               🔗 Open in Google Docs — you have edit access
             </a>
           )}
+
+          {/* Teach the agent. This is the only feedback path in one-shot mode: the
+              note is distilled into a durable rule injected into every future doc for
+              this course, and the distilled text is shown back so a bad distillation
+              can be spotted and deleted rather than silently applied for months. */}
+          <details className="panel feedback">
+            <summary>🧠 Teach the agent — what should change in future docs?</summary>
+            <div className="fbbody">
+              <textarea
+                rows={3} value={fbText} disabled={fbBusy}
+                placeholder="e.g. Don't put an analogy on a worked-example slide. Use realistic hex base addresses in memory examples."
+                onChange={(e) => setFbText(e.target.value)} />
+              <div className="row">
+                <button className="ghostbtn" disabled={fbBusy || fbText.trim().length < 5}
+                        onClick={() => sendFeedback(result.session_no)}>
+                  {fbBusy ? 'Learning…' : 'Save as a rule'}
+                </button>
+                <span className="hint" style={{ marginTop: 0 }}>
+                  Applied to every future doc in this course, above the style guide.
+                </span>
+              </div>
+              {fbErr && <div className="alert error"><pre>{fbErr}</pre></div>}
+              {fbDone && (
+                <div className="alert ok">
+                  <b>{fbDone.merged ? 'Folded into an existing rule.' : 'Learned.'}</b>
+                  <div className="learnedtext">“{fbDone.rule?.text}”</div>
+                  {fbDone.rule?.hits > 1 && (
+                    <div className="hint" style={{ marginTop: 4 }}>
+                      Raised {fbDone.rule.hits}× — flagged to the model as a repeated miss.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </details>
 
           {result.judge?.scores && (
             <details className="panel rubric" open>
@@ -779,7 +871,7 @@ function RunTable({ runs }) {
               <span className="dashcell">{r.rubric != null ? `${r.rubric}` : '—'}</span>
               <span className="dashcell">${((r.cost || {}).cost || 0).toFixed(4)}</span>
               <span className="dashcell">
-                {done ? <a href="#" onClick={(e) => { e.preventDefault(); api.downloadDoc(r.session_no).catch((err) => alert(err.message)) }}>⬇️ .docx</a> : '—'}
+                {done ? <a href="#" onClick={(e) => { e.preventDefault(); api.downloadDoc(r.session_no, r.id, r.docx_name).catch((err) => alert(err.message)) }}>⬇️ .docx</a> : '—'}
               </span>
             </div>
             {isOpen && <CostBreakdown cost={{ totals: r.cost, calls: r.calls }} embedded ts={r.ts} rounds={r.rounds} />}
@@ -1058,11 +1150,17 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
                 <span className="dimname">{r.text}</span>
                 {r.hits > 1 && <span className="chip mid" title="you have asked for this more than once">×{r.hits}</span>}
                 {r.session_no === sessionNo && <span className="chip good">new</span>}
+                {/* A rule a guardrail now enforces is no longer injected OR checked by
+                    the judge — the judge used to re-adjudicate it from prose and could
+                    fail a compliant doc on a violation that wasn't there. Shown, not
+                    hidden, so it's clear the correction is still in force. */}
+                {r.gated && <span className="chip good" title={`Enforced automatically by ${r.gated}. No longer sent to the model or the judge — the check is exact now.`}>auto-enforced</span>}
                 {/* These rules now outrank the style guide, so a badly-generalised one
                     has to be removable — otherwise it is pushed at every session. */}
                 <button className="link" disabled={busy === i} title="Remove this rule"
                         onClick={() => remove(i, r.text)}>✕</button>
               </div>
+              {r.gated && <div className="just">Now enforced by {r.gated} — a hard gate rather than a prompt instruction.</div>}
               {r.raw && <div className="just">you wrote: “{r.raw}”</div>}
               {r.session_no != null && <div className="just">learned at Session {r.session_no}</div>}
             </div>

@@ -27,7 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from src import config, course_loader, pipeline, llm, pptx_ingest, regen_log, learning  # noqa: E402
-from graders import time_grader  # noqa: E402
+from graders import time_grader, page_grader  # noqa: E402
 
 SETS_DIR = ROOT / "evals" / "sets"
 CASES_DIR = ROOT / "evals" / "cases"
@@ -130,15 +130,26 @@ def _chk_document_structure(doc, session, sset):
     sec_n = len(doc.get("sections", []))
     if agenda_n != sec_n:
         v.append(f"sections({sec_n}) != agenda items({agenda_n})")
+    # `analogy` is NOT in the required set: it is conditional on the slide's role, and
+    # the analogy_placement set owns that biconditional. Requiring it here is what used
+    # to force an analogy onto comparison and worked-example slides.
     for s in slides:
-        miss = [f for f in ("heading", "subheading", "content", "analogy",
+        miss = [f for f in ("role", "heading", "subheading", "content",
                             "visual_guidance", "speaker_notes") if not s.get(f)]
         if miss:
             v.append(f"slide {s.get('n')} missing {miss}")
+    if config.harness()["constraints"].get("coverage", {}).get("require_coverage_map"):
+        cmap = doc.get("coverage_map")
+        if not isinstance(cmap, list) or not cmap:
+            v.append("coverage_map missing")
+        elif len(cmap) != len(session.key_takeaways):
+            v.append(f"coverage_map has {len(cmap)} entries vs "
+                     f"{len(session.key_takeaways)} takeaways")
     if (doc.get("closing") or "").strip() != "Thank You  |  All the Best":
         v.append("closing != 'Thank You  |  All the Best'")
     score = 5 if not v else 1
-    return score, ("exact layout + all six slide fields" if not v else f"{len(v)} issue(s): {v[:6]}")
+    return score, ("exact layout, all required slide fields, coverage_map present"
+                   if not v else f"{len(v)} issue(s): {v[:6]}")
 
 
 def _chk_chunk_count(doc, session, sset):
@@ -187,14 +198,125 @@ def _chk_curriculum_extraction(doc, session, sset):
     return 1, "; ".join(bits)
 
 
+def _chk_document_length(doc, session, sset):
+    """The 16-page ceiling. A doc that came in very SHORT is flagged too: the usual
+    cause is dropped coverage, not good editing, and that is the worse failure."""
+    pe = page_grader.estimate(doc)
+    p, cap, target = pe["estimated_pages"], pe["max_pages"], pe["target_pages"]
+    if p > cap:
+        score = 1
+    elif p < 6:
+        score = 1
+    elif p > target:
+        score = 3
+    else:
+        score = 5
+    top = sorted(pe["pages_by_part"].items(), key=lambda kv: -kv[1])[:3]
+    where = ", ".join(f"{k} ~{v:.1f}p" for k, v in top)
+    return score, f"~{p} pages (target {target}, max {cap}); biggest: {where}"
+
+
+def _chk_analogy_placement(doc, session, sset):
+    """The exact biconditional: analogy present iff role == concept_intro. Also checks
+    the roles are declared, valid, and not all labelled concept_intro to keep the
+    analogies — the cheat that would otherwise make this set trivially passable."""
+    con = config.harness()["constraints"]
+    valid = set(con.get("slide_roles", {}).get("values", []))
+    req = set(con.get("analogy", {}).get("required_on_roles", []))
+    ban = set(con.get("analogy", {}).get("banned_on_roles", []))
+    cap = con.get("slide_roles", {}).get("max_concept_intro_share", 1.0)
+    slides = _slides(doc)
+    viol, n_intro = [], 0
+    for s in slides:
+        role = str(s.get("role") or "").strip()
+        has = bool(str(s.get("analogy") or "").strip())
+        if not role:
+            viol.append(f"slide {s.get('n')} has no role")
+            continue
+        if role not in valid:
+            viol.append(f"slide {s.get('n')} role '{role}' invalid")
+            continue
+        if role == "concept_intro":
+            n_intro += 1
+        if role in ban and has:
+            viol.append(f"slide {s.get('n')} ({role}) has an analogy")
+        if role in req and not has:
+            viol.append(f"slide {s.get('n')} ({role}) is missing its analogy")
+    if slides and n_intro > cap * len(slides):
+        viol.append(f"{n_intro}/{len(slides)} slides labelled concept_intro (max {cap:.0%})")
+    score = 5 if not viol else (3 if len(viol) == 1 else 1)
+    detail = ("analogies exactly on first-introduction slides "
+              f"({n_intro}/{len(slides)} concept_intro)" if not viol
+              else f"{len(viol)} violation(s): {viol[:6]}")
+    return score, detail
+
+
+def _chk_worked_example_share(doc, session, sset):
+    """Deterministic HALF of the worked-example set: the share cap. Whether each example
+    was WARRANTED (and whether a procedural topic went without one) needs judgement, so
+    the LLM half is combined in via HYBRID below."""
+    con = config.harness()["constraints"]
+    cap = con.get("worked_example", {}).get("max_share_of_slides", 1.0)
+    slides = _slides(doc)
+    we = [s for s in slides if str(s.get("role") or "") == "working_example"]
+    if slides and len(we) > cap * len(slides):
+        return 1, (f"{len(we)}/{len(slides)} slides are worked examples "
+                   f"(max {cap:.0%}) — the concepts have stopped being taught")
+    return 5, f"{len(we)}/{len(slides)} worked-example slide(s), within the {cap:.0%} cap"
+
+
+def _chk_example_realism(doc, session, sset):
+    """Deterministic HALF of the realism set: worked examples must carry concrete values,
+    and no slide may use a placeholder. Whether a figure is PLAUSIBLE for the domain
+    (a 1000-byte page, a decimal where hex is conventional) is the LLM half."""
+    con = config.harness()["constraints"]
+    ex = con.get("examples", {})
+    min_lits = ex.get("min_numeric_literals", 2)
+    banned = [b.lower() for b in ex.get("banned_placeholders", [])]
+    viol = []
+    for s in _slides(doc):
+        blob = " ".join([
+            str(s.get(f) or "") for f in ("title", "heading", "subheading", "analogy",
+                                          "speaker_notes")]
+            + [str(b.get("text", "")) for b in (s.get("content") or [])
+               if b.get("type") == "text"]
+            + [str(i) for b in (s.get("content") or []) if b.get("type") == "bullets"
+               for i in (b.get("items") or [])]
+            + [str(c) for b in (s.get("content") or []) if b.get("type") == "table"
+               for row in (b.get("rows") or []) for c in row])
+        low = blob.lower()
+        for ph in banned:
+            if re.search(r"(?<![a-z])" + re.escape(ph) + r"(?![a-z])", low):
+                viol.append(f"slide {s.get('n')}: placeholder '{ph}'")
+        if str(s.get("role") or "") == "working_example":
+            lits = re.findall(r"0x[0-9a-f]+|\b\d[\d,._]*\b", blob, re.I)
+            if len(lits) < min_lits:
+                viol.append(f"slide {s.get('n')}: worked example with {len(lits)} "
+                            f"concrete value(s) (min {min_lits})")
+    score = 5 if not viol else (3 if len(viol) == 1 else 1)
+    return score, ("figures concrete, no placeholders" if not viol
+                   else f"{len(viol)} issue(s): {viol[:6]}")
+
+
 DETERMINISTIC = {
     "recording_time_budget": _chk_recording_time,
+    "document_length_pages": _chk_document_length,
+    "analogy_placement": _chk_analogy_placement,
     "conciseness": _chk_conciseness,
     "slide_phrasing_no_meta_narration": _chk_slide_phrasing,
     "document_structure_layout": _chk_document_structure,
     "chunk_count": _chk_chunk_count,
     "ppt_extraction_completeness": _chk_extraction,
     "curriculum_takeaway_extraction": _chk_curriculum_extraction,
+}
+
+# TRUE HYBRIDS: a deterministic half that catches what is countable, plus the LLM's
+# judgement of what is not, combined as the MINIMUM. Both halves must be satisfied —
+# an example within the share cap that was still unwarranted should not pass on a
+# technicality, and vice versa.
+HYBRID = {
+    "worked_example_appropriateness": _chk_worked_example_share,
+    "example_figure_realism": _chk_example_realism,
 }
 
 
@@ -240,13 +362,34 @@ Score this ONE dimension now."""
     return int(obj.get("score", 0)), str(obj.get("justification", ""))[:300]
 
 
-def _score_regen_event(event, sset) -> tuple[int, str]:
-    """LLM-score whether a regenerated chunk addressed the user's stated reason."""
+def _score_regen_event(event, sset, *, scope_mode: bool = False) -> tuple[int, str]:
+    """LLM-score a recorded regeneration event.
+
+    Two different questions are asked of the same event, which is why the flag exists:
+      - adherence (default): did the redo ADDRESS the reason?
+      - scope (scope_mode):  did it change ONLY what the reason concerned?
+    A redo can pass one and fail the other — rewriting the whole section usually fixes
+    the complaint and destroys four accepted slides doing it.
+    """
     m = config.harness()["model"]
     rubric = "\n".join(f"  {k} = {v}" for k, v in sset.get("rubric", {}).items())
-    system = ("You score whether a REGENERATED chunk addressed the user's stated reason. "
-              "Return ONLY JSON {\"score\": <1-5>, \"justification\": \"<one sentence>\"}. "
-              "Reserve 5 for a reason fully addressed while keeping the rest intact.")
+    scope = event.get("scope") or {}
+    if scope_mode:
+        system = ("You score whether a REGENERATION stayed inside the scope of the "
+                  "reviewer's complaint. Return ONLY JSON {\"score\": <1-5>, "
+                  "\"justification\": \"<one sentence>\"}. Reserve 5 for a reason fully "
+                  "resolved with everything unrelated left untouched. Penalise a "
+                  "whole-chunk rewrite prompted by a narrow note even when the result "
+                  "reads well, and penalise a no-op that changed nothing.")
+        ask = ("How the edit was applied (patch mode means untouched slides are "
+               f"byte-identical by construction):\n{json.dumps(scope, indent=2)}\n\n"
+               "Did AFTER resolve the reason WITHOUT changing anything the reason did "
+               "not concern? Score now.")
+    else:
+        system = ("You score whether a REGENERATED chunk addressed the user's stated reason. "
+                  "Return ONLY JSON {\"score\": <1-5>, \"justification\": \"<one sentence>\"}. "
+                  "Reserve 5 for a reason fully addressed while keeping the rest intact.")
+        ask = "Did AFTER address the reason? Score now."
     user = f"""REASON THE USER GAVE FOR REGENERATING:
 {event.get('reason','')}
 
@@ -259,7 +402,7 @@ BEFORE (the version the user rejected):
 AFTER (the regenerated version):
 {event.get('after','')}
 
-Did AFTER address the reason? Score now."""
+{ask}"""
     raw = llm.complete(system=system, user=user, model=m["judge"],
                        max_tokens=m.get("judge_max_tokens", 8000), temperature=0.0)
     obj = llm.extract_json(raw)
@@ -362,8 +505,10 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
             results.append({"id": sid, "grader": "skip", "skipped": True,
                             "reason": "depth mode (40-min limit OFF) — concision caps relaxed, not assessed"})
             continue
-        # Feedback adherence: score a recorded Guided-mode regeneration, if any.
-        if sid == "feedback_regeneration_adherence":
+        # Two sets score a recorded Guided-mode regeneration: one asks whether the redo
+        # ADDRESSED the reason, the other whether it stayed inside the reason's SCOPE.
+        if sid in ("feedback_regeneration_adherence", "regeneration_scope_discipline"):
+            scope_mode = sid == "regeneration_scope_discipline"
             evs = regen_log.events(session.number) or regen_log.events()
             if not evs:
                 results.append({"id": sid, "grader": "llm_judge", "skipped": True,
@@ -374,14 +519,35 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
                                 "reason": "LLM disabled (--no-llm)"})
                 continue
             try:
-                score, detail = _score_regen_event(evs[-1], sset)
+                score, detail = _score_regen_event(evs[-1], sset, scope_mode=scope_mode)
             except Exception as e:
                 results.append({"id": sid, "grader": "llm_judge", "skipped": True,
                                 "reason": f"llm error: {e}"})
                 continue
+            if scope_mode:
+                mode = (evs[-1].get("scope") or {}).get("mode", "unknown")
+                detail = f"[{mode}] {detail}"
             results.append({"id": sid, "grader": "llm_judge", "score": score,
                             "threshold": thr, "passed": score >= thr,
                             "detail": f"(scored {len(evs)} recorded regen event(s)) {detail}"})
+            continue
+        # True hybrids: the deterministic half always runs; the LLM half is combined as
+        # the MINIMUM so neither can carry the set on its own.
+        if sid in HYBRID:
+            d_score, d_detail = HYBRID[sid](doc, session, sset)
+            if use_llm:
+                try:
+                    l_score, l_detail = _llm_score(doc, session, sset,
+                                                   enforce_time=enforce_time)
+                    score = min(d_score, l_score)
+                    detail = f"deterministic {d_score}/5 ({d_detail}); judge {l_score}/5: {l_detail}"
+                    grader = "hybrid"
+                except Exception as e:
+                    score, detail, grader = d_score, f"{d_detail} (llm error: {e})", "deterministic"
+            else:
+                score, detail, grader = d_score, f"{d_detail} (judge half skipped: --no-llm)", "deterministic"
+            results.append({"id": sid, "grader": grader, "score": score,
+                            "threshold": thr, "passed": score >= thr, "detail": detail})
             continue
         if sid in DETERMINISTIC:
             score, detail = DETERMINISTIC[sid](doc, session, sset)

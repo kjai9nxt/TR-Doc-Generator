@@ -21,12 +21,13 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from src import (config, sheets, sync, course_loader, pipeline, pptx_ingest,
-                 context_builder, generator, docx_writer, app_settings, auth, db)
+                 context_builder, generator, docx_writer, app_settings, auth, db,
+                 outputs)
 
 app = FastAPI(title="TR Doc Generator API")
 
@@ -55,6 +56,18 @@ try:
         print(f"[startup] restored {_restored} knowledge-base file(s) from cloud storage")
 except Exception as _e:
     print(f"[startup] knowledge-base restore skipped: {_e}")
+# Retire learned rules that a deterministic gate now enforces (harness 1.29 turned
+# three of them into hard guardrails). Idempotent, and needed at startup because the
+# rule store is runtime data restored from the DB — a deployed instance would otherwise
+# keep feeding those rules to the judge, which re-adjudicates them from prose and can
+# fail a compliant doc on a violation that isn't there. See src/learning.retire_gated.
+try:
+    from src import learning as _learning
+    _retired = _learning.retire_gated()
+    if _retired:
+        print(f"[startup] retired {_retired} learned rule(s) now enforced by a guardrail")
+except Exception as _e:
+    print(f"[startup] learned-rule retirement skipped: {_e}")
 # Guided-run checkpoints are rehydrated lazily (on the first request for that id),
 # not eagerly — we only drop the ones too old for anyone to come back to.
 try:
@@ -76,6 +89,10 @@ class SyncBody(BaseModel):
     course_name: str | None = None         # grouping label for runs/teams
 
 
+# use_judge / enforce_time are kept on the wire for backwards compatibility with any
+# older client, but they are no longer honoured when the harness pins them
+# (gates.always_run_llm_judge, constraints.recording.always_enforced) — pipeline forces
+# both on. The app no longer sends them.
 class GenerateBody(BaseModel):
     session_no: int
     use_judge: bool = True
@@ -116,8 +133,17 @@ class CourseBody(BaseModel):
     course: str
 
 
+class FeedbackBody(BaseModel):
+    session_no: int
+    reason: str              # a plain-language correction; distilled into a durable rule
+
+
 class GdocBody(BaseModel):
     access_token: str        # short-lived Google Drive token from the frontend (GIS)
+    # Optional but preferred: identify the OUTPUT exactly rather than letting the server
+    # re-derive its filename from whatever course is synced right now (src/outputs.py).
+    run_id: str | None = None
+    name: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -191,6 +217,16 @@ def status():
         "saved_links": {"course": c, "details": d},
         "settings": app_settings.load(),
         "version": config.harness()["meta"]["version"],
+        # Generation policy the app shows instead of offering as checkboxes: the LLM
+        # quality check and the 40-minute budget always run, and every doc is capped at
+        # constraints.pages.max pages.
+        "policy": {
+            "judge_always_on": pipeline.judge_always_on(),
+            "time_always_enforced": pipeline.time_always_enforced(),
+            "max_minutes": config.harness()["constraints"]["recording"]["max_minutes"],
+            "max_pages": config.harness()["constraints"]["pages"]["max"],
+            "target_pages": config.harness()["constraints"]["pages"]["target"],
+        },
     }
 
 
@@ -281,17 +317,24 @@ def _run_generation(job_id: str, session_no: int, use_judge: bool, enforce_time:
                 job_id, status="done", accepted=final.get("accepted"),
                 rubric=(final.get("judge") or {}).get("weighted_total"),
                 est_minutes=final.get("time", {}).get("estimated_minutes"),
+                est_pages=(final.get("pages") or {}).get("estimated_pages"),
                 rounds=len(result.get("history", [])),
                 slides=final.get("time", {}).get("slide_count"),
                 cost=cost.get("totals"), calls=cost.get("calls"),
                 docx_path=result.get("docx"))
         except Exception:
             pass
+        # Store the rendered .docx/.md against this run. The files live on the instance
+        # disk, which an ephemeral host wipes on spin-down — and that is how a finished
+        # document became undownloadable after review. Best effort, never fatal.
+        outputs.persist(job_id, result.get("docx"))
         with _lock:
             JOBS[job_id].update(status="done", result={
+                "run_id": job_id,
                 "session_no": session_no,
                 "accepted": final["accepted"],
                 "time": final["time"],
+                "pages": final.get("pages"),
                 "judge": final.get("judge"),
                 "issues": final.get("issues", []),
                 "docx_name": Path(result["docx"]).name,
@@ -583,6 +626,24 @@ def _guided_generate_all(gid: str):
         _guided_db_error(gid, e)
 
 
+def _patch_one(gid: str, index: int, reason: str) -> tuple[dict, dict]:
+    """SURGICAL regeneration of one chunk: the model returns a patch, we apply it.
+
+    Returns (chunk, scope_summary). Raises so the caller can fall back to a full
+    re-draft; every failure reason is logged, never swallowed.
+    """
+    from src import patcher
+    with _lock:
+        state = GUIDED[gid]
+        prev_fragment = state["chunks"][index]["fragment"]
+        base_context = state["base_context"]
+    kind, _ = _chunk_spec(GUIDED[gid], index)
+    patch = generator.generate_patch(base_context, kind, prev_fragment, reason)
+    fragment, summary = patcher.apply(kind, prev_fragment, patch)
+    markdown = docx_writer.chunk_to_markdown(kind, fragment)
+    return {"kind": kind, "fragment": fragment, "markdown": markdown}, summary
+
+
 def _guided_regenerate(gid: str, index: int, reason: str):
     """Regenerate a single chunk in place (given the chunks before it) during review."""
     try:
@@ -598,10 +659,46 @@ def _guided_regenerate(gid: str, index: int, reason: str):
         except Exception:
             pass
         _guided_log(gid, f"Regenerating chunk {index + 1}: {GUIDED[gid]['labels'][index]} …")
-        chunk = _gen_one(gid, index, prior, reason)
-        # Log the before/reason/after so the feedback_regeneration_adherence eval can score it.
+
+        # PATCH FIRST. A reviewer note is almost always narrow, and re-drafting the whole
+        # chunk from it threw away the slides they were happy with. A patch touches only
+        # what it names, so the rest is not merely "asked to stay the same" — it is never
+        # regenerated at all.
+        rcfg = config.harness().get("regeneration", {}) or {}
+        chunk = scope = None
+        if rcfg.get("mode", "patch") == "patch":
+            try:
+                chunk, scope = _patch_one(gid, index, reason)
+                warn_at = rcfg.get("warn_above_changed_share", 0.5)
+                _guided_log(
+                    gid,
+                    f"Applied a surgical patch: changed slide(s) "
+                    f"{scope.get('slides_changed') or '—'}"
+                    + (f", removed {scope['slides_removed']}" if scope.get("slides_removed") else "")
+                    + (f", added {scope['slides_added']}" if scope.get("slides_added") else "")
+                    + f"; left {len(scope.get('slides_untouched') or [])} slide(s) untouched.")
+                if warn_at and scope.get("changed_share", 0) > warn_at:
+                    _guided_log(
+                        gid,
+                        f"⚠ That patch touched {scope['changed_share']:.0%} of the section — "
+                        f"broader than a targeted fix usually needs. Check the slides you "
+                        f"had already accepted.")
+            except Exception as e:
+                if not rcfg.get("fallback_to_full", True):
+                    raise
+                _guided_log(gid, f"⚠ Could not apply a surgical patch ({e}) — falling back "
+                                 f"to re-drafting the whole chunk.")
+                chunk = scope = None
+        if chunk is None:
+            chunk = _gen_one(gid, index, prior, reason)
+            scope = {"mode": "full", "note": "whole chunk re-drafted"}
+
+        # Log the before/reason/after so the feedback_regeneration_adherence and
+        # regeneration_scope_discipline evals can score it.
         try:
             from src import regen_log
+            regen_log.record(session_no, reason, before_md, chunk["markdown"], scope=scope)
+        except TypeError:      # older regen_log signature (no scope) — keep the event
             regen_log.record(session_no, reason, before_md, chunk["markdown"])
         except Exception:
             pass
@@ -628,16 +725,26 @@ def _guided_finalize(gid: str):
             enforce_time = state.get("enforce_time", True)
         opening = chunks[0]["fragment"]
         sections = [c["fragment"].get("section", c["fragment"]) for c in chunks[1:]]
-        doc = pipeline.assemble_doc(cur, nxt, opening, sections)
+        # Each takeaway chunk also reports the sub-concepts it covers and the slide
+        # teaching each one; assemble_doc folds those into the doc-level coverage_map
+        # (remapping slide numbers, since assembly renumbers the document).
+        coverage = [c["fragment"].get("coverage") or {} for c in chunks[1:]]
+        doc = pipeline.assemble_doc(cur, nxt, opening, sections, coverage)
         result = pipeline.finalize(session_no, doc, use_judge=use_judge,
                                    enforce_time=enforce_time,
                                    on_event=lambda m: _guided_log(gid, m))
         final = result["history"][-1]
+        # Persist the rendered outputs BEFORE surfacing the result. A guided run has
+        # already cost a long human review by this point, so its document must not be
+        # recoverable only from the instance disk.
+        outputs.persist(gid, result.get("docx"))
         with _lock:
             GUIDED[gid].update(status="done", result={
+                "run_id": gid,
                 "session_no": session_no,
                 "accepted": final["accepted"],
                 "time": final["time"],
+                "pages": final.get("pages"),
                 "judge": final.get("judge"),
                 "issues": final.get("issues", []),
                 "docx_name": Path(result["docx"]).name,
@@ -651,6 +758,7 @@ def _guided_finalize(gid: str):
                 gid, status="done", accepted=final.get("accepted"),
                 rubric=(final.get("judge") or {}).get("weighted_total"),
                 est_minutes=final.get("time", {}).get("estimated_minutes"),
+                est_pages=(final.get("pages") or {}).get("estimated_pages"),
                 rounds=len(result.get("history", [])),
                 slides=final.get("time", {}).get("slide_count"),
                 cost=cost.get("totals"), calls=cost.get("calls"),
@@ -788,6 +896,41 @@ def extraction_check():
     return pptx_ingest.completeness_report()
 
 
+@app.post("/api/feedback")
+def submit_feedback(body: FeedbackBody, user: dict = Depends(current_user)):
+    """Teach the agent from a finished document, outside Guided mode.
+
+    Until now `learning.record_feedback` was reachable ONLY from a guided-mode
+    regeneration, so a reviewer working in one-shot mode had no way to give feedback at
+    all — the corrections that should have become durable rules were simply never
+    captured. (The UI even had a 'feedback' source label that nothing could produce.)
+
+    The distilled rule is returned so the reviewer can SEE what the agent took away
+    from their note, and delete it if the distillation missed the point.
+    """
+    from src import learning
+    reason = (body.reason or "").strip()
+    if len(reason) < 5:
+        raise HTTPException(status_code=400, detail={"message":
+            "Say what should change, in a sentence — it becomes a rule applied to every "
+            "future document in this course."})
+    before = {r.get("text") for r in learning.rules()}
+    try:
+        learning.record_feedback(body.session_no, reason, source="feedback")
+    except Exception as e:
+        raise HTTPException(status_code=502, detail={"message": f"Could not record that: {e}"})
+    rules = learning.rules()
+    added = next((r for r in reversed(rules) if r.get("text") not in before), None)
+    # No new rule means it folded into an existing one (a restatement) — which is the
+    # dedupe working, not a failure, so report the reinforced rule instead.
+    if added is None:
+        added = max(rules, key=lambda r: (r.get("hits") or 1)) if rules else None
+        return {"ok": True, "merged": True, "rule": added,
+                "message": "Folded into an existing rule and raised its priority."}
+    return {"ok": True, "merged": False, "rule": added,
+            "message": "Learned — this will be applied to every future doc in this course."}
+
+
 @app.get("/api/learned-rules")
 def learned_rules(user: dict = Depends(current_user)):
     """Every stored rule, each flagged with whether it applies to the ACTIVE course.
@@ -801,9 +944,15 @@ def learned_rules(user: dict = Depends(current_user)):
     # Compare by text, not identity: applicable_rules() re-reads the store, so its
     # dicts are different objects from rules()'.
     applies = {r.get("text") for r in learning.applicable_rules(course)}
+    # `gated` explains the most common reason a rule is listed but not applied: a
+    # deterministic guardrail now enforces it better than the prose could, so it is no
+    # longer injected OR checked by the judge (which used to re-adjudicate it and
+    # occasionally invent a violation). Nothing is hidden — the rule stays visible.
     return {
         "course": course,
-        "rules": [{**r, "applies": r.get("text") in applies} for r in learning.rules()],
+        "rules": [{**r, "applies": r.get("text") in applies,
+                   "gated": learning.gate_for(r)}
+                  for r in learning.rules()],
     }
 
 
@@ -919,7 +1068,10 @@ def admin_overview(user: dict = Depends(require_admin)):
 @app.get("/api/admin/runs")
 def admin_runs(user: dict = Depends(require_admin), course: str | None = None,
                user_email: str | None = None, status: str | None = None):
-    return {"runs": db.runs(course=course, user_email=user_email, status=status)}
+    # page_limit travels with the rows so the runs table can flag over-length docs
+    # against the harness ceiling even when the admin never opened the Overview tab.
+    return {"runs": db.runs(course=course, user_email=user_email, status=status),
+            "page_limit": config.harness()["constraints"]["pages"]["max"]}
 
 
 @app.get("/api/admin/live")
@@ -993,16 +1145,21 @@ def admin_delete_team(team_id: int, user: dict = Depends(require_admin)):
 def create_gdoc(session_no: int, body: GdocBody, user: dict = Depends(current_user)):
     """Upload the generated .docx to the SIGNED-IN user's Google Drive as a native
     Google Doc and return its link. The file is created with the user's own Drive
-    token, so the user owns it and is the only editor — edit access is theirs alone."""
-    out = config.harness()["output"]
-    s = course_loader.get_session(session_no)
-    fname = out["docx_filename"].format(N=s.number, SessionName=s.name).replace("/", "-")
-    path = config.DATA_ROOT / out["dir"] / fname
-    if not path.exists():
-        raise HTTPException(status_code=404, detail={"message": "Generate the doc first."})
+    token, so the user owns it and is the only editor — edit access is theirs alone.
+
+    Resolved through src.outputs like the download, and for the same reason: this used
+    to re-derive the filename from the synced course, so it failed on exactly the docs
+    the download failed on — leaving a reviewer with no way to get the document out."""
+    got = _resolve_output(session_no, body.run_id, body.name)
     from src import gdrive
+    # The Drive title comes from the OUTPUT's own filename, not from the current
+    # curriculum, so a re-synced sheet cannot mislabel the uploaded document either.
+    title = got.filename.rsplit(".", 1)[0]
     try:
-        res = gdrive.upload_as_gdoc(path, f"Session {s.number} _ {s.name}", body.access_token)
+        if got.path is not None:
+            res = gdrive.upload_as_gdoc(got.path, title, body.access_token)
+        else:
+            res = gdrive.upload_as_gdoc_bytes(got.read_bytes(), title, body.access_token)
     except Exception as e:
         raise HTTPException(status_code=502, detail={"message": f"Google Drive upload failed: {e}"})
     return {"id": res.get("id"), "link": res.get("webViewLink"), "name": res.get("name")}
@@ -1018,17 +1175,57 @@ def admin_page():
     return FileResponse(str(p), media_type="text/html")
 
 
+_DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+def _resolve_output(session_no: int, run_id: str | None, name: str | None,
+                    kind: str = "docx"):
+    """Locate a run's rendered output, or raise a 404 that says what was searched.
+
+    Every download path goes through here. It never re-derives the filename from the
+    currently-synced course as its first move — that is what made Download and Create
+    Google Doc both fail on a finished document (see src/outputs.py).
+    """
+    got = outputs.resolve(session_no, run_id=run_id, filename=name, kind=kind)
+    if got is None:
+        raise HTTPException(status_code=404, detail={"message":
+            f"Could not find the generated {kind} for session {session_no}. Searched: "
+            f"{outputs.describe_attempts(session_no, run_id=run_id, filename=name)}. "
+            f"If the document was generated on an earlier deploy its file may have been "
+            f"cleared — regenerate it, or copy it from the preview below."})
+    return got
+
+
 @app.get("/api/download/{session_no}")
-def download(session_no: int, user: dict = Depends(current_user)):
-    out = config.harness()["output"]
-    s = course_loader.get_session(session_no)
-    fname = out["docx_filename"].format(N=s.number, SessionName=s.name).replace("/", "-")
-    path = config.DATA_ROOT / out["dir"] / fname
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="Generate the doc first.")
-    return FileResponse(
-        str(path), filename=fname,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+def download(session_no: int, run_id: str | None = None, name: str | None = None,
+             user: dict = Depends(current_user)):
+    """Download the rendered .docx.
+
+    `run_id` and `name` are optional but preferred: they identify the output exactly,
+    whereas the session number alone has to be resolved against a curriculum that may
+    have been re-synced since the doc was generated.
+    """
+    got = _resolve_output(session_no, run_id, name)
+    if got.path is not None:
+        return FileResponse(str(got.path), filename=got.filename, media_type=_DOCX_MIME)
+    # Recovered from the DB because the instance disk no longer has it.
+    return Response(
+        content=got.read_bytes(), media_type=_DOCX_MIME,
+        headers={"Content-Disposition": f'attachment; filename="{got.filename}"'})
+
+
+@app.get("/api/preview/{session_no}")
+def preview(session_no: int, run_id: str | None = None, name: str | None = None,
+            user: dict = Depends(current_user)):
+    """The Markdown of a generated doc, resolved the same way as the download.
+
+    The last-resort escape hatch: a reviewer whose .docx cannot be produced for ANY
+    reason can still retrieve the full document as text rather than losing the work.
+    The result payload carries this while the page is open; this survives a reload."""
+    got = _resolve_output(session_no, run_id, name, kind="md")
+    return {"session_no": session_no, "filename": got.filename,
+            "markdown": got.read_bytes().decode("utf-8", "replace"),
+            "source": got.source}
 
 
 # Serve the built React frontend (Vite output) at the site root. This is mounted

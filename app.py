@@ -113,8 +113,15 @@ if ss.synced and ss.sessions:
         for k in sel.key_takeaways:
             st.write("•", k)
 
-    use_judge = st.checkbox("Run the LLM quality judge (rubric /100)", value=True,
-                            help="Uncheck for a faster, cheaper draft graded only by the deterministic gates.")
+    # The judge and the 40-minute budget are harness policy, not per-run choices
+    # (gates.always_run_llm_judge, constraints.recording.always_enforced), so this
+    # legacy UI states them instead of offering a checkbox that pipeline would override.
+    _con = config.harness()["constraints"]
+    st.caption(
+        f"Every generation runs the LLM quality check, fits the "
+        f"{_con['recording']['max_minutes']}-minute recording budget, and stays within "
+        f"{_con['pages']['max']} pages (target {_con['pages']['target']}).")
+    use_judge = True
 
     if st.button("✨ Generate TR Doc", type="primary", disabled=not key_ok):
         logbox = st.empty()
@@ -141,13 +148,16 @@ if ss.gen_result is not None:
     result = ss.gen_result
     final = result["history"][-1]
     te = final["time"]
+    pe = final.get("pages") or {}
 
-    r1, r2, r3, r4 = st.columns(4)
+    r1, r2, r3, r4, r5 = st.columns(5)
     r1.metric("Accepted", "✅ Yes" if final["accepted"] else "⚠️ Review")
     r2.metric("Est. recording", f"{te['estimated_minutes']} min", f"budget {te['max_minutes']}")
-    r3.metric("Slides", te["slide_count"])
+    if pe:
+        r3.metric("Length", f"~{pe['estimated_pages']} pages", f"max {pe['max_pages']}")
+    r4.metric("Slides", te["slide_count"])
     if "judge" in final:
-        r4.metric("Rubric score", f"{final['judge'].get('weighted_total', '-')}/100")
+        r5.metric("Rubric score", f"{final['judge'].get('weighted_total', '-')}/100")
 
     if not final["accepted"]:
         st.warning("Below one or more gates — the best attempt is still available below.")

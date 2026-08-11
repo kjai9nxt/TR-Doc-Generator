@@ -19,6 +19,18 @@ Tone, density, and voice rules. Calibrated against the golden reference.
 - Indian English spelling and everyday Indian-context analogies (WhatsApp, trains,
   hospital ER, school canteen — as in the golden doc).
 
+## Length (HARD — two ceilings, and what to cut)
+- The rendered document must be **≤ 16 pages** (aim ~14) *and* recordable in
+  **≤ 40 minutes** (aim ~36). They are different limits: a table costs page space but
+  almost no narration, a chatty speaker note costs a minute but one line.
+- **The budget belongs to coverage.** When the doc is too long, cut in this order:
+  1. every analogy that is not on a first-introduction slide,
+  2. worked examples on topics that do not need one,
+  3. bullets that restate their lead-in or the table beside them,
+  4. prose that should be bullets, and filler.
+  **Never cut a sub-concept to make room.** A shorter doc that drops something an exam
+  tests has failed at the thing it exists to do.
+
 ## Conciseness (HARD — this is what appears on the slide)
 A TR doc is a SKELETON, not an essay. Every line must be tight enough to read at a
 glance. Enforce these caps:
@@ -52,7 +64,8 @@ glance. Enforce these caps:
   exam/interview hook. Nothing else. Do NOT restate the slide body, do NOT write
   "close by…", do NOT write "tie back to the analogy". This is the primary signal for
   the time estimator, so a bloated note inflates the whole session's estimate.
-- Analogy: 1-2 sentences. Concrete, everyday, not abstract — and it must
+- Analogy: **only on a `concept_intro` slide** — see the Analogy placement section
+  below. 1-2 sentences. Concrete, everyday, not abstract — and it must
   **correlate, not just illustrate**: end with an explicit tie-back that names the
   concept, `"<everyday scene> — just as / exactly as <how the concept works>."`
   An analogy that leaves the mapping implicit is incomplete. It must also match the
@@ -74,6 +87,31 @@ glance. Enforce these caps:
 5. Real-world usage / where it shows up.
 Each section should feel like it hands off to the next.
 
+## Analogy placement (where an analogy is allowed at all)
+- Every slide declares a `role`. An analogy is **required** on `concept_intro` and
+  **forbidden** on `mechanism`, `working_example`, `comparison`,
+  `advantages_limitations`, `reasoning`, `application` and `summary`.
+- The reason is simple: an analogy earns its lines by making an unfamiliar idea
+  graspable the **first** time it is met. On an advantages slide, a reasoning slide or a
+  comparison table the concept is already on the table — a second analogy there is
+  decoration that costs page space. Omit the field entirely on those slides.
+- No more than **half** the slides may be `concept_intro`. In a real session most
+  slides build on a concept already introduced; labelling them otherwise to keep
+  writing analogies is a failure.
+
+## Worked examples (only where one earns its slide)
+- Add a worked example only where the learner could follow every word and still not be
+  able to **DO** the thing: a procedure, an algorithm, a calculation, an address or
+  state translation, a traced sequence, a numeric trade-off.
+- **Omit it** for definitional, classificatory or terminological topics — "what a file
+  is", "types of scheduling", "components of a process". A manufactured example there
+  adds length, not understanding.
+- **Realistic figures, always.** Hex base/bound addresses (`0x00400000`), power-of-two
+  page and frame sizes (4 KB), real port and RFC numbers, plausible PIDs (4312), byte
+  counts (1500-byte MTU), timings in ms. Round toy numbers are acceptable only as
+  counts of things ("3 processes", "4 frames"), never as an address, size or
+  identifier — and never a placeholder ("some address", "value X", "xyz", "foo").
+
 ## Coverage rules (the most serious failure mode)
 - A syllabus line names a topic, not its full scope. For each key takeaway, enumerate
   the sub-concepts an exam would test, then give each one a slide. "Page Faults" is
@@ -83,6 +121,10 @@ Each section should feel like it hands off to the next.
 - Silently omitting a commonly-tested sub-concept is worse than any style defect.
   If a sub-concept genuinely belongs to a later session, **name the deferral** in that
   section rather than dropping it without a word.
+- Record that enumeration in `coverage_map` — takeaway by takeaway, each sub-concept
+  against the slide number that teaches it (or a named `deferred_to`). It is checked
+  against the slides that actually exist, so the map is the difference between "I
+  covered it" and "here is where I covered it".
 
 ## Recap rules
 - ALL of the *previous* session's agenda items, in the same `topic: subtopics` format
@@ -100,6 +142,9 @@ Each section should feel like it hands off to the next.
 - No second person ("you"/"your") anywhere, including speaker notes.
 - No cross-references in slide-visible text (see Voice).
 - No content beyond the session's key takeaways (scope creep breaks the 40-min budget).
-- No repeated analogies across slides — and no reused domain/theme either (if one
-  slide uses postal mail, another must not use couriers/postcards; switch domains).
+- No analogy on a slide that is not a first introduction — and no repeated analogies
+  across slides, nor a reused domain/theme (if one slide uses postal mail, another must
+  not use couriers/postcards; switch domains).
+- No worked example on a purely definitional topic, and no toy or placeholder figures
+  in the examples that do belong.
 - No unexplained jargon.

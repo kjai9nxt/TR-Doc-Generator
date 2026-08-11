@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from src import config, course_loader, pptx_ingest  # noqa: E402
 from guardrails import guardrails  # noqa: E402
-from graders import time_grader  # noqa: E402
+from graders import time_grader, page_grader  # noqa: E402
 
 EVAL_SET = ROOT / "evals" / "eval_set.yaml"
 CASES_DIR = ROOT / "evals" / "cases"
@@ -38,28 +38,53 @@ def _slides(doc):
 def check_invariants(doc, session, is_first, is_last, *, enforce_time: bool = True):
     """enforce_time=False (the user's 40-minute limit turned off) => the recording
     budget and the concise-mode slide ceiling are not invariants for this doc; the
-    estimate is still computed and reported, just not failed on."""
+    estimate is still computed and reported, just not failed on.
+
+    The PAGE ceiling has no such exemption — no mode allows a 25-page TR doc."""
+    con = config.harness()["constraints"]
     slides = _slides(doc)
     fails = []
     if len(doc.get("agenda", [])) > session.key_takeaways_count:
         fails.append("agenda > key takeaways")
     te = time_grader.estimate(doc)
+    pe = page_grader.estimate(doc)
     if enforce_time and not te["within_budget"]:
         fails.append(f"time {te['estimated_minutes']} > 40")
-    slide_max = 12 if enforce_time else config.harness()["constraints"]["slides"].get("max_rich", 18)
-    if not (5 <= len(slides) <= slide_max):
-        fails.append(f"slide count {len(slides)} out of [5,{slide_max}]")
+    if not pe["within_budget"]:
+        fails.append(f"pages ~{pe['estimated_pages']} > {pe['max_pages']}")
+    slide_max = (con["slides"]["max"] if enforce_time
+                 else con["slides"].get("max_rich", con["slides"]["max"]))
+    if not (con["slides"]["min"] <= len(slides) <= slide_max):
+        fails.append(f"slide count {len(slides)} out of "
+                     f"[{con['slides']['min']},{slide_max}]")
+    # `analogy` is deliberately NOT in this list: it is conditional on the slide's role
+    # (required on concept_intro, forbidden elsewhere), checked immediately below.
     for s in slides:
-        for req in ("heading", "subheading", "content",
-                    "analogy", "visual_guidance", "speaker_notes"):
+        for req in ("role", "heading", "subheading", "content",
+                    "visual_guidance", "speaker_notes"):
             if not s.get(req):
                 fails.append(f"slide {s.get('n')} missing required field '{req}'")
+    req_roles = set(con.get("analogy", {}).get("required_on_roles", []))
+    ban_roles = set(con.get("analogy", {}).get("banned_on_roles", []))
+    for s in slides:
+        role, has = str(s.get("role") or ""), bool(str(s.get("analogy") or "").strip())
+        if role in req_roles and not has:
+            fails.append(f"slide {s.get('n')} ({role}) missing its analogy")
+        if role in ban_roles and has:
+            fails.append(f"slide {s.get('n')} ({role}) must have no analogy")
+    intro_cap = con.get("slide_roles", {}).get("max_concept_intro_share", 1.0)
+    n_intro = sum(1 for s in slides if str(s.get("role") or "") == "concept_intro")
+    if slides and n_intro > intro_cap * len(slides):
+        fails.append(f"{n_intro}/{len(slides)} slides are concept_intro "
+                     f"(max {intro_cap:.0%})")
+    if con.get("coverage", {}).get("require_coverage_map") and not doc.get("coverage_map"):
+        fails.append("coverage_map missing")
     if (doc.get("recap") is not None) != (not is_first):
         fails.append("recap presence != (session_no > 1)")
     analogies = [s["analogy"].strip().lower() for s in slides if s.get("analogy")]
     if len(analogies) != len(set(analogies)):
         fails.append("duplicate analogy across slides")
-    return fails, te
+    return fails, te, pe
 
 
 def run_offline():
@@ -76,7 +101,7 @@ def run_offline():
 
     print(f"== OFFLINE: golden Session {g['session_no']} ==")
     gr = guardrails.check(doc, cur, is_first, is_last)
-    inv_fails, te = check_invariants(doc, cur, is_first, is_last)
+    inv_fails, te, pe = check_invariants(doc, cur, is_first, is_last)
 
     # Split the guardrail failures into ones that must block and ones the golden is
     # explicitly grandfathered on (see `known_deviations` in eval_set.yaml). Both are
@@ -96,6 +121,8 @@ def run_offline():
         print(f"     GRANDFATHERED (golden predates this rule): {f}")
     print(f"  est. minutes      : {te['estimated_minutes']} (budget {te['max_minutes']}, "
           f"within={te['within_budget']})")
+    print(f"  est. pages        : ~{pe['estimated_pages']} (max {pe['max_pages']}, "
+          f"target {pe['target_pages']}, within={pe['within_budget']})")
     print(f"  slides / spoken w : {te['slide_count']} / {te['spoken_words']}")
     if gr.warnings:
         for w in gr.warnings:
@@ -138,6 +165,10 @@ def run_offline():
                 "within_budget": te["within_budget"],
                 "slide_count": te["slide_count"],
                 "spoken_words": te["spoken_words"],
+                "estimated_pages": pe["estimated_pages"],
+                "max_pages": pe["max_pages"],
+                "pages_within_budget": pe["within_budget"],
+                "pages_by_part": pe["pages_by_part"],
             },
         },
     })
@@ -158,7 +189,7 @@ def run_live():
         final = result["history"][-1]
         rubric = (final.get("judge") or {}).get("weighted_total")
         prev, cur, nxt = course_loader.neighbours(sn, sessions)
-        inv_fails, te = check_invariants(doc, cur, prev is None, nxt is None)
+        inv_fails, te, pe = check_invariants(doc, cur, prev is None, nxt is None)
         exp = case["expect"]
         if "recap_present" in exp and (doc.get("recap") is not None) != exp["recap_present"]:
             inv_fails.append("recap_present mismatch")
@@ -169,6 +200,7 @@ def run_live():
         for f in inv_fails:
             print(f"   FAIL: {f}")
         print(f"  rubric={rubric} | est={te['estimated_minutes']}min | "
+              f"~{pe['estimated_pages']}p/{pe['max_pages']} | "
               f"slides={te['slide_count']} | RESULT: {'PASS' if ok else 'FAIL'}\n")
         cases.append({
             "session_no": sn, "pass": ok, "accepted": final.get("accepted"),
@@ -176,6 +208,8 @@ def run_live():
             "metrics": {
                 "estimated_minutes": te["estimated_minutes"],
                 "within_budget": te["within_budget"],
+                "estimated_pages": pe["estimated_pages"],
+                "pages_within_budget": pe["within_budget"],
                 "slide_count": te["slide_count"],
                 "spoken_words": te["spoken_words"],
             },

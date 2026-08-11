@@ -55,7 +55,11 @@ generate_cases:
 invariants:
   - "agenda bullet count <= session key-takeaway count"
   - "estimated recording minutes <= 40"
-  - "5 <= slide count <= 12"
-  - "every slide has heading, subheading, and content"
+  - "estimated rendered pages <= 16 (applies in EVERY mode, unlike the time budget)"
+  - "5 <= slide count <= 14"
+  - "every slide has role, heading, subheading, content, visual_guidance, speaker_notes"
+  - "analogy present IFF the slide's role is concept_intro (both directions checked)"
+  - "at most half the slides are concept_intro"
+  - "coverage_map present, and every slide it references exists"
   - "recap present iff session_no > 1"
   - "no analogy repeated across slides in the same doc"

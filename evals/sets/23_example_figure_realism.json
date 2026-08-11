@@ -1,0 +1,53 @@
+{
+  "id": "example_figure_realism",
+  "title": "Example Figures — Realistic, Never Toy or Placeholder",
+  "guideline_refs": [24],
+  "capability_status": "implemented",
+  "grader": "hybrid",
+  "applies_to": "per_slide_example",
+  "description": "Figures inside an example must be values a practitioner would recognise, at the right magnitude and shape for the domain: hex base and bound addresses, power-of-two page and frame sizes, real port and RFC numbers, plausible PIDs, byte counts, ms timings, standard field widths. A toy number teaches a toy mental model — 'base = 5' is not an address. Round numbers are fine as COUNTS of things (3 processes, 4 frames) but never as an address, a size or an identifier, and a placeholder ('some address', 'value X', 'xyz') is never acceptable. Deterministic half: a working_example slide carries at least 2 concrete values and no banned placeholder. LLM half: are those values plausible for the domain?",
+  "criterion": "Every example uses domain-plausible figures with correct magnitude and format; at least two concrete values per worked example; no placeholders anywhere in the doc.",
+  "rubric": {
+    "5": "Every figure is one a practitioner would recognise, correctly formatted for its kind.",
+    "3": "Figures are concrete but one is implausible or oddly formatted (a decimal where hex is conventional, an off-by-magnitude size).",
+    "1": "Toy values used as addresses/sizes/identifiers, a placeholder, or an 'example' with no concrete values at all."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "fr-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"example": "Process 4312 has base register 0x00400000 and a 12 KB limit; a 4 KB page maps to frame 0x0000C, giving physical 0x0000C2B4."},
+      "rationale": "Hex addresses, power-of-two page size, plausible PID."
+    },
+    {
+      "id": "fr-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"example": "3 processes compete for 4 identical tape drives; P1 holds 2, requests 1 more."},
+      "rationale": "Small round numbers used as COUNTS of things — correct here."
+    },
+    {
+      "id": "fr-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"example": "The base register holds 5 and the offset is 3, so the physical address is 8."},
+      "rationale": "Toy numbers as addresses. A learner leaves with the impression addresses are single digits."
+    },
+    {
+      "id": "fr-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"example": "Add the offset to some address in the base register to get the physical address."},
+      "rationale": "Placeholder instead of a figure, and nothing is actually worked through."
+    },
+    {
+      "id": "fr-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"example": "A page of size 1000 bytes is mapped to frame number X."},
+      "rationale": "Page sizes are powers of two (4 KB, 8 KB), and 'frame number X' is a placeholder."
+    }
+  ]
+}

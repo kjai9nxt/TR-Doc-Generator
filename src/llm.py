@@ -24,6 +24,14 @@ class TruncationError(RuntimeError):
     a re-run would truncate identically; the fix is a larger max_tokens."""
 
 
+# How long to wait for one non-streaming completion. A whole TR doc is a single
+# large request: the model reasons for thousands of tokens, then writes ~10k tokens
+# of JSON, which takes minutes rather than seconds. Generous on purpose — a timeout
+# here throws away a generation the model was still producing, and each one costs
+# real money.
+_REQUEST_TIMEOUT_S = 900
+
+
 # --------------------------------------------------------------------------- #
 # Token/cost accounting. Every complete() call appends a record here; pipeline
 # resets at the start of a run and reads the total at the end. OpenRouter returns
@@ -177,7 +185,15 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
     last = None
     for attempt in range(retries):
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=180)
+            # 180s was tuned when a doc took ~90s to write. It no longer holds:
+            # Claude Sonnet 5 thinks by default (adaptive thinking is on when the
+            # `thinking` field is omitted, unlike Sonnet 4.6), so a full TR doc now
+            # spends thousands of reasoning tokens before the first character of JSON
+            # and a single generation runs several minutes. Note `requests`' timeout is
+            # per-socket-read, not wall clock, so this is a floor rather than a
+            # guarantee — a generation that legitimately runs long is not an error.
+            resp = requests.post(url, headers=headers, json=payload,
+                                 timeout=_REQUEST_TIMEOUT_S)
             if resp.status_code == 200:
                 data = resp.json()
                 choice = data["choices"][0]

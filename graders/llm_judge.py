@@ -36,7 +36,8 @@ JUDGE_SYSTEM = (
 )
 
 
-def grade(doc: dict, session, time_estimate: dict, *, enforce_time: bool = True) -> dict:
+def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None = None,
+          enforce_time: bool = True) -> dict:
     h = config.harness()
     m = h["model"]
     judge_model = m["judge"]
@@ -57,18 +58,30 @@ def grade(doc: dict, session, time_estimate: dict, *, enforce_time: bool = True)
             "TutorialsPoint, and Scaler, and (b) the CURRENT standards/versions. Penalise "
             "anything missing versus mainstream references, and any deprecated/superseded "
             "info presented as current. Note in the justification what you verified.")
-    # Depth mode (40-min limit off): the doc is INTENDED to be fuller — explanatory
-    # prose, worked examples, extra slides. Judge clarity/filler, not brevity.
+    # Depth mode (40-min limit off): the doc is INTENDED to be fuller — richer bullets
+    # and tables, more thorough sub-concept treatment. Judge clarity/filler, not brevity.
+    # Note what depth mode does NOT buy: the page ceiling holds in every mode, and the
+    # analogy/worked-example rules are unchanged, so length_discipline is graded normally.
     depth_note = "" if enforce_time else (
         "\n\nDEPTH MODE: the 40-minute limit is OFF, so this doc is deliberately fuller "
-        "(explanatory prose in content, worked examples, extra slides). Do NOT penalise "
-        "length or the absence of terse bullets. For the conciseness and slide-content-style "
-        "dimensions, penalise only genuine filler, redundancy, or off-topic text — reward "
-        "clear, complete teaching. Still penalise meta-narration in slide content.")
+        "(fuller bullets and tables, more thorough treatment of each sub-concept). Do NOT "
+        "penalise the absence of terse 12-word bullets. For the slide-content-style "
+        "dimension, penalise only genuine filler, redundancy, or off-topic text — reward "
+        "clear, complete teaching. Still penalise meta-narration in slide content. "
+        "The PAGE ceiling applies in this mode too, so grade length_discipline normally: "
+        "depth mode buys thoroughness within the page budget, not an unbounded document. "
+        "The analogy-placement and worked-example rules are also unchanged here.")
     # Only feed the recording-time estimate when that dimension is actually graded.
     time_block = "" if not enforce_time else (
         "DETERMINISTIC RECORDING-TIME ESTIMATE (ground truth for the recording_time dimension):\n"
         + json.dumps(time_estimate, indent=2) + "\n\n")
+    # The page estimate is ground truth in EVERY mode — the page ceiling is the one
+    # length limit no mode relaxes. `pages_by_part` is what makes the judgement useful:
+    # it separates "long because it covers a lot" from "long because of decoration".
+    page_block = "" if not page_estimate else (
+        "DETERMINISTIC PAGE-COUNT ESTIMATE (ground truth for the length_discipline "
+        "dimension; pages_by_part shows where the length went):\n"
+        + json.dumps(page_estimate, indent=2) + "\n\n")
     # Close the self-evolution loop: the judge is also the VERIFIER that the rules
     # learned from the reviewer's earlier corrections were actually applied. Without
     # this, nothing ever checked, so a rule could be silently ignored on every run
@@ -87,7 +100,21 @@ def grade(doc: dict, session, time_estimate: dict, *, enforce_time: bool = True)
                 "followed, add a specific entry to `blocking_issues` naming the rule and "
                 "where the doc breaks it. Also reflect the violation in the most relevant "
                 "dimension's score. If a rule genuinely does not apply to this doc, ignore "
-                f"it silently.\n\n{block}")
+                "it silently.\n"
+                # EVIDENCE REQUIREMENT. A blocking_issue fails the run outright and is then
+                # re-learned as a durable rule, so a hallucinated violation does lasting
+                # damage. This happened: a compliant doc was failed for putting an analogy
+                # on a worked-example slide that had no `analogy` field at all. Rules whose
+                # enforcement is now deterministic are no longer sent here (see
+                # self_evolution.gated_rules), and the rest require quoted evidence.
+                "EVIDENCE REQUIRED: only report a rule violation you can prove by QUOTING "
+                "the exact offending text and naming the slide number and JSON field it "
+                "came from. If the field you would need to quote is absent from the doc, "
+                "the rule was FOLLOWED — say nothing. Never infer a violation from a "
+                "slide's topic, title, or role. When in doubt, leave it out: a false "
+                "blocking issue discards a correct document and is then learned as a "
+                "permanent rule.\n"
+                f"\n{block}")
     except Exception:
         pass
     prompt = f"""RUBRIC
@@ -96,32 +123,77 @@ def grade(doc: dict, session, time_estimate: dict, *, enforce_time: bool = True)
 SESSION KEY TAKEAWAYS (coverage must match these):
 {json.dumps(session.key_takeaways, indent=2)}
 
-{time_block}TR DOC TO GRADE (JSON):
+{time_block}{page_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
 {web_note}{depth_note}{rules_note}
 
 Grade now. Return only the contract JSON."""
-    raw = llm.complete(
-        system=JUDGE_SYSTEM, user=prompt,
-        model=judge_model, max_tokens=m.get("judge_max_tokens", 8000),
-        temperature=0.0, label="judge",
-    )
-    result = llm.extract_json(raw)
-
-    # Drop the excluded dimension from the scores entirely (so it isn't shown/gated).
-    for ex in exclude:
-        result.get("scores", {}).pop(ex, None)
-
-    # recompute weighted total defensively over the ACTIVE dimensions (renormalised)
     dims = {d["id"]: d["weight"] for d in config.rubric()["dimensions"]
             if d["id"] not in exclude}
-    tot_w = sum(dims.values())
+
+    def _ask() -> dict:
+        raw = llm.complete(
+            system=JUDGE_SYSTEM, user=prompt,
+            model=judge_model, max_tokens=m.get("judge_max_tokens", 8000),
+            temperature=0.0, label="judge",
+        )
+        r = llm.extract_json(raw)
+        # Drop the excluded dimension from the scores entirely (not shown/gated).
+        for ex in exclude:
+            r.get("scores", {}).pop(ex, None)
+        return r
+
+    result = _ask()
+    missing = _unscored(result, dims)
+    if missing:
+        # RETRY ONCE. The judge sometimes returns a dimension with a justification but
+        # no `score` — observed live on `pedagogy`, whose justification read "Ordering is
+        # strong: problem → idea → mechanism". The old code read that as 0 via
+        # `.get("score", 0)`, which cost the doc 8 weighted points AND tripped the
+        # per-dimension gate, so a document that passed every guardrail at 12/16 pages
+        # with 5/5 on eleven dimensions was rejected — and the phantom "scored None < 4"
+        # defect was then distilled into a durable learned rule. A missing score is a
+        # malformed response, not a verdict of zero. Re-asking is cheap on Haiku.
+        llm.log_debug("JUDGE RETURNED UNSCORED DIMENSION(S) — retrying",
+                      json.dumps(result.get("scores", {}), indent=2)[:2000],
+                      extra=f"missing: {sorted(missing)}")
+        retry = _ask()
+        if len(_unscored(retry, dims)) < len(missing):
+            result, missing = retry, _unscored(retry, dims)
+
+    # Recompute the weighted total over the dimensions that were ACTUALLY scored, and
+    # renormalise. Counting an unscored dimension as 0 would invent a verdict the judge
+    # never gave; excluding it reports the score honestly over what was assessed.
+    scored = {did: w for did, w in dims.items() if did not in missing}
+    tot_w = sum(scored.values())
     acc = 0.0
-    for did, w in dims.items():
-        sc = result.get("scores", {}).get(did, {}).get("score", 0)
-        acc += (sc / 5.0) * w
+    for did, w in scored.items():
+        acc += (_score_of(result, did) / 5.0) * w
     result["weighted_total"] = round(acc / tot_w * 100, 1) if tot_w else 0.0
+    if missing:
+        # Surfaced, never silent: the reviewer must be able to see that part of the
+        # rubric was not assessed rather than reading a total that looks complete.
+        result["unscored_dimensions"] = sorted(missing)
+        result.setdefault("suggested_fixes", []).append(
+            f"Grader note: the judge returned no score for {sorted(missing)} even after a "
+            f"retry, so those dimensions were excluded from the total (scored over "
+            f"{len(scored)} of {len(dims)} dimensions). Re-run the grading to assess them.")
     return result
+
+
+def _score_of(result: dict, did: str):
+    obj = (result.get("scores") or {}).get(did) or {}
+    return obj.get("score") if isinstance(obj, dict) else None
+
+
+def _unscored(result: dict, dims: dict) -> set:
+    """Active dimensions the judge did not return a usable 1-5 score for."""
+    out = set()
+    for did in dims:
+        sc = _score_of(result, did)
+        if not isinstance(sc, (int, float)) or isinstance(sc, bool):
+            out.add(did)
+    return out
 
 
 def passes_gates(judge_result: dict) -> tuple[bool, list[str]]:
@@ -130,9 +202,18 @@ def passes_gates(judge_result: dict) -> tuple[bool, list[str]]:
     if judge_result["weighted_total"] < gates["rubric_min_total"]:
         reasons.append(
             f"Rubric total {judge_result['weighted_total']} < {gates['rubric_min_total']}.")
+    # A dimension the judge never scored is a GRADER failure, not a document failure —
+    # it is reported in `unscored_dimensions` and excluded from the total, and must not
+    # be gated on. Gating on it rejected a compliant doc for "scored None < 4".
+    unscored = set(judge_result.get("unscored_dimensions") or [])
     for did, obj in judge_result.get("scores", {}).items():
-        if obj.get("score", 0) < gates["rubric_min_per_dimension"]:
-            reasons.append(f"Dimension '{did}' scored {obj.get('score')} "
+        if did in unscored:
+            continue
+        score = obj.get("score") if isinstance(obj, dict) else None
+        if not isinstance(score, (int, float)) or isinstance(score, bool):
+            continue
+        if score < gates["rubric_min_per_dimension"]:
+            reasons.append(f"Dimension '{did}' scored {score} "
                            f"< {gates['rubric_min_per_dimension']}.")
     reasons += [f"Blocking: {b}" for b in judge_result.get("blocking_issues", [])]
     return len(reasons) == 0, reasons

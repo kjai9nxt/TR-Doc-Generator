@@ -10,27 +10,42 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src import config, course_loader, context_builder, generator, docx_writer  # noqa: E402
 from guardrails import guardrails  # noqa: E402
-from graders import time_grader, llm_judge  # noqa: E402
+from graders import time_grader, page_grader, llm_judge  # noqa: E402
 
 
 def _log(msg: str):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def judge_always_on() -> bool:
+    """The LLM quality check is not optional. Beyond leaving the doc ungraded, skipping
+    it also skips the revision loop and the self-evolution step that turns surviving
+    defects into durable rules — so the opt-out quietly disabled the agent's learning."""
+    return bool(config.harness()["gates"].get("always_run_llm_judge", False))
+
+
+def time_always_enforced() -> bool:
+    """Every session is a 40-minute session. The old toggle could remove the budget
+    altogether, which also removed the only length discipline the doc had."""
+    return bool(config.harness()["constraints"]["recording"].get("always_enforced", False))
+
+
 def _score_key(accepted: bool, report: dict) -> tuple:
     """Rank a draft so the loop can keep the BEST one across rounds. Ordered by:
-    accepted, then hard gates (guardrails, time), then rubric total, then fewest
+    accepted, then hard gates (guardrails, time, pages), then rubric total, then fewest
     issues. Higher tuple = better.
 
     With the 40-minute limit OFF the time term is neutral (always 1) — otherwise a
     deliberately fuller depth-mode draft would be ranked below a thinner one for
-    busting a budget that does not apply to this run."""
+    busting a budget that does not apply to this run. The PAGE term has no such
+    exemption: the page ceiling applies in every mode."""
     rubric = report.get("judge", {}).get("weighted_total", 0) or 0
     gr_ok = 1 if report.get("guardrails", {}).get("passed") else 0
     enforced = report.get("time_enforced", True)
     time_ok = 1 if (not enforced or report.get("time", {}).get("within_budget", True)) else 0
+    page_ok = 1 if report.get("pages", {}).get("within_budget", True) else 0
     n_issues = len(report.get("issues", []) or [])
-    return (1 if accepted else 0, gr_ok, time_ok, rubric, -n_issues)
+    return (1 if accepted else 0, gr_ok, time_ok, page_ok, rubric, -n_issues)
 
 
 def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bool,
@@ -39,12 +54,21 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
 
     enforce_time=False keeps the recording-time estimate in the report but stops it
     from gating acceptance or triggering a revision (the '40-min limit' UI toggle).
-    It also puts generation in DEPTH MODE (richer doc, higher slide ceiling)."""
+    It also puts generation in DEPTH MODE (richer doc, higher slide ceiling).
+
+    The PAGE budget is gated unconditionally: it is the ceiling the reviewer actually
+    reads against, and there is no mode in which a 25-page TR doc is acceptable."""
+    if judge_always_on():
+        use_judge = True
+    if time_always_enforced():
+        enforce_time = True
     gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time)
     te = time_grader.estimate(doc)
+    pe = page_grader.estimate(doc)
     # time_enforced travels with the report so downstream consumers (draft ranking,
     # the UI, the dashboard) know the estimate is informational on this run.
-    report = {"guardrails": gr.as_dict(), "time": te, "time_enforced": enforce_time}
+    report = {"guardrails": gr.as_dict(), "time": te, "pages": pe,
+              "time_enforced": enforce_time}
     issues = list(gr.failures)
     time_ok = te["within_budget"] or not enforce_time
     if enforce_time and not te["within_budget"]:
@@ -52,22 +76,37 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
             f"Recording estimate {te['estimated_minutes']} min exceeds the "
             f"{te['max_minutes']} min ceiling — split/trim content.")
 
+    page_gate = config.harness()["gates"].get("pages_within_budget", True)
+    page_ok = pe["within_budget"] or not page_gate
+    if page_gate and not pe["within_budget"]:
+        # Say WHERE the pages went, so the revision pass cuts ritual rather than
+        # coverage — the whole point of the ceiling.
+        parts = sorted(pe["pages_by_part"].items(), key=lambda kv: -kv[1])[:4]
+        breakdown = ", ".join(f"{k} ~{v:.1f}p" for k, v in parts)
+        issues.append(
+            f"Document is ~{pe['estimated_pages']} pages, over the "
+            f"{pe['max_pages']}-page ceiling (target {pe['target_pages']}). Biggest "
+            f"consumers: {breakdown}. Cut analogies that are not on a concept_intro "
+            f"slide, worked examples the topic does not need, bullets restating a table "
+            f"or lead-in, and prose that should be bullets — do NOT drop a sub-concept.")
+
     judge_ok = True
     rubric_total = 100
     if use_judge:
-        jr = llm_judge.grade(doc, session, te, enforce_time=enforce_time)
+        jr = llm_judge.grade(doc, session, te, page_estimate=pe, enforce_time=enforce_time)
         report["judge"] = jr
         rubric_total = jr.get("weighted_total", 0)
         judge_ok, judge_reasons = llm_judge.passes_gates(jr)
         issues += judge_reasons
 
-    accepted = gr.passed and time_ok and judge_ok
+    accepted = gr.passed and time_ok and page_ok and judge_ok
     report["accepted"] = accepted
     report["issues"] = issues
 
     # Revising costs another ~1-2 min LLM call, so only do it when it clearly pays:
-    # a HARD gate fails (structure/time), or the rubric is badly below bar.
-    hard_fail = (not gr.passed) or (enforce_time and not te["within_budget"])
+    # a HARD gate fails (structure/time/pages), or the rubric is badly below bar.
+    hard_fail = ((not gr.passed) or (enforce_time and not te["within_budget"])
+                 or (page_gate and not pe["within_budget"]))
     revise_floor = config.harness()["gates"].get("rubric_revise_below", 75)
     should_revise = hard_fail or (use_judge and rubric_total < revise_floor)
     return accepted, report, issues, should_revise
@@ -75,6 +114,15 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
 
 def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: bool = True,
         enforce_time: bool = True, on_event=None, user: str | None = None) -> dict:
+    # Harness policy wins over the caller: the quality check and the 40-minute budget
+    # are not per-run choices any more (gates.always_run_llm_judge,
+    # constraints.recording.always_enforced). Forced here as well as in evaluate() so
+    # the PROMPT is built for the same mode the doc is graded in.
+    if judge_always_on():
+        use_judge = True
+    if time_always_enforced():
+        enforce_time = True
+
     def log(msg: str):
         _log(msg)
         if on_event:
@@ -121,8 +169,9 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
             doc, cur, is_first, is_last, use_judge=use_judge, enforce_time=enforce_time)
         report["round"] = rnd
         history.append(report)
-        te = report["time"]
+        te, pe = report["time"], report["pages"]
         log(f"Round {rnd}: accepted={accepted} | est={te['estimated_minutes']}min "
+             f"| ~{pe['estimated_pages']}p/{pe['max_pages']} "
              f"| guardrails={'ok' if report['guardrails']['passed'] else 'FAIL'}"
              + (f" | rubric={report.get('judge',{}).get('weighted_total','-')}" if use_judge else ""))
 
@@ -196,6 +245,7 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
             "accepted": final["accepted"],
             "rubric": final.get("judge", {}).get("weighted_total"),
             "est_minutes": final["time"]["estimated_minutes"],
+            "est_pages": final["pages"]["estimated_pages"],
             "enforce_time": enforce_time,
             "rounds": len(history),
             "slides": n_slides,
@@ -208,6 +258,7 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     c = cost["totals"]
     log(f"DONE. accepted={final['accepted']}  "
         f"est_minutes={final['time']['estimated_minutes']}  "
+        f"est_pages={final['pages']['estimated_pages']}/{final['pages']['max_pages']}  "
         f"cost=${c.get('cost', 0):.4f} ({c.get('total_tokens', 0)} tokens)")
     return {"doc": doc, "history": history, "docx": str(docx_path), "cost": cost}
 
@@ -215,11 +266,13 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
 # --------------------------------------------------------------------------- #
 # Guided (chunk-by-chunk) mode: assemble approved fragments, then grade + render
 # --------------------------------------------------------------------------- #
-def assemble_doc(cur, nxt, opening: dict, sections: list[dict]) -> dict:
+def assemble_doc(cur, nxt, opening: dict, sections: list[dict],
+                 coverage: list[dict] | None = None) -> dict:
     """Build the full TR-doc JSON from approved guided chunks + deterministic
     boilerplate. `opening` is {recap, agenda}; `sections` are the inner section
-    dicts ({name, slides}) from each takeaway chunk. Section indices are assigned
-    here (1..N) so the model never has to track them."""
+    dicts ({name, slides}) from each takeaway chunk; `coverage` are the per-chunk
+    {takeaway, sub_concepts} entries, assembled into the doc-level coverage_map.
+    Section indices are assigned here (1..N) so the model never has to track them."""
     doc = {
         "session_no": cur.number,
         "session_title": cur.name,
@@ -234,6 +287,43 @@ def assemble_doc(cur, nxt, opening: dict, sections: list[dict]) -> dict:
         s = dict(sec)
         s["index"] = i
         doc["sections"].append(s)
+
+    # RENUMBER slides 1..N across the whole document, and carry the coverage map's
+    # slide references along with them. Each chunk numbers its slides against the
+    # chunks approved at the time, so a regeneration that ADDS or REMOVES a slide left
+    # every later section off by one — and a coverage_map entry pointing at a slide
+    # number that no longer exists is now a hard guardrail failure, not a cosmetic
+    # nit. Remapping here is the only place that can see all the sections at once.
+    remap: dict[tuple[int, object], int] = {}
+    next_n = 1
+    for si, sec in enumerate(doc["sections"]):
+        for slide in sec.get("slides") or []:
+            remap[(si, slide.get("n"))] = next_n
+            slide["n"] = next_n
+            next_n += 1
+
+    if coverage:
+        cmap = []
+        for si, entry in enumerate(coverage):
+            if not isinstance(entry, dict):
+                continue
+            subs = []
+            for sub in entry.get("sub_concepts") or []:
+                if not isinstance(sub, dict):
+                    continue
+                sub = dict(sub)
+                if sub.get("slide") not in (None, ""):
+                    # A chunk's coverage refers only to that chunk's own slides, so the
+                    # (section, old n) key resolves unambiguously.
+                    try:
+                        old = int(sub["slide"])
+                    except (TypeError, ValueError):
+                        old = sub["slide"]
+                    if (si, old) in remap:
+                        sub["slide"] = remap[(si, old)]
+                subs.append(sub)
+            cmap.append({"takeaway": entry.get("takeaway"), "sub_concepts": subs})
+        doc["coverage_map"] = cmap
     return doc
 
 
@@ -253,6 +343,10 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
             except Exception:
                 pass
 
+    if judge_always_on():
+        use_judge = True
+    if time_always_enforced():
+        enforce_time = True
     sessions = course_loader.load_sessions(None)
     prev, cur, nxt = course_loader.neighbours(session_no, sessions)
     is_first, is_last = prev is None, nxt is None
@@ -264,6 +358,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     history = [report]
     log(f"accepted={accepted} | est={report['time']['estimated_minutes']}min"
         f"{'' if enforce_time else ' (40-min limit OFF — not graded on time)'} "
+        f"| ~{report['pages']['estimated_pages']}p/{report['pages']['max_pages']} "
         f"| guardrails={'ok' if report['guardrails']['passed'] else 'FAIL'}"
         + (f" | rubric={report.get('judge',{}).get('weighted_total','-')}" if use_judge else ""))
 

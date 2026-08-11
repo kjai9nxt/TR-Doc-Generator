@@ -1,16 +1,19 @@
 {
   "id": "takeaway_coverage",
-  "title": "Key-Takeaway Full Coverage (no gaps, no scope creep)",
-  "guideline_refs": [1, 4],
+  "title": "Key-Takeaway & Sub-Concept Coverage (no gaps, no scope creep)",
+  "guideline_refs": [
+    1,
+    4
+  ],
   "capability_status": "implemented",
   "grader": "hybrid",
   "applies_to": "final_tr_doc",
-  "description": "The generated TR doc must teach EVERY key takeaway of the session as per the curriculum, and must NOT introduce scope beyond them.",
-  "criterion": "Each key takeaway is covered by at least one section/slide; no section teaches material outside the takeaway set.",
+  "description": "The generated TR doc must teach EVERY key takeaway of the session as per the curriculum AND the exam-testable sub-concepts inside each one, and must NOT introduce scope beyond them. A syllabus line names a topic, not its scope, so this is checked against the doc's `coverage_map` — the enumeration the doc must emit, mapping each sub-concept to the slide teaching it or to a named deferral. The map is VERIFIED, not trusted: a thin map that restates the takeaway, or one pointing at a slide that does not teach that sub-concept, fails.",
+  "criterion": "Every takeaway has a coverage_map entry with the sub-concepts an exam would test; every sub-concept resolves to a slide that genuinely teaches it, or to an explicitly named deferral; nothing is taught outside the takeaway set.",
   "rubric": {
-    "5": "All takeaways covered with dedicated content; zero scope creep.",
-    "3": "All covered but one is thin, or one minor out-of-scope aside.",
-    "1": "A takeaway is missing entirely, or a whole section is out of scope."
+    "5": "All takeaways and their standard sub-concepts covered, coverage_map accurate; zero scope creep.",
+    "3": "All covered but one sub-concept is thin, or one minor out-of-scope aside.",
+    "1": "A takeaway or a commonly-tested sub-concept is missing (silently, or behind a map entry that does not hold up), or a whole section is out of scope."
   },
   "pass_threshold": 4,
   "cases": [
@@ -18,22 +21,142 @@
       "id": "tc-good-1",
       "polarity": "good",
       "expected": "pass",
-      "input": {"takeaways": ["TCP handshake", "Flow control", "Congestion control", "UDP vs TCP", "When to use UDP"], "sections": ["The 3-way handshake", "Flow control (sliding window)", "Congestion control", "TCP vs UDP", "Choosing UDP"]},
+      "input": {
+        "takeaways": [
+          "TCP handshake",
+          "Flow control",
+          "Congestion control",
+          "UDP vs TCP",
+          "When to use UDP"
+        ],
+        "sections": [
+          "The 3-way handshake",
+          "Flow control (sliding window)",
+          "Congestion control",
+          "TCP vs UDP",
+          "Choosing UDP"
+        ]
+      },
       "rationale": "1:1 mapping, all five covered, nothing extra."
     },
     {
       "id": "tc-bad-1",
       "polarity": "bad",
       "expected": "fail",
-      "input": {"takeaways": ["TCP handshake", "Flow control", "Congestion control", "UDP vs TCP", "When to use UDP"], "sections": ["The 3-way handshake", "Flow control", "TCP vs UDP", "Choosing UDP"]},
+      "input": {
+        "takeaways": [
+          "TCP handshake",
+          "Flow control",
+          "Congestion control",
+          "UDP vs TCP",
+          "When to use UDP"
+        ],
+        "sections": [
+          "The 3-way handshake",
+          "Flow control",
+          "TCP vs UDP",
+          "Choosing UDP"
+        ]
+      },
       "rationale": "'Congestion control' takeaway is missing — must fail (gap)."
     },
     {
       "id": "tc-bad-2",
       "polarity": "bad",
       "expected": "fail",
-      "input": {"takeaways": ["TCP handshake", "Flow control"], "sections": ["The 3-way handshake", "Flow control", "QUIC and HTTP/3 deep dive"]},
+      "input": {
+        "takeaways": [
+          "TCP handshake",
+          "Flow control"
+        ],
+        "sections": [
+          "The 3-way handshake",
+          "Flow control",
+          "QUIC and HTTP/3 deep dive"
+        ]
+      },
       "rationale": "QUIC/HTTP-3 is out of scope for this session — scope creep, must fail."
+    },
+    {
+      "id": "tc-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "takeaway": "Page Faults",
+        "coverage_map_entry": {
+          "sub_concepts": [
+            {
+              "name": "Definition of a page fault",
+              "slide": 4
+            },
+            {
+              "name": "Handling steps",
+              "slide": 5
+            },
+            {
+              "name": "Effective access time",
+              "slide": 6
+            }
+          ]
+        }
+      },
+      "rationale": "The map looks complete but the CAUSES (first-reference/demand-load, swapped-out, copy-on-write, illegal access) and minor-vs-major faults are absent — the silent-omission failure this set exists to catch."
+    },
+    {
+      "id": "tc-bad-4",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "coverage_map_entry": {
+          "sub_concepts": [
+            {
+              "name": "Deadlock detection in a wait-for graph",
+              "slide": 11
+            }
+          ]
+        },
+        "slides_present": [
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "rationale": "The map claims slide 11, which does not exist — a claimed coverage the document does not deliver."
+    },
+    {
+      "id": "tc-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "takeaway": "Page Faults",
+        "coverage_map_entry": {
+          "sub_concepts": [
+            {
+              "name": "Definition and the trap sequence",
+              "slide": 4
+            },
+            {
+              "name": "Causes: first reference, swapped out, copy-on-write, illegal access",
+              "slide": 5
+            },
+            {
+              "name": "Minor vs major faults",
+              "slide": 5
+            },
+            {
+              "name": "Effective access time calculation",
+              "slide": 6
+            },
+            {
+              "name": "Page-fault frequency replacement",
+              "deferred_to": "Session 22 — covered with thrashing"
+            }
+          ]
+        }
+      },
+      "rationale": "Sub-concepts enumerated to exam depth, each mapped, and the one deferral named."
     }
   ]
 }

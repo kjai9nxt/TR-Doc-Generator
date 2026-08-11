@@ -19,13 +19,20 @@ def _load() -> list[dict]:
     return []
 
 
-def record(session_no, reason: str, before: str, after: str) -> None:
+def record(session_no, reason: str, before: str, after: str,
+           scope: dict | None = None) -> None:
+    """`scope` is the applied-patch summary from src.patcher (which slides changed,
+    which were left untouched, the share of the section touched) — or {"mode": "full"}
+    when the patch path fell back to a whole-chunk re-draft. It is what lets the
+    regeneration_scope_discipline eval judge whether the edit stayed inside the
+    reviewer's complaint instead of rewriting content they had accepted."""
     data = _load()
     data.append({
         "session_no": session_no,
         "reason": (reason or "").strip(),
         "before": (before or "")[:2000],
         "after": (after or "")[:2000],
+        "scope": scope or {},
     })
     STORE.parent.mkdir(parents=True, exist_ok=True)
     STORE.write_text(json.dumps(data[-_MAX:], ensure_ascii=False, indent=2), encoding="utf-8")

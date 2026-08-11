@@ -22,8 +22,18 @@ jobs:
           cache-dependency-path: requirements.txt
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Run offline eval (golden through guardrails + time + invariants + extraction)
+      - name: Run offline eval (golden through guardrails + time + pages + invariants + extraction)
         run: python -m evals.run_eval
+      # The golden proves a GOOD doc passes; this proves each gate FIRES on the defect it
+      # was added for (analogy placement, worked-example share, figure realism, coverage
+      # map, page ceiling) plus the patcher and assembly guarantees. Also free, no API.
+      - name: Run gate regression (each deterministic gate fires on its own defect)
+        run: python -m evals.test_gates
+      # Output delivery: a reviewer once lost an hour because Download and Create
+      # Google Doc both failed on a finished doc. Boots the API and exercises the real
+      # endpoints, including recovery when the instance disk has lost the file.
+      - name: Run output-delivery regression (download / preview / recovery)
+        run: python -m evals.test_outputs
 
   frontend-build:
     name: Frontend build (Vite/React)
@@ -62,4 +72,8 @@ jobs:
             echo "::error::OPENROUTER_API_KEY secret is not set — add it in Settings → Secrets → Actions."
             exit 1
           fi
+          # The learning loop first: it is a handful of cheap distillation calls and it
+          # proves reviewer feedback still becomes a durable rule. A silent break there
+          # looks exactly like "the model ignored my feedback again".
+          python -m evals.test_learning_loop
           python -m evals.run_eval --live

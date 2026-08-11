@@ -24,18 +24,31 @@ that a default said otherwise; that is how the same correction ends up being giv
 over and over.
 
 # HARD RULES (a violation fails the run)
-1. **40-minute ceiling.** The entire session must be recordable in ≤ 40 minutes
-   (aim for ~36). If content is large, use MORE slides rather than denser slides.
-   Write speaker notes as they would actually be spoken — they set the pace.
+1. **40-minute ceiling AND a 16-page ceiling.** The entire session must be recordable
+   in ≤ 40 minutes (aim for ~36), and the rendered document must be **≤ 16 pages**
+   (aim for ~14). These are two different limits: a comparison table costs almost no
+   narration but a third of a page, so a doc can be inside the time budget and still
+   be too long. If content is large, use MORE slides rather than denser slides — but
+   the total still has to fit both ceilings. Write speaker notes as they would
+   actually be spoken; they set the pace.
+   **Spend that budget on COVERAGE, not on ritual.** Length goes to sub-concepts a
+   learner is examined on — never to an analogy on a slide that does not need one, an
+   invented example for a definitional topic, prose where a bullet would do, or a
+   restatement of something already on the slide.
 2. **Cover every key takeaway of the session — and every sub-concept inside it.**
-   A syllabus line names a topic, not the full scope. Before writing, for each
-   takeaway list the standard sub-concepts an exam would test, then make sure each
-   one has a slide. "Page Faults" is not definition + handling steps + service
-   time; it also includes the **causes** (first-reference/demand-load, swapped-out,
-   copy-on-write, illegal access) and **minor vs major** faults. A commonly-tested
-   sub-concept that is silently missing is the **most serious failure** you can make.
+   A syllabus line names a topic, not the full scope. For each takeaway list the
+   standard sub-concepts an exam would test, then make sure each one has a slide.
+   "Page Faults" is not definition + handling steps + service time; it also includes
+   the **causes** (first-reference/demand-load, swapped-out, copy-on-write, illegal
+   access) and **minor vs major** faults. A commonly-tested sub-concept that is
+   silently missing is the **most serious failure** you can make.
+   You must **emit that enumeration** as the `coverage_map` field (schema below):
+   every takeaway, every sub-concept, each mapped to the slide `n` that teaches it or
+   to a named deferral. It is checked against the slides you actually wrote, so a
+   sub-concept you forgot becomes a visible failure instead of a silent gap. The map
+   is a planning artifact — it is not rendered into the document.
    Add no scope beyond the takeaways, and if you deliberately leave a sub-concept to
-   a later session, **say so explicitly** in that section rather than dropping it.
+   a later session, **say so explicitly** in that section as well as in the map.
 3. **Agenda = the key-takeaway lines, numbered and VERBATIM.** Number the agenda
    1..N so it mirrors the numbered Key Takeaways, and make agenda item *i* the
    **identical text** to key takeaway *i* — copied from the curriculum, not a word
@@ -69,7 +82,27 @@ over and over.
 - **Broad → specific.** Start with the big picture, then go into detail. Never open
   on a narrow detail/formula before the overview is set.
 - Introduce a term only after the learner feels the gap it fills.
-- One everyday, Indian-context analogy per non-trivial concept. Analogies must be
+
+## SLIDE ROLE — every slide declares why it exists
+Give every slide a `role`, one of:
+`concept_intro` (a concept appears here for the **first time**), `mechanism` (how it
+works: steps, internals, protocol behaviour), `working_example` (one concrete case
+traced end to end), `comparison` (2+ things contrasted), `advantages_limitations`
+(benefits, drawbacks, trade-offs), `reasoning` (why it works or fails, a derivation),
+`application` (where it shows up in the real world), `summary` (consolidating a
+section). The role drives the analogy rule below, so label honestly: most slides in a
+real session build on a concept that has already been introduced, and **no more than
+half the slides may be `concept_intro`**.
+
+## ANALOGIES — only at a first introduction, and only one
+- **An analogy belongs on a `concept_intro` slide and NOWHERE else.** This is exact:
+  an analogy is **required** when `role == "concept_intro"` and is a **failure** on
+  every other role. Do not write an analogy for an advantages/disadvantages slide, a
+  reasoning slide, a comparison table, a mechanism walk-through, an application slide,
+  a summary, or a worked example. An analogy buys exactly one thing — making an
+  unfamiliar idea graspable the first time it is met. After that it costs pages and
+  teaches nothing. **Omit the `analogy` field entirely** on those slides.
+- One everyday, Indian-context analogy on that first-introduction slide. It must be
   **simple, relatable, and non-distracting** — one clean mapping, 1-2 sentences. No
   niche or elaborate analogies that need their own explanation.
 - **Every analogy must CORRELATE, not merely illustrate.** End it with an explicit
@@ -84,6 +117,25 @@ over and over.
   (trains, queues, electricity, cooking, banking, traffic, etc.). Each slide's
   analogy must be recognisably distinct from every other slide's.
 - Use a comparison TABLE whenever contrasting 2+ things.
+
+## WORKED EXAMPLES — only where one earns its slide
+- A worked example is **not** required on every doc or every topic. Add one only where
+  the learner could follow every word and still not be able to **DO** the thing: a
+  procedure, an algorithm, a calculation, an address or state translation, a sequence
+  traced over time, a numeric trade-off. Trace it step by step, showing the reasoning
+  and the instructive edge case, not just the result.
+- **Omit it for definitional, classificatory, or terminological topics.** "What a file
+  is", "types of scheduling", "components of a process" need a clear definition and a
+  mental model; an invented example there only adds length. Never manufacture one to
+  fill a slot.
+- **Give every example realistic figures** — values a practitioner would recognise, at
+  the right magnitude and shape for the domain: base/bound registers as hex like
+  `0x00400000`, power-of-two page and frame sizes (4 KB, 8 KB), real port and RFC
+  numbers, plausible PIDs (4312), byte counts (a 1500-byte MTU), timings in ms, real
+  field widths. Round toy numbers (1, 2, 5, 10, 100) are fine as **counts of things**
+  ("3 processes", "4 frames") but never as an address, a size, or an identifier.
+  Never write a placeholder — no "some address", "value X", "xyz", "foo".
+- A `working_example` slide carries **no analogy** (see the analogy rule above).
 - Keep prior sessions in mind: don't re-teach what earlier sessions covered;
   build on it and reference it naturally in the recap and transitions.
 - **Stay in this session's scope.** Never teach a topic that belongs to a FUTURE
@@ -127,17 +179,26 @@ Return ONLY a single JSON object, no prose around it:
     {"index": <int>, "name": "<section name>",
      "slides": [
        {"n": <int>, "title": "<slide title>",
+        "role": "concept_intro|mechanism|working_example|comparison|advantages_limitations|reasoning|application|summary",
         "heading": "<str>", "subheading": "<str>",
         "content": [
            {"type":"text","text":"<str>"} |
            {"type":"bullets","items":["<str>", ...]} |
            {"type":"table","columns":["<str>",...],"rows":[["<str>",...], ...]}
         ],
-        "analogy": "<str or omit>",
-        "visual_guidance": "<str or omit>",
-        "speaker_notes": "<str or omit>"
+        "analogy": "<str — ONLY when role == concept_intro; OMIT the field otherwise>",
+        "visual_guidance": "<str>",
+        "speaker_notes": "<str>"
        }
     ]}
+  ],
+  "coverage_map": [                            // planning artifact, NOT rendered
+    {"takeaway": "<key takeaway i, verbatim>",
+     "sub_concepts": [
+        {"name": "<exam-testable sub-concept>", "slide": <n of the slide teaching it>},
+        {"name": "<sub-concept left to a later session>",
+         "deferred_to": "<which session covers it, and why it is deferred>"}
+     ]}
   ],
   "key_takeaways": ["<str>", ...],             // mirror the session's takeaways
   "upcoming_session": "<next session name, or null if final session>",
@@ -145,9 +206,11 @@ Return ONLY a single JSON object, no prose around it:
 }
 
 # FIELD GUIDANCE
-- **Every slide MUST include all six fields: `heading`, `subheading`, `content`,
-  `analogy`, `visual_guidance`, `speaker_notes`.** None may be omitted or empty —
-  a missing field fails the run.
+- **Every slide MUST include: `role`, `heading`, `subheading`, `content`,
+  `visual_guidance`, `speaker_notes`.** None may be omitted or empty — a missing field
+  fails the run.
+- **`analogy` is the one conditional field**: present iff `role == "concept_intro"`,
+  omitted on every other role. Both directions fail the run.
 - **`heading` / `subheading`: 3-4 words MAXIMUM (hard cap — 5+ words fails the run).**
   They are short slide labels, not sentences. No verbs-with-objects sentences, no
   questions longer than 4 words, no periods. Count the words before you emit them.
@@ -164,26 +227,43 @@ Return ONLY a single JSON object, no prose around it:
 - **`speaker_notes`: 2 sentences maximum** (one teaching cue + one exam/interview hook).
 - **`analogy`: ends with an explicit tie-back naming the concept** ("… — just as
   <how the concept works>"), and matches the concept structurally.
+- **`coverage_map`: one entry per key takeaway, in curriculum order, `takeaway` copied
+  verbatim, at least 2 sub-concepts each**, and every `slide` value must be a slide
+  number you actually wrote. Use `deferred_to` instead of `slide` only for a
+  sub-concept you have deliberately left to a later session.
 - **Layout order:** session title → recap (all of the prev session's agenda items) →
   numbered agenda → one section breaker per agenda item (same order, same text) →
   slides → numbered key takeaways → upcoming session name → closing
   "Thank You  |  All the Best".
-- 5-12 slides total. Each slide speakable in 2-5 minutes.
+- 5-14 slides total. Each slide speakable in 2-5 minutes.
 - `content` blocks are ordered and rendered in order. Prefer bullets/tables; each
   `text` block ≤ 35 words / 1-2 sentences.
 
-# BEFORE YOU RETURN — COVERAGE SELF-CHECK
+# BEFORE YOU RETURN — SELF-CHECK
 Run this pass on your own draft and fix what it finds. Do not describe the pass,
 just apply it:
 1. For each key takeaway, list the sub-concepts an exam would test. Does each have a
    slide? If one is missing, add it. If it genuinely belongs to a later session, say
-   so explicitly in that section instead of dropping it.
-2. Scan every `title`, `heading`, `subheading`, `content`, and `analogy` for "you"/
+   so explicitly in that section instead of dropping it. Then confirm `coverage_map`
+   records exactly that, with every `slide` pointing at a slide that exists.
+2. **Analogy audit.** For every slide: if `role` is `concept_intro`, is there exactly
+   one analogy with an explicit tie-back? For every other role, is the `analogy` field
+   **absent**? Delete every analogy that is not on a first introduction. Then count:
+   are `concept_intro` slides at most half the deck? If more, re-label the slides that
+   explain, compare or apply a concept already introduced, and delete their analogies.
+3. **Example audit.** Does every `working_example` slide earn its place (the learner
+   must be able to EXECUTE something)? Delete any example written for a definitional
+   topic. Does each surviving example use realistic figures — real addresses, sizes,
+   ports, PIDs — with no placeholders?
+4. **Length audit.** Is the document within ~16 rendered pages and 40 minutes? If it is
+   long, cut in this order: analogies not on a first introduction, unwarranted
+   examples, restatements of a table or lead-in, prose that should be bullets, filler.
+   **Never cut a sub-concept to fit** — cut ritual, not coverage.
+5. Scan every `title`, `heading`, `subheading`, `content`, and `analogy` for "you"/
    "your", for "and all", and for any navigational phrase. Remove them.
-3. Check every `content` text block is ≤ 35 words, and that no bullet list restates
+6. Check every `content` text block is ≤ 35 words, and that no bullet list restates
    its lead-in sentence or its table.
-4. Check every `speaker_notes` is ≤ 2 sentences.
-5. Check every `analogy` ends with an explicit tie-back naming the concept.
-6. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
+7. Check every `speaker_notes` is ≤ 2 sentences.
+8. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
 
 Return the JSON object and nothing else.

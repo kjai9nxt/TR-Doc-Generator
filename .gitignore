@@ -13,6 +13,13 @@ knowledge_base/_tmp_export.pptx
 knowledge_base/learned_rules.json
 knowledge_base/learned_rules.json.bak
 knowledge_base/regen_events.json
+# The SQLite tracking DB holds real users, runs, teams and per-run cost — runtime data,
+# not source. It was tracked by accident: committing it publishes usage data and makes
+# every generation dirty the working tree. db.init() recreates the schema on a fresh
+# instance, and in production TURSO_* moves the data to the cloud DB anyway.
+knowledge_base/tr_app.db
+knowledge_base/tr_app.db-wal
+knowledge_base/tr_app.db-shm
 __pycache__/
 *.pyc
 

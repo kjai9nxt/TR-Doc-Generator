@@ -102,6 +102,14 @@ select { appearance: none; -webkit-appearance: none; cursor: pointer;
   background-position: right 15px center, right 10px center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 34px; }
 .check { display: flex; align-items: center; gap: 9px; color: var(--text); margin-top: 14px; font-size: 14px; cursor: pointer; }
 .check input { width: auto; }
+
+/* Generation policy: what WILL happen, in place of the checkboxes that used to let
+   the quality check and the 40-minute budget be switched off. */
+.policy { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.pchip {
+  font-size: 12.5px; color: var(--muted); background: rgba(124,147,255,.09);
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px;
+}
 input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
 
 /* ---------- Buttons ---------- */
@@ -372,3 +380,22 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
 .tw { display: inline-block; width: 1em; color: var(--muted); }
+
+/* "Teach the agent" panel on the result card. This is the only feedback path in
+   one-shot mode — Guided mode could teach the agent through a regeneration reason,
+   one-shot could not, so corrections from half the reviewers were never captured. */
+.feedback .fbbody { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.feedback textarea {
+  width: 100%; resize: vertical; font: inherit; font-size: 13.5px; line-height: 1.55;
+  color: var(--text); background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px;
+}
+.feedback textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+.feedback .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.alert.ok {
+  background: rgba(66, 190, 130, .1); border: 1px solid rgba(66, 190, 130, .35);
+  color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 13px;
+}
+/* The distilled rule, shown back so a bad distillation is visible immediately
+   instead of being applied silently to every future doc. */
+.learnedtext { margin-top: 5px; font-style: italic; color: var(--muted); }

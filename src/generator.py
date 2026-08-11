@@ -104,6 +104,21 @@ def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
             user_prompt + _SHRINK_NUDGE, tries=1, label="generate_chunk_retry")
 
 
+def generate_patch(base_context: str, kind: str, prev_fragment: dict,
+                   reason: str) -> dict:
+    """Ask for a SURGICAL PATCH to one already-generated chunk.
+
+    Returns the raw patch dict; src.patcher applies it. Kept separate from
+    generate_chunk because the two have opposite goals: that one writes content, this
+    one writes the smallest possible description of a change.
+    """
+    prev_json = json.dumps(prev_fragment, ensure_ascii=False, indent=2)
+    from . import context_builder
+    prompt = (f"{base_context}\n"
+              + context_builder.patch_instruction(kind, prev_json, reason))
+    return _complete_json(prompt, label="regenerate_patch")
+
+
 def revise(user_prompt: str, prev_doc_json: str, issues: list[str],
            *, enforce_time: bool = True) -> dict:
     """Repair a draft given concrete failures from guardrails + graders.

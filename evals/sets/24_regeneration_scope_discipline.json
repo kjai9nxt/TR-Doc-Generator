@@ -1,0 +1,71 @@
+{
+  "id": "regeneration_scope_discipline",
+  "title": "Regeneration Scope — Change Only What Was Complained About",
+  "guideline_refs": [25],
+  "capability_status": "implemented",
+  "grader": "llm_judge",
+  "applies_to": "regeneration_event",
+  "description": "When a reviewer rejects one chunk, the note is almost always narrow ('drop the analogy on the example slide', 'this base address is unrealistic'). Regenerating the whole chunk from that note threw away the slides the reviewer had already accepted, so every regeneration re-rolled approved content. Regeneration is now patch-based: the model names the change and src/patcher.py applies it, so untouched slides are byte-identical. This set scores the SCOPE of a recorded regeneration event — did the edit stay inside the complaint? — which is the complement of feedback_regeneration_adherence, which scores whether the complaint was addressed at all.",
+  "criterion": "The reason is fully addressed, AND no content outside the reason's scope changed. Slides the reason did not concern must be identical, not merely similar. A patch that names every slide for a single-slide complaint fails even if the result is good.",
+  "rubric": {
+    "5": "Reason fully addressed; every unrelated slide byte-identical (patch mode, minimal fields touched).",
+    "3": "Reason addressed but some unrelated wording changed too (e.g. a fell-back full re-draft that happened to stay close).",
+    "1": "Whole chunk rewritten for a narrow note, or unrelated slides materially changed, or the reason not addressed."
+  },
+  "pass_threshold": 4,
+  "scoring_inputs": ["reason", "before", "after", "scope"],
+  "cases": [
+    {
+      "id": "rs-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "reason": "Slide 7 is a pros-and-cons slide, it should not have an analogy.",
+        "scope": {"mode": "patch", "slides_changed": [7], "fields_changed": {"7": ["-analogy", "role"]}, "slides_untouched": [5, 6, 8, 9], "changed_share": 0.2}
+      },
+      "rationale": "One slide, two fields, everything else literally untouched."
+    },
+    {
+      "id": "rs-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "reason": "The base addresses in the translation example are unrealistic — use real hex addresses.",
+        "scope": {"mode": "patch", "slides_changed": [8], "fields_changed": {"8": ["content", "visual_guidance"]}, "slides_untouched": [6, 7, 9], "changed_share": 0.25}
+      },
+      "rationale": "Narrow note, narrow patch, and visual_guidance legitimately follows the figures it describes."
+    },
+    {
+      "id": "rs-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "reason": "Slide 7 should not have an analogy.",
+        "scope": {"mode": "full", "note": "whole chunk re-drafted"},
+        "after_note": "All five slides came back with new headings and reworded bullets."
+      },
+      "rationale": "The exact reported defect: a one-slide note rewrote four slides the reviewer had accepted."
+    },
+    {
+      "id": "rs-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "reason": "Add the minor vs major page-fault distinction.",
+        "scope": {"mode": "patch", "slides_changed": [5, 6, 7, 8, 9], "slides_untouched": [], "changed_share": 1.0}
+      },
+      "rationale": "A 'patch' that names every slide is a re-draft wearing a patch's clothes."
+    },
+    {
+      "id": "rs-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "reason": "Remove the analogy from the worked-example slide.",
+        "scope": {"mode": "patch", "slides_changed": [], "fields_changed": {}, "changed_share": 0.0},
+        "after_note": "The analogy is still there."
+      },
+      "rationale": "Surgical is not an excuse for doing nothing — the reason must still be resolved."
+    }
+  ]
+}

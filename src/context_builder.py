@@ -176,26 +176,48 @@ def build_user_prompt(prev: Session | None, cur: Session, nxt: Session | None) -
             + f"\nNow produce the TR doc JSON for Session {cur.number}: {cur.name}.\n")
 
 
-def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
-    """The generation tail that depends on the user's 40-minute toggle.
+def _page_budget_block(guided: bool) -> str:
+    """The page ceiling, stated in every mode.
 
+    It is separate from the time ceiling because the two measure different things: a
+    comparison table costs a third of a page and almost no narration, a chatty speaker
+    note costs a minute and one line. A doc can sit inside the 40-minute budget and
+    still be twenty pages, which is what the reviewer was rejecting.
+    """
+    pg = config.harness()["constraints"]["pages"]
+    share = (" Keep this chunk proportionate to its share of that budget."
+             if guided else "")
+    return (
+        f"\nHARD LENGTH LIMIT: the rendered document must be at most {pg['max']} pages "
+        f"(aim for ~{pg['target']}).{share} Spend that budget on COVERAGE — the "
+        f"sub-concepts an exam tests — never on ritual. If it is running long, cut in "
+        f"this order: analogies on slides that are not a first introduction, worked "
+        f"examples the topic does not need, bullets restating a table or lead-in, prose "
+        f"that should be bullets, filler. Never drop a sub-concept to fit.\n")
+
+
+def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
+    """The generation tail carrying the LENGTH budget the doc is graded against.
+
+    The page ceiling is stated in EVERY mode. The 40-minute time ceiling depends on
+    the toggle, which `constraints.recording.always_enforced` normally pins on:
     ON  -> the hard time limit (the whole session must fit the budget).
-    OFF -> DEPTH MODE: the rich-generation instructions that override the concision
-           caps. The 40-minute ceiling (HARD RULE 1 of the system prompt) does not
-           apply at all in this mode — it is not mentioned, generated for, or graded.
+    OFF -> DEPTH MODE: fuller bullets/tables and no time gate — but still bounded by
+           the page ceiling, which no mode relaxes.
 
     Used by BOTH generation modes (one-shot whole doc and guided per-chunk) so the
-    toggle behaves identically in each.
+    behaviour is identical in each.
     """
+    pages = _page_budget_block(guided)
     if not enforce_time:
-        return "\n" + config.depth_mode() + "\n"
+        return "\n" + config.depth_mode() + "\n" + pages
     if guided:
         return ("\nHARD TIME LIMIT: the WHOLE session must be recordable within 40 minutes "
                 "(aim ~36), so keep this chunk proportionate to its share of the session. "
-                "Be concise and use MORE slides rather than denser ones.\n")
+                "Be concise and use MORE slides rather than denser ones.\n") + pages
     return ("\nHARD TIME LIMIT: the entire session MUST be recordable within 40 minutes "
             "(aim ~36). Be concise and use MORE slides rather than denser ones. Exceeding "
-            "40 minutes fails the run.\n")
+            "40 minutes fails the run.\n") + pages
 
 
 # --------------------------------------------------------------------------- #
@@ -230,6 +252,64 @@ Word caps do not apply to agenda or recap lines: copy them exactly even if they 
 Return ONLY this JSON object."""
 
 
+def patch_instruction(kind: str, prev_fragment_json: str, reason: str) -> str:
+    """The tail that asks for a SURGICAL PATCH instead of a re-drafted chunk.
+
+    The reviewer's note is almost always about one slide or one field. Asking for the
+    section back re-rolls everything they already approved, and telling the model to
+    "keep the rest identical" does not work — reproducing a thousand words verbatim is
+    exactly what a sampler is bad at. So the model names the change and
+    src/patcher.py performs it: whatever the patch does not mention is never passed
+    through the model, so it cannot drift.
+    """
+    if kind == "opening":
+        schema = """{
+  "set_fields": { "recap": { ... } }   // and/or "agenda": [ ... ] — only these two keys
+  "note": "<one line: what changed>"
+}
+Include ONLY the field(s) the feedback is about. Remember the agenda lines and recap
+items are copied verbatim from the curriculum — never reword them to satisfy a note."""
+    else:
+        schema = """{
+  "section_name": "<new name>" | null,          // null / omit = leave the name alone
+  "edit_slides": [                              // change specific FIELDS of specific slides
+    {"n": <slide number>,
+     "fields": {"heading": "<new>", "content": [ ...full replacement blocks... ],
+                "analogy": null}}               // null DELETES that field
+  ],
+  "add_slides":    [{"after_n": <slide number or null>, "slide": { ...full slide... }}],
+  "remove_slides": [<slide number>, ...],
+  "note": "<one line: what changed and why>"
+}"""
+    return f"""REGENERATE — SURGICAL PATCH ONLY.
+
+The reviewer rejected part of this chunk. Here is the chunk EXACTLY as it stands:
+{prev_fragment_json}
+
+THEIR REASON:
+{reason}
+
+Return a JSON PATCH — not the chunk. The patch is applied programmatically, so
+**anything you do not name stays exactly as it is**:
+{schema}
+
+RULES FOR THE PATCH
+- Address the reason and NOTHING else. Do not "improve" a slide the reason does not
+  mention, do not re-word a heading that was not complained about, do not reorder or
+  renumber slides.
+- Touch the FEWEST fields that fully resolve the reason. If the note is about one
+  slide's analogy, the patch is one `edit_slides` entry with one field.
+- Only fix an untouched slide if the reason applies to it too (e.g. "remove the
+  analogies from the example slides" names more than one) — then patch each of them,
+  still field by field.
+- Every field you DO supply must satisfy all the house rules (word caps, roles, the
+  analogy placement rule, realistic figures, no second person, no navigation).
+- `n` values refer to the slides as numbered above. Do not renumber anything; final
+  numbering is assigned when the document is assembled.
+
+Return ONLY the patch JSON object."""
+
+
 def takeaway_instruction(cur: Session, idx: int) -> str:
     """idx is 0-based into cur.key_takeaways."""
     takeaway = cur.key_takeaways[idx]
@@ -237,19 +317,40 @@ def takeaway_instruction(cur: Session, idx: int) -> str:
 {{
   "section": {{
     "name": "<section title>",
-    "slides": [ {{ "n": <int>, "title": "...", "heading": "...", "subheading": "...",
+    "slides": [ {{ "n": <int>, "title": "...", "role": "<slide role>",
+                   "heading": "...", "subheading": "...",
                    "content": [ ...ordered blocks per the format spec... ],
-                   "analogy": "...", "visual_guidance": "...", "speaker_notes": "..." }} ]
+                   "analogy": "<ONLY when role is concept_intro — else omit>",
+                   "visual_guidance": "...", "speaker_notes": "..." }} ]
+  }},
+  "coverage": {{
+    "takeaway": "{takeaway}",
+    "sub_concepts": [ {{"name": "<exam-testable sub-concept>", "slide": <n>}},
+                      {{"name": "<one left to a later session>",
+                        "deferred_to": "<which session, and why>"}} ]
   }}
 }}
 This section must teach EXACTLY this key takeaway and nothing from the others:
   "{takeaway}"
 The section "name" must be this takeaway line VERBATIM (it is also the agenda item).
 
-COVERAGE: this line names a topic, not its whole scope. Before writing, list the
-sub-concepts an exam would test on it and give EACH one a slide — a commonly-tested
-sub-concept that is silently missing is the most serious failure here. If one genuinely
-belongs to a later session, say so explicitly rather than dropping it.
+COVERAGE: this line names a topic, not its whole scope. List the sub-concepts an exam
+would test on it, give EACH one a slide, and record that mapping in "coverage" — a
+commonly-tested sub-concept that is silently missing is the most serious failure here.
+At least 2 sub-concepts. If one genuinely belongs to a later session, say so explicitly
+in the section text AND record it as "deferred_to" instead of a slide.
 
-Slide numbers ("n") continue consecutively AFTER the already-approved slides shown above.
-Do not repeat anything already covered in the approved chunks. Return ONLY this JSON object."""
+ROLES AND ANALOGIES: every slide declares a "role". An analogy is REQUIRED on a
+"concept_intro" slide and FORBIDDEN on every other role (mechanism, working_example,
+comparison, advantages_limitations, reasoning, application, summary) — omit the field
+there. At most half the slides in this section may be "concept_intro".
+
+WORKED EXAMPLES: include one only if this takeaway is something the learner must be
+able to EXECUTE (a procedure, calculation, translation, trace, numeric trade-off). For a
+definitional or classificatory takeaway, do not manufacture one. Where one belongs, use
+realistic figures (hex base addresses, power-of-two sizes, real ports/PIDs), never
+placeholders.
+
+Slide numbers ("n") continue consecutively AFTER the already-approved slides shown above,
+and "coverage" refers to them by those numbers. Do not repeat anything already covered in
+the approved chunks. Return ONLY this JSON object."""

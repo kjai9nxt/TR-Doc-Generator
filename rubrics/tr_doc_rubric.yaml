@@ -13,11 +13,19 @@ scale:
   5: "Excellent — recording-ready, nothing to fix."
 
 # Each dimension tags the eval guideline(s) it enforces: [G#]. Process guidelines
-# (G2/G3 extraction, G5 chunk count, G8 feedback, G9 self-evolution) are NOT scored
-# here — they are not per-doc quality; they live only in evals/sets/.
+# (G2/G3 extraction, G5 chunk count, G8 feedback, G9 self-evolution, G25 regeneration
+# scope) are NOT scored here — they are not per-doc quality; they live only in evals/sets/.
+#
+# 13 dimensions, weights summing to 100. The three added in 1.29 exist because the
+# reviewer's complaints were about ECONOMY, and nothing was scoring it: the doc was
+# spending pages on an analogy per slide and an example per topic while sub-concepts went
+# missing. So length_discipline scores whether the length was earned, analogy_discipline
+# scores placement before quality, and example_quality scores whether an example was
+# warranted at all. The old clarity_and_analogies dimension lost its analogy half to
+# analogy_discipline and is now clarity_and_language.
 dimensions:
   - id: technical_accuracy
-    weight: 20
+    weight: 17
     question: >
       Is every fact correct AND grounded in the curriculum / known material? RFC
       numbers, field sizes, port numbers, thresholds, acronym expansions, protocol
@@ -33,24 +41,40 @@ dimensions:
       copy-on-write, illegal access — and minor vs major faults, not only definition +
       handling steps + service time.) A SILENTLY missing commonly-tested sub-concept is
       the most serious failure here and caps this at 2; a deferral named explicitly in the
-      text does not. Also: nothing beyond the takeaways' scope, no re-teaching a prior
-      session's concept (a brief recap is fine), no future-session topic. Missing a whole
-      takeaway caps at 2; scope creep, re-teaching, or future leakage caps at 3. [G1,G4,G18]
+      text does not. VERIFY THE `coverage_map` RATHER THAN TRUSTING IT: does it list the
+      sub-concepts an exam would actually test (not a thin restatement of the takeaway),
+      and does the slide it points at really teach that sub-concept? A map that looks
+      complete while a sub-concept is missing from the slides caps this at 2. Also:
+      nothing beyond the takeaways' scope, no re-teaching a prior session's concept (a
+      brief recap is fine), no future-session topic. Missing a whole takeaway caps at 2;
+      scope creep, re-teaching, or future leakage caps at 3. [G1,G4,G18]
   - id: pedagogy
-    weight: 12
+    weight: 8
     question: >
       Sound ordering (problem -> idea -> mechanism -> comparison -> use) AND broad ->
       specific (big picture before narrow detail)? Concepts motivated before defined;
       terms introduced after the gap is felt; smooth flow with no sudden jumps (nothing
       used before it is taught). [G12,G17]
   - id: recording_time
-    weight: 12
+    weight: 8
     question: >
       Is the session realistically recordable in <= 40 minutes (when the limit is on),
       based on the deterministic time estimate provided as ground truth? Over budget
       caps at 2. [G10]
+  - id: length_discipline
+    weight: 8
+    question: >
+      Is the document within the 16-page ceiling (target ~14), per the deterministic page
+      estimate given as ground truth — and, more importantly, is its length EARNED? Use
+      `pages_by_part` to tell the two apart: length spent on sub-concepts, worked detail
+      and comparison tables is earned; length spent on analogies outside first
+      introductions, examples the topic did not need, bullets restating a table or their
+      own lead-in, prose where a bullet would do, or filler is not. Over the ceiling caps
+      this at 2. Within the ceiling but padded (any of the above present) caps at 3. A doc
+      that came in short by DROPPING a sub-concept caps at 1 — cutting coverage to make
+      length is the worst possible trade, and should also cap `coverage`. [G22]
   - id: slide_content_style
-    weight: 10
+    weight: 8
     question: >
       Does slide CONTENT read as tight slide text, not prose or spoken narration? Each
       `content` text block must be <= 35 words / 1-2 sentences — one framing or definition
@@ -64,28 +88,54 @@ dimensions:
       allowed. No filler ("and all", "basically"). Bullets <= 12 words; every slide
       heading/subheading a 3-4 word label (5+ words caps this at 2). Every block stays
       on-topic for its slide (no tangents). [G6,G13,G16]
-  - id: clarity_and_analogies
-    weight: 8
+  - id: analogy_discipline
+    weight: 7
     question: >
-      Easy to understand on first read? Are analogies simple, everyday, relatable,
-      non-distracting (one clean mapping) and non-repeating? Crucially, does each analogy
-      CORRELATE rather than merely illustrate — does it end with an explicit tie-back
-      naming the concept ("<everyday scene> — just as / exactly as <how the concept
-      works>")? An analogy that paints a picture and leaves the mapping implicit is
-      incomplete and caps this at 3. Does it also match the concept STRUCTURALLY (a cycle
-      needs a circular-dependency scene, not a queue)? Are speaker notes <= 2 sentences —
-      one teaching cue plus one exam/interview hook, with no restatement of the slide body
-      and no "close by…"? Is jargon explained on first use and the language plain?
-      [G11,G14,G15]
-  - id: content_recency
+      Is every analogy in the right PLACE, and is each one good? PLACEMENT is exact and
+      comes first: an analogy belongs on a `concept_intro` slide (a concept's first
+      appearance) and NOWHERE else. An analogy on a mechanism, comparison,
+      advantages_limitations, reasoning, application, summary or working_example slide is
+      decoration that costs page space and teaches nothing — each one caps this at 2. A
+      first-introduction slide with no analogy also caps at 2. Check the roles themselves
+      are honest: if slides that merely explain, compare or apply an already-introduced
+      concept are labelled `concept_intro` so they can keep an analogy, cap at 2. QUALITY,
+      for the analogies that do belong: simple, everyday, relatable, one clean mapping,
+      1-2 sentences, no domain reused across slides, and it must CORRELATE rather than
+      illustrate — ending with an explicit tie-back naming the concept ("<everyday scene>
+      — just as / exactly as <how the concept works>") and matching the concept
+      STRUCTURALLY (a cycle needs a circular-dependency scene, not a queue). A missing
+      tie-back or a structural mismatch caps at 3. [G14,G15,G23]
+  - id: example_quality
     weight: 6
+    question: >
+      Are worked examples WARRANTED, and are their figures REALISTIC? Warranted means the
+      learner must be able to EXECUTE something — a procedure, algorithm, calculation,
+      address or state translation, traced sequence, numeric trade-off. An example
+      manufactured for a definitional, classificatory or terminological topic ("what a
+      file is", "types of scheduling") is padding and caps this at 2; so does a topic that
+      clearly NEEDED a traced example and got only prose. Realistic means figures a
+      practitioner would recognise, at the right magnitude and shape for the domain: hex
+      base/bound addresses, power-of-two page and frame sizes, real port and RFC numbers,
+      plausible PIDs, byte counts, ms timings. Toy values used as addresses, sizes or
+      identifiers ("base = 5"), or any placeholder ("some address", "value X", "xyz"), cap
+      this at 2. Round numbers as COUNTS of things ("3 processes", "4 frames") are fine.
+      An example that states a result without tracing the steps caps at 3. [G24]
+  - id: clarity_and_language
+    weight: 5
+    question: >
+      Easy to understand on first read? Are speaker notes <= 2 sentences — one teaching
+      cue plus one exam/interview hook, with no restatement of the slide body and no
+      "close by…"? Is jargon explained on first use, and the language plain and concrete?
+      [G11]
+  - id: content_recency
+    weight: 5
     question: >
       Is the content up to date? No deprecated/superseded standard or version presented
       as current (e.g. SSL for TLS, "HTTP/1.1 is the latest", Python 2 for new work).
       Legacy items, if mentioned, are labelled as legacy. Presenting outdated info as
       current caps this at 2. [G20]
   - id: format_compliance
-    weight: 7
+    weight: 6
     question: >
       Exact layout IN ORDER: session title; recap = ALL of the previous session's agenda
       items in its "topic: subtopics" format (omitted only for Session 1); agenda; one
@@ -95,15 +145,18 @@ dimensions:
       i, not summarised or reworded (these lines are exempt from every word cap, so a long
       one must still be copied whole). A reworded agenda item, an unnumbered agenda, or a
       recap missing any of the prior session's agenda items caps this at 2. EVERY slide
-      must carry ALL SIX fields — heading, subheading, content, analogy, visual_guidance,
-      speaker_notes. A missing slide field or a wrong-order/missing section caps this at 2.
+      must carry `role`, heading, subheading, content, visual_guidance and speaker_notes;
+      `analogy` is present iff role == concept_intro (scored under analogy_discipline).
+      `coverage_map` must be present, one entry per takeaway in order with the takeaway
+      copied verbatim. A missing slide field, a missing/invalid coverage_map, or a
+      wrong-order/missing section caps this at 2.
   - id: market_parity
-    weight: 5
+    weight: 4
     question: >
       Does depth/accuracy match or exceed Scaler, GeeksforGeeks, TutorialsPoint, and
       standard syllabi for this topic? Nothing important for the topic is missing. [G19]
   - id: language_quality
-    weight: 5
+    weight: 3
     question: >
       Grammar, spelling (Indian English), consistent terminology, no filler. [G11]
 

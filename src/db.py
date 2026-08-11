@@ -20,10 +20,12 @@ Notes:
   stage ("generating draft 2", "grading", ...), so an admin can watch progress.
 """
 from __future__ import annotations
+import base64
 import json
 import os
 import sqlite3
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from . import config
 
@@ -121,9 +123,11 @@ _SCHEMA = [
     """CREATE TABLE IF NOT EXISTS runs (
          id TEXT PRIMARY KEY, ts TEXT, updated TEXT, user_email TEXT, course TEXT,
          team_id INTEGER, session_no INTEGER, title TEXT, status TEXT, stage TEXT,
-         accepted INTEGER, rubric REAL, est_minutes REAL, enforce_time INTEGER,
+         accepted INTEGER, rubric REAL, est_minutes REAL, est_pages REAL,
+         enforce_time INTEGER,
          rounds INTEGER, slides INTEGER, cost REAL, total_tokens INTEGER,
-         cost_json TEXT, calls_json TEXT, docx_path TEXT, error TEXT)""",
+         cost_json TEXT, calls_json TEXT, docx_path TEXT, docx_name TEXT,
+         error TEXT)""",
     "CREATE INDEX IF NOT EXISTS idx_runs_user   ON runs(user_email)",
     "CREATE INDEX IF NOT EXISTS idx_runs_course ON runs(course)",
     "CREATE INDEX IF NOT EXISTS idx_runs_status ON runs(status)",
@@ -143,18 +147,62 @@ _SCHEMA = [
          id TEXT PRIMARY KEY, ts TEXT, updated TEXT, user_email TEXT,
          session_no INTEGER, state_json TEXT)""",
     "CREATE INDEX IF NOT EXISTS idx_guided_updated ON guided_sessions(updated)",
+    # RENDERED OUTPUTS, keyed by run. The .docx lived only on the instance disk, so on
+    # an ephemeral host it vanished when the instance spun down — and a guided run spans
+    # a long human review, which is exactly that window. A reviewer who had finished
+    # generating and reviewing then found Download and Create-Google-Doc both dead and
+    # had to copy the document out by hand. ~40 KB per doc, base64 in `content_b64`.
+    """CREATE TABLE IF NOT EXISTS run_files (
+         run_id TEXT, kind TEXT, filename TEXT, content_b64 TEXT, updated_at TEXT,
+         PRIMARY KEY (run_id, kind))""",
+    "CREATE INDEX IF NOT EXISTS idx_run_files_name ON run_files(filename)",
 ]
 
 
+# Columns added to `runs` after the table first shipped. CREATE TABLE IF NOT EXISTS is
+# a no-op on an existing database, so a new column in _SCHEMA would appear only on a
+# fresh install — every deployed instance would keep the old table and every write
+# naming the column would fail. Each entry is applied with ALTER TABLE ADD COLUMN,
+# which is cheap and, unlike a rebuild, cannot lose rows.
+_RUNS_ADDED_COLUMNS = [
+    ("est_pages", "REAL"),      # 1.29: the 16-page ceiling, shown in the dashboards
+    ("docx_name", "TEXT"),      # 1.30: exact output filename, so downloads never re-derive it
+]
+
+
+def _add_missing_columns(conn) -> list[str]:
+    """Bring an existing `runs` table up to date. Idempotent."""
+    try:
+        cur = conn.cursor()
+        cur.execute("PRAGMA table_info(runs)")
+        have = {row[1] for row in cur.fetchall()}
+    except Exception:
+        return []
+    added = []
+    for name, decl in _RUNS_ADDED_COLUMNS:
+        if name in have:
+            continue
+        try:
+            conn.execute(f"ALTER TABLE runs ADD COLUMN {name} {decl}")
+            added.append(name)
+        except Exception:
+            pass                 # a racing instance added it first — harmless
+    return added
+
+
 def init() -> None:
-    """Create tables (idempotent) and one-time import the old JSON run log."""
+    """Create tables (idempotent), add any columns a pre-existing DB is missing, and
+    one-time import the old JSON run log."""
     conn = _connect()
     try:
         for stmt in _SCHEMA:
             conn.execute(stmt)
+        added = _add_missing_columns(conn)
         conn.commit()
     finally:
         _close(conn)
+    if added:
+        print(f"[db] migrated runs table: added column(s) {', '.join(added)}")
     _migrate_json_log()
 
 
@@ -248,21 +296,26 @@ def update_stage(run_id: str, stage: str) -> None:
 
 
 def finish_run(run_id: str, *, status: str, accepted: bool | None = None,
-               rubric=None, est_minutes=None, rounds=None, slides=None,
+               rubric=None, est_minutes=None, est_pages=None, rounds=None, slides=None,
                cost: dict | None = None, calls: list | None = None,
                docx_path: str | None = None, error: str | None = None) -> None:
     cost = cost or {}
+    # docx_name is stored ALONGSIDE docx_path because the path is only valid on the
+    # instance that wrote it, while the name is what identifies the output anywhere —
+    # it is what a download must be resolved by, instead of re-deriving a filename from
+    # whatever course happens to be synced at the time (see src/outputs.py).
+    docx_name = Path(docx_path).name if docx_path else None
     _exec(
         """UPDATE runs SET status=?, stage=?, accepted=?, rubric=?, est_minutes=?,
-             rounds=?, slides=?, cost=?, total_tokens=?, cost_json=?, calls_json=?,
-             docx_path=?, error=?, updated=?
+             est_pages=?, rounds=?, slides=?, cost=?, total_tokens=?, cost_json=?,
+             calls_json=?, docx_path=?, docx_name=?, error=?, updated=?
            WHERE id=?""",
         (status, "done" if status == "done" else status,
          None if accepted is None else (1 if accepted else 0),
-         rubric, est_minutes, rounds, slides,
+         rubric, est_minutes, est_pages, rounds, slides,
          cost.get("cost"), cost.get("total_tokens"),
          json.dumps(cost), json.dumps(calls or []),
-         docx_path, error, _now(), run_id))
+         docx_path, docx_name, error, _now(), run_id))
 
 
 # A run still marked "running" this long after its last update almost certainly
@@ -368,6 +421,10 @@ def summary() -> dict:
     abandoned = [r for r in rs if r["abandoned"]]
     in_progress = [r for r in rs if r["status"] == "running" and not r["abandoned"]]
     durations = [r["duration_min"] for r in done if r["duration_min"] is not None]
+    # est_pages is None for runs generated before the page ceiling existed (1.29), so
+    # the length stats are computed over the runs that actually have it rather than
+    # counting a missing value as zero and dragging the average down.
+    pages = [r["est_pages"] for r in done if r.get("est_pages")]
     by_model: dict = {}
     for r in rs:
         for call in r["calls"]:
@@ -388,10 +445,27 @@ def summary() -> dict:
         "acceptance_rate": round(100 * len(approved) / len(done), 1) if done else 0,
         "avg_rubric": round(sum((r["rubric"] or 0) for r in done) / len(done), 1) if done else 0,
         "avg_duration_min": round(sum(durations) / len(durations), 1) if durations else 0,
+        # Document length. `over_page_limit` is the number that matters: the reviewer's
+        # original complaint was length, so an admin needs to see at a glance whether
+        # docs are still coming out over the ceiling rather than infer it per run.
+        "avg_pages": round(sum(pages) / len(pages), 1) if pages else 0,
+        "max_pages_seen": max(pages) if pages else 0,
+        "page_limit": _page_limit(),
+        "over_page_limit": len([p for p in pages if p > _page_limit()]),
+        "docs_with_pages": len(pages),
         "total_cost": round(sum((r["cost"] or {}).get("cost", 0) or 0 for r in rs), 6),
         "total_tokens": sum((r["cost"] or {}).get("total_tokens", 0) or 0 for r in rs),
         "models": sorted(by_model.values(), key=lambda x: -x["cost"]),
     }
+
+
+def _page_limit() -> int:
+    """The harness page ceiling, so the dashboard flags over-length docs against the
+    same number the gate enforces rather than a copy of it."""
+    try:
+        return int(config.harness()["constraints"]["pages"]["max"])
+    except Exception:
+        return 16
 
 
 def per_user() -> list[dict]:
@@ -527,6 +601,93 @@ def kb_put(name: str) -> bool:
         return True
     except Exception:
         return False
+
+
+# --------------------------------------------------------------------------- #
+# Rendered outputs (.docx / .md), stored per run.
+#
+# WHY: the rendered files lived ONLY on the instance disk. On an ephemeral host that
+# disk is wiped whenever the instance spins down or redeploys, and a guided run spans a
+# long human review — precisely that window. A reviewer finished generating and
+# reviewing a document and then found BOTH "Download Word" and "Create Google Doc"
+# dead, and had to copy the whole thing out of the preview by hand.
+#
+# Unlike kb_put, these are stored on EVERY backend, not only Turso. The name-mismatch
+# bug (src/outputs.py) could hide a file that was present, and the disk could lose one
+# that was not — so the store is the single answer to "where is this run's document",
+# and it is cheap: a TR doc .docx is ~40 KB.
+# --------------------------------------------------------------------------- #
+def run_file_put(run_id: str, path, kind: str = "docx") -> bool:
+    """Persist one rendered output for `run_id`. Best effort — never raises, because a
+    storage hiccup must not fail a generation that has already succeeded."""
+    if not run_id:
+        return False
+    try:
+        p = Path(path)
+        blob = base64.b64encode(p.read_bytes()).decode("ascii")
+    except Exception:
+        return False
+    try:
+        _exec("""INSERT OR REPLACE INTO run_files
+                   (run_id, kind, filename, content_b64, updated_at) VALUES (?,?,?,?,?)""",
+              (run_id, kind, p.name, blob, _now()))
+        return True
+    except Exception:
+        return False
+
+
+def run_file_get(run_id: str, kind: str = "docx") -> tuple[str, bytes] | None:
+    """(filename, bytes) for a stored output, or None."""
+    try:
+        rows = _query("SELECT filename, content_b64 FROM run_files WHERE run_id=? AND kind=?",
+                      (run_id, kind))
+    except Exception:
+        return None
+    if not rows:
+        return None
+    try:
+        return rows[0]["filename"], base64.b64decode(rows[0]["content_b64"])
+    except Exception:
+        return None
+
+
+def run_file_find(filename: str, kind: str = "docx") -> tuple[str, bytes] | None:
+    """Look a stored output up by FILENAME, for a download whose run id is unknown
+    (an older run logged before run ids were threaded through, or a direct link)."""
+    if not filename:
+        return None
+    try:
+        rows = _query("""SELECT filename, content_b64 FROM run_files
+                          WHERE filename=? AND kind=? ORDER BY updated_at DESC LIMIT 1""",
+                      (filename, kind))
+    except Exception:
+        return None
+    if not rows:
+        return None
+    try:
+        return rows[0]["filename"], base64.b64decode(rows[0]["content_b64"])
+    except Exception:
+        return None
+
+
+def run_file_find_by_session(session_no: int, kind: str = "docx") -> tuple[str, bytes] | None:
+    """Newest stored output for a session number — the last-resort lookup, matching the
+    filename convention "Session {n} _ ...". Used when neither a run id nor an exact
+    filename is available and the disk copy is gone."""
+    try:
+        rows = _query("""SELECT r.docx_name AS filename, f.content_b64 AS content_b64
+                           FROM run_files f JOIN runs r ON r.id = f.run_id
+                          WHERE r.session_no=? AND f.kind=?
+                          ORDER BY f.updated_at DESC LIMIT 1""", (session_no, kind))
+    except Exception:
+        return None
+    if not rows:
+        return None
+    try:
+        return (rows[0]["filename"] or f"Session {session_no}.docx",
+                base64.b64decode(rows[0]["content_b64"]))
+    except Exception:
+        return None
 
 
 def kb_backup() -> int:

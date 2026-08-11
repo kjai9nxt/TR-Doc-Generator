@@ -1,0 +1,53 @@
+{
+  "id": "worked_example_appropriateness",
+  "title": "Worked Examples — Only Where One Earns Its Slide",
+  "guideline_refs": [24],
+  "capability_status": "implemented",
+  "grader": "hybrid",
+  "applies_to": "whole_document",
+  "description": "A worked example is not a ritual. It earns a slide where the learner could follow every word and still not be able to DO the thing — a procedure, algorithm, calculation, address or state translation, traced sequence, or numeric trade-off. It must be OMITTED for definitional, classificatory and terminological topics: 'what a file is' needs a definition and a mental model, not an invented trace. The deterministic half checks the share cap (worked examples <= 30% of slides); the LLM half judges whether each example was warranted and whether a topic that needed one went without.",
+  "criterion": "Every working_example slide is on a topic the learner must be able to EXECUTE, and traces it step by step. No example manufactured for a definitional topic. Conversely, no procedural/computational takeaway left with prose only. Worked examples are at most 30% of the slides.",
+  "rubric": {
+    "5": "Examples exactly where they are needed, each traced step by step; none manufactured.",
+    "3": "One borderline example, or one procedural topic that would have benefited from a trace.",
+    "1": "An example invented for a definitional topic, a procedural topic left with no trace, or the deck dominated by examples."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "we-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"takeaway": "Address translation with base and limit registers", "role": "working_example", "content": "Base 0x00400000, limit 0x0002F000; logical address 0x0001A2B4 -> within limit -> physical 0x0041A2B4. Then 0x00031000 -> exceeds limit -> trap."},
+      "rationale": "A calculation the learner must perform, traced including the failing case."
+    },
+    {
+      "id": "we-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"takeaway": "File concept: attributes and operations", "roles_present": ["concept_intro", "mechanism", "comparison"], "note": "no working_example slide"},
+      "rationale": "Definitional topic. Correctly has no worked example."
+    },
+    {
+      "id": "we-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"takeaway": "File concept: what a file is", "role": "working_example", "content": "Consider a file named report.txt. It has a name. It has a size. It has a type."},
+      "rationale": "An invented 'example' of a definition — it restates the concept slide and costs a page."
+    },
+    {
+      "id": "we-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"takeaway": "Banker's algorithm for deadlock avoidance", "roles_present": ["concept_intro", "mechanism", "advantages_limitations"], "note": "no traced example anywhere"},
+      "rationale": "The classic case where an example is mandatory — the learner cannot run the safety check from prose alone."
+    },
+    {
+      "id": "we-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"slides": 10, "working_example_slides": 5},
+      "rationale": "Half the deck is examples — over the 30% share cap; the concepts have stopped being taught."
+    }
+  ]
+}

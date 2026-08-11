@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.28"
+  version: "1.32"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -356,9 +356,195 @@ meta:
               viewport (left: 16px) and sized to the gutter, width: min(300px, calc(50vw - 506px)),
               which keeps a 20px gap at every width and can never clip. Below 1420px it still falls
               back to an in-flow card by design — there is no room for a side panel there."
+    - "1.29 — LENGTH DISCIPLINE + ANALOGY/EXAMPLE ECONOMY + SURGICAL REGENERATION. Seven
+              reviewer findings, all of which come down to the same thing: the doc was spending
+              its budget on RITUAL (an analogy on every slide, a worked example for every topic,
+              prose where a bullet would do) instead of on COVERAGE, and it was too long to
+              record. Encoded as deterministic gates, per 1.24's lesson.
+              (a) PAGE CEILING. There was no length gate at all except recording time, and
+              recording time is a poor proxy for page count (a comparison table costs pages but
+              almost no narration). New graders/page_grader.py estimates the rendered .docx page
+              count from the actual layout model of the template docx_writer uses (6.0in x 9.0in
+              text area, 11pt body at 1.15 line spacing + 10pt space-after, heading sizes, bullet
+              indent, table row heights) — every constant lives in constraints.pages.layout, so
+              it is tunable without touching code. constraints.pages.max = 16 (target 14) is a
+              HARD gate in guardrails, is handed to the judge as ground truth, is checked by the
+              new document_length_pages eval set, and is shown in the app. Measured on the
+              existing outputs, the depth-mode S18 doc lands ~21 pages — the reported defect.
+              (b) ANALOGY ONLY AT FIRST INTRODUCTION. An analogy was REQUIRED on every slide
+              (1.7), so the model dutifully produced one for advantages/disadvantages slides,
+              reasoning slides, comparison tables and worked examples, where it adds length and
+              no understanding. Every slide now declares a `role` (concept_intro | mechanism |
+              working_example | comparison | advantages_limitations | reasoning | application |
+              summary) and the analogy rule is an exact BICONDITIONAL: an analogy is required iff
+              role == concept_intro, and is a FAILURE on every other role. Since 'label
+              everything concept_intro' would defeat it, concept_intro slides are capped at
+              constraints.slide_roles.max_concept_intro_share of the deck.
+              (c) WORKED EXAMPLES ARE NOW CONDITIONAL. depth_mode.md made a worked example
+              MANDATORY on every doc, which produced example slides for definitional topics
+              ('What is a file' does not need one). constraints.worked_example now states when
+              an example EARNS its slide (a procedure, algorithm, computation, address
+              translation, state trace, or numeric trade-off) and when it must be omitted
+              (definition / classification / terminology), with a share cap.
+              (d) REALISTIC FIGURES. An example must use figures a practitioner would recognise
+              — 0x00400000-style base addresses, 4 KB pages, PID 4312, a 1500-byte MTU — never
+              toy or placeholder values. Deterministic gate: a working_example slide must carry
+              at least min_numeric_literals concrete values and none of banned_placeholders.
+              (e) MISSING SUB-CONCEPTS. 1.24 asked the model to enumerate each takeaway's
+              exam-testable sub-concepts in its head; nothing ever verified that it had. The doc
+              now emits a `coverage_map` — per takeaway, each sub-concept mapped to the slide `n`
+              that teaches it or to a NAMED deferral — which guardrails validate (one entry per
+              takeaway, verbatim text, >= min_sub_concepts_per_takeaway each, every slide
+              reference resolvable, no unmapped sub-concept). It is a planning artifact: it is
+              NOT rendered into the .docx, so it costs no pages.
+              (f) REGENERATION IS SURGICAL. Regenerating one guided section re-drafted the WHOLE
+              section from scratch, so a note about one slide threw away the slides the reviewer
+              was happy with. The model is now asked for a JSON PATCH (edit_slides / add_slides /
+              remove_slides / section_name) which src/patcher.py applies to the previous fragment
+              in code — so anything the patch does not name stays BYTE-IDENTICAL, a guarantee no
+              prompt can give. It falls back to a full regeneration (logged) if the patch is
+              unusable, and the applied patch's scope (changed vs untouched slides) is logged and
+              scored by the new regeneration_scope_discipline eval set.
+              (g) THE LLM QUALITY CHECK AND THE 40-MINUTE BUDGET NOW ALWAYS RUN. Both were
+              user-toggleable, so a doc could be produced ungraded and unbounded, and 'the session
+              is 40 minutes' was optional. gates.always_run_llm_judge and
+              constraints.recording.always_enforced (both true) force them on in one-shot and
+              guided mode alike; the checkboxes are gone from the app. DEPTH MODE is therefore
+              dormant by default — and it no longer means 'unlimited': the page ceiling applies in
+              every mode. Set either flag false to restore the toggles.
+              Rubric reweighted to 13 dimensions (adds length_discipline, analogy_discipline,
+              example_quality; coverage raised to 15); 5 new eval sets (20-24) and 3 updated
+              (03/13/14); guidelines 22-25 added. The golden was re-authored for (b) and (e):
+              roles assigned, 4 ritual analogies dropped, a real coverage_map added."
+    - "1.30 — OUTPUT DELIVERY, THE FEEDBACK PATH, AND PAGE COUNT IN THE DASHBOARD.
+              (a) A REVIEWER LOST AN HOUR OF WORK. She generated and reviewed a full TR
+              doc, then found that BOTH 'Download Word' and 'Create Google Doc' failed, and
+              copied the whole document out of the preview pane by hand. The file was fine.
+              Both endpoints REBUILT the filename from the CURRENTLY-synced curriculum on
+              every request — `get_session(n)` then `Session {n} _ {name}.docx` — which is
+              only correct while the sheet still says what it said at generation time. This
+              is ONE shared instance with ONE active course, so another user pressing
+              Connect & Sync renames every session under everyone else's feet; measured
+              against the existing outputs directory, 5 of 9 generated documents were
+              already unreachable, returning 404 'Generate the doc first' about documents
+              plainly on disk. Worse, a session number missing from the newly-synced course
+              made get_session raise KeyError — a bare HTTP 500. New src/outputs.py never
+              re-derives: it resolves through the run's recorded filename, then the caller's
+              explicit filename, then the newest `Session {n} _ *.docx` on disk, and only
+              then the derived name — so the one guess that can be wrong runs last. Run rows
+              now store docx_name beside docx_path (the path is only valid on the instance
+              that wrote it), and the UIs pass run_id + filename. A 404 now lists what was
+              searched instead of blaming the user.
+              (b) AND THE DISK CAN LOSE THE FILE ANYWAY. Outputs lived only on the instance
+              disk, which an ephemeral host wipes on spin-down — and a guided run spans a
+              long human review, exactly that window. New run_files table + db.run_file_put/
+              get/find: the rendered .docx and .md (~40 KB) are stored against the run at
+              render time and served from there when the disk no longer has them, on every
+              backend rather than only Turso. gdrive.upload_as_gdoc_bytes lets a recovered
+              document still become a Google Doc. New GET /api/preview/{n} returns the
+              markdown, and the result card gained a 'Copy full text' button — so no one is
+              ever one broken button away from losing a reviewed document again.
+              (c) ONE-SHOT MODE HAD NO FEEDBACK PATH AT ALL. Asked whether reviewer feedback
+              is really learned, the answer was yes — but only in Guided mode.
+              learning.record_feedback was reachable ONLY from a guided regeneration, so a
+              reviewer working one-shot had nowhere to give a correction; the UI even had a
+              `feedback` source label nothing could produce. New POST /api/feedback +
+              a 'Teach the agent' panel on the result card, which SHOWS the distilled rule
+              back so a bad distillation can be spotted and deleted instead of being applied
+              silently to every future doc. Verified live: the loop itself was healthy —
+              7 stored rules, all distilled, scoped and hit-counted (a hurried
+              'Since this is an example remove analogy from this' had become 'Remove
+              analogies from example sections'). Their hit counts are the real finding:
+              raised 4x, 3x and 2x means the SAME correction was re-learned that many times,
+              which is precisely why 1.29 converted those three into deterministic gates —
+              a rule that lives only in a prompt is one the model talks itself out of.
+              (d) PAGE COUNT IN THE DASHBOARDS. runs.est_pages is persisted (via a new
+              additive ALTER TABLE migration — CREATE TABLE IF NOT EXISTS is a no-op on an
+              existing DB, so a column added to _SCHEMA alone would only ever appear on a
+              fresh install). db.summary reports avg_pages / max_pages_seen / page_limit /
+              over_page_limit, computed only over runs that HAVE a page count so pre-1.29
+              runs do not drag the average down. The admin app gained a Pages column that
+              chips red over the ceiling, four length metrics on Overview, and the same
+              download fix.
+              Three new offline regressions in CI: evals/test_outputs.py (boots the API and
+              exercises download / preview / traversal safety / disk-loss recovery, 15
+              checks) joins test_gates.py; evals/test_learning_loop.py runs in the manual
+              live job (14 checks over distil / inject / dedupe / verify)."
+    - "1.31 — WHAT THE FIRST LIVE RUN OF 1.29/1.30 ACTUALLY FOUND. The offline suites all
+              passed, so this was only discoverable by generating a real document — worth
+              recording as the lesson: deterministic gates can be green while the run still
+              fails end to end.
+              (a) EVERY GENERATION TRUNCATED. `model.max_tokens` was 32000, sized when a doc
+              used ~14.5k output tokens. But max_tokens caps THINKING PLUS TEXT, and Claude
+              Sonnet 5 thinks by default — adaptive thinking is on whenever the request omits
+              the `thinking` field, where the same request on Sonnet 4.6 did no thinking at
+              all. A real S13 run spent 6,863 reasoning tokens before writing any JSON and
+              hit the ceiling with the last of five sections unwritten; a truncated response
+              cannot be parsed, so the whole paid generation was lost. Raised to 64000
+              (Sonnet 5's ceiling is 128k). The same arithmetic caught judge_max_tokens:
+              1.29 took the rubric from 8 dimensions to 13, leaving ~1.5x margin on 8k — now
+              16000. And src/llm.py's 180s HTTP timeout was tuned for ~90s generations while
+              a real one now takes ~330s: raised to 900s (_REQUEST_TIMEOUT_S), with the note
+              that `requests` timeouts are per-read, not wall-clock.
+              (b) A HALLUCINATED RULE VIOLATION WAS FAILING COMPLIANT DOCS — AND BEING
+              LEARNED. With (a) fixed, S13 came back genuinely good: guardrails passed,
+              12/16 pages, 36.6 min, 14 slides, analogies on exactly the 4 concept_intro
+              slides (0 placement violations), 4 worked examples each with 16-22 real
+              figures, a complete coverage_map, rubric 91.2. It was still rejected — on one
+              blocking issue from the judge: 'Slide 2 (role=working_example) contains an
+              analogy', about a slide with no `analogy` key at all. The mechanism is the
+              problem, not the model: the judge is handed every learned rule and told to put
+              violations in blocking_issues, which is a hard gate — so it was re-adjudicating
+              from prose a rule that 1.29 had already made an exact guardrail, and inventing
+              a violation. Then self-evolution distilled that phantom defect into 2 NEW
+              durable rules: a hallucination promoted to permanent policy, injected into
+              every future generation. New self_evolution.gated_rules declares which learned
+              rules a deterministic gate now covers; learning.gate_for/retire_gated stamp
+              them (idempotent, run at server startup since the store is DB-restored runtime
+              data), applicable_rules drops them from injection AND from judge verification,
+              and the app shows them as 'auto-enforced' rather than hiding them — the
+              correction is still in force, just checked exactly. On the real store this
+              retired 3 of 7 rules (agenda-verbatim, analogy-on-examples, analogy-tie-back).
+              The judge also now requires QUOTED evidence — the offending text, slide number
+              and JSON field — for any rule violation, and is told that an absent field means
+              the rule was followed."
+    - "1.32 — THE THIRD GRADER DEFECT, AND TWO PIECES OF HYGIENE. With 1.31 in place the
+              S13 doc came back with guardrails passed, 12/16 pages, 34.7 min and 5/5 on
+              eleven of thirteen dimensions — and was still rejected.
+              (a) THE JUDGE OMITTED A SCORE AND THAT READ AS ZERO. `pedagogy` came back with
+              a justification ('Ordering is strong: problem -> idea -> mechanism') and no
+              `score` field at all. llm_judge read it through `.get('score', 0)`, so a
+              missing value became 0/5: it cost 8 weighted points (90.4 instead of ~97) AND
+              tripped gates.rubric_min_per_dimension, and the resulting 'Dimension
+              pedagogy scored None < 4' was then distilled into a durable rule. Three
+              failures from one malformed field. A missing score is a GRADER malfunction, not
+              a verdict of zero: llm_judge now detects unscored active dimensions
+              (_unscored/_score_of), retries the judge once, renormalises the weighted total
+              over the dimensions actually scored, reports the rest in
+              `unscored_dimensions` + a suggested fix, and passes_gates skips them. A
+              genuine low score still fails — verified both ways.
+              (b) SELF-EVOLUTION WAS LEARNING FROM GRADER NOISE. Both this and the 1.31
+              hallucination reached the rule store because learn_from_issues distils
+              whatever survives the loop. New learning._GRADER_NOISE filter drops issues
+              that describe the grader misbehaving ('scored none', 'no score', 'llm
+              error', 'unparseable', 'truncated', 'grader note:') at the entrance,
+              while real defects still learn normally.
+              Result: S13 ACCEPTED — rubric 95.4, 12/16 pages, 34.7 min, 14 slides,
+              guardrails passed, analogies on exactly the 4 concept_intro slides (0
+              placement violations), 4 worked examples with 22-24 real figures each, a
+              complete 5/5 coverage map, 2 rounds, $0.53.
+              (c) evals/test_outputs.py was passing while testing NOTHING on CI: it needs a
+              rendered doc and `outputs/` is gitignored, so on a fresh clone it hit the
+              'no generated .docx' branch and skipped — green, and worthless. It now
+              renders the golden into a throwaway fixture (session 9101, deleted after) when
+              no real output exists, so both paths genuinely run.
+              (d) knowledge_base/tr_app.db was tracked in git — real users, runs, teams and
+              per-run cost committed as source, and every generation dirtying the working
+              tree. Untracked and gitignored (with -wal/-shm); db.init() rebuilds the schema
+              on a fresh instance and TURSO_* owns the data in production."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
-    flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
+    flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> pages -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
     inputs: "two Google Sheets (links given at startup) + past Google Slides decks"
     output: "Word .docx (+ .md preview + .grade.json report) in outputs/"
 
@@ -374,8 +560,20 @@ model:
   generator: "anthropic/claude-sonnet-5"   # drafting + revision
   judge: "anthropic/claude-haiku-4.5"      # LLM-as-judge grader — Haiku: ~3x faster/cheaper than Sonnet for scoring
   prompt_caching: true              # cache the large static system prompt across generate/revise/judge calls
-  max_tokens: 32000                 # ceiling; docs use ~14.5k out (~2x margin, no truncation risk)
-  judge_max_tokens: 8000            # judge emits 8 dimensions + justifications; 4k truncated mid-JSON
+  # OUTPUT CEILING. This caps THINKING PLUS TEXT, not just the JSON — and Claude
+  # Sonnet 5 thinks by default (adaptive thinking is on whenever the request omits
+  # the `thinking` field; on Sonnet 4.6 the same request did no thinking at all). A
+  # real generation was observed spending 6,863 reasoning tokens before writing any
+  # JSON, then hitting the old 32k ceiling with the last of five sections unwritten —
+  # the whole doc lost, because a truncated response cannot be parsed. Sonnet 5's
+  # ceiling is 128k; 64k leaves roughly 4x headroom over what a 16-page doc needs.
+  max_tokens: 64000
+  # The judge emits one score + justification per rubric dimension, plus
+  # blocking_issues and suggested_fixes. 4k truncated mid-JSON at 8 dimensions; 8k
+  # left only ~1.5x margin at 13 (1.29 added length_discipline, analogy_discipline
+  # and example_quality), and the doc that most needs judging is exactly the one
+  # with the most to say about it. Cheap on Haiku, so the margin is worth having.
+  judge_max_tokens: 16000
   temperature: 0.4                  # low-ish: correctness over creativity
   # Live market + recency check via OpenRouter's ":online" web search on the JUDGE
   # call (uses this same OPENROUTER_API_KEY; small extra per-call cost). When true,
@@ -392,10 +590,43 @@ constraints:
     target_minutes: 36              # aim below the ceiling for safety margin
     speaking_words_per_minute: 130  # narration pace for time estimation
     seconds_per_slide_overhead: 15  # transition + settle time per slide
+    # Every session IS a 40-minute session. The old UI toggle could switch the
+    # budget off entirely (DEPTH MODE), which produced docs nobody could record and
+    # contradicted the page ceiling below. The budget is now unconditional: the
+    # server forces it on for one-shot and guided runs alike. Set false to hand the
+    # choice back to the user (the toggle code path is intact).
+    always_enforced: true
     # A TR doc is a SKELETON the instructor elaborates on when recording.
     # Calibrated against the golden Session 15 (1399 skeleton words -> ~38 min
     # recording across 8 slides). Raising this makes the 40-min gate stricter.
     elaboration_factor: 2.9
+  pages:
+    # LENGTH CEILING, in rendered .docx pages. Recording time alone was not enough of
+    # a length gate: a comparison table costs a third of a page and almost no narration,
+    # so a doc could sit inside the 40-minute budget and still run past twenty pages.
+    # A page count is also what the reviewer actually reads, so it is what we gate on.
+    max: 16                         # HARD ceiling — a longer doc FAILS the run
+    target: 14                      # aim here, so a revision round has room to work
+    # Layout model of the template docx_writer renders into (python-docx default:
+    # 8.5x11 page, 1.25in side / 1.0in top-bottom margins, 11pt body at 1.15 line
+    # spacing with 10pt space-after). graders/page_grader.py reads ONLY these numbers,
+    # so the estimator can be re-tuned here — e.g. if docx_writer's template changes —
+    # without touching code.
+    layout:
+      usable_width_pt: 432          # 6.0in text column
+      usable_height_pt: 648         # 9.0in text height
+      body_font_pt: 11
+      line_height_factor: 1.38      # 1.15 line spacing x Word's ~1.2 single-line height
+      space_after_pt: 10            # docDefaults w:after=200 twips
+      avg_char_width_ratio: 0.48    # of font size — Calibri-like body text
+      bullet_indent_pt: 18          # List Bullet left indent (0.25in)
+      heading1_pt: 14
+      heading2_pt: 13
+      heading3_pt: 12
+      heading_space_before_pt: 10   # Heading 2 / Heading 3
+      heading1_space_before_pt: 24
+      table_row_padding_pt: 4       # cell margins on top of the row's text height
+      empty_paragraph_pt: 25        # the spacer paragraphs between slides/sections
   agenda:
     # Agenda bullets must not exceed the number of key-takeaway lines.
     max_bullets_rule: "<= key_takeaways_count"
@@ -411,8 +642,27 @@ constraints:
     format: "topic: subtopics"
   slides:
     min: 5
-    max: 12                         # split content across more slides, don't cram
-    max_rich: 18                    # higher ceiling when the 40-min limit is OFF (depth mode)
+    max: 14                         # split content across more slides, don't cram
+    max_rich: 14                    # depth mode adds no slides now — the page ceiling binds
+  slide_roles:
+    # Every slide declares WHY it exists. This exists so the analogy and worked-example
+    # rules below can be DETERMINISTIC: "only analogise a first introduction" is not
+    # checkable on free text, but it is trivially checkable against a declared role.
+    # The role is a planning field — it is NOT rendered into the .docx.
+    required: true
+    values:
+      - concept_intro           # a concept appears here for the FIRST time
+      - mechanism               # how it works: steps, internals, protocol behaviour
+      - working_example         # a concrete case traced through end to end
+      - comparison             # 2+ things contrasted, normally as a table
+      - advantages_limitations  # benefits / drawbacks / trade-offs
+      - reasoning               # why it works, why it fails, derivation
+      - application             # where it shows up in the real world
+      - summary                 # consolidation of what a section established
+    # Guard against the obvious cheat: labelling every slide concept_intro to keep
+    # writing analogies. In a real session most slides build on a concept already
+    # introduced, so more than half being first-introductions means mislabelling.
+    max_concept_intro_share: 0.5
   headings:
     # A slide `heading`/`subheading` is a LABEL, not a sentence. Hard 4-word cap,
     # enforced by guardrails and applied in DEPTH MODE too (depth adds body
@@ -431,6 +681,17 @@ constraints:
     # One core teaching cue + one exam/interview hook. Nothing else.
     max_sentences: 2
   analogy:
+    # WHERE an analogy belongs. An analogy buys ONE thing: it makes an unfamiliar
+    # concept graspable the first time it is met. Once the concept is on the table, a
+    # second analogy on the advantages slide, the reasoning slide, the comparison table
+    # or the worked example teaches nothing and costs pages — and 1.7's "every slide
+    # must have all six fields" was manufacturing exactly those. So the rule is an exact
+    # biconditional against the slide's declared `role`, not a preference:
+    #   analogy present  <=>  role == concept_intro
+    # A missing analogy on a first introduction FAILS; an analogy anywhere else FAILS.
+    required_on_roles: ["concept_intro"]
+    banned_on_roles: ["mechanism", "working_example", "comparison",
+                      "advantages_limitations", "reasoning", "application", "summary"]
     # An analogy that paints a picture and leaves the mapping implicit is incomplete:
     # it must end by naming the concept it maps onto, and it must match the concept
     # STRUCTURALLY (a cycle needs a circular-dependency scene, not a queue).
@@ -457,6 +718,40 @@ constraints:
                         "in the previous slide", "in the next slide", "in this slide",
                         "we will see", "we saw", "let us", "moving on",
                         "recall that", "now that we", "earlier we", "coming up"]
+  worked_example:
+    # A worked example is not a ritual. It EARNS a slide when the learner could follow
+    # the words and still not be able to DO the thing — and it wastes one otherwise.
+    # "What is a file" needs a definition and a mental model, not a traced example.
+    earns_a_slide_when: >
+      the takeaway involves a procedure, an algorithm, a calculation, an address or
+      state translation, a sequence traced over time, or a numeric trade-off — i.e.
+      something the learner must be able to EXECUTE, not merely recognise.
+    omit_when: >
+      the takeaway is definitional, classificatory, or terminological (what X is, types
+      of X, components of X, vocabulary) — the concept slide already carries the weight,
+      and an invented example only adds length.
+    # A deck that is mostly examples has stopped teaching the concepts.
+    max_share_of_slides: 0.3
+  examples:
+    # Figures inside an example must be ones a practitioner would recognise, because a
+    # toy number teaches a toy mental model: base register 0x00400000 and a 4 KB page,
+    # not "base = 5"; PID 4312, not "process X"; a 1500-byte MTU, not "some size".
+    require_realistic_figures: true
+    realism_guidance: >
+      Use values with the right magnitude and shape for the domain: hex base/bound
+      addresses, power-of-two page and frame sizes, real port and RFC numbers, plausible
+      PIDs, byte counts, timings in ms, and standard field widths. Round toy numbers
+      (1, 2, 5, 10, 100) are acceptable only as counts of things (3 processes,
+      4 frames), never as addresses, sizes, or identifiers.
+    # A traced example with no concrete values is not a worked example.
+    min_numeric_literals: 2
+    # Vague stand-ins for a real value. Matched on word boundaries, so this list is
+    # deliberately narrow: a legitimate label ("Process P1", "frame 3") must never trip
+    # it, and neither must ordinary prose — which is why "abc" and "bar" are NOT here
+    # ("bar graph", "toolbar" are innocent) while "foo"/"xyz" have no other use.
+    banned_placeholders: ["some address", "some value", "some number", "any address",
+                          "any value", "arbitrary value", "address x", "value x",
+                          "xyz", "foo", "lorem ipsum", "tbd"]
   coverage:
     # The most serious failure mode is a SILENTLY missing sub-concept: a syllabus line
     # like "Page Faults" implies causes (first-reference/demand-load, swapped-out,
@@ -465,6 +760,18 @@ constraints:
     enumerate_sub_concepts: true
     self_check_pass: true
     deferrals_must_be_named: true
+    # …and now VERIFY it instead of trusting it. 1.24 told the model to enumerate the
+    # sub-concepts before writing; nothing checked that it had, so a missing sub-concept
+    # still slipped through silently — the exact defect reported again. The doc must now
+    # EMIT the enumeration as a `coverage_map`: for every takeaway, each exam-testable
+    # sub-concept mapped either to the slide `n` that teaches it or to a named deferral.
+    # Guardrails then check the map against the slides that actually exist, so "I
+    # forgot one" becomes "the map says slide 9 and there is no slide 9".
+    require_coverage_map: true
+    min_sub_concepts_per_takeaway: 2
+    # The map is a PLANNING artifact for the graders, not lecture material — it is not
+    # rendered into the .docx or the Markdown preview, so it costs no pages.
+    rendered_in_docx: false
   language:
     variety: "Indian English"
     grammar: "must be error-free"
@@ -501,9 +808,11 @@ structure:
           - {label: "Heading:", required: true}
           - {label: "Subheading:", required: true}
           - {label: "Content:", required: true}
-          - {label: "Analogy:", required: false}          # include when it aids understanding
-          - {label: "Visual Guidance:", required: false}  # NOT mandatory
-          - {label: "Speaker Notes:", required: false}    # NOT mandatory
+          # Required on a first introduction, FORBIDDEN on every other slide role —
+          # see constraints.analogy.required_on_roles / banned_on_roles.
+          - {label: "Analogy:", required: "iff role == concept_intro"}
+          - {label: "Visual Guidance:", required: true}
+          - {label: "Speaker Notes:", required: true}
         tables_allowed: true         # comparison/spec tables encouraged
   - id: key_takeaways
     required: true
@@ -525,10 +834,16 @@ pedagogy:
   - "Motivate every concept before defining it — never jump straight to a definition."
   - "Order concepts so each builds on the previous (problem -> idea -> mechanism -> comparison -> real use)."
   - "Introduce a new term only after the learner feels the gap it fills."
-  - "Use one concrete analogy per non-trivial concept; keep analogies everyday and Indian-context friendly."
+  - "Analogise a concept ONCE, where it is first introduced. An analogy on an advantages,
+     reasoning, comparison or worked-example slide adds length and no understanding."
+  - "Keep the one analogy everyday and Indian-context friendly, and tie it back to the concept."
+  - "Add a worked example only where the learner must be able to EXECUTE something
+     (a procedure, calculation, translation or trace) — not for definitional topics."
+  - "Give examples realistic figures: real base addresses, page sizes, port numbers, PIDs."
   - "Prefer a comparison table when contrasting 2+ items (e.g. TCP vs UDP)."
   - "Close each section implicitly leading into the next."
-  - "Cover every key takeaway of the session — none skipped, none padded beyond scope."
+  - "Cover every key takeaway of the session AND its exam-testable sub-concepts — none
+     skipped, none padded beyond scope. Spend the length budget on coverage, not ritual."
 
 # ----------------------------------------------------------------------------
 # MARKET PARITY  (content depth benchmark)
@@ -615,6 +930,13 @@ interface:
 gates:
   structural_pass: true             # ALL required elements present (hard gate)
   time_within_budget: true          # estimated minutes <= max_minutes (hard gate)
+  pages_within_budget: true         # estimated pages <= constraints.pages.max (hard gate)
+  # The LLM quality check is not optional any more. It used to be a checkbox, so a doc
+  # could be produced with no rubric score at all — and an ungraded doc also skips the
+  # revision loop AND the self-evolution step that turns surviving defects into durable
+  # rules, so turning it off quietly disabled the agent's learning. Set false to hand
+  # the choice back to the user (the use_judge code path is intact).
+  always_run_llm_judge: true
   # Rebalanced 2026-07-13 from a 3-session live probe (Sessions 10/17/24 all scored
   # 100/100, every dimension 5/5). The old 85/3 bar had huge headroom — "accepted"
   # was near-automatic. Raised so acceptance means RECORDING-READY, not just "okay":
@@ -627,6 +949,27 @@ gates:
   # Revise a clear miss (< this) once; marginal near-misses (82-89) are shipped
   # flagged-not-accepted rather than burning a slow extra round for a small delta.
   rubric_revise_below: 82           # revise only if weighted score < this (was 75)
+
+# ----------------------------------------------------------------------------
+# REGENERATION — what happens when a reviewer rejects ONE guided chunk.
+#   The reviewer's note is almost always narrow ("drop the analogy on the example
+#   slide", "the base address is unrealistic"). Re-drafting the whole section from
+#   that note threw away the slides they were happy with, so every regeneration was
+#   a fresh roll of the dice on content that had already been approved.
+#   The fix is not a stronger instruction — a prompt cannot promise that unrelated
+#   text comes back identical. The model returns a PATCH naming exactly what to
+#   change, and src/patcher.py applies it to the previous fragment, so anything the
+#   patch does not name is preserved literally.
+# ----------------------------------------------------------------------------
+regeneration:
+  mode: "patch"                     # "patch" (surgical) | "full" (legacy re-draft)
+  # If the model's patch is missing, malformed, or empty, fall back to a full
+  # re-draft rather than failing the reviewer's click. Logged, never silent.
+  fallback_to_full: true
+  # Guard against a "patch" that simply rewrites every slide: if a patch touches
+  # more than this share of the section's slides, say so in the run log so the
+  # over-broad edit is visible to the reviewer instead of looking surgical.
+  warn_above_changed_share: 0.5
 
 # ----------------------------------------------------------------------------
 # SELF-EVOLUTION — the cross-run learning loop.
@@ -645,6 +988,23 @@ self_evolution:
   # this system exists to prevent; scoping nothing leaks one course's topics into
   # another. Set false to go back to injecting every rule everywhere.
   scope_rules: true
+  # RULES A DETERMINISTIC GATE NOW ENFORCES. 1.29 turned three of the reviewer's
+  # most-repeated corrections into hard guardrails, so injecting them as prose is
+  # redundant — and actively harmful, because the judge is handed every learned rule
+  # and told to put violations in blocking_issues (a hard gate). Observed live: a doc
+  # whose worked-example slide had no `analogy` field at all, and which passed
+  # guardrails, was failed by the judge for "Remove analogies from example sections" —
+  # then that phantom defect was learned as two NEW rules. A hallucination became
+  # durable policy. Matched rules are retired from injection and from judge
+  # verification, but kept in the store and shown as automatically enforced.
+  # `match` is ALL-of, on the rule text + the reviewer's original wording.
+  gated_rules:
+    - gate: "guardrails: agenda must equal the curriculum's key-takeaway lines verbatim"
+      match: ["agenda", "curriculum"]
+    - gate: "guardrails: analogy is forbidden on every role except concept_intro"
+      match: ["analog", "example"]
+    - gate: "guardrails: analogy must end with an explicit tie-back naming the concept"
+      match: ["analog", "relate"]
   learn_from_judge: true            # surviving guardrail/judge/time defects (per-generation) -> durable rules
   learn_from_eval_sets: true        # eval-set FAILURES (evals/run_sets.py, System B) -> durable rules (LLM runs only)
   distill: true                     # LLM-rewrite each raw defect into a general, reusable DO/DON'T rule
@@ -688,7 +1048,7 @@ evals:
   golden: "evals/golden/session_15_golden.json"
   runner: "python -m evals.run_eval [--live]"          # golden regression / live pipeline
   sets_runner: "python -m evals.run_sets --session N [--no-llm]"  # score a doc vs all sets
-  # 17 dimensions covering all 19 guidelines. status: implemented | dormant | not_implemented
+  # 24 dimensions covering all 25 guidelines. status: implemented | dormant | not_implemented
   dimensions:
     - {id: curriculum_takeaway_extraction, guidelines: [1],        status: implemented,     grader: deterministic}
     - {id: ppt_extraction_completeness,    guidelines: [2, 3],     status: implemented,     grader: hybrid}
@@ -709,3 +1069,8 @@ evals:
     - {id: market_coverage_completeness,   guidelines: [19],       status: implemented,     grader: llm_judge}
     - {id: content_recency,                guidelines: [20],       status: implemented,     grader: llm_judge}
     - {id: document_structure_layout,      guidelines: [21],       status: implemented,     grader: deterministic}
+    - {id: document_length_pages,          guidelines: [22],       status: implemented,     grader: deterministic}
+    - {id: analogy_placement,              guidelines: [23],       status: implemented,     grader: deterministic}
+    - {id: worked_example_appropriateness, guidelines: [24],       status: implemented,     grader: hybrid}
+    - {id: example_figure_realism,         guidelines: [24],       status: implemented,     grader: hybrid}
+    - {id: regeneration_scope_discipline,  guidelines: [25],       status: implemented,     grader: llm_judge}

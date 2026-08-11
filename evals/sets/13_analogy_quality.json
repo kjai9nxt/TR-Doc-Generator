@@ -1,12 +1,15 @@
 {
   "id": "analogy_quality",
   "title": "Analogy Quality — Simple, Relatable, Non-Distracting",
-  "guideline_refs": [14, 15],
+  "guideline_refs": [
+    14,
+    15
+  ],
   "capability_status": "implemented",
   "grader": "llm_judge",
   "applies_to": "per_slide_analogy",
-  "description": "Analogies must be simple, everyday, and relatable, and must clarify the concept without distracting. No elaborate, niche, or multi-part analogies that need their own explanation.",
-  "criterion": "1-2 sentences, everyday domain, maps cleanly to the concept, does not introduce new confusion; no analogy repeated across slides.",
+  "description": "For the analogies that BELONG (concept_intro slides only — placement is scored by the analogy_placement set): they must be simple, everyday, and relatable, and must clarify the concept without distracting. No elaborate, niche, or multi-part analogies that need their own explanation, and no domain reused across slides.",
+  "criterion": "1-2 sentences, everyday domain, maps cleanly and STRUCTURALLY to the concept, ends with an explicit tie-back naming the concept, introduces no new confusion; no analogy or analogy DOMAIN repeated across slides.",
   "rubric": {
     "5": "Simple, relatable, illuminating, one clean mapping.",
     "3": "Works but slightly stretched or a touch long.",
@@ -18,22 +21,42 @@
       "id": "aq-good-1",
       "polarity": "good",
       "expected": "pass",
-      "input": {"concept": "TCP reliability", "analogy": "Like registered post — you get a delivery receipt for every letter."},
+      "input": {
+        "concept": "TCP reliability",
+        "analogy": "Like registered post — you get a delivery receipt for every letter."
+      },
       "rationale": "Everyday, one clean mapping."
     },
     {
       "id": "aq-bad-1",
       "polarity": "bad",
       "expected": "fail",
-      "input": {"concept": "TCP congestion control", "analogy": "Like a Formula-1 team's tyre-degradation model balancing undercut strategy against a virtual safety car window while managing ERS deployment."},
+      "input": {
+        "concept": "TCP congestion control",
+        "analogy": "Like a Formula-1 team's tyre-degradation model balancing undercut strategy against a virtual safety car window while managing ERS deployment."
+      },
       "rationale": "Niche, complex, needs its own explanation — distracting."
     },
     {
       "id": "aq-bad-2",
       "polarity": "bad",
       "expected": "fail",
-      "input": {"concept": "UDP", "analogy": "Like sending a postcard.", "note": "identical postcard analogy already used on an earlier slide for IP"},
+      "input": {
+        "concept": "UDP",
+        "analogy": "Like sending a postcard.",
+        "note": "identical postcard analogy already used on an earlier slide for IP"
+      },
       "rationale": "Repeated analogy across slides — not allowed."
+    },
+    {
+      "id": "aq-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "concept": "Circular wait in deadlock",
+        "analogy": "Like a long queue at a railway counter where everyone waits their turn — just as processes wait for resources."
+      },
+      "rationale": "Structurally wrong: a queue is a linear wait, a deadlock cycle is circular. The tie-back is present but maps onto the wrong shape."
     }
   ]
 }

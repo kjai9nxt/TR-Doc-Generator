@@ -8,7 +8,7 @@ Interface (on open):
 
 Direct / scripted use:
   python run.py --session 16          # sync (using saved links) + generate session 16
-  python run.py --session 1 --no-judge
+  python run.py --session 1
   python run.py --sync                # just re-sync with the saved sheet links
   python run.py --setup               # re-enter / change the sheet links
   python run.py --watch               # keep syncing on an interval, log changes
@@ -43,7 +43,12 @@ def main():
     ap = argparse.ArgumentParser(description="Generate a TR doc for one course session.")
     ap.add_argument("--session", type=int, help="Session number to generate.")
     ap.add_argument("--course", default=None, help="Offline: explicit course-structure .xlsx.")
-    ap.add_argument("--no-judge", action="store_true", help="Skip the LLM-as-judge grader.")
+    # Honoured only if gates.always_run_llm_judge is turned off in the harness: the
+    # quality check is policy now, and skipping it also skips the revision loop and
+    # the self-evolution step that turns surviving defects into durable rules.
+    ap.add_argument("--no-judge", action="store_true",
+                    help="Skip the LLM-as-judge grader (ignored while the harness "
+                         "pins gates.always_run_llm_judge).")
     ap.add_argument("--list", action="store_true", help="List sessions and exit.")
     ap.add_argument("--setup", action="store_true", help="Re-enter the Google Sheet links.")
     ap.add_argument("--sync", action="store_true", help="Sync with the saved sheet links and exit.")

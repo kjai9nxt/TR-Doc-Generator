@@ -9,10 +9,13 @@
 #   TURSO_DATABASE_URL    libsql://<your-db>.turso.io   (from https://turso.tech)
 #   TURSO_AUTH_TOKEN      your Turso token
 #
-# Note: generated .docx files live on the (ephemeral) instance disk and are
-# regenerated on demand; all TRACKING data (runs, users, teams, cost) is in Turso
-# and persists. If you later want persistent .docx too, add object storage or a
-# paid disk (set TR_DATA_DIR instead of Turso).
+# Note: the free instance's disk is wiped on every spin-down and redeploy. Since 1.30
+# that no longer costs anyone their document — each run's rendered .docx and .md are
+# stored in the DB (run_files) at render time and served from there when the disk no
+# longer has them, alongside all TRACKING data (runs, users, teams, cost). So with
+# Turso configured, Download and Create-Google-Doc keep working across a restart.
+# Without Turso the local SQLite file sits on that same ephemeral disk and goes with
+# it — set TURSO_* (or a paid disk via TR_DATA_DIR) for anything people rely on.
 services:
   - type: web
     name: tr-doc-generator

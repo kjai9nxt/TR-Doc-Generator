@@ -28,6 +28,7 @@ deterministic and lets graders inspect fields directly.
         {
           "n": 1,
           "title": "Why SCTP Exists — TCP's Two Problems",
+          "role": "concept_intro",                   // why this slide exists
           "heading": "Why SCTP Exists",              // 3-4 words MAX
           "subheading": "Two Gaps TCP Left",         // 3-4 words MAX
           "content": [                         // ordered blocks
@@ -37,18 +38,30 @@ deterministic and lets graders inspect fields directly.
              "columns": ["Feature", "Detail"],
              "rows": [["Standard", "RFC 4960"], ["...", "..."]]}
           ],
-          "analogy": "TCP is a single-lane road ...",   // optional, omit if not useful
-          "visual_guidance": "Left: TCP one stream ...", // optional
-          "speaker_notes": "..."                          // optional
+          "analogy": "TCP is a single-lane road ...",   // ONLY on concept_intro
+          "visual_guidance": "Left: TCP one stream ...",
+          "speaker_notes": "..."
         }
       ]
     }
+  ],
+  "coverage_map": [                           // planning artifact — NOT rendered
+    {"takeaway": "SCTP: Stream Control Transmission Protocol",
+     "sub_concepts": [
+       {"name": "Head-of-line blocking in TCP", "slide": 1},
+       {"name": "Partial reliability (PR-SCTP)",
+        "deferred_to": "Session 16 — covered with SCTP extensions"}
+     ]}
   ],
   "key_takeaways": ["...", "..."],            // mirror course-structure takeaways
   "upcoming_session": "Network Layer & IP Addressing",  // null if final session
   "closing": "Thank You  |  All the Best"
 }
 ```
+
+`role` is one of `concept_intro`, `mechanism`, `working_example`, `comparison`,
+`advantages_limitations`, `reasoning`, `application`, `summary`. Like `coverage_map`,
+it is a planning field: the renderer ignores it, so it costs no pages.
 
 ## Rendering rules (docx_writer)
 
@@ -83,10 +96,30 @@ The breaker uses the same dash-wrapped form as the golden doc:
 7. **Next session name** — `Upcoming Session : {name}` (omit/null on the final session).
 8. **Closing** — centered `Thank You  |  All the Best`.
 
-## Required per-slide fields (ALL SIX, on EVERY slide)
-`heading`, `subheading`, `content`, `analogy`, `visual_guidance`, `speaker_notes`
-are **all REQUIRED on every slide** — none may be omitted or left empty. (A missing
-field is a hard guardrail failure.)
+## Required per-slide fields
+`role`, `heading`, `subheading`, `content`, `visual_guidance`, `speaker_notes` are
+**REQUIRED on every slide** — none may be omitted or left empty. (A missing field is a
+hard guardrail failure.)
+
+`analogy` is **conditional, and exactly so**: required when `role == "concept_intro"`,
+**forbidden** on `mechanism`, `working_example`, `comparison`,
+`advantages_limitations`, `reasoning`, `application` and `summary`. Both a missing
+analogy on a first introduction and a present one anywhere else are hard failures. No
+more than half the slides may be `concept_intro`.
+
+## Length ceiling
+The rendered document must be **≤ 16 pages** (target ~14), estimated deterministically
+from this layout by `graders/page_grader.py`, and independently recordable in
+≤ 40 minutes. Over either ceiling is a hard failure. When trimming, cut ritual
+(unneeded analogies, unwarranted examples, restatement, filler) — never a sub-concept.
+
+## `coverage_map` (required)
+One entry per key takeaway, in curriculum order, `takeaway` byte-identical to the
+curriculum line, at least **2** sub-concepts each, and every `slide` value resolvable
+to a slide in the document. A sub-concept deliberately left to a later session carries
+`deferred_to` instead of `slide` and must also be named in the section text. Guardrails
+verify the map against the slides that exist, which is what turns a silently missing
+sub-concept into a visible failure.
 
 `heading` and `subheading` are **3-4 word labels — hard maximum 4 words each** (no
 period). A 5-word heading or subheading is a hard guardrail failure, in every mode
@@ -108,8 +141,13 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 - No redundancy on a slide: bullets must not restate the lead-in sentence, and must
   not restate a table on the same slide. Pick one carrier per piece of information.
 - `speaker_notes`: **≤ 2 sentences** — one teaching cue + one exam/interview hook.
-- `analogy`: ends with an explicit tie-back naming the concept ("… — just as <how
-  the concept works>"), and matches the concept structurally.
+- `analogy`: on a `concept_intro` slide only; ends with an explicit tie-back naming the
+  concept ("… — just as <how the concept works>"), and matches the concept structurally.
+- A `working_example` slide traces a concrete case step by step using **realistic
+  figures** (hex base addresses, power-of-two page sizes, real ports/RFCs, plausible
+  PIDs and byte counts) — at least two concrete values, and no placeholders ("some
+  address", "value X", "xyz"). Add one only where the learner must be able to EXECUTE
+  something; omit it for definitional or classificatory topics.
 - Slide-visible text (`title`, `heading`, `subheading`, `content`, `analogy`) carries
   **no second person** ("you"/"your") and **no navigational phrases** ("last
   session", "as we saw earlier", "in the next slide", …). `speaker_notes` may keep a

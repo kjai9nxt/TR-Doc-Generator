@@ -105,18 +105,27 @@ function renderLogin() {
   }
 }
 
+let PAGE_LIMIT = 16
 function signOut(){ TOKEN=''; localStorage.removeItem('tr_auth_token'); ME=null; if(window.google?.accounts?.id) google.accounts.id.disableAutoSelect(); boot() }
 
-async function downloadDoc(ev, session_no){
+// run_id + the exact filename pin the output. Resolving by session number alone made
+// the server re-derive the name from whatever course is synced now, which 404'd on any
+// doc whose session had since been renamed or re-synced (see src/outputs.py).
+async function downloadDoc(ev, session_no, run_id, name){
   ev.preventDefault()
   try {
-    const res = await fetch(`${API}/api/download/${session_no}`, { headers: TOKEN?{Authorization:`Bearer ${TOKEN}`}:{} })
-    if(!res.ok) throw new Error('HTTP '+res.status)
+    const q = Object.entries({run_id, name}).filter(([,v])=>v).map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&')
+    const res = await fetch(`${API}/api/download/${session_no}${q?'?'+q:''}`, { headers: TOKEN?{Authorization:`Bearer ${TOKEN}`}:{} })
+    if(!res.ok){
+      let msg = 'HTTP '+res.status
+      try { const d = await res.json(); msg = (d.detail && (d.detail.message||d.detail)) || msg } catch{}
+      throw new Error(msg)
+    }
     const blob = await res.blob()
     const cd = res.headers.get('Content-Disposition')||''
     const m = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(cd)
-    const name = m ? decodeURIComponent(m[1].replace(/"$/,'')) : `Session_${session_no}.docx`
-    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name
+    const saveAs = m ? decodeURIComponent(m[1].replace(/"$/,'')) : (name || `Session_${session_no}.docx`)
+    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=saveAs
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
   } catch(e){ alert('Download failed: '+e.message) }
 }
@@ -135,9 +144,13 @@ function render(){ if(!ME.is_admin){ app.innerHTML=`<div class="err">Admin acces
 async function loadView(){
   const v = document.getElementById('view'); v.innerHTML = '<div class="muted" style="padding:20px">Loading…</div>'
   try {
-    if (TAB==='overview') return v.innerHTML = viewOverview(await api('/admin/overview'))
+    if (TAB==='overview') { const d = await api('/admin/overview');
+      PAGE_LIMIT = (d.summary && d.summary.page_limit) || PAGE_LIMIT
+      return v.innerHTML = viewOverview(d) }
     if (TAB==='live')     { v.innerHTML = viewLive(await api('/admin/live')); return }
-    if (TAB==='runs')     return v.innerHTML = viewRuns(await api('/admin/runs'))
+    if (TAB==='runs')     { const d = await api('/admin/runs');
+      PAGE_LIMIT = d.page_limit || PAGE_LIMIT
+      return v.innerHTML = viewRuns(d) }
     if (TAB==='users')    return v.innerHTML = viewUsers(await api('/admin/users'))
     if (TAB==='teams')    return v.innerHTML = await viewTeams()
   } catch(e){ v.innerHTML = `<div class="err">${esc(e.message)}</div>` }
@@ -154,6 +167,13 @@ function statusChip(r){
   return '<span class="chip done">✓ completed</span>'   // done, not approved
 }
 function dur(m){ return (m==null)?'—':(m<1?`${Math.round(m*60)}s`:`${(+m).toFixed(1)}m`) }
+// Page count, flagged when it exceeds the harness ceiling. '—' for runs generated
+// before the ceiling existed, which is honest: those were never measured.
+function pages(p, limit){
+  if(p==null) return '<span class="muted">—</span>'
+  const cap = limit || PAGE_LIMIT
+  return (cap && p > cap) ? `<span class="chip bad">${p}p</span>` : `${p}p`
+}
 
 function viewOverview(d){
   const s=d.summary, ts=({day:d.daily,week:d.weekly,month:d.monthly}[UNIT])||d.daily
@@ -174,6 +194,12 @@ function viewOverview(d){
        ${metric(s.completion_rate+'%','Completion rate')}${metric(s.acceptance_rate+'%','Approval rate')}
        ${metric(dur(s.avg_duration_min),'Avg generation time')}${metric(s.avg_rubric,'Avg rubric /100')}
        ${metric(money(s.total_cost),'Total cost')}${metric(num(s.total_tokens),'Total tokens')}
+     </div>
+     <div class="metrics" style="margin-top:10px">
+       ${metric(s.avg_pages?`${s.avg_pages}p`:'—','Avg length')}
+       ${metric(s.max_pages_seen?`${s.max_pages_seen}p`:'—','Longest doc')}
+       ${metric(`${s.page_limit||16}p`,'Page ceiling')}
+       ${metric((s.over_page_limit||0)>0?`<span class="chip bad">${s.over_page_limit}</span>`:'0','Over the ceiling')}
      </div>
    </div>
    <div class="card"><h2 style="margin-top:0">Completion funnel</h2>
@@ -219,13 +245,14 @@ function viewLive(d){
 
 function viewRuns(d){
   return `<div class="card"><h2>All runs (${d.runs.length})</h2>
-   <table><thead><tr><th>When</th><th>User</th><th>Course</th><th>Session</th><th>Outcome</th><th class="r">Time</th><th class="r">Rubric</th><th class="r">Cost</th><th>Output</th></tr></thead><tbody>
+   <table><thead><tr><th>When</th><th>User</th><th>Course</th><th>Session</th><th>Outcome</th><th class="r">Time</th><th class="r">Pages</th><th class="r">Rubric</th><th class="r">Cost</th><th>Output</th></tr></thead><tbody>
    ${d.runs.map(r=>`<tr>
      <td class="muted">${esc((r.ts||'').replace('T',' '))}</td><td>${esc(r.user_email||'?')}</td><td>${esc(r.course||'')}</td>
      <td>S${r.session_no}: ${esc(r.title||'')}</td><td>${statusChip(r)}</td>
      <td class="r">${dur(r.duration_min)}</td>
+     <td class="r">${pages(r.est_pages)}</td>
      <td class="r">${r.rubric!=null?r.rubric:'—'}</td><td class="r">${money((r.cost||{}).cost)}</td>
-     <td>${r.status==='done'?`<a href="#" onclick="downloadDoc(event, ${r.session_no})">.docx</a>`:'—'}</td>
+     <td>${r.status==='done'?`<a href="#" onclick="downloadDoc(event, ${r.session_no}, '${esc(r.id||'')}', '${esc((r.docx_name||'').replace(/'/g,"\\'"))}')">.docx</a>`:'—'}</td>
    </tr>`).join('')||'<tr><td class="muted">no runs</td></tr>'}
    </tbody></table></div>`
 }

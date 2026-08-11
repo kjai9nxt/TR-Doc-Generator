@@ -24,6 +24,7 @@
         {
           "n": 1,
           "title": "Why SCTP Exists — TCP's Two Problems",
+          "role": "concept_intro",
           "heading": "Why was SCTP Created?",
           "subheading": "Two Gaps TCP Left",
           "content": [
@@ -58,6 +59,7 @@
         {
           "n": 2,
           "title": "SCTP — What It Is & Key Features",
+          "role": "concept_intro",
           "heading": "Stream Control Transmission Protocol",
           "subheading": "A Smarter Transport Protocol",
           "content": [
@@ -123,6 +125,7 @@
         {
           "n": 3,
           "title": "SCTP 4-Way Handshake & Comparison",
+          "role": "mechanism",
           "heading": "SCTP Handshake Basics",
           "subheading": "Cookie-Based 4-Way Handshake",
           "content": [
@@ -219,7 +222,6 @@
               ]
             }
           ],
-          "analogy": "A clinic that hands out a token slip first and opens a patient file only when the token comes back, so people who never return cost it nothing — just as the 4-way handshake commits no server state until the Cookie is echoed.",
           "visual_guidance": "Ladder diagram for the 4-way handshake with a note at Step 2: 'Server stores no state yet.' Below it, the comparison table with the SCTP column highlighted.",
           "speaker_notes": "The Cookie keeps the handshake stateless until the client proves itself, which is what blocks SYN floods. A standard exam question is why SCTP needs four steps where TCP needs three."
         }
@@ -232,6 +234,7 @@
         {
           "n": 4,
           "title": "What is QoS & Its Parameters",
+          "role": "concept_intro",
           "heading": "Quality of Service (QoS)",
           "subheading": "Traffic Is Not Equal",
           "content": [
@@ -281,6 +284,7 @@
         {
           "n": 5,
           "title": "QoS Techniques — Scheduling & Traffic Shaping",
+          "role": "mechanism",
           "heading": "QoS Techniques",
           "subheading": "Scheduling and Traffic Shaping",
           "content": [
@@ -348,7 +352,6 @@
               ]
             }
           ],
-          "analogy": "First Class boarding ahead of everyone, a cabin holding a fixed seat quota per class, and a water tank with a small hole that overflows when filled too fast — just as Priority Queuing drains the top queue first, WFQ guarantees each class a bandwidth share, and Leaky Bucket drops whatever exceeds its rate.",
           "visual_guidance": "Two diagrams — Leaky Bucket (bursty in, steady drip out) and Token Bucket (tokens accumulating, a burst of packets released).",
           "speaker_notes": "Scheduling sets priority at the router queue, while Traffic Shaping caps the rate before traffic enters the network. Expect a Leaky versus Token Bucket comparison — Token Bucket permits bursts, Leaky Bucket does not."
         }
@@ -361,6 +364,7 @@
         {
           "n": 6,
           "title": "Best Effort — The Default Behaviour",
+          "role": "concept_intro",
           "heading": "Best Effort",
           "subheading": "Internet Default Behaviour",
           "content": [
@@ -385,6 +389,7 @@
         {
           "n": 7,
           "title": "IntServ & DiffServ",
+          "role": "comparison",
           "heading": "Two Network-Wide QoS Approaches",
           "subheading": "IntServ vs DiffServ",
           "content": [
@@ -457,13 +462,13 @@
               ]
             }
           ],
-          "analogy": "A train seat reserved before the journey versus a highway with Express, Fast, and Slow lanes assigned by vehicle class — just as IntServ reserves resources per flow end to end while DiffServ only marks each packet into a class and forwards it per hop.",
           "visual_guidance": "Left — IntServ: PATH/RESV ladder, each router 'Reserves Bandwidth'. Right — DiffServ: edge router marks DSCP -> core routers read label -> three output lanes (EF, AF, BE).",
           "speaker_notes": "IntServ reserves per flow and cannot scale, while DiffServ marks a class at the edge and leaves core routers stateless. That scalability contrast is the usual exam question here."
         },
         {
           "n": 8,
           "title": "QoS in Switched Networks",
+          "role": "application",
           "heading": "QoS in Switched Networks",
           "subheading": "How Switches Prioritise Traffic",
           "content": [
@@ -505,7 +510,6 @@
               ]
             }
           ],
-          "analogy": "A school canteen with a separate express counter for teachers, served ahead of the regular queue — just as an Ethernet switch reads the 802.1p PCP bits and forwards high-priority frames before best-effort ones.",
           "visual_guidance": "An Ethernet frame with the 802.1Q VLAN tag highlighted; zoom into the 3-bit PCP field. Next to it a switch with two queues — High Priority and Normal.",
           "speaker_notes": "Ethernet switches use the 3-bit PCP field inside the VLAN tag, giving eight local priority levels. Remember 802.1p as the LAN counterpart to DSCP."
         }
@@ -522,5 +526,134 @@
     "Switched networks use IEEE 802.1p PCP bits in the VLAN tag to prioritise traffic locally."
   ],
   "upcoming_session": "Network Layer & IP Addressing",
-  "closing": "Thank You  |  All the Best"
+  "closing": "Thank You  |  All the Best",
+  "coverage_map": [
+    {
+      "takeaway": "SCTP: Stream Control Transmission Protocol",
+      "sub_concepts": [
+        {
+          "name": "Head-of-line blocking in TCP",
+          "slide": 1
+        },
+        {
+          "name": "Single-path dependency of a TCP connection",
+          "slide": 1
+        },
+        {
+          "name": "SCTP definition: reliable, connection-oriented association",
+          "slide": 2
+        },
+        {
+          "name": "Message-oriented delivery (vs TCP's byte stream)",
+          "slide": 2
+        }
+      ]
+    },
+    {
+      "takeaway": "SCTP Features: Multi-Streaming, Multi-Homing",
+      "sub_concepts": [
+        {
+          "name": "Multi-streaming: independent streams in one association",
+          "slide": 2
+        },
+        {
+          "name": "Multi-homing: multiple IPs per endpoint, path failover",
+          "slide": 2
+        },
+        {
+          "name": "Cookie-based 4-way handshake and its DoS resistance",
+          "slide": 3
+        }
+      ]
+    },
+    {
+      "takeaway": "SCTP vs TCP vs UDP",
+      "sub_concepts": [
+        {
+          "name": "Feature-by-feature comparison of the three protocols",
+          "slide": 3
+        },
+        {
+          "name": "Which protocol suits which workload",
+          "slide": 3
+        }
+      ]
+    },
+    {
+      "takeaway": "Quality of Service (QoS): Parameters - Delay, Jitter, Bandwidth, Loss",
+      "sub_concepts": [
+        {
+          "name": "What QoS is and why best-effort is not enough",
+          "slide": 4
+        },
+        {
+          "name": "Delay and the ITU-T G.114 one-way budget",
+          "slide": 4
+        },
+        {
+          "name": "Jitter: variation in delay",
+          "slide": 4
+        },
+        {
+          "name": "Bandwidth and throughput",
+          "slide": 4
+        },
+        {
+          "name": "Packet loss and its effect per traffic type",
+          "slide": 4
+        }
+      ]
+    },
+    {
+      "takeaway": "Techniques to Improve QoS: Scheduling, Traffic Shaping",
+      "sub_concepts": [
+        {
+          "name": "Scheduling: FIFO, priority queuing, weighted fair queuing",
+          "slide": 5
+        },
+        {
+          "name": "Traffic shaping: leaky bucket",
+          "slide": 5
+        },
+        {
+          "name": "Traffic shaping: token bucket and burst allowance",
+          "slide": 5
+        }
+      ]
+    },
+    {
+      "takeaway": "Integrated Services (IntServ) & Differentiated Services (DiffServ)",
+      "sub_concepts": [
+        {
+          "name": "Best Effort as the default behaviour",
+          "slide": 6
+        },
+        {
+          "name": "IntServ: per-flow reservation with RSVP",
+          "slide": 7
+        },
+        {
+          "name": "DiffServ: per-class DSCP marking at the edge",
+          "slide": 7
+        },
+        {
+          "name": "Scalability trade-off between the two models",
+          "slide": 7
+        }
+      ]
+    },
+    {
+      "takeaway": "QoS in Switched Networks",
+      "sub_concepts": [
+        {
+          "name": "802.1Q VLAN tag and the 3-bit PCP field",
+          "slide": 8
+        },
+        {
+          "name": "Priority-level to traffic-type mapping on a switch",
+          "slide": 8
+        }
+      ]
+    }
+  ]
 }

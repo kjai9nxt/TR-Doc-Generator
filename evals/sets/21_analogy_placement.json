@@ -1,0 +1,60 @@
+{
+  "id": "analogy_placement",
+  "title": "Analogy Placement — First Introduction Only",
+  "guideline_refs": [23],
+  "capability_status": "implemented",
+  "grader": "deterministic",
+  "applies_to": "per_slide",
+  "description": "An analogy belongs where a concept is met for the FIRST time, and nowhere else. Every slide declares a `role`; the rule is an exact biconditional: analogy present iff role == concept_intro. An analogy on an advantages/disadvantages slide, a reasoning slide, a comparison table, a mechanism walk-through, an application slide, a summary or a worked example costs page space and teaches nothing — it was being generated only because an older rule demanded all six fields on every slide.",
+  "criterion": "Every concept_intro slide has exactly one analogy; every other role has none. Roles are honestly assigned: at most half the slides may be concept_intro. Slide `role` is present and valid on every slide.",
+  "rubric": {
+    "5": "Analogies exactly on the first-introduction slides, none anywhere else, roles honestly assigned.",
+    "3": "One misplaced or one missing analogy.",
+    "1": "Multiple analogies outside first introductions, missing roles, or concept_intro over-used to keep them."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "ap-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"role": "concept_intro", "concept": "Deadlock", "analogy": "Four cars entering a narrow crossroads from four sides, each blocking the next — just as four processes each hold one resource and wait for the next."},
+      "rationale": "First introduction, one analogy, explicit tie-back."
+    },
+    {
+      "id": "ap-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"role": "advantages_limitations", "concept": "Deadlock prevention", "analogy": "Like booking all your train tickets before starting a trip — just as requesting every resource up front avoids waiting later."},
+      "rationale": "An advantages/limitations slide needs no analogy; the concept is already on the table."
+    },
+    {
+      "id": "ap-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"role": "working_example", "concept": "Banker's algorithm trace", "analogy": "Like a bank lending only what it can still cover — just as the algorithm grants a request only if a safe sequence remains."},
+      "rationale": "A worked example teaches by tracing real figures. An analogy on top of it is decoration."
+    },
+    {
+      "id": "ap-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"role": "reasoning", "concept": "Why circular wait must be broken", "analogy": "Like a queue at a canteen counter — just as ordering resources removes the cycle."},
+      "rationale": "Reasoning slides explain why; the analogy adds length, and a queue is also the wrong structural match for a cycle."
+    },
+    {
+      "id": "ap-bad-4",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"role": "concept_intro", "concept": "Advantages of paging", "note": "8 of 10 slides in this doc are labelled concept_intro, each with an analogy"},
+      "rationale": "Roles mislabelled to keep writing analogies — the cheat the share cap exists to catch."
+    },
+    {
+      "id": "ap-bad-5",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"role": "concept_intro", "concept": "Semaphore", "analogy": null},
+      "rationale": "A first introduction with no analogy — the other direction of the biconditional."
+    }
+  ]
+}

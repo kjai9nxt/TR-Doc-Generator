@@ -113,6 +113,25 @@ def _norm_line(text: str) -> str:
     return re.sub(r"\s+", " ", t).strip().lower().rstrip(".")
 
 
+# A concrete figure: a decimal or hex number, optionally with a unit. This is what
+# separates a real worked example ("base 0x00400000, page 4 KB, offset 1 234") from a
+# hand-wave ("the base address plus the offset gives the physical address").
+_NUMERIC = re.compile(r"0x[0-9a-f]+|\b\d[\d,._]*\b", re.I)
+
+
+def _slide_text_blob(slide: dict) -> str:
+    """All of one slide's teaching text, for content-level checks."""
+    parts = [str(slide.get(f) or "") for f in ("title", "heading", "subheading",
+                                               "analogy", "speaker_notes")]
+    parts += _text_blocks(slide)
+    for items in _bullet_lists(slide):
+        parts += items
+    for tb in _tables(slide):
+        parts += [str(c) for row in (tb.get("rows") or []) for c in row]
+        parts += [str(c) for c in (tb.get("columns") or [])]
+    return " ".join(parts)
+
+
 def _phrase_hits(text: str, phrases: list[str]) -> list[str]:
     """Which of `phrases` occur in `text`, matched on word boundaries so 'no' does
     not fire inside 'node' and 'you' does not fire inside 'your'."""
@@ -174,14 +193,67 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
         fails.append(f"{len(slides)} slides (max {slide_max}) — split content, don't cram.")
 
     # --- per-slide required fields ---
-    # House rule: EVERY slide must carry all six fields (heading, subheading,
-    # content, analogy, visual_guidance, speaker_notes).
+    # Five fields are unconditional. `analogy` is NOT: it is required on a first
+    # introduction and forbidden everywhere else (see the role/analogy gate below) —
+    # the old "all six on every slide" rule is what produced an analogy on every
+    # advantages, reasoning and worked-example slide.
     for s in slides:
         tag = f"Slide {s.get('n', '?')}"
         for req in ("heading", "subheading", "content",
-                    "analogy", "visual_guidance", "speaker_notes"):
+                    "visual_guidance", "speaker_notes"):
             if not s.get(req) or not str(s.get(req)).strip():
                 fails.append(f"{tag}: missing '{req}' (required on every slide).")
+
+    # --- slide role: declared, valid, and honestly distributed ------------------
+    # The role is what makes the analogy and worked-example rules checkable at all.
+    role_cfg = con.get("slide_roles", {})
+    valid_roles = list(role_cfg.get("values", []))
+    roles: dict = {}
+    if role_cfg.get("required", False) and valid_roles:
+        for s in slides:
+            tag = f"Slide {s.get('n', '?')}"
+            role = str(s.get("role") or "").strip()
+            if not role:
+                fails.append(
+                    f"{tag}: missing 'role' — declare why this slide exists, one of: "
+                    f"{', '.join(valid_roles)}.")
+            elif role not in valid_roles:
+                fails.append(
+                    f"{tag}: role '{role}' is not one of {', '.join(valid_roles)}.")
+            else:
+                roles[s.get("n")] = role
+        # Cap first-introduction slides. Without this, "role" is trivially gamed by
+        # calling every slide a first introduction and keeping every analogy.
+        share_cap = role_cfg.get("max_concept_intro_share")
+        n_intro = sum(1 for r in roles.values() if r == "concept_intro")
+        if share_cap and slides and n_intro > share_cap * len(slides):
+            fails.append(
+                f"{n_intro} of {len(slides)} slides are labelled 'concept_intro' "
+                f"(max {share_cap:.0%}) — most slides build on a concept already "
+                f"introduced. Re-label the ones that explain, compare, or apply it, "
+                f"and drop their analogies.")
+
+    # --- analogy placement: an EXACT biconditional against the role -------------
+    # required iff role == concept_intro. An analogy earns its lines the first time a
+    # concept is met; on a mechanism, comparison, pros/cons, reasoning, application or
+    # worked-example slide it adds length and no understanding.
+    a_cfg = con.get("analogy", {})
+    req_roles = a_cfg.get("required_on_roles", [])
+    ban_roles = a_cfg.get("banned_on_roles", [])
+    if req_roles or ban_roles:
+        for s in slides:
+            tag = f"Slide {s.get('n', '?')}"
+            role = roles.get(s.get("n"))
+            has = bool(str(s.get("analogy") or "").strip())
+            if role in req_roles and not has:
+                fails.append(
+                    f"{tag}: role is '{role}' (a first introduction) so an analogy is "
+                    f"REQUIRED — one everyday scene with an explicit tie-back.")
+            if role in ban_roles and has:
+                fails.append(
+                    f"{tag}: role is '{role}', so it must have NO analogy — remove the "
+                    f"'analogy' field. An analogy belongs only where a concept is "
+                    f"introduced for the first time.")
 
     # --- heading / subheading word cap ---
     # A heading is a slide LABEL, not a sentence: hard 4-word cap (house rule).
@@ -328,7 +400,6 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"not the learner.")
 
     # --- analogies must correlate, not just illustrate -------------------------
-    a_cfg = con.get("analogy", {})
     if a_cfg.get("require_explicit_tie_back", False):
         connectives = a_cfg.get("tie_back_connectives", [])
         for s in slides:
@@ -338,6 +409,124 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"Slide {s.get('n', '?')}: the analogy never ties back to the concept. "
                     f"End it with an explicit mapping — e.g. \"… — just as <how the concept "
                     f"works>\" — naming what it stands for.")
+
+    # --- worked examples: only where one earns its slide -----------------------
+    # depth_mode used to make a worked example MANDATORY on every doc, so definitional
+    # takeaways ("what a file is", "types of scheduling") got a traced example that
+    # taught nothing and cost a page. The judge scores whether each example was
+    # WARRANTED; the deterministic part is the share cap — a deck that is mostly
+    # examples has stopped teaching the concepts.
+    we_cfg = con.get("worked_example", {})
+    we_slides = [s for s in slides if roles.get(s.get("n")) == "working_example"]
+    we_cap = we_cfg.get("max_share_of_slides")
+    if we_cap and slides and len(we_slides) > we_cap * len(slides):
+        fails.append(
+            f"{len(we_slides)} of {len(slides)} slides are worked examples "
+            f"(max {we_cap:.0%}) — keep the examples that let the learner EXECUTE "
+            f"something and fold the rest back into the concept slides.")
+
+    # --- examples must use realistic, concrete figures -------------------------
+    # A toy number teaches a toy mental model: "base = 5" is not an address. The
+    # magnitude/shape judgement is the judge's; deterministically we require that a
+    # worked example carries real values at all, and that none of them is a stand-in.
+    ex_cfg = con.get("examples", {})
+    if ex_cfg.get("require_realistic_figures", False):
+        min_lits = ex_cfg.get("min_numeric_literals", 2)
+        placeholders = ex_cfg.get("banned_placeholders", [])
+        for s in we_slides:
+            tag = f"Slide {s.get('n', '?')}"
+            blob = _slide_text_blob(s)
+            found = _NUMERIC.findall(blob)
+            if min_lits and len(found) < min_lits:
+                fails.append(
+                    f"{tag}: a worked example with {len(found)} concrete value(s) "
+                    f"(min {min_lits}) is not worked through. Use realistic figures — "
+                    f"a hex base address, a power-of-two page size, a real port/PID — "
+                    f"and trace them step by step.")
+        # Placeholders are checked on EVERY slide: a vague stand-in is just as bad in a
+        # mechanism explanation as in a dedicated example slide.
+        for s in slides:
+            hits = _phrase_hits(_slide_text_blob(s), placeholders)
+            if hits:
+                fails.append(
+                    f"Slide {s.get('n', '?')}: placeholder figure(s) "
+                    f"{', '.join(repr(x) for x in hits)} — substitute a realistic "
+                    f"value a practitioner would recognise.")
+
+    # --- coverage map: the sub-concept enumeration, VERIFIED -------------------
+    # The prompt has asked for this enumeration since 1.24, but only in the model's
+    # head, so "I forgot one" stayed invisible. Emitting it turns a silent omission
+    # into a checkable claim: the map says slide 9 teaches minor-vs-major faults, so
+    # either slide 9 exists or the run fails.
+    cov_cfg = con.get("coverage", {})
+    if cov_cfg.get("require_coverage_map", False):
+        cmap = doc.get("coverage_map")
+        src_kt = list(session.key_takeaways)
+        slide_ns = {s.get("n") for s in slides}
+        min_subs = cov_cfg.get("min_sub_concepts_per_takeaway", 2)
+        if not isinstance(cmap, list) or not cmap:
+            fails.append(
+                "Missing 'coverage_map'. For EACH key takeaway, list the exam-testable "
+                "sub-concepts and map each one to the slide 'n' that teaches it (or to "
+                "a named deferral). This is the check that catches a silently missing "
+                "sub-concept.")
+        else:
+            if len(cmap) != len(src_kt):
+                fails.append(
+                    f"coverage_map has {len(cmap)} entries but the curriculum has "
+                    f"{len(src_kt)} key takeaways — one entry per takeaway, in order.")
+            for i, entry in enumerate(cmap):
+                where = f"coverage_map[{i + 1}]"
+                if not isinstance(entry, dict):
+                    fails.append(f"{where} is not an object.")
+                    continue
+                if i < len(src_kt) and _norm_line(entry.get("takeaway")) != _norm_line(src_kt[i]):
+                    fails.append(
+                        f"{where}.takeaway must be key takeaway {i + 1} verbatim:\n"
+                        f"    expected: {src_kt[i]}\n    got:      {entry.get('takeaway')}")
+                subs = entry.get("sub_concepts") or []
+                if len(subs) < min_subs:
+                    fails.append(
+                        f"{where} lists {len(subs)} sub-concept(s) (min {min_subs}) — a "
+                        f"syllabus line names a topic, not its scope. Enumerate what an "
+                        f"exam would actually test on it.")
+                for j, sub in enumerate(subs):
+                    at = f"{where}.sub_concepts[{j + 1}]"
+                    if not isinstance(sub, dict) or not str(sub.get("name") or "").strip():
+                        fails.append(f"{at} has no 'name'.")
+                        continue
+                    name = str(sub["name"]).strip()
+                    slide_ref, deferred = sub.get("slide"), sub.get("deferred_to")
+                    if slide_ref in (None, "") and not str(deferred or "").strip():
+                        fails.append(
+                            f"{at} \"{name}\" is mapped to neither a slide nor a named "
+                            f"deferral — cover it, or say in the section which later "
+                            f"session covers it and record that here as 'deferred_to'.")
+                        continue
+                    if slide_ref not in (None, ""):
+                        try:
+                            ref = int(slide_ref)
+                        except (TypeError, ValueError):
+                            fails.append(f"{at} \"{name}\": slide '{slide_ref}' is not a "
+                                         f"slide number.")
+                            continue
+                        if ref not in slide_ns:
+                            fails.append(
+                                f"{at} \"{name}\" claims slide {ref}, which does not "
+                                f"exist (slides are {sorted(n for n in slide_ns if n is not None)}). "
+                                f"Add the slide or correct the map.")
+            # A slide nothing in the map points at is not a failure — a comparison or
+            # summary slide legitimately consolidates several sub-concepts — but it is
+            # worth surfacing, because it is also what padding looks like.
+            mapped = {int(sub["slide"]) for entry in cmap if isinstance(entry, dict)
+                      for sub in (entry.get("sub_concepts") or [])
+                      if isinstance(sub, dict) and str(sub.get("slide") or "").strip().isdigit()}
+            orphans = sorted(n for n in slide_ns if n is not None and n not in mapped)
+            if orphans:
+                warns.append(
+                    f"Slide(s) {orphans} are not referenced by any sub-concept in the "
+                    f"coverage map — fine for a comparison or summary slide, worth a "
+                    f"look otherwise.")
 
     passed = len(fails) == 0
     if gates.get("structural_pass") is True and not passed:

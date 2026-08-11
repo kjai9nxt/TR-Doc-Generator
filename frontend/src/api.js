@@ -12,6 +12,15 @@ export function setAuthToken(t) {
 let onUnauthorized = () => {}
 export function setOnUnauthorized(fn) { onUnauthorized = fn || (() => {}) }
 
+// Build a query string from the defined values only, so `?run_id=undefined` never
+// reaches the server (it would be treated as a real run id and resolve nothing).
+function qs(params) {
+  const q = Object.entries(params || {})
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+  return q.length ? `?${q.join('&')}` : ''
+}
+
 async function req(path, opts = {}) {
   let res
   try {
@@ -50,8 +59,12 @@ export const api = {
   me: () => req('/auth/me'),
   myHistory: () => req('/my/history'),
   myTeams: () => req('/my/teams'),
-  createGdoc: (session_no, access_token) =>
-    req(`/gdoc/${session_no}`, { method: 'POST', body: JSON.stringify({ access_token }) }),
+  // run_id / name identify the OUTPUT exactly. Without them the server has to guess
+  // the filename from whatever course is synced right now, which is what made both
+  // this and the download fail on finished documents.
+  createGdoc: (session_no, access_token, run_id, name) =>
+    req(`/gdoc/${session_no}`, { method: 'POST', body: JSON.stringify({ access_token, run_id, name }) }),
+  preview: (session_no, run_id, name) => req(`/preview/${session_no}${qs({ run_id, name })}`),
   status: () => req('/status'),
   templateGuide: () => req('/template-guide'),
   sync: (course_link, details_link, reference_date, course_type, course_name) =>
@@ -60,12 +73,13 @@ export const api = {
   generate: (session_no, use_judge, enforce_time) =>
     req('/generate', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),
   job: (id) => req(`/jobs/${id}`),
-  downloadUrl: (session_no) => `/api/download/${session_no}`,
+  downloadUrl: (session_no, run_id, name) => `/api/download/${session_no}${qs({ run_id, name })}`,
 
   // Download the .docx via fetch so the auth token is sent (a plain <a href>
   // navigation can't carry the Authorization header, so it would 401).
-  downloadDoc: async (session_no) => {
-    const res = await fetch(`/api/download/${session_no}`, {
+  // Always pass run_id/name when known: they pin the exact output file.
+  downloadDoc: async (session_no, run_id, name) => {
+    const res = await fetch(`/api/download/${session_no}${qs({ run_id, name })}`, {
       headers: { ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
     })
     if (!res.ok) {
@@ -76,10 +90,11 @@ export const api = {
     const blob = await res.blob()
     const cd = res.headers.get('Content-Disposition') || ''
     const m = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(cd)
-    const name = m ? decodeURIComponent(m[1].replace(/"$/, '')) : `Session_${session_no}.docx`
+    // Prefer the name the server actually served, then the one we asked for.
+    const saveAs = m ? decodeURIComponent(m[1].replace(/"$/, '')) : (name || `Session_${session_no}.docx`)
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url; a.download = name
+    a.href = url; a.download = saveAs
     document.body.appendChild(a); a.click(); a.remove()
     URL.revokeObjectURL(url)
   },
@@ -92,6 +107,10 @@ export const api = {
     req(`/guided/${id}/regenerate`, { method: 'POST', body: JSON.stringify({ index, reason }) }),
   guidedFinalize: (id) => req(`/guided/${id}/finalize`, { method: 'POST' }),
 
+  // Teach the agent from a finished doc (one-shot mode had NO feedback path at all,
+  // so corrections were never captured outside Guided regeneration).
+  submitFeedback: (session_no, reason) =>
+    req('/feedback', { method: 'POST', body: JSON.stringify({ session_no, reason }) }),
   learnedRules: () => req('/learned-rules'),
   deleteLearnedRule: (index) => req(`/learned-rules/${index}`, { method: 'DELETE' }),
   migrateLearnedRules: () => req('/learned-rules/migrate', { method: 'POST' }),

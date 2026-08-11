@@ -155,13 +155,73 @@ def _scope_of(r: dict) -> str:
     return COURSE if r.get("scope") == COURSE else GLOBAL
 
 
+# --------------------------------------------------------------------------- #
+# RULES SUPERSEDED BY A DETERMINISTIC GATE.
+#
+# Harness 1.29 converted three of the reviewer's most-repeated corrections into hard
+# guardrails — the agenda-verbatim check, the analogy-placement biconditional, and the
+# analogy tie-back check. Those rules are now enforced better than any prose can manage,
+# and leaving them in the injected block is worse than redundant:
+#
+#   the judge is handed every learned rule and told to put violations in
+#   blocking_issues, which is a HARD gate. Observed on a live run: a fully compliant
+#   doc (slide 2 role=working_example, no `analogy` key at all, guardrails passed)
+#   was failed by the judge for violating "Remove analogies from example sections".
+#   The gate had already enforced it; the judge re-adjudicated the same rule from prose
+#   and hallucinated a violation. That cost a revision round AND fed the surviving
+#   "defect" back into this store as two new rules — a hallucination promoted to
+#   durable policy, injected into every future generation.
+#
+# So a gated rule is retired from injection and from judge verification. It stays in the
+# store, visibly marked, because deleting it would lose the record of the reviewer having
+# asked — and because turning the gate off should bring the rule back.
+# --------------------------------------------------------------------------- #
+def _gate_specs() -> list[dict]:
+    return _self_evo_cfg().get("gated_rules", []) or []
+
+
+def gate_for(rule: dict) -> str | None:
+    """The deterministic gate that now enforces `rule`, or None.
+
+    Uses the stamp written by retire_gated() when present, so a human can correct a
+    misclassification by hand and it will stick.
+    """
+    stamped = rule.get("superseded_by_gate")
+    if stamped:
+        return str(stamped)
+    text = _norm((rule.get("text") or "") + " " + (rule.get("raw") or ""))
+    for spec in _gate_specs():
+        needles = spec.get("match") or []
+        if needles and all(_norm(n) in text for n in needles):
+            return str(spec.get("gate") or "a deterministic guardrail")
+    return None
+
+
+def retire_gated() -> int:
+    """Stamp every rule a deterministic gate now covers. Idempotent; returns the count
+    newly stamped. Safe to run on every start-up."""
+    data = _load()
+    n = 0
+    for r in data.get("rules", []):
+        if r.get("superseded_by_gate"):
+            continue
+        gate = gate_for(r)
+        if gate:
+            r["superseded_by_gate"] = gate
+            n += 1
+    if n:
+        _save(data)
+    return n
+
+
 def applicable_rules(course: str | None = None) -> list[dict]:
-    """The rules that apply to `course`: every global rule + that course's own.
+    """The rules that apply to `course`: every global rule + that course's own, minus
+    any that a deterministic gate now enforces (see the note above).
 
     Honours self_evolution.scope_rules — set it false in the harness to go back to
     injecting every rule everywhere.
     """
-    rs = rules()
+    rs = [r for r in rules() if not gate_for(r)]
     if not _self_evo_cfg().get("scope_rules", True):
         return rs
     course = _active_course() if course is None else course
@@ -378,16 +438,39 @@ def distill_feedback(reason: str, existing: list[str] | None = None
         return reason, None, GLOBAL
 
 
+# Issues that describe the GRADER misbehaving rather than the document being wrong.
+# These must never become durable rules: a rule distilled from "Dimension 'pedagogy'
+# scored None < 4" teaches the writer nothing and is then injected into every future
+# generation with reviewer-level precedence. Observed twice on live runs — once from a
+# judge that omitted a score, once from a judge that hallucinated a rule violation on a
+# field the slide did not have. Self-evolution amplifies whatever reaches it, so the
+# filter belongs here, at the entrance.
+_GRADER_NOISE = (
+    "scored none", "scored 0 <", "grader note:", "llm error", "unparseable",
+    "no score", "unscored", "could not parse", "truncated",
+)
+
+
+def _is_grader_noise(issue: str) -> bool:
+    low = _norm(issue)
+    return any(marker in low for marker in _GRADER_NOISE)
+
+
 def learn_from_issues(session_no, issues: list[str], *, source: str = "judge") -> int:
     """Self-evolution entry point: distil the defects that SURVIVED the revision loop
     into durable, cross-session rules. Honors harness `self_evolution` config
-    (enabled / learn_from_judge / distill). Returns the number of NEW rules added."""
+    (enabled / learn_from_judge / distill). Returns the number of NEW rules added.
+
+    Issues that describe a grader malfunction are dropped rather than learned — see
+    _GRADER_NOISE."""
     cfg = _self_evo_cfg()
     if not cfg.get("enabled", True) or not cfg.get("learn_from_judge", True):
         return 0
     do_distill = cfg.get("distill", True)
     n = 0
     for raw in issues or []:
+        if _is_grader_noise(str(raw)):
+            continue
         text = distill_rule(str(raw)) if do_distill else str(raw)
         if add_rule(text, source=source, session_no=session_no):
             n += 1
