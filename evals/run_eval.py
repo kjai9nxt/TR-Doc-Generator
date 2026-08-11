@@ -186,7 +186,7 @@ def run_live():
         print(f"== LIVE: Session {sn} ==")
         result = pipeline.run(sn, use_judge=True)
         doc = result["doc"]
-        final = result["history"][-1]
+        final = result.get("final") or result["history"][-1]
         rubric = (final.get("judge") or {}).get("weighted_total")
         prev, cur, nxt = course_loader.neighbours(sn, sessions)
         inv_fails, te, pe = check_invariants(doc, cur, prev is None, nxt is None)

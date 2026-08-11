@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.32"
+  version: "1.36"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -542,6 +542,208 @@ meta:
               per-run cost committed as source, and every generation dirtying the working
               tree. Untracked and gitignored (with -wal/-shm); db.init() rebuilds the schema
               on a fresh instance and TURSO_* owns the data in production."
+    - "1.33 — THE SLIDE CEILING WAS ENFORCED AND NEVER STATED. A guided run of Session 30
+              (I/O Systems, 5 takeaways) came back at 23 slides / 57.6 min / ~17 pages /
+              rubric 62, failing every length gate at once for $2.06 across 13 calls.
+              One root cause with three multipliers.
+              (a) NO PROMPT FILE MENTIONED A SLIDE COUNT. constraints.slides.max = 14 is a
+              hard guardrail, but system_prompt.md, format_spec.md and context_builder
+              never named it — while HARD RULE 1 said 'use MORE slides rather than denser
+              slides'. So the ONLY slide-count instruction the model ever received pushed
+              the count UP, against a gate that caps it: exactly the prompt-says-X /
+              gate-says-not-X trap 1.24 was written about. One-shot drafts landed at 14 by
+              luck, bounded indirectly by the time and page budgets.
+              (b) GUIDED MODE HAD NOTHING HOLDING IT AT ALL. Each section is one LLM call,
+              so no call can see the document-wide budget being spent, and the instruction
+              was open-ended ('list the sub-concepts an exam would test, give EACH one a
+              slide'). Five takeaways answered that with 23 slides. The ceiling is now
+              DIVIDED per chunk (context_builder.chunk_slide_allowance, wired through
+              server._slide_budget_state) from the slides the other sections ACTUALLY
+              used, not a fixed quota — so a section that ran long squeezes the ones after
+              it instead of silently pushing the total over, and the allowances sum to the
+              ceiling for every takeaway count (5 -> 3,3,3,3,2; 8 -> 2,2,2,2,2,2,1,1).
+              Over the budget the model is told to GROUP related sub-concepts onto one
+              slide — never to drop one, never to add a slide. A chunk that overspends is
+              now flagged IN THE GUIDED LOG while the run is still open, so the reviewer
+              can regenerate that one chunk surgically; discovering it at finalize is
+              discovering it too late, because the review panel is gone by then.
+              (c) finalize() HAD NO REPAIR PASS. One-shot gets up to 3 revision rounds;
+              guided graded once and stopped, so an over-long assembled doc was a dead end
+              — the only way forward was to pay for a whole new guided run. New
+              gates.guided_length_repair_rounds (1) bounds a trim pass, fired ONLY by the
+              three ceilings a chunk review cannot see (pipeline._too_long: slide count,
+              recording time, pages — read from the graders' structured output, never by
+              matching issue text). Quality defects are still not auto-revised; the
+              reviewer gated each chunk. The best-scoring draft is kept, so a trim that
+              makes things worse can never ship.
+              Also fixed in the same pass: (d) the over-max slide failure read '23 slides
+              (max 14) — split content, don't cram', the advice for being UNDER the
+              minimum. That string is what the revision pass is TOLD TO FIX, so a doc with
+              too many slides was being asked to produce more of them; it now says MERGE,
+              names the longest sections, and the under-minimum message keeps the split
+              wording. (e) generator._SHRINK_NUDGE told a truncated chunk '3-4 slides is
+              fine for one key takeaway' — 5 takeaways x 4 = 20, over the ceiling it was
+              nudging toward. (f) run() and finalize() keep the BEST draft, but every
+              consumer read result['history'][-1] — the last draft GRADED, which the
+              best-draft rule may have discarded. Both now return `final` (the report for
+              the doc actually RENDERED) and server/app/run_eval read it, so the metrics
+              on the result card cannot describe a draft that was thrown away.
+              21 new offline checks in evals/test_gates.py (78 total): the ceiling appears
+              in all three prompt modes, allowances sum to it, an overspent budget squeezes
+              to the floor, the merge/split messages are the right way round, and
+              _too_long fires on exactly the three length gates."
+    - "1.34 — WHY A TR DOC SUDDENLY COST $2, AND A COVERAGE FAILURE THE GATE COULD NOT SEE.
+              Reported as 'cost jumped by a dollar' plus coverage 2/5 and format_compliance
+              2/5 on the same S30 guided run.
+              (a) THE PER-DOC COST FIGURE WAS NOT THAT DOC'S COST. src/llm.py kept usage in
+              ONE process-wide list, documented as 'fine for this app (one generation at a
+              time)'. That assumption died at 1.19, when this became one shared instance
+              with a worker thread per job: reset_usage() cleared the single list, so a run
+              that finished reported everything spent since the most recent START ANYWHERE
+              in the process — another user's generation, or a guided run abandoned ten
+              minutes earlier — while the run whose records were wiped reported a fraction
+              of its own. The dashboard shows five S30 rows: $2.0621, $2.8462 and three at
+              $0.0000. Measured from the real prompt sizes, ONE guided S30 run is ~149k
+              tokens / ~$0.57 — and 752,878 / 149,107 is 5.05, the number of S30 runs on
+              screen. Usage is now keyed by RUN (llm.use_meter/reset_usage/close_usage/
+              usage_totals(run_id)), not by process and not by thread: a guided run spans
+              several threads (generate-all, each regenerate, finalize) and each declares
+              which run it is spending for. pipeline.run/finalize take run_id; server
+              passes the job id / guided id.
+              (b) AN ABANDONED GUIDED RUN LOOKED FREE. Cost reached the DB only via
+              finish_run, so the three S30 rows still at 'All chunks generated' showed
+              $0.0000 having paid for six chunk calls each — org-wide spend understated by
+              exactly the runs a reviewer walks away from, which is the common case. New
+              db.update_cost writes cost WITHOUT finishing a run; guided mode calls it
+              after every chunk and every regeneration (the checkpoint granularity), and a
+              crashed one-shot run now records what it spent instead of reporting nothing.
+              (c) AND GUIDED MODE REALLY IS DEARER — for a fixable reason. base_context
+              (course + target + the summary of every prior deck) is 10,430 tokens for S30,
+              IDENTICAL on every chunk call, and it sat in the USER message, so it was
+              re-billed in full on all six chunks and on every regeneration. Only the 9k
+              system prompt was cached. llm._system_blocks now takes a third
+              `cached_context` block — cached, placed after the static system prompt and
+              BEFORE the learned rules (which stay uncached, since feedback changes them) —
+              and generate_chunk/generate_patch pass base_context through it. Modelled on
+              the real sizes: ~$0.57 -> ~$0.32 per guided run, 139k -> 57k input tokens.
+              Per-call records now also carry cached_prompt_tokens where the provider
+              reports it, so cache hits are visible rather than inferred.
+              (d) THE COVERAGE GATE ONLY CHECKED THAT A SLIDE EXISTED. Every complaint
+              behind the 2/5 had the same shape — 'sub-concept mapped to Slide 2, but Slide
+              2 does not teach it; it is on Slide 5' — and the guardrail could not see it:
+              it verified the reference RESOLVED somewhere in the document, so takeaway 3
+              pointing at section 1's slide passed silently. In guided mode that is also
+              what a slide number left stale by a chunk regenerated at a different length
+              looks like. A sub-concept of takeaway i must now map into the section whose
+              name IS takeaway i; where no section can be matched by name the check SKIPS,
+              because scoping to a guessed section would false-fail the golden, whose four
+              grouped sections predate the verbatim-name rule.
+              (e) ASSEMBLY LEFT SUCH A REFERENCE STALE. pipeline.assemble_doc renumbered
+              slides 1..N and remapped coverage by (section, old n), so a reference to
+              ANOTHER section's slide was the one thing left unchanged while every real
+              slide moved around it — the map then pointed at whatever slide landed on that
+              number. Added a document-wide fallback, used only where the old number is
+              unambiguous; a genuinely unresolvable reference is left for the gate to
+              report rather than silently rewritten.
+              (f) THE JUDGE WAS PENALISING THE SPEC. Part of that 2/5 was 'Buffering &
+              spooling is deferred to Session 31 ... this creates false impression of
+              coverage' — but a named deferral is exactly what constraints.coverage
+              REQUIRES, and the rubric already said a named deferral does not cap the
+              score. The coverage dimension now states that a `deferred_to` entry is the
+              required form, must not be read as a defect, and that an out-of-section slide
+              reference is a deterministic guardrail failure the judge should not
+              re-adjudicate — the 1.31 lesson, which is that a judge re-deciding from prose
+              what a gate already decides exactly will invent violations, and 1.32's, that
+              those get distilled into durable rules.
+              19 new offline checks (97 total in evals/test_gates.py): per-run metering
+              under interleaved runs and across threads, the cached-block layout, the
+              cross-section coverage gate firing and correctly skipping, and the assembly
+              remap. NOT explained: format_compliance 2/5 — its justification was not
+              captured, and no structural difference between a guided-assembled and a
+              one-shot doc accounts for it (session_title, section naming, key order and
+              coverage_map shape all match). Expand that run's row for the per-call
+              breakdown to confirm (a) directly: more than ~7-9 calls, or repeated
+              generate_chunk labels, is contamination from the abandoned runs."
+    - "1.35 — SLIDE CEILING 14 -> 18, WITH THE CONTENT BUDGET THAT MAKES IT POSSIBLE.
+              Reviewer's call: 14 slides reads as too few. Raising the number alone would
+              have reproduced the defect 1.33 fixed, because the live verification run of
+              1.33/1.34 landed at 39.8 of its 40 minutes with 14 slides — there was no
+              spare recording time to spend. Measured across every generated doc, they
+              carry 100-116 skeleton words per slide; at that depth 18 slides is ~46
+              minutes and 25 slides is ~60, so the slide count was never the binding
+              constraint. The 40-minute budget is.
+              So the slide count and the text per slide are now stated as ONE budget seen
+              two ways. New context_builder.content_budget() INVERTS time_grader: given the
+              ceiling it returns the spoken-word budget the 40 minutes allows (~1262 words
+              at the 36-minute target, ~1441 hard, ~70/slide at 18 slides), shrinking as
+              the count grows because each slide also costs 15s of transition. Stated in
+              the one-shot and guided prompt tails and in every guided chunk instruction
+              (a per-section word allowance beside its slide allowance) — because a slide
+              allowance on its own is only half a budget: a section can obey it and still
+              write twice the words, which is how a doc lands inside the slide gate and
+              outside the time gate. system_prompt HARD RULE 1 now says the two are one
+              budget and that extra slides exist to give a crowded slide room to breathe,
+              never to lengthen the document. Depth mode omits the derived word budget
+              (no time ceiling applies there). Per-chunk allowances for a 5-takeaway
+              session become 4,4,4,3,3 = 18.
+              NOT YET VERIFIED LIVE at 18: the model has to write ~30% less per slide than
+              it just did at 14, and only a real generation shows whether it does.
+              8 further offline checks (105 total): the prompt names the CURRENT ceiling
+              rather than a stale number, the derived budget shrinks as slides are added
+              and agrees with time_grader's overhead, both prompt modes and the chunk
+              instruction carry it, and depth mode does not."
+    - "1.36 — THE PACING MODEL WAS WRONG, WHICH IS WHY 14 SLIDES LOOKED LIKE TOO FEW.
+              The reviewer records these sessions and calibrated it directly: a slide takes
+              about 1.5 minutes to record WHATEVER IS ON IT, so 26 slides is 39 minutes.
+              The word-count estimator disagreed by roughly 2x — it read the accepted
+              14-slide Session 30 doc as 39.8 of its 40 minutes, this model reads 21 — and
+              that phantom ceiling is what had been capping the document at 14 slides and
+              ~1600 skeleton words. The person recording is the calibration authority, so
+              constraints.recording.pacing='per_slide' + minutes_per_slide=1.5 is now the
+              gate. The word-count figure is still COMPUTED and reported as
+              `narration_minutes` so the disagreement stays visible rather than being
+              silently discarded, and `dense_slides` names any slide whose narration alone
+              would run well past its 1.5 minutes — information for the reviewer, not a
+              gate. `time_grader.max_slides_in_budget()` derives the slide ceiling from the
+              recording budget so the two can never drift apart (an offline check asserts
+              they are equal).
+              WHAT ELSE HAD TO MOVE, because the ceilings are tied to each other:
+              (a) SLIDES 18 -> 26. This is exactly what 40 min / 1.5 min buys.
+              (b) PAGES 16 -> 26 (target 23). Under this model recording time limits the
+              slide COUNT and says nothing about text, so the PAGE ceiling becomes the only
+              content limit — and left at 16 it would have rejected every document the new
+              slide ceiling permits. 26 is derived, not chosen: a slide costs 0.887 rendered
+              pages (median over every doc generated so far), so 26 slides is ~23 pages.
+              (c) THE CONTENT BUDGET IS NOW PAGE-DERIVED, not time-derived.
+              context_builder.content_budget() reports bound_by='pages' and computes ~100
+              words per slide (ceiling ~114) from the page budget, using new measured
+              constants pages.words_per_page=122 and pages.front_back_matter_pages=1.5. That
+              is the density these documents ALREADY have, so the extra slides buy genuinely
+              more material: ~2623 words over 26 slides against ~1628 over 14, a ~60%
+              increase. 1.35's 'more slides means less on each' framing was correct for a
+              time-bounded budget and is WRONG here; the prompt now says teach each slide at
+              FULL depth to the budget.
+              (d) THE PROMPTS SAY HOW THE BUDGET IS SPENT, not just the number. Trimming a
+              slide's text buys NO recording time under this model, so 'be concise to fit 40
+              minutes' is actively misleading and 'drop a sub-concept to fit the time' is a
+              trade that does not exist. system_prompt HARD RULE 1, style_guide (Length +
+              Density), format_spec and context_builder.time_mode_block all state the
+              per-slide pace and that text is spent against PAGES.
+              (e) THE RUBRIC AND EVAL SETS FOLLOW. recording_time now tells the judge the
+              estimate is count-based and forbids it recommending shorter text or dropped
+              sub-concepts on time grounds; length_discipline reads 26 pages. Eval set 09
+              (recording_time_budget) is re-pointed at the pacing model with slide-count
+              thresholds and 4 rewritten cases; set 20 (document_length_pages) at 26/23 with
+              its cases rescaled; set 14 cites the new ceiling.
+              run_sets._chk_recording_time no longer hardcodes 42/40/20 and no longer scores
+              'under 20 minutes' as thin — under per-slide pacing that is just a low slide
+              count, and whether it means thin coverage is what the coverage and chunk_count
+              sets decide; scoring it here punished a short syllabus line twice.
+              9 new offline checks (116 total), the ones that matter being: adding text does
+              not move the recording estimate while it does move the diagnostic, a dense
+              slide is named rather than failed, and the page gate is what a fat document
+              actually busts. NOT YET VERIFIED LIVE at 26 slides — the previous ceiling was
+              live-verified at 14 (39.8 min under the old model, 21.0 under this one)."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> pages -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
@@ -588,6 +790,21 @@ constraints:
   recording:
     max_minutes: 40                 # absolute ceiling
     target_minutes: 36              # aim below the ceiling for safety margin
+    # ---- PACING MODEL -------------------------------------------------------
+    # "per_slide"  : minutes = slide_count x minutes_per_slide.  THE ACTIVE MODEL.
+    # "word_count" : the original estimator (skeleton words x elaboration_factor
+    #                / wpm + per-slide overhead), kept selectable.
+    # Changed on the reviewer's own recording experience: a slide takes about a
+    # minute and a half to record, whatever is on it, so 26 slides is 39 minutes.
+    # The word-count model disagreed by roughly 2x — it read the accepted 14-slide
+    # Session 30 doc as 39.8 minutes where this model reads 21 — and the person who
+    # records the sessions is the calibration authority. The word-count estimate is
+    # still COMPUTED and reported as `narration_minutes` so the disagreement stays
+    # visible instead of being silently discarded, and a slide carrying far more
+    # narration than its 1.5 minutes can hold is surfaced as a warning.
+    pacing: "per_slide"
+    minutes_per_slide: 1.5
+    # ---- used by the word_count model, and by the density warning -----------
     speaking_words_per_minute: 130  # narration pace for time estimation
     seconds_per_slide_overhead: 15  # transition + settle time per slide
     # Every session IS a 40-minute session. The old UI toggle could switch the
@@ -605,8 +822,22 @@ constraints:
     # a length gate: a comparison table costs a third of a page and almost no narration,
     # so a doc could sit inside the 40-minute budget and still run past twenty pages.
     # A page count is also what the reviewer actually reads, so it is what we gate on.
-    max: 16                         # HARD ceiling — a longer doc FAILS the run
-    target: 14                      # aim here, so a revision round has room to work
+    # RAISED 16 -> 26 together with the slide ceiling, because the two are tied: a
+    # slide costs 0.887 rendered pages (median across every doc generated so far), so
+    # the 26 slides the 1.5-min pacing allows is ~23 pages. Leaving this at 16 would
+    # have made the page gate reject every document the new slide ceiling permits —
+    # the ceiling that binds must be the one that reflects a real limit, and here that
+    # is the 40-minute recording budget. Target 23 keeps a revision pass room to work.
+    max: 26                         # HARD ceiling — a longer doc FAILS the run
+    target: 23                      # aim here, so a revision round has room to work
+    # MEASURED, not assumed: median words per rendered page across every doc generated
+    # so far (111,104,128,117,216,152,136 -> median 122). Used only to turn the page
+    # budget into a per-slide WORD figure the model can act on — "keep this slide under
+    # 0.9 pages" is not an instruction anything can follow, "about 110 words" is.
+    words_per_page: 122
+    # Recap + agenda + key takeaways + title/closing occupy roughly this much before any
+    # slide is written, so the slides get the remainder rather than the whole ceiling.
+    front_back_matter_pages: 1.5
     # Layout model of the template docx_writer renders into (python-docx default:
     # 8.5x11 page, 1.25in side / 1.0in top-bottom margins, 11pt body at 1.15 line
     # spacing with 10pt space-after). graders/page_grader.py reads ONLY these numbers,
@@ -642,8 +873,16 @@ constraints:
     format: "topic: subtopics"
   slides:
     min: 5
-    max: 14                         # split content across more slides, don't cram
-    max_rich: 14                    # depth mode adds no slides now — the page ceiling binds
+    # 14 -> 18 -> 26. The reviewer's pacing model is what makes 26 coherent: at
+    # 1.5 minutes per slide, 26 slides is 39 minutes, inside the 40-minute ceiling
+    # with a slide to spare. Under the old word-count estimator 26 slides read as
+    # ~60 minutes, which is why this number could not move before.
+    # 26 is therefore the number the TIME ceiling allows, and the PAGE ceiling below
+    # was raised to match it — a slide costs ~0.887 rendered pages (median over
+    # every generated doc), so 26 slides is ~23 pages. Content roughly doubles
+    # versus 14 slides; that is the point of the change.
+    max: 26
+    max_rich: 26                    # depth mode adds no slides — time/pages bind
   slide_roles:
     # Every slide declares WHY it exists. This exists so the analogy and worked-example
     # rules below can be DETERMINISTIC: "only analogise a first introduction" is not
@@ -949,6 +1188,15 @@ gates:
   # Revise a clear miss (< this) once; marginal near-misses (82-89) are shipped
   # flagged-not-accepted rather than burning a slow extra round for a small delta.
   rubric_revise_below: 82           # revise only if weighted score < this (was 75)
+  # GUIDED MODE ONLY, and ONLY for the three length ceilings (slides, recording time,
+  # pages). Guided mode drafts one section per call, so no chunk review can see the
+  # length of the ASSEMBLED document — and finalize had no repair pass at all, so an
+  # over-long guided doc came back failing three gates at once with the review panel
+  # already gone: the only way forward was to pay for a whole new guided run. This
+  # bounds a trim pass over the assembled doc; the best-scoring draft is kept, so a
+  # trim that makes things worse can never be the one that ships. Quality defects are
+  # still NOT auto-revised here — the reviewer gated each chunk. Set 0 to disable.
+  guided_length_repair_rounds: 1
 
 # ----------------------------------------------------------------------------
 # REGENERATION — what happens when a reviewer rejects ONE guided chunk.

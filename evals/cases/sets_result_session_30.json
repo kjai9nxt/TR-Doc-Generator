@@ -1,0 +1,180 @@
+{
+  "session_no": 30,
+  "session_name": "I/O Systems & I/O Models",
+  "overall_pass": false,
+  "scored": 12,
+  "passed": 9,
+  "skipped": 12,
+  "learned_rules_added": 0,
+  "sets": [
+    {
+      "id": "curriculum_takeaway_extraction",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "all 5 takeaways extracted verbatim"
+    },
+    {
+      "id": "ppt_extraction_completeness",
+      "grader": "deterministic",
+      "score": 1,
+      "threshold": 4,
+      "passed": false,
+      "detail": "17 deck(s), 6 with issues"
+    },
+    {
+      "id": "takeaway_coverage",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "chunk_count",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "agenda=5, sections=5, recap=yes"
+    },
+    {
+      "id": "content_relevance",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "groundedness_faithfulness",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "feedback_regeneration_adherence",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "recording_time_budget",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 3,
+      "passed": true,
+      "detail": "estimated 21.0 min (budget 40, within=True, paced at 1.5 min x 14 slides; word-count model would read 39.8 min; dense slides [8])"
+    },
+    {
+      "id": "language_simplicity",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "broad_to_specific_ordering",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "slide_phrasing_no_meta_narration",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "no meta-narration in slide content"
+    },
+    {
+      "id": "analogy_quality",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "conciseness",
+      "grader": "deterministic",
+      "score": 1,
+      "threshold": 4,
+      "passed": false,
+      "detail": "11 over-length: ['slide 2 sentence 19w', 'slide 3 sentence 21w', 'slide 4 sentence 21w', 'slide 6 sentence 23w', 'slide 8 sentence 28w', 'slide 9 sentence 26w']"
+    },
+    {
+      "id": "pedagogical_flow_continuity",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "no_repeat_no_future_leakage",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "market_coverage_completeness",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "content_recency",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "document_structure_layout",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 5,
+      "passed": true,
+      "detail": "exact layout, all required slide fields, coverage_map present"
+    },
+    {
+      "id": "document_length_pages",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 4,
+      "passed": true,
+      "detail": "~12 pages (target 23, max 26); biggest: slides ~2.8p, content ~2.7p, tables ~1.8p"
+    },
+    {
+      "id": "analogy_placement",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 4,
+      "passed": true,
+      "detail": "analogies exactly on first-introduction slides (5/14 concept_intro)"
+    },
+    {
+      "id": "worked_example_appropriateness",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 4,
+      "passed": true,
+      "detail": "1/14 worked-example slide(s), within the 30% cap (judge half skipped: --no-llm)"
+    },
+    {
+      "id": "example_figure_realism",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 4,
+      "passed": true,
+      "detail": "figures concrete, no placeholders (judge half skipped: --no-llm)"
+    },
+    {
+      "id": "regeneration_scope_discipline",
+      "grader": "llm_judge",
+      "skipped": true,
+      "reason": "LLM disabled (--no-llm)"
+    },
+    {
+      "id": "self_evolution_loop",
+      "grader": "longitudinal",
+      "score": 1,
+      "threshold": 4,
+      "passed": false,
+      "detail": "defect(s) recurred despite prior signal (S10→S30): ['ppt_extraction_completeness']; fixed: ['curriculum_takeaway_extraction']; 7 rule(s) learned"
+    }
+  ],
+  "generated_at": "2026-08-11T16:03:00"
+}

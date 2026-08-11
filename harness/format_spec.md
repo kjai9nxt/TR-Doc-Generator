@@ -108,10 +108,12 @@ analogy on a first introduction and a present one anywhere else are hard failure
 more than half the slides may be `concept_intro`.
 
 ## Length ceiling
-The rendered document must be **≤ 16 pages** (target ~14), estimated deterministically
+The rendered document must be **≤ 26 pages** (target ~23), estimated deterministically
 from this layout by `graders/page_grader.py`, and independently recordable in
-≤ 40 minutes. Over either ceiling is a hard failure. When trimming, cut ritual
-(unneeded analogies, unwarranted examples, restatement, filler) — never a sub-concept.
+≤ 40 minutes — which at ~1.5 minutes per slide means **≤ 26 slides**. Over either ceiling
+is a hard failure. Recording time is spent by the slide COUNT, so trimming text buys none
+of it; trim only to fit PAGES, and when trimming cut ritual (unneeded analogies,
+unwarranted examples, restatement, filler) — never a sub-concept.
 
 ## `coverage_map` (required)
 One entry per key takeaway, in curriculum order, `takeaway` byte-identical to the

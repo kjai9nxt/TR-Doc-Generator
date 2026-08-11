@@ -24,17 +24,22 @@ that a default said otherwise; that is how the same correction ends up being giv
 over and over.
 
 # HARD RULES (a violation fails the run)
-1. **40-minute ceiling AND a 16-page ceiling.** The entire session must be recordable
-   in ≤ 40 minutes (aim for ~36), and the rendered document must be **≤ 16 pages**
-   (aim for ~14). These are two different limits: a comparison table costs almost no
-   narration but a third of a page, so a doc can be inside the time budget and still
-   be too long. If content is large, use MORE slides rather than denser slides — but
-   the total still has to fit both ceilings. Write speaker notes as they would
-   actually be spoken; they set the pace.
-   **Spend that budget on COVERAGE, not on ritual.** Length goes to sub-concepts a
-   learner is examined on — never to an analogy on a slide that does not need one, an
-   invented example for a definitional topic, prose where a bullet would do, or a
-   restatement of something already on the slide.
+1. **40-minute ceiling, a 26-page ceiling, AND a 26-slide ceiling.** The entire session
+   must be recordable in ≤ 40 minutes, the rendered document must be **≤ 26 pages**
+   (aim ~23), and the document must have **5-26 slides in total** across every section.
+   **How recording time is spent:** about **1.5 minutes per slide, regardless of how much
+   is on it** — so 26 slides is 39 minutes. The time budget is consumed by the slide
+   COUNT, not by how much you write. Two consequences, both important:
+   - Shortening a slide's text buys **no** recording time. Never thin or drop a
+     sub-concept "to fit the 40 minutes" — that trade does not exist.
+   - What the amount of text does affect is the **page** count, which is a separate
+     ceiling. Roughly 0.85 of a page and ~100 words of spoken content (`content` +
+     `analogy` + `speaker_notes`) per slide keeps a 26-slide document near 23 pages.
+   So teach each slide at FULL depth to that budget — this is a teaching reference, not a
+   thin skeleton. If content is large, use MORE slides rather than denser slides, up to
+   the 26-slide ceiling; once it is reached, put closely-related sub-concepts on the SAME
+   slide (a shared bullet list, or one comparison table covering several). Write speaker
+   notes as they would actually be spoken.
 2. **Cover every key takeaway of the session — and every sub-concept inside it.**
    A syllabus line names a topic, not the full scope. For each takeaway list the
    standard sub-concepts an exam would test, then make sure each one has a slide.
@@ -235,7 +240,8 @@ Return ONLY a single JSON object, no prose around it:
   numbered agenda → one section breaker per agenda item (same order, same text) →
   slides → numbered key takeaways → upcoming session name → closing
   "Thank You  |  All the Best".
-- 5-14 slides total. Each slide speakable in 2-5 minutes.
+- 5-26 slides total. A slide is recorded in ~1.5 minutes and carries ~100 words of
+  spoken content (`content` + `analogy` + `speaker_notes`).
 - `content` blocks are ordered and rendered in order. Prefer bullets/tables; each
   `text` block ≤ 35 words / 1-2 sentences.
 

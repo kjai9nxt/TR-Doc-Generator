@@ -196,6 +196,125 @@ def _page_budget_block(guided: bool) -> str:
         f"that should be bullets, filler. Never drop a sub-concept to fit.\n")
 
 
+def slide_ceiling(enforce_time: bool) -> int:
+    """The document-wide slide ceiling guardrails will actually enforce.
+
+    Mirrors guardrails.check(rich=not enforce_time): depth mode reads `max_rich`,
+    which since 1.29 is the same number — the page ceiling binds, not the slide count.
+    """
+    con = config.harness()["constraints"]["slides"]
+    return int(con.get("max_rich", con["max"]) if not enforce_time else con["max"])
+
+
+def content_budget(enforce_time: bool, n_slides: int | None = None) -> dict:
+    """How much a slide may carry, derived from whichever limit actually binds.
+
+    Under the PER-SLIDE pacing model the recording ceiling is a limit on the NUMBER of
+    slides (1.5 min each, so 26 slides is 39 of the 40 minutes) and says nothing about how
+    much text a slide holds. The binding content limit is therefore the PAGE ceiling, and
+    the budget is derived from it: the pages left after front/back matter, divided across
+    the slides, converted to words with the measured words-per-page figure so the number
+    is something a writer can act on.
+
+    Under the WORD-COUNT model the recording ceiling itself bounds the text, so the budget
+    is derived by inverting graders/time_grader instead — every slide added costs 15s of
+    transition and takes words away from the others.
+
+    Either way the point is the same: a slide ceiling stated without a matching content
+    budget just moves the failure from the slide gate to the length gate.
+    """
+    rec = config.harness()["constraints"]["recording"]
+    pages = config.harness()["constraints"]["pages"]
+    n = max(int(n_slides or slide_ceiling(enforce_time)), 1)
+
+    if rec.get("pacing") == "per_slide" and rec.get("minutes_per_slide"):
+        wpp = float(pages.get("words_per_page", 122))
+        matter = float(pages.get("front_back_matter_pages", 1.5))
+
+        def words_for(page_ceiling):
+            return max(0, int((max(page_ceiling - matter, 0) * wpp)))
+
+        total_max = words_for(pages["max"])
+        total_target = words_for(pages.get("target", pages["max"]))
+        return {"bound_by": "pages", "slides": n,
+                "pages_max": pages["max"], "pages_target": pages.get("target"),
+                "pages_per_slide": round(
+                    (pages.get("target", pages["max"]) - matter) / n, 2),
+                "total_max": total_max, "total_target": total_target,
+                "per_slide_max": total_max // n,
+                "per_slide_target": total_target // n}
+
+    wpm = rec["speaking_words_per_minute"]
+    factor = rec.get("elaboration_factor", 2.9)
+    overhead_min = n * rec["seconds_per_slide_overhead"] / 60.0
+    # Recap/agenda/takeaway lines are spoken but not elaborated much; time_grader counts
+    # them in the same total, so reserve a slice rather than promising it to the slides.
+    frame_reserve = 150
+
+    def minutes_words(minutes):
+        return max(0, int((max(minutes - overhead_min, 0) * wpm / factor) - frame_reserve))
+
+    total_max = minutes_words(rec["max_minutes"])
+    total_target = minutes_words(rec.get("target_minutes", rec["max_minutes"]))
+    return {"bound_by": "recording_time", "slides": n,
+            "total_max": total_max, "total_target": total_target,
+            "per_slide_max": total_max // n,
+            "per_slide_target": total_target // n}
+
+
+def _slide_budget_block(enforce_time: bool, *, guided: bool) -> str:
+    """STATE the slide ceiling in the prompt.
+
+    It was enforced and never said: `constraints.slides.max` is a hard guardrail, but
+    no prompt file mentioned a slide count — while HARD RULE 1 said "use MORE slides
+    rather than denser slides". So the only slide-count instruction the model ever got
+    pushed the count UP, against a gate that caps it. A one-shot draft happened to land
+    at 14 because the time and page budgets bound it indirectly; a GUIDED run, where
+    each section is drafted with no view of the whole, had nothing holding it at all and
+    came back with 23 slides for 5 takeaways — which then failed the slide, time and
+    page gates together, at finalize, with no revision pass to repair it.
+    """
+    con = config.harness()["constraints"]["slides"]
+    mx = slide_ceiling(enforce_time)
+    scope = ("The number below is for the WHOLE document, across every section — this "
+             "chunk gets the share stated in its own instruction."
+             if guided else
+             "Count every slide in every section.")
+    block = (
+        f"\nHARD SLIDE CEILING: the document must have between {con['min']} and {mx} "
+        f"slides IN TOTAL. {scope} More slides than that fails the run, so 'use more "
+        f"slides rather than denser slides' applies only up to this ceiling: once it is "
+        f"reached, the way to fit more sub-concepts is to put two closely-related ones "
+        f"on one slide, not to add another slide.\n")
+    if not enforce_time:
+        return block
+    cb = content_budget(enforce_time, mx)
+    if cb["bound_by"] != "pages":
+        # word_count pacing: the recording ceiling itself bounds the text, so more slides
+        # means less on each — say the number, or "you may use N slides" reads as
+        # permission to write N slides' worth of prose and the time gate fails instead.
+        return block + (
+            f"\nCONTENT BUDGET — MORE SLIDES MEANS LESS ON EACH, NOT MORE IN TOTAL. The "
+            f"document has about {cb['total_target']} words of spoken content to spend "
+            f"(content + analogy + speaker_notes across every slide; hard ceiling "
+            f"{cb['total_max']}). At the {mx}-slide ceiling that is roughly "
+            f"{cb['per_slide_target']} words per slide.\n")
+    # per_slide pacing: the recording ceiling limits the NUMBER of slides, and the PAGE
+    # ceiling limits the text. So the slides may be written at full teaching depth — the
+    # budget below is close to the density these documents already have, and the extra
+    # slides genuinely buy more material rather than the same material spread thinner.
+    return block + (
+        f"\nCONTENT BUDGET — WHAT EACH SLIDE MAY CARRY. Aim for about "
+        f"{cb['per_slide_target']} words per slide of spoken content (the `content` "
+        f"blocks + `analogy` + `speaker_notes`; hard ceiling ~{cb['per_slide_max']}), "
+        f"which is roughly {cb['pages_per_slide']} of a rendered page. Across the whole "
+        f"document that is ~{cb['total_target']} words and ~{cb['pages_target']} pages "
+        f"(hard ceiling {cb['pages_max']}). Teach each slide at FULL depth to that budget "
+        f"— this is not a thin skeleton. The slide ceiling and this word budget are "
+        f"independent limits, so using every slide allowed does NOT require shortening "
+        f"them: spend the room on the sub-concepts an exam tests, never on ritual.\n")
+
+
 def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
     """The generation tail carrying the LENGTH budget the doc is graded against.
 
@@ -208,16 +327,32 @@ def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
     Used by BOTH generation modes (one-shot whole doc and guided per-chunk) so the
     behaviour is identical in each.
     """
-    pages = _page_budget_block(guided)
+    pages = _page_budget_block(guided) + _slide_budget_block(enforce_time, guided=guided)
     if not enforce_time:
         return "\n" + config.depth_mode() + "\n" + pages
+    rec = config.harness()["constraints"]["recording"]
+    mx, mps = rec["max_minutes"], rec.get("minutes_per_slide")
+    # Say HOW the recording time is measured, not just the ceiling. Under the per-slide
+    # pacing model it is the slide COUNT that consumes the budget (a slide takes ~1.5
+    # minutes to record whatever is on it), so "be concise to save time" is the wrong
+    # instinct — trimming a slide's text buys no recording time at all, and dropping a
+    # sub-concept to save time buys nothing while costing coverage.
+    if rec.get("pacing") == "per_slide" and mps:
+        allowed = int(mx // mps)
+        how = (f"\nHARD TIME LIMIT: {mx} minutes for the whole session. Recording pace is "
+               f"about {mps} minutes PER SLIDE regardless of how much is on it, so the "
+               f"budget is spent by the slide COUNT — {allowed} slides is "
+               f"{round(allowed * mps, 1)} minutes. Shortening a slide's text therefore "
+               f"buys no recording time; only using fewer slides does. Do NOT drop or thin "
+               f"a sub-concept in the name of the time budget.\n")
+    else:
+        how = (f"\nHARD TIME LIMIT: the entire session MUST be recordable within {mx} "
+               f"minutes (aim ~{rec['target_minutes']}). Exceeding {mx} minutes fails the "
+               f"run.\n")
     if guided:
-        return ("\nHARD TIME LIMIT: the WHOLE session must be recordable within 40 minutes "
-                "(aim ~36), so keep this chunk proportionate to its share of the session. "
-                "Be concise and use MORE slides rather than denser ones.\n") + pages
-    return ("\nHARD TIME LIMIT: the entire session MUST be recordable within 40 minutes "
-            "(aim ~36). Be concise and use MORE slides rather than denser ones. Exceeding "
-            "40 minutes fails the run.\n") + pages
+        how += ("This chunk is one section of that session — keep it proportionate to its "
+                "share, per the budgets below.\n")
+    return how + pages
 
 
 # --------------------------------------------------------------------------- #
@@ -310,10 +445,86 @@ RULES FOR THE PATCH
 Return ONLY the patch JSON object."""
 
 
-def takeaway_instruction(cur: Session, idx: int) -> str:
-    """idx is 0-based into cur.key_takeaways."""
+def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
+                          enforce_time: bool = True) -> int:
+    """How many slides THIS guided section may use.
+
+    Guided mode drafts one section per LLM call, so no single call can see the
+    document-wide slide ceiling being spent — the model was asked for "the sub-concepts
+    an exam would test, EACH with a slide" and nothing else, which is an open-ended
+    instruction. Five takeaways answered it with 23 slides against a ceiling of 14.
+
+    So the ceiling is divided here, from the slides the earlier sections ACTUALLY used
+    rather than from a fixed per-section quota: a section that ran one slide long
+    squeezes the ones after it instead of silently pushing the total over. The remainder
+    goes to the earlier sections (a 14-slide budget over 5 takeaways is 3,3,3,3,2, not
+    2,2,2,2,6). The floor is min_sub_concepts_per_takeaway, since a section that cannot
+    fit its required sub-concepts would fail the coverage gate instead.
+    """
+    budget = slide_ceiling(enforce_time)
+    floor = int(config.harness()["constraints"]["coverage"]
+                .get("min_sub_concepts_per_takeaway", 2))
+    # A session with more takeaways than budget/floor cannot give every section that
+    # floor and still fit the ceiling (8 takeaways x 2 > 14). This course tops out at 6,
+    # but issuing a budget whose parts cannot sum to the whole is exactly the
+    # prompt-says-X-gate-says-not-X trap the deterministic gates exist to avoid, so drop
+    # to 1: sub-concepts are allowed to share a slide, and the instruction says so.
+    if floor * max(1, cur.key_takeaways_count) > budget:
+        floor = 1
+    left = max(1, sections_left)
+    base, extra = divmod(max(budget - max(slides_used, 0), 0), left)
+    return max(floor, base + (1 if extra else 0))
+
+
+def takeaway_instruction(cur: Session, idx: int, *, slides_used: int = 0,
+                         sections_left: int | None = None,
+                         enforce_time: bool = True) -> str:
+    """idx is 0-based into cur.key_takeaways.
+
+    slides_used / sections_left describe the slide budget already spent by the OTHER
+    sections and how many sections (including this one) still have to fit in what is
+    left — see chunk_slide_allowance. They default to a whole-budget-for-one-section
+    view only so an old call site still works; server.py always passes real numbers.
+    """
     takeaway = cur.key_takeaways[idx]
-    return f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
+    if sections_left is None:
+        sections_left = max(1, cur.key_takeaways_count - idx)
+    allowance = chunk_slide_allowance(cur, slides_used=slides_used,
+                                     sections_left=sections_left,
+                                     enforce_time=enforce_time)
+    budget = slide_ceiling(enforce_time)
+    # A slide allowance on its own is only half a budget: the section can obey it and
+    # still write twice as much per slide as the recording ceiling allows, which is how a
+    # doc lands inside the slide gate and outside the time gate.
+    words = ""
+    if enforce_time:
+        cb = content_budget(enforce_time)
+        tail = ("Teach these slides at FULL depth to that budget — the slide allowance and "
+                "the word budget are independent limits, so using every slide does not "
+                "mean writing thinner ones."
+                if cb["bound_by"] == "pages" else
+                "Using every slide allowed means writing SHORTER slides, not more "
+                "material, because the recording budget bounds the total text.")
+        words = (f"WORD BUDGET FOR THIS SECTION: about "
+                 f"{cb['per_slide_target'] * allowance} words of spoken content across "
+                 f"those slides (content + analogy + speaker_notes, ~"
+                 f"{cb['per_slide_target']} per slide, ceiling ~{cb['per_slide_max']}). "
+                 f"The whole document has ~{cb['total_target']} to spend. {tail}\n")
+    budget_block = (
+        f"\nSLIDE BUDGET FOR THIS SECTION: at most {allowance} slide(s).\n"
+        + words
+        + f"The whole document is capped at {budget} slides; the other sections have "
+        f"already used {slides_used}, and {sections_left} section(s) — including this "
+        f"one — share the {max(budget - slides_used, 0)} that remain. Going over is not "
+        f"a stylistic preference: the assembled document is hard-gated on the total, and "
+        f"a section that overspends is one another section has to pay for.\n"
+        f"If this takeaway has more exam-testable sub-concepts than {allowance} slides, "
+        f"do NOT drop one and do NOT add a slide — group closely-related sub-concepts "
+        f"onto one slide (a shared bullet list, or a comparison table covering several at "
+        f"once) and map each of them to that slide in \"coverage\". Cut ritual first: an "
+        f"analogy is only allowed on a concept_intro slide, and a worked example only "
+        f"where the learner must EXECUTE something.\n")
+    return budget_block + f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
 {{
   "section": {{
     "name": "<section title>",
@@ -335,10 +546,11 @@ This section must teach EXACTLY this key takeaway and nothing from the others:
 The section "name" must be this takeaway line VERBATIM (it is also the agenda item).
 
 COVERAGE: this line names a topic, not its whole scope. List the sub-concepts an exam
-would test on it, give EACH one a slide, and record that mapping in "coverage" — a
-commonly-tested sub-concept that is silently missing is the most serious failure here.
-At least 2 sub-concepts. If one genuinely belongs to a later session, say so explicitly
-in the section text AND record it as "deferred_to" instead of a slide.
+would test on it, map EACH one to the slide that teaches it in "coverage", and stay
+inside the slide budget above — two sub-concepts may share a slide, but neither may go
+unmapped. A commonly-tested sub-concept that is silently missing is the most serious
+failure here. At least 2 sub-concepts. If one genuinely belongs to a later session, say
+so explicitly in the section text AND record it as "deferred_to" instead of a slide.
 
 ROLES AND ANALOGIES: every slide declares a "role". An analogy is REQUIRED on a
 "concept_intro" slide and FORBIDDEN on every other role (mechanism, working_example,

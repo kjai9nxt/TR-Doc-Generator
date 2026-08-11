@@ -27,7 +27,7 @@ from pydantic import BaseModel
 
 from src import (config, sheets, sync, course_loader, pipeline, pptx_ingest,
                  context_builder, generator, docx_writer, app_settings, auth, db,
-                 outputs)
+                 outputs, llm)
 
 app = FastAPI(title="TR Doc Generator API")
 
@@ -308,9 +308,12 @@ def _run_generation(job_id: str, session_no: int, use_judge: bool, enforce_time:
         except Exception:
             pass
     try:
+        # run_id keys the token/cost meter, so a second generation starting while this
+        # one is in flight cannot wipe or absorb its accounting (src/llm.py).
         result = pipeline.run(session_no, use_judge=use_judge, do_sync=False,
-                              enforce_time=enforce_time, on_event=on_event, user=user_email)
-        final = result["history"][-1]
+                              enforce_time=enforce_time, on_event=on_event,
+                              user=user_email, run_id=job_id)
+        final = result.get("final") or result["history"][-1]
         cost = result.get("cost") or {}
         try:
             db.finish_run(
@@ -343,11 +346,19 @@ def _run_generation(job_id: str, session_no: int, use_judge: bool, enforce_time:
             })
     except Exception as e:
         try:
-            db.finish_run(job_id, status="error", error=str(e))
+            # A generation that crashed halfway has still spent whatever it spent —
+            # record it, or the dashboard shows a failed run as free.
+            db.finish_run(job_id, status="error", error=str(e),
+                          cost=llm.usage_totals(job_id), calls=llm.usage_records(job_id))
         except Exception:
             pass
         with _lock:
             JOBS[job_id].update(status="error", error=str(e))
+    finally:
+        try:
+            llm.close_usage(job_id)
+        except Exception:
+            pass
 
 
 def _read_markdown(docx_path: str) -> str:
@@ -542,9 +553,11 @@ def _guided_require(gid: str) -> dict:
 
 
 def _guided_db_error(gid: str, e: Exception):
-    """Mark this guided run as failed in the DB (so it still shows in the dashboard)."""
+    """Mark this guided run as failed in the DB (so it still shows in the dashboard),
+    keeping whatever it had already spent — a failed run is not a free one."""
     try:
-        db.finish_run(gid, status="error", error=str(e))
+        db.finish_run(gid, status="error", error=str(e),
+                      cost=llm.usage_totals(gid), calls=llm.usage_records(gid))
     except Exception:
         pass
 
@@ -574,12 +587,52 @@ def _guided_step_failed(gid: str, e: Exception, what: str) -> None:
     _guided_save(gid)
 
 
+def _fragment_slides(fragment: dict) -> int:
+    """Slide count of one guided chunk (0 for the opening)."""
+    sec = (fragment or {}).get("section", fragment) or {}
+    return len(sec.get("slides") or [])
+
+
+def _slide_budget_state(state: dict, index: int) -> tuple[int, int]:
+    """(slides_used, sections_left) for the section chunk at `index`.
+
+    'Used' counts every OTHER section chunk that currently exists, so the number is
+    right in both directions: while generating forward only the earlier sections exist,
+    and when re-drafting section 3 of 5 the four others do — in which case this chunk is
+    the only one left to fit whatever the ceiling still has room for.
+    """
+    used = sections = 0
+    for i, c in enumerate(state["chunks"]):
+        if i == index or c.get("kind") != "section":
+            continue
+        sections += 1
+        used += _fragment_slides(c.get("fragment"))
+    n_takeaways = state["total"] - 1          # chunk 0 is the opening
+    return used, max(1, n_takeaways - sections)
+
+
 def _chunk_spec(state: dict, index: int):
-    """(kind, instruction) for the chunk at `index`: 0 = opening, else takeaway."""
+    """(kind, instruction) for the chunk at `index`: 0 = opening, else takeaway.
+
+    A section instruction carries its SLIDE BUDGET, computed from what the other
+    sections have already spent — see context_builder.chunk_slide_allowance. Built per
+    call, never cached with base_context, so a re-draft sees the current usage.
+    """
     cur, prev = state["cur"], state["prev"]
     if index == 0:
         return "opening", context_builder.opening_instruction(cur, prev)
-    return "section", context_builder.takeaway_instruction(cur, index - 1)
+    used, left = _slide_budget_state(state, index)
+    return "section", context_builder.takeaway_instruction(
+        cur, index - 1, slides_used=used, sections_left=left,
+        enforce_time=state.get("enforce_time", True))
+
+
+def _chunk_allowance(state: dict, index: int) -> int:
+    """The slide allowance the instruction for `index` states (for the over-budget log)."""
+    used, left = _slide_budget_state(state, index)
+    return context_builder.chunk_slide_allowance(
+        state["cur"], slides_used=used, sections_left=left,
+        enforce_time=state.get("enforce_time", True))
 
 
 def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None) -> dict:
@@ -592,8 +645,47 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
     return {"kind": kind, "fragment": fragment, "markdown": markdown}
 
 
+def _guided_record_cost(gid: str) -> None:
+    """Persist this guided run's spend SO FAR, without finishing the run.
+
+    Cost used to reach the DB only via finish_run, so a run the reviewer abandoned
+    mid-review showed $0.0000 in the dashboard while having paid for one LLM call per
+    chunk — three such Session-30 runs were sitting there. Called after every chunk and
+    every regeneration, so the number is never further behind than one call.
+    """
+    try:
+        db.update_cost(gid, llm.usage_totals(gid), llm.usage_records(gid))
+    except Exception:
+        pass
+
+
+def _guided_slide_budget_note(gid: str, index: int, allowance: int) -> None:
+    """Log whether the chunk just produced fits its slide allowance and the ceiling."""
+    if index == 0 or not allowance:
+        return
+    with _lock:
+        state = GUIDED.get(gid)
+        if not state or index >= len(state["chunks"]):
+            return
+        got = _fragment_slides(state["chunks"][index].get("fragment"))
+        total = sum(_fragment_slides(c.get("fragment")) for c in state["chunks"])
+        ceiling = context_builder.slide_ceiling(state.get("enforce_time", True))
+        label = state["labels"][index]
+    if got > allowance:
+        _guided_log(gid, f"⚠ Chunk {index + 1} used {got} slides against a budget of "
+                         f"{allowance} — {total}/{ceiling} of the document's slide "
+                         f"ceiling is now spent. Regenerate it with 'cut to {allowance} "
+                         f"slides, group related sub-concepts' if the later sections "
+                         f"end up squeezed: {label}")
+    if total > ceiling:
+        _guided_log(gid, f"⚠ The chunks so far already total {total} slides, over the "
+                         f"{ceiling}-slide ceiling — the assembled doc will fail the "
+                         f"slide, recording-time and page gates unless a chunk is cut.")
+
+
 def _guided_generate_all(gid: str):
     """Generate every chunk up front, then move to the review phase."""
+    llm.use_meter(gid)      # this thread's LLM spend belongs to this guided run
     try:
         while True:
             with _lock:
@@ -605,13 +697,22 @@ def _guided_generate_all(gid: str):
                     break
                 prior = [c["fragment"] for c in state["chunks"]]
             _guided_log(gid, f"Generating chunk {i + 1}/{total}: {GUIDED[gid]['labels'][i]} …")
+            with _lock:
+                allowance = _chunk_allowance(GUIDED[gid], i) if i else 0
             chunk = _gen_one(gid, i, prior)
             with _lock:
                 GUIDED[gid]["chunks"].append(chunk)
                 GUIDED[gid]["index"] = len(GUIDED[gid]["chunks"])
+            # Say it HERE if a section overspent its share of the slide ceiling. The
+            # reviewer can then regenerate that one chunk surgically, while the run is
+            # still open; discovering it at finalize is discovering it too late, because
+            # the assembled doc fails the slide, time and page gates at once and the
+            # review panel is gone by then.
+            _guided_slide_budget_note(gid, i, allowance)
             # Checkpoint per chunk: an LLM call each, so a restart must never cost
             # more than the one chunk that was in flight.
             _guided_save(gid)
+            _guided_record_cost(gid)
         with _lock:
             GUIDED[gid]["status"] = "reviewing"
         _guided_log(gid, "All chunks generated — review each, then create the final doc.")
@@ -646,6 +747,7 @@ def _patch_one(gid: str, index: int, reason: str) -> tuple[dict, dict]:
 
 def _guided_regenerate(gid: str, index: int, reason: str):
     """Regenerate a single chunk in place (given the chunks before it) during review."""
+    llm.use_meter(gid)      # a regeneration is part of THIS run's cost, in a new thread
     try:
         with _lock:
             prior = [c["fragment"] for c in GUIDED[gid]["chunks"][:index]]
@@ -659,6 +761,8 @@ def _guided_regenerate(gid: str, index: int, reason: str):
         except Exception:
             pass
         _guided_log(gid, f"Regenerating chunk {index + 1}: {GUIDED[gid]['labels'][index]} …")
+        with _lock:
+            allowance = _chunk_allowance(GUIDED[gid], index) if index else 0
 
         # PATCH FIRST. A reviewer note is almost always narrow, and re-drafting the whole
         # chunk from it threw away the slides they were happy with. A patch touches only
@@ -706,7 +810,11 @@ def _guided_regenerate(gid: str, index: int, reason: str):
             GUIDED[gid]["chunks"][index] = chunk
             GUIDED[gid]["status"] = "reviewing"
             GUIDED[gid]["regen_index"] = None
+        _guided_record_cost(gid)      # a regeneration is real spend on this run
         _guided_log(gid, "Chunk updated.")
+        # A patch may ADD slides, and a full re-draft is a fresh roll of the dice on the
+        # count, so re-check this chunk against the ceiling exactly as generation does.
+        _guided_slide_budget_note(gid, index, allowance)
         _guided_save(gid)
     except Exception as e:
         # The chunk that was there before is still in place, so this is recoverable:
@@ -716,6 +824,7 @@ def _guided_regenerate(gid: str, index: int, reason: str):
 
 def _guided_finalize(gid: str):
     """Assemble all chunks, grade once, render the final .docx."""
+    llm.use_meter(gid)      # the judge (and any trim pass) bills to this run
     try:
         with _lock:
             state = GUIDED[gid]
@@ -731,9 +840,9 @@ def _guided_finalize(gid: str):
         coverage = [c["fragment"].get("coverage") or {} for c in chunks[1:]]
         doc = pipeline.assemble_doc(cur, nxt, opening, sections, coverage)
         result = pipeline.finalize(session_no, doc, use_judge=use_judge,
-                                   enforce_time=enforce_time,
+                                   enforce_time=enforce_time, run_id=gid,
                                    on_event=lambda m: _guided_log(gid, m))
-        final = result["history"][-1]
+        final = result.get("final") or result["history"][-1]
         # Persist the rendered outputs BEFORE surfacing the result. A guided run has
         # already cost a long human review by this point, so its document must not be
         # recoverable only from the instance disk.
@@ -804,9 +913,11 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
         f"Key takeaway {i + 1}: {kt[:70]}" for i, kt in enumerate(cur.key_takeaways)]
     gid = uuid.uuid4().hex[:12]
     # Start token/cost accounting for THIS guided doc (chunks + regens + judge),
-    # mirroring what pipeline.run() does for one-shot generations.
+    # mirroring what pipeline.run() does for one-shot generations. Keyed by `gid`: the
+    # old process-wide reset meant starting a second guided run erased the first one's
+    # accounting, so whichever finished next reported the wrong figure.
     from src import llm
-    llm.reset_usage()
+    llm.reset_usage(gid)
     # The 40-minute toggle applies to guided runs exactly as it does to one-shot:
     # ON  -> every chunk is generated under the hard time limit and the doc is graded on it;
     # OFF -> chunks are generated in DEPTH MODE and recording time is never graded.

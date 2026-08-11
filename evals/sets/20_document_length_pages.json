@@ -1,16 +1,18 @@
 {
   "id": "document_length_pages",
   "title": "Document Length — 16-Page Ceiling",
-  "guideline_refs": [22],
+  "guideline_refs": [
+    22
+  ],
   "capability_status": "implemented",
   "grader": "deterministic",
   "applies_to": "whole_document",
-  "description": "The rendered TR doc must fit within constraints.pages.max (16) pages, target ~14, measured by graders/page_grader.py against the real .docx layout. This is a SEPARATE limit from recording time: a comparison table costs page space and almost no narration, so a doc can be inside the 40-minute budget and still be far too long to read.",
-  "criterion": "Estimated pages <= 16. A doc at or under the 14-page target scores 5; 15-16 is acceptable but tight; over 16 fails. A doc that is suspiciously short (under 6 pages) is also flagged, since the usual cause is dropped coverage rather than good editing.",
+  "description": "The rendered TR doc must fit within constraints.pages.max (26) pages, target ~23, measured by graders/page_grader.py against the real .docx layout. This is THE content limit: recording time is paced per slide (1.5 min each) and so is spent by the slide count, while the amount of text is what consumes pages. The ceiling scales with the slide ceiling — a slide costs ~0.887 rendered pages (median over every generated doc), so 26 slides is ~23 pages.",
+  "criterion": "Estimated pages <= 26. At or under the 23-page target scores 5; 24-26 is acceptable but tight; over 26 fails. A doc far short of the target is flagged only if the shortfall came from dropping sub-concepts rather than from a genuinely small syllabus line.",
   "rubric": {
-    "5": "<= 14 pages — inside the target, with room for a revision pass.",
-    "3": "15-16 pages — within the ceiling but with no margin.",
-    "1": "> 16 pages (over the ceiling), or so short that coverage was probably dropped."
+    "5": "<= 23 pages — inside the target, with room for a revision pass.",
+    "3": "24-26 pages — within the ceiling but with no margin.",
+    "1": "> 26 pages (over the ceiling), or so short that coverage was probably dropped."
   },
   "pass_threshold": 4,
   "cases": [
@@ -18,21 +20,37 @@
       "id": "dl-good-1",
       "polarity": "good",
       "expected": "pass",
-      "input": {"estimated_pages": 13, "slides": 11, "note": "9 sub-concept slides, 2 comparison tables"},
-      "rationale": "Inside the target."
+      "input": {
+        "estimated_pages": 21,
+        "slides": 24,
+        "note": "20 sub-concept slides, 4 comparison tables"
+      },
+      "rationale": "21 pages over 24 slides — inside the 23-page target, length spent on coverage."
     },
     {
       "id": "dl-bad-1",
       "polarity": "bad",
       "expected": "fail",
-      "input": {"estimated_pages": 21, "slides": 16, "pages_by_part": {"analogies": 1.2, "speaker_notes": 2.2, "content": 4.3}},
-      "rationale": "Over the ceiling. The breakdown shows where to cut: an analogy on every slide plus over-long notes."
+      "input": {
+        "estimated_pages": 31,
+        "slides": 26,
+        "pages_by_part": {
+          "analogies": 1.2,
+          "speaker_notes": 2.2,
+          "content": 4.3
+        }
+      },
+      "rationale": "31 pages over the 26-page ceiling, and pages_by_part shows analogies and speaker notes carrying it — padded, not earned."
     },
     {
       "id": "dl-bad-2",
       "polarity": "bad",
       "expected": "fail",
-      "input": {"estimated_pages": 4, "slides": 5, "note": "7 key takeaways, only 5 slides — three sub-concepts absent"},
+      "input": {
+        "estimated_pages": 5,
+        "slides": 6,
+        "note": "5 key takeaways, only 6 slides — sub-concepts absent"
+      },
       "rationale": "Short because coverage was cut, which is the worst way to hit a length target."
     }
   ]

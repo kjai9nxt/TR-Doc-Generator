@@ -188,9 +188,23 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # Depth mode (40-min limit off) allows more slides for worked examples etc.
     slide_max = con["slides"].get("max_rich", con["slides"]["max"]) if rich else con["slides"]["max"]
     if len(slides) < con["slides"]["min"]:
-        fails.append(f"Only {len(slides)} slides (min {con['slides']['min']}).")
+        fails.append(f"Only {len(slides)} slides (min {con['slides']['min']}) — "
+                     f"split content across more slides, don't cram.")
     if len(slides) > slide_max:
-        fails.append(f"{len(slides)} slides (max {slide_max}) — split content, don't cram.")
+        # This message is not just for the reviewer: it goes into `issues`, which is what
+        # the revision pass is told to fix. It used to read "split content, don't cram" —
+        # the advice for being UNDER the minimum — so a doc with too many slides was
+        # asked to make more of them. Say where the excess is and what to merge.
+        over = len(slides) - slide_max
+        heavy = sorted(((len(sec.get("slides") or []), sec.get("name") or f"section {i + 1}")
+                        for i, sec in enumerate(doc.get("sections") or [])), reverse=True)[:3]
+        worst = ", ".join(f"{name} ({n} slides)" for n, name in heavy)
+        fails.append(
+            f"{len(slides)} slides (max {slide_max}) — {over} too many. MERGE, do not "
+            f"split: put closely-related sub-concepts on one slide (a shared bullet list "
+            f"or a comparison table covering several at once) and drop analogies outside "
+            f"concept_intro slides and worked examples the topic does not need. Never drop "
+            f"a sub-concept. Longest sections: {worst}.")
 
     # --- per-slide required fields ---
     # Five fields are unconditional. `analogy` is NOT: it is required on a first
@@ -464,6 +478,18 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
         src_kt = list(session.key_takeaways)
         slide_ns = {s.get("n") for s in slides}
         min_subs = cov_cfg.get("min_sub_concepts_per_takeaway", 2)
+        # Which slides belong to the section that teaches takeaway i. Resolved BY NAME,
+        # because that is the rule (a section's name is its key-takeaway line verbatim)
+        # and it is what makes the check sound: where a section cannot be matched to its
+        # takeaway the naming gate already fails, and scoping a coverage reference to a
+        # section we only GUESSED at would produce false failures — the golden, whose
+        # four grouped sections predate the verbatim rule, is exactly that case.
+        by_name = {_norm_line(sec.get("name")): sec for sec in doc.get("sections") or []}
+        own_section: dict[int, set] = {}
+        for i, kt in enumerate(src_kt):
+            sec = by_name.get(_norm_line(kt))
+            if sec is not None:
+                own_section[i] = {s.get("n") for s in (sec.get("slides") or [])}
         if not isinstance(cmap, list) or not cmap:
             fails.append(
                 "Missing 'coverage_map'. For EACH key takeaway, list the exam-testable "
@@ -515,6 +541,21 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                                 f"{at} \"{name}\" claims slide {ref}, which does not "
                                 f"exist (slides are {sorted(n for n in slide_ns if n is not None)}). "
                                 f"Add the slide or correct the map.")
+                        elif i in own_section and ref not in own_section[i]:
+                            # A reference that RESOLVES but points OUTSIDE the section
+                            # teaching this takeaway. Checking only that the slide exists
+                            # let this through silently, and it is the exact defect the
+                            # judge kept reporting as a coverage failure: "sub-concept
+                            # mapped to Slide 2, but Slide 2 does not teach it — it is on
+                            # Slide 5". In guided mode it is also what a stale slide
+                            # number looks like after a chunk was regenerated at a
+                            # different length. Section i is the one whose name IS
+                            # takeaway i, so the correct slide can only be in it.
+                            fails.append(
+                                f"{at} \"{name}\" maps to slide {ref}, which is not in "
+                                f"the section teaching takeaway {i + 1} (its slides are "
+                                f"{sorted(own_section[i])}). Point it at the slide that "
+                                f"actually teaches this sub-concept, or teach it there.")
             # A slide nothing in the map points at is not a failure — a comparison or
             # summary slide legitimately consolidates several sub-concepts — but it is
             # worth surfacing, because it is also what padding looks like.

@@ -295,6 +295,24 @@ def update_stage(run_id: str, stage: str) -> None:
     _exec("UPDATE runs SET stage=?, updated=? WHERE id=?", (stage, _now(), run_id))
 
 
+def update_cost(run_id: str, cost: dict | None, calls: list | None = None) -> None:
+    """Write a run's cost-so-far WITHOUT finishing it.
+
+    Cost used to be recorded only by finish_run, so a guided run the reviewer never
+    finalised reported $0.00 — while having paid for one LLM call per chunk. Three
+    abandoned Session-30 runs sat in the dashboard at $0.0000 with all their chunks
+    generated, so the org-wide spend was understated by whatever those cost. Guided
+    mode now calls this after every chunk, which is also the checkpoint granularity,
+    so an interrupted run's spend is never invisible.
+    """
+    cost = cost or {}
+    _exec(
+        """UPDATE runs SET cost=?, total_tokens=?, cost_json=?, calls_json=?, updated=?
+           WHERE id=?""",
+        (cost.get("cost"), cost.get("total_tokens"), json.dumps(cost),
+         json.dumps(calls or []), _now(), run_id))
+
+
 def finish_run(run_id: str, *, status: str, accepted: bool | None = None,
                rubric=None, est_minutes=None, est_pages=None, rounds=None, slides=None,
                cost: dict | None = None, calls: list | None = None,

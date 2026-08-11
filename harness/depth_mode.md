@@ -11,9 +11,9 @@ on every doc — which produced documents nobody could record and nobody wanted 
 
 ## What still binds in this mode
 
-- **The 16-page ceiling applies unchanged** (`constraints.pages.max`). There is no mode
-  in which the document may run past it. Aim for the target (~14 pages).
-- **Slide ceiling unchanged** (`constraints.slides.max_rich` = 14). Depth is not more
+- **The page ceiling applies unchanged** (`constraints.pages.max` = 26). There is no mode
+  in which the document may run past it. Aim for the target (~23 pages).
+- **Slide ceiling unchanged** (`constraints.slides.max_rich` = 26). Depth is not more
   slides for their own sake.
 - `heading` / `subheading` stay 3-4 words, hard maximum 4.
 - A `content` text block stays ≤ 35 words / 1-2 sentences. Depth goes into bullets,

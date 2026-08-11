@@ -113,7 +113,8 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
 
 
 def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: bool = True,
-        enforce_time: bool = True, on_event=None, user: str | None = None) -> dict:
+        enforce_time: bool = True, on_event=None, user: str | None = None,
+        run_id: str | None = None) -> dict:
     # Harness policy wins over the caller: the quality check and the 40-minute budget
     # are not per-run choices any more (gates.always_run_llm_judge,
     # constraints.recording.always_enforced). Forced here as well as in evaluate() so
@@ -152,7 +153,11 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
                    + context_builder.time_mode_block(enforce_time))
 
     from src import llm
-    llm.reset_usage()      # start counting tokens/cost for THIS generation
+    # Count tokens/cost against THIS run's meter. Keyed by run so a second generation
+    # starting in another thread cannot wipe or inherit this one's accounting — which is
+    # what a single process-wide accumulator did on the shared instance (see src/llm.py).
+    llm.use_meter(run_id)
+    llm.reset_usage(run_id)
 
     log("Generating draft 1 … (this LLM step takes ~1-2 minutes)")
     doc = generator.generate(user_prompt)
@@ -233,7 +238,7 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     final = best_report      # the chosen (best) draft's report, not necessarily the last
 
     # --- Cost/token accounting for the dashboard (best-effort) ---
-    cost = {"totals": llm.usage_totals(), "calls": llm.usage_records()}
+    cost = {"totals": llm.usage_totals(run_id), "calls": llm.usage_records(run_id)}
     n_slides = sum(len(sec.get("slides", [])) for sec in doc.get("sections", []))
     try:
         from src import gen_log
@@ -260,7 +265,10 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
         f"est_minutes={final['time']['estimated_minutes']}  "
         f"est_pages={final['pages']['estimated_pages']}/{final['pages']['max_pages']}  "
         f"cost=${c.get('cost', 0):.4f} ({c.get('total_tokens', 0)} tokens)")
-    return {"doc": doc, "history": history, "docx": str(docx_path), "cost": cost}
+    # See finalize(): `final` is the report of the RENDERED doc. history[-1] is the last
+    # draft GRADED, which the best-draft rule may have discarded.
+    return {"doc": doc, "history": history, "final": final,
+            "docx": str(docx_path), "cost": cost}
 
 
 # --------------------------------------------------------------------------- #
@@ -295,12 +303,27 @@ def assemble_doc(cur, nxt, opening: dict, sections: list[dict],
     # number that no longer exists is now a hard guardrail failure, not a cosmetic
     # nit. Remapping here is the only place that can see all the sections at once.
     remap: dict[tuple[int, object], int] = {}
+    # Chunks are told to number their slides consecutively after the approved ones, so an
+    # `n` a coverage entry cites may belong to ANOTHER section — a legitimate reference to
+    # a slide in an earlier section, or a number left stale by a chunk that was
+    # regenerated at a different length. Keyed only by (section, n), those were left
+    # UNCHANGED while every real slide was renumbered around them, so the map ended up
+    # pointing at whatever slide happened to land on that number. Hence a document-wide
+    # fallback, used only where the old number is unambiguous.
+    seen_n: dict[object, int] = {}
+    global_remap: dict[object, int] = {}
     next_n = 1
     for si, sec in enumerate(doc["sections"]):
         for slide in sec.get("slides") or []:
-            remap[(si, slide.get("n"))] = next_n
+            old = slide.get("n")
+            remap[(si, old)] = next_n
+            seen_n[old] = seen_n.get(old, 0) + 1
+            global_remap[old] = next_n
             slide["n"] = next_n
             next_n += 1
+    # An old number reused by two sections cannot be resolved document-wide; drop it and
+    # let the coverage gate report the reference rather than guess.
+    global_remap = {k: v for k, v in global_remap.items() if seen_n.get(k) == 1}
 
     if coverage:
         cmap = []
@@ -321,16 +344,55 @@ def assemble_doc(cur, nxt, opening: dict, sections: list[dict],
                         old = sub["slide"]
                     if (si, old) in remap:
                         sub["slide"] = remap[(si, old)]
+                    elif old in global_remap:
+                        # Cited a slide outside its own section. Track it to the slide it
+                        # actually named instead of leaving a number that now means
+                        # something else; the coverage gate then reports it as
+                        # out-of-section, which is the truth about the map.
+                        sub["slide"] = global_remap[old]
                 subs.append(sub)
             cmap.append({"takeaway": entry.get("takeaway"), "sub_concepts": subs})
         doc["coverage_map"] = cmap
     return doc
 
 
+def _too_long(doc: dict, report: dict) -> list[str]:
+    """Which of the three HARD LENGTH ceilings the assembled doc busts.
+
+    Read from the graders' STRUCTURED output, never by matching issue text — the issue
+    strings are written for the reviewer and the revision prompt, and are edited freely.
+    Only these three failures justify re-drafting a doc whose chunks a human already
+    approved: they are properties of the assembled whole, so no chunk review can see them.
+    """
+    over = []
+    con = config.harness()["constraints"]["slides"]
+    ceiling = con.get("max_rich", con["max"]) if not report.get("time_enforced", True) \
+        else con["max"]
+    n_slides = sum(len(sec.get("slides") or []) for sec in doc.get("sections") or [])
+    if n_slides > ceiling:
+        over.append(f"slide count ({n_slides}/{ceiling})")
+    if report.get("time_enforced", True) and not report.get("time", {}).get("within_budget", True):
+        over.append(f"recording time ({report['time']['estimated_minutes']}/"
+                    f"{report['time']['max_minutes']} min)")
+    if (config.harness()["gates"].get("pages_within_budget", True)
+            and not report.get("pages", {}).get("within_budget", True)):
+        over.append(f"length ({report['pages']['estimated_pages']}/"
+                    f"{report['pages']['max_pages']} pages)")
+    return over
+
+
 def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
-             enforce_time: bool = True, on_event=None) -> dict:
-    """Grade an assembled guided doc ONCE (no auto-revise — the human already gated
-    each chunk) and render the .docx + .md + grade report. Same result shape as run().
+             enforce_time: bool = True, on_event=None, run_id: str | None = None) -> dict:
+    """Grade an assembled guided doc and render the .docx + .md + grade report. Same
+    result shape as run().
+
+    Quality defects are NOT auto-revised here — the human gated each chunk, so their
+    judgement stands. The one exception is a hard LENGTH failure (slide count, recording
+    time, pages): those are properties of the ASSEMBLED document that no chunk review
+    can see, and finalize used to be a dead end for them — the doc came back failing
+    three gates at once, the review panel was gone, and the only way forward was to pay
+    for a whole new guided run. gates.guided_length_repair_rounds bounds the repair; the
+    best-scoring draft is kept, so a repair that makes things worse cannot win.
 
     enforce_time mirrors the one-shot path: when the user left the 40-minute limit OFF,
     the recording-time dimension is dropped from the rubric and the budget does not
@@ -351,16 +413,50 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     prev, cur, nxt = course_loader.neighbours(session_no, sessions)
     is_first, is_last = prev is None, nxt is None
 
+    def grade(d: dict, rnd: int):
+        acc, rep, iss, _ = evaluate(d, cur, is_first, is_last, use_judge=use_judge,
+                                    enforce_time=enforce_time)
+        rep["round"] = rnd
+        log(f"accepted={acc} | est={rep['time']['estimated_minutes']}min"
+            f"{'' if enforce_time else ' (40-min limit OFF — not graded on time)'} "
+            f"| {rep['time']['slide_count']} slides "
+            f"| ~{rep['pages']['estimated_pages']}p/{rep['pages']['max_pages']} "
+            f"| guardrails={'ok' if rep['guardrails']['passed'] else 'FAIL'}"
+            + (f" | rubric={rep.get('judge',{}).get('weighted_total','-')}" if use_judge else ""))
+        return acc, rep, iss
+
     log("Grading the assembled doc …" + (" (judging quality, ~15s)" if use_judge else ""))
-    accepted, report, issues, _ = evaluate(doc, cur, is_first, is_last, use_judge=use_judge,
-                                           enforce_time=enforce_time)
-    report["round"] = 0
+    accepted, report, issues = grade(doc, 0)
     history = [report]
-    log(f"accepted={accepted} | est={report['time']['estimated_minutes']}min"
-        f"{'' if enforce_time else ' (40-min limit OFF — not graded on time)'} "
-        f"| ~{report['pages']['estimated_pages']}p/{report['pages']['max_pages']} "
-        f"| guardrails={'ok' if report['guardrails']['passed'] else 'FAIL'}"
-        + (f" | rubric={report.get('judge',{}).get('weighted_total','-')}" if use_judge else ""))
+
+    # --- LENGTH REPAIR. Bounded, and only for the three ceilings a chunk review cannot
+    # see (see _too_long). Everything else the human already signed off on. ---
+    max_repair = int(config.harness()["gates"].get("guided_length_repair_rounds", 1) or 0)
+    best = (_score_key(accepted, report), doc, report)
+    rnd = 0
+    while not accepted and rnd < max_repair:
+        over = _too_long(doc, report)
+        if not over:
+            break
+        rnd += 1
+        log(f"Over budget on {', '.join(over)} — the assembled document is longer than "
+            f"any single chunk could show. Trimming (repair {rnd}/{max_repair}, ~1-2 min); "
+            f"coverage is preserved, ritual is cut.")
+        base = (context_builder.build_user_prompt(prev, cur, nxt)
+                + context_builder.time_mode_block(enforce_time))
+        doc = generator.revise(base, json.dumps(doc, ensure_ascii=False), issues,
+                              enforce_time=enforce_time)
+        accepted, report, issues = grade(doc, rnd)
+        history.append(report)
+        key = _score_key(accepted, report)
+        if key > best[0]:
+            best = (key, doc, report)
+    # Never ship a repair that scored worse than what the reviewer approved.
+    if best[2] is not history[-1]:
+        log(f"Keeping the draft from round {best[2]['round']} — the trim pass did not "
+            f"improve on it.")
+    _, doc, report = best
+    accepted = report["accepted"]
 
     out = config.harness()["output"]
     safe = out["docx_filename"].format(N=cur.number, SessionName=cur.name).replace("/", "-")
@@ -379,8 +475,12 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     # (every chunk generation + regeneration), so the totals here cover the whole
     # guided run, not just this grading call.
     from src import llm
-    cost = {"totals": llm.usage_totals(), "calls": llm.usage_records()}
+    cost = {"totals": llm.usage_totals(run_id), "calls": llm.usage_records(run_id)}
     c = cost["totals"]
     log(f"DONE. accepted={accepted}  est_minutes={report['time']['estimated_minutes']}  "
         f"cost=${c.get('cost', 0) or 0:.4f} ({c.get('total_tokens', 0)} tokens)")
-    return {"doc": doc, "history": history, "docx": str(docx_path), "cost": cost}
+    # `final` is the report for the doc that was actually RENDERED. Callers must not use
+    # history[-1] for that: the best draft is not necessarily the last one graded, so
+    # reading the tail can describe a draft that was discarded.
+    return {"doc": doc, "history": history, "final": report,
+            "docx": str(docx_path), "cost": cost}

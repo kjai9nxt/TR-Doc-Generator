@@ -20,9 +20,13 @@ Tone, density, and voice rules. Calibrated against the golden reference.
   hospital ER, school canteen — as in the golden doc).
 
 ## Length (HARD — two ceilings, and what to cut)
-- The rendered document must be **≤ 16 pages** (aim ~14) *and* recordable in
-  **≤ 40 minutes** (aim ~36). They are different limits: a table costs page space but
-  almost no narration, a chatty speaker note costs a minute but one line.
+- The rendered document must be **≤ 26 pages** (aim ~23) *and* recordable in
+  **≤ 40 minutes**. These are different limits and they are consumed differently:
+  recording time goes at **~1.5 minutes per slide whatever is on it** (so 26 slides
+  ≈ 39 minutes — the SLIDE COUNT spends the time budget), while the amount of text is
+  what spends the PAGE budget (~0.85 page and ~100 words of spoken content per slide).
+- So **trimming a slide's text buys no recording time.** Never thin or drop a
+  sub-concept to fit the 40 minutes; that trade does not exist. Cut only to fit PAGES.
 - **The budget belongs to coverage.** When the doc is too long, cut in this order:
   1. every analogy that is not on a first-introduction slide,
   2. worked examples on topics that do not need one,
@@ -56,14 +60,17 @@ glance. Enforce these caps:
   Write "TCP guarantees order" — not "It is important to understand that TCP is a
   protocol which basically guarantees that data arrives in order."
 
-## Density (this drives the 40-minute budget)
-- A slide should be *speakable in 2-5 minutes*. If a slide's content would take
-  longer, split it into two slides — never shrink the font / cram.
+## Density (this drives the PAGE budget)
+- A slide is recorded in about **1.5 minutes**. Aim for ~100 words of spoken content
+  (`content` + `analogy` + `speaker_notes`) — that is a full, well-taught slide, not a
+  thin one. If a slide clearly needs more than that, split it into two slides rather
+  than cramming, up to the 26-slide ceiling.
 - `content` blocks: prefer bullets and tables over paragraphs. A bullet = one beat.
 - `speaker_notes`: **2 sentences, hard maximum** — one core teaching cue plus one
   exam/interview hook. Nothing else. Do NOT restate the slide body, do NOT write
-  "close by…", do NOT write "tie back to the analogy". This is the primary signal for
-  the time estimator, so a bloated note inflates the whole session's estimate.
+  "close by…", do NOT write "tie back to the analogy". A bloated note costs PAGE budget
+  (recording time is paced per slide, not per word), and it buries the one cue that
+  matters.
 - Analogy: **only on a `concept_intro` slide** — see the Analogy placement section
   below. 1-2 sentences. Concrete, everyday, not abstract — and it must
   **correlate, not just illustrate**: end with an explicit tie-back that names the

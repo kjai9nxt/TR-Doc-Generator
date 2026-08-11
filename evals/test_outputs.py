@@ -187,7 +187,11 @@ def _run(session_no, path):
           row and str(row.get("docx_name") or "").endswith(".docx"),
           str(row and row.get("docx_name")))
     s = db.summary()
-    check("the summary reports the page ceiling", s.get("page_limit") == 16, str(s.get("page_limit")))
+    # Read the ceiling from config rather than pinning 16: it moves with the slide ceiling
+    # (constraints.pages.max), and a test that hardcodes it fails on every retune.
+    _cap = config.harness()["constraints"]["pages"]["max"]
+    check("the summary reports the page ceiling", s.get("page_limit") == _cap,
+          f'{s.get("page_limit")} != {_cap}')
     check("the summary reports length stats",
           {"avg_pages", "max_pages_seen", "over_page_limit"} <= set(s))
     st, _, _ = get("/api/admin/runs")

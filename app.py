@@ -146,7 +146,7 @@ if ss.gen_result is not None:
     st.divider()
     st.header("3 · Result")
     result = ss.gen_result
-    final = result["history"][-1]
+    final = result.get("final") or result["history"][-1]
     te = final["time"]
     pe = final.get("pages") or {}
 

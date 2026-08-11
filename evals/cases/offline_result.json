@@ -1,6 +1,6 @@
 {
   "kind": "offline",
-  "generated_at": "2026-08-11T13:55:30",
+  "generated_at": "2026-08-11T16:02:43",
   "overall_pass": true,
   "extraction": {
     "ok": false,
@@ -374,13 +374,13 @@
     "warnings": [],
     "invariant_failures": [],
     "metrics": {
-      "estimated_minutes": 31.4,
+      "estimated_minutes": 12.0,
       "max_minutes": 40,
       "within_budget": true,
       "slide_count": 8,
       "spoken_words": 3828,
       "estimated_pages": 9,
-      "max_pages": 16,
+      "max_pages": 26,
       "pages_within_budget": true,
       "pages_by_part": {
         "front_matter": 0.53,

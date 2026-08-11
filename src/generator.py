@@ -10,9 +10,9 @@ _STRICT_NUDGE = (
 
 _SHRINK_NUDGE = (
     "\n\nYOUR PREVIOUS ATTEMPT WAS CUT OFF because it was too long to finish. Produce the "
-    "SAME JSON but SMALLER so it completes: use FEWER slides (3-4 is fine for one key "
-    "takeaway), keep every bullet under 12 words, and keep speaker_notes to 2-3 sentences "
-    "per slide. Completeness of the JSON matters more than volume of prose.")
+    "SAME JSON but SMALLER so it completes: use FEWER slides — never more than the slide "
+    "budget stated above — keep every bullet under 12 words, and keep speaker_notes to 2 "
+    "sentences per slide. Completeness of the JSON matters more than volume of prose.")
 
 
 def _system() -> str:
@@ -41,19 +41,23 @@ def _learned() -> str:
         return ""
 
 
-def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate") -> dict:
+def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate",
+                   cached_context: str = "") -> dict:
     """Call the generator and parse its JSON, RETRYING on a parse failure.
 
     Models occasionally emit slightly malformed JSON (a missing comma, stray
     prose). A fresh sample almost always parses; on the retry we also append a
     strict-JSON nudge. Truncation is NOT retried here (it raises TruncationError
     from llm.complete — a bigger max_tokens is the fix, not a re-sample); the one
-    exception is a single guided chunk, see generate_chunk."""
+    exception is a single guided chunk, see generate_chunk.
+
+    `cached_context` is run-constant context to send as a CACHED system block rather
+    than inside the user message — see generate_chunk."""
     m = config.harness()["model"]
     last = None
     for attempt in range(tries):
         raw = llm.complete(
-            system=_system(), system_extra=_learned(),
+            system=_system(), system_extra=_learned(), cached_context=cached_context,
             user=user_prompt + (_STRICT_NUDGE if attempt else ""),
             model=m["generator"], max_tokens=m["max_tokens"], temperature=m["temperature"],
             label=label,
@@ -90,9 +94,15 @@ def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
     if reason:
         regen_block = (f"\nREGENERATE — the human REJECTED your previous version of this "
                        f"chunk for this reason. Address it specifically:\n{reason}\n")
-    user_prompt = f"{base_context}\n{approved_block}{regen_block}\n{instruction}"
+    # base_context (course + target session + the summary of every prior deck) is
+    # IDENTICAL for every chunk of a run and measured 10,430 tokens for S30. Sent inside
+    # the user message it was re-billed in full on all six chunk calls and on every
+    # regeneration — the single largest reason a guided doc cost ~3x a one-shot one. As a
+    # cached system block, chunks 2..N read it from cache instead.
+    user_prompt = f"{approved_block}{regen_block}\n{instruction}"
     try:
-        return _complete_json(user_prompt, label="generate_chunk")
+        return _complete_json(user_prompt, label="generate_chunk",
+                              cached_context=base_context)
     except llm.TruncationError:
         # A whole-doc truncation is unrecoverable (re-sampling truncates the same
         # way), but ONE chunk that ran long is: it only has to cover a single key
@@ -101,7 +111,8 @@ def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
         # already had several paid chunks in it.
         llm.log_debug("CHUNK TRUNCATED — retrying with a concision nudge", user_prompt[-800:])
         return _complete_json(
-            user_prompt + _SHRINK_NUDGE, tries=1, label="generate_chunk_retry")
+            user_prompt + _SHRINK_NUDGE, tries=1, label="generate_chunk_retry",
+            cached_context=base_context)
 
 
 def generate_patch(base_context: str, kind: str, prev_fragment: dict,
@@ -114,9 +125,11 @@ def generate_patch(base_context: str, kind: str, prev_fragment: dict,
     """
     prev_json = json.dumps(prev_fragment, ensure_ascii=False, indent=2)
     from . import context_builder
-    prompt = (f"{base_context}\n"
-              + context_builder.patch_instruction(kind, prev_json, reason))
-    return _complete_json(prompt, label="regenerate_patch")
+    # Same cached block as generate_chunk, so a regeneration during review re-reads the
+    # base context from cache instead of paying for all 10k tokens of it again.
+    prompt = context_builder.patch_instruction(kind, prev_json, reason)
+    return _complete_json(prompt, label="regenerate_patch",
+                          cached_context=base_context)
 
 
 def revise(user_prompt: str, prev_doc_json: str, issues: list[str],

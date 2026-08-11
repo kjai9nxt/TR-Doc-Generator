@@ -58,15 +58,24 @@ def _wc(text):
 # deterministic checkers -> (score 1-5, detail str)
 # --------------------------------------------------------------------------- #
 def _chk_recording_time(doc, session, sset):
+    """Score the recording budget from the ACTIVE pacing model, thresholds from config.
+
+    The old version hardcoded 42/40/20 and treated "under 20 minutes" as thin. Under the
+    per-slide pacing model a low minute count is nothing but a low SLIDE count, and
+    whether that means thin coverage is what the coverage and chunk_count sets decide —
+    scoring it here punished a short syllabus line twice for the same thing.
+    """
     te = time_grader.estimate(doc)
-    m = te["estimated_minutes"]
-    if m > 42:
-        score = 1
-    elif m > 40 or m < 20:
-        score = 3
-    else:
-        score = 5
-    return score, f"estimated {m} min (budget {te['max_minutes']}, within={te['within_budget']})"
+    m, cap = te["estimated_minutes"], te["max_minutes"]
+    marginal = cap + 2                     # 40 -> 42: over, but only just
+    score = 1 if m > marginal else (3 if m > cap else 5)
+    detail = f"estimated {m} min (budget {cap}, within={te['within_budget']}"
+    if te.get("pacing") == "per_slide":
+        detail += (f", paced at {te['minutes_per_slide']} min x {te['slide_count']} slides"
+                   f"; word-count model would read {te['narration_minutes']} min")
+        if te.get("dense_slides"):
+            detail += f"; dense slides {te['dense_slides']}"
+    return score, detail + ")"
 
 
 def _chk_conciseness(doc, session, sset):

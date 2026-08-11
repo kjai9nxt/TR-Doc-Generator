@@ -1,16 +1,18 @@
 {
   "id": "recording_time_budget",
   "title": "40-Minute Recording Budget (when enforced)",
-  "guideline_refs": [10],
+  "guideline_refs": [
+    10
+  ],
   "capability_status": "implemented",
   "grader": "deterministic",
   "applies_to": "final_tr_doc",
-  "description": "When the user selects the 40-minute limit, the generated TR doc must be teachable within 40 minutes per the calibrated time estimator (skeleton words × elaboration factor + per-slide overhead).",
-  "criterion": "estimated_minutes <= 40 when enforce_time is on. (Aim ~36 for margin; far under ~25 may signal thin content — soft warning, not a fail.)",
+  "description": "The generated TR doc must be recordable within constraints.recording.max_minutes (40). Recording is paced at constraints.recording.minutes_per_slide (1.5) minutes PER SLIDE whatever is on the slide, so the budget is spent by the SLIDE COUNT: 26 slides = 39 min. The amount of TEXT does not consume recording time — it consumes PAGES, which is the separate document_length_pages set. The older word-count estimate is still reported as narration_minutes for comparison but does NOT gate.",
+  "criterion": "estimated_minutes <= 40 when enforce_time is on, i.e. slides <= 26 at 1.5 min each. A doc far under budget is only a concern if it is under because sub-concepts were dropped — check coverage, not minutes. Trimming a slide's text must never be recommended to save time.",
   "rubric": {
-    "5": "28-40 min — full and within budget.",
-    "3": "20-28 min (a little thin) or 40-42 (marginal).",
-    "1": "> 42 min when the limit is on."
+    "5": "<= 26 slides / <= 39 min — inside the budget, with the slide allowance used to cover the syllabus.",
+    "3": "27-28 slides (40-42 min) — marginally over, or so few slides that coverage looks thin.",
+    "1": "> 28 slides (> 42 min) when the limit is on, or short because sub-concepts were cut."
   },
   "pass_threshold": 3,
   "cases": [
@@ -18,22 +20,48 @@
       "id": "rtb-good-1",
       "polarity": "good",
       "expected": "pass",
-      "input": {"enforce_time": true, "estimated_minutes": 36.6, "slides": 8},
-      "rationale": "Within budget with margin (matches golden Session 15)."
+      "input": {
+        "enforce_time": true,
+        "slides": 24,
+        "estimated_minutes": 36.0
+      },
+      "rationale": "24 slides x 1.5 = 36 min, inside the 40-minute budget with the full syllabus covered."
+    },
+    {
+      "id": "rtb-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "enforce_time": true,
+        "slides": 26,
+        "estimated_minutes": 39.0,
+        "narration_minutes": 58.0
+      },
+      "rationale": "At the ceiling: 39 min. The higher word-count narration figure is reported for comparison only and must not fail the doc."
     },
     {
       "id": "rtb-bad-1",
       "polarity": "bad",
       "expected": "fail",
-      "input": {"enforce_time": true, "estimated_minutes": 53.8, "slides": 11},
-      "rationale": "Over the 40-min ceiling with the limit on — must fail and trigger revision."
+      "input": {
+        "enforce_time": true,
+        "slides": 31,
+        "estimated_minutes": 46.5
+      },
+      "rationale": "31 slides x 1.5 = 46.5 min — over the ceiling. The fix is fewer slides, not less text."
     },
     {
-      "id": "rtb-neutral-1",
-      "polarity": "good",
-      "expected": "pass",
-      "input": {"enforce_time": false, "estimated_minutes": 58.0, "slides": 13},
-      "rationale": "Limit OFF — time is reported but does not gate; passes by design."
+      "id": "rtb-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "enforce_time": true,
+        "slides": 6,
+        "estimated_minutes": 9.0,
+        "note": "5 key takeaways, 6 slides — sub-concepts dropped to look short"
+      },
+      "rationale": "Well inside the budget but only because coverage was cut, which is the worst trade."
     }
-  ]
+  ],
+  "automated_check": "graders/time_grader.estimate(): estimated_minutes = slide_count x minutes_per_slide under constraints.recording.pacing='per_slide'. Gated in pipeline.evaluate; time_grader.max_slides_in_budget() is the slide ceiling the recording budget implies (26)."
 }

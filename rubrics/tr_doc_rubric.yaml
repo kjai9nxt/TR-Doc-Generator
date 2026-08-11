@@ -41,10 +41,17 @@ dimensions:
       copy-on-write, illegal access — and minor vs major faults, not only definition +
       handling steps + service time.) A SILENTLY missing commonly-tested sub-concept is
       the most serious failure here and caps this at 2; a deferral named explicitly in the
-      text does not. VERIFY THE `coverage_map` RATHER THAN TRUSTING IT: does it list the
+      text does not. A `deferred_to` entry in the coverage_map is the REQUIRED way to
+      record a sub-concept left to a later session — it is the opposite of a silent
+      omission, so do NOT treat its presence as a defect or as "a false impression of
+      coverage", and do not ask for it to be dropped from the map. Judge only whether the
+      deferral is genuinely a later session's material and is named in the section text.
+      VERIFY THE `coverage_map` RATHER THAN TRUSTING IT: does it list the
       sub-concepts an exam would actually test (not a thin restatement of the takeaway),
       and does the slide it points at really teach that sub-concept? A map that looks
-      complete while a sub-concept is missing from the slides caps this at 2. Also:
+      complete while a sub-concept is missing from the slides caps this at 2. Note that a
+      sub-concept mapped to a slide OUTSIDE the section teaching its takeaway is now a
+      deterministic guardrail failure — do not re-adjudicate it here. Also:
       nothing beyond the takeaways' scope, no re-teaching a prior session's concept (a
       brief recap is fine), no future-session topic. Missing a whole takeaway caps at 2;
       scope creep, re-teaching, or future leakage caps at 3. [G1,G4,G18]
@@ -60,11 +67,19 @@ dimensions:
     question: >
       Is the session realistically recordable in <= 40 minutes (when the limit is on),
       based on the deterministic time estimate provided as ground truth? Over budget
-      caps at 2. [G10]
+      caps at 2. NOTE HOW THE ESTIMATE WORKS: recording is paced at ~1.5 minutes PER
+      SLIDE whatever is on the slide, so the budget is spent by the SLIDE COUNT and 26
+      slides is 39 minutes. Do NOT penalise a slide for carrying substantial content on
+      recording-time grounds, and do NOT suggest trimming text or dropping a sub-concept
+      to save recording time — trimming text buys none. The amount of text is judged
+      under length_discipline (the PAGE ceiling) instead. The estimate also reports
+      `narration_minutes` (the older word-count model) for comparison; it is NOT the
+      gate. `dense_slides`, if present, lists slides whose narration alone would run well
+      past 1.5 minutes — worth a note, not a failure. [G10]
   - id: length_discipline
     weight: 8
     question: >
-      Is the document within the 16-page ceiling (target ~14), per the deterministic page
+      Is the document within the 26-page ceiling (target ~23), per the deterministic page
       estimate given as ground truth — and, more importantly, is its length EARNED? Use
       `pages_by_part` to tell the two apart: length spent on sub-concepts, worked detail
       and comparison tables is earned; length spent on analogies outside first

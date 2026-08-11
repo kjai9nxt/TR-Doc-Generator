@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from src import course_loader, patcher, pipeline
 from guardrails import guardrails
-from graders import page_grader
+from graders import page_grader, time_grader
 
 OK = FAIL = 0
 def check(name, cond, extra=""):
@@ -114,7 +114,7 @@ check("golden is within the page ceiling", est["within_budget"] and est["estimat
       f"got {est['estimated_pages']}")
 big = copy.deepcopy(GOLDEN)
 big["sections"][0]["slides"][0]["content"].append(
-    {"type": "bullets", "items": ["A padded bullet line of roughly a dozen words here"] * 400})
+    {"type": "bullets", "items": ["A padded bullet line of roughly a dozen words here"] * 900})
 est2 = page_grader.estimate(big)
 check("a padded doc busts the ceiling", not est2["within_budget"], f"got {est2['estimated_pages']}")
 check("breakdown attributes the bloat to content",
@@ -246,6 +246,296 @@ for noise in ["Dimension 'pedagogy' scored None < 4.",
     check(f"not learned: {noise[:40]}…", learning._is_grader_noise(noise))
 check("a real defect IS still learned",
       not learning._is_grader_noise("Slide 4: the analogy never ties back to the concept."))
+
+print("\n== the slide ceiling is STATED, and divided across guided chunks ==")
+# A guided run of a 5-takeaway session came back with 23 slides against a ceiling of 14,
+# failing the slide, recording-time and page gates at once. `constraints.slides.max` was
+# enforced by a guardrail and mentioned in NO prompt file, while HARD RULE 1 said "use
+# MORE slides rather than denser slides" — so the only slide-count instruction the model
+# ever received pushed the count up, against a gate that caps it.
+from src import context_builder, config
+CEIL = context_builder.slide_ceiling(True)
+check("the ceiling matches the guardrail's",
+      CEIL == config.harness()["constraints"]["slides"]["max"], str(CEIL))
+for name, text in (("one-shot", context_builder.time_mode_block(True)),
+                   ("guided", context_builder.time_mode_block(True, guided=True)),
+                   ("depth mode", context_builder.time_mode_block(False))):
+    check(f"{name} prompt states the slide ceiling", f"{CEIL} slides" in text,
+          text[-200:])
+# Compare on whitespace-normalised text: the prompt is hand-wrapped markdown, so the
+# phrase spans a line break and an exact-substring check would break on a re-wrap.
+_sp = " ".join(config.system_prompt().split())
+check("the system prompt bounds 'more slides' by the ceiling",
+      f"up to the {CEIL}-slide ceiling" in _sp,
+      "harness/system_prompt.md no longer bounds the 'use more slides' advice")
+check("the system prompt states the CURRENT ceiling, not a stale number",
+      f"{CEIL}-slide ceiling" in config.system_prompt(),
+      "harness/system_prompt.md still names a different slide ceiling")
+
+# Raising the slide ceiling does NOT raise the amount of content: a live S30 run was
+# accepted at 39.8 of its 40 minutes with 14 slides, so there was no spare time to spend.
+# The per-slide word budget is what makes "more slides" mean "thinner slides"; without it,
+# "you may use 18 slides" reads as permission to write 18 slides' worth of prose.
+cbud = context_builder.content_budget(True)
+check("a content budget is derived for the ceiling",
+      0 < cbud["per_slide_target"] < cbud["per_slide_max"], str(cbud))
+if cbud["bound_by"] == "pages":
+    # Recording time is paced per slide, so the slide count does not consume the TEXT
+    # budget — the page ceiling does, and it is fixed. What shrinks is each slide's share.
+    check("the total word budget comes from PAGES, not the slide count",
+          context_builder.content_budget(True, CEIL)["total_max"]
+          == context_builder.content_budget(True, 5)["total_max"], str(cbud))
+    check("each slide's share shrinks as slides are added",
+          context_builder.content_budget(True, CEIL)["per_slide_target"]
+          < context_builder.content_budget(True, 5)["per_slide_target"])
+    check("the per-slide budget is a full slide, not a thinned one (>= 80 words)",
+          cbud["per_slide_target"] >= 80, str(cbud))
+else:
+    check("the word budget SHRINKS as slides are added (transition overhead)",
+          context_builder.content_budget(True, CEIL)["total_max"]
+          < context_builder.content_budget(True, 5)["total_max"])
+check("the derived total matches what time_grader would allow",
+      abs(time_grader.estimate({
+          "sections": [{"slides": [{"n": i, "content": [{"type": "text", "text": "w " * 0}],
+                                    "speaker_notes": ""} for i in range(CEIL)]}],
+      })["overhead_minutes"] - CEIL * 15 / 60) < 0.06)
+for name, text in (("one-shot", context_builder.time_mode_block(True)),
+                   ("guided", context_builder.time_mode_block(True, guided=True))):
+    check(f"{name} prompt states the per-slide word budget",
+          f"{cbud['per_slide_target']} words per slide" in text, text[-260:])
+check("depth mode omits the time-derived word budget (no time ceiling there)",
+      "CONTENT BUDGET" not in context_builder.time_mode_block(False))
+instr_w = context_builder.takeaway_instruction(cur, 0, slides_used=0,
+                                               sections_left=cur.key_takeaways_count)
+check("the chunk instruction carries a WORD budget too",
+      "WORD BUDGET FOR THIS SECTION" in instr_w)
+
+# The allowance must SUM to the ceiling for an obedient model, and self-correct (rather
+# than silently overshoot) when a section overspends.
+N = cur.key_takeaways_count
+used, allocs = 0, []
+for i in range(N):
+    a = context_builder.chunk_slide_allowance(cur, slides_used=used, sections_left=N - i)
+    allocs.append(a); used += a
+check(f"allowances sum to the ceiling ({allocs} = {used})", used == CEIL, str(allocs))
+squeezed = context_builder.chunk_slide_allowance(cur, slides_used=CEIL + 5, sections_left=2)
+floor = config.harness()["constraints"]["coverage"]["min_sub_concepts_per_takeaway"]
+check("an overspent budget squeezes later sections to the floor, not below",
+      squeezed == floor, str(squeezed))
+instr = context_builder.takeaway_instruction(cur, 1, slides_used=3, sections_left=N - 1)
+check("the chunk instruction carries its budget", "SLIDE BUDGET FOR THIS SECTION" in instr)
+check("…and tells the model to GROUP rather than drop a sub-concept",
+      "do NOT drop one and do NOT add a slide" in instr)
+
+print("\n== over the slide ceiling: MERGE, not split ==")
+# This failure text is what the revision pass is told to fix. It used to read "split
+# content, don't cram" — the advice for being UNDER the minimum — so a doc with too many
+# slides was asked to produce more of them.
+over = copy.deepcopy(GOLDEN)
+extra = copy.deepcopy(over["sections"][0]["slides"][0])
+over["sections"][0]["slides"] += [dict(extra, n=100 + i) for i in range(CEIL)]
+gate(over, f"(max {CEIL})", label="too many slides fails")
+r = guardrails.check(over, cur, False, False)
+msg = next(f for f in r.failures if f"(max {CEIL})" in f)
+check("the message says MERGE", "MERGE, do not" in msg, msg)
+check("…and does not tell it to split", "split content" not in msg, msg)
+check("…and names the longest sections", "Longest sections:" in msg, msg)
+under = copy.deepcopy(GOLDEN)
+under["sections"] = [{"name": "x", "slides": under["sections"][0]["slides"][:1]}]
+r2 = guardrails.check(under, cur, False, False)
+check("the UNDER-minimum message still says split",
+      any("split content across more slides" in f for f in r2.failures), str(r2.failures[:2]))
+
+print("\n== guided finalize can repair an over-long assembled doc ==")
+# finalize() used to grade once and stop: an over-long guided doc came back failing three
+# gates with the review panel already gone, so the only way forward was a whole new run.
+rep = {"time_enforced": True, "time": {"within_budget": False, "estimated_minutes": 46.5,
+                                       "max_minutes": 40},
+       "pages": {"within_budget": False, "estimated_pages": 31, "max_pages": 26}}
+long_doc = {"sections": [{"slides": [{"n": i} for i in range(31)]}]}
+over3 = pipeline._too_long(long_doc, rep)
+check("all three length ceilings are reported", len(over3) == 3, str(over3))
+check("the slide count is one of them", any("31/" in o for o in over3), str(over3))
+ok_rep = {"time_enforced": True, "time": {"within_budget": True},
+          "pages": {"within_budget": True}}
+check("a doc inside every ceiling triggers no repair",
+      pipeline._too_long({"sections": [{"slides": [{"n": 1}]}]}, ok_rep) == [])
+check("time is not a length failure when the 40-min limit is off",
+      pipeline._too_long({"sections": []},
+                         {"time_enforced": False, "time": {"within_budget": False},
+                          "pages": {"within_budget": True}}) == [])
+check("the repair round count is configured",
+      config.harness()["gates"].get("guided_length_repair_rounds") is not None)
+
+print("\n== a coverage_map reference must point INTO its own section ==")
+# The judge kept reporting coverage failures of the form "sub-concept mapped to Slide 2,
+# but Slide 2 does not teach it — it is on Slide 5". The gate only checked that the slide
+# EXISTED anywhere in the document, so a reference to another section's slide passed
+# silently — and in guided mode that is also what a slide number left stale by a
+# regenerated chunk looks like.
+kts = list(cur.key_takeaways)
+
+
+def _slide(n):
+    return {"n": n, "title": f"T{n}", "role": "mechanism", "heading": "H",
+            "subheading": "S", "content": [], "visual_guidance": "V",
+            "speaker_notes": "One cue. One hook."}
+
+
+def _guided_doc(cross_ref=None):
+    """A guided-shaped doc: one section per takeaway, named verbatim."""
+    ns, sections, cov = 1, [], []
+    for kt in kts:
+        mine = [ns, ns + 1]; ns += 2
+        sections.append({"name": kt, "slides": [_slide(n) for n in mine]})
+        cov.append({"takeaway": kt, "sub_concepts": [{"name": "a", "slide": mine[0]},
+                                                     {"name": "b", "slide": mine[1]}]})
+    if cross_ref is not None:
+        cov[cross_ref]["sub_concepts"][0]["slide"] = 1      # section 1's first slide
+    opening = {"recap": {"prev_session_no": prev.number, "prev_session_name": prev.name,
+                         "bullets": list(prev.key_takeaways)},
+               "agenda": list(kts)}
+    return pipeline.assemble_doc(cur, nxt, opening, sections, cov)
+
+
+clean = _guided_doc()
+r = guardrails.check(clean, cur, False, False)
+check("an in-section map raises nothing",
+      not any("not in the section" in f for f in r.failures),
+      str([f for f in r.failures if "coverage_map" in f][:2]))
+bad = _guided_doc(cross_ref=len(kts) - 1)
+r = guardrails.check(bad, cur, False, False)
+hits = [f for f in r.failures if "not in the section" in f]
+check("a cross-section map reference FAILS", len(hits) == 1, str(r.failures[:3]))
+check("…and names the section's real slides",
+      hits and "its slides are" in hits[0], str(hits))
+# The golden's four grouped sections predate the verbatim-name rule, so no section can be
+# matched to a takeaway — the check must SKIP rather than invent failures.
+r = guardrails.check(GOLDEN, cur, False, False)
+check("the check skips when sections cannot be matched to takeaways",
+      not any("not in the section" in f for f in r.failures),
+      str([f for f in r.failures if "not in the section" in f]))
+
+print("\n== guided assembly remaps a cross-section slide reference ==")
+# Renumbering keyed only by (section, n) left an out-of-section reference UNCHANGED while
+# every real slide moved around it, so the map ended up pointing at whatever slide landed
+# on that number.
+secs = [{"name": "A", "slides": [_slide(1), _slide(2), _slide(3)]},
+        {"name": "B", "slides": [_slide(4), _slide(5)]}]
+covs = [{"takeaway": "A", "sub_concepts": [{"name": "a", "slide": 1}]},
+        {"takeaway": "B", "sub_concepts": [{"name": "b", "slide": 4},
+                                           {"name": "cross", "slide": 2},
+                                           {"name": "gone", "slide": 99}]}]
+asm = pipeline.assemble_doc(cur, nxt, {"recap": None, "agenda": []},
+                            copy.deepcopy(secs), copy.deepcopy(covs))
+refs = [s.get("slide") for s in asm["coverage_map"][1]["sub_concepts"]]
+check("an in-section reference is remapped", refs[0] == 4, str(refs))
+check("a cross-section reference is remapped too, not left stale",
+      refs[1] == 2, str(refs))
+check("an unresolvable reference is left for the gate to report",
+      refs[2] == 99, str(refs))
+
+print("\n== token/cost accounting is per RUN, not per process ==")
+# The accumulator was one process-wide list on the assumption of "one generation at a
+# time", which stopped holding at 1.19 (shared instance, a thread per job). reset_usage()
+# cleared it, so a finishing run reported everything spent since the most recent START
+# ANYWHERE — and the run whose records were wiped reported a fraction of its own cost.
+from src import llm
+llm.reset_usage("t_A"); llm.use_meter("t_A")
+llm._record_usage("generate_chunk", "m", {"prompt_tokens": 10, "completion_tokens": 2,
+                                          "cost": 0.5})
+
+
+def _second_run():
+    llm.reset_usage("t_B")          # used to wipe t_A
+    llm._record_usage("generate_chunk", "m", {"prompt_tokens": 9, "completion_tokens": 1,
+                                              "cost": 0.3})
+
+
+import threading as _th
+_t = _th.Thread(target=_second_run); _t.start(); _t.join()
+check("a second run does not erase the first's accounting",
+      llm.usage_totals("t_A")["calls"] == 1, str(llm.usage_totals("t_A")))
+check("…and does not inherit its cost either",
+      abs(llm.usage_totals("t_B")["cost"] - 0.3) < 1e-9, str(llm.usage_totals("t_B")))
+
+
+def _later_thread():
+    llm.use_meter("t_A")            # guided: finalize runs in a different thread
+    llm._record_usage("judge", "m", {"prompt_tokens": 30, "completion_tokens": 4,
+                                     "cost": 0.05})
+
+
+_t = _th.Thread(target=_later_thread); _t.start(); _t.join()
+check("a later thread still bills to the run it declares",
+      llm.usage_totals("t_A")["calls"] == 2, str(llm.usage_totals("t_A")))
+check("cost totals are the run's own",
+      abs(llm.usage_totals("t_A")["cost"] - 0.55) < 1e-9, str(llm.usage_totals("t_A")))
+llm.close_usage("t_A")
+check("closing a meter frees it", llm.usage_totals("t_A")["calls"] == 0)
+check("db can record cost without finishing a run", hasattr(__import__(
+    "src.db", fromlist=["x"]), "update_cost"))
+
+print("\n== the guided base context is CACHED, not re-billed per chunk ==")
+blocks = llm._system_blocks("SYSTEM", "LEARNED RULES", "BASE CONTEXT")
+check("three blocks when a cached context is supplied", len(blocks) == 3, str(len(blocks)))
+check("the static system prompt is cached", "cache_control" in blocks[0])
+check("the base context is cached too", "cache_control" in blocks[1])
+check("the learned rules stay UNCACHED (they change on feedback)",
+      "cache_control" not in blocks[2])
+check("no cached-context block when none is passed",
+      len(llm._system_blocks("SYSTEM", "RULES")) == 2)
+llm._record_usage("generate_chunk", "m", {
+    "prompt_tokens": 100, "completion_tokens": 2,
+    "prompt_tokens_details": {"cached_tokens": 90}})
+check("cached prompt tokens are recorded when the provider reports them",
+      llm.usage_records()[-1].get("cached_prompt_tokens") == 90,
+      str(llm.usage_records()[-1]))
+
+print("\n== the PER-SLIDE pacing model ==")
+# The reviewer records these sessions and calibrated the pace at ~1.5 min per slide
+# whatever is on it — so 26 slides is 39 of the 40 minutes. The word-count estimator
+# disagreed by about 2x (it read the accepted 14-slide S30 doc as 39.8 min, this reads 21),
+# and the person recording is the authority. Consequences worth pinning down: the budget is
+# spent by the slide COUNT, and the older estimate must survive as a visible diagnostic
+# rather than being silently dropped.
+rec = config.harness()["constraints"]["recording"]
+check("the active pacing model is per_slide", rec.get("pacing") == "per_slide",
+      str(rec.get("pacing")))
+check("the slide ceiling equals what the recording budget allows",
+      time_grader.max_slides_in_budget() == CEIL,
+      f"{time_grader.max_slides_in_budget()} != {CEIL}")
+
+
+def _doc_of(n, words_per_slide=0):
+    body = ([{"type": "bullets", "items": ["word " * words_per_slide]}]
+            if words_per_slide else [])
+    return {"sections": [{"name": "S", "slides": [
+        {"n": i + 1, "content": body, "speaker_notes": ""} for i in range(n)]}]}
+
+
+t26 = time_grader.estimate(_doc_of(CEIL))
+check(f"{CEIL} slides is inside the 40-minute budget ({t26['estimated_minutes']} min)",
+      t26["within_budget"] and t26["estimated_minutes"] == round(CEIL * 1.5, 1),
+      str(t26["estimated_minutes"]))
+check("one slide over the ceiling busts the budget",
+      not time_grader.estimate(_doc_of(CEIL + 1))["within_budget"])
+# The key property of the model: TEXT does not consume recording time.
+thin, fat = time_grader.estimate(_doc_of(10)), time_grader.estimate(_doc_of(10, 400))
+check("adding text does NOT change the recording estimate",
+      thin["estimated_minutes"] == fat["estimated_minutes"],
+      f"{thin['estimated_minutes']} vs {fat['estimated_minutes']}")
+check("…but the word-count diagnostic still moves with the text",
+      fat["narration_minutes"] > thin["narration_minutes"] * 2,
+      f"{thin['narration_minutes']} vs {fat['narration_minutes']}")
+check("a slide too dense for its 1.5 minutes is NAMED, not failed",
+      fat["dense_slides"] and fat["within_budget"], str(fat["dense_slides"]))
+check("the page ceiling is what a fat doc actually busts",
+      not page_grader.estimate(_doc_of(20, 900))["within_budget"])
+# The word_count model must remain selectable — it is the fallback if the pace is retuned.
+check("both pacing models are reachable",
+      time_grader.estimate(_doc_of(8))["pacing"] == "per_slide"
+      and "narration_minutes" in time_grader.estimate(_doc_of(8)))
 
 print("\n== policy flags ==")
 check("judge is always on", pipeline.judge_always_on())
