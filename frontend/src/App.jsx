@@ -15,7 +15,6 @@ export default function App() {
 
   const [courseLink, setCourseLink] = useState('')
   const [detailsLink, setDetailsLink] = useState('')
-  const [refDate, setRefDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [courseType, setCourseType] = useState('semester')
   const [courseName, setCourseName] = useState('Computer Networks')
   const [syncing, setSyncing] = useState(false)
@@ -110,7 +109,6 @@ export default function App() {
       setStatus(s)
       if (s.saved_links?.course) setCourseLink(s.saved_links.course)
       if (s.saved_links?.details) setDetailsLink(s.saved_links.details)
-      if (s.settings?.reference_date) setRefDate(s.settings.reference_date)
       if (s.settings?.course_type) setCourseType(s.settings.course_type)
       if (s.settings?.course_name) setCourseName(s.settings.course_name)
     }).catch(() => {})
@@ -205,7 +203,7 @@ export default function App() {
 
   function doSync() {
     setSyncing(true); setSyncErr(null); setSyncOut(null); setSyncLogs([])
-    api.sync(courseLink, detailsLink, refDate, courseType, courseName).then(({ job_id }) => {
+    api.sync(courseLink, detailsLink, courseType, courseName).then(({ job_id }) => {
       syncPollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -380,16 +378,9 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand">📝 <b>TR Doc Generator</b></div>
-        {status && (
-          <div className="status">
-            <span className="pill">{status.provider}</span>
-            <span className="pill">{(status.model || '').split('/').pop()}</span>
-            <span className={`pill ${status.key_ok ? 'ok' : 'bad'}`}>
-              {status.key_ok ? 'API key ✓' : 'API key ✗'}
-            </span>
-            <span className="pill ghost">v{status.version}</span>
-          </div>
-        )}
+        {/* No provider/model/version chips: which LLM runs the agent is an internal
+            detail that changes over time, and the user has no decision to make on it.
+            A missing API key is surfaced where it blocks you — next to Generate. */}
         <div className="userbox">
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           <span className="uemail">{user.email}{user.is_admin && <span className="pill admin">admin</span>}</span>
@@ -424,11 +415,6 @@ export default function App() {
             <input value={courseName} onChange={(e) => setCourseName(e.target.value)}
                    placeholder="e.g. Computer Networks" />
             <span className="hint">Groups your docs, history & team by course.</span>
-          </div>
-          <div className="settingcol">
-            <label>Reference date (recency baseline)</label>
-            <input type="date" value={refDate} onChange={(e) => setRefDate(e.target.value)} />
-            <span className="hint">The agent treats info as current as of this date.</span>
           </div>
           <div className="settingcol">
             <label>Course type</label>
@@ -522,6 +508,16 @@ export default function App() {
               Guided <span className="msub">generate all, review, then finalize</span>
             </label>
           </div>
+
+          {/* The only server-config fact worth showing a user: without a key the
+              Generate buttons below are dead, and a silently disabled button is worse
+              than no button. */}
+          {status && !status.key_ok && (
+            <div className="alert error">
+              <b>The generator is not configured</b>
+              <pre>No API key is set on the server, so generation is disabled. Ask an admin to set it.</pre>
+            </div>
+          )}
 
           {mode === 'oneshot' && (
             <>

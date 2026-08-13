@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.36"
+  version: "1.37"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -744,6 +744,30 @@ meta:
               slide is named rather than failed, and the page gate is what a fat document
               actually busts. NOT YET VERIFIED LIVE at 26 slides — the previous ceiling was
               live-verified at 14 (39.8 min under the old model, 21.0 under this one)."
+    - "1.37 — TWO PIECES OF 1.18 REMOVED: THE PROVIDER/MODEL CHIPS AND THE REFERENCE DATE.
+              (a) The topbar no longer shows provider / model / API-key / version chips.
+              Which LLM runs the agent is an internal detail that changes whenever the model
+              lineup does, and the user had no decision attached to it. /api/status therefore
+              stops reporting provider, model and version; it still reports key_ok, because
+              the Generate buttons are gated on it — and that gate is now explained by an
+              inline 'generator is not configured' alert in step 2 instead of a red chip in
+              the corner, so a disabled button is never silent.
+              (b) The 'Reference date (recency baseline)' field is gone: removed from the
+              connect step, from /api/sync (SyncBody.reference_date), from
+              src/app_settings.py (reference_date()/save(reference_date=)) and from
+              knowledge_base/app_settings.json. Reason from the reviewer: 'current as of
+              DATE' resolves to 'newest version wins', which holds for a theoretical session
+              but is wrong for a coding one, where the version or tool the industry actually
+              uses is frequently NOT the latest release. So the date premise was the wrong
+              premise, not a wrong date.
+              WHAT SURVIVES, deliberately: guideline 20 / eval set 18 content_recency and
+              the rubric dimension of the same name stay in force, because they never needed
+              a date — they forbid presenting a DEPRECATED thing as current and allow legacy
+              material that is labelled as legacy, which is exactly the coding-session case.
+              context_builder.recency_and_course_type_block() is renamed course_type_block()
+              and its date sentences are replaced by the date-free rule: never pass off
+              something deprecated as the state of the art, teach the version the industry
+              actually uses, and say which one you are teaching. Supersedes 1.18(a)."
   architecture:
     entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
     flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> pages -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"

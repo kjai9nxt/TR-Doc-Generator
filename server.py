@@ -5,7 +5,7 @@ Run:
     python server.py                 # serves the API on http://localhost:8000
 
 Endpoints:
-    GET  /api/status                 -> provider / model / key status
+    GET  /api/status                 -> key status / saved links / settings / policy
     GET  /api/template-guide         -> markdown of the required sheet templates
     POST /api/sync                    -> validate + sync both sheets (returns changelog/sessions)
     GET  /api/sessions               -> synced session list
@@ -84,7 +84,6 @@ except Exception as _e:
 class SyncBody(BaseModel):
     course_link: str
     details_link: str
-    reference_date: str | None = None      # recency baseline (default today)
     course_type: str | None = None         # "semester" | "interview"
     course_name: str | None = None         # grouping label for runs/teams
 
@@ -208,15 +207,14 @@ def auth_me(user: dict = Depends(current_user)):
 # --------------------------------------------------------------------------- #
 @app.get("/api/status")
 def status():
-    m = config.harness()["model"]
     c, d = sync.last_links()
     return {
-        "provider": m.get("provider"),
-        "model": m.get("generator"),
+        # Which provider/model/harness version is running is deliberately NOT reported:
+        # it is an internal detail that changes over time and the UI showed it with no
+        # action attached. `key_ok` stays because the UI gates Generate on it.
         "key_ok": config.api_key() is not None,
         "saved_links": {"course": c, "details": d},
         "settings": app_settings.load(),
-        "version": config.harness()["meta"]["version"],
         # Generation policy the app shows instead of offering as checkboxes: the LLM
         # quality check and the 40-minute budget always run, and every doc is capped at
         # constraints.pages.max pages.
@@ -263,10 +261,9 @@ def _run_sync(job_id: str, course_link: str, details_link: str):
 
 @app.post("/api/sync")
 def do_sync(body: SyncBody, user: dict = Depends(current_user)):
-    # Persist the recency date + course type chosen at connect time so generation
+    # Persist the course type + course name chosen at connect time so generation
     # (context_builder) can use them later.
-    app_settings.save(reference_date=body.reference_date, course_type=body.course_type,
-                      course_name=body.course_name)
+    app_settings.save(course_type=body.course_type, course_name=body.course_name)
     job_id = uuid.uuid4().hex[:12]
     with _lock:
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,

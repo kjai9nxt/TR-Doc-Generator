@@ -67,8 +67,8 @@ export const api = {
   preview: (session_no, run_id, name) => req(`/preview/${session_no}${qs({ run_id, name })}`),
   status: () => req('/status'),
   templateGuide: () => req('/template-guide'),
-  sync: (course_link, details_link, reference_date, course_type, course_name) =>
-    req('/sync', { method: 'POST', body: JSON.stringify({ course_link, details_link, reference_date, course_type, course_name }) }),
+  sync: (course_link, details_link, course_type, course_name) =>
+    req('/sync', { method: 'POST', body: JSON.stringify({ course_link, details_link, course_type, course_name }) }),
   sessions: () => req('/sessions'),
   generate: (session_no, use_judge, enforce_time) =>
     req('/generate', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),

@@ -93,13 +93,17 @@ def past_ppts_context(cur: Session) -> str:
     return "\n\n".join(parts)
 
 
-def recency_and_course_type_block() -> str:
-    """Inject the recency baseline + the course-type teaching strategy the user
-    chose at connect time (src/app_settings). Both course types must ultimately
-    help the learner clear interview questions; a semester course additionally
-    goes deep on theory."""
+def course_type_block() -> str:
+    """Inject the course-type teaching strategy the user chose at connect time
+    (src/app_settings). Both course types must ultimately help the learner clear
+    interview questions; a semester course additionally goes deep on theory.
+
+    There is deliberately NO "current as of <date>" baseline here. A fixed date
+    forces "newest version wins", which is wrong for coding sessions where the
+    version or tool the industry actually uses is often not the newest one. What
+    remains is the version-agnostic rule: never pass off something deprecated as
+    the present state of the art."""
     from . import app_settings
-    ref = app_settings.reference_date()
     ct = app_settings.course_type()
     if ct == "interview":
         type_line = (
@@ -112,10 +116,12 @@ def recency_and_course_type_block() -> str:
             "derivations/why-it-works, internals, and edge cases — as a semester course "
             "demands. Depth is expected here.")
     return (
-        "=== RECENCY & COURSE TYPE ===\n"
-        f"Treat all information as current AS OF {ref}. Do NOT present deprecated, "
-        "superseded, or outdated tools/versions/practices as current; prefer the latest "
-        f"stable standards known as of {ref}, and note when something recently changed.\n"
+        "=== COURSE TYPE ===\n"
+        "Do NOT present a deprecated or superseded tool/version/practice as the current "
+        "state of the art; if you mention a legacy item, label it as legacy. Teach the "
+        "version or tool the industry actually uses for this topic — that is often NOT "
+        "the newest release, and choosing the widely-used one is correct as long as you "
+        "say which one you are teaching.\n"
         f"{type_line}\n"
         "IN BOTH CASES: the doc must ultimately help the learner CLEAR INTERVIEW "
         "QUESTIONS on this topic — frame each major concept so it also answers the "
@@ -145,7 +151,7 @@ def build_guided_base(prev: Session | None, cur: Session, nxt: Session | None) -
 MODULE: {cur.module}
 TOPIC: {cur.topic}
 
-{recency_and_course_type_block()}
+{course_type_block()}
 
 === TARGET SESSION ===
 Session {cur.number}: {cur.name}

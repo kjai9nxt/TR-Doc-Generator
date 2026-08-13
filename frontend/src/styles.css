@@ -50,15 +50,14 @@ body::before {
 }
 .brand { font-size: 19px; font-weight: 700; letter-spacing: -.2px; display: flex; align-items: center; gap: 8px; }
 .brand b { background: linear-gradient(92deg, #fff 20%, #b9c4ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.status { display: flex; gap: 7px; flex-wrap: wrap; }
+/* .pill now dresses exactly one thing — the `admin` badge next to the signed-in
+   email. The provider/model/key/version variants (.status, .ok, .bad, .ghost)
+   went out with the topbar chips in 1.37. */
 .pill {
   background: var(--card2); border: 1px solid var(--line); border-radius: 999px;
   padding: 4px 11px; font-size: 12px; font-weight: 600; color: var(--muted);
   display: inline-flex; align-items: center; gap: 5px;
 }
-.pill.ok { color: #7ee0ac; border-color: rgba(53,199,133,.4); background: rgba(53,199,133,.1); }
-.pill.bad { color: #f3a0a0; border-color: rgba(239,99,99,.42); background: rgba(239,99,99,.1); }
-.pill.ghost { opacity: .55; }
 .pill.admin { background: rgba(232,179,74,.14); color: #eac06a; border-color: rgba(232,179,74,.4); }
 
 .sub { color: var(--muted); margin: 8px 2px 22px; font-size: 14.5px; max-width: 62ch; }
