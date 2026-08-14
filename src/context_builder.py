@@ -59,10 +59,21 @@ def past_docs_summary(before_session: int) -> str:
 
 
 def past_ppts_context(cur: Session) -> str:
-    """Build the prior-material block from the knowledge base: a summary of every
-    earlier deck + RAG-retrieved relevant slides. The KB is populated by the sync
-    engine (Google Slides); if it is empty we fall back to any local .pptx files
-    (offline/dev mode)."""
+    """What earlier sessions ALREADY TAUGHT, from the ingested decks.
+
+    Two layers, deliberately:
+      1. the TAUGHT INDEX — every prior session's distinct topics, de-duplicated
+         (pptx_ingest.taught_index). This is the "do not teach this again" list, and
+         it replaced dumping each deck's raw slide-title summary: 38,000 characters in
+         which "Data Representation" appeared eight times, which cost ~10k tokens a
+         run and told the model very little.
+      2. RAG-retrieved prior slides most relevant to THIS session's topic, with their
+         actual body text — the detail layer, so the model can see how far a prior
+         session went and pick up from there rather than starting over.
+
+    The KB is populated by the sync engine (Google Slides); if it is empty we fall
+    back to any local .pptx files (offline/dev mode).
+    """
     prior = pptx_ingest.decks_before(cur.number)
     if not prior and not pptx_ingest.load_all_decks():
         pptx_ingest.ingest(verbose=True)   # offline fallback: local inputs/past_ppts/
@@ -70,10 +81,21 @@ def past_ppts_context(cur: Session) -> str:
 
     parts = []
     if prior:
-        summaries = "\n\n".join(d["summary"] for d in prior)
         covered = ", ".join(f"S{d['session_no']}" for d in prior)
-        parts.append(f"SUMMARY OF EVERY PRIOR DECK (already taught — do NOT re-teach; "
-                     f"sessions covered: {covered}):\n{summaries}")
+        parts.append(
+            f"ALREADY TAUGHT IN THIS COURSE — sessions {covered}, extracted from their "
+            f"actual decks. THIS IS BINDING: a learner reaching the target session has "
+            f"ALREADY been taught everything below.\n"
+            f"  · Do NOT re-teach any of it. No slide may explain, define or walk "
+            f"through a topic listed here.\n"
+            f"  · BUILD ON it instead: use these as established ground the new material "
+            f"stands on, and assume the terms are known.\n"
+            f"  · If the target session's takeaway genuinely revisits one of these, go "
+            f"BEYOND what was taught — the new angle, the deeper mechanism, the case the "
+            f"earlier session did not cover — never repeat the introduction.\n"
+            f"  · A one-line reminder inside the Recap is the only place repetition is "
+            f"allowed.\n"
+            f"{pptx_ingest.taught_digest(cur.number)}")
 
         query = cur.name + " " + " ".join(cur.key_takeaways)
         top_k = config.harness()["context"].get("rag_top_k", 6)
@@ -82,7 +104,10 @@ def past_ppts_context(cur: Session) -> str:
             rag = "\n".join(
                 f"  [S{h['session_no']} · Slide {h['slide']}] {h['title']}: {h['excerpt']}"
                 for h in hits)
-            parts.append("MOST RELEVANT PRIOR SLIDES TO THIS TOPIC (for continuity/detail):\n" + rag)
+            parts.append(
+                "HOW FAR PRIOR SESSIONS ALREADY WENT ON THIS TOPIC (their actual slide "
+                "content — this is the material you must NOT restate, and the level you "
+                "must start ABOVE):\n" + rag)
     else:
         parts.append("(No prior decks in the knowledge base yet — treat earlier "
                       "sessions' scope as given by the course structure above.)")
@@ -91,6 +116,36 @@ def past_ppts_context(cur: Session) -> str:
     if docs.strip():
         parts.append("PRIOR TR DOCS (secondary reference):\n" + docs)
     return "\n\n".join(parts)
+
+
+def prior_coverage_block(cur: Session, takeaway: str, *, top_k: int | None = None) -> str:
+    """What prior decks already said about ONE takeaway — injected into that chunk.
+
+    The session-level block above is retrieved once, against the whole session, and is
+    frozen into the cached base context. So the chunk actually writing takeaway 4 sees
+    prior material chosen for the session as a whole, not for takeaway 4 — and the
+    overlap that matters is always topic-specific. This retrieves against the takeaway
+    itself and goes into that chunk's own instruction.
+    """
+    if top_k is None:
+        top_k = config.harness()["context"].get("rag_top_k_per_takeaway", 5)
+    try:
+        hits = pptx_ingest.retrieve(f"{cur.name} {takeaway}", cur.number, top_k=top_k)
+    except Exception:
+        return ""
+    if not hits:
+        return ""
+    lines = "\n".join(
+        f"  [Session {h['session_no']} · Slide {h['slide']}] {h['title']}: {h['excerpt']}"
+        for h in hits)
+    return (f"\nALREADY TAUGHT ON THIS EXACT TOPIC — the closest prior-session slides to "
+            f"this takeaway, straight out of their decks. The learner has seen ALL of "
+            f"this:\n{lines}\n"
+            f"Do NOT re-explain any of it. Start above this level: assume every term and "
+            f"mechanism shown here is known, and spend this section on what these slides "
+            f"do NOT already cover. If a sub-concept here is genuinely part of this "
+            f"takeaway, treat it as one line of assumed background and go deeper, never "
+            f"as a slide re-introducing it.\n")
 
 
 def course_type_block() -> str:
@@ -530,7 +585,7 @@ def takeaway_instruction(cur: Session, idx: int, *, slides_used: int = 0,
         f"once) and map each of them to that slide in \"coverage\". Cut ritual first: an "
         f"analogy is only allowed on a concept_intro slide, and a worked example only "
         f"where the learner must EXECUTE something.\n")
-    return budget_block + f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
+    return budget_block + prior_coverage_block(cur, takeaway) + f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
 {{
   "section": {{
     "name": "<section title>",
@@ -551,17 +606,61 @@ This section must teach EXACTLY this key takeaway and nothing from the others:
   "{takeaway}"
 The section "name" must be this takeaway line VERBATIM (it is also the agenda item).
 
-COVERAGE: this line names a topic, not its whole scope. List the sub-concepts an exam
-would test on it, map EACH one to the slide that teaches it in "coverage", and stay
-inside the slide budget above — two sub-concepts may share a slide, but neither may go
-unmapped. A commonly-tested sub-concept that is silently missing is the most serious
-failure here. At least 2 sub-concepts. If one genuinely belongs to a later session, say
-so explicitly in the section text AND record it as "deferred_to" instead of a slide.
+COVERAGE — 100% OF THIS TAKEAWAY, NOTHING LEFT OVER. The curriculum line itself names
+what must be taught: everything after the colon, and every item separated by a
+semicolon or comma inside it, is a sub-topic this session OWES the learner. Read the
+line above and list them out; each one must end up on a slide in THIS section. A
+sub-topic named in the line and not taught here is a broken promise to the learner and
+fails the run.
+Then go further: the line names a topic, not its whole scope. Add the sub-concepts an
+exam would test on it, map EACH one to the slide that teaches it in "coverage", and
+stay inside the slide budget above — two sub-concepts may share a slide, but neither
+may go unmapped. A commonly-tested sub-concept silently missing is the most serious
+failure here. At least 2 sub-concepts.
+DEFERRAL IS A LAST RESORT, not a way to make room: "deferred_to" is only for a
+sub-concept that genuinely belongs to a LATER session's takeaway. Never defer anything
+the curriculum line above names, never defer to fit the slide budget (group
+sub-concepts onto one slide instead), and never defer most of a takeaway. If you defer
+one, say so explicitly in the section text AND record it as "deferred_to".
+
+SCOPE — NOTHING BUT THIS TAKEAWAY. It also runs the other way: every slide you write
+must teach a sub-concept you list in "coverage". A slide nothing in the map points at
+is off-agenda and will be rejected — cut it, or map it. The only slides allowed to
+stand unmapped are the section's "overview", a "comparison" table and a "summary",
+which serve several sub-concepts at once. An adjacent topic, however interesting,
+spends this session's budget on something the learner was not promised.
+
+BROAD -> SPECIFIC (structural — the first slide of this section is checked):
+Open on the LANDSCAPE, then go narrow. Slide 1 of this section must have role
+"overview" (or "concept_intro" if this takeaway is a single concept rather than a
+family of things): say what this topic is and name ALL the types / kinds / parts /
+stages it has, together, in one place. Only then take them one at a time — what each
+is, where it came from or why it was introduced, how it works, what it costs — and
+finish with the cross-cutting view (comparison, trade-offs, real use). Never open on
+one type, one formula or one step.
+
+PROSE AND BULLETS — MIX THEM. A section made only of bullet lists reads as choppy and
+loses the reasoning that connects the points.
+- A short `text` paragraph (<= 55 words, 2-3 sentences) frames, defines or connects.
+  At least 60% of the slides in this section must carry one, and no slide should open
+  straight into a list with nothing saying what the list is.
+- `bullets` are for a REAL list: 3 or more parallel, substantial items (types, steps,
+  causes, guarantees, trade-offs), each <= 12 words. Never emit a one- or two-item
+  bullet list — that is a sentence somebody bulleted; write the sentence.
+- Two or three short related points go in the paragraph; long, independent ones go in
+  bullets. Use a `table` for any 2+ way comparison.
+
+TECHNICAL CORRECTNESS: check every specific before writing it — standard/RFC numbers,
+port numbers, field names and bit-widths, thresholds, acronym expansions, complexities,
+version numbers. If you are not certain of one, teach the concept WITHOUT it ("a
+well-known port", "a fixed-size header") rather than reaching for a plausible value:
+this document is recorded and taught, so an invented figure outlives the session. Keep
+every value consistent with the approved chunks above.
 
 ROLES AND ANALOGIES: every slide declares a "role". An analogy is REQUIRED on a
-"concept_intro" slide and FORBIDDEN on every other role (mechanism, working_example,
-comparison, advantages_limitations, reasoning, application, summary) — omit the field
-there. At most half the slides in this section may be "concept_intro".
+"concept_intro" slide and FORBIDDEN on every other role (overview, mechanism,
+working_example, comparison, advantages_limitations, reasoning, application, summary) —
+omit the field there. At most half the slides in this section may be "concept_intro".
 
 WORKED EXAMPLES: include one only if this takeaway is something the learner must be
 able to EXECUTE (a procedure, calculation, translation, trace, numeric trade-off). For a

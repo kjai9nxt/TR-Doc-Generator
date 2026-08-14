@@ -1,6 +1,6 @@
 {
   "kind": "offline",
-  "generated_at": "2026-08-12T16:08:41",
+  "generated_at": "2026-08-14T12:34:55",
   "overall_pass": true,
   "extraction": {
     "ok": false,
@@ -359,6 +359,7 @@
     "guardrails_pass": false,
     "guardrail_failures": [],
     "grandfathered_failures": [
+      "Section 2 ('SCTP vs TCP vs UDP') opens on slide 3 with role 'mechanism' — a section must start BROAD and then go specific. Its first slide must be concept_intro or overview: name what this topic is and which types/kinds/parts it has, all in one place, before any single one of them is taught.",
       "Agenda has 4 items but the curriculum has 7 key takeaways — emit one agenda item per takeaway, verbatim.",
       "Agenda item 1 was reworded. Expected the curriculum line verbatim:\n    expected: SCTP: Stream Control Transmission Protocol\n    got:      SCTP — Features, Multi-Streaming & Multi-Homing",
       "Agenda item 2 was reworded. Expected the curriculum line verbatim:\n    expected: SCTP Features: Multi-Streaming, Multi-Homing\n    got:      SCTP vs TCP vs UDP",
@@ -369,7 +370,14 @@
       "Agenda item 3 and key takeaway 3 differ — they must be the same text.\n    agenda:   Quality of Service (QoS) — Parameters & Techniques\n    takeaway: SCTP's 4-way handshake adds a Cookie for built-in DoS protection.",
       "Agenda item 4 and key takeaway 4 differ — they must be the same text.\n    agenda:   IntServ, DiffServ & Switched Networks\n    takeaway: QoS manages traffic via four parameters: delay, jitter, bandwidth, and packet loss.",
       "4 agenda item(s) are not numbered — number them 1..4 to mirror the numbered Key Takeaways.",
-      "Recap has 3 bullet(s) but the previous session had 5 agenda items — the recap must carry ALL of them, verbatim, in its 'topic: subtopics' format."
+      "4 section(s) for 7 key takeaways — the document needs exactly one section per takeaway, in curriculum order.",
+      "Section 1 is named \"SCTP — Features, Multi-Streaming & Multi-Homing\" but must carry key takeaway 1 verbatim (it is the agenda item too):\n    expected: SCTP: Stream Control Transmission Protocol",
+      "Section 2 is named \"SCTP vs TCP vs UDP\" but must carry key takeaway 2 verbatim (it is the agenda item too):\n    expected: SCTP Features: Multi-Streaming, Multi-Homing",
+      "Section 3 is named \"Quality of Service (QoS) — Parameters & Techniques\" but must carry key takeaway 3 verbatim (it is the agenda item too):\n    expected: SCTP vs TCP vs UDP",
+      "Section 4 is named \"IntServ, DiffServ & QoS in Switched Networks\" but must carry key takeaway 4 verbatim (it is the agenda item too):\n    expected: Quality of Service (QoS): Parameters - Delay, Jitter, Bandwidth, Loss",
+      "Recap has 3 bullet(s) but the previous session had 5 agenda items — the recap must carry ALL of them, verbatim, in its 'topic: subtopics' format.",
+      "Slide 1: bullet list 2 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Connection must restart from scratch; Unacceptable in telecom signalling, wher",
+      "Slide 2: bullet list 1 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Multi-Streaming: one association carries; Multi-Homing: both endpoints register mu"
     ],
     "warnings": [],
     "invariant_failures": [],

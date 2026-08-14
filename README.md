@@ -3,12 +3,17 @@
 An automation agent that generates recording-ready **TR (Teaching Reference)
 documents** for individual course sessions — one session at a time — following
 your house format, keeping every session recordable in **≤ 40 minutes** and within
-**16 pages**, technically correct, pedagogically ordered, and market-competitive.
+**26 pages**, technically correct, pedagogically ordered, and market-competitive.
 
 Length is spent on **coverage, not ritual**: an analogy appears only where a concept is
 introduced for the first time, a worked example only where the learner must be able to
 execute something (and always with realistic figures), and every doc emits a
 `coverage_map` that is checked against the slides it claims to have.
+
+**A key takeaway is a contract.** The curriculum writes one as `Topic: item; item, item`
+— every item after the colon is owed to the learner, and a guardrail checks each one is
+actually taught in that takeaway's section. Deferring to a later session is a last
+resort, never a way to make room, and never for something the line itself names.
 
 Built with **harness engineering**: all the "how" lives in `harness/` so the
 agent never re-analyses the whole project. Change behaviour by editing the
@@ -16,58 +21,81 @@ harness, not the Python.
 
 ---
 
-## Inputs — two Google Sheets
+## Input — one Google Sheet
 
-The agent is driven by **two Google Sheets** you provide as links when the
-workflow opens. The sheet/tab name can be anything; only the column headers
-matter (see the template guide — matching is trimmed + case-insensitive but the
-column set must be exact, or the sheet is **discarded** with a message).
+The agent is driven by **one Google Sheet** you provide as a link: your course
+curriculum. The sheet/tab name can be anything; only the column headers matter (see
+the template guide — matching is trimmed + case-insensitive but the column set must
+be exact, or the sheet is **discarded** with a message).
 
 | Sheet | Required columns |
 |-------|------------------|
-| Course Curriculum Structure | `Topic Name`, `Session`, `Session Name`, `Key Takeaways` |
-| Session Details (past decks) | `Session Name`, `PPT Link` (a Google **Slides** link) |
+| Course Curriculum Structure | `Topic Name`, `Session`, `Session Name`, `Key Takeaways`, `PPT Links` |
 
-Both the sheets and the linked decks must be shared **“Anyone with the link →
-Viewer.”**  See `harness/sheet_templates.md` (or `python run.py --template-guide`).
+`PPT Links` holds the Google **Slides** deck for a session that has already been
+recorded, on that session's own row; leave it **blank** for a session still to come.
+(It replaces the old second sheet joined on `Session Name` — with the link on the
+row, renaming a session can no longer detach it from its deck.)
+
+The sheet and the linked decks must be shared **“Anyone with the link → Viewer.”**
+See `harness/sheet_templates.md` (or `python run.py --template-guide`).
 
 ## Course memory + live sync
 
-On every run the agent **syncs** with both sheets:
-- validates each against its template (discards + guides you if it doesn't match),
-- joins them on `Session Name` to attach a session number to each deck,
+On every run the agent **syncs** with the sheet:
+- validates it against the template (discards + guides you if it doesn't match),
+- reads each row's deck link straight off that row,
 - exports each Google Slides deck to `.pptx`, extracts it **once**, and caches it
   in the persistent knowledge base (`knowledge_base/`),
 - **detects changes** (added/removed/renamed sessions, changed links, edited
   decks) by content hash and re-ingests only what changed — reporting a changelog.
 
-Past sessions are never forgotten. At generation time the agent injects a
-**summary of every prior deck** (so it never re-teaches and can recap) plus
-**RAG-retrieved** slides most relevant to the target topic.
+Past sessions are never forgotten, and the decks are not decoration — they decide what
+the new document is allowed to say. At generation time the agent injects:
+
+- an **already-taught index** — every earlier session's distinct topics, extracted from
+  the deck that was actually recorded (de-duplicated: 950 titled slides become ~290
+  topics). The writer is told this is binding: build on it, never re-teach it.
+- the **prior slides themselves** for the topic at hand — retrieved for the session, and
+  again per takeaway inside each guided chunk, so the model can see how far the earlier
+  session went and start above it.
+
+The same index goes to the **LLM judge** (which used to grade "no repetition" without
+ever being shown what earlier sessions taught) and to a **guardrail** that fails any
+slide re-introducing a concept an earlier deck already introduced. Revisiting a topic to
+go *deeper* is required whenever a takeaway names it — repeating the introduction is not.
 
 ```bash
-python run.py                 # interactive workflow: enter links, validate, sync, generate
-python run.py --sync          # re-sync with saved links and print the changelog
+python run.py                 # interactive setup: enter the sheet link, validate, sync
+python run.py --sync          # re-sync with the saved link and print the changelog
 python run.py --watch         # keep syncing on an interval, logging changes live
-python run.py --setup         # change the sheet links
+python run.py --setup         # change the sheet link
 python run.py --template-guide
 ```
 
 ## What it does (the workflow)
 
+Generation is **always guided**: the doc is written one chunk per key takeaway and a
+human approves each chunk before the document is assembled. (The old one-shot mode —
+a whole doc drafted in a single call, unseen until it was finished — has been removed.)
+
 ```
-course structure sheet ─┐  validate + sync
-session details sheet  ─┼─► (Slides→pptx→KB) ─► GENERATE (Claude) ──► TR-doc JSON
-target session         ─┘                              │
-                                                       ▼
+curriculum sheet ──┐  validate + sync
+ (+ PPT Links)     ├─► (Slides→pptx→KB) ─► GENERATE CHUNK i (one per takeaway)
+target session ────┘                              │
+                                                  ▼
+                                   HUMAN REVIEW: approve / regenerate with a reason
+                                                  │ all approved
+                                                  ▼
+                                              ASSEMBLE
                     ┌──────────── EVALUATE ───────────────┐
                     │  guardrails   (hard structural gates)│
                     │  time grader  (40-min budget, calib.)│
-                    │  page grader  (16-page ceiling)      │
+                    │  page grader  (26-page ceiling)      │
                     │  LLM judge    (rubric, /100 — always)│
                     └──────────────────┬───────────────────┘
-                          accepted? ──no──► REVISE (up to N rounds)
-                              │yes
+                       length/accuracy failure ──► bounded REPAIR (keep best)
+                              │
                               ▼
                 RENDER ──► .docx (styled) + .md + grade report
 ```
@@ -78,23 +106,24 @@ target session         ─┘                              │
 pip install -r requirements.txt
 # put your key in .env  (OPENROUTER_API_KEY=... ; provider is set in harness.yaml)
 
-# Web UI (recommended):
-streamlit run app.py                          # opens in your browser at http://localhost:8501
+./start.sh          # backend (FastAPI) + React UI — open the URL it prints
 
-# Or the command line:
-python run.py                                 # interactive workflow (asks for both sheet links)
-python run.py --session 15                     # sync + generate + full grading
+# Command line (sheet sync only; docs are written in the web app):
+python run.py                 # interactive setup (asks for the one sheet link)
+python run.py --sync
 # The LLM quality check and the 40-minute budget always run (harness policy —
 # gates.always_run_llm_judge, constraints.recording.always_enforced).
 ```
 
-### Web UI (`app.py`)
+### Web UI (`server.py` + `frontend/`)
 A browser front end covering the whole flow:
-1. **Connect your sheets** — paste both Google Sheet links; templates are validated
-   (mismatches are shown and rejected) and the decks are synced.
-2. **Generate** — pick a session, watch live progress as it drafts → grades → revises.
-3. **Result** — see the recording-time estimate, rubric score, and **download the
-   Word `.docx`** (with an in-page preview).
+1. **Connect your sheet** — paste the curriculum Google Sheet link; the template is
+   validated (mismatches are shown and rejected) and the decks are synced.
+2. **Generate all chunks** — pick a session; one chunk is generated per key takeaway.
+3. **Review each chunk** — approve it, or regenerate with a reason (the reason is also
+   distilled into a durable rule for future sessions).
+4. **Create the final TR doc** — see the recording-time estimate, rubric score, and
+   **download the Word `.docx`** (with an in-page preview).
 
 Outputs land in `outputs/`:
 - `Session N _ <Name>.docx` — the styled TR doc
@@ -112,7 +141,7 @@ Outputs land in `outputs/`:
 | `rubrics/tr_doc_rubric.yaml` | 13 scored dimensions → /100 (LLM judge). |
 | `guardrails/guardrails.py` | Deterministic hard gates (structure, recap, slide roles, analogy placement, example realism, coverage map…). |
 | `graders/time_grader.py` | 40-min recording estimator (calibrated to the golden). |
-| `graders/page_grader.py` | 16-page ceiling — lays out the doc against the real `.docx` metrics. |
+| `graders/page_grader.py` | 26-page ceiling — lays out the doc against the real `.docx` metrics. |
 | `graders/llm_judge.py` | LLM-as-judge rubric scorer. |
 | `src/patcher.py` | Applies a surgical regeneration patch, so untouched slides stay byte-identical. |
 | `evals/` | Golden fixture (Session 15) + 24 eval sets + runners + gate regression. |
@@ -143,7 +172,7 @@ python -m evals.run_eval --live   # full pipeline on sample sessions (needs API)
 Everything is in `harness/harness.yaml`:
 - `constraints.recording.*` — the 40-min budget & `elaboration_factor`
   (calibrated so the golden Session 15 lands ~36 min); `always_enforced` pins it on.
-- `constraints.pages.*` — the 16-page ceiling, the target, and the `.docx` layout
+- `constraints.pages.*` — the 26-page ceiling, the target, and the `.docx` layout
   metrics the page estimator uses.
 - `constraints.slide_roles` / `constraints.analogy` — the slide-role vocabulary and the
   analogy-placement biconditional (required iff `concept_intro`).

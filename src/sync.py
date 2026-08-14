@@ -1,8 +1,13 @@
-"""Sync engine — keeps the agent in step with both Google Sheets.
+"""Sync engine — keeps the agent in step with the curriculum Google Sheet.
+
+ONE sheet carries everything: the curriculum plus, in the "PPT Links" column, the
+Google Slides deck for each session that already has one. (It used to be two sheets
+joined on Session Name; a row whose title was edited in one sheet and not the other
+silently lost its deck, and there is no join left to break.)
 
 On every run (and in --watch mode) it:
-  1. fetches + validates both sheets (discards any that break the template),
-  2. joins them on 'Session Name' to attach a session number to each deck link,
+  1. fetches + validates the sheet (discards it if it breaks the template),
+  2. reads each row's deck link straight off that row — no join,
   3. diffs against the stored state to detect adds / removes / edits,
   4. (re)ingests only changed/new Google Slides decks into the knowledge base,
   5. writes a normalized course-structure cache the rest of the pipeline reads,
@@ -71,7 +76,7 @@ def _save_state(state: dict):
     STATE.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
-def sync(course_link: str, details_link: str, *, verbose: bool = True, on_event=None) -> SyncResult:
+def sync(course_link: str, *, verbose: bool = True, on_event=None) -> SyncResult:
     res = SyncResult(ok=True)
 
     def emit(msg: str):
@@ -84,14 +89,15 @@ def sync(course_link: str, details_link: str, *, verbose: bool = True, on_event=
                 pass
 
     # 1. fetch + validate (TemplateError propagates to the caller/wizard)
-    emit("Reading Course Curriculum Structure sheet…")
+    emit("Reading the Course Curriculum Structure sheet…")
     course = sheets.load_sheet(course_link, "course_structure")
-    emit("Reading Session Details sheet…")
-    details = sheets.load_sheet(details_link, "session_details")
+    ppt_col = config.harness()["sheet_templates"]["course_structure"].get(
+        "ppt_link_column", "PPT Links")
 
-    # 2. normalize course structure + build name -> session_no map
+    # 2. normalize the course structure. The deck link travels on the row, so it is
+    #    collected here rather than joined in from a second sheet.
     sessions_norm = {}
-    name_to_no = {}
+    deck_rows = []
     for row in course.rows:
         no_raw = _col(row, "Session")
         try:
@@ -105,8 +111,9 @@ def sync(course_link: str, details_link: str, *, verbose: bool = True, on_event=
             "topic": _col(row, "Topic Name"),
             "key_takeaways": _split_takeaways(_col(row, "Key Takeaways")),
         }
-        if name:
-            name_to_no[_norm_name(name)] = number
+        link = _col(row, ppt_col)
+        if link:
+            deck_rows.append((number, name, link))
     COURSE_CACHE.write_text(json.dumps(sessions_norm, ensure_ascii=False, indent=2),
                             encoding="utf-8")
 
@@ -127,25 +134,22 @@ def sync(course_link: str, details_link: str, *, verbose: bool = True, on_event=
             res.changelog.append(f"- Removed session {sn}: {old.get('name')}")
     state["sessions"] = sessions_norm
 
-    # 4. process the Session Details deck links (join on Session Name)
+    # 4. process the deck links found on the curriculum rows themselves
     prev_decks = state.get("decks", {})
     new_decks = {}
     seen_names = set()
 
-    # build the task list (skip rows that can't be joined to a session)
+    # Deck state stays keyed by NORMALISED SESSION NAME, which is how every previously
+    # synced instance stored it: re-keying by session number would invalidate the cache
+    # and re-download every deck in the course on the first sync after this change.
     tasks = []
-    for row in details.rows:
-        name = _col(row, "Session Name")
-        link = _col(row, "PPT Link")
-        if not name or not link:
+    for session_no, name, link in deck_rows:
+        if not name:
+            res.errors.append(f"Session {session_no} has a {ppt_col} value but no "
+                              f"Session Name — deck skipped.")
             continue
         key = _norm_name(name)
         seen_names.add(key)
-        session_no = name_to_no.get(key)
-        if session_no is None:
-            res.errors.append(f"'{name}' in Session Details has no matching Session Name "
-                              f"in the Course Structure — deck skipped.")
-            continue
         tasks.append((key, name, link, session_no))
 
     # Download AND extract each deck inside the worker, so the multi-MB .pptx
@@ -219,7 +223,9 @@ def sync(course_link: str, details_link: str, *, verbose: bool = True, on_event=
     state["decks"] = new_decks
     state["last_sync"] = _now()
     state["course_link"] = course_link
-    state["details_link"] = details_link
+    # The second sheet is gone; drop any link a previous version stored so a stale
+    # value can never be handed back to a caller as if it were still configured.
+    state.pop("details_link", None)
     _save_state(state)
 
     # extraction-completeness check across all decks now in the KB (guideline 2/3)
@@ -263,6 +269,6 @@ def _print_report(res: SyncResult):
         print(f"[SYNC] ⚠ {e}")
 
 
-def last_links() -> tuple[str | None, str | None]:
-    state = _load_state()
-    return state.get("course_link"), state.get("details_link")
+def last_link() -> str | None:
+    """The curriculum sheet link this instance last synced with, if any."""
+    return _load_state().get("course_link")

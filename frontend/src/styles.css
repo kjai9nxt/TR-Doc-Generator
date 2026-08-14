@@ -193,17 +193,8 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
   border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; flex: none; }
 .busyrow { display: flex; align-items: center; gap: 9px; margin-top: 14px; color: var(--muted); font-size: 13px; }
 
-/* ---------- Mode selector ---------- */
-.mode { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
-.modeopt {
-  display: flex; align-items: center; gap: 9px; flex: 1; min-width: 220px;
-  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 13px 15px; cursor: pointer; font-size: 14px; font-weight: 600; transition: border-color .15s, background .15s;
-}
-.modeopt:hover { border-color: var(--line2); }
-.modeopt.on { border-color: var(--accent); background: rgba(124,147,255,.1); box-shadow: var(--ring); }
-.modeopt input { width: auto; }
-.msub { color: var(--muted); font-size: 12px; font-weight: 400; }
+/* The one-shot/guided mode selector is gone — guided review is the only path, so
+   there is nothing left to choose between and its styles went with it. */
 
 /* ---------- Guided review ---------- */
 .guided { margin-top: 16px; }

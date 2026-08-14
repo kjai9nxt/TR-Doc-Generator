@@ -2,8 +2,8 @@
   "session_no": 30,
   "session_name": "I/O Systems & I/O Models",
   "overall_pass": false,
-  "scored": 12,
-  "passed": 9,
+  "scored": 13,
+  "passed": 10,
   "skipped": 12,
   "learned_rules_added": 0,
   "sets": [
@@ -61,7 +61,7 @@
       "score": 5,
       "threshold": 3,
       "passed": true,
-      "detail": "estimated 21.0 min (budget 40, within=True, paced at 1.5 min x 14 slides; word-count model would read 39.8 min; dense slides [8])"
+      "detail": "estimated 39.0 min (budget 40, within=True, paced at 1.5 min x 26 slides; word-count model would read 60.2 min)"
     },
     {
       "id": "language_simplicity",
@@ -95,7 +95,7 @@
       "score": 1,
       "threshold": 4,
       "passed": false,
-      "detail": "11 over-length: ['slide 2 sentence 19w', 'slide 3 sentence 21w', 'slide 4 sentence 21w', 'slide 6 sentence 23w', 'slide 8 sentence 28w', 'slide 9 sentence 26w']"
+      "detail": "14 over-length: ['slide 2 sentence 20w', 'slide 4 sentence 19w', 'slide 5 sentence 22w', 'slide 6 sentence 19w', 'slide 9 sentence 20w', 'slide 11 sentence 20w']"
     },
     {
       "id": "pedagogical_flow_continuity",
@@ -135,7 +135,7 @@
       "score": 5,
       "threshold": 4,
       "passed": true,
-      "detail": "~12 pages (target 23, max 26); biggest: slides ~2.8p, content ~2.7p, tables ~1.8p"
+      "detail": "~19 pages (target 23, max 26); biggest: slides ~5.1p, content ~4.5p, speaker_notes ~2.3p"
     },
     {
       "id": "analogy_placement",
@@ -143,7 +143,7 @@
       "score": 5,
       "threshold": 4,
       "passed": true,
-      "detail": "analogies exactly on first-introduction slides (5/14 concept_intro)"
+      "detail": "analogies exactly on first-introduction slides (7/26 concept_intro)"
     },
     {
       "id": "worked_example_appropriateness",
@@ -151,7 +151,7 @@
       "score": 5,
       "threshold": 4,
       "passed": true,
-      "detail": "1/14 worked-example slide(s), within the 30% cap (judge half skipped: --no-llm)"
+      "detail": "2/26 worked-example slide(s), within the 30% cap (judge half skipped: --no-llm)"
     },
     {
       "id": "example_figure_realism",
@@ -168,6 +168,14 @@
       "reason": "LLM disabled (--no-llm)"
     },
     {
+      "id": "prose_bullet_mix",
+      "grader": "deterministic",
+      "score": 5,
+      "threshold": 4,
+      "passed": true,
+      "detail": "96% of slides carry prose; every list has >= 3 items"
+    },
+    {
       "id": "self_evolution_loop",
       "grader": "longitudinal",
       "score": 1,
@@ -176,5 +184,5 @@
       "detail": "defect(s) recurred despite prior signal (S10→S30): ['ppt_extraction_completeness']; fixed: ['curriculum_takeaway_extraction']; 7 rule(s) learned"
     }
   ],
-  "generated_at": "2026-08-11T16:03:00"
+  "generated_at": "2026-08-14T12:24:23"
 }

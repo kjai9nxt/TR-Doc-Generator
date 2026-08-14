@@ -23,14 +23,37 @@ scale:
 # scores placement before quality, and example_quality scores whether an example was
 # warranted at all. The old clarity_and_analogies dimension lost its analogy half to
 # analogy_discipline and is now clarity_and_language.
+#
+# REWEIGHTED for the reviewer's three standing complaints — wrong technical specifics,
+# content that was never on the agenda, and a document made almost entirely of bullets.
+# technical_accuracy 17 -> 20 (it is the complaint that costs the most once a session is
+# recorded) and pedagogy 8 -> 9 (it now carries the broad->specific rule as a scored
+# criterion, not a footnote). The 4 points came off the dimensions whose defects a
+# reviewer catches at a glance: analogy_discipline 7 -> 6, example_quality 6 -> 5,
+# clarity_and_language 5 -> 4, market_parity 4 -> 3. Scope and the prose/bullet mix are
+# scored inside coverage and slide_content_style rather than as new dimensions, because
+# both already own that ground and a 14th dimension would dilute every weight.
 dimensions:
   - id: technical_accuracy
-    weight: 17
+    weight: 20
     question: >
-      Is every fact correct AND grounded in the curriculum / known material? RFC
-      numbers, field sizes, port numbers, thresholds, acronym expansions, protocol
-      behaviour. No invented facts; no contradiction with what earlier sessions
-      established. Any incorrect or invented fact caps this at 2. [G7]
+      Is every fact correct AND grounded in the curriculum / known material? This is the
+      heaviest dimension because the document is copied onto slides and recorded: a wrong
+      specific is taught to the whole batch. CHECK THE SPECIFICS ONE BY ONE — RFC /
+      standard / IEEE numbers, port numbers, header field names and bit-widths, numeric
+      thresholds and limits, acronym expansions, complexities and formulas, version
+      numbers, and attributions (who introduced what, when). Where web search is
+      available, VERIFY them rather than judging plausibility, and say in the
+      justification which ones you checked. Any incorrect or invented fact caps this at
+      2 — and name it explicitly in `blocking_issues` with the slide number and the
+      correct value, so the repair pass can fix exactly that line. Also check the doc
+      against ITSELF: the same value, definition or acronym expansion must read
+      identically everywhere it appears; two different numbers for one thing means one
+      is wrong, and caps this at 2. Contradicting what an earlier session established
+      caps at 2. NOTE what is NOT a defect: teaching a mechanism correctly WITHOUT a
+      specific figure is the house rule when the writer is unsure — do not penalise a
+      correct explanation for omitting a number, and never ask for a number to be added
+      unless you can supply the verified value. [G7]
   - id: coverage
     weight: 15
     question: >
@@ -51,17 +74,41 @@ dimensions:
       and does the slide it points at really teach that sub-concept? A map that looks
       complete while a sub-concept is missing from the slides caps this at 2. Note that a
       sub-concept mapped to a slide OUTSIDE the section teaching its takeaway is now a
-      deterministic guardrail failure — do not re-adjudicate it here. Also:
-      nothing beyond the takeaways' scope, no re-teaching a prior session's concept (a
-      brief recap is fine), no future-session topic. Missing a whole takeaway caps at 2;
-      scope creep, re-teaching, or future leakage caps at 3. [G1,G4,G18]
+      deterministic guardrail failure — do not re-adjudicate it here.
+      100% OF EVERY TAKEAWAY, AND THE SESSION FINISHED: the curriculum line itself names
+      sub-topics (everything after the colon, split on semicolons and commas) and the
+      session OWES every one of them. Walk each takeaway line item by item and confirm
+      the section teaches it; a sub-topic named in the line and missing from the section
+      caps this at 2. A deferral is legitimate only for material that genuinely belongs
+      to a LATER session's takeaway — never for something this line names and never to
+      make room for length, and a takeaway with most of its sub-concepts deferred is a
+      postponed takeaway, which caps at 2.
+      SCOPE, in the other direction: the agenda IS the scope. Nothing beyond the
+      takeaways, no future-session topic. Read every slide and ask whether the takeaway
+      it sits under genuinely promised it — an adjacent, interesting topic is spending
+      the session's budget on something the learner was not promised.
+      NO RE-TEACHING: the already-taught digest below the doc lists what earlier sessions
+      covered, from their real decks. A slide that re-introduces or re-explains something
+      on that list is repetition and caps this at 3 — but revisiting a topic to go DEEPER
+      is required when the takeaway names it, so judge whether the slide starts ABOVE
+      what the earlier session covered rather than penalising the overlap itself. A
+      one-line reminder in the Recap is always fine.
+      Missing a whole takeaway caps at 2; off-agenda content, re-teaching, or future
+      leakage caps at 3 — name the offending slide in `blocking_issues` either way, so
+      the repair pass can act on it. [G1,G4,G18]
   - id: pedagogy
-    weight: 8
+    weight: 9
     question: >
-      Sound ordering (problem -> idea -> mechanism -> comparison -> use) AND broad ->
-      specific (big picture before narrow detail)? Concepts motivated before defined;
-      terms introduced after the gap is felt; smooth flow with no sudden jumps (nothing
-      used before it is taught). [G12,G17]
+      Sound ordering (problem -> idea -> mechanism -> comparison -> use) AND, above all,
+      BROAD -> SPECIFIC. The broad->specific rule is structural: each section must open
+      on the landscape — what the topic is and which types / kinds / parts / stages it
+      has, named together — before any single one of them is taught in detail, and only
+      then move to how each works, where it came from, and what it costs. A section that
+      opens on one type, one formula or one step, or that teaches types 1..N without ever
+      having named the set, caps this at 2 (the deterministic gate only checks the
+      opening slide's role, so judge whether the CONTENT really sets the map). Also:
+      concepts motivated before defined; terms introduced after the gap is felt; smooth
+      flow with no sudden jumps (nothing used before it is taught). [G12,G17]
   - id: recording_time
     weight: 8
     question: >
@@ -82,19 +129,27 @@ dimensions:
       Is the document within the 26-page ceiling (target ~23), per the deterministic page
       estimate given as ground truth — and, more importantly, is its length EARNED? Use
       `pages_by_part` to tell the two apart: length spent on sub-concepts, worked detail
-      and comparison tables is earned; length spent on analogies outside first
-      introductions, examples the topic did not need, bullets restating a table or their
-      own lead-in, prose where a bullet would do, or filler is not. Over the ceiling caps
+      and comparison tables is earned; length spent on content that is not on the agenda,
+      analogies outside first introductions, examples the topic did not need, bullets
+      restating a table or their own lead-in, or filler is not. Note that the framing
+      PARAGRAPHS are earned length, not padding — the prose/bullet mix is a house rule,
+      so never treat "this could have been bullets" as a length defect. Over the ceiling caps
       this at 2. Within the ceiling but padded (any of the above present) caps at 3. A doc
       that came in short by DROPPING a sub-concept caps at 1 — cutting coverage to make
       length is the worst possible trade, and should also cap `coverage`. [G22]
   - id: slide_content_style
     weight: 8
     question: >
-      Does slide CONTENT read as tight slide text, not prose or spoken narration? Each
-      `content` text block must be <= 35 words / 1-2 sentences — one framing or definition
-      sentence, with the detail carried by bullets and tables; a 60-90 word paragraph as
-      slide content caps this at 2 (in depth mode too). No redundancy: bullets must not
+      Does slide CONTENT read as tight slide text, not spoken narration — and is it a
+      MIX of short paragraphs and bullets rather than wall-to-wall bullets? The mix is a
+      house rule: a short `text` paragraph frames, defines or connects (<= 55 words, 2-3
+      sentences), bullets carry a genuine list of 3+ parallel substantial items (<= 12
+      words each), and tables carry any 2+ way comparison. A document that is almost
+      entirely bullet lists caps this at 2 — it reads as choppy and loses the connective
+      reasoning a bullet cannot carry. A one- or two-item bullet list (a sentence that was
+      bulleted) caps at 3, as does a slide that opens straight into a list with no
+      framing sentence. In the other direction, a 90-word essay paragraph as slide
+      content caps at 2 (in depth mode too). No redundancy: bullets must not
       restate their lead-in sentence, and must not restate a table on the same slide.
       Slide-visible text must carry NO second person ("you"/"your") and NO navigational
       phrases ("last/previous/next session", "as we saw earlier", "in the previous/next
@@ -104,7 +159,7 @@ dimensions:
       heading/subheading a 3-4 word label (5+ words caps this at 2). Every block stays
       on-topic for its slide (no tangents). [G6,G13,G16]
   - id: analogy_discipline
-    weight: 7
+    weight: 6
     question: >
       Is every analogy in the right PLACE, and is each one good? PLACEMENT is exact and
       comes first: an analogy belongs on a `concept_intro` slide (a concept's first
@@ -121,7 +176,7 @@ dimensions:
       STRUCTURALLY (a cycle needs a circular-dependency scene, not a queue). A missing
       tie-back or a structural mismatch caps at 3. [G14,G15,G23]
   - id: example_quality
-    weight: 6
+    weight: 5
     question: >
       Are worked examples WARRANTED, and are their figures REALISTIC? Warranted means the
       learner must be able to EXECUTE something — a procedure, algorithm, calculation,
@@ -136,7 +191,7 @@ dimensions:
       this at 2. Round numbers as COUNTS of things ("3 processes", "4 frames") are fine.
       An example that states a result without tracing the steps caps at 3. [G24]
   - id: clarity_and_language
-    weight: 5
+    weight: 4
     question: >
       Easy to understand on first read? Are speaker notes <= 2 sentences — one teaching
       cue plus one exam/interview hook, with no restatement of the slide body and no
@@ -166,7 +221,7 @@ dimensions:
       copied verbatim. A missing slide field, a missing/invalid coverage_map, or a
       wrong-order/missing section caps this at 2.
   - id: market_parity
-    weight: 4
+    weight: 3
     question: >
       Does depth/accuracy match or exceed Scaler, GeeksforGeeks, TutorialsPoint, and
       standard syllabi for this topic? Nothing important for the topic is missing. [G19]

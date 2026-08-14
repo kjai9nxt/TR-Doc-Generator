@@ -13,8 +13,8 @@ export default function App() {
   const [guide, setGuide] = useState('')
   const [showGuide, setShowGuide] = useState(false)
 
+  // ONE sheet: the curriculum, whose "PPT Links" column carries each session's deck.
   const [courseLink, setCourseLink] = useState('')
-  const [detailsLink, setDetailsLink] = useState('')
   const [courseType, setCourseType] = useState('semester')
   const [courseName, setCourseName] = useState('Computer Networks')
   const [syncing, setSyncing] = useState(false)
@@ -33,14 +33,12 @@ export default function App() {
     max_minutes: 40, max_pages: 16, target_pages: 14,
   }
 
-  const [logs, setLogs] = useState([])
-  const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState(null)
   const [genErr, setGenErr] = useState(null)
-  const pollRef = useRef(null)
 
-  // Guided mode: generate all chunks -> review each -> finalize
-  const [mode, setMode] = useState('oneshot')
+  // Guided generation is the ONLY way a doc is written: generate all chunks -> review
+  // each -> finalize. The old one-shot mode (whole doc in a single unreviewed call) is
+  // gone, so there is no mode to choose between any more.
   const [guidedId, setGuidedId] = useState(null)
   // The id of a guided run this browser started but never finished. The server
   // checkpoints guided runs, so one left behind by a reload or a server restart can
@@ -108,7 +106,6 @@ export default function App() {
     api.status().then((s) => {
       setStatus(s)
       if (s.saved_links?.course) setCourseLink(s.saved_links.course)
-      if (s.saved_links?.details) setDetailsLink(s.saved_links.details)
       if (s.settings?.course_type) setCourseType(s.settings.course_type)
       if (s.settings?.course_name) setCourseName(s.settings.course_name)
     }).catch(() => {})
@@ -136,8 +133,8 @@ export default function App() {
   // fallback, not as an alert() the user dismisses and then has nothing to act on.
   const [dlErr, setDlErr] = useState(null)
   const [copied, setCopied] = useState(false)
-  // Feedback on a FINISHED doc. Guided mode could teach the agent (via a regeneration
-  // reason); one-shot mode could not, so half the reviewers had no way to correct it.
+  // Feedback on a FINISHED doc — for a correction spotted only after assembly, which a
+  // per-chunk regeneration reason can no longer capture.
   const [fbText, setFbText] = useState('')
   const [fbBusy, setFbBusy] = useState(false)
   const [fbDone, setFbDone] = useState(null)   // { rule, merged, message }
@@ -203,7 +200,7 @@ export default function App() {
 
   function doSync() {
     setSyncing(true); setSyncErr(null); setSyncOut(null); setSyncLogs([])
-    api.sync(courseLink, detailsLink, courseType, courseName).then(({ job_id }) => {
+    api.sync(courseLink, courseType, courseName).then(({ job_id }) => {
       syncPollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -227,23 +224,6 @@ export default function App() {
 
   // Side panel showing the cost of the CURRENT generation only (dismissable).
   const [showCost, setShowCost] = useState(true)
-
-  function startGenerate() {
-    setGenerating(true); setResult(null); setGenErr(null); setLogs([]); setEvalReport(null); setEvalErr(null); setGdoc(null); setShowCost(true)
-    api.generate(sel, true, policy.time_always_enforced).then(({ job_id }) => {
-      pollRef.current = setInterval(async () => {
-        try {
-          const job = await api.job(job_id)
-          setLogs(job.logs || [])
-          if (job.status === 'done') {
-            clearInterval(pollRef.current); setGenerating(false); setResult(job.result)
-          } else if (job.status === 'error') {
-            clearInterval(pollRef.current); setGenerating(false); setGenErr(job.error)
-          }
-        } catch (e) { clearInterval(pollRef.current); setGenerating(false); setGenErr(e.message) }
-      }, 1500)
-    }).catch((e) => { setGenerating(false); setGenErr(e.message) })
-  }
 
   // Poll guided state ONLY while it's in a transient state (generating_all,
   // regenerating, assembling). We STOP as soon as it reaches a stable state:
@@ -306,7 +286,7 @@ export default function App() {
           : 'That guided run had already finished — nothing left to resume.')
         return
       }
-      setMode('guided'); setGuidedId(gid); setGuided(st); setApproved({}); setShowCost(true)
+      setGuidedId(gid); setGuided(st); setApproved({}); setShowCost(true)
       if (st.status !== 'reviewing') pollGuided(gid)
     }).catch((e) => { setBusyAction(false); handleGuidedError(e) })
   }
@@ -356,7 +336,6 @@ export default function App() {
   }, [sel])
 
   useEffect(() => () => {
-    pollRef.current && clearInterval(pollRef.current)
     syncPollRef.current && clearInterval(syncPollRef.current)
     guidedPollRef.current && clearInterval(guidedPollRef.current)
     evalPollRef.current && clearInterval(evalPollRef.current)
@@ -388,27 +367,27 @@ export default function App() {
         </div>
       </header>
 
-      <p className="sub">Generate a recording-ready Word TR doc for one session, in sync with your two Google Sheets.</p>
+      <p className="sub">Generate a recording-ready Word TR doc for one session, in sync with your curriculum Google Sheet.</p>
 
       {/* Cost of the TR doc being generated right now — sticky side panel
           (falls back to a normal block on narrow screens). */}
-      {showCost && (generating || guidedActive || result) && (
+      {showCost && (guidedActive || result) && (
         <CostSidePanel
           cost={result?.cost}
           sessionNo={result?.session_no ?? sel}
-          pending={!result && (generating || guidedActive)}
+          pending={!result && guidedActive}
           onClose={() => setShowCost(false)}
         />
       )}
 
       <button className="link" onClick={loadGuide}>
-        📋 {showGuide ? 'Hide' : 'Show'} the required sheet templates
+        📋 {showGuide ? 'Hide' : 'Show'} the required sheet template
       </button>
       {showGuide && <TemplateSidePanel markdown={guide} onClose={() => setShowGuide(false)} />}
 
       {/* STEP 1 */}
       <section className="card">
-        <h2><span className="num">1</span> Connect your sheets</h2>
+        <h2><span className="num">1</span> Connect your sheet</h2>
         <div className="settingsrow">
           <div className="settingcol">
             <label>Course name</label>
@@ -428,10 +407,11 @@ export default function App() {
         <label>Course Curriculum Structure — Google Sheet link</label>
         <input value={courseLink} onChange={(e) => setCourseLink(e.target.value)}
                placeholder="https://docs.google.com/spreadsheets/d/.../edit" />
-        <label>Session Details (past decks) — Google Sheet link</label>
-        <input value={detailsLink} onChange={(e) => setDetailsLink(e.target.value)}
-               placeholder="https://docs.google.com/spreadsheets/d/.../edit" />
-        <button className="primary" disabled={!courseLink || !detailsLink || syncing} onClick={doSync}>
+        <span className="hint">
+          One sheet only. Its <b>PPT Links</b> column holds each past session's Google
+          Slides deck — leave that cell blank for a session not recorded yet.
+        </span>
+        <button className="primary" disabled={!courseLink || syncing} onClick={doSync}>
           {syncing ? 'Syncing…' : '🔄 Connect & Sync'}
         </button>
 
@@ -496,21 +476,8 @@ export default function App() {
             <span className="pchip">✓ Max {policy.max_pages} pages (target {policy.target_pages})</span>
           </div>
 
-          <div className="mode">
-            <label className={`modeopt ${mode === 'oneshot' ? 'on' : ''}`}>
-              <input type="radio" name="mode" checked={mode === 'oneshot'}
-                     disabled={generating || guidedActive} onChange={() => setMode('oneshot')} />
-              One-shot <span className="msub">whole doc, ~2–4 min</span>
-            </label>
-            <label className={`modeopt ${mode === 'guided' ? 'on' : ''}`}>
-              <input type="radio" name="mode" checked={mode === 'guided'}
-                     disabled={generating || guidedActive} onChange={() => setMode('guided')} />
-              Guided <span className="msub">generate all, review, then finalize</span>
-            </label>
-          </div>
-
           {/* The only server-config fact worth showing a user: without a key the
-              Generate buttons below are dead, and a silently disabled button is worse
+              Generate button below is dead, and a silently disabled button is worse
               than no button. */}
           {status && !status.key_ok && (
             <div className="alert error">
@@ -519,25 +486,10 @@ export default function App() {
             </div>
           )}
 
-          {mode === 'oneshot' && (
-            <>
-              <button className="primary" disabled={generating || sel == null || !status?.key_ok} onClick={startGenerate}>
-                {generating ? 'Generating…' : '✨ Generate TR Doc'}
-              </button>
-              <div className="hint">
-                The model drafts, grades, and (if needed) revises the whole doc — ~<b>2–4 min</b>.
-                {` Fitted to the ${policy.max_minutes}-minute budget and ${policy.max_pages} pages.`}
-              </div>
-              {(generating || logs.length > 0) && (
-                <>
-                  {generating && <Busy label="Generating… (drafts → grades → revises)" />}
-                  <pre className="logs">{logs.join('\n') || 'Starting…'}</pre>
-                </>
-              )}
-            </>
-          )}
-
-          {mode === 'guided' && (
+          {/* Guided review is the only generation path. The one-shot mode that wrote a
+              whole doc in a single unreviewed call has been removed: nothing it produced
+              was ever seen by a human before it was assembled. */}
+          {(
             <>
               {!guidedId && (
                 <button className="primary" disabled={sel == null || !status?.key_ok} onClick={startGuided}>
@@ -707,7 +659,7 @@ export default function App() {
             </a>
           )}
 
-          {/* Teach the agent. This is the only feedback path in one-shot mode: the
+          {/* Teach the agent from the finished document: the
               note is distilled into a durable rule injected into every future doc for
               this course, and the distilled text is shown back so a bad distillation
               can be spotted and deleted rather than silently applied for months. */}

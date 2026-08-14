@@ -16,9 +16,16 @@ on every doc — which produced documents nobody could record and nobody wanted 
 - **Slide ceiling unchanged** (`constraints.slides.max_rich` = 26). Depth is not more
   slides for their own sake.
 - `heading` / `subheading` stay 3-4 words, hard maximum 4.
-- A `content` text block stays ≤ 35 words / 1-2 sentences. Depth goes into bullets,
-  tables and better-chosen slides — never into a paragraph. A 90-word paragraph is a
-  defect in this mode too.
+- A `content` text block stays ≤ 55 words / 2-3 sentences. Depth goes into bullets,
+  tables and better-chosen slides — never into a longer paragraph. A 90-word paragraph
+  is a defect in this mode too.
+- **The prose/bullet mix is unchanged**: at least 60% of slides carry a `text` block,
+  and no bullet list has fewer than 3 items. Depth never means bulleting more.
+- **Broad → specific is unchanged**: every section still opens on an `overview` (or
+  `concept_intro`) slide that names the types/parts before any one is taught.
+- **The agenda is still the scope**: every slide maps to a sub-concept in
+  `coverage_map`. Depth means covering the takeaways more thoroughly, never widening
+  to adjacent topics.
 - `speaker_notes` stay ≤ 2 sentences: one teaching cue plus one exam/interview hook.
 - **The analogy rule is unchanged and exact:** an analogy on `concept_intro` slides
   only, and no more than half the slides may be `concept_intro`. Depth never means

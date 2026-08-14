@@ -8,12 +8,12 @@
   "capability_status": "implemented",
   "grader": "hybrid",
   "applies_to": "final_tr_doc",
-  "description": "The generated TR doc must teach EVERY key takeaway of the session as per the curriculum AND the exam-testable sub-concepts inside each one, and must NOT introduce scope beyond them. A syllabus line names a topic, not its scope, so this is checked against the doc's `coverage_map` — the enumeration the doc must emit, mapping each sub-concept to the slide teaching it or to a named deferral. The map is VERIFIED, not trusted: a thin map that restates the takeaway, or one pointing at a slide that does not teach that sub-concept, fails.",
-  "criterion": "Every takeaway has a coverage_map entry with the sub-concepts an exam would test; every sub-concept resolves to a slide that genuinely teaches it, or to an explicitly named deferral; nothing is taught outside the takeaway set.",
+  "description": "The generated TR doc must teach EVERY key takeaway of the session as per the curriculum AND the exam-testable sub-concepts inside each one, and must NOT introduce scope beyond them. Two layers, and the first is new: the curriculum line itself is a CONTRACT \u2014 it is written as \"Topic: item; item, item\", and every item after the colon is owed to the learner, so each must be taught in that takeaway's section (a deterministic guardrail now checks exactly this, matching on distinctive vocabulary and treating any acronym the line names as mandatory). Second, a syllabus line names a topic, not its scope, so the doc's `coverage_map` must enumerate the exam-testable sub-concepts and map each to the slide teaching it or to a named deferral. The map is VERIFIED, not trusted: a thin map that restates the takeaway, or one pointing at a slide that does not teach that sub-concept, fails. Deferral is a last resort \u2014 never for something the line names, never to make room, and never for most of a takeaway (that is a postponed takeaway, not a taught one). The session must be COMPLETE when it ends: every takeaway delivered, nothing dangling.",
+  "criterion": "Every sub-topic named in the curriculum's takeaway line is taught in that takeaway's section; every takeaway has a coverage_map entry with the sub-concepts an exam would test; every sub-concept resolves to a slide that genuinely teaches it, or to an explicitly named deferral that belongs to a later session; nothing is taught outside the takeaway set.",
   "rubric": {
-    "5": "All takeaways and their standard sub-concepts covered, coverage_map accurate; zero scope creep.",
+    "5": "All takeaways, every sub-topic their lines name, and their standard sub-concepts covered; coverage_map accurate; zero scope creep.",
     "3": "All covered but one sub-concept is thin, or one minor out-of-scope aside.",
-    "1": "A takeaway or a commonly-tested sub-concept is missing (silently, or behind a map entry that does not hold up), or a whole section is out of scope."
+    "1": "A sub-topic the curriculum line names, a whole takeaway, or a commonly-tested sub-concept is missing (silently, behind a map entry that does not hold up, or behind a deferral used to make room), or a whole section is out of scope."
   },
   "pass_threshold": 4,
   "cases": [
@@ -58,7 +58,7 @@
           "Choosing UDP"
         ]
       },
-      "rationale": "'Congestion control' takeaway is missing — must fail (gap)."
+      "rationale": "'Congestion control' takeaway is missing \u2014 must fail (gap)."
     },
     {
       "id": "tc-bad-2",
@@ -75,7 +75,7 @@
           "QUIC and HTTP/3 deep dive"
         ]
       },
-      "rationale": "QUIC/HTTP-3 is out of scope for this session — scope creep, must fail."
+      "rationale": "QUIC/HTTP-3 is out of scope for this session \u2014 scope creep, must fail."
     },
     {
       "id": "tc-bad-3",
@@ -100,7 +100,7 @@
           ]
         }
       },
-      "rationale": "The map looks complete but the CAUSES (first-reference/demand-load, swapped-out, copy-on-write, illegal access) and minor-vs-major faults are absent — the silent-omission failure this set exists to catch."
+      "rationale": "The map looks complete but the CAUSES (first-reference/demand-load, swapped-out, copy-on-write, illegal access) and minor-vs-major faults are absent \u2014 the silent-omission failure this set exists to catch."
     },
     {
       "id": "tc-bad-4",
@@ -123,7 +123,7 @@
           9
         ]
       },
-      "rationale": "The map claims slide 11, which does not exist — a claimed coverage the document does not deliver."
+      "rationale": "The map claims slide 11, which does not exist \u2014 a claimed coverage the document does not deliver."
     },
     {
       "id": "tc-good-2",
@@ -151,12 +151,25 @@
             },
             {
               "name": "Page-fault frequency replacement",
-              "deferred_to": "Session 22 — covered with thrashing"
+              "deferred_to": "Session 22 \u2014 covered with thrashing"
             }
           ]
         }
       },
       "rationale": "Sub-concepts enumerated to exam depth, each mapped, and the one deferral named."
+    },
+    {
+      "id": "tc-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "takeaway": "3. I/O Techniques: Polling vs interrupt-driven I/O; Direct memory access (DMA)",
+        "section_teaches": [
+          "polling",
+          "interrupt-driven I/O"
+        ]
+      },
+      "rationale": "The line names DMA and the section never teaches it \u2014 a promise the curriculum made and the session did not keep."
     }
   ]
 }

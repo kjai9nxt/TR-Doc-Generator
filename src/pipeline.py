@@ -1,5 +1,10 @@
 """End-to-end orchestrator: load -> generate -> guardrails -> time -> judge ->
-revise (up to N) -> render. This is the 'agent workflow'.
+revise -> render. This is the 'agent workflow'.
+
+The product entry point is finalize(): the guided flow generates one chunk per key
+takeaway, a human approves each, and finalize() grades and renders the assembled
+document. run() is the old whole-doc-in-one-call path, kept only for the offline eval
+harness (see its docstring) — no user-facing surface reaches it.
 """
 from __future__ import annotations
 import json
@@ -115,6 +120,15 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
 def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: bool = True,
         enforce_time: bool = True, on_event=None, user: str | None = None,
         run_id: str | None = None) -> dict:
+    """OFFLINE EVAL ONLY — draft a whole doc in one call, then grade/revise it.
+
+    This is no longer a product path. The one-shot mode it used to serve (the web
+    app's "Generate TR Doc" button, the CLI's --session flag) has been removed: every
+    real TR doc is now written chunk by chunk with a human approving each one, via
+    the guided endpoints and finalize() below. What remains here is the offline
+    harness's way to obtain a doc to score (evals/run_eval.py, evals/run_sets.py)
+    without a reviewer in the loop — nothing user-facing reaches it.
+    """
     # Harness policy wins over the caller: the quality check and the 40-minute budget
     # are not per-run choices any more (gates.always_run_llm_judge,
     # constraints.recording.always_enforced). Forced here as well as in evaluate() so
@@ -132,13 +146,13 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
             except Exception:
                 pass
 
-    # Stay in step with the sheets before generating (if links are configured).
+    # Stay in step with the sheet before generating (if a link is configured).
     if do_sync and course_file is None:
         from src import sync
-        c_link, d_link = sync.last_links()
-        if c_link and d_link:
+        c_link = sync.last_link()
+        if c_link:
             try:
-                sync.sync(c_link, d_link, verbose=True)
+                sync.sync(c_link, verbose=True)
             except Exception as e:
                 log(f"⚠ Sheet sync skipped: {e}")
 
@@ -356,13 +370,46 @@ def assemble_doc(cur, nxt, opening: dict, sections: list[dict],
     return doc
 
 
+def _repair_reasons(doc: dict, report: dict) -> list[str]:
+    """Why the assembled guided doc must be repaired — or [] to leave it alone.
+
+    Read from the graders' STRUCTURED output, never by matching issue text (the issue
+    strings are written for the reviewer and are edited freely). Three admissible
+    reasons, all configured under gates.guided_repair_on:
+
+      length      the slide / recording-time / page ceilings — properties of the
+                  assembled whole that no single chunk review can see;
+      guardrails  a HARD structural failure on the assembled doc (the prose/bullet mix
+                  share, an off-agenda slide, a section opening on a detail, a broken
+                  coverage reference). Mechanical and unambiguous;
+      accuracy    technical_accuracy scored below the per-dimension bar. A wrong RFC
+                  number or bit-width is not a matter of the reviewer's taste, and it
+                  is the defect that costs most once the session has been recorded.
+
+    Everything else the human approved chunk by chunk, and their judgement stands.
+    """
+    cfg = config.harness()["gates"].get("guided_repair_on") or {}
+    reasons = []
+    if cfg.get("length", True):
+        reasons += _too_long(doc, report)
+    if cfg.get("guardrails", False) and not report.get("guardrails", {}).get("passed", True):
+        n = len(report.get("guardrails", {}).get("failures") or [])
+        reasons.append(f"{n} structural guardrail failure(s) on the assembled document")
+    if cfg.get("technical_accuracy", False):
+        bar = config.harness()["gates"].get("rubric_min_per_dimension", 4)
+        score = ((report.get("judge") or {}).get("scores") or {}).get(
+            "technical_accuracy") or {}
+        got = score.get("score")
+        if isinstance(got, (int, float)) and got < bar:
+            reasons.append(f"technical accuracy scored {got}/5 (needs {bar})")
+    return reasons
+
+
 def _too_long(doc: dict, report: dict) -> list[str]:
     """Which of the three HARD LENGTH ceilings the assembled doc busts.
 
     Read from the graders' STRUCTURED output, never by matching issue text — the issue
     strings are written for the reviewer and the revision prompt, and are edited freely.
-    Only these three failures justify re-drafting a doc whose chunks a human already
-    approved: they are properties of the assembled whole, so no chunk review can see them.
     """
     over = []
     con = config.harness()["constraints"]["slides"]
@@ -383,20 +430,26 @@ def _too_long(doc: dict, report: dict) -> list[str]:
 
 def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
              enforce_time: bool = True, on_event=None, run_id: str | None = None) -> dict:
-    """Grade an assembled guided doc and render the .docx + .md + grade report. Same
-    result shape as run().
+    """Grade an assembled guided doc and render the .docx + .md + grade report.
 
-    Quality defects are NOT auto-revised here — the human gated each chunk, so their
-    judgement stands. The one exception is a hard LENGTH failure (slide count, recording
-    time, pages): those are properties of the ASSEMBLED document that no chunk review
-    can see, and finalize used to be a dead end for them — the doc came back failing
-    three gates at once, the review panel was gone, and the only way forward was to pay
-    for a whole new guided run. gates.guided_length_repair_rounds bounds the repair; the
-    best-scoring draft is kept, so a repair that makes things worse cannot win.
+    This is THE way a TR doc is produced: the chunks were generated one per key
+    takeaway and approved by a human, and this assembles, grades and renders them.
 
-    enforce_time mirrors the one-shot path: when the user left the 40-minute limit OFF,
-    the recording-time dimension is dropped from the rubric and the budget does not
-    gate acceptance (the estimate is still reported)."""
+    Style and quality opinions are NOT auto-revised here — the human gated each chunk,
+    so their judgement stands. Three exceptions, all in _repair_reasons(): a LENGTH
+    ceiling (slides / recording time / pages), a hard GUARDRAIL failure, and a
+    TECHNICAL ACCURACY score below the per-dimension bar. The first two are properties
+    of the ASSEMBLED document that no chunk review can see; the third is not a matter
+    of taste at all, and it is the defect that costs most once a session is recorded.
+    finalize used to be a dead end for all of them — the doc came back failing gates
+    with the review panel already gone, and the only way forward was to pay for a whole
+    new guided run. gates.guided_length_repair_rounds bounds the repair and
+    gates.guided_repair_on selects what fires it; the best-scoring draft is kept, so a
+    repair that makes things worse cannot win.
+
+    enforce_time: when the 40-minute limit is OFF, the recording-time dimension is
+    dropped from the rubric and the budget does not gate acceptance (the estimate is
+    still reported)."""
     def log(msg: str):
         _log(msg)
         if on_event:
@@ -429,19 +482,20 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     accepted, report, issues = grade(doc, 0)
     history = [report]
 
-    # --- LENGTH REPAIR. Bounded, and only for the three ceilings a chunk review cannot
-    # see (see _too_long). Everything else the human already signed off on. ---
+    # --- REPAIR. Bounded, and only for defects a chunk review could not have caught:
+    # the assembled document's length, a hard guardrail failure, or a wrong technical
+    # fact (see _repair_reasons). Everything else the human already signed off on. ---
     max_repair = int(config.harness()["gates"].get("guided_length_repair_rounds", 1) or 0)
     best = (_score_key(accepted, report), doc, report)
     rnd = 0
     while not accepted and rnd < max_repair:
-        over = _too_long(doc, report)
+        over = _repair_reasons(doc, report)
         if not over:
             break
         rnd += 1
-        log(f"Over budget on {', '.join(over)} — the assembled document is longer than "
-            f"any single chunk could show. Trimming (repair {rnd}/{max_repair}, ~1-2 min); "
-            f"coverage is preserved, ritual is cut.")
+        log(f"Repairing {', '.join(over)} — these are properties of the assembled "
+            f"document that no single chunk review could see (repair {rnd}/{max_repair}, "
+            f"~1-2 min). Coverage is preserved; ritual and off-agenda material are cut.")
         base = (context_builder.build_user_prompt(prev, cur, nxt)
                 + context_builder.time_mode_block(enforce_time))
         doc = generator.revise(base, json.dumps(doc, ensure_ascii=False), issues,

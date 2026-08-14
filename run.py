@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""TR Doc Generator — CLI / workflow entrypoint.
+"""TR Doc Generator — CLI / sync entrypoint.
+
+TR docs themselves are written in the web app's GUIDED review flow (start.sh ->
+`python3 server.py` + the React UI): every chunk is reviewed and approved by a human
+before the document is assembled. There is no command-line "generate the whole doc"
+path any more — that was the one-shot mode, and it is gone.
 
 Interface (on open):
-  python run.py                       # launch the interactive workflow:
-                                      #   ask for both Google Sheet links,
-                                      #   validate templates, sync, then generate.
+  python run.py                       # interactive setup: ask for the curriculum
+                                      #   Google Sheet link, validate it, sync.
 
 Direct / scripted use:
-  python run.py --session 16          # sync (using saved links) + generate session 16
-  python run.py --session 1
-  python run.py --sync                # just re-sync with the saved sheet links
-  python run.py --setup               # re-enter / change the sheet links
+  python run.py --sync                # re-sync with the saved sheet link
+  python run.py --setup               # re-enter / change the sheet link
   python run.py --watch               # keep syncing on an interval, log changes
-  python run.py --template-guide      # print how the sheets must look
+  python run.py --template-guide      # print how the sheet must look
   python run.py --list                # list sessions (from the synced structure)
 """
 from __future__ import annotations
@@ -20,38 +22,32 @@ import argparse
 import sys
 import time
 
-from src import course_loader, pipeline, wizard, sync
+from src import course_loader, wizard, sync
 from src import config
 
 
 def _do_watch():
-    c, d = sync.last_links()
-    if not (c and d):
-        print("No sheet links configured. Run 'python run.py --setup' first.")
+    c = sync.last_link()
+    if not c:
+        print("No sheet link configured. Run 'python run.py --setup' first.")
         return
     interval = config.harness()["context"].get("sync_poll_seconds", 60)
-    print(f"Watching both sheets every {interval}s. Ctrl-C to stop.")
+    print(f"Watching the curriculum sheet every {interval}s. Ctrl-C to stop.")
     try:
         while True:
-            sync.sync(c, d, verbose=True)
+            sync.sync(c, verbose=True)
             time.sleep(interval)
     except KeyboardInterrupt:
         print("\nStopped watching.")
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Generate a TR doc for one course session.")
-    ap.add_argument("--session", type=int, help="Session number to generate.")
+    ap = argparse.ArgumentParser(
+        description="Keep the TR Doc Generator in sync with the curriculum sheet.")
     ap.add_argument("--course", default=None, help="Offline: explicit course-structure .xlsx.")
-    # Honoured only if gates.always_run_llm_judge is turned off in the harness: the
-    # quality check is policy now, and skipping it also skips the revision loop and
-    # the self-evolution step that turns surviving defects into durable rules.
-    ap.add_argument("--no-judge", action="store_true",
-                    help="Skip the LLM-as-judge grader (ignored while the harness "
-                         "pins gates.always_run_llm_judge).")
     ap.add_argument("--list", action="store_true", help="List sessions and exit.")
-    ap.add_argument("--setup", action="store_true", help="Re-enter the Google Sheet links.")
-    ap.add_argument("--sync", action="store_true", help="Sync with the saved sheet links and exit.")
+    ap.add_argument("--setup", action="store_true", help="Re-enter the Google Sheet link.")
+    ap.add_argument("--sync", action="store_true", help="Sync with the saved sheet link and exit.")
     ap.add_argument("--watch", action="store_true", help="Continuously sync and log changes.")
     ap.add_argument("--template-guide", action="store_true", help="Print the sheet template guide.")
     args = ap.parse_args()
@@ -66,29 +62,19 @@ def main():
         wizard.run_wizard(reuse=False)
         return
     if args.sync:
-        c, d = sync.last_links()
-        if not (c and d):
-            print("No sheet links configured. Run 'python run.py --setup' first.")
+        c = sync.last_link()
+        if not c:
+            print("No sheet link configured. Run 'python run.py --setup' first.")
             return
-        sync.sync(c, d, verbose=True)
+        sync.sync(c, verbose=True)
         return
     if args.list:
         for s in course_loader.load_sessions(args.course):
             print(f"{s.number:>2}. {s.name}  ({s.key_takeaways_count} takeaways)")
         return
 
-    # No session number and no offline course file -> launch the interactive workflow.
-    if args.session is None and args.course is None:
-        wizard.run_wizard(reuse=True)
-        raw = input("Which session number should I generate now? (blank to exit): ").strip()
-        if not raw:
-            return
-        args.session = int(raw)
-
-    if args.session is None:
-        ap.error("--session is required (or use --list / no args for the workflow).")
-
-    pipeline.run(args.session, use_judge=not args.no_judge, course_file=args.course)
+    wizard.run_wizard(reuse=True)
+    print("Open the web app to write a TR doc: ./start.sh  (guided review flow).")
 
 
 if __name__ == "__main__":

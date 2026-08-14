@@ -4,8 +4,8 @@ python-pptx>=1.0.0
 openpyxl>=3.1.0
 PyYAML>=6.0
 requests>=2.31.0
-streamlit>=1.30.0
-# React frontend backend (server.py)
+# React frontend backend (server.py) — the only UI. The Streamlit app it replaced
+# (app.py) was a one-shot generator and has been removed along with that mode.
 fastapi>=0.110.0
 uvicorn>=0.29.0
 # Google Sign-In (OAuth) — verify ID tokens server-side

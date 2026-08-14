@@ -59,9 +59,14 @@ deterministic and lets graders inspect fields directly.
 }
 ```
 
-`role` is one of `concept_intro`, `mechanism`, `working_example`, `comparison`,
-`advantages_limitations`, `reasoning`, `application`, `summary`. Like `coverage_map`,
-it is a planning field: the renderer ignores it, so it costs no pages.
+`role` is one of `overview`, `concept_intro`, `mechanism`, `working_example`,
+`comparison`, `advantages_limitations`, `reasoning`, `application`, `summary`. Like
+`coverage_map`, it is a planning field: the renderer ignores it, so it costs no pages.
+
+`overview` is the **broad** slide that opens a section — what the topic is and which
+types/kinds/parts it has, named together before any one of them is taught. **The first
+slide of every section must be `overview` or `concept_intro`**; anything else means
+the section opened on a detail, and that is a hard failure.
 
 ## Rendering rules (docx_writer)
 
@@ -102,7 +107,7 @@ The breaker uses the same dash-wrapped form as the golden doc:
 hard guardrail failure.)
 
 `analogy` is **conditional, and exactly so**: required when `role == "concept_intro"`,
-**forbidden** on `mechanism`, `working_example`, `comparison`,
+**forbidden** on `overview`, `mechanism`, `working_example`, `comparison`,
 `advantages_limitations`, `reasoning`, `application` and `summary`. Both a missing
 analogy on a first introduction and a present one anywhere else are hard failures. No
 more than half the slides may be `concept_intro`.
@@ -137,9 +142,17 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
   they run long; never trim one to fit a cap.
 
 ## Per-slide content rules
-- `content` text blocks: **≤ 35 words, 1-2 sentences** — one definition or framing
-  sentence, with the detail carried by bullets/tables. A 60-90 word paragraph is a
-  hard failure, in every mode including depth mode.
+- **Mix prose and bullets — a document of nothing but bullets is a defect.**
+  - `content` text blocks (short paragraphs): **≤ 55 words, 2-3 sentences.** They
+    frame, define or connect — what this is, why it exists, how it relates to what
+    came before. Two or three short related points belong here as a sentence, not as
+    a bullet list. A 90-word essay paragraph is still a hard failure, in every mode
+    including depth mode.
+  - `bullets`: **minimum 3 items**, parallel and substantial (types, steps, causes,
+    guarantees, trade-offs), each ≤ 12 words. A one- or two-item list is a sentence
+    somebody bulleted — write the sentence.
+  - **At least 60% of slides must contain a `text` block.** A slide that opens
+    straight into a list, with nothing saying what the list is, fails this.
 - No redundancy on a slide: bullets must not restate the lead-in sentence, and must
   not restate a table on the same slide. Pick one carrier per piece of information.
 - `speaker_notes`: **≤ 2 sentences** — one teaching cue + one exam/interview hook.
@@ -157,4 +170,9 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 
 ## Notes
 - Tables are first-class: use them for any 2+ way comparison or spec sheet.
-- Keep prose in `content` tight — this is a teaching reference, not an essay.
+- Keep prose in `content` tight — this is a teaching reference, not an essay. Tight
+  does not mean absent: the short paragraphs are what carry the connective reasoning
+  a bullet list cannot.
+- Every slide must teach a sub-concept named in `coverage_map`. A slide nothing in the
+  map points at is off-agenda and fails, unless its role is `overview`, `comparison`
+  or `summary` (those serve several sub-concepts at once).

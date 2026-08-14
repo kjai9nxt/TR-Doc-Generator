@@ -5,10 +5,10 @@
   "capability_status": "implemented",
   "grader": "llm_judge",
   "applies_to": "final_tr_doc",
-  "description": "The doc must not re-teach content already covered in earlier sessions (a brief recap is fine, re-teaching is not), and must not teach topics that belong to future sessions.",
-  "criterion": "No full re-explanation of a prior session's concept; no coverage of a topic scheduled for a later session.",
+  "description": "The doc must not re-teach content already covered in earlier sessions (a brief recap is fine, re-teaching is not), and must not teach topics that belong to future sessions. This is the reason every past deck is ingested at all. The judge is now given the ALREADY-TAUGHT digest — each earlier session's distinct topics, extracted from its real deck — so this is graded against what was actually taught rather than guessed at; a deterministic guardrail additionally fails any slide that RE-INTRODUCES (role concept_intro) a concept under a title an earlier deck already used. Note the asymmetry that matters: revisiting a topic to go DEEPER is required whenever the curriculum's takeaway names it, so overlap alone is not the defect — starting at the level the earlier session already reached is.",
+  "criterion": "No re-explanation of a prior session's concept at the level it was already taught; revisits start above that level; no coverage of a topic scheduled for a later session.",
   "rubric": {
-    "5": "Builds on prior sessions without re-teaching; stays within this session's scope.",
+    "5": "Builds on prior sessions without re-teaching; revisits go deeper; stays within scope.",
     "3": "Minor overlap with a prior session, or a one-line forward mention.",
     "1": "Re-teaches a full prior-session concept, or teaches a future-session topic."
   },
@@ -27,6 +27,13 @@
       "expected": "fail",
       "input": {"this_session": "TCP & UDP", "prior_taught": ["IP addressing"], "doc_mentions": ["full re-explanation of IPv4 header, subnetting, CIDR across two slides"]},
       "rationale": "Re-teaches an entire prior-session topic (IP addressing)."
+    },
+    {
+      "id": "nrf-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"this_session": "I/O Systems", "takeaway": "I/O Hardware: Ports, buses & device controllers", "prior_taught": ["Ports", "Computer Hardware", "CPU"], "doc_mentions": ["controller register model and CPU interaction", "bus types and arbitration", "memory-mapped vs port-mapped I/O"]},
+      "rationale": "The takeaway names hardware the intro session already touched, so the section is REQUIRED to cover it — and it starts above that level (arbitration, register model) instead of re-introducing what a port is."
     },
     {
       "id": "nrf-bad-2",

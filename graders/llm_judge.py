@@ -53,11 +53,21 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
         if not judge_model.endswith(":online"):
             judge_model = judge_model + ":online"
         web_note = (
-            "\n\nWEB CHECK (do this for the market_parity and content_recency dimensions): "
-            "search the web to confirm (a) the topic's mainstream coverage on GeeksforGeeks, "
-            "TutorialsPoint, and Scaler, and (b) the CURRENT standards/versions. Penalise "
-            "anything missing versus mainstream references, and any deprecated/superseded "
-            "info presented as current. Note in the justification what you verified.")
+            "\n\nWEB CHECK — do this for technical_accuracy FIRST, then market_parity and "
+            "content_recency.\n"
+            "(a) TECHNICAL ACCURACY: search to VERIFY the document's concrete specifics "
+            "rather than judging whether they look plausible — RFC/IEEE/standard numbers, "
+            "port numbers, header field names and bit-widths, numeric thresholds and "
+            "limits, acronym expansions, complexities and formulas, version numbers, and "
+            "attributions. Check the ones that would be embarrassing to teach wrong. For "
+            "each value you find to be incorrect, put a `blocking_issues` entry naming the "
+            "slide, quoting the wrong value, and giving the verified correct one — that "
+            "entry is what the repair pass acts on, so a vague 'some figures look off' is "
+            "useless. List in the justification which specifics you checked and confirmed.\n"
+            "(b) MARKET PARITY / RECENCY: confirm the topic's mainstream coverage on "
+            "GeeksforGeeks, TutorialsPoint and Scaler, and the CURRENT standards/versions. "
+            "Penalise anything missing versus mainstream references, and any "
+            "deprecated/superseded info presented as current. Note what you verified.")
     # Depth mode (40-min limit off): the doc is INTENDED to be fuller — richer bullets
     # and tables, more thorough sub-concept treatment. Judge clarity/filler, not brevity.
     # Note what depth mode does NOT buy: the page ceiling holds in every mode, and the
@@ -117,6 +127,33 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
                 f"\n{block}")
     except Exception:
         pass
+    # WHAT EARLIER SESSIONS ALREADY TAUGHT. The judge scores a "no re-teaching a prior
+    # session's concept" rule under `coverage`, and it used to do so with no idea what
+    # the prior sessions contained — so the one dimension that could catch repetition was
+    # judged blind, and the ingested decks influenced nothing at grading time. The taught
+    # index (each earlier session's distinct topics, straight out of its deck) is cheap:
+    # ~8k characters for a 17-session course, deduplicated.
+    taught_note = ""
+    try:
+        from src import pptx_ingest
+        digest = pptx_ingest.taught_digest(session.number)
+        if digest.strip():
+            taught_note = (
+                "\n\nALREADY TAUGHT IN EARLIER SESSIONS (extracted from their actual "
+                "decks). Use this for the `coverage` dimension's no-re-teaching rule and "
+                "for `pedagogy`:\n"
+                "  · A slide that re-introduces, re-defines or re-explains something "
+                "listed here is REPETITION — the learner has already sat through it. "
+                "Name the slide in `blocking_issues` and cap `coverage` at 3.\n"
+                "  · Revisiting a topic to go DEEPER is not repetition and must not be "
+                "penalised: if the curriculum's takeaway names it, the session owes it. "
+                "Judge whether the slide starts ABOVE what the earlier deck covered.\n"
+                "  · A one-line reminder in the Recap is allowed and is not repetition.\n"
+                "  · Say in the justification which slides you checked against this.\n"
+                f"{digest}")
+    except Exception:
+        pass
+
     prompt = f"""RUBRIC
 {_rubric_text(exclude)}
 
@@ -125,7 +162,7 @@ SESSION KEY TAKEAWAYS (coverage must match these):
 
 {time_block}{page_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
-{web_note}{depth_note}{rules_note}
+{web_note}{depth_note}{taught_note}{rules_note}
 
 Grade now. Return only the contract JSON."""
     dims = {d["id"]: d["weight"] for d in config.rubric()["dimensions"]

@@ -67,11 +67,10 @@ export const api = {
   preview: (session_no, run_id, name) => req(`/preview/${session_no}${qs({ run_id, name })}`),
   status: () => req('/status'),
   templateGuide: () => req('/template-guide'),
-  sync: (course_link, details_link, course_type, course_name) =>
-    req('/sync', { method: 'POST', body: JSON.stringify({ course_link, details_link, course_type, course_name }) }),
+  // ONE sheet: the curriculum, whose "PPT Links" column carries each session's deck.
+  sync: (course_link, course_type, course_name) =>
+    req('/sync', { method: 'POST', body: JSON.stringify({ course_link, course_type, course_name }) }),
   sessions: () => req('/sessions'),
-  generate: (session_no, use_judge, enforce_time) =>
-    req('/generate', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),
   job: (id) => req(`/jobs/${id}`),
   downloadUrl: (session_no, run_id, name) => `/api/download/${session_no}${qs({ run_id, name })}`,
 
@@ -99,7 +98,8 @@ export const api = {
     URL.revokeObjectURL(url)
   },
 
-  // Guided mode: generate all chunks -> review each -> finalize
+  // Guided generation — the only way a TR doc is written: generate all chunks ->
+  // review each -> finalize.
   guidedStart: (session_no, use_judge, enforce_time) =>
     req('/guided/start', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),
   guidedState: (id) => req(`/guided/${id}`),
@@ -107,8 +107,8 @@ export const api = {
     req(`/guided/${id}/regenerate`, { method: 'POST', body: JSON.stringify({ index, reason }) }),
   guidedFinalize: (id) => req(`/guided/${id}/finalize`, { method: 'POST' }),
 
-  // Teach the agent from a finished doc (one-shot mode had NO feedback path at all,
-  // so corrections were never captured outside Guided regeneration).
+  // Teach the agent from a FINISHED doc — a correction spotted after assembly, which
+  // a per-chunk regeneration reason can no longer capture.
   submitFeedback: (session_no, reason) =>
     req('/feedback', { method: 'POST', body: JSON.stringify({ session_no, reason }) }),
   learnedRules: () => req('/learned-rules'),

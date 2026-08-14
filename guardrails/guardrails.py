@@ -132,6 +132,111 @@ def _slide_text_blob(slide: dict) -> str:
     return " ".join(parts)
 
 
+# --------------------------------------------------------------------------- #
+# Sub-topics named INSIDE a key-takeaway line.
+#
+# The curriculum writes a takeaway as "Topic: sub-topic; sub-topic, sub-topic" —
+#   "2. Number Systems: Decimal notation & radix / base, Binary notation; counting
+#    in binary"
+# Everything after the colon is a promise the session makes to the learner, item by
+# item. Coverage was checked only against the model's OWN enumeration of sub-concepts,
+# which cannot catch a promise dropped before the enumeration was written — so a
+# sub-topic named in the sheet could go untaught with every gate green.
+# --------------------------------------------------------------------------- #
+_STOPWORDS = {
+    "a", "an", "the", "and", "or", "of", "in", "on", "to", "for", "with", "vs",
+    "versus", "how", "what", "why", "when", "its", "it", "is", "are", "as", "by",
+    "from", "into", "at", "we", "this", "that", "their", "them", "using", "use",
+    "basics", "introduction", "overview", "concepts", "concept", "types", "type",
+}
+
+
+def _content_tokens(text: str) -> set[str]:
+    """Distinctive words of a phrase — lowercased, de-punctuated, stopwords dropped.
+    Short tokens are kept only if they look like an acronym or identifier (MSB, I/O,
+    CPU), which are exactly the terms a curriculum line leans on."""
+    raw = re.findall(r"[A-Za-z][A-Za-z0-9+#/_-]*", str(text or ""))
+    out = set()
+    for w in raw:
+        low = w.lower()
+        if low in _STOPWORDS:
+            continue
+        if len(low) <= 2 and not w.isupper():
+            continue
+        out.add(low)
+    return out
+
+
+def _singular(tok: str) -> str:
+    """Crude de-pluralisation, enough to match 'buses'/'bus', 'controllers'/'controller'
+    without dragging in a stemmer."""
+    for suf, cut in (("ies", 3), ("sses", 2), ("ses", 2), ("s", 1)):
+        if len(tok) > cut + 2 and tok.endswith(suf):
+            return tok[:-cut] + ("y" if suf == "ies" else "")
+    return tok
+
+
+def _norm_tokens(text: str) -> set[str]:
+    return {_singular(t) for t in _content_tokens(text)}
+
+
+# An acronym or initialism inside a curriculum line — DMA, MSB, LSB, I/O, UTF-8, RGB.
+# These are the load-bearing words of a sub-topic: everything around them ("direct",
+# "memory", "access") is vocabulary the rest of the section uses anyway, so a plain
+# proportion-of-words match scores a DROPPED sub-topic as covered. Measured: removing
+# every mention of DMA from an I/O section still matched 2 of 3 words and passed.
+_ACRONYM = re.compile(r"\b(?=[A-Z0-9/&+.-]*[A-Z][A-Z0-9/&+.-]*[A-Z])[A-Z][A-Za-z0-9/&+.-]*\b")
+
+
+def _mandatory_tokens(phrase: str) -> set[str]:
+    """The tokens of `phrase` that must appear verbatim for it to count as taught."""
+    out = set()
+    for m in _ACRONYM.findall(str(phrase or "")):
+        for part in re.split(r"[/&+.-]", m):
+            if len(part) >= 2:
+                out.add(_singular(part.lower()))
+    return out
+
+
+def _covers(phrase: str, blob_tokens: set[str], threshold: float) -> bool:
+    """Is `phrase` taught by text whose vocabulary is `blob_tokens`?
+
+    Two conditions, because either alone is wrong: enough of the phrase's words are
+    present (a sub-topic may legitimately be taught in other words), AND every acronym
+    it names is present (those cannot be paraphrased away — if the section never says
+    "DMA", it did not teach direct memory access).
+    """
+    toks = _norm_tokens(phrase)
+    if not toks:
+        return True
+    if not _mandatory_tokens(phrase) <= blob_tokens:
+        return False
+    return len(toks & blob_tokens) / len(toks) >= threshold
+
+
+def takeaway_subtopics(line: str) -> list[str]:
+    """The sub-topics a takeaway line names, in order.
+
+    "1. Data Representation & Binary Basics: How computers see information; binary
+     (1s and 0s), Bit & byte; most- and least-significant bit (MSB / LSB)"
+      -> ["How computers see information", "binary (1s and 0s)", "Bit & byte",
+          "most- and least-significant bit (MSB / LSB)"]
+
+    Only the part AFTER the first colon is split — the part before it is the topic
+    name, and it is already enforced verbatim as the section name. A line with no
+    colon names no sub-topics, and this returns []: the takeaway is then covered by
+    the coverage_map rules alone, exactly as before.
+    """
+    text = re.sub(r"^\s*(?:\d+\s*[.)\-:]|[-*•])\s*", "", str(line or "")).strip()
+    if ":" not in text:
+        return []
+    after = text.split(":", 1)[1]
+    parts = [p.strip(" .;,&-–—") for p in re.split(r"[;,]", after)]
+    # A fragment with no distinctive word of its own ("and so on", "etc") is not a
+    # promise anyone can check, so it is not treated as one.
+    return [p for p in parts if p and _content_tokens(p)]
+
+
 def _phrase_hits(text: str, phrases: list[str]) -> list[str]:
     """Which of `phrases` occur in `text`, matched on word boundaries so 'no' does
     not fire inside 'node' and 'you' does not fire inside 'your'."""
@@ -247,6 +352,29 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"introduced. Re-label the ones that explain, compare, or apply it, "
                 f"and drop their analogies.")
 
+        # --- BROAD -> SPECIFIC, made checkable ------------------------------------
+        # Sections were opening on a narrow detail — one type, one formula, one step —
+        # so the learner met the parts before the shape of the whole. The rule is that
+        # a section opens on the LANDSCAPE: what this is and which types/parts it has.
+        # Only the opening slide's ROLE is checked here; whether that slide really sets
+        # the map is a judgement, and it is scored under the pedagogy dimension.
+        if role_cfg.get("require_broad_to_specific_opener", False):
+            opener_ok = set(role_cfg.get("section_opener_roles", []))
+            for si, sec in enumerate(doc.get("sections") or []):
+                sec_slides = sec.get("slides") or []
+                if not sec_slides:
+                    continue
+                first = sec_slides[0]
+                r = roles.get(first.get("n")) or str(first.get("role") or "").strip()
+                if opener_ok and r and r not in opener_ok:
+                    fails.append(
+                        f"Section {si + 1} ('{sec.get('name') or '?'}') opens on slide "
+                        f"{first.get('n', '?')} with role '{r}' — a section must start "
+                        f"BROAD and then go specific. Its first slide must be "
+                        f"{' or '.join(sorted(opener_ok))}: name what this topic is and "
+                        f"which types/kinds/parts it has, all in one place, before any "
+                        f"single one of them is taught.")
+
     # --- analogy placement: an EXACT biconditional against the role -------------
     # required iff role == concept_intro. An analogy earns its lines the first time a
     # concept is met; on a mechanism, comparison, pros/cons, reasoning, application or
@@ -319,6 +447,27 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"{len(unnumbered)} agenda item(s) are not numbered — number them "
                 f"1..{len(agenda)} to mirror the numbered Key Takeaways.")
 
+    # --- one section per takeaway, named after it, in order ---------------------
+    # The layout rule has always been "one section breaker per agenda item, in agenda
+    # order, with the same text", but only the rubric ever looked at it. That left the
+    # coverage machinery resting on an unchecked assumption: sub-concept references are
+    # scoped to "the section whose name IS takeaway i", and the takeaway-completeness
+    # check below looks up the same way, so a section renamed by a word quietly detached
+    # both from the takeaway they are meant to police.
+    if ag_cfg.get("sections_named_after_takeaways", False):
+        src_kt = list(session.key_takeaways)
+        secs = doc.get("sections") or []
+        if secs and len(secs) != len(src_kt):
+            fails.append(
+                f"{len(secs)} section(s) for {len(src_kt)} key takeaways — the document "
+                f"needs exactly one section per takeaway, in curriculum order.")
+        for i, sec in enumerate(secs[:len(src_kt)]):
+            if _norm_line(sec.get("name")) != _norm_line(src_kt[i]):
+                fails.append(
+                    f"Section {i + 1} is named \"{sec.get('name')}\" but must carry key "
+                    f"takeaway {i + 1} verbatim (it is the agenda item too):\n"
+                    f"    expected: {src_kt[i]}")
+
     # --- recap must carry ALL of the previous session's agenda items -------------
     rc_cfg = con.get("recap", {})
     if (rc_cfg.get("must_cover_all_prev_agenda_items", False)
@@ -349,6 +498,54 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 fails.append(
                     f"{tag}: content text block {i + 1} has {_sentence_count(t)} "
                     f"sentences (max {max_cs}).")
+
+    # --- prose / bullet MIX ------------------------------------------------------
+    # The reviewer's complaint: "mostly all the content is bullets only, which looks
+    # odd". It did, and nothing checked it — every earlier rule pushed the same way
+    # ("prefer bullets/tables over text"), so the model dutifully bulleted everything,
+    # including pairs of short points that are plainly one sentence. Two deterministic
+    # halves, both cheap to check and both exactly what the reviewer was seeing:
+    #   1. most slides must carry a framing PARAGRAPH, not open straight into a list;
+    #   2. a "list" of one or two items is a bulleted sentence — write the sentence.
+    min_text_share = c_cfg.get("min_slides_with_text_share")
+    if min_text_share and slides:
+        with_text = [s for s in slides if _text_blocks(s)]
+        if len(with_text) < min_text_share * len(slides):
+            bare = [s.get("n", "?") for s in slides if not _text_blocks(s)]
+            fails.append(
+                f"Only {len(with_text)} of {len(slides)} slides carry a prose `text` "
+                f"block (need at least {min_text_share:.0%}) — this document is almost "
+                f"all bullets, which reads as choppy and drops the connective reasoning "
+                f"a bullet cannot carry. Give slide(s) {bare} a short framing paragraph "
+                f"(<= {max_cw or 55} words) saying what the slide is about, then let the "
+                f"bullets and tables carry the detail.")
+
+    min_items = c_cfg.get("min_bullet_items")
+    if min_items:
+        for s in slides:
+            tag = f"Slide {s.get('n', '?')}"
+            for li, items in enumerate(_bullet_lists(s)):
+                if 0 < len(items) < min_items:
+                    fails.append(
+                        f"{tag}: bullet list {li + 1} has {len(items)} item(s) (min "
+                        f"{min_items}) — a one- or two-item list is a sentence that was "
+                        f"bulleted. Fold it into the slide's paragraph: "
+                        f"{'; '.join(i[:40] for i in items)}")
+
+    # Same idea, warned rather than failed: a list whose items are all a couple of
+    # words is keyword soup — but a genuine keyword list (field names, ports, flags) is
+    # legitimate, and only the judge can tell those apart.
+    short_words = c_cfg.get("short_bullet_words")
+    if short_words:
+        for s in slides:
+            for li, items in enumerate(_bullet_lists(s)):
+                if len(items) >= min_items and all(
+                        _word_count(i) <= short_words for i in items):
+                    warns.append(
+                        f"Slide {s.get('n', '?')}: bullet list {li + 1} is all "
+                        f"<= {short_words}-word fragments — if these are not keywords "
+                        f"(field names, ports, flags), say them in the paragraph or "
+                        f"make them a table.")
 
     # --- no redundancy on a slide ----------------------------------------------
     # A bullet that repeats its lead-in sentence, or a table restated as bullets,
@@ -516,6 +713,29 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"{where} lists {len(subs)} sub-concept(s) (min {min_subs}) — a "
                         f"syllabus line names a topic, not its scope. Enumerate what an "
                         f"exam would actually test on it.")
+
+                # --- DEFERRAL IS A LAST RESORT, NOT A RELEASE VALVE ----------------
+                # `deferred_to` exists so a sub-concept belonging to a later session is
+                # named rather than dropped silently. Nothing stopped it being used to
+                # make room, though — and a takeaway whose sub-concepts are mostly
+                # "deferred" has not been taught, it has been postponed while every
+                # other gate stayed green.
+                if subs:
+                    n_def = sum(1 for s in subs if isinstance(s, dict)
+                                and str(s.get("deferred_to") or "").strip()
+                                and s.get("slide") in (None, ""))
+                    max_share = cov_cfg.get("max_deferred_share_per_takeaway", 0.34)
+                    if n_def == len(subs):
+                        fails.append(
+                            f"{where}: every one of its {n_def} sub-concept(s) is deferred "
+                            f"to a later session, so takeaway {i + 1} is not taught in this "
+                            f"session at all. The agenda promises it — teach it here.")
+                    elif max_share and n_def > max_share * len(subs):
+                        fails.append(
+                            f"{where}: {n_def} of {len(subs)} sub-concepts are deferred "
+                            f"(max {max_share:.0%}). Deferral is for material that genuinely "
+                            f"belongs to a later session, never for making room — group "
+                            f"closely-related sub-concepts onto one slide instead.")
                 for j, sub in enumerate(subs):
                     at = f"{where}.sub_concepts[{j + 1}]"
                     if not isinstance(sub, dict) or not str(sub.get("name") or "").strip():
@@ -556,18 +776,137 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                                 f"the section teaching takeaway {i + 1} (its slides are "
                                 f"{sorted(own_section[i])}). Point it at the slide that "
                                 f"actually teaches this sub-concept, or teach it there.")
-            # A slide nothing in the map points at is not a failure — a comparison or
-            # summary slide legitimately consolidates several sub-concepts — but it is
-            # worth surfacing, because it is also what padding looks like.
+            # --- NOTHING OFF THE AGENDA -------------------------------------------
+            # A slide nothing in the map points at is a slide teaching something the
+            # session never promised. This used to be a warning, and warnings do not
+            # reach the revision pass — so off-agenda slides shipped, which is exactly
+            # what the reviewer kept striking out. Now it fails, with a named exception
+            # for the roles that legitimately serve several sub-concepts at once (the
+            # section's opening landscape, a contrast table, a consolidating summary).
             mapped = {int(sub["slide"]) for entry in cmap if isinstance(entry, dict)
                       for sub in (entry.get("sub_concepts") or [])
                       if isinstance(sub, dict) and str(sub.get("slide") or "").strip().isdigit()}
             orphans = sorted(n for n in slide_ns if n is not None and n not in mapped)
             if orphans:
-                warns.append(
-                    f"Slide(s) {orphans} are not referenced by any sub-concept in the "
-                    f"coverage map — fine for a comparison or summary slide, worth a "
-                    f"look otherwise.")
+                allowed = set(cov_cfg.get("unmapped_slide_roles_allowed", []))
+                by_n = {s.get("n"): s for s in slides}
+                off = [n for n in orphans
+                       if (roles.get(n) or str((by_n.get(n) or {}).get("role") or "")) not in allowed]
+                if cov_cfg.get("every_slide_mapped", False) and off:
+                    titles = "; ".join(
+                        f"{n} \"{(by_n.get(n) or {}).get('title', '?')}\"" for n in off)
+                    fails.append(
+                        f"Slide(s) {off} teach nothing the coverage map points at, so "
+                        f"nothing on the agenda promised them: {titles}. Either map each "
+                        f"one to the exam-testable sub-concept it teaches under its "
+                        f"takeaway, or CUT it — an adjacent topic spends the session's "
+                        f"budget on something the learner was not promised. (Only "
+                        f"{', '.join(sorted(allowed)) or 'no'} roles may stand unmapped.)")
+                elif off:
+                    warns.append(
+                        f"Slide(s) {off} are not referenced by any sub-concept in the "
+                        f"coverage map — worth a look; that is what off-agenda content "
+                        f"looks like.")
+
+    # --- 100% OF EACH TAKEAWAY: the sub-topics the CURRICULUM LINE itself names ----
+    # Everything checked above measures the doc against the model's OWN enumeration of
+    # sub-concepts, so a promise the curriculum made and the model never enumerated was
+    # invisible to every gate. The sheet writes a takeaway as
+    #   "2. Number Systems: Decimal notation & radix / base, Binary notation; counting
+    #    in binary"
+    # — each item after the colon is owed to the learner. This checks the section that
+    # teaches takeaway i actually mentions each of them, matched on distinctive
+    # vocabulary (de-pluralised) across the section's slides AND its coverage entries,
+    # so a sub-topic taught under a different wording still counts.
+    if cov_cfg.get("takeaway_subtopics_must_be_taught", False):
+        thresh = float(cov_cfg.get("subtopic_token_match", 0.6))
+        src_kt = list(session.key_takeaways)
+        by_name = {_norm_line(sec.get("name")): sec for sec in doc.get("sections") or []}
+        cmap = doc.get("coverage_map") if isinstance(doc.get("coverage_map"), list) else []
+        for i, kt in enumerate(src_kt):
+            subtopics = takeaway_subtopics(kt)
+            if not subtopics:
+                continue                      # no colon -> the line promises no items
+            sec = by_name.get(_norm_line(kt))
+            # Prefer the section that teaches this takeaway. When no section carries the
+            # takeaway's name (the naming gate reports that separately) fall back to the
+            # WHOLE document rather than skipping: a promise the curriculum made must be
+            # checked even when the section titles have drifted — skipping is how a
+            # reworded name would silently switch this check off.
+            if sec is not None:
+                scope = sec.get("slides") or []
+                where = f'section "{sec.get("name")}"'
+            else:
+                scope = slides
+                where = f"this document (no section is named after takeaway {i + 1})"
+            blob = " ".join(_slide_text_blob(s) for s in scope)
+            if i < len(cmap) and isinstance(cmap[i], dict):
+                blob += " " + " ".join(str(sub.get("name") or "")
+                                       for sub in (cmap[i].get("sub_concepts") or [])
+                                       if isinstance(sub, dict))
+            have = _norm_tokens(blob)
+            missing = [st for st in subtopics if not _covers(st, have, thresh)]
+            if missing:
+                quoted = "; ".join(f'"{m}"' for m in missing)
+                fails.append(
+                    f"Takeaway {i + 1} promises sub-topic(s) that are never taught: "
+                    f"{quoted}. The curriculum line names them, so the session owes them "
+                    f"to the learner — add a slide (or fold them into an existing one) "
+                    f"in {where}. Do not defer or drop a sub-topic the takeaway "
+                    f"itself names.")
+
+    # --- DO NOT RE-TEACH WHAT AN EARLIER SESSION ALREADY TAUGHT -------------------
+    # The whole reason prior decks are ingested. Until now nothing checked it: the
+    # instruction lived in the prompt, and the judge scored "no repetition" without
+    # ever being shown what the earlier sessions contained.
+    #
+    # Deliberately narrow, because "covers the same ground" and "re-teaches" are not the
+    # same thing — the curriculum legitimately revisits a topic to go deeper, and the
+    # takeaway-coverage gate above REQUIRES that. So only one case is unambiguous
+    # enough to fail: a slide that introduces a concept (role concept_intro) under a
+    # title an earlier session's deck already used. That is re-running the introduction.
+    # Everything else that looks like overlap is surfaced as a warning and handed to the
+    # judge, which now receives the same already-taught digest and can tell "goes
+    # deeper" from "says it again".
+    rep_cfg = con.get("repetition", {})
+    if rep_cfg.get("check_prior_decks", False) and getattr(session, "number", None):
+        try:
+            from src import pptx_ingest
+            prior = pptx_ingest.taught_titles(session.number)
+        except Exception:
+            prior = []
+        if prior:
+            prior_toks = [(sn, t, _norm_tokens(t)) for sn, t in prior]
+            near = float(rep_cfg.get("near_duplicate_jaccard", 0.7))
+            for s in slides:
+                title = str(s.get("title") or "")
+                t_toks = _norm_tokens(title)
+                if len(t_toks) < 2:
+                    continue                  # a one-word title collides by accident
+                best = None
+                for sn, ptitle, p_toks in prior_toks:
+                    if len(p_toks) < 2:
+                        continue
+                    union = t_toks | p_toks
+                    j = len(t_toks & p_toks) / len(union) if union else 0.0
+                    if best is None or j > best[0]:
+                        best = (j, sn, ptitle)
+                if not best:
+                    continue
+                j, sn, ptitle = best
+                role = roles.get(s.get("n")) or str(s.get("role") or "")
+                if j >= 1.0 and role == "concept_intro":
+                    fails.append(
+                        f"Slide {s.get('n', '?')} \"{title}\" introduces a concept Session "
+                        f"{sn} already introduced under the same title — the learner has "
+                        f"been taught this. Either build on it (a deeper mechanism, the "
+                        f"case that session did not cover, with role changed from "
+                        f"concept_intro) or drop the slide and use the recap line.")
+                elif j >= near:
+                    warns.append(
+                        f"Slide {s.get('n', '?')} \"{title}\" closely matches Session {sn}'s "
+                        f"slide \"{ptitle}\" — make sure this goes BEYOND what was already "
+                        f"taught rather than repeating it.")
 
     passed = len(fails) == 0
     if gates.get("structural_pass") is True and not passed:

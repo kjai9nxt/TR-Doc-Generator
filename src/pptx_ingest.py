@@ -188,6 +188,76 @@ def decks_before(session_no: int) -> list[dict]:
 
 
 # --------------------------------------------------------------------------- #
+# WHAT HAS ALREADY BEEN TAUGHT  (the point of ingesting the decks at all)
+#
+# The generator used to receive each prior deck's raw `summary` — deck title plus
+# EVERY slide title, in order. Measured on this course that is 38,000 characters in
+# which "Data Representation" appears eight times and "Recap"/"Quiz Time!" dozens of
+# times: the model was paying for ~10k tokens of noise, and what it actually needed —
+# a clean list of the TOPICS already covered, per session — was buried in it.
+#
+# taught_index() is that list: per prior session, its slide titles de-duplicated and
+# stripped of deck furniture. 950 titled slides across this course collapse to 281
+# distinct topics, so the block gets smaller AND says something. Slide BODIES are not
+# summarised here — body-level detail arrives through retrieve(), which is targeted at
+# the topic being written rather than dumped wholesale.
+# --------------------------------------------------------------------------- #
+# Deck furniture: structural slides that say nothing about what was taught.
+_BOILERPLATE = re.compile(
+    r"^(agenda|agenda for today.?s session|recap|quiz ?time!?|quiz|thank ?you|"
+    r"key ?takeaways?|takeaways?|summary|questions?\??|q ?& ?a|poll|break|"
+    r"upcoming session|next session|welcome|introduction)\W*$", re.I)
+
+
+def _clean_title(t: str) -> str:
+    # Titles carry vertical tabs and newlines from PowerPoint text boxes.
+    return re.sub(r"\s+", " ", str(t or "").replace("\x0b", " ")).strip(" -–—:")
+
+
+def taught_index(before_session: int) -> list[dict]:
+    """Per prior session: the distinct topics its deck actually taught.
+
+    Returns [{session_no, deck_title, topics: [...]}] in session order, oldest first.
+    """
+    out = []
+    for deck in decks_before(before_session):
+        deck_title = _clean_title(deck.get("deck_title"))
+        seen, topics = set(), []
+        for s in deck.get("slides") or []:
+            t = _clean_title(s.get("title"))
+            if not t or _BOILERPLATE.match(t):
+                continue
+            key = t.lower()
+            # The deck title repeats on section-divider slides; it is already the
+            # heading of this block, so it adds nothing as a topic.
+            if key == deck_title.lower() or key in seen:
+                continue
+            seen.add(key)
+            topics.append(t)
+        out.append({"session_no": deck["session_no"], "deck_title": deck_title,
+                    "topics": topics})
+    return out
+
+
+def taught_digest(before_session: int, max_per_deck: int = 40) -> str:
+    """taught_index() rendered for the prompt — one line per prior session."""
+    lines = []
+    for entry in taught_index(before_session):
+        topics = entry["topics"][:max_per_deck]
+        more = len(entry["topics"]) - len(topics)
+        tail = f" (+{more} more)" if more > 0 else ""
+        lines.append(f"  Session {entry['session_no']} — {entry['deck_title']}:\n"
+                     f"    {'; '.join(topics)}{tail}")
+    return "\n".join(lines)
+
+
+def taught_titles(before_session: int) -> list[tuple[int, str]]:
+    """(session_no, topic) for every distinct topic already taught — the lookup the
+    repetition guardrail compares a new slide's title against."""
+    return [(e["session_no"], t) for e in taught_index(before_session) for t in e["topics"]]
+
+
+# --------------------------------------------------------------------------- #
 # extraction-completeness measure (guideline 2/3: decks must be FULLY extracted)
 # --------------------------------------------------------------------------- #
 def _source_slide_count(deck: dict) -> int | None:

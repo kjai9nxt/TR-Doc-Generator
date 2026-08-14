@@ -7,7 +7,7 @@
   "capability_status": "implemented",
   "grader": "hybrid",
   "applies_to": "per_slide_content",
-  "description": "Points and sentences must be short and precise — this is what keeps the doc inside the 26-page ceiling (scored end-to-end by the document_length_pages set). Enforced caps: bullets <= 12 words; text blocks <= 2 sentences of <= 18 words each and <= 35 words total; slide heading/subheading <= 4 words each (hard cap, no period); slide title <= 8-word phrase; table cells <= 8 words. Cutting a sub-concept to hit a cap is never the right trade — cut ritual and restatement instead.",
+  "description": "Points and sentences must be short and precise — this is what keeps the doc inside the 26-page ceiling (scored end-to-end by the document_length_pages set). Enforced caps: bullets <= 12 words; text blocks <= 3 sentences of <= 18 words each and <= 55 words total; slide heading/subheading <= 4 words each (hard cap, no period); slide title <= 8-word phrase; table cells <= 8 words. Note what conciseness does NOT mean: bulleting everything. A short framing paragraph is required on most slides (see the prose_bullet_mix set) and is never a conciseness defect — the cap on it was raised from 35 to 55 words precisely so a real paragraph fits. Cutting a sub-concept to hit a cap is never the right trade — cut ritual and restatement instead.",
   "criterion": "No bullet > 12 words; no sentence > 18 words; heading/subheading <= 4 words; title <= 8 words; no filler words.",
   "rubric": {
     "5": "All lines within caps; crisp.",

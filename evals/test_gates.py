@@ -32,8 +32,22 @@ def check(name, cond, extra=""):
 sessions = course_loader.load_sessions(ROOT / "Final CN Structure.xlsx")
 prev, cur, nxt = course_loader.neighbours(15, sessions)
 GOLDEN = json.loads((ROOT / "evals/golden/session_15_golden.json").read_text())
+# Failures the golden legitimately trips because it PREDATES the rule that catches
+# them. The golden is a real, human-approved Session 15 doc kept as the format
+# reference; it is not re-written every time a rule is added, so the gates it predates
+# are listed here and excluded from the "fires nothing new" baseline. The gate itself
+# is still proved to work — each one has its own positive test below.
+#   · the agenda-verbatim / numbering / recap rules (harness 1.28);
+#   · the prose-bullet mix and broad->specific rules (this change): the golden has two
+#     2-item bullet lists that should be sentences, and its comparison section opens on
+#     a mechanism slide instead of the landscape — which is exactly the reviewer's
+#     complaint, so the rules are right and the fixture is old.
+#   · one-section-per-takeaway naming: the golden groups its seven takeaways into four
+#     thematic sections, which predates the rule (the coverage code has always noted it).
 GRAND = ["Agenda has 4 items", "was reworded. Expected", "and key takeaway",
-         "agenda item(s) are not numbered", "recap must carry ALL"]
+         "agenda item(s) are not numbered", "recap must carry ALL",
+         "item(s) (min 3)", "must start BROAD",
+         "must carry key takeaway", "section(s) for 7 key takeaways"]
 
 def gate(doc, needle, *, want=True, label=None):
     """Assert `needle` appears (or not) in the non-grandfathered failures."""
@@ -107,6 +121,128 @@ d = copy.deepcopy(GOLDEN)
 d["coverage_map"][0]["sub_concepts"][0] = {"name": "Partial reliability",
                                           "deferred_to": "Session 16 — SCTP extensions"}
 gate(d, "neither a slide nor a named", want=False, label="named deferral is accepted")
+
+print("\n== prose / bullet MIX ==")
+# The reviewer's complaint was "mostly all the content is bullets, which looks odd".
+# `gate()` filters these needles out of the baseline (the golden predates the rule), so
+# these check the raw failures instead.
+def raw(doc):
+    return guardrails.check(doc, cur, False, False).failures
+
+d = copy.deepcopy(GOLDEN)                      # strip every framing paragraph
+for sec in d["sections"]:
+    for s in sec["slides"]:
+        s["content"] = [b for b in s["content"] if b.get("type") != "text"] or \
+                       [{"type": "bullets", "items": ["one", "two", "three"]}]
+check("an all-bullets document fails the mix rule",
+      any("carry a prose `text` block" in f for f in raw(d)))
+check("the golden's paragraphs satisfy it",
+      not any("carry a prose `text` block" in f for f in raw(GOLDEN)))
+
+d = copy.deepcopy(GOLDEN)
+d["sections"][3]["slides"][0]["content"] = [          # slide 6
+    {"type": "text", "text": "Best Effort is the default service model."},
+    {"type": "bullets", "items": ["No delivery guarantee", "No delay bound"]}]
+# Scoped to slide 6: the golden's own grandfathered 2-item lists (slides 1 and 2) fire
+# the same message, so an unscoped `any(...)` would pass whatever this slide does.
+def short_list_on(doc, n):
+    return any(f.startswith(f"Slide {n}:") and "item(s) (min 3)" in f for f in raw(doc))
+
+check("a 2-item bullet list fails (it is a bulleted sentence)", short_list_on(d, 6))
+d["sections"][3]["slides"][0]["content"][1]["items"].append("No bandwidth reservation")
+check("...and a real 3-item list passes", not short_list_on(d, 6))
+
+print("\n== broad -> specific: a section opens on the landscape ==")
+d = copy.deepcopy(GOLDEN)
+d["sections"][0]["slides"][0]["role"] = "mechanism"
+d["sections"][0]["slides"][0].pop("analogy", None)
+check("a section opening on a mechanism slide fails",
+      any("must start BROAD" in f for f in raw(d)))
+d["sections"][0]["slides"][0]["role"] = "overview"
+check("...and an `overview` opener is accepted",
+      not any("must start BROAD" in f and "Section 1" in f for f in raw(d)))
+check("an overview slide must carry NO analogy",
+      "overview" in guardrails.config.harness()["constraints"]["analogy"]["banned_on_roles"])
+
+print("\n== nothing off the agenda: every slide is mapped ==")
+# Slide 5 teaches takeaway 5; point its sub-concepts at slide 4 instead, so nothing in
+# the map claims slide 5 — which is what an off-agenda slide looks like.
+d = copy.deepcopy(GOLDEN)
+for sub in d["coverage_map"][4]["sub_concepts"]:
+    sub["slide"] = 4
+check("a slide no sub-concept points at FAILS",
+      any("nothing the coverage map points at" in f for f in raw(d)))
+d["sections"][2]["slides"][1]["role"] = "summary"      # slide 5 -> an allowed role
+d["sections"][2]["slides"][1].pop("analogy", None)
+check("...unless it is an overview / comparison / summary",
+      not any("nothing the coverage map points at" in f for f in raw(d)))
+
+print("\n== 100% of every takeaway: the sub-topics the curriculum line names ==")
+# The sheet writes a takeaway as "Topic: item; item, item". Each item is owed to the
+# learner, and until now nothing checked the promise — only the model's own enumeration.
+subs = guardrails.takeaway_subtopics(
+    "1. Data Representation & Binary Basics: How computers see information; "
+    "binary (1s and 0s), Bit & byte; most- and least-significant bit (MSB / LSB)")
+check("the line's sub-topics are parsed", len(subs) == 4, str(subs))
+check("the topic name before the colon is not one of them",
+      not any("Binary Basics" in s for s in subs), str(subs))
+check("a line with no colon promises no items",
+      guardrails.takeaway_subtopics("Understanding TCP and UDP") == [])
+check("an acronym is mandatory vocabulary",
+      guardrails._mandatory_tokens("Direct memory access (DMA)") == {"dma"})
+have = guardrails._norm_tokens("The controller uses direct memory access to move blocks "
+                               "without the CPU, and the DMA engine raises an interrupt.")
+check("a sub-topic taught in other words still counts",
+      guardrails._covers("Direct memory access (DMA)", have, 0.6))
+have_no_dma = guardrails._norm_tokens(
+    "The controller moves memory blocks directly, giving the processor access to data.")
+check("...but dropping the acronym does NOT (generic words alone can't cover it)",
+      not guardrails._covers("Direct memory access (DMA)", have_no_dma, 0.6))
+
+print("\n== deferral is a last resort, not a release valve ==")
+d = copy.deepcopy(GOLDEN)
+for sub in d["coverage_map"][4]["sub_concepts"]:
+    sub.pop("slide", None); sub["deferred_to"] = "Session 16 — QoS deep dive"
+gate(d, "is not taught in this session at all", label="a wholly deferred takeaway fails")
+d = copy.deepcopy(GOLDEN)
+d["coverage_map"][3]["sub_concepts"][0].pop("slide", None)
+d["coverage_map"][3]["sub_concepts"][0]["deferred_to"] = "Session 16"
+d["coverage_map"][3]["sub_concepts"][1].pop("slide", None)
+d["coverage_map"][3]["sub_concepts"][1]["deferred_to"] = "Session 16"
+gate(d, "are deferred (max", label="deferring most of a takeaway fails")
+gate(GOLDEN, "are deferred (max", want=False, label="the golden defers nothing")
+
+print("\n== one section per takeaway, named after it ==")
+d = copy.deepcopy(GOLDEN); d["sections"][0]["name"] = "SCTP Basics"
+r = guardrails.check(d, cur, False, False)
+check("a renamed section is reported",
+      any('named "SCTP Basics"' in f for f in r.failures))
+
+print("\n== do not re-teach what an earlier session already taught ==")
+# The point of ingesting the decks. Only the unambiguous case fails: a slide that
+# RE-INTRODUCES a concept under a title an earlier deck already used.
+from src import pptx_ingest as _ppt
+_prior = _ppt.taught_titles(15)
+if _prior:
+    _title = next((t for _sn, t in _prior if len(t.split()) >= 3), None)
+    d = copy.deepcopy(GOLDEN)
+    s = d["sections"][0]["slides"][0]
+    s["title"] = _title; s["role"] = "concept_intro"
+    s["analogy"] = "A shared notice board — just as one association carries many streams."
+    gate(d, "already introduced under the same title",
+         label="re-introducing a prior session's concept fails")
+    d2 = copy.deepcopy(d)
+    d2["sections"][0]["slides"][0]["role"] = "mechanism"
+    d2["sections"][0]["slides"][0].pop("analogy", None)
+    r2 = guardrails.check(d2, cur, False, False)
+    check("...but the same title on a deeper slide is a WARNING, not a failure",
+          not any("already introduced under the same title" in f for f in r2.failures)
+          and any("closely matches Session" in w for w in r2.warnings))
+    check("the golden itself trips no repetition failure",
+          not any("already introduced under the same title" in f
+                  for f in guardrails.check(GOLDEN, cur, False, False).failures))
+else:
+    check("prior decks available for the repetition gate", False, "(knowledge base empty)")
 
 print("\n== page ceiling ==")
 est = page_grader.estimate(GOLDEN)
@@ -366,6 +502,28 @@ check("time is not a length failure when the 40-min limit is off",
                           "pages": {"within_budget": True}}) == [])
 check("the repair round count is configured",
       config.harness()["gates"].get("guided_length_repair_rounds") is not None)
+
+# …and repair now also fires on the two defects a chunk reviewer could not catch:
+# a hard guardrail failure on the ASSEMBLED doc, and a wrong technical fact.
+import copy as _copy
+CLEAN = {"guardrails": {"passed": True}, "time_enforced": True,
+         "time": {"within_budget": True}, "pages": {"within_budget": True},
+         "judge": {"scores": {"technical_accuracy": {"score": 5}}}}
+small = {"sections": [{"slides": [{"n": 1}]}]}
+check("a clean assembled doc triggers no repair",
+      pipeline._repair_reasons(small, CLEAN) == [])
+r = _copy.deepcopy(CLEAN); r["guardrails"] = {"passed": False, "failures": ["a", "b"]}
+check("a guardrail failure triggers a repair",
+      any("guardrail" in x for x in pipeline._repair_reasons(small, r)))
+r = _copy.deepcopy(CLEAN); r["judge"]["scores"]["technical_accuracy"]["score"] = 2
+check("a wrong technical fact triggers a repair",
+      any("technical accuracy" in x for x in pipeline._repair_reasons(small, r)))
+r = _copy.deepcopy(CLEAN); r["judge"]["scores"]["technical_accuracy"]["score"] = 4
+check("accuracy at the bar does not",
+      pipeline._repair_reasons(small, r) == [])
+r = _copy.deepcopy(CLEAN); r["judge"] = {}
+check("a judge that scored nothing does NOT force a repair",
+      pipeline._repair_reasons(small, r) == [])
 
 print("\n== a coverage_map reference must point INTO its own section ==")
 # The judge kept reporting coverage failures of the form "sub-concept mapped to Slide 2,

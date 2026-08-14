@@ -1,0 +1,58 @@
+{
+  "id": "prose_bullet_mix",
+  "title": "Prose / Bullet Mix",
+  "guideline_refs": [16],
+  "capability_status": "implemented",
+  "grader": "deterministic",
+  "applies_to": "final_tr_doc",
+  "description": "A TR doc must MIX short paragraphs with bullets. Added after the reviewer's note that 'mostly all the content is bullets only, which looks odd' — and it did, because every earlier rule pushed the same way ('prefer bullets/tables over text'), so even pairs of short related points came back as lists. Two countable halves: at least 60% of slides must carry a `text` block (a short framing paragraph of <= 55 words / 2-3 sentences saying what the slide is about), and no bullet list may have fewer than 3 items, since a one- or two-item list is a sentence somebody bulleted. Bullets stay for genuine lists of 3+ parallel, substantial items; tables stay for any 2+ way comparison.",
+  "criterion": ">= 60% of slides contain a `text` content block, AND every bullet list has >= 3 items.",
+  "rubric": {
+    "5": "Both hold: most slides open with a framing paragraph, every list is a real list.",
+    "3": "One of the two is breached on a slide or two.",
+    "1": "Wall-to-wall bullets, or several bulleted one/two-item 'lists'."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "mix-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "content": [
+          {"type": "text", "text": "SCTP carries several independent streams inside one association, so a loss on one stream does not stall the others."},
+          {"type": "bullets", "items": [
+            "Each stream keeps its own sequence space",
+            "Loss blocks only the affected stream",
+            "Ordering is preserved per stream"
+          ]}
+        ]
+      },
+      "rationale": "A framing paragraph, then a real 3-item list — the intended shape."
+    },
+    {
+      "id": "mix-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "content": [
+          {"type": "bullets", "items": [
+            "Multi-streaming avoids head-of-line blocking",
+            "Multi-homing survives a path failure"
+          ]}
+        ]
+      },
+      "rationale": "No framing paragraph, and a 2-item 'list' that is really one sentence."
+    },
+    {
+      "id": "mix-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "doc_shape": "12 slides, 2 of which carry a `text` block",
+        "text_block_share": 0.17
+      },
+      "rationale": "17% of slides carry prose — under the 60% floor; this is the wall of bullets the reviewer rejected."
+    }
+  ]
+}

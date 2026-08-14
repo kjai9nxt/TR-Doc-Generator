@@ -39,6 +39,17 @@ golden:
     - "and key takeaway"
     - "agenda item(s) are not numbered"
     - "the recap must carry ALL of them"
+    # The prose/bullet-mix and broad->specific rules. The golden predates both: it has
+    # two 2-item bullet lists that should be sentences, and its comparison section opens
+    # on a mechanism slide instead of the landscape. Those are exactly the defects the
+    # rules were added to catch, so the fixture is what is out of date — each gate has
+    # its own positive test in evals/test_gates.py.
+    - "item(s) (min 3)"
+    - "must start BROAD"
+    # One section per takeaway, named after it. The golden groups its seven takeaways
+    # into four thematic sections — the same vintage as its non-verbatim agenda above.
+    - "must carry key takeaway"
+    - "section(s) for 7 key takeaways"
 
 # Live generation cases — exercise the full pipeline on real sessions.
 generate_cases:

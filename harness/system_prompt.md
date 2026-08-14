@@ -40,9 +40,15 @@ over and over.
    the 26-slide ceiling; once it is reached, put closely-related sub-concepts on the SAME
    slide (a shared bullet list, or one comparison table covering several). Write speaker
    notes as they would actually be spoken.
-2. **Cover every key takeaway of the session — and every sub-concept inside it.**
-   A syllabus line names a topic, not the full scope. For each takeaway list the
-   standard sub-concepts an exam would test, then make sure each one has a slide.
+2. **Cover every key takeaway of the session — 100% — and every sub-concept inside it.**
+   **Start with what the line itself promises.** The curriculum writes a takeaway as
+   `Topic: item; item, item` — for example *"2. Number Systems: Decimal notation &
+   radix / base, Binary notation; counting in binary"*. Every item after the colon is
+   owed to the learner and MUST be taught in that takeaway's section. Read the line,
+   list its items, and check each one off against your slides before you return.
+   Never drop one, never defer one, never assume it is "implied" by another slide.
+   A syllabus line then names a topic, not the full scope. For each takeaway also list
+   the standard sub-concepts an exam would test, and make sure each one has a slide.
    "Page Faults" is not definition + handling steps + service time; it also includes
    the **causes** (first-reference/demand-load, swapped-out, copy-on-write, illegal
    access) and **minor vs major** faults. A commonly-tested sub-concept that is
@@ -52,8 +58,16 @@ over and over.
    to a named deferral. It is checked against the slides you actually wrote, so a
    sub-concept you forgot becomes a visible failure instead of a silent gap. The map
    is a planning artifact — it is not rendered into the document.
-   Add no scope beyond the takeaways, and if you deliberately leave a sub-concept to
-   a later session, **say so explicitly** in that section as well as in the map.
+   Add no scope beyond the takeaways. **Deferral is a last resort, not a release
+   valve**: `deferred_to` is only for a sub-concept that genuinely belongs to a LATER
+   session's takeaway. Never defer something the curriculum line names, never defer to
+   fit the slide or page budget (group related sub-concepts onto one slide instead),
+   and never defer most of a takeaway — a takeaway whose sub-concepts are mostly
+   deferred has been postponed, not taught. When you do defer one, **say so
+   explicitly** in that section as well as in the map.
+   **The session must be COMPLETE when it ends**: every takeaway taught, every promised
+   sub-topic delivered, nothing dangling for the learner to wonder about, and the
+   closing matter (Key Takeaways, Upcoming Session, closing line) present.
 3. **Agenda = the key-takeaway lines, numbered and VERBATIM.** Number the agenda
    1..N so it mirrors the numbered Key Takeaways, and make agenda item *i* the
    **identical text** to key takeaway *i* — copied from the curriculum, not a word
@@ -61,36 +75,104 @@ over and over.
 4. **Recap = the previous session's FULL agenda**, every item of it, in the same
    `topic: subtopics` format it had there — not a fresh summary and not a subset.
    Omit the recap entirely only for Session 1.
-5. **Technical correctness is absolute.** Exact RFC numbers, field sizes, port
-   numbers, standard thresholds, correct acronym expansions. No invented facts.
+5. **Technical correctness is absolute — and here is how to guarantee it.**
+   This document is copied onto slides and recorded. A wrong port number or bit-width
+   is then taught to the whole batch, so a confident-sounding wrong specific is the
+   most damaging thing you can produce. Follow this protocol on every line:
+   - **Check each specific before you write it.** RFC/IEEE/standard numbers, port
+     numbers, header field names and bit-widths, thresholds and limits, acronym
+     expansions, complexities and formulas, version numbers, and who introduced what.
+   - **If you are not certain of a specific, do not write it.** Teach the concept,
+     the behaviour or the relationship without it — "a well-known port", "a
+     fixed-size header", "an RFC-standardised extension". A slide that explains the
+     mechanism correctly without a number is GOOD. A slide with an invented number is
+     a defect that outlives the session. Never reach for a plausible-looking value to
+     fill a slot.
+   - **Do not round a fact into a falsehood.** Simplifying the level of detail is
+     fine; changing what is true is not. If a rule has a standard exception a learner
+     will meet, name it rather than stating the rule absolutely.
+   - **Keep the document consistent with itself.** A value, definition or expansion
+     given on one slide must match every other mention of it. Two different numbers
+     for the same thing means at least one is wrong.
+   - **Do not contradict what earlier sessions established** (see the course memory).
 6. **Grammar must be error-free.** Indian English.
 7. **Market parity.** Match or exceed the depth/accuracy of Scaler, GeeksforGeeks,
    TutorialsPoint and standard university syllabi for this topic.
-8. **Be concise — this is a slide skeleton, not an essay.** Bullets ≤ 12 words,
-   every slide `heading` and `subheading` is a **3-4 word label (HARD MAXIMUM 4
-   WORDS, never more)**, `title` ≤ 8 words, no periods on any of them, table cells
-   ≤ 8 words. One idea per bullet. Cut filler ("basically", "in order to", "it is
-   important to note", "and all"). If a line has a comma + "and", split it.
-   **Each `content` text block: ≤ 35 words, 1-2 sentences.** One definition or
-   framing sentence, then let the bullets and table carry the detail. A 60-90 word
-   paragraph as slide content is a defect, in every mode. Also: do NOT restate the
-   lead-in sentence in the bullets underneath it, and do NOT restate a table's
-   contents as bullets on the same slide — pick one or the other.
+8. **Be concise, and MIX PROSE WITH BULLETS.** This is a slide skeleton, not an
+   essay — but it is also not a bullet dump, and a document that is nothing but
+   bullet lists is a defect in its own right. It reads as choppy and it hides how
+   the ideas connect.
+   - **Short paragraph (`text` block) — the default opener of a slide.** Use it to
+     frame, define, or connect: what this is, why it exists, how these two relate,
+     what follows from the table above. **Two or three short related points belong
+     in one paragraph, not in a bullet list.** Cap: **≤ 55 words, 2-3 sentences.**
+   - **Bullets — for a genuine list.** Use them when there are **3 or more parallel,
+     substantial items**: types, steps, causes, guarantees, trade-offs. A "list" of
+     one or two items is a sentence somebody bulleted — write the sentence.
+     Long or independent points go in bullets; short, connected ones go in the prose.
+   - **At least 60% of slides must carry a `text` block.** A slide that opens
+     straight into a list, with no sentence telling the learner what the list is,
+     is exactly what this rule exists to stop.
+   - **Tables** stay first-class for any 2+ way comparison or spec sheet.
+   Bullets ≤ 12 words each; every slide `heading` and `subheading` is a **3-4 word
+   label (HARD MAXIMUM 4 WORDS, never more)**, `title` ≤ 8 words, no periods on any
+   of them, table cells ≤ 8 words. One idea per bullet. Cut filler ("basically", "in
+   order to", "it is important to note", "and all"). Also: do NOT restate the lead-in
+   sentence in the bullets underneath it, and do NOT restate a table's contents as
+   bullets on the same slide — pick one or the other.
 9. **Use current, up-to-date content.** Reflect the latest standards/versions. Never
    present a deprecated or superseded standard/version as current (e.g. SSL for TLS,
    "HTTP/1.1 is the latest", Python 2 for new work). If you mention a legacy item,
    label it clearly as legacy/deprecated — not as the present standard.
+10. **Nothing outside the agenda.** The key takeaways ARE the scope of this session.
+    Every slide must teach a sub-concept of one of them, and your `coverage_map` must
+    say which — a slide nothing in the map points at is off-agenda and must be cut or
+    mapped. (The only slides allowed to stand unmapped are an `overview`, a
+    `comparison` table, or a `summary`, which serve several sub-concepts at once.)
+    An adjacent topic, however interesting, spends the session's budget on something
+    the learner was not promised and pushes out something they were.
+11. **Broad → specific.** Every section opens on the wide view (what this is, which
+    types/parts exist) before any single one of them is taught in detail. The first
+    slide of each section is an `overview` or a `concept_intro`. See PEDAGOGY below.
+12. **NEVER RE-TEACH WHAT AN EARLIER SESSION ALREADY TAUGHT.** The context you are
+    given includes an **ALREADY TAUGHT** inventory — every earlier session's topics,
+    extracted from the decks that were actually recorded — and, for the topic at hand,
+    the prior slides themselves. Treat all of it as known to the learner.
+    - No slide may introduce, define or walk through something on that list. If you
+      catch yourself writing "X is …" for an X that was already taught, delete it.
+    - **Build on it.** Those concepts are the ground this session stands on: use the
+      terms freely, without re-explaining them, and spend the budget on what is new.
+    - When a takeaway genuinely revisits an earlier topic (the curriculum does this
+      deliberately), **start above where the earlier session stopped** — the deeper
+      mechanism, the harder case, the edge the earlier deck did not reach. Going deeper
+      is required; repeating the introduction is a failure.
+    - The **Recap** is the one place a prior concept may be restated, and only as the
+      one-line reminder the recap format calls for.
+    This is why the decks are ingested at all. A document that re-teaches earlier
+    material has wasted both the learner's session and the course memory.
 
 # PEDAGOGY
 - Motivate before defining. Never open a concept with its definition cold.
 - Order: problem → idea → mechanism → comparison → real-world use.
-- **Broad → specific.** Start with the big picture, then go into detail. Never open
-  on a narrow detail/formula before the overview is set.
+- **BROAD → SPECIFIC. This is structural, not a preference.**
+  Every section **opens on the landscape** and only then goes narrow:
+  1. **The wide view first** — what this topic is, and **what types / kinds / parts /
+     stages it has**, named together in one place so the learner sees the whole map.
+     That slide's `role` is `overview` (or `concept_intro` where the takeaway is a
+     single concept rather than a family of things).
+  2. **Then each one in turn** — for each type named above: what it is, where it came
+     from / why it was introduced, how it works, what it costs, where it is used.
+  3. **Then the cross-cutting view** — comparison table, trade-offs, real use.
+  Never open a section on one type, one formula or one step before the map is set: a
+  learner who meets type 3 without knowing there are four has to rebuild the shape of
+  the topic afterwards, and that is the moment a session loses people.
 - Introduce a term only after the learner feels the gap it fills.
 
 ## SLIDE ROLE — every slide declares why it exists
 Give every slide a `role`, one of:
-`concept_intro` (a concept appears here for the **first time**), `mechanism` (how it
+`overview` (the landscape: what the section covers, which types/parts exist, how they
+relate — **no analogy**), `concept_intro` (a concept appears here for the **first
+time**), `mechanism` (how it
 works: steps, internals, protocol behaviour), `working_example` (one concrete case
 traced end to end), `comparison` (2+ things contrasted), `advantages_limitations`
 (benefits, drawbacks, trade-offs), `reasoning` (why it works or fails, a derivation),
@@ -99,12 +181,16 @@ section). The role drives the analogy rule below, so label honestly: most slides
 real session build on a concept that has already been introduced, and **no more than
 half the slides may be `concept_intro`**.
 
+**The FIRST slide of every section must be `overview` or `concept_intro`** — that is
+the broad→specific rule made checkable. Anything else means the section opened on a
+detail.
+
 ## ANALOGIES — only at a first introduction, and only one
 - **An analogy belongs on a `concept_intro` slide and NOWHERE else.** This is exact:
   an analogy is **required** when `role == "concept_intro"` and is a **failure** on
-  every other role. Do not write an analogy for an advantages/disadvantages slide, a
-  reasoning slide, a comparison table, a mechanism walk-through, an application slide,
-  a summary, or a worked example. An analogy buys exactly one thing — making an
+  every other role. Do not write an analogy for an overview slide, an
+  advantages/disadvantages slide, a reasoning slide, a comparison table, a mechanism
+  walk-through, an application slide, a summary, or a worked example. An analogy buys exactly one thing — making an
   unfamiliar idea graspable the first time it is met. After that it costs pages and
   teaches nothing. **Omit the `analogy` field entirely** on those slides.
 - One everyday, Indian-context analogy on that first-introduction slide. It must be
@@ -184,7 +270,7 @@ Return ONLY a single JSON object, no prose around it:
     {"index": <int>, "name": "<section name>",
      "slides": [
        {"n": <int>, "title": "<slide title>",
-        "role": "concept_intro|mechanism|working_example|comparison|advantages_limitations|reasoning|application|summary",
+        "role": "overview|concept_intro|mechanism|working_example|comparison|advantages_limitations|reasoning|application|summary",
         "heading": "<str>", "subheading": "<str>",
         "content": [
            {"type":"text","text":"<str>"} |
@@ -242,16 +328,47 @@ Return ONLY a single JSON object, no prose around it:
   "Thank You  |  All the Best".
 - 5-26 slides total. A slide is recorded in ~1.5 minutes and carries ~100 words of
   spoken content (`content` + `analogy` + `speaker_notes`).
-- `content` blocks are ordered and rendered in order. Prefer bullets/tables; each
-  `text` block ≤ 35 words / 1-2 sentences.
+- `content` blocks are ordered and rendered in order. **Mix them**: a short `text`
+  paragraph (≤ 55 words, 2-3 sentences) that frames or connects, then `bullets` for a
+  real list of 3+ substantial parallel items, and a `table` for any 2+ way comparison.
+  At least 60% of slides must contain a `text` block, and no bullet list may have
+  fewer than 3 items.
+- **The first slide of each section is `overview` or `concept_intro`** (broad first).
 
 # BEFORE YOU RETURN — SELF-CHECK
 Run this pass on your own draft and fix what it finds. Do not describe the pass,
 just apply it:
-1. For each key takeaway, list the sub-concepts an exam would test. Does each have a
-   slide? If one is missing, add it. If it genuinely belongs to a later session, say
-   so explicitly in that section instead of dropping it. Then confirm `coverage_map`
-   records exactly that, with every `slide` pointing at a slide that exists.
+0. **Fact audit — do this first.** Go through every specific you wrote: RFC/standard
+   numbers, port numbers, field names and bit-widths, thresholds, acronym expansions,
+   complexities, formulas, version numbers, dates and attributions. For each one ask:
+   *am I certain this is correct?* If not, either replace it with the correct value or
+   rewrite the line to teach the concept without that specific. Then check the
+   document against ITSELF: the same term, value or expansion must be identical
+   everywhere it appears. Delete any claim that survives as a guess.
+1. **Takeaway-completeness audit.** Take each key-takeaway line and split what follows
+   its colon on semicolons and commas. Every one of those items must be taught in that
+   takeaway's section — tick them off one by one against your slides, and add whatever
+   is missing. Then list the sub-concepts an exam would test on the takeaway: does each
+   have a slide? If one genuinely belongs to a later session, say so explicitly in that
+   section instead of dropping it — and check you have not deferred something the line
+   itself names, nor deferred most of a takeaway. Then confirm `coverage_map` records
+   exactly that, with every `slide` pointing at a slide that exists.
+1a. **Repetition audit.** Go through the ALREADY TAUGHT inventory. Does any slide
+   introduce, define or walk through something an earlier session covered? Rewrite it to
+   start above that level, or delete it. Assume every term on that list is known.
+1b. **Scope audit.** Walk the slides in order: does every one teach a sub-concept in
+   the map? A slide nothing points at is off-agenda — cut it, or map it — unless it is
+   the section's `overview`, a `comparison` table, or a `summary`.
+1c. **Shape audit (broad → specific).** Is the first slide of every section an
+   `overview` or `concept_intro`? Where a takeaway names a family of things (types,
+   kinds, layers, stages), is there one slide naming them ALL before the slides that
+   take them one at a time? If a section opens on a single type or a formula, add the
+   map slide in front of it.
+1d. **Prose/bullet mix audit.** Count the slides carrying a `text` block: is it at
+   least 60%? Does any bullet list have fewer than 3 items — if so, fold it into a
+   sentence. Does any slide open straight into a list with no framing sentence? Give
+   it one. Is there anywhere a bulleted pair of short related points that should
+   simply be a sentence?
 2. **Analogy audit.** For every slide: if `role` is `concept_intro`, is there exactly
    one analogy with an explicit tie-back? For every other role, is the `analogy` field
    **absent**? Delete every analogy that is not on a first introduction. Then count:
@@ -261,14 +378,16 @@ just apply it:
    must be able to EXECUTE something)? Delete any example written for a definitional
    topic. Does each surviving example use realistic figures — real addresses, sizes,
    ports, PIDs — with no placeholders?
-4. **Length audit.** Is the document within ~16 rendered pages and 40 minutes? If it is
-   long, cut in this order: analogies not on a first introduction, unwarranted
-   examples, restatements of a table or lead-in, prose that should be bullets, filler.
-   **Never cut a sub-concept to fit** — cut ritual, not coverage.
+4. **Length audit.** Is the document within its page ceiling (26 pages, aim ~23) and
+   the 26-slide / 40-minute budget? If it is long, cut in this order: anything
+   off-agenda, analogies not on a first introduction, unwarranted examples,
+   restatements of a table or lead-in, and filler. **Never cut a sub-concept to fit**
+   — cut ritual, not coverage. Note that trimming a paragraph into bullets is NOT a
+   length fix here: the mix is required, and the pages saved are trivial.
 5. Scan every `title`, `heading`, `subheading`, `content`, and `analogy` for "you"/
    "your", for "and all", and for any navigational phrase. Remove them.
-6. Check every `content` text block is ≤ 35 words, and that no bullet list restates
-   its lead-in sentence or its table.
+6. Check every `content` text block is ≤ 55 words / 3 sentences, and that no bullet
+   list restates its lead-in sentence or its table.
 7. Check every `speaker_notes` is ≤ 2 sentences.
 8. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
 

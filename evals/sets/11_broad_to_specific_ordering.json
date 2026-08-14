@@ -5,12 +5,12 @@
   "capability_status": "implemented",
   "grader": "llm_judge",
   "applies_to": "final_tr_doc",
-  "description": "The doc must move from the broad picture to specifics: motivation/overview first, then mechanism, then fine detail. It must not open with a narrow detail before the big picture is set.",
-  "criterion": "Early slides establish the 'what/why' at a high level; detail deepens as the doc progresses.",
+  "description": "The doc must move from the broad picture to specifics, SECTION BY SECTION: each section opens on the landscape — what the topic is and which types / kinds / parts / stages it has, named together in one place — and only then teaches them one at a time (what each is, where it came from, how it works, what it costs), finishing with the cross-cutting comparison and real use. A learner who meets the third kind of something before knowing there are four has to rebuild the map afterwards. The opening slide's ROLE is gated deterministically (it must be `overview` or `concept_intro`); this set judges whether that slide's CONTENT really sets the map, and whether the arc holds across the section.",
+  "criterion": "Every section opens with the wide view (the set of types/parts named before any one is taught); detail deepens as the section progresses.",
   "rubric": {
-    "5": "Clear broad→specific arc across sections.",
+    "5": "Clear broad→specific arc in every section; the set is named before its members are taught.",
     "3": "Mostly ordered, one slide out of place.",
-    "1": "Opens on a narrow detail, or detail precedes the overview."
+    "1": "A section opens on a narrow detail, or types 1..N are taught without the set ever being named."
   },
   "pass_threshold": 4,
   "cases": [
@@ -27,6 +27,30 @@
       "expected": "fail",
       "input": {"slide_titles": ["Retransmission timeout calculation (RTO = SRTT + 4·RTTVAR)", "What is TCP?", "Why reliability matters"]},
       "rationale": "Opens on a narrow formula before defining TCP — inverted order."
+    },
+    {
+      "id": "bts-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {"section": "Types of Scheduling", "slides": [
+        {"role": "overview", "title": "The three scheduler levels", "teaches": "long-term, short-term and medium-term named together, with where each sits"},
+        {"role": "mechanism", "title": "Long-term scheduler"},
+        {"role": "mechanism", "title": "Short-term scheduler"},
+        {"role": "mechanism", "title": "Medium-term scheduler"},
+        {"role": "comparison", "title": "Frequency and scope compared"}
+      ]},
+      "rationale": "The set is named first, then each member is taught, then they are compared."
+    },
+    {
+      "id": "bts-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {"section": "Types of Scheduling", "slides": [
+        {"role": "mechanism", "title": "Long-term scheduler"},
+        {"role": "mechanism", "title": "Short-term scheduler"},
+        {"role": "mechanism", "title": "Medium-term scheduler"}
+      ]},
+      "rationale": "Teaches all three types without ever naming the set — the learner has to infer that there are exactly three, and how they relate."
     }
   ]
 }

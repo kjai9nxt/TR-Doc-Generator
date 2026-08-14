@@ -207,6 +207,14 @@
       ],
       "status": "implemented",
       "grader": "llm_judge"
+    },
+    {
+      "file": "25_prose_bullet_mix.json",
+      "guidelines": [
+        16
+      ],
+      "status": "implemented",
+      "grader": "deterministic"
     }
   ],
   "guideline_coverage": "All 25 guidelines are covered across 24 sets. Guidelines 20 (content recency) and 21 (document structure & layout) were added by the user on 2026-07-13. Guidelines 22-25 were added on 2026-08-10 from reviewer feedback that the docs were too long and were spending that length on ritual rather than coverage: 22 = 16-page ceiling, 23 = an analogy only where a concept is first introduced, 24 = a worked example only where one earns its slide and always with realistic figures, 25 = regenerating one chunk must change only what the reviewer complained about."

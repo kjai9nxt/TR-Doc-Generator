@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.37"
+  version: "1.39"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -768,10 +768,110 @@ meta:
               and its date sentences are replaced by the date-free rule: never pass off
               something deprecated as the state of the art, teach the version the industry
               actually uses, and say which one you are teaching. Supersedes 1.18(a)."
+    - "1.38 — ONE SHEET, ONE MODE, AND THE THREE CONTENT COMPLAINTS.
+              (a) INPUT IS NOW A SINGLE SHEET. The curriculum sheet carries each session's
+              deck link itself, in a 'PPT Links' column on the session's own row; the
+              separate 'Session Details' sheet joined on Session Name is gone, along with
+              the second link to paste, the second template to keep valid, and the failure
+              where renaming a session in one sheet silently detached its deck. A blank
+              cell is not an error — it marks a session not yet recorded, which is exactly
+              the set of sessions still needing a TR doc. sync.sync() takes one link,
+              sync.last_links() becomes last_link(), and the stored details_link is dropped
+              on the next sync. Deck state stays keyed by normalised session name, so no
+              previously synced instance re-downloads its decks.
+              (b) ONE-SHOT GENERATION REMOVED. Every TR doc is written in the GUIDED flow,
+              where a human approves each chunk before assembly; the one-shot path produced
+              whole documents nobody had read until they were finished. Gone: /api/generate,
+              the UI mode selector, run.py --session, and app.py (the Streamlit UI, which
+              was one-shot only — streamlit is off the requirements list with it).
+              pipeline.run() survives ONLY as the offline eval harness's way to obtain a doc
+              to score; no user-facing surface reaches it.
+              (c) THE THREE CONTENT COMPLAINTS, each given a rule rather than an adjective:
+                · TECHNICAL CORRECTNESS — constraints.technical states the protocol (verify
+                  every specific; if unsure, teach the concept WITHOUT the number rather
+                  than inventing one; stay consistent with yourself), the judge's web check
+                  now verifies specifics FIRST and must name slide + wrong value + correct
+                  value in blocking_issues, technical_accuracy is reweighted 17 -> 20, and
+                  gates.guided_repair_on.technical_accuracy lets finalize repair a factual
+                  error the chunk reviewer could not have fact-checked.
+                · NOTHING OFF THE AGENDA — a slide no coverage_map sub-concept points at was
+                  a WARNING, and warnings never reach the revision pass, so off-agenda
+                  slides shipped. coverage.every_slide_mapped makes it a hard failure, with
+                  overview/comparison/summary exempt (they serve several sub-concepts).
+                · PROSE/BULLET MIX — the docs were wall-to-wall bullets because every rule
+                  pushed that way ('prefer bullets over text'). Text blocks now allow a real
+                  paragraph (35 -> 55 words, 2 -> 3 sentences); at least 60% of slides must
+                  carry one (content.min_slides_with_text_share), and a bullet list needs 3+
+                  items (content.min_bullet_items) since a two-item list is a bulleted
+                  sentence. New eval set 25 prose_bullet_mix scores both halves.
+              (d) BROAD -> SPECIFIC IS STRUCTURAL NOW. New slide role `overview` (the
+              landscape: what this is and which types/parts it has, named together; no
+              analogy), and slide_roles.require_broad_to_specific_opener makes the FIRST
+              slide of every section an overview or concept_intro. The judge scores whether
+              that slide really sets the map (pedagogy 8 -> 9); the gate only checks the
+              role, which is the checkable half.
+              The golden (Session 15) predates (c) and (d) and is grandfathered in
+              evals/eval_set.yaml + evals/test_gates.py, exactly as it is for the agenda
+              rules — each new gate has its own positive test instead."
+    - "1.39 — THE INGESTED DECKS NOW ACTUALLY DECIDE SOMETHING, AND A TAKEAWAY IS A CONTRACT.
+              (a) COURSE MEMORY WAS EXPENSIVE NOISE. Each prior deck's raw `summary` — deck
+              title plus EVERY slide title — was pasted into the context: 38,000 characters
+              for this course, in which 'Data Representation' appears eight times and
+              'Recap'/'Quiz Time!' dozens of times. ~10k tokens a run to say very little.
+              pptx_ingest.taught_index()/taught_digest() replace it with each earlier
+              session's DISTINCT topics, de-duplicated and stripped of deck furniture: 950
+              titled slides collapse to 293 topics and 8,000 characters. Smaller AND it
+              finally reads as 'session 12 taught these things'.
+              (b) NOTHING EVER CHECKED THE NO-REPEAT RULE — the point of ingesting decks at
+              all. It lived in the prompt, and the judge scored the dimension that owns it
+              (`coverage`) with no idea what earlier sessions contained. Now the taught
+              digest reaches all three places that need it: the WRITER (as a binding
+              already-taught inventory), the JUDGE (as grading context, with the asymmetry
+              spelled out — going deeper is required, re-running the introduction is not),
+              and a GUARDRAIL. The gate is deliberately narrow: only a slide that
+              re-introduces (role concept_intro) a concept under a title an earlier deck
+              already used fails; anything else that looks like overlap is a warning, because
+              the curriculum legitimately revisits topics and the coverage rules REQUIRE it.
+              (c) PER-TAKEAWAY RETRIEVAL. The session-level RAG hits are frozen into the
+              cached base context, so the chunk writing takeaway 4 saw prior material chosen
+              for the session as a whole — while the overlap that matters is always
+              topic-specific. Each guided chunk now carries its own retrieval against its own
+              takeaway (context.rag_top_k_per_takeaway).
+              Observed live on Session 30 takeaway 1 ('I/O Hardware: Ports, buses & device
+              controllers', where session 2 had already taught ports): the old prompt wrote
+              'What Is An I/O Port' as a first introduction; with the decks fed in, that slide
+              is gone and the section runs controller register model → memory-mapped vs
+              port-mapped → bus types and arbitration. Same takeaway, started above what the
+              learner had already been taught.
+              (d) 100% OF EVERY TAKEAWAY. Every coverage gate measured the doc against the
+              model's OWN enumeration of sub-concepts, so a promise the CURRICULUM made and
+              the model never enumerated was invisible to all of them. The sheet writes a
+              takeaway as 'Topic: item; item, item' and each item is owed to the learner:
+              coverage.takeaway_subtopics_must_be_taught parses them out and checks the
+              section teaches each one. Matching is on distinctive vocabulary with plurals
+              normalised, PLUS any acronym the line names is mandatory — measured: stripping
+              every mention of DMA from an I/O section still matched two words in three and
+              passed until acronyms became compulsory.
+              (e) DEFERRAL WAS AN UNBOUNDED RELEASE VALVE. `deferred_to` exists so a
+              sub-concept left to a later session is named rather than dropped silently, but
+              nothing stopped it being used to make room — a takeaway could have every
+              sub-concept 'deferred' with all gates green. Deferring all of them now fails,
+              and coverage.max_deferred_share_per_takeaway (0.34) bounds the rest.
+              (f) SECTION NAMING WAS AN UNCHECKED ASSUMPTION. 'One section breaker per agenda
+              item, same text' was in the layout rules from the start but only the rubric ever
+              looked at it — while the coverage machinery scopes sub-concept references to
+              'the section whose name IS takeaway i', and so does (d). A section renamed by a
+              word quietly detached both. agenda.sections_named_after_takeaways gates it, and
+              (d) falls back to a document-wide search rather than skipping when a section
+              cannot be matched, so a naming drift can never silently switch the check off.
+              Download and Create-Google-Doc were verified end-to-end against a rendered
+              document after the one-shot removal (both resolve through src/outputs.py, which
+              the guided result payload feeds exactly as the removed path did)."
   architecture:
-    entrypoints: ["app.py (Streamlit web UI)", "run.py (CLI + interactive wizard)"]
-    flow: "sheets -> validate+sync (Slides->pptx->KB) -> generate -> [guardrails -> time -> pages -> judge -> revise]xN (keep best) -> learn surviving defects -> render .docx"
-    inputs: "two Google Sheets (links given at startup) + past Google Slides decks"
+    entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
+                  "run.py (CLI: sheet setup, sync, watch, list)"]
+    flow: "sheet -> validate+sync (Slides->pptx->KB) -> guided chunk generation -> human reviews/approves each chunk -> assemble -> guardrails -> time -> pages -> judge -> bounded repair -> learn surviving defects -> render .docx"
+    inputs: "ONE Google Sheet (curriculum + a 'PPT Links' column of past Google Slides decks)"
     output: "Word .docx (+ .md preview + .grade.json report) in outputs/"
 
 # ----------------------------------------------------------------------------
@@ -890,6 +990,12 @@ constraints:
     # section breakers and the Key Takeaways list all read identically.
     numbered: true
     text_must_equal_key_takeaway: true
+    # …and the SECTION BREAKERS carry the same line. Stated in the layout rules from the
+    # start but never checked, which mattered more than it looks: coverage references are
+    # scoped to "the section whose name IS takeaway i", and so is the takeaway-completeness
+    # check, so a section renamed by one word silently detached both from the takeaway
+    # they exist to police.
+    sections_named_after_takeaways: true
   recap:
     # Not a fresh 2-4 line summary: the recap reloads the PREVIOUS session's agenda —
     # every item of it — in the same "topic: subtopics" shape it had there.
@@ -914,6 +1020,8 @@ constraints:
     # The role is a planning field — it is NOT rendered into the .docx.
     required: true
     values:
+      - overview                # the LANDSCAPE first: what the section covers, which
+                                # types/kinds/parts exist, how they relate. No analogy.
       - concept_intro           # a concept appears here for the FIRST time
       - mechanism               # how it works: steps, internals, protocol behaviour
       - working_example         # a concrete case traced through end to end
@@ -926,6 +1034,15 @@ constraints:
     # writing analogies. In a real session most slides build on a concept already
     # introduced, so more than half being first-introductions means mislabelling.
     max_concept_intro_share: 0.5
+    # ---- BROAD -> SPECIFIC (structural, not just advice) ------------------------
+    # Sections were opening on a narrow detail — one type, one formula, one step —
+    # leaving the learner to reconstruct the shape of the topic afterwards. A section
+    # must now OPEN on the wide view: name the category and its types/parts, then take
+    # them one at a time in the slides that follow. `overview` is the role for that
+    # opening slide; `concept_intro` also qualifies, because introducing the concept
+    # itself is the broadest a single-concept takeaway gets.
+    require_broad_to_specific_opener: true
+    section_opener_roles: ["overview", "concept_intro"]
   headings:
     # A slide `heading`/`subheading` is a LABEL, not a sentence. Hard 4-word cap,
     # enforced by guardrails and applied in DEPTH MODE too (depth adds body
@@ -933,13 +1050,30 @@ constraints:
     max_words: 4
     title_max_words: 8
   content:
-    # Slide `content` is what appears ON the slide, so it cannot be prose. One framing
-    # sentence, then let bullets/tables carry the detail. Applies in DEPTH MODE too:
-    # depth comes from MORE slides covering more sub-concepts, never fatter paragraphs.
-    max_words_per_text_block: 35
-    max_sentences_per_text_block: 2
+    # Slide `content` mixes SHORT PROSE and BULLETS. The old rule was "prefer bullets,
+    # keep text to one framing sentence", and the result was a document that is almost
+    # nothing but bullet lists — which the reviewer reads as choppy and odd, and which
+    # loses exactly the connective tissue ("why this exists", "how these two relate")
+    # that a bullet cannot carry. The caps below therefore allow a real short
+    # paragraph, and the mix rules make one mandatory on most slides.
+    # Still bounded: a paragraph is 2-3 sentences, not an essay, and the page ceiling
+    # is unchanged — a slide that needs more than this needs to be two slides.
+    max_words_per_text_block: 55
+    max_sentences_per_text_block: 3
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
+    # ---- PROSE / BULLET MIX (added because docs came back as wall-to-wall bullets) --
+    # At least this share of slides must carry a `text` block — a short paragraph that
+    # frames, defines, or connects — rather than opening straight into a list.
+    min_slides_with_text_share: 0.6
+    # A "list" of one or two items is not a list; it is a sentence someone bulleted.
+    # Short, closely-related points belong in the paragraph.
+    min_bullet_items: 3
+    # Bullets earn their form when the items are substantial and parallel. A list whose
+    # items are all this short is keyword soup — fold it into the prose or make it a
+    # table. Reported as a warning, not a hard failure: a genuine keyword list (field
+    # names, port numbers) is legitimate and the judge can tell the difference.
+    short_bullet_words: 4
   speaker_notes:
     # One core teaching cue + one exam/interview hook. Nothing else.
     max_sentences: 2
@@ -953,7 +1087,11 @@ constraints:
     #   analogy present  <=>  role == concept_intro
     # A missing analogy on a first introduction FAILS; an analogy anywhere else FAILS.
     required_on_roles: ["concept_intro"]
-    banned_on_roles: ["mechanism", "working_example", "comparison",
+    # `overview` is banned too: it maps the territory (the types, the parts, how they
+    # relate) rather than introducing one unfamiliar idea, and an analogy for "here are
+    # the four kinds of X" is decoration. The analogy belongs on the slide that first
+    # explains a specific one of them.
+    banned_on_roles: ["overview", "mechanism", "working_example", "comparison",
                       "advantages_limitations", "reasoning", "application", "summary"]
     # An analogy that paints a picture and leaves the mapping implicit is incomplete:
     # it must end by naming the concept it maps onto, and it must match the concept
@@ -1032,9 +1170,92 @@ constraints:
     # forgot one" becomes "the map says slide 9 and there is no slide 9".
     require_coverage_map: true
     min_sub_concepts_per_takeaway: 2
+    # ---- NOTHING OFF THE AGENDA ------------------------------------------------
+    # The agenda IS the scope. Reviewers kept finding slides on topics the session was
+    # never meant to teach — interesting, adjacent, and paid for out of a budget that
+    # belongs to the takeaways. The coverage_map already says which sub-concept each
+    # slide teaches, so a slide NO sub-concept points at is a slide with no place on
+    # the agenda: it is either mapped, or it is cut. This used to be a warning only.
+    every_slide_mapped: true
+    # The exceptions are the slides that legitimately serve several sub-concepts at
+    # once rather than teaching one: the section's opening landscape, a contrast table,
+    # and a consolidating summary.
+    unmapped_slide_roles_allowed: ["overview", "comparison", "summary"]
+    # ---- 100% OF EVERY KEY TAKEAWAY -------------------------------------------
+    # Everything above measures the doc against the model's OWN list of sub-concepts,
+    # so a promise the CURRICULUM made and the model never enumerated was invisible to
+    # every gate. The sheet writes a takeaway as "Topic: item; item, item" —
+    #   "2. Number Systems: Decimal notation & radix / base, Binary notation; counting
+    #    in binary"
+    # — and each item after the colon is owed to the learner. Each one must be taught in
+    # the section for that takeaway. A line with no colon promises no items and is
+    # governed by the coverage_map rules alone, exactly as before.
+    takeaway_subtopics_must_be_taught: true
+    # How much of a sub-topic's distinctive vocabulary must appear in its section, after
+    # stopwords are dropped and plurals normalised ("buses" matches "bus"). 0.6 lets the
+    # doc teach "device controllers" as "the controller's registers" without tripping,
+    # while a sub-topic that is simply absent still fails.
+    subtopic_token_match: 0.6
+    # `deferred_to` is how a sub-concept left to a later session is NAMED rather than
+    # dropped silently — it is not a release valve for a tight slide budget. A takeaway
+    # whose sub-concepts are mostly deferred has been postponed, not taught, and every
+    # other gate stayed green while that happened. Deferring ALL of them always fails.
+    max_deferred_share_per_takeaway: 0.34
+  repetition:
+    # WHY THE DECKS ARE INGESTED AT ALL. Every prior session's deck is extracted into the
+    # knowledge base so the new document can BUILD ON what was taught instead of teaching
+    # it again — but nothing checked that: the instruction lived only in the prompt, and
+    # the judge scored the no-repetition dimension without ever being shown what earlier
+    # sessions actually contained. Now the taught index reaches the writer (as an
+    # already-taught inventory), the judge (as grading context), and this gate.
+    check_prior_decks: true
+    # Deliberately narrow. "Covers the same ground" and "re-teaches" are different: the
+    # curriculum legitimately revisits a topic to go deeper, and the takeaway-coverage
+    # gate above REQUIRES that. So only one case is unambiguous enough to fail — a slide
+    # that INTRODUCES a concept (role concept_intro) under a title an earlier session's
+    # deck already used, i.e. re-running the introduction. Anything else that looks like
+    # overlap becomes a warning for the reviewer and is left to the judge, which can tell
+    # "goes deeper" from "says it again" and now has the material to do so.
+    near_duplicate_jaccard: 0.7
     # The map is a PLANNING artifact for the graders, not lecture material — it is not
     # rendered into the .docx or the Markdown preview, so it costs no pages.
     rendered_in_docx: false
+  technical:
+    # TECHNICAL CORRECTNESS IS THE PRODUCT. A TR doc is copied onto slides and recorded;
+    # a wrong port number, bit-width or acronym expansion is then taught to every learner
+    # in the batch and is expensive to walk back. The reviewer's standing complaint is
+    # that specifics were confidently wrong, so the rule is no longer "be accurate" —
+    # it is a stated protocol the writer follows and the judge verifies.
+    #
+    # The distinction that matters: a CONCEPT stated correctly at a slightly coarser
+    # grain is fine; a SPECIFIC invented to sound authoritative is not. Every concrete
+    # value below is either one you are sure of, or it does not appear.
+    verify_before_stating: true
+    specifics_requiring_certainty:
+      - "RFC / standard / IEEE numbers"
+      - "port numbers"
+      - "header field names, orders and bit-widths"
+      - "numeric thresholds and limits (timeouts, MTUs, sizes, ranges)"
+      - "acronym expansions"
+      - "algorithm complexity and formulas"
+      - "version numbers, and which version is current"
+      - "who/what introduced something, and when"
+    # What to do instead of guessing. Teaching the mechanism without a number is
+    # ACCEPTABLE; teaching it with a wrong number is not. This line exists because the
+    # failure mode is a model reaching for a plausible-looking figure to fill a slot.
+    when_unsure: >
+      state the concept, the behaviour, or the relationship WITHOUT the specific —
+      "a well-known port", "a fixed-size header", "an RFC-standardised option" — and
+      never substitute a plausible-sounding value. Omitting a figure costs a little
+      precision; inventing one teaches something false.
+    # Claims that contradict each other inside one document are the other half of this:
+    # a value given on slide 4 and a different one on slide 11 means at least one is
+    # wrong, and the judge is asked to check the doc against itself.
+    internal_consistency: true
+    # The judge already runs with live web search (model.enable_web_market_check), so
+    # the specifics above are spot-checked against real sources rather than re-derived
+    # from the same model that wrote them.
+    judge_web_verifies_specifics: true
   language:
     variety: "Indian English"
     grammar: "must be error-free"
@@ -1096,7 +1317,19 @@ structure:
 pedagogy:
   - "Motivate every concept before defining it — never jump straight to a definition."
   - "Order concepts so each builds on the previous (problem -> idea -> mechanism -> comparison -> real use)."
+  - "BROAD -> SPECIFIC, in that order, always. Open a section on the landscape: what
+     the topic is, which types/kinds/parts it has, how they relate. Only then take
+     them one at a time — what each is, where it came from, how it works, what it
+     costs. A learner who meets type 3 before knowing there are four types has to
+     rebuild the map afterwards."
   - "Introduce a new term only after the learner feels the gap it fills."
+  - "Write in a MIX of short paragraphs and bullets. A short paragraph frames, defines
+     or connects; bullets carry a genuine list of 3+ parallel, substantial items. Two
+     short related points are a sentence, not a bullet list — a document that is
+     nothing but bullets reads as choppy and hides how the ideas connect."
+  - "Teach nothing that is not on the agenda. The key takeaways are the scope; an
+     adjacent topic, however interesting, is spending the session's budget on
+     something the learner was not promised."
   - "Analogise a concept ONCE, where it is first introduced. An analogy on an advantages,
      reasoning, comparison or worked-example slide adds length and no understanding."
   - "Keep the one analogy everyday and Indian-context friendly, and tie it back to the concept."
@@ -1133,7 +1366,13 @@ context:
   # The agent syncs both on every run, validates their templates, and ingests
   # the linked Google Slides into the persistent knowledge base (incremental).
   knowledge_base_dir: "knowledge_base"
-  rag_top_k: 6                                 # relevant prior slides to retrieve
+  rag_top_k: 6                                 # relevant prior slides, retrieved for the SESSION
+  # …and again per TAKEAWAY, inside that chunk's own instruction. The session-level
+  # retrieval is frozen into the cached base context, so the chunk writing takeaway 4
+  # was seeing prior material chosen for the session as a whole — while the overlap that
+  # actually matters is always topic-specific. Retrieving against the takeaway puts the
+  # nearest already-taught slides in front of the model at the moment it writes.
+  rag_top_k_per_takeaway: 5
   sync_poll_seconds: 60                        # --watch mode poll interval
   sync_max_workers: 1                          # decks parsed ONE at a time — image-heavy python-pptx
                                                # decks each spike RAM, and >1 in memory OOM-kills a 512 MB
@@ -1157,14 +1396,19 @@ context:
 # ----------------------------------------------------------------------------
 sheet_templates:
   match_mode: "exact_set"          # exact set of columns; trimmed, case-insensitive
+  # ONE sheet, not two. The deck link used to live in a separate "Session Details"
+  # sheet joined on Session Name, which meant two links to paste, two templates to keep
+  # valid, and a whole class of failure where a row joined to nothing because a title
+  # was edited in one sheet and not the other. The curriculum sheet now carries the
+  # deck link itself in a "PPT Links" column, so a session and its deck are the same
+  # row and the join cannot go stale.
   course_structure:
     label: "Course Curriculum Structure"
-    required_columns: ["Topic Name", "Session", "Session Name", "Key Takeaways"]
-    join_key: "Session Name"       # links the two sheets together
-  session_details:
-    label: "Session Details"
-    required_columns: ["Session Name", "PPT Link"]
-    join_key: "Session Name"
+    required_columns: ["Topic Name", "Session", "Session Name", "Key Takeaways",
+                       "PPT Links"]
+    # The column holding each session's Google Slides deck. Blank for a session whose
+    # deck does not exist yet — that is a session still needing a TR doc, not an error.
+    ppt_link_column: "PPT Links"
   guide_file: "harness/sheet_templates.md"
 
 # ----------------------------------------------------------------------------
@@ -1172,20 +1416,24 @@ sheet_templates:
 # ----------------------------------------------------------------------------
 interface:
   web:
-    tool: "streamlit"
-    file: "app.py"
-    launch: "streamlit run app.py"
-    steps: ["Connect sheets (validate + sync)", "Pick session + generate (live progress)",
-            "Review grades + download .docx"]
+    tool: "react + fastapi"
+    file: "server.py + frontend/"
+    launch: "./start.sh"
+    steps: ["Connect the curriculum sheet (validate + sync)",
+            "Pick a session and generate every chunk",
+            "Review each chunk — approve or regenerate with a reason",
+            "Create the final TR doc, review grades + download .docx"]
   cli:
     file: "run.py"
     commands:
-      - "python run.py                 # interactive wizard: enter links, sync, generate"
-      - "python run.py --session N      # sync + generate one session"
-      - "python run.py --sync           # re-sync with saved links, print changelog"
-      - "python run.py --watch          # poll both sheets, log changes"
+      - "python run.py                 # interactive setup: enter the sheet link and sync"
+      - "python run.py --sync           # re-sync with the saved link, print changelog"
+      - "python run.py --watch          # poll the sheet, log changes"
       - "python run.py --template-guide  # print the required sheet template"
       - "python run.py --list           # list sessions from the synced structure"
+  # Generation itself is web-only and always GUIDED: every chunk is human-reviewed
+  # before assembly. The one-shot mode (whole doc in a single unreviewed call) was
+  # removed — it produced documents nobody had looked at until they were finished.
 
 # ----------------------------------------------------------------------------
 # QUALITY GATES  (thresholds the graders must clear to accept a doc)
@@ -1212,15 +1460,32 @@ gates:
   # Revise a clear miss (< this) once; marginal near-misses (82-89) are shipped
   # flagged-not-accepted rather than burning a slow extra round for a small delta.
   rubric_revise_below: 82           # revise only if weighted score < this (was 75)
-  # GUIDED MODE ONLY, and ONLY for the three length ceilings (slides, recording time,
-  # pages). Guided mode drafts one section per call, so no chunk review can see the
-  # length of the ASSEMBLED document — and finalize had no repair pass at all, so an
-  # over-long guided doc came back failing three gates at once with the review panel
-  # already gone: the only way forward was to pay for a whole new guided run. This
-  # bounds a trim pass over the assembled doc; the best-scoring draft is kept, so a
-  # trim that makes things worse can never be the one that ships. Quality defects are
-  # still NOT auto-revised here — the reviewer gated each chunk. Set 0 to disable.
+  # GUIDED REPAIR AT FINALIZE. Guided mode drafts one section per call, so no chunk
+  # review can see a property of the ASSEMBLED document — and finalize originally had
+  # no repair pass at all, so an over-long guided doc came back failing three gates at
+  # once with the review panel already gone: the only way forward was to pay for a
+  # whole new guided run. This bounds a repair pass over the assembled doc; the
+  # best-scoring draft is kept, so a repair that makes things worse can never be the
+  # one that ships. Set 0 to disable.
   guided_length_repair_rounds: 1
+  # WHAT the repair pass is allowed to fire on. Everything here is either a property of
+  # the whole document (invisible to any single chunk review) or a defect that is not a
+  # matter of the reviewer's taste at all. Ordinary quality/style opinions are still NOT
+  # auto-revised — the human gated each chunk and their judgement stands.
+  guided_repair_on:
+    # slides / recording time / pages — the three ceilings only the assembled doc has.
+    length: true
+    # Any HARD guardrail failure on the assembled doc: the prose/bullet mix share, an
+    # off-agenda slide, a section that opens on a detail, a broken coverage reference.
+    # These are mechanical, unambiguous, and a reviewer approving chunk 3 of 6 cannot
+    # see them; leaving them unrepaired means shipping a doc that failed its own gates.
+    guardrails: true
+    # A wrong technical specific is not a preference — it is the defect that costs most
+    # once the session is recorded, and the reviewer cannot be expected to fact-check
+    # every RFC number by hand. When the judge scores technical_accuracy below the
+    # per-dimension bar it names the slide and the correct value in blocking_issues, and
+    # this lets the repair pass act on exactly that.
+    technical_accuracy: true
 
 # ----------------------------------------------------------------------------
 # REGENERATION — what happens when a reviewer rejects ONE guided chunk.

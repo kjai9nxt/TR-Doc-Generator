@@ -1,5 +1,5 @@
-"""Google Slides access. A 'PPT Link' in the Session Details sheet is a Google
-Slides link. We export it as .pptx via Google's export endpoint (the deck must
+"""Google Slides access. A value in the curriculum sheet's 'PPT Links' column is a
+Google Slides link. We export it as .pptx via Google's export endpoint (the deck must
 be link-viewable) and hand it to the existing pptx extractor — so one extraction
 code path serves both local .pptx files and Google Slides links.
 """

@@ -7,9 +7,11 @@ Run:
 Endpoints:
     GET  /api/status                 -> key status / saved links / settings / policy
     GET  /api/template-guide         -> markdown of the required sheet templates
-    POST /api/sync                    -> validate + sync both sheets (returns changelog/sessions)
+    POST /api/sync                    -> validate + sync the curriculum sheet (changelog/sessions)
     GET  /api/sessions               -> synced session list
-    POST /api/generate                -> start a generation job -> {job_id}
+    POST /api/guided/start            -> start a guided run (chunk -> review -> finalize)
+    GET  /api/guided/{gid}           -> poll guided state
+    POST /api/guided/{gid}/finalize   -> assemble, grade and render the approved doc
     GET  /api/jobs/{job_id}          -> poll job status/logs/result
     GET  /api/download/{session_no}  -> download the generated .docx
 """
@@ -83,7 +85,10 @@ except Exception as _e:
 # --------------------------------------------------------------------------- #
 class SyncBody(BaseModel):
     course_link: str
-    details_link: str
+    # One sheet now carries both the curriculum and each session's deck link (the
+    # "PPT Links" column), so there is no second link to send. Accepted and ignored
+    # so an older client that still posts it does not get a 422.
+    details_link: str | None = None
     course_type: str | None = None         # "semester" | "interview"
     course_name: str | None = None         # grouping label for runs/teams
 
@@ -92,12 +97,6 @@ class SyncBody(BaseModel):
 # older client, but they are no longer honoured when the harness pins them
 # (gates.always_run_llm_judge, constraints.recording.always_enforced) — pipeline forces
 # both on. The app no longer sends them.
-class GenerateBody(BaseModel):
-    session_no: int
-    use_judge: bool = True
-    enforce_time: bool = True
-
-
 class EvalSetsBody(BaseModel):
     session_no: int
     use_llm: bool = True
@@ -207,13 +206,13 @@ def auth_me(user: dict = Depends(current_user)):
 # --------------------------------------------------------------------------- #
 @app.get("/api/status")
 def status():
-    c, d = sync.last_links()
+    c = sync.last_link()
     return {
         # Which provider/model/harness version is running is deliberately NOT reported:
         # it is an internal detail that changes over time and the UI showed it with no
         # action attached. `key_ok` stays because the UI gates Generate on it.
         "key_ok": config.api_key() is not None,
-        "saved_links": {"course": c, "details": d},
+        "saved_links": {"course": c},
         "settings": app_settings.load(),
         # Generation policy the app shows instead of offering as checkboxes: the LLM
         # quality check and the 40-minute budget always run, and every doc is capped at
@@ -236,12 +235,12 @@ def template_guide():
 # --------------------------------------------------------------------------- #
 # sync
 # --------------------------------------------------------------------------- #
-def _run_sync(job_id: str, course_link: str, details_link: str):
+def _run_sync(job_id: str, course_link: str):
     def on_event(msg: str):
         with _lock:
             JOBS[job_id]["logs"].append(msg)
     try:
-        res = sync.sync(course_link, details_link, verbose=True, on_event=on_event)
+        res = sync.sync(course_link, verbose=True, on_event=on_event)
         with _lock:
             JOBS[job_id].update(status="done", result={
                 "sessions": _session_list(),
@@ -269,7 +268,7 @@ def do_sync(body: SyncBody, user: dict = Depends(current_user)):
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,
                         "error": None, "error_kind": None}
     threading.Thread(target=_run_sync,
-                     args=(job_id, body.course_link, body.details_link), daemon=True).start()
+                     args=(job_id, body.course_link), daemon=True).start()
     return {"job_id": job_id}
 
 
@@ -293,103 +292,16 @@ def sessions():
 
 
 # --------------------------------------------------------------------------- #
-# generate (background job + polling)
+# doc rendering helper
+#
+# There is no /api/generate any more. It ran the one-shot pipeline — a whole TR doc
+# drafted, graded and revised in one background job, with nothing seen by a human
+# until it was finished. Every doc now comes from the GUIDED endpoints below, where
+# each chunk is reviewed and approved before assembly.
 # --------------------------------------------------------------------------- #
-def _run_generation(job_id: str, session_no: int, use_judge: bool, enforce_time: bool,
-                    user_email: str | None = None):
-    def on_event(msg: str):
-        with _lock:
-            JOBS[job_id]["logs"].append(msg)
-        try:
-            db.update_stage(job_id, msg.strip()[:120])   # live stage for the admin view
-        except Exception:
-            pass
-    try:
-        # run_id keys the token/cost meter, so a second generation starting while this
-        # one is in flight cannot wipe or absorb its accounting (src/llm.py).
-        result = pipeline.run(session_no, use_judge=use_judge, do_sync=False,
-                              enforce_time=enforce_time, on_event=on_event,
-                              user=user_email, run_id=job_id)
-        final = result.get("final") or result["history"][-1]
-        cost = result.get("cost") or {}
-        try:
-            db.finish_run(
-                job_id, status="done", accepted=final.get("accepted"),
-                rubric=(final.get("judge") or {}).get("weighted_total"),
-                est_minutes=final.get("time", {}).get("estimated_minutes"),
-                est_pages=(final.get("pages") or {}).get("estimated_pages"),
-                rounds=len(result.get("history", [])),
-                slides=final.get("time", {}).get("slide_count"),
-                cost=cost.get("totals"), calls=cost.get("calls"),
-                docx_path=result.get("docx"))
-        except Exception:
-            pass
-        # Store the rendered .docx/.md against this run. The files live on the instance
-        # disk, which an ephemeral host wipes on spin-down — and that is how a finished
-        # document became undownloadable after review. Best effort, never fatal.
-        outputs.persist(job_id, result.get("docx"))
-        with _lock:
-            JOBS[job_id].update(status="done", result={
-                "run_id": job_id,
-                "session_no": session_no,
-                "accepted": final["accepted"],
-                "time": final["time"],
-                "pages": final.get("pages"),
-                "judge": final.get("judge"),
-                "issues": final.get("issues", []),
-                "docx_name": Path(result["docx"]).name,
-                "markdown": _read_markdown(result["docx"]),
-                "cost": result.get("cost"),
-            })
-    except Exception as e:
-        try:
-            # A generation that crashed halfway has still spent whatever it spent —
-            # record it, or the dashboard shows a failed run as free.
-            db.finish_run(job_id, status="error", error=str(e),
-                          cost=llm.usage_totals(job_id), calls=llm.usage_records(job_id))
-        except Exception:
-            pass
-        with _lock:
-            JOBS[job_id].update(status="error", error=str(e))
-    finally:
-        try:
-            llm.close_usage(job_id)
-        except Exception:
-            pass
-
-
 def _read_markdown(docx_path: str) -> str:
     md = Path(docx_path).with_suffix(".md")
     return md.read_text(encoding="utf-8") if md.exists() else ""
-
-
-@app.post("/api/generate")
-def generate(body: GenerateBody, user: dict = Depends(current_user)):
-    if config.api_key() is None:
-        raise HTTPException(status_code=400, detail={"message": "No API key configured in .env"})
-    job_id = uuid.uuid4().hex[:12]
-    with _lock:
-        JOBS[job_id] = {"status": "running", "logs": [], "result": None, "error": None}
-    # Record the run in the DB up-front (status=running) so it shows live, with
-    # the user's course + team attribution.
-    try:
-        email = user.get("email")
-        course = app_settings.course_name()
-        try:
-            title = course_loader.get_session(body.session_no).name
-        except Exception:
-            title = f"Session {body.session_no}"
-        db.create_run(job_id, user_email=email, course=course,
-                      team_id=db.team_for_user_course(email, course),
-                      session_no=body.session_no, title=title,
-                      enforce_time=body.enforce_time)
-    except Exception:
-        pass
-    threading.Thread(target=_run_generation,
-                     args=(job_id, body.session_no, body.use_judge, body.enforce_time,
-                           user.get("email")),
-                     daemon=True).start()
-    return {"job_id": job_id}
 
 
 def _run_eval_sets(job_id: str, session_no: int, use_llm: bool, enforce_time: bool):
@@ -1195,7 +1107,7 @@ def admin_users(user: dict = Depends(require_admin)):
 def _connectors() -> list:
     """Health of the external integrations the pipeline depends on."""
     m = config.harness()["model"]
-    c, d = sync.last_links()
+    c = sync.last_link()
     try:
         warns = len(pptx_ingest.completeness_report().get("decks", []))
     except Exception:
@@ -1205,7 +1117,6 @@ def _connectors() -> list:
          "ok": config.api_key() is not None},
         {"name": "Judge model", "detail": m.get("judge"), "ok": config.api_key() is not None},
         {"name": "Curriculum Sheet", "detail": "linked" if c else "not linked", "ok": bool(c)},
-        {"name": "Session Details Sheet", "detail": "linked" if d else "not linked", "ok": bool(d)},
         {"name": "Google Slides ingest", "detail": f"{warns} deck(s) known" if warns is not None else "n/a",
          "ok": True},
         {"name": "Google Sign-In", "detail": "configured" if config.google_client_id() else "not configured",

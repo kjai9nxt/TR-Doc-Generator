@@ -28,22 +28,44 @@ Tone, density, and voice rules. Calibrated against the golden reference.
 - So **trimming a slide's text buys no recording time.** Never thin or drop a
   sub-concept to fit the 40 minutes; that trade does not exist. Cut only to fit PAGES.
 - **The budget belongs to coverage.** When the doc is too long, cut in this order:
-  1. every analogy that is not on a first-introduction slide,
-  2. worked examples on topics that do not need one,
-  3. bullets that restate their lead-in or the table beside them,
-  4. prose that should be bullets, and filler.
+  1. anything not on the agenda (a slide no coverage-map entry points at),
+  2. every analogy that is not on a first-introduction slide,
+  3. worked examples on topics that do not need one,
+  4. bullets that restate their lead-in or the table beside them, and filler.
+  Converting paragraphs into bullets is **not** on this list: the prose/bullet mix is
+  required, and the pages it would save are negligible.
   **Never cut a sub-concept to make room.** A shorter doc that drops something an exam
   tests has failed at the thing it exists to do.
+
+## Prose and bullets — the MIX (this is a house rule, not a preference)
+A document that is nothing but bullet lists reads as choppy, looks odd on the page,
+and loses the connective tissue — why this exists, how these two relate, what follows
+from that table — that a bullet cannot carry. Every slide is written as a mix:
+
+| Use a short paragraph (`text`) when… | Use `bullets` when… |
+|---|---|
+| framing what the slide is about | there are **3 or more** parallel items |
+| defining a term and saying why it exists | they are types, steps, causes, guarantees, trade-offs |
+| connecting this idea to the previous one | each item stands on its own and is substantial |
+| there are only **two or three short, related points** | the items would be clumsy to read as a sentence |
+
+- **At least 60% of slides must carry a `text` block.** A slide that opens straight
+  into a list, with nothing saying what the list is, is the defect this rule exists
+  to stop.
+- **Never write a one- or two-item bullet list.** That is a sentence that was
+  bulleted; write the sentence.
+- Short points → prose. Long, independent points → bullets. If an item needs a
+  comma-plus-conjunction to hold together, it belongs in a bullet of its own or in
+  the paragraph, never as half a bullet.
 
 ## Conciseness (HARD — this is what appears on the slide)
 A TR doc is a SKELETON, not an essay. Every line must be tight enough to read at a
 glance. Enforce these caps:
 - **Bullets: ≤ 12 words each.** One idea per bullet. No sub-clauses, no "and also".
   If a bullet needs a comma-plus-conjunction, split it into two bullets.
-- **`content` text blocks: ≤ 35 words TOTAL, 1-2 sentences.** One definition or
-  framing sentence, then let the bullets and table carry the detail. A 60-90 word
-  paragraph as slide content is a defect — this cap holds in depth mode too.
-  Prefer bullets/tables over `text`; reach for a sentence only to frame what follows.
+- **`content` text blocks: ≤ 55 words TOTAL, 2-3 sentences.** Enough for a real
+  framing paragraph, not enough for an essay. A 90-word block is a defect — this cap
+  holds in depth mode too.
 - **No redundancy on a slide.** Do not restate the lead-in sentence in the bullets
   under it, and do not restate a table's contents as bullets on the same slide —
   pick the table or the bullets, never both for the same information.
@@ -65,7 +87,8 @@ glance. Enforce these caps:
   (`content` + `analogy` + `speaker_notes`) — that is a full, well-taught slide, not a
   thin one. If a slide clearly needs more than that, split it into two slides rather
   than cramming, up to the 26-slide ceiling.
-- `content` blocks: prefer bullets and tables over paragraphs. A bullet = one beat.
+- `content` blocks: a short framing paragraph, then bullets or a table for the
+  detail. A bullet = one beat; a paragraph = the thread between the beats.
 - `speaker_notes`: **2 sentences, hard maximum** — one core teaching cue plus one
   exam/interview hook. Nothing else. Do NOT restate the slide body, do NOT write
   "close by…", do NOT write "tie back to the analogy". A bloated note costs PAGE budget
@@ -83,7 +106,16 @@ glance. Enforce these caps:
 ## Technical accuracy (non-negotiable)
 - Use exact standard values: RFC numbers, field bit-widths, port numbers,
   thresholds (e.g. "ITU-T G.114: < 150 ms one-way delay"), header field names.
+- **If you are not certain of a specific, leave it out and teach the concept without
+  it.** "A well-known port", "a fixed-size header", "an RFC-standardised extension"
+  are all acceptable; a plausible-sounding wrong number is not. This document is
+  recorded and taught, so an invented figure outlives the session.
 - Never invent an acronym expansion. If unsure, state the widely-accepted one.
+- **Be consistent with yourself.** The same value, definition or expansion must read
+  identically everywhere it appears in the document; two different numbers for one
+  thing means at least one of them is wrong.
+- Simplify the level of detail, never the truth. Where a rule has a standard exception
+  a learner will meet, name it rather than stating the rule absolutely.
 - Comparisons must be symmetric and fair (same rows for each column).
 
 ## Pedagogical ordering (per session)
@@ -94,9 +126,22 @@ glance. Enforce these caps:
 5. Real-world usage / where it shows up.
 Each section should feel like it hands off to the next.
 
+## Broad → specific (per section)
+Within each section the order is **map first, then the territory**:
+1. **Overview** — what this topic is, and which types / kinds / parts / stages it has,
+   named together in one place. This is the section's first slide (`role: overview`,
+   or `concept_intro` when the takeaway is one concept rather than a family).
+2. **Each one in turn** — for each type named above: what it is, where it came from or
+   why it was introduced, how it works, what it costs.
+3. **Across them** — the comparison table, the trade-offs, where each is used.
+
+Never open a section on one type, one formula or one step. A learner who meets the
+third kind of something before knowing there are four has to rebuild the map
+afterwards, and that is where a session loses people.
+
 ## Analogy placement (where an analogy is allowed at all)
 - Every slide declares a `role`. An analogy is **required** on `concept_intro` and
-  **forbidden** on `mechanism`, `working_example`, `comparison`,
+  **forbidden** on `overview`, `mechanism`, `working_example`, `comparison`,
   `advantages_limitations`, `reasoning`, `application` and `summary`.
 - The reason is simple: an analogy earns its lines by making an unfamiliar idea
   graspable the **first** time it is met. On an advantages slide, a reasoning slide or a
@@ -120,11 +165,30 @@ Each section should feel like it hands off to the next.
   identifier — and never a placeholder ("some address", "value X", "xyz", "foo").
 
 ## Coverage rules (the most serious failure mode)
-- A syllabus line names a topic, not its full scope. For each key takeaway, enumerate
-  the sub-concepts an exam would test, then give each one a slide. "Page Faults" is
-  not just definition + handling steps + service time — it also needs the **causes**
-  (first-reference/demand-load, swapped-out, copy-on-write, illegal access) and
-  **minor vs major** faults.
+- **The takeaway line is a contract.** The curriculum writes it as
+  `Topic: item; item, item`. Every item after the colon must be taught in that
+  takeaway's section — none dropped, none deferred, none left "implied".
+- A syllabus line then names a topic, not its full scope. For each key takeaway,
+  enumerate the sub-concepts an exam would test, then give each one a slide. "Page
+  Faults" is not just definition + handling steps + service time — it also needs the
+  **causes** (first-reference/demand-load, swapped-out, copy-on-write, illegal access)
+  and **minor vs major** faults.
+- **Deferral is a last resort.** `deferred_to` is for a sub-concept that genuinely
+  belongs to a later session — never for something the line names, never to make room.
+  A takeaway with most of its sub-concepts deferred has been postponed, not taught.
+- **The session must be complete when it ends**: every takeaway delivered, nothing left
+  dangling, and the closing matter present.
+
+## Do not re-teach earlier sessions
+- The context carries an **ALREADY TAUGHT** inventory built from the decks earlier
+  sessions actually recorded, plus the prior slides closest to this topic. The learner
+  has seen all of it.
+- No slide may introduce, define or walk through anything on that list. Use those terms
+  freely instead — they are established ground.
+- When a takeaway deliberately revisits an earlier topic, **start above where the
+  earlier session stopped**: the deeper mechanism, the harder case, the edge it did not
+  reach. Going deeper is required; re-running the introduction is a failure.
+- The Recap is the only place a prior concept is restated, and only as its one line.
 - Silently omitting a commonly-tested sub-concept is worse than any style defect.
   If a sub-concept genuinely belongs to a later session, **name the deferral** in that
   section rather than dropping it without a word.
@@ -148,7 +212,12 @@ Each section should feel like it hands off to the next.
 - No filler ("In this slide we will see...", "and all", "basically"). Get to the substance.
 - No second person ("you"/"your") anywhere, including speaker notes.
 - No cross-references in slide-visible text (see Voice).
-- No content beyond the session's key takeaways (scope creep breaks the 40-min budget).
+- **No content beyond the session's key takeaways.** The agenda is the scope: every
+  slide teaches a sub-concept named in `coverage_map`, and a slide nothing points at
+  is cut. An adjacent topic spends the budget on something the learner was not
+  promised and pushes out something they were.
+- No wall of bullets, and no one- or two-item bullet list (see the mix rules above).
+- No specific you are not sure of — teach the concept without it instead.
 - No analogy on a slide that is not a first introduction — and no repeated analogies
   across slides, nor a reused domain/theme (if one slide uses postal mail, another must
   not use couriers/postcards; switch domains).
