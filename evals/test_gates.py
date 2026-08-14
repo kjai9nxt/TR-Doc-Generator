@@ -152,6 +152,54 @@ check("a 2-item bullet list fails (it is a bulleted sentence)", short_list_on(d,
 d["sections"][3]["slides"][0]["content"][1]["items"].append("No bandwidth reservation")
 check("...and a real 3-item list passes", not short_list_on(d, 6))
 
+print("\n== the paragraph and the bullets must say DIFFERENT things ==")
+# Reported by the reviewer on nearly every slide: a lead-in sentence, then bullets that
+# repeat it in other words. The old redundancy check only matched VERBATIM lines, and
+# nothing on a real slide is verbatim. Both fixtures below are the reviewer's own.
+def _echo_slide(text, bullets):
+    d = copy.deepcopy(GOLDEN)
+    d["sections"][0]["slides"][0]["content"] = [
+        {"type": "text", "text": text}, {"type": "bullets", "items": bullets}]
+    return d
+
+d = _echo_slide(
+    "Interrupt-driven I/O still burdens the CPU with copying each byte; DMA lets a "
+    "dedicated controller transfer data directly.",
+    ["DMA controller moves data memory-to-device directly",
+     "CPU only sets up transfer, then continues",
+     "Single interrupt signals whole block completion",
+     "Frees CPU from byte-by-byte copying"])
+r = guardrails.check(d, cur, False, False)
+echoed = [f for f in r.failures if "repeats the paragraph" in f]
+check("a bullet restating the lead-in FAILS (paraphrase, not verbatim)", len(echoed) >= 1,
+      f"\n        {[f[:70] for f in echoed]}")
+check("...and the bullets that add real information are NOT flagged",
+      not any("sets up transfer" in f or "whole block completion" in f for f in echoed),
+      f"\n        {[f[:70] for f in echoed]}")
+
+d = _echo_slide(
+    "Applications call generic read, write and control operations; device drivers "
+    "translate these into device-specific commands.",
+    ["System calls expose a uniform I/O interface",
+     "Device drivers hide hardware-specific command details",
+     "Same read/write call works across device types"])
+check("the second reported slide is caught too",
+      any("repeats the paragraph" in f for f in guardrails.check(d, cur, False, False).failures))
+
+d = _echo_slide(
+    "Interrupt-driven I/O makes the processor copy every byte itself, which collapses "
+    "at disk speeds. DMA hands that work to a dedicated controller.",
+    ["Setup: CPU writes source, destination and count registers",
+     "Transfer: controller drives the bus while the CPU works",
+     "Completion: one interrupt per block, not per byte",
+     "Cost: cycle stealing contends for bus bandwidth",
+     "Used by disk, network and audio streaming"])
+check("the rewrite — bullets carrying the mechanism, cost and use — passes",
+      not any("repeats the paragraph" in f for f in guardrails.check(d, cur, False, False).failures))
+check("the golden's own slides do not trip it",
+      not any("repeats the paragraph" in f
+              for f in guardrails.check(GOLDEN, cur, False, False).failures))
+
 print("\n== broad -> specific: a section opens on the landscape ==")
 d = copy.deepcopy(GOLDEN)
 d["sections"][0]["slides"][0]["role"] = "mechanism"

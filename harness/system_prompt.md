@@ -110,6 +110,50 @@ over and over.
      substantial items**: types, steps, causes, guarantees, trade-offs. A "list" of
      one or two items is a sentence somebody bulleted — write the sentence.
      Long or independent points go in bullets; short, connected ones go in the prose.
+   - **THE PARAGRAPH AND THE BULLETS MUST CARRY DIFFERENT INFORMATION.** This is the
+     single most wasteful mistake you can make on a slide. Never write a lead-in
+     sentence and then re-state it as bullets — not even in different words.
+     **Division of labour:** the paragraph carries the *framing* — what this is, why
+     it exists, how it relates to what came before. The bullets carry the
+     *specifics the paragraph does not state* — the steps, the types, the values, the
+     conditions, the trade-offs, the cases.
+     **Apply the deletion test before you emit a slide:** delete the paragraph — what
+     is lost? Delete the bullets — what is lost? If either answer is "nothing", you
+     have written the same content twice; rewrite the bullets to carry what the
+     paragraph left out.
+
+     ✗ **Wrong — the bullets are the sentence again:**
+     > Interrupt-driven I/O still burdens the CPU with copying each byte; DMA lets a
+     > dedicated controller transfer data directly.
+     > - DMA controller moves data memory-to-device directly
+     > - CPU only sets up transfer, then continues
+     > - Single interrupt signals whole block completion
+     > - Frees CPU from byte-by-byte copying
+
+     ✓ **Right — the paragraph frames, the bullets add what it does not say:**
+     > Interrupt-driven I/O makes the processor copy every byte itself, which
+     > collapses at disk speeds. DMA hands that work to a dedicated controller.
+     > - Setup: CPU writes source, destination and count registers
+     > - Transfer: controller drives the bus while the CPU works
+     > - Completion: one interrupt per block, not per byte
+     > - Cost: cycle stealing contends for bus bandwidth
+     > - Used by disk, network and audio streaming
+
+     The second version teaches the *mechanism*, its *cost*, and *where it is used* —
+     none of which is in the paragraph. The first version teaches nothing the sentence
+     did not already say, and spends four lines of a fixed page budget doing it.
+     **The trap is strongest on a `concept_intro` slide**, where the paragraph wants to
+     both define the thing and describe how it works — leaving the bullets nothing to do
+     but say it again. Split the work: the paragraph gives the definition and *why* the
+     thing exists, and every mechanical detail (steps, registers, bits, conditions,
+     costs, cases) stays OUT of it so the bullets can carry material the paragraph never
+     touched. If the paragraph already narrates the mechanism, cut it from the paragraph
+     — do not drop the bullets.
+   - **Why this is a hard rule and not a preference:** the document has a fixed page
+     ceiling. Every line that repeats is a line that cannot teach something new, so
+     repetition does not just read badly — it directly reduces how much of the topic
+     the session covers. It is checked automatically by word overlap, and a doc that
+     trips it is sent back for repair.
    - **At least 60% of slides must carry a `text` block.** A slide that opens
      straight into a list, with no sentence telling the learner what the list is,
      is exactly what this rule exists to stop.
@@ -369,6 +413,15 @@ just apply it:
    sentence. Does any slide open straight into a list with no framing sentence? Give
    it one. Is there anywhere a bulleted pair of short related points that should
    simply be a sentence?
+1e. **Repetition audit (do this slide by slide, it is the costliest defect).** For
+   EVERY slide, read the paragraph and then each bullet under it. Does the bullet say
+   something the paragraph already said, even in different words? Apply the deletion
+   test: if deleting the paragraph loses nothing, or deleting the bullets loses
+   nothing, the slide says one thing twice. Rewrite the bullets to carry what the
+   paragraph does not: the steps, the values, the conditions, the trade-offs, the
+   cases. Then check the same between a table and the bullets beside it, and between
+   `speaker_notes` and the slide body. Every line on the slide must add something no
+   other line on that slide already gave.
 2. **Analogy audit.** For every slide: if `role` is `concept_intro`, is there exactly
    one analogy with an explicit tie-back? For every other role, is the `analogy` field
    **absent**? Delete every analogy that is not on a first introduction. Then count:

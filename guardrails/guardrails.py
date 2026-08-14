@@ -560,6 +560,56 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         fails.append(
                             f"{tag}: a bullet restates the lead-in sentence verbatim "
                             f"(\"{it[:60]}…\") — keep one or the other, not both.")
+    # --- THE PARAGRAPH AND THE BULLETS MUST SAY DIFFERENT THINGS -----------------
+    # The pattern the reviewer found on nearly every slide: a lead-in sentence, then
+    # bullets that say the same thing in other words —
+    #     "Interrupt-driven I/O still burdens the CPU with copying each byte; DMA lets
+    #      a dedicated controller transfer data directly."
+    #       · DMA controller moves data memory-to-device directly
+    #       · Frees CPU from byte-by-byte copying
+    # Both bullets are the sentence again. The existing redundancy check only caught
+    # VERBATIM repeats, so paraphrase — which is all of it in practice — passed.
+    #
+    # This costs coverage directly, which is why it is a failure and not a style note:
+    # the document has a hard page ceiling, so a line that repeats is a line that
+    # cannot teach something new. Measured on the documents generated so far, 11% of
+    # all bullets were restating their own lead-in.
+    #
+    # The metric is the share of a bullet's distinctive words that already appear in one
+    # of the paragraph's clauses. Bullet-side (not symmetric) on purpose: the question
+    # is whether THIS bullet adds anything, not whether the sentence was fully consumed.
+    if c_cfg.get("no_bullet_echoes_lead_in", False):
+        thr = float(c_cfg.get("bullet_echo_overlap", 0.5))
+        for s in slides:
+            tag = f"Slide {s.get('n', '?')}"
+            clauses = [c for t in _text_blocks(s)
+                       for c in re.split(r"[;.!?]", t) if len(_norm_tokens(c)) >= 3]
+            if not clauses:
+                continue
+            for li, items in enumerate(_bullet_lists(s)):
+                for bi, it in enumerate(items):
+                    b_toks = _norm_tokens(it)
+                    if len(b_toks) < 3:
+                        continue
+                    best, source = 0.0, None
+                    for c in clauses:
+                        shared = b_toks & _norm_tokens(c)
+                        ratio = len(shared) / len(b_toks)
+                        if len(shared) >= 2 and ratio > best:
+                            best, source = ratio, c.strip()
+                    if best >= thr:
+                        fails.append(
+                            f"{tag}: bullet {li + 1}.{bi + 1} repeats the paragraph above "
+                            f"it ({best:.0%} of its words are already there) —\n"
+                            f"    paragraph: {source[:110]}\n"
+                            f"    bullet:    {it[:110]}\n"
+                            f"    The paragraph and the bullets must carry DIFFERENT "
+                            f"information. Keep the paragraph for what this is and why it "
+                            f"matters, and make the bullets the specifics it does NOT "
+                            f"state — the steps, the types, the values, the conditions, "
+                            f"the trade-offs. A repeated line costs a line of coverage "
+                            f"that the page ceiling will not give back.")
+
     if c_cfg.get("no_table_restated_as_bullets", False):
         for s in slides:
             tag = f"Slide {s.get('n', '?')}"

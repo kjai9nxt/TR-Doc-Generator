@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.39"
+  version: "1.40"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -867,6 +867,70 @@ meta:
               Download and Create-Google-Doc were verified end-to-end against a rendered
               document after the one-shot removal (both resolve through src/outputs.py, which
               the guided result payload feeds exactly as the removed path did)."
+    - "1.40 — THE PARAGRAPH AND THE BULLETS WERE SAYING THE SAME THING.
+              Reported by the reviewer as happening on almost every slide:
+                'Interrupt-driven I/O still burdens the CPU with copying each byte; DMA lets
+                 a dedicated controller transfer data directly.'
+                   · DMA controller moves data memory-to-device directly
+                   · Frees CPU from byte-by-byte copying
+              Both bullets are the sentence again. constraints.content.no_restating_lead_in
+              _bullets only ever matched VERBATIM lines and nothing on a real slide is
+              verbatim, so every instance of this passed every gate. Measured across the
+              documents generated so far: 11% of ALL bullets were restating their own lead-in.
+              This is a COVERAGE defect, not a style one — the reviewer's own framing: 'I
+              limited pages to cover more information; if you are repeating content, we will
+              cover less information only'. The page ceiling is fixed, so a repeated line is a
+              line that cannot teach anything new.
+              (a) THE RULE, stated as a division of labour rather than a prohibition: the
+              paragraph carries the FRAMING (what this is, why it exists, how it relates to
+              what came before) and the bullets carry the SPECIFICS it does not state (steps,
+              types, values, conditions, trade-offs, where it is used). With a deletion test
+              the model can actually apply — delete the paragraph, what is lost? delete the
+              bullets, what is lost? if either answer is 'nothing', rewrite — and a worked
+              wrong/right pair using the reviewer's own DMA slide. Repeated in the style
+              guide, the format spec and every guided chunk instruction.
+              (b) THE GATE: content.no_bullet_echoes_lead_in fails a bullet whose distinctive
+              words are >= 50% already present in one clause of the paragraph above it
+              (bullet-side ratio: the question is whether THIS bullet adds anything).
+              Threshold chosen against the real corpus, not by feel — every flagged case in
+              the 0.45-0.60 band was genuine repetition ('Mutual exclusion means each resource
+              is either available or held by one process' / 'Mutual exclusion: one holder per
+              non-shareable resource'), and 0.5 catches both slides the reviewer quoted while
+              leaving the bullets that genuinely add something ('CPU only sets up transfer,
+              then continues') untouched. It feeds the finalize repair pass, so a doc that
+              trips it is fixed rather than rejected.
+              (c) WHAT THE GATE CANNOT SEE is paraphrase that shares no vocabulary
+              ('Applications call generic read/write operations' -> 'System calls expose a
+              uniform I/O interface'). That half is the judge's: slide_content_style now makes
+              redundancy its heaviest criterion, with the deletion test and an explicit
+              instruction not to accept a bullet as new merely because the words differ. Eval
+              set 25 became a hybrid for the same reason, carrying both reviewer slides as
+              bad cases and the rewrite as a good one.
+              (d) THE TRAP IS WORST ON concept_intro SLIDES, where the paragraph wants to both
+              define the thing and narrate how it works, leaving the bullets nothing to do but
+              repeat. Both the system prompt and the chunk instruction now say to keep every
+              mechanical detail OUT of the paragraph there.
+              Measured live on the same section, regenerated: repeating bullets fell from 5 of
+              28 (18%) to 1 of 24 (4%), worst overlap 67% -> 50%. The paragraph on the polling
+              slide went from narrating the status-register loop to explaining why polling
+              exists and when it still suits, leaving the loop, the busy/ready bits, the cost
+              and the real uses to the bullets — five distinct pieces of information on a slide
+              that previously carried two.
+              (e) …BUT THE PROMPT ALONE IS NOT RELIABLE, and a second live section proved it:
+              a freshly generated takeaway-4 section came back at 5 of 22 bullets repeating
+              (23%) under the very same rules that produced 4% on takeaway 3. So the fix
+              cannot rest on instruction quality. Two additions make the gate the guarantee
+              rather than the prompt:
+                · REVIEW-TIME SURFACING. Each guided chunk is checked as it is generated
+                  (server._chunk_repetition, same measure as the guardrail) and the offending
+                  bullets are listed in the live log AND in the review panel, above the
+                  Approve button. That is the cheap moment to fix it — regenerating one
+                  section costs a fraction of a repair pass over the assembled document, and
+                  the reviewer can no longer approve a chunk without seeing the defect.
+                · gates.guided_length_repair_rounds 1 -> 2. One round was sized for a single
+                  length overshoot; this gate can report five or six bullets at once, and one
+                  pass clears some but not all. The second round only runs if the first did
+                  not finish, and the best draft still wins."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -1062,6 +1126,27 @@ constraints:
     max_sentences_per_text_block: 3
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
+    # ---- THE PARAGRAPH AND THE BULLETS MUST CARRY DIFFERENT INFORMATION --------
+    # The rule above only ever caught VERBATIM repeats, and nothing on a real slide is
+    # verbatim — it is paraphrase:
+    #   "Interrupt-driven I/O still burdens the CPU with copying each byte; DMA lets a
+    #    dedicated controller transfer data directly."
+    #     · DMA controller moves data memory-to-device directly
+    #     · Frees CPU from byte-by-byte copying
+    # Both bullets are the sentence again in other words. Measured across every document
+    # generated so far: 11% of all bullets were restating their own lead-in.
+    # This is a COVERAGE failure, not a style one. The page ceiling is fixed, so every
+    # repeated line is a line that cannot teach something new — the reviewer's point
+    # exactly: "if you are repeating content, we will cover less information only".
+    no_bullet_echoes_lead_in: true
+    # Share of a bullet's distinctive words (stopwords dropped, plurals normalised) that
+    # already appear in one clause of the paragraph above it. Bullet-side, not symmetric:
+    # the question is whether THIS bullet adds anything, not whether the sentence was
+    # consumed. 0.5 was chosen against the real corpus — every flagged case at 0.45-0.60
+    # was genuine repetition ("Mutual exclusion means each resource is either available
+    # or held by one process" / "Mutual exclusion: one holder per non-shareable
+    # resource"), and it catches both slides the reviewer reported.
+    bullet_echo_overlap: 0.5
     # ---- PROSE / BULLET MIX (added because docs came back as wall-to-wall bullets) --
     # At least this share of slides must carry a `text` block — a short paragraph that
     # frames, defines, or connects — rather than opening straight into a list.
@@ -1467,7 +1552,12 @@ gates:
   # whole new guided run. This bounds a repair pass over the assembled doc; the
   # best-scoring draft is kept, so a repair that makes things worse can never be the
   # one that ships. Set 0 to disable.
-  guided_length_repair_rounds: 1
+  # 1 -> 2: one round was sized for a single length overshoot. The repetition gate can
+  # report five or six offending bullets across a document at once, and a single pass
+  # reliably clears some but not all of them; the second round costs one LLM call and
+  # only runs when the first did not finish the job. The best draft still wins, so a
+  # second pass can never ship something worse than the first.
+  guided_length_repair_rounds: 2
   # WHAT the repair pass is allowed to fire on. Everything here is either a property of
   # the whole document (invisible to any single chunk review) or a defect that is not a
   # matter of the reviewer's taste at all. Ordinary quality/style opinions are still NOT

@@ -153,8 +153,16 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
     somebody bulleted — write the sentence.
   - **At least 60% of slides must contain a `text` block.** A slide that opens
     straight into a list, with nothing saying what the list is, fails this.
-- No redundancy on a slide: bullets must not restate the lead-in sentence, and must
-  not restate a table on the same slide. Pick one carrier per piece of information.
+- **No redundancy on a slide — and this means PARAPHRASE, not just verbatim.** The
+  paragraph and the bullets under it must carry different information: the paragraph
+  frames (what this is, why it exists, how it relates), the bullets carry the
+  specifics it does not state (steps, types, values, conditions, trade-offs, cases).
+  A bullet that restates its lead-in in other words is a hard failure — it is checked
+  by word overlap, not by exact match. Apply the deletion test: if deleting the
+  paragraph loses nothing, or deleting the bullets loses nothing, the slide says one
+  thing twice. The same holds for a table and the bullets beside it, and for
+  `speaker_notes` versus the slide body. One carrier per piece of information —
+  the page ceiling is fixed, so a repeated line costs a line of coverage.
 - `speaker_notes`: **≤ 2 sentences** — one teaching cue + one exam/interview hook.
 - `analogy`: on a `concept_intro` slide only; ends with an explicit tie-back naming the
   concept ("… — just as <how the concept works>"), and matches the concept structurally.

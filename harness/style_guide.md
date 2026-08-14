@@ -58,6 +58,41 @@ from that table — that a bullet cannot carry. Every slide is written as a mix:
   comma-plus-conjunction to hold together, it belongs in a bullet of its own or in
   the paragraph, never as half a bullet.
 
+### The paragraph and the bullets must say DIFFERENT things
+The most wasteful mistake on a slide is a lead-in sentence followed by bullets that
+repeat it in other words. It is not caught by "don't duplicate text" — nothing is ever
+duplicated word for word — and it is not a style nit: the page ceiling is fixed, so
+every repeated line is a line that cannot teach something new.
+
+| The paragraph carries | The bullets carry |
+|---|---|
+| what this is, in one framing sentence | the steps of the mechanism |
+| why it exists / what problem it solves | the distinct types, cases or conditions |
+| how it relates to what came before | the concrete values, limits, trade-offs |
+| what follows from the table beside it | where it shows up in practice |
+
+**The deletion test, before you emit a slide:** delete the paragraph — what is lost?
+Delete the bullets — what is lost? If either answer is "nothing", the slide says one
+thing twice; rewrite the bullets to carry what the paragraph left out.
+
+✗ Wrong — the bullets are the sentence again:
+> Applications call generic read, write and control operations; device drivers
+> translate these into device-specific commands.
+> - System calls expose a uniform I/O interface
+> - Device drivers hide hardware-specific command details
+> - Same read/write call works across device types
+
+✓ Right — the paragraph frames, the bullets add what it does not say:
+> A uniform read/write/ioctl interface lets one application work with any device,
+> because the driver below it absorbs the differences.
+> - Block devices: random access in fixed-size blocks (disks)
+> - Character devices: byte streams, no seeking (keyboards, serial)
+> - Network devices: socket interface rather than read/write
+> - Escape hatch: ioctl passes device-specific commands straight through
+
+The same rule holds between a table and the bullets beside it, and between
+`speaker_notes` and the slide body — one carrier per piece of information.
+
 ## Conciseness (HARD — this is what appears on the slide)
 A TR doc is a SKELETON, not an essay. Every line must be tight enough to read at a
 glance. Enforce these caps:

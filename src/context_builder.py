@@ -649,6 +649,27 @@ loses the reasoning that connects the points.
   bullet list — that is a sentence somebody bulleted; write the sentence.
 - Two or three short related points go in the paragraph; long, independent ones go in
   bullets. Use a `table` for any 2+ way comparison.
+- THE PARAGRAPH AND THE BULLETS MUST SAY DIFFERENT THINGS. Never write a sentence and
+  then re-state it as bullets, even in other words — that is the costliest mistake on
+  a slide, because the page ceiling is fixed and every repeated line is a line that
+  cannot teach something new. The paragraph FRAMES (what this is, why it exists, how
+  it relates to what came before); the bullets carry the SPECIFICS it does not state
+  (the steps, the types, the values, the conditions, the trade-offs, where it is used).
+  Before you emit a slide, delete the paragraph in your head — what is lost? Delete the
+  bullets — what is lost? If either answer is "nothing", rewrite the bullets.
+  WRONG: "Interrupt-driven I/O burdens the CPU with copying each byte; DMA lets a
+  controller transfer directly." + bullets "DMA controller moves data directly" /
+  "Frees CPU from byte-by-byte copying" — both bullets are the sentence again.
+  RIGHT: the same paragraph + bullets that give the setup registers the CPU writes,
+  one interrupt per block instead of per byte, the cycle-stealing cost, and the devices
+  that rely on it — none of which the paragraph said.
+  WATCH THIS ESPECIALLY ON A "concept_intro" SLIDE, where the trap is strongest: the
+  paragraph naturally wants to define the thing AND describe how it works, and then the
+  bullets have nothing left but to say it again. Split the work — let the paragraph give
+  the definition and WHY the thing exists, and keep every mechanical detail (the steps,
+  the registers, the bits, the conditions, the costs, the cases) OUT of it, so the
+  bullets carry material the paragraph never touched. If your paragraph already narrates
+  the mechanism, cut that narration from the paragraph rather than dropping the bullets.
 
 TECHNICAL CORRECTNESS: check every specific before writing it — standard/RFC numbers,
 port numbers, field names and bit-widths, thresholds, acronym expansions, complexities,

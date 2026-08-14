@@ -149,8 +149,21 @@ dimensions:
       reasoning a bullet cannot carry. A one- or two-item bullet list (a sentence that was
       bulleted) caps at 3, as does a slide that opens straight into a list with no
       framing sentence. In the other direction, a 90-word essay paragraph as slide
-      content caps at 2 (in depth mode too). No redundancy: bullets must not
-      restate their lead-in sentence, and must not restate a table on the same slide.
+      content caps at 2 (in depth mode too).
+      NO REDUNDANCY, AND THIS MEANS PARAPHRASE — the heaviest part of this dimension.
+      The paragraph and the bullets beneath it must carry DIFFERENT information: the
+      paragraph frames (what this is, why it exists, how it relates), the bullets carry
+      the specifics it does not state (steps, types, values, conditions, trade-offs,
+      where it is used). Read every slide and apply the deletion test: if deleting the
+      paragraph would lose nothing, or deleting the bullets would lose nothing, the
+      slide says one thing twice — cap at 2 and name the slide in `blocking_issues`
+      with the rewrite. Do not accept a bullet as "new" merely because it uses
+      different words: "DMA lets a dedicated controller transfer data directly" followed
+      by the bullet "DMA controller moves data memory-to-device directly" is the same
+      information twice. This is a COVERAGE cost, not a style nit — the page ceiling is
+      fixed, so every repeated line is a line that cannot teach something new. The same
+      applies between a table and the bullets beside it, and between speaker_notes and
+      the slide body.
       Slide-visible text must carry NO second person ("you"/"your") and NO navigational
       phrases ("last/previous/next session", "as we saw earlier", "in the previous/next
       slide", "in this slide we will", "now let us", "moving on") — every slide stands

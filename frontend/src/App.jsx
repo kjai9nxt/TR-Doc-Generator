@@ -557,6 +557,20 @@ export default function App() {
                         {regenning
                           ? <Busy label="Regenerating this chunk…" />
                           : <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{c.markdown}</ReactMarkdown></div>}
+                        {/* Shown BEFORE the Approve button, because this is the cheap
+                            moment to fix it: regenerating one section costs a fraction
+                            of a repair pass over the assembled document, and these same
+                            bullets will fail the run at finalize otherwise. */}
+                        {!regenning && c.repetition?.length > 0 && (
+                          <div className="alert warn">
+                            <b>⚠ {c.repetition.length} bullet(s) repeat the paragraph above them</b>
+                            <ul>{c.repetition.map((x, k) => <li key={k}>{x}</li>)}</ul>
+                            The page budget is fixed, so a repeated line is a line that
+                            teaches nothing new. Regenerate with a reason like{' '}
+                            <i>"rewrite the bullets to carry what the paragraph does not
+                            say — the steps, values, conditions and trade-offs"</i>.
+                          </div>
+                        )}
                         {guidedReviewing && !regenning && (
                           <div className="chunk-actions">
                             <div className="gactions">

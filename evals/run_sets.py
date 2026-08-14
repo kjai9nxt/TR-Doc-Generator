@@ -105,38 +105,66 @@ def _chk_conciseness(doc, session, sset):
 
 
 def _chk_prose_bullet_mix(doc, session, sset):
-    """Both halves of the mix rule, counted rather than judged.
+    """The countable half of the mix rule — the judge takes the rest.
 
-    The reviewer's note was that the docs are "mostly all bullets, which looks odd".
-    Two countable symptoms: slides with no framing paragraph at all, and "lists" of
-    one or two items that are really a sentence. Thresholds come from the harness so
-    this set and the guardrail can never drift apart.
+    Three symptoms, all counted the same way the guardrail counts them (thresholds come
+    from the harness, so this set and the gate can never drift apart):
+      · slides with no framing paragraph at all — the wall of bullets;
+      · "lists" of one or two items, which are really a sentence somebody bulleted;
+      · bullets that RESTATE the paragraph above them, measured by word overlap.
+    The third is the expensive one: on a fixed page ceiling a repeated line is a line
+    that cannot teach anything new. What word overlap cannot see — a bullet that
+    paraphrases the paragraph while sharing almost no vocabulary — is what the judge
+    half of this hybrid set is for.
     """
+    from guardrails.guardrails import _norm_tokens
     c = config.harness()["constraints"].get("content", {})
     share_floor = c.get("min_slides_with_text_share", 0.6)
     min_items = c.get("min_bullet_items", 3)
+    echo_thr = float(c.get("bullet_echo_overlap", 0.5))
     slides = _slides(doc)
     if not slides:
         return 1, "no slides"
-    bare, short = [], []
+    bare, short, echoes = [], [], []
     for s in slides:
         blocks = s.get("content") or []
-        if not any(b.get("type") == "text" and str(b.get("text") or "").strip()
-                   for b in blocks):
+        texts = [str(b.get("text") or "") for b in blocks if b.get("type") == "text"]
+        if not any(t.strip() for t in texts):
             bare.append(s.get("n"))
+        clauses = [c2 for t in texts for c2 in re.split(r"[;.!?]", t)
+                   if len(_norm_tokens(c2)) >= 3]
         for b in blocks:
-            if b.get("type") == "bullets" and 0 < len(b.get("items") or []) < min_items:
-                short.append(f"slide {s.get('n')} ({len(b['items'])} items)")
+            if b.get("type") != "bullets":
+                continue
+            items = b.get("items") or []
+            if 0 < len(items) < min_items:
+                short.append(f"slide {s.get('n')} ({len(items)} items)")
+            for it in items:
+                bt = _norm_tokens(it)
+                if len(bt) < 3 or not clauses:
+                    continue
+                best = 0.0
+                for c2 in clauses:
+                    shared = bt & _norm_tokens(c2)
+                    if len(shared) >= 2:
+                        best = max(best, len(shared) / len(bt))
+                if best >= echo_thr:
+                    echoes.append(f"slide {s.get('n')}: \"{str(it)[:44]}\" ({best:.0%})")
     share = (len(slides) - len(bare)) / len(slides)
-    ok_share, ok_lists = share >= share_floor, not short
-    if ok_share and ok_lists:
-        return 5, f"{share:.0%} of slides carry prose; every list has >= {min_items} items"
-    if ok_share or ok_lists:
-        return 3, (f"{share:.0%} prose share (floor {share_floor:.0%}); "
-                   f"{len(short)} short list(s): {short[:4]}")
-    return 1, (f"wall of bullets — only {share:.0%} of slides carry prose "
-               f"(no `text` block on slides {bare[:8]}), and {len(short)} bulleted "
-               f"one/two-item 'list(s)': {short[:4]}")
+    broken = sum([share < share_floor, bool(short), bool(echoes)])
+    detail_bits = []
+    if share < share_floor:
+        detail_bits.append(f"only {share:.0%} of slides carry prose (floor "
+                           f"{share_floor:.0%}); bare slides {bare[:6]}")
+    if short:
+        detail_bits.append(f"{len(short)} one/two-item 'list(s)': {short[:3]}")
+    if echoes:
+        detail_bits.append(f"{len(echoes)} bullet(s) restate their paragraph — that is "
+                           f"page budget spent teaching nothing: {echoes[:3]}")
+    if broken == 0:
+        return 5, (f"{share:.0%} of slides carry prose; every list has >= {min_items} "
+                   f"items; no bullet restates its paragraph")
+    return (3 if broken == 1 else 1), "; ".join(detail_bits)
 
 
 def _chk_slide_phrasing(doc, session, sset):
@@ -347,7 +375,6 @@ DETERMINISTIC = {
     "document_length_pages": _chk_document_length,
     "analogy_placement": _chk_analogy_placement,
     "conciseness": _chk_conciseness,
-    "prose_bullet_mix": _chk_prose_bullet_mix,
     "slide_phrasing_no_meta_narration": _chk_slide_phrasing,
     "document_structure_layout": _chk_document_structure,
     "chunk_count": _chk_chunk_count,
@@ -362,6 +389,11 @@ DETERMINISTIC = {
 HYBRID = {
     "worked_example_appropriateness": _chk_worked_example_share,
     "example_figure_realism": _chk_example_realism,
+    # Word overlap catches a bullet that reuses the paragraph's vocabulary; it cannot
+    # see one that paraphrases the paragraph in entirely different words ("Applications
+    # call generic read/write operations" -> "System calls expose a uniform I/O
+    # interface"). That half is the judge's, and both must be satisfied.
+    "prose_bullet_mix": _chk_prose_bullet_mix,
 }
 
 

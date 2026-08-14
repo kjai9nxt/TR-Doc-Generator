@@ -3,7 +3,7 @@
   "session_name": "I/O Systems & I/O Models",
   "overall_pass": false,
   "scored": 13,
-  "passed": 10,
+  "passed": 9,
   "skipped": 12,
   "learned_rules_added": 0,
   "sets": [
@@ -170,10 +170,10 @@
     {
       "id": "prose_bullet_mix",
       "grader": "deterministic",
-      "score": 5,
+      "score": 3,
       "threshold": 4,
-      "passed": true,
-      "detail": "96% of slides carry prose; every list has >= 3 items"
+      "passed": false,
+      "detail": "5 bullet(s) restate their paragraph — that is page budget spent teaching nothing: ['slide 7: \"Hides hardware diversity from applications\" (50%)', 'slide 9: \"Device-independent layer maps call to driver\" (80%)', 'slide 16: \"Count register: 4096 bytes, one block\" (60%)'] (judge half skipped: --no-llm)"
     },
     {
       "id": "self_evolution_loop",
@@ -184,5 +184,5 @@
       "detail": "defect(s) recurred despite prior signal (S10→S30): ['ppt_extraction_completeness']; fixed: ['curriculum_takeaway_extraction']; 7 rule(s) learned"
     }
   ],
-  "generated_at": "2026-08-14T12:24:23"
+  "generated_at": "2026-08-14T13:07:16"
 }

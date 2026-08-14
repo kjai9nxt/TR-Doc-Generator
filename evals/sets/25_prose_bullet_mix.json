@@ -1,16 +1,18 @@
 {
   "id": "prose_bullet_mix",
-  "title": "Prose / Bullet Mix",
-  "guideline_refs": [16],
+  "title": "Prose / Bullet Mix \u2014 and No Repetition Between Them",
+  "guideline_refs": [
+    16
+  ],
   "capability_status": "implemented",
-  "grader": "deterministic",
+  "grader": "hybrid",
   "applies_to": "final_tr_doc",
-  "description": "A TR doc must MIX short paragraphs with bullets. Added after the reviewer's note that 'mostly all the content is bullets only, which looks odd' — and it did, because every earlier rule pushed the same way ('prefer bullets/tables over text'), so even pairs of short related points came back as lists. Two countable halves: at least 60% of slides must carry a `text` block (a short framing paragraph of <= 55 words / 2-3 sentences saying what the slide is about), and no bullet list may have fewer than 3 items, since a one- or two-item list is a sentence somebody bulleted. Bullets stay for genuine lists of 3+ parallel, substantial items; tables stay for any 2+ way comparison.",
-  "criterion": ">= 60% of slides contain a `text` content block, AND every bullet list has >= 3 items.",
+  "description": "A TR doc must MIX short paragraphs with bullets. Added after the reviewer's note that 'mostly all the content is bullets only, which looks odd' \u2014 and it did, because every earlier rule pushed the same way ('prefer bullets/tables over text'), so even pairs of short related points came back as lists. Two countable halves: at least 60% of slides must carry a `text` block (a short framing paragraph of <= 55 words / 2-3 sentences saying what the slide is about), and no bullet list may have fewer than 3 items, since a one- or two-item list is a sentence somebody bulleted. Bullets stay for genuine lists of 3+ parallel, substantial items; tables stay for any 2+ way comparison. SECOND HALF, added after the reviewer found it on nearly every slide: the paragraph and the bullets beneath it must carry DIFFERENT information. A lead-in sentence followed by bullets that restate it in other words is the costliest defect on a slide \u2014 the page ceiling is fixed, so every repeated line is a line that cannot teach something new ('if you are repeating content, we will cover less information only'). The division of labour: the paragraph frames (what this is, why it exists, how it relates), the bullets carry the specifics it does not state (steps, types, values, conditions, trade-offs, where it is used). Apply the deletion test \u2014 if deleting the paragraph loses nothing, or deleting the bullets loses nothing, the slide says one thing twice. A guardrail fails a bullet whose distinctive words are >= 50% already in the paragraph; paraphrase that shares no vocabulary is the judge's half of this set.",
+  "criterion": ">= 60% of slides contain a `text` block; every bullet list has >= 3 items; and no bullet restates the paragraph above it, in any wording.",
   "rubric": {
-    "5": "Both hold: most slides open with a framing paragraph, every list is a real list.",
-    "3": "One of the two is breached on a slide or two.",
-    "1": "Wall-to-wall bullets, or several bulleted one/two-item 'lists'."
+    "5": "Mix is right and every line on a slide adds something no other line gave.",
+    "3": "One of the three breached on a slide or two.",
+    "1": "Wall-to-wall bullets, bulleted one/two-item 'lists', or bullets that are the lead-in sentence again."
   },
   "pass_threshold": 4,
   "cases": [
@@ -20,15 +22,21 @@
       "expected": "pass",
       "input": {
         "content": [
-          {"type": "text", "text": "SCTP carries several independent streams inside one association, so a loss on one stream does not stall the others."},
-          {"type": "bullets", "items": [
-            "Each stream keeps its own sequence space",
-            "Loss blocks only the affected stream",
-            "Ordering is preserved per stream"
-          ]}
+          {
+            "type": "text",
+            "text": "SCTP carries several independent streams inside one association, so a loss on one stream does not stall the others."
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "Each stream keeps its own sequence space",
+              "Loss blocks only the affected stream",
+              "Ordering is preserved per stream"
+            ]
+          }
         ]
       },
-      "rationale": "A framing paragraph, then a real 3-item list — the intended shape."
+      "rationale": "A framing paragraph, then a real 3-item list \u2014 the intended shape."
     },
     {
       "id": "mix-bad-1",
@@ -36,10 +44,13 @@
       "expected": "fail",
       "input": {
         "content": [
-          {"type": "bullets", "items": [
-            "Multi-streaming avoids head-of-line blocking",
-            "Multi-homing survives a path failure"
-          ]}
+          {
+            "type": "bullets",
+            "items": [
+              "Multi-streaming avoids head-of-line blocking",
+              "Multi-homing survives a path failure"
+            ]
+          }
         ]
       },
       "rationale": "No framing paragraph, and a 2-item 'list' that is really one sentence."
@@ -52,7 +63,76 @@
         "doc_shape": "12 slides, 2 of which carry a `text` block",
         "text_block_share": 0.17
       },
-      "rationale": "17% of slides carry prose — under the 60% floor; this is the wall of bullets the reviewer rejected."
+      "rationale": "17% of slides carry prose \u2014 under the 60% floor; this is the wall of bullets the reviewer rejected."
+    },
+    {
+      "id": "mix-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Interrupt-driven I/O still burdens the CPU with copying each byte; DMA lets a dedicated controller transfer data directly."
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "DMA controller moves data memory-to-device directly",
+              "CPU only sets up transfer, then continues",
+              "Single interrupt signals whole block completion",
+              "Frees CPU from byte-by-byte copying"
+            ]
+          }
+        ]
+      },
+      "rationale": "Bullets 1 and 4 are the two halves of the sentence restated; only bullets 2 and 3 add anything. Four lines of a fixed page budget, two lines of new information."
+    },
+    {
+      "id": "mix-bad-4",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Applications call generic read, write and control operations; device drivers translate these into device-specific commands."
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "System calls expose a uniform I/O interface",
+              "Device drivers hide hardware-specific command details",
+              "Same read/write call works across device types"
+            ]
+          }
+        ]
+      },
+      "rationale": "All three bullets paraphrase the sentence \u2014 the slide teaches one idea and spends four lines on it. The learner ends knowing no more than the first sentence gave."
+    },
+    {
+      "id": "mix-good-3",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Interrupt-driven I/O makes the processor copy every byte itself, which collapses at disk speeds. DMA hands that work to a dedicated controller."
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "Setup: CPU writes source, destination and count registers",
+              "Transfer: controller drives the bus while the CPU works",
+              "Completion: one interrupt per block, not per byte",
+              "Cost: cycle stealing contends for bus bandwidth",
+              "Used by disk, network and audio streaming"
+            ]
+          }
+        ]
+      },
+      "rationale": "The rewrite of mix-bad-3: the paragraph frames the problem, and the bullets carry the mechanism, its cost and where it is used \u2014 none of it in the paragraph. Delete either and something is lost."
     }
   ]
 }

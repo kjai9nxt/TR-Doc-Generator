@@ -592,6 +592,26 @@ def _guided_slide_budget_note(gid: str, index: int, allowance: int) -> None:
                          f"slide, recording-time and page gates unless a chunk is cut.")
 
 
+def _guided_repetition_note(gid: str, index: int, fragment: dict | None) -> None:
+    """Say it in the live log when a chunk's bullets restate their own paragraph.
+
+    The reviewer is the cheapest place to fix this: regenerating one section costs a
+    fraction of a repair pass over the assembled document, and it happens while the
+    review panel is still open. Left to finalize, the same defect arrives as a hard
+    guardrail failure with only one bounded repair round to clear all of it.
+    """
+    if index == 0:
+        return
+    hits = _chunk_repetition(fragment)
+    if not hits:
+        return
+    _guided_log(gid, f"⚠ Chunk {index + 1}: {len(hits)} bullet(s) repeat the paragraph "
+                     f"above them, which spends page budget without teaching anything "
+                     f"new. Regenerate with 'rewrite the bullets to carry what the "
+                     f"paragraph does not say — steps, values, conditions, trade-offs' "
+                     f"if you want it fixed now: " + "; ".join(hits[:3]))
+
+
 def _guided_generate_all(gid: str):
     """Generate every chunk up front, then move to the review phase."""
     llm.use_meter(gid)      # this thread's LLM spend belongs to this guided run
@@ -618,6 +638,7 @@ def _guided_generate_all(gid: str):
             # the assembled doc fails the slide, time and page gates at once and the
             # review panel is gone by then.
             _guided_slide_budget_note(gid, i, allowance)
+            _guided_repetition_note(gid, i, chunk.get("fragment"))
             # Checkpoint per chunk: an LLM call each, so a restart must never cost
             # more than the one chunk that was in flight.
             _guided_save(gid)
@@ -724,6 +745,10 @@ def _guided_regenerate(gid: str, index: int, reason: str):
         # A patch may ADD slides, and a full re-draft is a fresh roll of the dice on the
         # count, so re-check this chunk against the ceiling exactly as generation does.
         _guided_slide_budget_note(gid, index, allowance)
+        with _lock:
+            _frag = (GUIDED.get(gid, {}).get("chunks") or [{}])[index].get("fragment") \
+                if index < len(GUIDED.get(gid, {}).get("chunks") or []) else None
+        _guided_repetition_note(gid, index, _frag)
         _guided_save(gid)
     except Exception as e:
         # The chunk that was there before is still in place, so this is recoverable:
@@ -790,10 +815,55 @@ def _guided_finalize(gid: str):
         _guided_db_error(gid, e)
 
 
+def _chunk_repetition(fragment: dict) -> list[str]:
+    """Bullets in this chunk that restate the paragraph above them.
+
+    Run per chunk and shown at REVIEW time, because that is the only moment the fix is
+    cheap: the reviewer can regenerate this one section for a few cents, whereas the
+    same defect found at finalize costs a repair pass over the whole assembled document
+    — and one bounded repair round cannot reliably clear five of them at once.
+
+    Same measure as the guardrail (constraints.content.bullet_echo_overlap), so the
+    reviewer is warned about exactly what would fail the run later.
+    """
+    from guardrails.guardrails import _norm_tokens
+    import re as _re
+    c = config.harness()["constraints"].get("content", {})
+    if not c.get("no_bullet_echoes_lead_in", False):
+        return []
+    thr = float(c.get("bullet_echo_overlap", 0.5))
+    out = []
+    section = (fragment or {}).get("section") or {}
+    for s in section.get("slides") or []:
+        blocks = s.get("content") or []
+        clauses = [x for b in blocks if b.get("type") == "text"
+                   for x in _re.split(r"[;.!?]", str(b.get("text") or ""))
+                   if len(_norm_tokens(x)) >= 3]
+        if not clauses:
+            continue
+        for b in blocks:
+            if b.get("type") != "bullets":
+                continue
+            for it in b.get("items") or []:
+                bt = _norm_tokens(it)
+                if len(bt) < 3:
+                    continue
+                best = 0.0
+                for cl in clauses:
+                    shared = bt & _norm_tokens(cl)
+                    if len(shared) >= 2:
+                        best = max(best, len(shared) / len(bt))
+                if best >= thr:
+                    out.append(f"Slide {s.get('n', '?')} · {best:.0%} of \"{str(it)[:60]}\" "
+                               f"is already in the paragraph above it")
+    return out
+
+
 def _guided_view(state: dict) -> dict:
     """JSON-safe snapshot (Session objects and base_context are kept server-side)."""
     labels = state["labels"]
-    chunks = [{"label": labels[i], "markdown": c["markdown"]}
+    chunks = [{"label": labels[i], "markdown": c["markdown"],
+               "repetition": _chunk_repetition(c.get("fragment"))}
               for i, c in enumerate(state["chunks"])]
     return {
         "status": state["status"],
