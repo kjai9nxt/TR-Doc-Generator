@@ -12,6 +12,10 @@ export default function App() {
   const [status, setStatus] = useState(null)
   const [guide, setGuide] = useState('')
   const [showGuide, setShowGuide] = useState(false)
+  // Deck extraction gaps live in the left panel alongside the templates. Only one of
+  // the two is open at a time — they share the slot, and stacking them would cover the
+  // page on a laptop screen.
+  const [showGaps, setShowGaps] = useState(false)
 
   // ONE sheet: the curriculum, whose "PPT Links" column carries each session's deck.
   const [courseLink, setCourseLink] = useState('')
@@ -45,10 +49,18 @@ export default function App() {
   // be resumed instead of stranding chunks that cost an LLM call each. Read once at
   // mount (before any state reset can clear it) and offered as an explicit Resume.
   const [resumableGid, setResumableGid] = useState(() => localStorage.getItem('tr_guided_id') || null)
+  // …and the same question asked of the SERVER, which knows every unfinished run this
+  // user started rather than only the ones this browser saw. Without it, starting a run
+  // on one machine and signing in from another stranded chunks that had already been
+  // paid for. Rows: {guided_id, session_no, title, status, chunks_done, total, updated}.
+  const [serverResumable, setServerResumable] = useState([])
   function rememberGuided(gid) {
     if (gid) localStorage.setItem('tr_guided_id', gid)
     else localStorage.removeItem('tr_guided_id')
     setResumableGid(gid)
+  }
+  function refreshResumable() {
+    api.guidedResumable().then((d) => setServerResumable(d.runs || [])).catch(() => {})
   }
   const [guided, setGuided] = useState(null)
   const [regenReason, setRegenReason] = useState('')
@@ -82,6 +94,9 @@ export default function App() {
     api.myTeams().then((d) => setTeams(d.teams || [])).catch(() => {})
   }
   useEffect(() => { if (user) refreshMine() }, [result, user])
+  // Ask on sign-in and after each finished doc — a run that just completed must drop
+  // off the list, and one abandoned earlier must appear on it.
+  useEffect(() => { if (user) refreshResumable() }, [user, result])
 
   // Auth bootstrap: figure out whether login is required, and restore a session.
   useEffect(() => {
@@ -196,6 +211,7 @@ export default function App() {
       catch (e) { setGuide(`Could not load the template guide: ${e.message}`) }
     }
     setShowGuide((v) => !v)
+    setShowGaps(false)          // one left panel at a time
   }
 
   function doSync() {
@@ -272,19 +288,34 @@ export default function App() {
   // Pick an unfinished guided run back up (after a reload, or after the server was
   // restarted/spun down mid-review). The chunks come back from the server's
   // checkpoint, so nothing already generated has to be paid for again.
-  function resumeGuided() {
-    const gid = resumableGid
+  // Forget a run without resuming it. Local only: the server checkpoint expires on its
+  // own after the purge window, and deleting it here would take away the ability to come
+  // back to it from another browser — the exact gap the server list exists to close.
+  function discardGuided(gid) {
+    setServerResumable((rs) => rs.filter((r) => r.guided_id !== gid))
+    if (gid === resumableGid) rememberGuided(null)
+  }
+
+  function resumeGuided(gidArg) {
+    const gid = gidArg || resumableGid
     if (!gid) return
     setGenErr(null); setResult(null); setEvalReport(null); setEvalErr(null)
     setBusyAction(true)
     api.guidedState(gid).then((st) => {
       setBusyAction(false)
       if (st.status === 'done' || st.status === 'error') {
-        rememberGuided(null)
+        discardGuided(gid)
         setGenErr(st.status === 'error'
           ? `That guided run had already failed: ${st.error || 'unknown error'}`
           : 'That guided run had already finished — nothing left to resume.')
         return
+      }
+      // Resuming makes this the ACTIVE run, so remember it here too: the id may have
+      // come from the server list on a machine that had never seen it.
+      rememberGuided(gid)
+      if (st.session_no != null && st.session_no !== sel) {
+        skipSelResetRef.current = true   // our own change; do not tear the run down
+        setSel(st.session_no)
       }
       setGuidedId(gid); setGuided(st); setApproved({}); setShowCost(true)
       if (st.status !== 'reviewing') pollGuided(gid)
@@ -330,7 +361,13 @@ export default function App() {
     }).catch((e) => { setEvalRunning(false); setEvalErr(e.message) })
   }
 
+  // Picking a DIFFERENT session drops the guided panel — it belongs to the session it
+  // was generated for. Resuming also moves the selector (to the resumed run's session),
+  // and that must NOT count: it would tear down the run we are in the middle of
+  // restoring. The ref marks the one selector change that is ours.
+  const skipSelResetRef = useRef(false)
   useEffect(() => {
+    if (skipSelResetRef.current) { skipSelResetRef.current = false; return }
     guidedPollRef.current && clearInterval(guidedPollRef.current)
     setGuidedId(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({})
   }, [sel])
@@ -384,6 +421,9 @@ export default function App() {
         📋 {showGuide ? 'Hide' : 'Show'} the required sheet template
       </button>
       {showGuide && <TemplateSidePanel markdown={guide} onClose={() => setShowGuide(false)} />}
+      {showGaps && syncOut?.extraction_warnings?.length > 0 && (
+        <GapsSidePanel warnings={syncOut.extraction_warnings} onClose={() => setShowGaps(false)} />
+      )}
 
       {/* STEP 1 */}
       <section className="card">
@@ -444,26 +484,14 @@ export default function App() {
             {syncOut.errors?.map((e, i) => <div key={i} className="alert warn"><pre>{e}</pre></div>)}
             {/* Extraction gaps are DIAGNOSTICS, not something the sync did wrong: a
                 handful of decks always have an image-only or divider slide with no
-                extractable text. Spelled out inline they filled the panel with a wall of
-                orange on every single sync, which is how a real warning stops being read.
-                Collapsed into its own section, opened only by someone who wants to audit
-                the decks. */}
+                extractable text. Even collapsed, a full-width block in the middle of the
+                sync result reads as "something needs your attention" on every sync. It is
+                reference material you consult if you feel like it, so it belongs in the
+                left panel with the sheet templates — one line here, the detail there. */}
             {syncOut.extraction_warnings?.length > 0 && (
-              <details className="gaps">
-                <summary>
-                  🔍 Deck extraction gaps ({syncOut.extraction_warnings.length} deck
-                  {syncOut.extraction_warnings.length === 1 ? '' : 's'}) — open only if you
-                  want to check what the decks did not give us
-                </summary>
-                <div className="gapsbody">
-                  <p className="hint">
-                    Slides with no extractable title, body or table — usually an image-only
-                    slide, a section divider or a screenshot. The rest of each deck is
-                    ingested normally, so this is a completeness note, not a failure.
-                  </p>
-                  <ul>{syncOut.extraction_warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
-                </div>
-              </details>
+              <button className="link gapslink" onClick={() => { setShowGaps((v) => !v); setShowGuide(false) }}>
+                🔍 {showGaps ? 'Hide' : 'Show'} deck extraction gaps ({syncOut.extraction_warnings.length})
+              </button>
             )}
           </div>
         )}
@@ -511,16 +539,49 @@ export default function App() {
                   🚦 Generate all chunks
                 </button>
               )}
-              {!guidedId && resumableGid && (
-                <div className="hint">
-                  You have an <b>unfinished guided run</b>. Its chunks are saved on the
-                  server, so you can carry on where you left off.{' '}
-                  <button className="ghostbtn" disabled={busyAction} onClick={resumeGuided}>
-                    ↩ Resume it
-                  </button>{' '}
-                  <button className="ghostbtn" onClick={() => rememberGuided(null)}>
-                    Discard
-                  </button>
+              {/* Unfinished runs. Every chunk is checkpointed as it is generated, so
+                  nothing already paid for is lost when a run is abandoned, the browser
+                  reloads, or the server restarts mid-review. The list comes from the
+                  SERVER (this user's runs, any browser); the localStorage id is kept as
+                  a fallback for a run the server list has not caught up with. */}
+              {!guidedId && (serverResumable.length > 0 || resumableGid) && (
+                <div className="resumebox">
+                  <b>↩ Unfinished TR doc{serverResumable.length > 1 ? 's' : ''}</b>
+                  <div className="hint">
+                    Every chunk generated so far is saved on the server, so resuming picks
+                    up where you stopped instead of paying for those chunks again.
+                    Checkpoints are kept for <b>72 hours</b>.
+                  </div>
+                  {serverResumable.map((r) => (
+                    <div key={r.guided_id} className="resumerow">
+                      <span className="rtitle">
+                        Session {r.session_no}{r.title ? ` — ${r.title}` : ''}
+                      </span>
+                      <span className="muted rmeta">
+                        {r.chunks_done}/{r.total} chunk{r.total === 1 ? '' : 's'} generated
+                        {r.status === 'reviewing' ? ' · waiting for your review' : ` · ${r.status}`}
+                      </span>
+                      <span className="ractions">
+                        <button className="ghostbtn" disabled={busyAction}
+                                onClick={() => resumeGuided(r.guided_id)}>↩ Resume</button>
+                        <button className="ghostbtn" disabled={busyAction}
+                                onClick={() => discardGuided(r.guided_id)}>Discard</button>
+                      </span>
+                    </div>
+                  ))}
+                  {/* Only if the server list does not already contain it. */}
+                  {resumableGid && !serverResumable.some((r) => r.guided_id === resumableGid) && (
+                    <div className="resumerow">
+                      <span className="rtitle">A run started in this browser</span>
+                      <span className="ractions">
+                        <button className="ghostbtn" disabled={busyAction}
+                                onClick={() => resumeGuided(resumableGid)}>↩ Resume</button>
+                        <button className="ghostbtn" onClick={() => rememberGuided(null)}>
+                          Discard
+                        </button>
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
               <div className="hint">
@@ -923,6 +984,29 @@ function TemplateSidePanel({ markdown, onClose }) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
           </div>
         : <div className="csidepending"><span className="spinner" /> Loading…</div>}
+    </aside>
+  )
+}
+
+// Deck extraction gaps — the same left slot as the templates, for the same reason:
+// reference material you open deliberately, not a verdict pushed at you. A few decks
+// always contain an image-only or divider slide with no extractable text, so this list
+// appears on every sync; inline it read as a standing alarm about a non-problem.
+function GapsSidePanel({ warnings, onClose }) {
+  return (
+    <aside className="tmplside gapsside" aria-label="Deck extraction gaps">
+      <div className="tsidehead">
+        <span className="tsidetitle">🔍 Extraction gaps ({warnings.length})</span>
+        <button className="csideclose" onClick={onClose} title="Hide">×</button>
+      </div>
+      <div className="tsidebody gapsbody">
+        <p className="hint">
+          Slides that gave us no title, body or table — usually an image-only slide, a
+          section divider or a screenshot. The rest of each deck is ingested normally,
+          so this is a completeness note, not a failure.
+        </p>
+        <ul>{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+      </div>
     </aside>
   )
 }

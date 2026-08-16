@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.41"
+  version: "1.42"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -977,6 +977,33 @@ meta:
               per-dimension minimum called out — since a lone 3 fails a 95-point document.
               llm_judge ships `weights` and `gates` with every result so an old run stays
               readable after the rubric changes."
+    - "1.42 — EXTRACTION GAPS TO THE LEFT PANEL, AND RESUME THAT FOLLOWS THE USER.
+              (a) The extraction-gap list moved out of the centre column into the LEFT side
+              panel, sharing the slot with the sheet templates (one open at a time — stacking
+              two fixed panels covers the page on a laptop). Even collapsed, a full-width
+              block in the middle of the sync result reads as 'something needs your
+              attention' on every sync, and this is reference material, not a verdict.
+              (b) RESUMING AN UNFINISHED RUN ONLY WORKED IN THE BROWSER THAT STARTED IT. The
+              offer came from localStorage['tr_guided_id'], so signing in from another
+              machine, clearing site data or using a private window stranded a run holding
+              several already-paid-for chunks — while the server still had its checkpoint and
+              would have restored it happily. The checkpoints carry user_email, so the server
+              can now answer the question directly: db.unfinished_guided() +
+              GET /api/guided/resumable list this USER's unfinished runs, each with its
+              session, title, and how many chunks are already generated. The localStorage id
+              is kept only as a fallback for a run the server list has not caught up with.
+              Finished and errored runs are excluded (they are history, and the runs table
+              already holds them), and a checkpoint past the 72h purge window correctly does
+              not appear.
+              Two things this needed: `session_title` is now persisted with the checkpoint so
+              a run can name itself without re-deriving it from a course that may have been
+              re-synced since, and /api/guided/{gid} returns `session_no` so resuming can move
+              the session selector to the run being restored. That selector move would
+              otherwise have triggered the effect that tears down the guided panel when the
+              user picks a different session — it is now suppressed for this one programmatic
+              change (skipSelResetRef), since resuming must not destroy what it is restoring.
+              Discard remains local: deleting the server checkpoint would take away the
+              ability to come back to the run from another browser, which is the whole point."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

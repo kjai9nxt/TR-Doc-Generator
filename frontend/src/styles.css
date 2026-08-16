@@ -169,15 +169,26 @@ a.download, button.download { background: linear-gradient(145deg, #3ad38f, #23a8
 .plainlist li { padding: 3px 0; }
 
 /* Deck extraction gaps — a diagnostic the user opens deliberately, not a warning
-   shouted on every sync. Neutral chrome on purpose: orange is reserved for things
-   that actually need acting on. */
-.gaps { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--r);
-        background: var(--bg2); padding: 10px 14px; }
-.gaps > summary { color: var(--muted); font-size: 13px; }
-.gaps > summary:hover { color: var(--text); }
-.gapsbody { margin-top: 8px; font-size: 13px; color: var(--muted); }
-.gapsbody ul { margin: 6px 0 0; padding-left: 20px; }
-.gapsbody li { padding: 2px 0; }
+   shouted on every sync. It lives in the LEFT panel (shares .tmplside's layout) so it
+   is never in the middle of the page. Neutral chrome on purpose: orange is reserved
+   for things that actually need acting on. */
+.gapslink { display: inline-block; margin-top: 10px; }
+
+/* Unfinished guided runs — each one holds chunks that already cost an LLM call, so the
+   offer to resume has to be legible, not a footnote. */
+.resumebox { margin-top: 14px; padding: 12px 14px; background: var(--bg2);
+             border: 1px solid var(--line); border-radius: var(--r); }
+.resumebox > b { font-size: 13px; }
+.resumerow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+             padding: 8px 0; border-top: 1px solid var(--line); margin-top: 8px; }
+.rtitle { font-size: 13px; font-weight: 600; }
+.rmeta { font-size: 12px; }
+.ractions { margin-left: auto; display: flex; gap: 8px; }
+.gapsside .tsidetitle { color: var(--muted); }
+.gapsbody { font-size: 12.5px; color: var(--muted); }
+.gapsbody .hint { margin: 0 0 10px; }
+.gapsbody ul { margin: 0; padding-left: 18px; }
+.gapsbody li { padding: 3px 0; line-height: 1.5; }
 
 /* Rubric: say what the bar is and what each shortfall cost, so the total explains
    itself instead of prompting "why is it 86?". */

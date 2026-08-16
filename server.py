@@ -372,6 +372,10 @@ _GUIDED_PERSIST_KEYS = (
     "status", "session_no", "base_context", "total", "index", "labels", "chunks",
     "regen_index", "use_judge", "enforce_time", "logs", "result", "error",
     "last_error", "user_email",
+    # Persisted so an unfinished run can NAME itself in the resume list without the
+    # server loading its whole state or re-deriving the title from a course that may
+    # have been re-synced since (see db.unfinished_guided).
+    "session_title",
 )
 
 
@@ -867,6 +871,11 @@ def _guided_view(state: dict) -> dict:
               for i, c in enumerate(state["chunks"])]
     return {
         "status": state["status"],
+        # Which session this run is for. Needed when a run is resumed from the server's
+        # list on a browser that never started it: the page has to move the session
+        # selector to the run being resumed, and it cannot know the number otherwise.
+        "session_no": state.get("session_no"),
+        "session_title": state.get("session_title"),
         "index": state["index"],
         "total": state["total"],
         "enforce_time": state.get("enforce_time", True),
@@ -905,6 +914,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     with _lock:
         GUIDED[gid] = {
             "status": "generating_all", "session_no": body.session_no,
+            "session_title": cur.name,
             "prev": prev, "cur": cur, "nxt": nxt,
             "base_context": base_context,
             "total": 1 + len(cur.key_takeaways), "index": 0, "labels": labels,
@@ -928,6 +938,25 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
         pass
     threading.Thread(target=_guided_generate_all, args=(gid,), daemon=True).start()
     return {"guided_id": gid}
+
+
+@app.get("/api/guided/resumable")
+def guided_resumable(user: dict = Depends(current_user)):
+    """Guided runs this user started and never finished.
+
+    The resume offer used to come only from the browser's localStorage, so it existed
+    in the one browser that started the run: sign in from another machine, clear site
+    data or use a private window, and a run holding several already-paid-for chunks was
+    unreachable while the server still had its checkpoint. This asks the server instead,
+    so the offer follows the USER rather than the browser.
+
+    Checkpoints older than the purge window (db.purge_guided, 72h) are gone for good and
+    correctly do not appear here.
+    """
+    try:
+        return {"runs": db.unfinished_guided(user.get("email"))}
+    except Exception:
+        return {"runs": []}
 
 
 @app.get("/api/guided/{gid}")

@@ -103,6 +103,9 @@ export const api = {
   guidedStart: (session_no, use_judge, enforce_time) =>
     req('/guided/start', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),
   guidedState: (id) => req(`/guided/${id}`),
+  // Unfinished runs for the signed-in USER, from the server's checkpoints — so the
+  // resume offer survives a different browser, cleared site data or a new machine.
+  guidedResumable: () => req('/guided/resumable'),
   guidedRegenerate: (id, index, reason) =>
     req(`/guided/${id}/regenerate`, { method: 'POST', body: JSON.stringify({ index, reason }) }),
   guidedFinalize: (id) => req(`/guided/${id}/finalize`, { method: 'POST' }),

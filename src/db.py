@@ -539,6 +539,50 @@ def save_guided(gid: str, state: dict, *, user_email: str | None = None,
         return False
 
 
+def unfinished_guided(user_email: str | None, limit: int = 5) -> list[dict]:
+    """This user's guided runs that were never finished, newest first.
+
+    The browser remembers the run id in localStorage, which is where the resume offer
+    came from — so the offer only existed in the ONE browser that started the run. Sign
+    in from a laptop after starting on a desktop, clear site data, or use a private
+    window, and a run with several paid-for chunks in it was unreachable even though the
+    server still held its checkpoint. The checkpoints carry user_email, so the server
+    can answer "what did I leave unfinished?" directly.
+
+    Returns id, session_no, title, status, how many chunks are done, and when it was
+    last touched — enough to describe the run without loading its whole state.
+    """
+    try:
+        rows = _query(
+            "SELECT id, session_no, updated, state_json FROM guided_sessions "
+            "WHERE user_email = ? ORDER BY updated DESC LIMIT ?",
+            (user_email or "", int(limit) * 4))
+    except Exception:
+        return []
+    out = []
+    for r in rows:
+        try:
+            st = json.loads(r.get("state_json") or "null") or {}
+        except Exception:
+            continue
+        # A finished or dead run is not resumable — it is history, and the runs table
+        # already carries it.
+        if st.get("status") in ("done", "error"):
+            continue
+        out.append({
+            "guided_id": r.get("id"),
+            "session_no": r.get("session_no"),
+            "title": st.get("session_title") or st.get("labels", [None])[0],
+            "status": st.get("status"),
+            "chunks_done": len(st.get("chunks") or []),
+            "total": st.get("total"),
+            "updated": r.get("updated"),
+        })
+        if len(out) >= limit:
+            break
+    return out
+
+
 def load_guided(gid: str) -> dict | None:
     """The saved state for one guided run, or None if it was never saved//purged."""
     try:
