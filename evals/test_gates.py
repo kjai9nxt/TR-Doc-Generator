@@ -292,6 +292,27 @@ if _prior:
 else:
     check("prior decks available for the repetition gate", False, "(knowledge base empty)")
 
+print("\n== the judge may not deduct without naming a defect ==")
+# Measured: the same document scored 91.6 and then 100.0 from the same model, the only
+# change being this rule. All four deductions had justifications that named nothing
+# wrong ("Verified concrete specifics ... are standard and correct" -> 4/5), and
+# technical_accuracy at weight 20 threw away 4 points on that alone — enough to fail the
+# 90 gate and send a clean document into a repair round it did not need. Guarded here
+# because it is prose in a YAML file: easy to lose in an edit, and expensive when lost.
+from src import config as _config
+_rub = _config.rubric()
+_scale = " ".join(str(v) for v in (_rub.get("scale") or {}).values()).lower()
+_contract = str(_rub.get("output_contract") or "").lower()
+_raw = (ROOT / "rubrics/tr_doc_rubric.yaml").read_text().lower()
+check("a score below 5 requires a named defect", "named defect" in _raw)
+check("5 is defined as 'no defect found', not 'perfect'",
+      "no defect found" in _scale and "perfect" not in _scale)
+check("the output contract demands the defect be quoted",
+      "quote the defect" in _contract or "must quote" in _contract)
+check("the caps that fail a doc are still absolute", "caps still bind" in _raw)
+_w = {d["id"]: d["weight"] for d in _rub["dimensions"]}
+check("weights still sum to 100", sum(_w.values()) == 100, f"got {sum(_w.values())}")
+
 print("\n== page ceiling ==")
 est = page_grader.estimate(GOLDEN)
 check("golden is within the page ceiling", est["within_budget"] and est["estimated_pages"] == 9,

@@ -9,8 +9,36 @@ scale:
   1: "Fails — unusable, major errors."
   2: "Weak — significant gaps or errors."
   3: "Acceptable — meets the bar with minor issues."
-  4: "Strong — clearly good, negligible issues."
-  5: "Excellent — recording-ready, nothing to fix."
+  4: "Strong — one specific, nameable issue."
+  5: "Meets every requirement of this dimension — no defect found."
+
+# HOW TO SCORE — read before assigning any number.
+#
+# A SCORE BELOW 5 REQUIRES A NAMED DEFECT. If you cannot point at the specific slide,
+# line or claim that is wrong, thin or missing, the dimension is a 5. "Strong overall",
+# "generally accurate", "could be slightly deeper" and "nothing stands out but I am not
+# certain it is perfect" are NOT defects — they are 5s written nervously.
+#
+# This rule exists because of a measured failure. On a real document the judge returned
+# 4/5 for technical_accuracy with the justification "Verified concrete specifics ... are
+# standard and correct ... accurate ... correctly explained" — it had checked the facts,
+# found them right, and deducted anyway. The same run gave 4/5 for pedagogy ("structure
+# is strong overall"), slide_content_style ("mix is present throughout ... no one- or
+# two-item bullet") and example_quality ("examples are warranted ... realistic"). Four
+# dimensions, no defect named between them, 8.4 points gone — and technical_accuracy at
+# weight 20 loses 4 points on its own for a shrug. That is not a strict grader; it is a
+# grader reporting a number the document did not earn, which then blocks acceptance at
+# the 90 gate and sends a clean document into a pointless repair round.
+#
+# So: 5 does NOT mean perfect or unimprovable. It means you looked for the defects this
+# dimension is about and did not find one. Reserve 4 for a real, quotable issue that is
+# small; 3 and below for the caps written into each dimension.
+#
+# The caps still bind absolutely. Where a dimension says "caps this at 2", that ceiling
+# applies no matter how good the rest is — a wrong RFC number, a missing sub-topic, a
+# bullet restating its paragraph. Being generous where you found nothing does not mean
+# being lenient where you found something: name it, cap it, and put it in
+# `blocking_issues` with the slide number so the repair pass can fix exactly that line.
 
 # Each dimension tags the eval guideline(s) it enforces: [G#]. Process guidelines
 # (G2/G3 extraction, G5 chunk count, G8 feedback, G9 self-evolution, G25 regeneration
@@ -251,3 +279,10 @@ output_contract: |
     "blocking_issues": ["<str>", ...],   // must-fix before acceptance
     "suggested_fixes": ["<str>", ...]    // actionable, for the revision pass
   }
+
+  EVERY score below 5 must QUOTE the defect in its justification — the slide number and
+  the offending text. A justification that only confirms the document is fine ("verified
+  and correct", "structure is strong", "examples are warranted") is a 5; if you write one
+  of those and then score 4, you have reported a number the document did not earn.
+  Re-read your justifications before you emit them and raise any score whose reasoning
+  names nothing wrong.

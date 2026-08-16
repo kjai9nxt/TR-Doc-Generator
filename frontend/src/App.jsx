@@ -442,11 +442,28 @@ export default function App() {
               </div>
             ) : <div className="ok-note">In sync — no changes since last time.</div>}
             {syncOut.errors?.map((e, i) => <div key={i} className="alert warn"><pre>{e}</pre></div>)}
+            {/* Extraction gaps are DIAGNOSTICS, not something the sync did wrong: a
+                handful of decks always have an image-only or divider slide with no
+                extractable text. Spelled out inline they filled the panel with a wall of
+                orange on every single sync, which is how a real warning stops being read.
+                Collapsed into its own section, opened only by someone who wants to audit
+                the decks. */}
             {syncOut.extraction_warnings?.length > 0 && (
-              <div className="alert warn">
-                <b>⚠ Deck extraction gaps (some slide content may be missing):</b>
-                <ul>{syncOut.extraction_warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
-              </div>
+              <details className="gaps">
+                <summary>
+                  🔍 Deck extraction gaps ({syncOut.extraction_warnings.length} deck
+                  {syncOut.extraction_warnings.length === 1 ? '' : 's'}) — open only if you
+                  want to check what the decks did not give us
+                </summary>
+                <div className="gapsbody">
+                  <p className="hint">
+                    Slides with no extractable title, body or table — usually an image-only
+                    slide, a section divider or a screenshot. The rest of each deck is
+                    ingested normally, so this is a completeness note, not a failure.
+                  </p>
+                  <ul>{syncOut.extraction_warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+                </div>
+              </details>
             )}
           </div>
         )}
@@ -463,18 +480,16 @@ export default function App() {
           {selSession && (
             <details className="takeaways">
               <summary>Key takeaways ({selSession.takeaways.length})</summary>
-              <ul>{selSession.takeaways.map((k, i) => <li key={i}>{k}</li>)}</ul>
+              {/* No bullet markers: the curriculum lines already begin with their own
+                  "1." / "2." numbering, so a bulleted list numbered them twice. */}
+              <ul className="plainlist">{selSession.takeaways.map((k, i) => <li key={i}>{k}</li>)}</ul>
             </details>
           )}
-          {/* These used to be checkboxes. They are policy now, not preferences: an
-              ungraded doc also skips the revision loop and the agent's learning step,
-              and a session with no time budget is not a session anyone can record. So
-              the app states what will happen instead of offering to switch it off. */}
-          <div className="policy">
-            <span className="pchip">✓ LLM quality check on every generation</span>
-            <span className="pchip">✓ {policy.max_minutes}-minute session</span>
-            <span className="pchip">✓ Max {policy.max_pages} pages (target {policy.target_pages})</span>
-          </div>
+          {/* The policy chips (LLM quality check / 40-minute session / max pages) are
+              gone from here. They restated three constants on every visit and there was
+              no decision attached to any of them — all three are enforced regardless.
+              They still show where they are ACTIONABLE: the budgets appear in the hint
+              under the generate button, and the grading bar appears next to the score. */}
 
           {/* The only server-config fact worth showing a user: without a key the
               Generate button below is dead, and a silently disabled button is worse
@@ -708,21 +723,7 @@ export default function App() {
             </div>
           </details>
 
-          {result.judge?.scores && (
-            <details className="panel rubric" open>
-              <summary>Rubric — judge score <b>{result.judge.weighted_total}/100</b>
-                <span className="muted"> ({Object.keys(result.judge.scores).length} dimensions)</span>
-              </summary>
-              <div className="scorelist">
-                {Object.entries(result.judge.scores).map(([dim, o]) => (
-                  <div key={dim} className="scorerow">
-                    <div className="scorehead"><ScoreChip score={o.score} /><span className="dimname">{pretty(dim)}</span></div>
-                    <div className="just">{o.justification}</div>
-                  </div>
-                ))}
-              </div>
-            </details>
-          )}
+          {result.judge?.scores && <RubricPanel judge={result.judge} />}
 
           <div className="panel evalsets">
             <div className="evalhead">
@@ -1022,6 +1023,69 @@ function pretty(id) {
 function ScoreChip({ score, max = 5 }) {
   const cls = score >= 4 ? 'good' : score >= 3 ? 'mid' : 'bad'
   return <span className={`chip ${cls}`}>{score}/{max}</span>
+}
+
+// The rubric panel used to be a flat list of thirteen dimensions in whatever order the
+// judge returned them, with the total on top. That shows a number without explaining it:
+// "why is this 86 and not 95?" was unanswerable without reading every justification and
+// knowing the weights by heart. Now the dimensions are ordered by what they actually COST
+// — weight x how far below 5 they scored — and the bar is stated, so the panel answers
+// the question it used to raise. A doc needs the total AND at least the per-dimension
+// minimum on every single dimension, so a lone 3 fails a 95-point document.
+function RubricPanel({ judge }) {
+  const weights = judge.weights || {}
+  const minTotal = judge.gates?.min_total
+  const minDim = judge.gates?.min_per_dimension
+  const rows = Object.entries(judge.scores).map(([dim, o]) => {
+    const w = weights[dim] || 0
+    return { dim, ...o, weight: w, lost: w ? ((5 - (o.score || 0)) / 5) * w : 0 }
+  }).sort((a, b) => b.lost - a.lost || (a.score || 0) - (b.score || 0))
+  const totalLost = rows.reduce((s, r) => s + r.lost, 0)
+  const belowBar = minDim ? rows.filter((r) => (r.score || 0) < minDim) : []
+  const perfect = rows.filter((r) => r.lost <= 0)
+  return (
+    <details className="panel rubric" open>
+      <summary>
+        Rubric — judge score <b>{judge.weighted_total}/100</b>
+        <span className="muted"> ({rows.length} dimensions)</span>
+      </summary>
+      {minTotal != null && (
+        <div className="rubricbar">
+          To be accepted a doc needs <b>{minTotal}/100</b> overall
+          {minDim != null && <> and at least <b>{minDim}/5</b> on <i>every</i> dimension</>}.
+          {totalLost > 0 && <> This one gave away <b>{totalLost.toFixed(1)} points</b>, listed
+            worst first below — a 4/5 means “strong, negligible issues”, so several 4s
+            alone put a document in the mid-80s.</>}
+          {belowBar.length > 0 && (
+            <div className="rubricblock">
+              ⚠ Below the per-dimension bar, which fails the run on its own:{' '}
+              <b>{belowBar.map((r) => pretty(r.dim)).join(', ')}</b>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="scorelist">
+        {rows.map((r) => (
+          <div key={r.dim} className={`scorerow ${r.lost > 0 ? 'cost' : ''}`}>
+            <div className="scorehead">
+              <ScoreChip score={r.score} />
+              <span className="dimname">{pretty(r.dim)}</span>
+              {r.weight > 0 && (
+                <span className="dimcost muted">
+                  weight {r.weight}
+                  {r.lost > 0 ? ` · −${r.lost.toFixed(1)} pts` : ' · full marks'}
+                </span>
+              )}
+            </div>
+            <div className="just">{r.justification}</div>
+          </div>
+        ))}
+      </div>
+      {perfect.length === rows.length && (
+        <div className="ok-note">Every dimension at full marks.</div>
+      )}
+    </details>
+  )
 }
 
 function EvalReport({ report }) {

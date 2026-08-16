@@ -207,6 +207,17 @@ Grade now. Return only the contract JSON."""
     for did, w in scored.items():
         acc += (_score_of(result, did) / 5.0) * w
     result["weighted_total"] = round(acc / tot_w * 100, 1) if tot_w else 0.0
+    # Ship the WEIGHTS and the BAR alongside the scores, so a total can be read instead
+    # of just seen. Without them "86/100" is a number with no story: the reviewer cannot
+    # tell that it is mostly 4-out-of-5s ("strong, negligible issues"), which dimension
+    # cost the most, or that a doc needs 90 AND at least 4 everywhere to be accepted.
+    # Stored per run, so an old result stays self-describing after the rubric changes.
+    gates = config.harness().get("gates", {})
+    result["weights"] = scored
+    result["gates"] = {
+        "min_total": gates.get("rubric_min_total"),
+        "min_per_dimension": gates.get("rubric_min_per_dimension"),
+    }
     if missing:
         # Surfaced, never silent: the reviewer must be able to see that part of the
         # rubric was not assessed rather than reading a total that looks complete.

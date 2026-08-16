@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.40"
+  version: "1.41"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -931,6 +931,52 @@ meta:
                   length overshoot; this gate can report five or six bullets at once, and one
                   pass clears some but not all. The second round only runs if the first did
                   not finish, and the best draft still wins."
+    - "1.41 — THE JUDGE WAS DEDUCTING POINTS IT COULD NOT JUSTIFY, PLUS FOUR UI FIXES.
+              (a) WHY A GOOD DOCUMENT SCORED 86. Investigated from the reviewer's question,
+              and it was not the document. Grading a real accepted doc returned 91.6 with ZERO
+              blocking issues, having thrown away 8.4 points across four dimensions whose
+              justifications named no defect at all: technical_accuracy 4/5 ('Verified
+              concrete specifics ... are standard and correct ... accurate ... correctly
+              explained'), pedagogy 4/5 ('structure is strong overall'), slide_content_style
+              4/5 ('mix is present throughout ... no one- or two-item bullet'), example_quality
+              4/5 ('examples are warranted ... realistic'). The judge had checked, found
+              nothing wrong, and deducted anyway — and at weight 20 technical_accuracy loses 4
+              points for that shrug alone, which is the difference between clearing the
+              90 gate and being sent into a repair round the document did not need.
+              THE FIX is in the rubric's scale and output contract, not the code: 5 now means
+              'no defect found' rather than 'nothing to fix', 4 means 'one specific, nameable
+              issue', and any score below 5 must QUOTE the offending slide and text. The caps
+              are untouched and still absolute.
+              MEASURED, same document and same model: 91.6 -> 100.0, and all four phantom
+              deductions became 5s. VERIFIED NOT TO BE BLINDNESS — the same document with
+              three defects injected (a false 'RFC 2119 7-bit port space', bullets restating
+              their paragraph, a second-person navigational lead-in) scored 68.6, capping
+              technical_accuracy and slide_content_style at 2 with quoted blocking issues, and
+              additionally caught an internal contradiction that was not deliberately planted
+              (the invented 7-bit port space against the real 'ports 0-65535' three slides
+              later). A grader that finds nothing on a clean doc and six things on a dirty one
+              is calibrated; one that finds four unnameable things on both is not.
+              (b) THE POLICY CHIPS ARE GONE from the generate panel ('LLM quality check on
+              every generation', '40-minute session', 'Max 26 pages'). They restated three
+              constants on every visit with no decision attached to any of them. All three are
+              still enforced exactly as before — the budgets appear in the hint under the
+              generate button, and the grading bar now appears next to the score where it is
+              actually actionable.
+              (c) DECK EXTRACTION GAPS moved out of the sync result into their own collapsed
+              section. A handful of decks always have an image-only or divider slide with no
+              extractable text, so the list appeared in full, in warning orange, on every
+              single sync — which is how a real warning stops being read. It is a completeness
+              diagnostic, so it now sits behind a neutral 'open only if you want to check what
+              the decks did not give us'.
+              (d) KEY TAKEAWAYS were rendered as a bulleted list, but the curriculum lines
+              already begin '1.', '2.' — so every line was numbered twice, once by the sheet
+              and once by the UI. The list markers are gone.
+              (e) THE RUBRIC PANEL now explains its own number: dimensions ordered by what
+              they COST (weight x shortfall) instead of arbitrary order, each row showing its
+              weight and points lost, the acceptance bar stated, and anything under the
+              per-dimension minimum called out — since a lone 3 fails a 95-point document.
+              llm_judge ships `weights` and `gates` with every result so an old run stays
+              readable after the rubric changes."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
