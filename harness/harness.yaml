@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.44"
+  version: "1.45"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1069,7 +1069,20 @@ meta:
               label; REVERTED at the reviewer's request — the filter is the intended
               behaviour. What remains is a line under the dropdown stating the rule, so the
               same disappearance reads as the rule working rather than as something going
-              wrong."
+              wrong.
+              …and then a REAL defect surfaced behind the same symptom: a session whose row
+              said `no deck` was still missing from the list. The exclusion was reading the
+              deck FILES ON DISK, not the curriculum, so a deck extracted earlier kept its
+              session hidden even after the link had been removed from the row — with no way
+              to put it back. Two changes: _session_list() now asks the CURRICULUM which
+              sessions have a deck (the disk scan survives only as the fallback for a
+              process with no curriculum rows, i.e. offline evals), and
+              sync.prune_orphan_decks() deletes the extracted text for any row whose link
+              has been cleared, called after every save and delete. The second half matters
+              beyond the dropdown: course memory must follow the curriculum, or the writer
+              keeps being told a deck was 'already taught' for a session the course says has
+              none. Guarded so an empty curriculum prunes nothing — a database that has not
+              been restored yet can never wipe the knowledge base."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

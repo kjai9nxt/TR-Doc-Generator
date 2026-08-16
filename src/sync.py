@@ -152,6 +152,45 @@ def import_sheet(course_link: str, course: str | None = None, *,
     return res
 
 
+def prune_orphan_decks(course: str | None = None) -> list[int]:
+    """Drop extracted decks the curriculum no longer claims. Returns the sessions cleared.
+
+    Removing a session's PPT link used to leave its extracted text behind in the
+    knowledge base, which is wrong twice over: the session stayed out of the
+    "needs a TR doc" list even though its row said `no deck`, and the agent went on
+    feeding that deck to the writer as material "already taught". The curriculum is the
+    source of truth, so course memory has to follow it — a row with no link has no deck.
+
+    Guarded against the empty case: with no curriculum rows this does nothing at all,
+    so a process that has not loaded a course (or a database that has not been restored
+    yet) can never wipe the knowledge base.
+    """
+    from . import db
+    course = course or _course()
+    rows = db.curriculum(course)
+    if not rows:
+        return []
+    linked = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
+    known = {r["session_no"] for r in rows}
+    cleared = []
+    for path in sorted(pptx_ingest.DECKS_DIR.glob("session_*.json")):
+        m = re.search(r"session_(\d+)\.json$", path.name)
+        if not m:
+            continue
+        no = int(m.group(1))
+        # Only sessions this curriculum actually covers: a deck belonging to a session
+        # the course does not list is left alone rather than assumed to be rubbish.
+        if no in known and no not in linked:
+            path.unlink(missing_ok=True)
+            cleared.append(no)
+    if cleared:
+        state = _load_state()
+        state["decks"] = {k: v for k, v in (state.get("decks") or {}).items()
+                          if v.get("session_no") not in cleared}
+        _save_state(state)
+    return cleared
+
+
 def adopt_existing_decks(course: str | None = None) -> int:
     """Recognise decks this instance ALREADY extracted, so an upgrade costs nothing.
 

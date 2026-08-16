@@ -349,6 +349,10 @@ def save_curriculum(body: CurriculumSaveBody, user: dict = Depends(current_user)
         saved += 1 if ok else 0
     # Keep the on-disk projection in step, so the offline loaders and the eval harness
     # see the edit without waiting for a sync.
+    # Course memory follows the curriculum: a row whose link was just cleared must not
+    # keep an extracted deck, or the session stays hidden from the generate list and the
+    # writer goes on treating that deck as material already taught.
+    sync.prune_orphan_decks(course)
     sync.write_course_cache(course)
     return {"saved": saved, "rows": _curriculum_rows(course)}
 
@@ -357,6 +361,7 @@ def save_curriculum(body: CurriculumSaveBody, user: dict = Depends(current_user)
 def delete_curriculum_row(session_no: int, user: dict = Depends(current_user)):
     course = app_settings.course_name() or "default"
     db.curriculum_delete(course, session_no)
+    sync.prune_orphan_decks(course)
     sync.write_course_cache(course)
     return {"ok": True, "rows": _curriculum_rows(course)}
 
@@ -408,8 +413,19 @@ def _session_list():
     sessions = course_loader.load_sessions_from_cache()
     if not sessions:
         return []
-    have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
-                  if d.get("session_no") is not None}
+    # WHAT COUNTS AS "already recorded" is the CURRICULUM's answer, not whatever deck
+    # files happen to sit on disk. Reading the disk meant a deck extracted earlier kept
+    # a session out of this list even after its link had been removed from the row —
+    # the row said "no deck" while the session stayed invisible, with no way to put it
+    # back. The curriculum is the source of truth, so it decides here too; the disk scan
+    # remains only as the fallback for a process with no curriculum rows (offline evals).
+    course = app_settings.course_name() or "default"
+    rows = db.curriculum(course)
+    if rows:
+        have_decks = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
+    else:
+        have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
+                      if d.get("session_no") is not None}
     return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
             for s in sessions if s.number not in have_decks]
 
