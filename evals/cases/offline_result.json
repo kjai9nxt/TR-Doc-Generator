@@ -1,11 +1,11 @@
 {
   "kind": "offline",
-  "generated_at": "2026-08-16T22:29:51",
+  "generated_at": "2026-08-16T22:51:18",
   "overall_pass": true,
   "extraction": {
     "ok": false,
-    "decks_checked": 18,
-    "decks_with_issues": 6,
+    "decks_checked": 30,
+    "decks_with_issues": 7,
     "decks": [
       {
         "session_no": 1,
@@ -366,6 +366,227 @@
         "with_notes": 50,
         "with_tables": 11,
         "body_coverage": 0.911,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 19,
+        "source_file": "Deadlock Avoidance: Banker's Algorithm",
+        "n_slides": 61,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          60,
+          61
+        ],
+        "interior_empty_slides": [],
+        "with_body": 54,
+        "with_notes": 36,
+        "with_tables": 9,
+        "body_coverage": 0.885,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 20,
+        "source_file": "Deadlock Detection & Recovery",
+        "n_slides": 55,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          54,
+          55
+        ],
+        "interior_empty_slides": [],
+        "with_body": 49,
+        "with_notes": 35,
+        "with_tables": 10,
+        "body_coverage": 0.891,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 21,
+        "source_file": "Memory Management Fundamentals",
+        "n_slides": 68,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          67,
+          68
+        ],
+        "interior_empty_slides": [],
+        "with_body": 62,
+        "with_notes": 55,
+        "with_tables": 4,
+        "body_coverage": 0.912,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 22,
+        "source_file": "Cache Memory & Mapping",
+        "n_slides": 67,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          66,
+          67
+        ],
+        "interior_empty_slides": [],
+        "with_body": 60,
+        "with_notes": 55,
+        "with_tables": 7,
+        "body_coverage": 0.896,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 23,
+        "source_file": "Memory Allocation - Contiguous",
+        "n_slides": 71,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          70,
+          71
+        ],
+        "interior_empty_slides": [],
+        "with_body": 65,
+        "with_notes": 55,
+        "with_tables": 13,
+        "body_coverage": 0.915,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 24,
+        "source_file": "Paging & Segmentation",
+        "n_slides": 72,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          71,
+          72
+        ],
+        "interior_empty_slides": [],
+        "with_body": 66,
+        "with_notes": 53,
+        "with_tables": 6,
+        "body_coverage": 0.917,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 25,
+        "source_file": "Virtual Memory & Demand Paging",
+        "n_slides": 62,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          61,
+          62
+        ],
+        "interior_empty_slides": [],
+        "with_body": 56,
+        "with_notes": 49,
+        "with_tables": 15,
+        "body_coverage": 0.903,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 26,
+        "source_file": "Page Replacement Algorithms & Belady's Anomaly",
+        "n_slides": 62,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          61,
+          62
+        ],
+        "interior_empty_slides": [],
+        "with_body": 56,
+        "with_notes": 33,
+        "with_tables": 20,
+        "body_coverage": 0.903,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 27,
+        "source_file": "Thrashing, Working Set & Frame Allocation",
+        "n_slides": 66,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          65,
+          66
+        ],
+        "interior_empty_slides": [],
+        "with_body": 60,
+        "with_notes": 49,
+        "with_tables": 17,
+        "body_coverage": 0.909,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 28,
+        "source_file": "File System Concepts & Directories",
+        "n_slides": 68,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          65,
+          67,
+          68
+        ],
+        "interior_empty_slides": [
+          65
+        ],
+        "with_body": 61,
+        "with_notes": 51,
+        "with_tables": 10,
+        "body_coverage": 0.897,
+        "ok": false,
+        "issues": [
+          "1 interior slide(s) with no title/body/table: [65]"
+        ]
+      },
+      {
+        "session_no": 29,
+        "source_file": "File System Implementation",
+        "n_slides": 66,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          65,
+          66
+        ],
+        "interior_empty_slides": [],
+        "with_body": 60,
+        "with_notes": 53,
+        "with_tables": 5,
+        "body_coverage": 0.909,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 30,
+        "source_file": "I/O Systems & I/O Models",
+        "n_slides": 55,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          54,
+          55
+        ],
+        "interior_empty_slides": [],
+        "with_body": 50,
+        "with_notes": 8,
+        "with_tables": 9,
+        "body_coverage": 0.909,
         "ok": true,
         "issues": []
       }

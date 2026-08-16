@@ -304,17 +304,31 @@ def do_sync(body: SyncBody, user: dict = Depends(current_user)):
 # once per link, because Google's export endpoint gives no way to ask whether it
 # changed without downloading the whole file (~4.7 MB, ~3.4 s each).
 # --------------------------------------------------------------------------- #
-@app.get("/api/curriculum")
-def get_curriculum(user: dict = Depends(current_user)):
-    course = app_settings.course_name() or "default"
+def _curriculum_rows(course: str) -> list[dict]:
+    """The course's rows, each tagged with whether its deck is REALLY held.
+
+    Every response that returns rows goes through here. It used to be inlined in the
+    GET only, so the POST and DELETE replies came back without `extracted` — and the
+    dashboard, which renders "pending" whenever that flag is falsy, showed every single
+    session as pending the moment you saved an edit. Nothing was being re-extracted;
+    the rows had simply lost the field. One source, one shape, no drift.
+
+    The flag is what the knowledge base ACTUALLY holds, not what the table believes: an
+    ephemeral disk can lose the extracted text while the row still says "extracted",
+    and that is exactly when a re-fetch is genuinely needed.
+    """
     rows = db.curriculum(course)
     have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
                   if d.get("session_no") is not None}
     for r in rows:
-        # What the knowledge base ACTUALLY holds, not just what the table believes —
-        # an ephemeral disk can lose the extracted text while the row still says
-        # "extracted", and that is the case where a re-fetch is genuinely needed.
         r["extracted"] = r["session_no"] in have_decks
+    return rows
+
+
+@app.get("/api/curriculum")
+def get_curriculum(user: dict = Depends(current_user)):
+    course = app_settings.course_name() or "default"
+    rows = _curriculum_rows(course)
     return {"course": course, "rows": rows,
             "imported_from": sync.last_link(),
             "pending": sum(1 for r in rows
@@ -336,7 +350,7 @@ def save_curriculum(body: CurriculumSaveBody, user: dict = Depends(current_user)
     # Keep the on-disk projection in step, so the offline loaders and the eval harness
     # see the edit without waiting for a sync.
     sync.write_course_cache(course)
-    return {"saved": saved, "rows": db.curriculum(course)}
+    return {"saved": saved, "rows": _curriculum_rows(course)}
 
 
 @app.delete("/api/curriculum/{session_no}")
@@ -344,7 +358,7 @@ def delete_curriculum_row(session_no: int, user: dict = Depends(current_user)):
     course = app_settings.course_name() or "default"
     db.curriculum_delete(course, session_no)
     sync.write_course_cache(course)
-    return {"ok": True, "rows": db.curriculum(course)}
+    return {"ok": True, "rows": _curriculum_rows(course)}
 
 
 def _run_ingest(job_id: str, force: bool, sessions: list[int] | None):
@@ -381,17 +395,27 @@ def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)
 
 
 def _session_list():
-    # Only expose sessions that came from a real sheet SYNC (the synced cache).
-    # Never fall back to the offline sample xlsx here — that would mislead the UI.
+    """Every session of the course, each saying whether it already has a deck.
+
+    It used to REMOVE sessions that had an ingested deck, on the reasoning that a deck
+    means the session was already recorded and so needs no TR doc. That rule is sound
+    as a default and wrong as a disappearance: attach a deck to a session in the
+    dashboard, extract it, and the session silently vanished from the generate
+    dropdown with nothing saying why — which is precisely what happened to a session
+    added by hand. Filtering the option away also removes a legitimate case: writing a
+    fresh TR doc for a session that already has a deck.
+
+    So nothing is hidden any more. `has_deck` travels with each session and the app
+    labels it, defaulting the selection to a session that still needs a doc.
+    """
     sessions = course_loader.load_sessions_from_cache()
     if not sessions:
         return []
-    # Sessions that already have an ingested PPT deck are PAST sessions (memory) —
-    # exclude them from the dropdown; only offer sessions still needing a TR doc.
     have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
                   if d.get("session_no") is not None}
-    return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
-            for s in sessions if s.number not in have_decks]
+    return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways,
+             "has_deck": s.number in have_decks}
+            for s in sessions]
 
 
 @app.get("/api/sessions")

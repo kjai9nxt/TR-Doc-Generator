@@ -88,11 +88,23 @@ h2 {
 
 /* ---------- Forms ---------- */
 label { display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
-input[type=text], input[type=date], input:not([type]), select, .regen textarea {
+/* Every text-like control, not an enumerated list of them. The old rule named
+   `input[type=text]`, `input[type=date]`, `input:not([type])` and `.regen textarea`
+   specifically, so anything else — a `type=number` box, a textarea outside .regen —
+   fell through to the browser default: white background, BLACK text. Worse, the
+   :focus rule below applies to every textarea and sets a dark background, so an
+   unstyled textarea turned dark-on-dark and the text disappeared the moment it was
+   typed into. Style the class of control, and a new field cannot be born broken. */
+input[type=text], input[type=number], input[type=date], input[type=url],
+input[type=email], input[type=search], input:not([type]), select, textarea {
   width: 100%; background: var(--bg2); border: 1px solid var(--line); color: var(--text);
   border-radius: var(--r-sm); padding: 10px 13px; font-size: 14px; font-family: inherit;
   transition: border-color .15s, box-shadow .15s, background .15s;
 }
+/* Belt and braces: the focus rule changes the background, so pin the text colour to
+   the theme in every state rather than trusting inheritance. */
+input, select, textarea { color: var(--text); }
+input:focus, select:focus, textarea:focus { color: var(--text); }
 input::placeholder, textarea::placeholder { color: var(--faint); }
 input:hover, select:hover, textarea:hover { border-color: var(--line2); }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); background: var(--bg); }

@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.43"
+  version: "1.44"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1041,6 +1041,34 @@ meta:
               (e) `force` exists for the one case the cheap path cannot cover: slides edited
               behind a link that did not change. It is a button, not a default, because it
               is the expensive path by definition."
+    - "1.44 — THREE DASHBOARD DEFECTS, ONE OF THEM ALARMING AND HARMLESS.
+              (a) TYPING INTO THE TAKEAWAYS BOX SHOWED NOTHING. The form rule styled an
+              ENUMERATED list of controls — input[type=text], [type=date], input:not([type])
+              and `.regen textarea` — so anything outside that list fell through to the
+              browser default (white background, black text), while the :focus rule below it
+              applies to EVERY textarea and sets a dark background. Result: the new takeaways
+              textarea was black-on-white until focused and black-on-black while being typed
+              into. The session-number input (type=number) had the same hole. Fixed by
+              styling the CLASS of control rather than a list of instances, plus an explicit
+              colour in every state, so a new field cannot be born broken.
+              (b) 'EVERY SESSION WENT PENDING AFTER A SAVE' — and nothing was re-extracted.
+              The `extracted` flag was computed inline in the GET handler only, so the POST
+              and DELETE replies returned rows WITHOUT it; the dashboard renders 'pending'
+              whenever the flag is falsy, so saving one edit made all 34 sessions look
+              pending until the next refresh. That is also why clicking extract appeared to
+              'fix' 30 decks ten seconds later: the ingest completes, the page reloads the
+              curriculum, and the flag comes back. One shared _curriculum_rows() helper now
+              feeds every response, so the shape cannot drift again. Verified: 30/34
+              extracted before AND after a save.
+              (c) A SESSION VANISHED FROM THE GENERATE DROPDOWN once its deck was extracted.
+              _session_list() REMOVED sessions that had a deck, on the reasoning that a deck
+              means the session was already recorded. Sound as a default, wrong as a
+              disappearance — attach a deck in the dashboard and the session silently left
+              the list with nothing saying why. It also blocked a legitimate case: writing a
+              fresh TR doc for a session that already has a deck. Nothing is hidden now;
+              `has_deck` travels with each session, the option is labelled '· already
+              recorded', and the default selection is the first session that still needs a
+              doc."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
