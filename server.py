@@ -395,27 +395,23 @@ def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)
 
 
 def _session_list():
-    """Every session of the course, each saying whether it already has a deck.
+    """Sessions that still need a TR doc.
 
-    It used to REMOVE sessions that had an ingested deck, on the reasoning that a deck
-    means the session was already recorded and so needs no TR doc. That rule is sound
-    as a default and wrong as a disappearance: attach a deck to a session in the
-    dashboard, extract it, and the session silently vanished from the generate
-    dropdown with nothing saying why — which is precisely what happened to a session
-    added by hand. Filtering the option away also removes a legitimate case: writing a
-    fresh TR doc for a session that already has a deck.
-
-    So nothing is hidden any more. `has_deck` travels with each session and the app
-    labels it, defaulting the selection to a session that still needs a doc.
+    A session whose deck has been ingested has already been recorded, so it is course
+    MEMORY rather than work to be done, and it is left out of the generate dropdown.
+    (Briefly changed to list everything with an "already recorded" label, after a
+    session appeared to vanish once a deck was attached to it — but that session had a
+    deck precisely because one had just been pasted in, so the exclusion was doing its
+    job. Reverted: the filter is the intended behaviour, and the dropdown stays a list
+    of sessions that need writing.)
     """
     sessions = course_loader.load_sessions_from_cache()
     if not sessions:
         return []
     have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
                   if d.get("session_no") is not None}
-    return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways,
-             "has_deck": s.number in have_decks}
-            for s in sessions]
+    return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
+            for s in sessions if s.number not in have_decks]
 
 
 @app.get("/api/sessions")

@@ -46,13 +46,10 @@ export default function App() {
       // the course and the import form is a deliberate choice.
       setShowImport(!(d.rows || []).length)
     }).catch(() => {})
-    // All sessions, so generation is available without a sync. The default selection
-    // is the first that still needs a doc (no deck yet) — the usual intent — rather
-    // than session 1, which is normally long since recorded.
+    // The sessions still needing a TR doc, so generation is available without a sync.
     api.sessions().then((s) => {
-      const list = s.sessions || []
-      setSessions(list)
-      setSel((cur) => cur ?? (list.find((x) => !x.has_deck) || list[0])?.number ?? null)
+      setSessions(s.sessions || [])
+      setSel((cur) => cur ?? (s.sessions || [])[0]?.number ?? null)
     }).catch(() => {})
   }
 
@@ -304,11 +301,7 @@ export default function App() {
             clearInterval(syncPollRef.current); setSyncing(false)
             const out = job.result
             setSyncOut(out); setSessions(out.sessions || [])
-            // Prefer a session that still needs a doc over simply the first one.
-            if (out.sessions?.length) {
-              const list = out.sessions
-              setSel((list.find((x) => !x.has_deck) || list[0]).number)
-            }
+            if (out.sessions?.length) setSel(out.sessions[0].number)
             // The import wrote into the agent's curriculum — show it, and put the
             // import form away again.
             loadCurriculum(); setShowImport(false)
@@ -617,25 +610,16 @@ export default function App() {
         <section className="card">
           <h2><span className="num">2</span> Generate a TR doc</h2>
           <label>Session</label>
-          {/* Every session is listed. Sessions that already have a deck are marked
-              rather than hidden: hiding them made a session disappear the moment you
-              attached a deck to it in the dashboard, with nothing explaining where it
-              went, and it also blocked the legitimate case of writing a fresh doc for
-              an already-recorded session. */}
           <select value={sel ?? ''} onChange={(e) => setSel(Number(e.target.value))}>
-            {sessions.map((s) => (
-              <option key={s.number} value={s.number}>
-                {s.number} — {s.name}{s.has_deck ? '  · already recorded' : ''}
-              </option>
-            ))}
+            {sessions.map((s) => <option key={s.number} value={s.number}>{s.number} — {s.name}</option>)}
           </select>
-          {selSession?.has_deck && (
-            <span className="hint">
-              This session already has a deck in the knowledge base, so it is normally
-              treated as <b>already taught</b> — earlier sessions use it as memory.
-              Generating a TR doc for it is fine; it just is not the usual case.
-            </span>
-          )}
+          {/* Says out loud what the list is, so a session leaving it after a deck is
+              attached reads as the rule working rather than as something going wrong. */}
+          <span className="hint">
+            Only sessions that still need a TR doc are listed. Attaching a deck in the
+            curriculum marks a session as already recorded, so it moves into the agent's
+            course memory and leaves this list.
+          </span>
           {selSession && (
             <details className="takeaways">
               <summary>Key takeaways ({selSession.takeaways.length})</summary>

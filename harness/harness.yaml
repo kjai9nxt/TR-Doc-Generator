@@ -1060,15 +1060,16 @@ meta:
               curriculum, and the flag comes back. One shared _curriculum_rows() helper now
               feeds every response, so the shape cannot drift again. Verified: 30/34
               extracted before AND after a save.
-              (c) A SESSION VANISHED FROM THE GENERATE DROPDOWN once its deck was extracted.
-              _session_list() REMOVED sessions that had a deck, on the reasoning that a deck
-              means the session was already recorded. Sound as a default, wrong as a
-              disappearance — attach a deck in the dashboard and the session silently left
-              the list with nothing saying why. It also blocked a legitimate case: writing a
-              fresh TR doc for a session that already has a deck. Nothing is hidden now;
-              `has_deck` travels with each session, the option is labelled '· already
-              recorded', and the default selection is the first session that still needs a
-              doc."
+              (c) A SESSION LEFT THE GENERATE DROPDOWN once its deck was extracted, which
+              looked like a defect and was not: _session_list() excludes sessions that have
+              an ingested deck because such a session has already been recorded and is
+              course MEMORY, not work to be done. The session in question had a deck
+              precisely because one had just been pasted into its row, so the filter was
+              doing its job. Briefly changed to list everything with an 'already recorded'
+              label; REVERTED at the reviewer's request — the filter is the intended
+              behaviour. What remains is a line under the dropdown stating the rule, so the
+              same disappearance reads as the rule working rather than as something going
+              wrong."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
