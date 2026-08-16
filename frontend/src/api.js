@@ -71,6 +71,18 @@ export const api = {
   sync: (course_link, course_type, course_name) =>
     req('/sync', { method: 'POST', body: JSON.stringify({ course_link, course_type, course_name }) }),
   sessions: () => req('/sessions'),
+
+  // The agent's own curriculum — the source of truth once a course has been imported.
+  // The sheet is an import format; everything after that happens here.
+  curriculum: () => req('/curriculum'),
+  saveCurriculum: (rows) =>
+    req('/curriculum', { method: 'POST', body: JSON.stringify({ rows }) }),
+  deleteCurriculumRow: (session_no) =>
+    req(`/curriculum/${session_no}`, { method: 'DELETE' }),
+  // Fetches ONLY decks that are new or whose link changed. force=true re-checks decks
+  // whose link is unchanged — the only way to pick up an edit to the slides themselves.
+  ingestDecks: (force = false, sessions = null) =>
+    req('/curriculum/ingest', { method: 'POST', body: JSON.stringify({ force, sessions }) }),
   job: (id) => req(`/jobs/${id}`),
   downloadUrl: (session_no, run_id, name) => `/api/download/${session_no}${qs({ run_id, name })}`,
 

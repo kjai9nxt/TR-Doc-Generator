@@ -83,8 +83,31 @@ except Exception as _e:
 # --------------------------------------------------------------------------- #
 # models
 # --------------------------------------------------------------------------- #
+class CurriculumRow(BaseModel):
+    session_no: int
+    topic: str | None = ""
+    session_name: str | None = ""
+    key_takeaways: list[str] | str | None = None
+    # None = leave the existing link (and its extracted deck) alone. A different link
+    # marks that row's deck as pending; the same link changes nothing, so saving a row
+    # never re-downloads a deck.
+    ppt_link: str | None = None
+
+
+class CurriculumSaveBody(BaseModel):
+    rows: list[CurriculumRow]
+
+
+class IngestBody(BaseModel):
+    # Re-fetch decks whose link has not changed. The only way to pick up an edit made to
+    # the SLIDES behind an unchanged link, since Google's export endpoint exposes no
+    # ETag/Last-Modified to ask cheaply.
+    force: bool = False
+    sessions: list[int] | None = None
+
+
 class SyncBody(BaseModel):
-    course_link: str
+    course_link: str | None = None
     # One sheet now carries both the curriculum and each session's deck link (the
     # "PPT Links" column), so there is no second link to send. Accepted and ignored
     # so an older client that still posts it does not get a 422.
@@ -235,7 +258,7 @@ def template_guide():
 # --------------------------------------------------------------------------- #
 # sync
 # --------------------------------------------------------------------------- #
-def _run_sync(job_id: str, course_link: str):
+def _run_sync(job_id: str, course_link: str | None):
     def on_event(msg: str):
         with _lock:
             JOBS[job_id]["logs"].append(msg)
@@ -269,6 +292,91 @@ def do_sync(body: SyncBody, user: dict = Depends(current_user)):
                         "error": None, "error_kind": None}
     threading.Thread(target=_run_sync,
                      args=(job_id, body.course_link), daemon=True).start()
+    return {"job_id": job_id}
+
+
+# --------------------------------------------------------------------------- #
+# CURRICULUM — the agent's own copy of the course, edited in the app.
+#
+# The sheet is an import format now, not a dependency. Everything below reads and
+# writes the `curriculum` table; the sheet is touched only when the user asks for an
+# import. Crucially, saving a row does NOT re-fetch its deck: a deck is downloaded
+# once per link, because Google's export endpoint gives no way to ask whether it
+# changed without downloading the whole file (~4.7 MB, ~3.4 s each).
+# --------------------------------------------------------------------------- #
+@app.get("/api/curriculum")
+def get_curriculum(user: dict = Depends(current_user)):
+    course = app_settings.course_name() or "default"
+    rows = db.curriculum(course)
+    have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
+                  if d.get("session_no") is not None}
+    for r in rows:
+        # What the knowledge base ACTUALLY holds, not just what the table believes —
+        # an ephemeral disk can lose the extracted text while the row still says
+        # "extracted", and that is the case where a re-fetch is genuinely needed.
+        r["extracted"] = r["session_no"] in have_decks
+    return {"course": course, "rows": rows,
+            "imported_from": sync.last_link(),
+            "pending": sum(1 for r in rows
+                           if (r.get("ppt_link") or "") and not r["extracted"])}
+
+
+@app.post("/api/curriculum")
+def save_curriculum(body: CurriculumSaveBody, user: dict = Depends(current_user)):
+    """Create or update rows. Only the rows sent are touched — nothing is deleted."""
+    course = app_settings.course_name() or "default"
+    saved = 0
+    for row in body.rows:
+        ok = db.curriculum_upsert(
+            course, row.session_no, topic=row.topic or "",
+            session_name=row.session_name or "",
+            key_takeaways=row.key_takeaways or [],
+            ppt_link=row.ppt_link)
+        saved += 1 if ok else 0
+    # Keep the on-disk projection in step, so the offline loaders and the eval harness
+    # see the edit without waiting for a sync.
+    sync.write_course_cache(course)
+    return {"saved": saved, "rows": db.curriculum(course)}
+
+
+@app.delete("/api/curriculum/{session_no}")
+def delete_curriculum_row(session_no: int, user: dict = Depends(current_user)):
+    course = app_settings.course_name() or "default"
+    db.curriculum_delete(course, session_no)
+    sync.write_course_cache(course)
+    return {"ok": True, "rows": db.curriculum(course)}
+
+
+def _run_ingest(job_id: str, force: bool, sessions: list[int] | None):
+    def on_event(msg: str):
+        with _lock:
+            JOBS[job_id]["logs"].append(msg)
+    try:
+        res = sync.ingest_decks(force=force, only_sessions=sessions,
+                                verbose=True, on_event=on_event)
+        with _lock:
+            JOBS[job_id].update(status="done", result={
+                "sessions": _session_list(),
+                "changelog": res.changelog,
+                "errors": res.errors,
+                "extraction_warnings": res.extraction_warnings,
+                "counts": {"sessions": res.sessions, "ingested": res.decks_ingested,
+                           "cached": res.decks_cached},
+            })
+    except Exception as e:
+        with _lock:
+            JOBS[job_id].update(status="error", error=str(e), error_kind="read")
+
+
+@app.post("/api/curriculum/ingest")
+def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)):
+    """Fetch the decks this course still needs — and only those."""
+    job_id = uuid.uuid4().hex[:12]
+    with _lock:
+        JOBS[job_id] = {"status": "running", "logs": [], "result": None,
+                        "error": None, "error_kind": None}
+    threading.Thread(target=_run_ingest,
+                     args=(job_id, body.force, body.sessions), daemon=True).start()
     return {"job_id": job_id}
 
 

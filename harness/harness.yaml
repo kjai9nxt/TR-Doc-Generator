@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.42"
+  version: "1.43"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1004,6 +1004,43 @@ meta:
               change (skipSelResetRef), since resuming must not destroy what it is restoring.
               Discard remains local: deleting the server checkpoint would take away the
               ability to come back to the run from another browser, which is the whole point."
+    - "1.43 — THE AGENT OWNS THE CURRICULUM, AND A DECK IS DOWNLOADED ONCE.
+              (a) THE COST. Every sync re-downloaded every deck the course has ever had.
+              Extraction was cached; the DOWNLOAD was not, because the cache key was a
+              content hash and computing it means fetching the file. Google's Slides export
+              endpoint offers no ETag, no Last-Modified and sends Cache-Control: no-store —
+              measured directly, so there is no cheap remote way to ask 'did this change?'.
+              At ~4.7 MB and ~3.4 s per deck, single-threaded, a 30-deck course paid ~102
+              seconds of transfer per sync to learn that nothing had changed.
+              (b) THE MODEL IS INVERTED. New `curriculum` table = the course, owned by the
+              agent. The sheet is an IMPORT FORMAT: bring a course in once (or re-import
+              deliberately), then edit it in the app. Each row carries its ppt_link and the
+              hash of the deck extracted FROM that link, so ingestion fetches only what is
+              new or changed. Editing a takeaway cannot touch a deck (curriculum_upsert
+              leaves the link alone unless a link is passed); replacing a link clears that
+              one row's hash and marks it pending.
+              MEASURED end to end on the real course: first import 30 fetches, every sync
+              after that 0 — `python run.py --sync` went from ~102 s to 1.2 s. Editing a
+              takeaway: 0 fetches. Adding one session with a link: exactly 1.
+              (c) THE UPGRADE COSTS NOTHING. An instance already holding extracted decks
+              would have seen an empty table, called all 17 of them new and re-fetched the
+              lot — the exact waste being removed. sync.adopt_existing_decks() matches rows
+              against the older knowledge_base/sync_state.json record (same link + extracted
+              file present) and adopts its hash. Verified: 17 recognised, only the 13
+              genuinely missing marked pending.
+              (d) THE DASHBOARD. An editable table in the app — add/edit/delete sessions,
+              edit key takeaways, attach deck links, save — with each row showing whether
+              its deck is extracted, pending or absent. GET/POST /api/curriculum,
+              DELETE /api/curriculum/{n}, POST /api/curriculum/ingest {force, sessions}.
+              course_loader reads the table FIRST (falling back to the on-disk cache for an
+              offline eval process), so an edit is live for the next generation with no sync
+              at all; sync.write_course_cache keeps knowledge_base/course_structure.json as
+              the table's projection so pptx_ingest, the RAG layer and the eval harness were
+              untouched. The generate panel is now gated on the curriculum the agent HOLDS
+              rather than on having run a sync in this browser session.
+              (e) `force` exists for the one case the cheap path cannot cover: slides edited
+              behind a link that did not change. It is a button, not a default, because it
+              is the expensive path by definition."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

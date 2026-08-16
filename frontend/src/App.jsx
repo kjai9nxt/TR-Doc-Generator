@@ -27,6 +27,32 @@ export default function App() {
   const [syncLogs, setSyncLogs] = useState([])
   const syncPollRef = useRef(null)
 
+  // The agent's curriculum — loaded from the server, edited here, saved back. This is
+  // the course after the first import; the sheet is not consulted again unless asked.
+  const [curRows, setCurRows] = useState([])
+  const [curPending, setCurPending] = useState(0)
+  const [curSaving, setCurSaving] = useState(false)
+  const [curIngesting, setCurIngesting] = useState(false)
+  const [curLogs, setCurLogs] = useState([])
+  const [importedFrom, setImportedFrom] = useState(null)
+  const [showImport, setShowImport] = useState(false)
+  const curDirty = curRows.some((r) => r._dirty)
+  function loadCurriculum() {
+    api.curriculum().then((d) => {
+      setCurRows(d.rows || [])
+      setCurPending(d.pending || 0)
+      setImportedFrom(d.imported_from || null)
+      // Only ask for a sheet when there is nothing to show; otherwise the dashboard is
+      // the course and the import form is a deliberate choice.
+      setShowImport(!(d.rows || []).length)
+    }).catch(() => {})
+    // Sessions still needing a TR doc — needed to offer generation without a sync.
+    api.sessions().then((s) => {
+      setSessions(s.sessions || [])
+      setSel((cur) => cur ?? (s.sessions || [])[0]?.number ?? null)
+    }).catch(() => {})
+  }
+
   const [sessions, setSessions] = useState([])
   const [sel, setSel] = useState(null)
   // Generation policy comes from the harness via /api/status — the LLM quality check
@@ -97,6 +123,56 @@ export default function App() {
   // Ask on sign-in and after each finished doc — a run that just completed must drop
   // off the list, and one abandoned earlier must appear on it.
   useEffect(() => { if (user) refreshResumable() }, [user, result])
+  // The curriculum is what the app opens onto now, so it loads with the session.
+  useEffect(() => { if (user) loadCurriculum() }, [user])
+
+  function saveCurriculum() {
+    setCurSaving(true); setCurLogs([])
+    const dirty = curRows.filter((r) => r._dirty)
+    api.saveCurriculum(dirty.map((r) => ({
+      session_no: Number(r.session_no), topic: r.topic || '',
+      session_name: r.session_name || '',
+      key_takeaways: (r.key_takeaways || []).filter((l) => String(l).trim()),
+      ppt_link: r.ppt_link ?? null,
+    }))).then((d) => {
+      setCurLogs([`Saved ${d.saved} session(s).`])
+      setCurRows(d.rows || [])
+      api.curriculum().then((c) => setCurPending(c.pending || 0)).catch(() => {})
+      api.sessions().then((s) => setSessions(s.sessions || [])).catch(() => {})
+    }).catch((e) => setCurLogs([`Could not save: ${e.message}`]))
+      .finally(() => setCurSaving(false))
+  }
+
+  function deleteCurriculumRow(row, i) {
+    // A row never saved has no server side yet — drop it locally.
+    if (row._new) { setCurRows((rs) => rs.filter((_, k) => k !== i)); return }
+    if (!window.confirm(`Remove session ${row.session_no} from the curriculum?`)) return
+    api.deleteCurriculumRow(row.session_no)
+      .then((d) => { setCurRows(d.rows || []); setCurLogs([`Removed session ${row.session_no}.`]) })
+      .catch((e) => setCurLogs([`Could not remove: ${e.message}`]))
+  }
+
+  // Fetch decks. Without force this touches ONLY links that are new or changed — the
+  // whole reason a sync no longer costs a full re-download of the course.
+  function ingestDecks(force) {
+    setCurIngesting(true); setCurLogs([])
+    api.ingestDecks(force).then(({ job_id }) => {
+      const t = setInterval(async () => {
+        try {
+          const job = await api.job(job_id)
+          setCurLogs(job.logs || [])
+          if (job.status === 'done') {
+            clearInterval(t); setCurIngesting(false)
+            setSyncOut(job.result); setSessions(job.result.sessions || [])
+            loadCurriculum()
+          } else if (job.status === 'error') {
+            clearInterval(t); setCurIngesting(false)
+            setCurLogs((l) => [...l, `Failed: ${job.error}`])
+          }
+        } catch (e) { clearInterval(t); setCurIngesting(false); setCurLogs([e.message]) }
+      }, 1000)
+    }).catch((e) => { setCurIngesting(false); setCurLogs([e.message]) })
+  }
 
   // Auth bootstrap: figure out whether login is required, and restore a session.
   useEffect(() => {
@@ -226,6 +302,9 @@ export default function App() {
             const out = job.result
             setSyncOut(out); setSessions(out.sessions || [])
             if (out.sessions?.length) setSel(out.sessions[0].number)
+            // The import wrote into the agent's curriculum — show it, and put the
+            // import form away again.
+            loadCurriculum(); setShowImport(false)
           } else if (job.status === 'error') {
             clearInterval(syncPollRef.current); setSyncing(false)
             setSyncErr({ kind: job.error_kind, message: job.error })
@@ -425,9 +504,23 @@ export default function App() {
         <GapsSidePanel warnings={syncOut.extraction_warnings} onClose={() => setShowGaps(false)} />
       )}
 
-      {/* STEP 1 */}
+      {/* THE CURRICULUM the agent holds. Shown first because it IS the course now —
+          the sheet below is only how a course gets in the first time. */}
+      {curRows.length > 0 && (
+        <CurriculumDashboard
+          course={courseName} rows={curRows} setRows={setCurRows}
+          onSave={saveCurriculum} onDelete={deleteCurriculumRow} onIngest={ingestDecks}
+          saving={curSaving} ingesting={curIngesting} dirty={curDirty}
+          pending={curPending} importedFrom={importedFrom} logs={curLogs}
+          onReimport={() => setShowImport((v) => !v)}
+        />
+      )}
+
+      {/* IMPORT — asked for when the agent has no curriculum yet, or on request. */}
+      {(showImport || curRows.length === 0) && (
       <section className="card">
-        <h2><span className="num">1</span> Connect your sheet</h2>
+        <h2><span className="num">{curRows.length ? '↺' : '1'}</span>{' '}
+          {curRows.length ? 'Re-import from a sheet' : 'Import your course'}</h2>
         <div className="settingsrow">
           <div className="settingcol">
             <label>Course name</label>
@@ -444,16 +537,27 @@ export default function App() {
             <span className="hint">Both help clear interviews; semester goes deeper on theory.</span>
           </div>
         </div>
+        {/* The sheet is an IMPORT FORMAT, not a dependency. It is asked for when the
+            agent has no curriculum for this course, or when the user explicitly chooses
+            to re-import; the rest of the time the dashboard below is the course. */}
         <label>Course Curriculum Structure — Google Sheet link</label>
         <input value={courseLink} onChange={(e) => setCourseLink(e.target.value)}
                placeholder="https://docs.google.com/spreadsheets/d/.../edit" />
         <span className="hint">
           One sheet only. Its <b>PPT Links</b> column holds each past session's Google
           Slides deck — leave that cell blank for a session not recorded yet.
+          <b> You only need this once</b>: after importing, the curriculum lives in the
+          agent and you edit it in the dashboard below.
         </span>
         <button className="primary" disabled={!courseLink || syncing} onClick={doSync}>
-          {syncing ? 'Syncing…' : '🔄 Connect & Sync'}
+          {syncing ? 'Importing…' : (curRows.length ? '↺ Re-import from this sheet' : '📥 Import this course')}
         </button>
+        {curRows.length > 0 && (
+          <span className="hint">
+            Re-importing refreshes names, takeaways and links from the sheet. Rows you
+            added in the agent are kept, and no already-extracted deck is downloaded again.
+          </span>
+        )}
 
         {(syncing || syncLogs.length > 0) && (
           <>
@@ -496,9 +600,13 @@ export default function App() {
           </div>
         )}
       </section>
+      )}
 
-      {/* STEP 2 — only after a successful sync */}
-      {syncOut && sessions.length > 0 && (
+      {/* STEP 2 — generation, available as soon as the agent holds a curriculum */}
+      {/* Gated on the curriculum the agent HOLDS, not on having just run a sync in this
+          browser: the course is in the database now, so generation is available the
+          moment you open the app. */}
+      {sessions.length > 0 && (
         <section className="card">
           <h2><span className="num">2</span> Generate a TR doc</h2>
           <label>Session</label>
@@ -985,6 +1093,126 @@ function TemplateSidePanel({ markdown, onClose }) {
           </div>
         : <div className="csidepending"><span className="spinner" /> Loading…</div>}
     </aside>
+  )
+}
+
+// THE CURRICULUM DASHBOARD — the agent's own copy of the course, edited here.
+//
+// The sheet used to be the curriculum, which meant re-pasting a link to change one
+// takeaway and re-reading it on every visit. It is an IMPORT FORMAT now: bring a course
+// in once, then own it here. Adding a session, fixing a takeaway or attaching a deck
+// link all happen in this table.
+//
+// The rule that makes it fast: saving a row never re-fetches a deck. A deck is
+// downloaded once per LINK (Google offers no way to ask "did this change?" without
+// sending the whole ~4.7 MB file), so only a new or changed link is marked pending, and
+// "Fetch new decks" collects exactly those.
+function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest,
+                               saving, ingesting, dirty, pending, importedFrom,
+                               onReimport, logs }) {
+  const [openRow, setOpenRow] = useState(null)
+  function edit(i, field, value) {
+    setRows((rs) => rs.map((r, k) => (k === i ? { ...r, [field]: value, _dirty: true } : r)))
+  }
+  function addRow() {
+    const next = rows.reduce((m, r) => Math.max(m, Number(r.session_no) || 0), 0) + 1
+    setRows((rs) => [...rs, {
+      session_no: next, topic: '', session_name: '', key_takeaways: [],
+      ppt_link: '', deck_status: 'none', extracted: false, _dirty: true, _new: true,
+    }])
+    setOpenRow(rows.length)
+  }
+  const deckChip = (r) => {
+    if (!r.ppt_link) return <span className="chip">no deck</span>
+    if (r.extracted) return <span className="chip good" title="Already extracted — syncing will not download it again">extracted</span>
+    return <span className="chip mid" title="Will be fetched by 'Fetch new decks'">pending</span>
+  }
+  return (
+    <section className="card">
+      <h2><span className="num">1</span> Curriculum — {course}</h2>
+      <p className="hint">
+        This is the agent's own copy of the course. Edit a session, add a new one, or
+        paste a deck link and press <b>Save</b>. Decks are downloaded <b>once per link</b>,
+        so saving an edit never re-fetches anything.
+      </p>
+
+      <div className="curactions">
+        <button className="ghostbtn" onClick={addRow}>+ Add session</button>
+        <button className="primary" disabled={!dirty || saving} onClick={onSave}>
+          {saving ? 'Saving…' : '💾 Save changes'}
+        </button>
+        <button className="ghostbtn" disabled={ingesting || !pending} onClick={() => onIngest(false)}
+                title="Downloads only decks that are new or whose link changed">
+          {ingesting ? 'Fetching…' : `⬇ Fetch new decks${pending ? ` (${pending})` : ''}`}
+        </button>
+        <button className="ghostbtn" disabled={ingesting} onClick={() => onIngest(true)}
+                title="Re-downloads every deck. Only needed if you edited the slides behind a link that did not change.">
+          ↻ Re-check all decks
+        </button>
+        <span className="curspacer" />
+        <button className="link" onClick={onReimport}>
+          {importedFrom ? '↺ Re-import from the sheet' : '📥 Import from a sheet'}
+        </button>
+      </div>
+
+      {logs?.length > 0 && <pre className="logs">{logs.join('\n')}</pre>}
+
+      <div className="curtable">
+        <div className="currow curhead">
+          <span className="c-no">#</span>
+          <span className="c-name">Session name</span>
+          <span className="c-topic">Topic</span>
+          <span className="c-kt">Key takeaways</span>
+          <span className="c-deck">Deck</span>
+          <span className="c-act" />
+        </div>
+        {rows.map((r, i) => (
+          <div key={`${r.session_no}-${i}`} className={`currow ${r._dirty ? 'dirty' : ''}`}>
+            <input className="c-no" type="number" value={r.session_no}
+                   onChange={(e) => edit(i, 'session_no', Number(e.target.value))} />
+            <input className="c-name" value={r.session_name || ''} placeholder="Session name"
+                   onChange={(e) => edit(i, 'session_name', e.target.value)} />
+            <input className="c-topic" value={r.topic || ''} placeholder="Topic"
+                   onChange={(e) => edit(i, 'topic', e.target.value)} />
+            <button className="c-kt ktbtn" onClick={() => setOpenRow(openRow === i ? null : i)}>
+              {(r.key_takeaways || []).length} takeaway{(r.key_takeaways || []).length === 1 ? '' : 's'}
+              {openRow === i ? ' ▲' : ' ▼'}
+            </button>
+            <span className="c-deck">{deckChip(r)}</span>
+            <span className="c-act">
+              <button className="ghostbtn tiny" title="Remove this session"
+                      onClick={() => onDelete(r, i)}>✕</button>
+            </span>
+            {openRow === i && (
+              <div className="ktedit">
+                <label>Key takeaways — one per line, exactly as they should appear in the doc</label>
+                <textarea rows={Math.max(4, (r.key_takeaways || []).length + 1)}
+                          value={(r.key_takeaways || []).join('\n')}
+                          placeholder={'1. Topic: sub-topic; sub-topic\n2. Topic: sub-topic'}
+                          onChange={(e) => edit(i, 'key_takeaways', e.target.value.split('\n'))} />
+                <span className="hint">
+                  Each line becomes an agenda item, a section and a Key Takeaway verbatim.
+                  Everything after the colon is treated as a promise the session must teach.
+                </span>
+                <label>PPT link (the deck for this session, if it has been recorded)</label>
+                <input value={r.ppt_link || ''} placeholder="https://docs.google.com/presentation/d/…/edit"
+                       onChange={(e) => edit(i, 'ppt_link', e.target.value)} />
+                <span className="hint">
+                  Leave blank for a session not recorded yet — those are the sessions
+                  offered for a TR doc. Changing this link is the only thing that makes
+                  the agent download a deck again.
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+        {rows.length === 0 && (
+          <div className="hint curempty">
+            No curriculum yet — import one from a sheet, or add sessions by hand.
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 

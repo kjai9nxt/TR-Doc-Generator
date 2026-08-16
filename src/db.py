@@ -156,6 +156,23 @@ _SCHEMA = [
          run_id TEXT, kind TEXT, filename TEXT, content_b64 TEXT, updated_at TEXT,
          PRIMARY KEY (run_id, kind))""",
     "CREATE INDEX IF NOT EXISTS idx_run_files_name ON run_files(filename)",
+    # THE CURRICULUM ITSELF — the agent's own copy, and the source of truth once a
+    # course has been imported. The Google Sheet used to be that source, which meant
+    # re-pasting a link and re-reading the sheet on every visit just to learn what the
+    # app already knew, with no way to correct a takeaway or attach a deck without
+    # leaving the app. The sheet is now an IMPORT format: paste it once to populate
+    # this table, then edit here.
+    #
+    # `ppt_link` carries each session's deck. `deck_hash` records the content hash of
+    # the deck we last extracted FROM THAT LINK: it is what lets a sync skip a deck
+    # entirely instead of re-downloading multiple megabytes to discover nothing
+    # changed (Google's export endpoint offers no ETag, no Last-Modified and says
+    # no-store, so there is no cheap remote way to ask).
+    """CREATE TABLE IF NOT EXISTS curriculum (
+         course TEXT, session_no INTEGER, topic TEXT, session_name TEXT,
+         key_takeaways TEXT, ppt_link TEXT, deck_hash TEXT, deck_status TEXT,
+         updated_at TEXT, PRIMARY KEY (course, session_no))""",
+    "CREATE INDEX IF NOT EXISTS idx_curriculum_course ON curriculum(course)",
 ]
 
 
@@ -537,6 +554,135 @@ def save_guided(gid: str, state: dict, *, user_email: str | None = None,
         return True
     except Exception:
         return False
+
+
+# --------------------------------------------------------------------------- #
+# CURRICULUM — the agent's own copy of the course, editable in the app.
+#
+# The sheet is an import format, not a dependency: it is read once to populate this
+# table and thereafter only if the user explicitly asks to re-import. Everything the
+# generator needs (sessions, takeaways, deck links) is served from here.
+# --------------------------------------------------------------------------- #
+def _row_to_session(r: dict) -> dict:
+    return {
+        "session_no": r.get("session_no"),
+        "topic": r.get("topic") or "",
+        "session_name": r.get("session_name") or "",
+        "key_takeaways": [t for t in (r.get("key_takeaways") or "").split("\n") if t.strip()],
+        "ppt_link": r.get("ppt_link") or "",
+        "deck_hash": r.get("deck_hash") or "",
+        "deck_status": r.get("deck_status") or ("linked" if (r.get("ppt_link") or "") else "none"),
+        "updated_at": r.get("updated_at"),
+    }
+
+
+def curriculum(course: str) -> list[dict]:
+    """Every session of a course, in session order."""
+    try:
+        rows = _query("SELECT * FROM curriculum WHERE course = ? ORDER BY session_no",
+                      (course or "",))
+    except Exception:
+        return []
+    return [_row_to_session(r) for r in rows]
+
+
+def curriculum_courses() -> list[str]:
+    try:
+        rows = _query("SELECT DISTINCT course FROM curriculum ORDER BY course", ())
+    except Exception:
+        return []
+    return [r["course"] for r in rows if r.get("course")]
+
+
+def curriculum_upsert(course: str, session_no: int, *, topic: str = "",
+                      session_name: str = "", key_takeaways=None,
+                      ppt_link: str | None = None) -> bool:
+    """Insert or update one session.
+
+    `ppt_link=None` leaves the existing link (and its deck_hash) alone — an edit to a
+    takeaway must not look like a deck change. Passing a DIFFERENT link clears
+    deck_hash, which is what marks the deck as needing ingestion; passing the SAME link
+    keeps it, so saving the row again does not re-download anything.
+    """
+    kt = key_takeaways or []
+    if isinstance(kt, str):
+        kt = [l for l in kt.split("\n") if l.strip()]
+    kt_text = "\n".join(str(x).strip() for x in kt if str(x).strip())
+    try:
+        prev = _query("SELECT ppt_link, deck_hash FROM curriculum "
+                      "WHERE course=? AND session_no=?", (course, int(session_no)))
+        old_link = (prev[0].get("ppt_link") if prev else "") or ""
+        old_hash = (prev[0].get("deck_hash") if prev else "") or ""
+        link = old_link if ppt_link is None else (ppt_link or "").strip()
+        keep_hash = old_hash if link and link == old_link else ""
+        status = "none" if not link else ("extracted" if keep_hash else "pending")
+        _exec("""INSERT INTO curriculum
+                   (course, session_no, topic, session_name, key_takeaways, ppt_link,
+                    deck_hash, deck_status, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?)
+                 ON CONFLICT(course, session_no) DO UPDATE SET
+                   topic=excluded.topic, session_name=excluded.session_name,
+                   key_takeaways=excluded.key_takeaways, ppt_link=excluded.ppt_link,
+                   deck_hash=excluded.deck_hash, deck_status=excluded.deck_status,
+                   updated_at=excluded.updated_at""",
+              (course, int(session_no), topic or "", session_name or "", kt_text,
+               link, keep_hash, status, _now()))
+        return True
+    except Exception:
+        return False
+
+
+def curriculum_delete(course: str, session_no: int) -> bool:
+    try:
+        _exec("DELETE FROM curriculum WHERE course=? AND session_no=?",
+              (course, int(session_no)))
+        return True
+    except Exception:
+        return False
+
+
+def curriculum_mark_deck(course: str, session_no: int, deck_hash: str,
+                         status: str = "extracted") -> bool:
+    """Record that this row's deck has been extracted at this content hash."""
+    try:
+        _exec("UPDATE curriculum SET deck_hash=?, deck_status=?, updated_at=? "
+              "WHERE course=? AND session_no=?",
+              (deck_hash or "", status, _now(), course, int(session_no)))
+        return True
+    except Exception:
+        return False
+
+
+def curriculum_import(course: str, rows: list[dict], *, replace: bool = False) -> dict:
+    """Load a sheet's rows into the table. Returns {added, updated, removed, kept}.
+
+    MERGE by default: existing rows are updated in place, so a re-import refreshes the
+    curriculum without discarding a deck already extracted (the link is unchanged, so
+    its hash survives and nothing is re-downloaded). `replace=True` also deletes
+    sessions absent from the import — the destructive option, never the default,
+    because in-app edits are the thing most likely to be lost.
+    """
+    before = {r["session_no"]: r for r in curriculum(course)}
+    seen, added, updated = set(), 0, 0
+    for r in rows:
+        try:
+            no = int(float(r.get("session_no")))
+        except (TypeError, ValueError):
+            continue
+        seen.add(no)
+        (updated := updated + 1) if no in before else (added := added + 1)
+        curriculum_upsert(course, no, topic=r.get("topic", ""),
+                          session_name=r.get("session_name", ""),
+                          key_takeaways=r.get("key_takeaways") or [],
+                          ppt_link=r.get("ppt_link", ""))
+    removed = 0
+    if replace:
+        for no in before:
+            if no not in seen:
+                curriculum_delete(course, no)
+                removed += 1
+    return {"added": added, "updated": updated, "removed": removed,
+            "kept": len(before) - removed}
 
 
 def unfinished_guided(user_email: str | None, limit: int = 5) -> list[dict]:

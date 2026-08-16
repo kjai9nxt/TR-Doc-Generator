@@ -21,7 +21,26 @@ harness, not the Python.
 
 ---
 
-## Input — one Google Sheet
+## The curriculum lives in the agent
+
+The course is stored in the agent's own database and edited in the **curriculum
+dashboard**: add a session, fix a takeaway, attach a deck link, press Save. A Google
+Sheet is only how a course gets in the **first time**.
+
+Two things follow from that, and both were the point:
+
+- **A deck is downloaded once, ever.** Each row records the content hash of the deck
+  extracted from its link, so a sync fetches only links that are new or changed.
+  Editing a takeaway downloads nothing. (Google's Slides export endpoint sends no
+  ETag, no `Last-Modified` and `Cache-Control: no-store`, so "did this change?" cannot
+  be asked without downloading the whole ~4.7 MB file — which is exactly why the old
+  behaviour cost ~100 s per sync on a 30-deck course. It is now ~1 s.)
+- **No sheet is needed to generate.** Open the app and the course is there.
+
+`↻ Re-check all decks` re-downloads everything, for the one case the cheap path cannot
+see: somebody edited the slides behind a link that did not change.
+
+## Input — one Google Sheet (first time only)
 
 The agent is driven by **one Google Sheet** you provide as a link: your course
 curriculum. The sheet/tab name can be anything; only the column headers matter (see

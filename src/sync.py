@@ -1,20 +1,31 @@
-"""Sync engine — keeps the agent in step with the curriculum Google Sheet.
+"""Curriculum store + deck ingestion.
 
-ONE sheet carries everything: the curriculum plus, in the "PPT Links" column, the
-Google Slides deck for each session that already has one. (It used to be two sheets
-joined on Session Name; a row whose title was edited in one sheet and not the other
-silently lost its deck, and there is no join left to break.)
+WHAT CHANGED AND WHY. The Google Sheet used to BE the curriculum: every visit meant
+pasting the link again, re-reading the sheet, and — the expensive part — re-downloading
+every deck the course has ever had, just to discover that none of them had changed.
+Google's Slides export endpoint offers no ETag, no Last-Modified and sends
+`Cache-Control: no-store`, so "has this deck changed?" cannot be asked cheaply: the only
+way to compute a content hash is to fetch the whole file. Measured on this course, that
+is ~4.7 MB and ~3.4 s per deck, 29 decks, single-threaded — about a hundred seconds of
+downloading per sync to learn nothing.
 
-On every run (and in --watch mode) it:
-  1. fetches + validates the sheet (discards it if it breaks the template),
-  2. reads each row's deck link straight off that row — no join,
-  3. diffs against the stored state to detect adds / removes / edits,
-  4. (re)ingests only changed/new Google Slides decks into the knowledge base,
-  5. writes a normalized course-structure cache the rest of the pipeline reads,
-  6. returns a human-readable changelog.
+So the model is inverted:
 
-State lives in knowledge_base/sync_state.json so change detection persists
-across runs. Nothing from the past is dropped unless it is removed from a sheet.
+  * The SHEET IS AN IMPORT FORMAT. Paste it once (or explicitly re-import later) and its
+    rows are loaded into the `curriculum` table. After that the agent owns the
+    curriculum and it is edited in the app.
+  * A DECK IS FETCHED ONCE. The row records the content hash of the deck extracted from
+    its link. A row whose link is unchanged and whose deck is already extracted is
+    skipped entirely — no request at all. Only a NEW or CHANGED link costs a download,
+    which is exactly the work that has to happen.
+  * Editing a takeaway never touches a deck; replacing a link marks that one row pending.
+
+`ingest_decks(force=True)` re-fetches everything, for the one case the cheap path cannot
+cover: somebody edited the SLIDES behind a link that did not change.
+
+The knowledge base on disk (extracted deck JSON + the course-structure cache) is still
+written exactly as before, so pptx_ingest's retrieval, the taught index and the offline
+loaders are unaffected.
 """
 from __future__ import annotations
 import json
@@ -76,7 +87,145 @@ def _save_state(state: dict):
     STATE.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
-def sync(course_link: str, *, verbose: bool = True, on_event=None) -> SyncResult:
+def _course() -> str:
+    from . import app_settings
+    return app_settings.course_name() or "default"
+
+
+# --------------------------------------------------------------------------- #
+# 1. IMPORT — read a sheet into the curriculum table. One-time, or on request.
+# --------------------------------------------------------------------------- #
+def import_sheet(course_link: str, course: str | None = None, *,
+                 replace: bool = False, verbose: bool = True, on_event=None) -> dict:
+    """Load the sheet's rows into the curriculum table. Returns the import counts.
+
+    MERGE by default: a re-import refreshes names/takeaways/links but keeps rows the
+    sheet no longer has, and — because a row whose link is unchanged keeps its deck
+    hash — re-importing does not re-download a single deck. `replace=True` also drops
+    sessions missing from the sheet.
+    """
+    from . import db
+    course = course or _course()
+
+    def emit(msg: str):
+        if verbose:
+            print(f"[SYNC] {msg}", flush=True)
+        if on_event:
+            try:
+                on_event(msg)
+            except Exception:
+                pass
+
+    emit("Reading the Course Curriculum Structure sheet…")
+    sheet = sheets.load_sheet(course_link, "course_structure")
+    ppt_col = config.harness()["sheet_templates"]["course_structure"].get(
+        "ppt_link_column", "PPT Links")
+
+    rows = []
+    for row in sheet.rows:
+        no_raw = _col(row, "Session")
+        try:
+            number = int(float(no_raw))
+        except (ValueError, TypeError):
+            continue
+        rows.append({
+            "session_no": number,
+            "topic": _col(row, "Topic Name"),
+            "session_name": _col(row, "Session Name"),
+            "key_takeaways": _split_takeaways(_col(row, "Key Takeaways")),
+            "ppt_link": _col(row, ppt_col),
+        })
+    res = db.curriculum_import(course, rows, replace=replace)
+    emit(f"Imported {len(rows)} session(s) into the agent: "
+         f"{res['added']} added, {res['updated']} updated"
+         + (f", {res['removed']} removed" if res.get("removed") else ""))
+    adopted = adopt_existing_decks(course)
+    if adopted:
+        emit(f"Recognised {adopted} deck(s) this agent had already extracted — "
+             f"they will not be downloaded again.")
+    write_course_cache(course)
+    state = _load_state()
+    state["course_link"] = course_link
+    state["last_import"] = _now()
+    state.pop("details_link", None)
+    _save_state(state)
+    return res
+
+
+def adopt_existing_decks(course: str | None = None) -> int:
+    """Recognise decks this instance ALREADY extracted, so an upgrade costs nothing.
+
+    Before the curriculum table existed, what-was-extracted lived in
+    knowledge_base/sync_state.json (per deck: link + content hash) with the extracted
+    text beside it in knowledge_base/decks/. A fresh table knows none of that, so on the
+    first import every one of those decks would look new and be downloaded again —
+    which is precisely the waste this change exists to remove.
+
+    So each row with a link is matched against that older record: same link, extracted
+    file present → adopt the stored hash and mark it extracted. Only an exact link match
+    counts, because the hash describes the deck at THAT link.
+    """
+    from . import db
+    course = course or _course()
+    decks = _load_state().get("decks", {})
+    by_link = {}
+    for rec in decks.values():
+        if isinstance(rec, dict) and rec.get("link"):
+            by_link[rec["link"]] = rec
+    adopted = 0
+    for r in db.curriculum(course):
+        link, no = (r.get("ppt_link") or "").strip(), r["session_no"]
+        if not link or r.get("deck_hash"):
+            continue
+        rec = by_link.get(link)
+        if not rec:
+            continue
+        if not (pptx_ingest.DECKS_DIR / f"session_{no:02d}.json").exists():
+            continue
+        if db.curriculum_mark_deck(course, no, rec.get("content_hash") or "adopted"):
+            adopted += 1
+    return adopted
+
+
+# --------------------------------------------------------------------------- #
+# 2. CACHE — mirror the table to the JSON the offline loaders/RAG already read.
+# --------------------------------------------------------------------------- #
+def write_course_cache(course: str | None = None) -> int:
+    """Write knowledge_base/course_structure.json from the curriculum table.
+
+    Kept because pptx_ingest, the offline loaders and the eval harness read this file;
+    the table is authoritative and this is its projection, so nothing downstream had to
+    learn about the database.
+    """
+    from . import db
+    course = course or _course()
+    out = {}
+    for r in db.curriculum(course):
+        out[str(r["session_no"])] = {
+            "number": r["session_no"],
+            "name": r["session_name"],
+            "topic": r["topic"],
+            "key_takeaways": r["key_takeaways"],
+        }
+    KB.mkdir(parents=True, exist_ok=True)
+    COURSE_CACHE.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    return len(out)
+
+
+# --------------------------------------------------------------------------- #
+# 3. INGEST — fetch ONLY the decks that are new, changed, or explicitly forced.
+# --------------------------------------------------------------------------- #
+def ingest_decks(course: str | None = None, *, force: bool = False,
+                 only_sessions: list[int] | None = None,
+                 verbose: bool = True, on_event=None) -> SyncResult:
+    """Extract the decks this course still needs. Nothing else is touched.
+
+    A row is fetched when its link is set AND (it has never been extracted, or its
+    extracted text is missing from the knowledge base, or `force`). A row already
+    extracted from the same link costs NO request — that is the whole point.
+    """
+    from . import db
+    course = course or _course()
     res = SyncResult(ok=True)
 
     def emit(msg: str):
@@ -88,147 +237,90 @@ def sync(course_link: str, *, verbose: bool = True, on_event=None) -> SyncResult
             except Exception:
                 pass
 
-    # 1. fetch + validate (TemplateError propagates to the caller/wizard)
-    emit("Reading the Course Curriculum Structure sheet…")
-    course = sheets.load_sheet(course_link, "course_structure")
-    ppt_col = config.harness()["sheet_templates"]["course_structure"].get(
-        "ppt_link_column", "PPT Links")
-
-    # 2. normalize the course structure. The deck link travels on the row, so it is
-    #    collected here rather than joined in from a second sheet.
-    sessions_norm = {}
-    deck_rows = []
-    for row in course.rows:
-        no_raw = _col(row, "Session")
-        try:
-            number = int(float(no_raw))
-        except (ValueError, TypeError):
-            continue
-        name = _col(row, "Session Name")
-        sessions_norm[str(number)] = {
-            "number": number,
-            "name": name,
-            "topic": _col(row, "Topic Name"),
-            "key_takeaways": _split_takeaways(_col(row, "Key Takeaways")),
-        }
-        link = _col(row, ppt_col)
-        if link:
-            deck_rows.append((number, name, link))
-    COURSE_CACHE.write_text(json.dumps(sessions_norm, ensure_ascii=False, indent=2),
-                            encoding="utf-8")
-
-    # 3. diff course structure vs previous state
+    rows = db.curriculum(course)
+    res.sessions = len(rows)
     state = _load_state()
-    prev_sessions = state.get("sessions", {})
-    for sn, cur in sessions_norm.items():
-        old = prev_sessions.get(sn)
-        if old is None:
-            res.changelog.append(f"+ Added session {sn}: {cur['name']}")
-        elif old != cur:
-            if old.get("name") != cur["name"]:
-                res.changelog.append(f"~ Session {sn} renamed: '{old.get('name')}' -> '{cur['name']}'")
-            if old.get("key_takeaways") != cur["key_takeaways"]:
-                res.changelog.append(f"~ Session {sn} key takeaways changed")
-    for sn, old in prev_sessions.items():
-        if sn not in sessions_norm:
-            res.changelog.append(f"- Removed session {sn}: {old.get('name')}")
-    state["sessions"] = sessions_norm
+    decks = state.get("decks", {})
 
-    # 4. process the deck links found on the curriculum rows themselves
-    prev_decks = state.get("decks", {})
-    new_decks = {}
-    seen_names = set()
-
-    # Deck state stays keyed by NORMALISED SESSION NAME, which is how every previously
-    # synced instance stored it: re-keying by session number would invalidate the cache
-    # and re-download every deck in the course on the first sync after this change.
-    tasks = []
-    for session_no, name, link in deck_rows:
-        if not name:
-            res.errors.append(f"Session {session_no} has a {ppt_col} value but no "
-                              f"Session Name — deck skipped.")
+    tasks, skipped = [], 0
+    for r in rows:
+        link, no = (r.get("ppt_link") or "").strip(), r["session_no"]
+        if only_sessions and no not in only_sessions:
             continue
-        key = _norm_name(name)
-        seen_names.add(key)
-        tasks.append((key, name, link, session_no))
+        if not link:
+            continue
+        have_file = (pptx_ingest.DECKS_DIR / f"session_{no:02d}.json").exists()
+        if not force and r.get("deck_hash") and have_file:
+            skipped += 1
+            res.decks_cached += 1
+            continue
+        tasks.append((no, r.get("session_name") or "", link))
 
-    # Download AND extract each deck inside the worker, so the multi-MB .pptx
-    # bytes are released the moment the worker returns (only the small extracted
-    # text is written to disk — never held in memory across decks). This caps
-    # peak memory to ~`workers` decks instead of ALL of them, which is what a
-    # 512 MB host (e.g. Render free) can survive. Workers touch only distinct
-    # per-session files + read-only prev_decks; all shared bookkeeping happens in
-    # the single main-thread loop below, so no locking is needed.
+    if skipped:
+        emit(f"{skipped} deck(s) already extracted — skipped without downloading "
+             f"anything (that is ~{skipped * 3.4:.0f}s of transfer avoided).")
+    if not tasks:
+        emit("No new or changed decks to fetch.")
+        state["decks"], state["last_sync"] = decks, _now()
+        _save_state(state)
+        _extraction_report(res)
+        return res
+
+    emit(f"Fetching {len(tasks)} deck(s) that are new or changed…")
+
     def _fetch(task):
-        key, name, link, session_no = task
-        deck_key = f"session_{session_no:02d}"
+        no, name, link = task
         try:
             chash, data = gslides.content_hash(link)
         except Exception as e:
             return (task, None, "error", str(e))
-        old = prev_decks.get(key)
-        unchanged = old and old.get("link") == link and old.get("content_hash") == chash \
-            and (pptx_ingest.DECKS_DIR / f"{deck_key}.json").exists()
-        if unchanged:
-            return (task, chash, "cached", None)
         try:
-            deck = gslides.extract_from_bytes(data, session_no, name, link)
+            deck = gslides.extract_from_bytes(data, no, name, link)
         except Exception as e:
             return (task, chash, "error", f"extract failed: {e}")
-        data = None  # free the raw .pptx bytes before writing the extracted JSON
+        data = None                      # free the .pptx bytes before writing
         pptx_ingest.DECKS_DIR.mkdir(parents=True, exist_ok=True)
-        (pptx_ingest.DECKS_DIR / f"{deck_key}.json").write_text(
+        (pptx_ingest.DECKS_DIR / f"session_{no:02d}.json").write_text(
             json.dumps(deck, ensure_ascii=False, indent=2), encoding="utf-8")
         return (task, chash, "ingested", None)
 
-    workers = config.harness()["context"].get("sync_max_workers", 6)
-    total = len(tasks)
-    if total:
-        emit(f"Syncing {total} deck(s)…")
+    workers = config.harness()["context"].get("sync_max_workers", 1)
     with ThreadPoolExecutor(max_workers=workers) as ex:
         futures = {ex.submit(_fetch, t): t for t in tasks}
         done_n = 0
         for fut in as_completed(futures):
             done_n += 1
             task, chash, status, err = fut.result()
-            key, name, link, session_no = task
-            deck_key = f"session_{session_no:02d}"
+            no, name, link = task
             if status == "error":
-                emit(f"[{done_n}/{total}] ⚠ unreadable — Session {session_no}: {name}")
-                res.errors.append(f"Session {session_no} ('{name}'): {err}")
-                new_decks[key] = prev_decks.get(key, {})  # keep old record if any
+                emit(f"[{done_n}/{len(tasks)}] ⚠ unreadable — Session {no}: {name}")
+                res.errors.append(f"Session {no} ('{name}'): {err}")
+                db.curriculum_mark_deck(course, no, "", status="error")
                 continue
-            emit(f"[{done_n}/{total}] ✓ synced — Session {session_no}: {name}")
-            if status == "cached":
-                res.decks_cached += 1
-            else:  # ingested
-                res.decks_ingested += 1
-                old = prev_decks.get(key)
-                if old is None:
-                    res.changelog.append(f"+ Ingested deck for session {session_no}: {name}")
-                elif old.get("link") != link:
-                    res.changelog.append(f"~ Session {session_no} deck link changed -> re-ingested")
-                else:
-                    res.changelog.append(f"~ Session {session_no} deck content edited -> re-ingested")
-            new_decks[key] = {"link": link, "content_hash": chash,
-                              "session_no": session_no, "deck_key": deck_key}
+            emit(f"[{done_n}/{len(tasks)}] ✓ extracted — Session {no}: {name}")
+            res.decks_ingested += 1
+            res.changelog.append(f"+ Extracted the deck for session {no}: {name}")
+            db.curriculum_mark_deck(course, no, chash, status="extracted")
+            decks[_norm_name(name) or str(no)] = {
+                "link": link, "content_hash": chash,
+                "session_no": no, "deck_key": f"session_{no:02d}"}
 
-    # decks removed from the sheet
-    for key, old in prev_decks.items():
-        if key not in seen_names:
-            dk = old.get("deck_key")
-            if dk:
-                (pptx_ingest.DECKS_DIR / f"{dk}.json").unlink(missing_ok=True)
-            res.changelog.append(f"- Session {old.get('session_no')} deck removed from sheet")
-    state["decks"] = new_decks
+    state["decks"] = decks
     state["last_sync"] = _now()
-    state["course_link"] = course_link
-    # The second sheet is gone; drop any link a previous version stored so a stale
-    # value can never be handed back to a caller as if it were still configured.
-    state.pop("details_link", None)
     _save_state(state)
+    _extraction_report(res)
 
-    # extraction-completeness check across all decks now in the KB (guideline 2/3)
+    try:
+        from . import db as _db
+        saved = _db.kb_backup()
+        if saved:
+            emit(f"Saved {saved} knowledge-base file(s) to cloud storage.")
+    except Exception as e:
+        emit(f"(knowledge-base cloud backup skipped: {e})")
+    return res
+
+
+def _extraction_report(res: SyncResult) -> None:
     try:
         rep = pptx_ingest.completeness_report()
         for d in rep["decks"]:
@@ -239,36 +331,47 @@ def sync(course_link: str, *, verbose: bool = True, on_event=None) -> SyncResult
     except Exception as e:
         res.extraction_warnings.append(f"extraction check skipped: {e}")
 
-    # Persist the freshly-synced KB (course structure + extracted decks) so it
-    # survives an ephemeral disk (Render free) and the app never re-syncs after a
-    # restart. No-op unless a cloud DB is configured; best effort, never fatal.
-    try:
-        from . import db
-        saved = db.kb_backup()
-        if saved:
-            emit(f"Saved {saved} knowledge-base file(s) to cloud storage.")
-    except Exception as e:
-        emit(f"(knowledge-base cloud backup skipped: {e})")
 
-    res.sessions = len(sessions_norm)
+# --------------------------------------------------------------------------- #
+# 4. The one-call path: import a sheet, then fetch whatever that added.
+# --------------------------------------------------------------------------- #
+def sync(course_link: str | None = None, *, course: str | None = None,
+         verbose: bool = True, on_event=None) -> SyncResult:
+    """Import the sheet (if a link is given) and ingest only what needs ingesting.
+
+    Called with no link it is purely a top-up: read the curriculum the agent already
+    holds and fetch any deck still missing. That is what a generation run wants — it
+    must never re-read a sheet or re-download a deck to produce a document.
+    """
+    course = course or _course()
+    res = SyncResult(ok=True)
+    if course_link:
+        imported = import_sheet(course_link, course, verbose=verbose, on_event=on_event)
+        res.changelog.append(
+            f"Imported from the sheet: {imported['added']} new session(s), "
+            f"{imported['updated']} updated.")
+    else:
+        write_course_cache(course)
+    got = ingest_decks(course, verbose=verbose, on_event=on_event)
+    res.changelog += got.changelog
+    res.errors += got.errors
+    res.extraction_warnings += got.extraction_warnings
+    res.sessions = got.sessions
+    res.decks_ingested, res.decks_cached = got.decks_ingested, got.decks_cached
     if verbose:
         _print_report(res)
     return res
 
 
 def _print_report(res: SyncResult):
-    print(f"[SYNC] {res.sessions} sessions | decks: {res.decks_ingested} (re)ingested, "
-          f"{res.decks_cached} cached")
-    if res.changelog:
-        print("[SYNC] changes since last sync:")
-        for c in res.changelog:
-            print(f"       {c}")
-    else:
-        print("[SYNC] no changes since last sync.")
+    print(f"[SYNC] {res.sessions} sessions | decks: {res.decks_ingested} extracted, "
+          f"{res.decks_cached} already held")
+    for c in res.changelog:
+        print(f"       {c}")
     for e in res.errors:
         print(f"[SYNC] ⚠ {e}")
 
 
 def last_link() -> str | None:
-    """The curriculum sheet link this instance last synced with, if any."""
+    """The sheet this course was last imported from (for the re-import button)."""
     return _load_state().get("course_link")

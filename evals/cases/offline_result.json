@@ -1,10 +1,10 @@
 {
   "kind": "offline",
-  "generated_at": "2026-08-16T18:32:27",
+  "generated_at": "2026-08-16T22:29:51",
   "overall_pass": true,
   "extraction": {
     "ok": false,
-    "decks_checked": 17,
+    "decks_checked": 18,
     "decks_with_issues": 6,
     "decks": [
       {
@@ -348,6 +348,24 @@
         "with_notes": 12,
         "with_tables": 7,
         "body_coverage": 0.928,
+        "ok": true,
+        "issues": []
+      },
+      {
+        "session_no": 18,
+        "source_file": "Deadlock Characterization & Prevention",
+        "n_slides": 79,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          78,
+          79
+        ],
+        "interior_empty_slides": [],
+        "with_body": 72,
+        "with_notes": 50,
+        "with_tables": 11,
+        "body_coverage": 0.911,
         "ok": true,
         "issues": []
       }

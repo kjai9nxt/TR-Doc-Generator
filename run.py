@@ -27,15 +27,16 @@ from src import config
 
 
 def _do_watch():
-    c = sync.last_link()
-    if not c:
-        print("No sheet link configured. Run 'python run.py --setup' first.")
-        return
+    """Top up the knowledge base on an interval.
+
+    No sheet is re-read and no deck is re-downloaded: this fetches only decks the
+    curriculum says are still missing. The curriculum itself is edited in the app.
+    """
     interval = config.harness()["context"].get("sync_poll_seconds", 60)
-    print(f"Watching the curriculum sheet every {interval}s. Ctrl-C to stop.")
+    print(f"Checking for decks to fetch every {interval}s. Ctrl-C to stop.")
     try:
         while True:
-            sync.sync(c, verbose=True)
+            sync.ingest_decks(verbose=True)
             time.sleep(interval)
     except KeyboardInterrupt:
         print("\nStopped watching.")
@@ -47,7 +48,11 @@ def main():
     ap.add_argument("--course", default=None, help="Offline: explicit course-structure .xlsx.")
     ap.add_argument("--list", action="store_true", help="List sessions and exit.")
     ap.add_argument("--setup", action="store_true", help="Re-enter the Google Sheet link.")
-    ap.add_argument("--sync", action="store_true", help="Sync with the saved sheet link and exit.")
+    ap.add_argument("--sync", action="store_true",
+                    help="Fetch any decks the curriculum still needs, and exit.")
+    ap.add_argument("--reimport", action="store_true",
+                    help="With --sync: re-read the saved sheet into the curriculum "
+                         "(merges; already-extracted decks are not downloaded again).")
     ap.add_argument("--watch", action="store_true", help="Continuously sync and log changes.")
     ap.add_argument("--template-guide", action="store_true", help="Print the sheet template guide.")
     args = ap.parse_args()
@@ -62,11 +67,9 @@ def main():
         wizard.run_wizard(reuse=False)
         return
     if args.sync:
-        c = sync.last_link()
-        if not c:
-            print("No sheet link configured. Run 'python run.py --setup' first.")
-            return
-        sync.sync(c, verbose=True)
+        # Top-up only: fetch decks the curriculum still needs. Pass --reimport to pull
+        # the sheet in again (which merges, and still re-downloads nothing already held).
+        sync.sync(sync.last_link() if args.reimport else None, verbose=True)
         return
     if args.list:
         for s in course_loader.load_sessions(args.course):

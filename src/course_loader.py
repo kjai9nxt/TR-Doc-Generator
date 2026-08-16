@@ -61,8 +61,30 @@ def _cache_path() -> Path:
 
 
 def load_sessions_from_cache() -> list[Session] | None:
-    """Load from the synced Google-Sheet cache (knowledge_base/course_structure.json).
-    Returns None if the cache does not exist yet."""
+    """The course the agent holds, or None if it holds none yet.
+
+    Two sources, in order of authority:
+      1. the CURRICULUM TABLE — what the user last saved in the app. This is the source
+         of truth: the sheet is only an import format, so an edit made in the dashboard
+         must be what generation sees, immediately and without a re-sync.
+      2. knowledge_base/course_structure.json — the table's projection on disk, and the
+         fallback for an offline/eval process running without a database.
+    """
+    try:
+        from . import db, app_settings
+        rows = db.curriculum(app_settings.course_name() or "default")
+        if rows:
+            sessions = [
+                Session(number=r["session_no"], name=r.get("session_name", ""),
+                        module=r.get("topic", ""), topic=r.get("topic", ""),
+                        key_takeaways=r.get("key_takeaways", []))
+                for r in rows
+            ]
+            sessions.sort(key=lambda s: s.number)
+            return sessions
+    except Exception:
+        pass                      # no DB (offline eval) — fall through to the cache
+
     p = _cache_path()
     if not p.exists():
         return None
