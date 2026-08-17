@@ -292,6 +292,45 @@ def team_for_user_course(email: str, course: str | None):
     return None
 
 
+def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
+    """Which courses this person may work on, and who else is on each.
+
+    A course belongs to the TEAM that owns it, so a curriculum one member imports is
+    immediately the curriculum everyone on that team opens — that is the whole point of
+    keeping it in the database rather than in a sheet someone has to re-paste.
+
+    Visibility:
+      · admin            — every course the agent holds;
+      · on ≥ 1 team      — exactly the courses those teams own, and nothing else;
+      · on no team yet   — every course, because scoping a person to nothing would lock
+                           them out of an agent they are entitled to use. Put them in a
+                           team and the list narrows to that team's courses.
+    """
+    known = set(curriculum_courses())
+    all_teams = teams()
+    for t in all_teams:
+        if t.get("course"):
+            known.add(t["course"])
+    mine = teams_for_user(email)
+    my_courses = {t["course"] for t in mine if t.get("course")}
+    if is_admin or not mine:
+        visible = known
+    else:
+        visible = my_courses
+    out = []
+    for name in sorted(visible):
+        owners = [t for t in all_teams if (t.get("course") or "") == name]
+        members = sorted({m for t in owners for m in (t.get("members") or [])})
+        out.append({
+            "name": name,
+            "sessions": len(curriculum(name)),
+            "teams": [t["name"] for t in owners],
+            "members": members,
+            "mine": name in my_courses,
+        })
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # runs
 # --------------------------------------------------------------------------- #

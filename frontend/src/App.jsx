@@ -37,8 +37,33 @@ export default function App() {
   const [importedFrom, setImportedFrom] = useState(null)
   const [showImport, setShowImport] = useState(false)
   const curDirty = curRows.some((r) => r._dirty)
-  function loadCurriculum() {
-    api.curriculum().then((d) => {
+  // Courses this person may work on. A course is a shared, team-owned thing now, so it
+  // is picked from a list rather than typed — two people spelling the same course
+  // differently used to end up with two separate curricula, and a course one person
+  // imported was invisible to everyone else.
+  const [courses, setCourses] = useState([])
+  function loadCourses() {
+    api.courses().then((d) => {
+      setCourses(d.courses || [])
+      if (d.active && !courseName) setCourseName(d.active)
+    }).catch(() => {})
+  }
+  function switchCourse(name) {
+    if (!name || name === courseName) return
+    setCourseName(name)
+    api.selectCourse(name, courseType).then((d) => {
+      setCurRows(d.rows || [])
+      setSessions(d.sessions || [])
+      setSel((d.sessions || [])[0]?.number ?? null)
+      setImportedFrom(d.imported_from || null)
+      setShowImport(!(d.rows || []).length)
+      setSyncOut(null); setCurLogs([])
+      api.curriculum(name).then((c) => setCurPending(c.pending || 0)).catch(() => {})
+    }).catch((e) => setCurLogs([e.message]))
+  }
+
+  function loadCurriculum(forCourse) {
+    api.curriculum(forCourse || courseName || undefined).then((d) => {
       setCurRows(d.rows || [])
       setCurPending(d.pending || 0)
       setImportedFrom(d.imported_from || null)
@@ -47,7 +72,7 @@ export default function App() {
       setShowImport(!(d.rows || []).length)
     }).catch(() => {})
     // The sessions still needing a TR doc, so generation is available without a sync.
-    api.sessions().then((s) => {
+    api.sessions(forCourse || courseName || undefined).then((s) => {
       setSessions(s.sessions || [])
       setSel((cur) => cur ?? (s.sessions || [])[0]?.number ?? null)
     }).catch(() => {})
@@ -124,7 +149,7 @@ export default function App() {
   // off the list, and one abandoned earlier must appear on it.
   useEffect(() => { if (user) refreshResumable() }, [user, result])
   // The curriculum is what the app opens onto now, so it loads with the session.
-  useEffect(() => { if (user) loadCurriculum() }, [user])
+  useEffect(() => { if (user) { loadCourses(); loadCurriculum() } }, [user])
 
   function saveCurriculum() {
     setCurSaving(true); setCurLogs([])
@@ -134,11 +159,11 @@ export default function App() {
       session_name: r.session_name || '',
       key_takeaways: (r.key_takeaways || []).filter((l) => String(l).trim()),
       ppt_link: r.ppt_link ?? null,
-    }))).then((d) => {
+    })), courseName || undefined).then((d) => {
       setCurLogs([`Saved ${d.saved} session(s).`])
       setCurRows(d.rows || [])
-      api.curriculum().then((c) => setCurPending(c.pending || 0)).catch(() => {})
-      api.sessions().then((s) => setSessions(s.sessions || [])).catch(() => {})
+      api.curriculum(courseName || undefined).then((c) => setCurPending(c.pending || 0)).catch(() => {})
+      api.sessions(courseName || undefined).then((s) => setSessions(s.sessions || [])).catch(() => {})
     }).catch((e) => setCurLogs([`Could not save: ${e.message}`]))
       .finally(() => setCurSaving(false))
   }
@@ -147,7 +172,7 @@ export default function App() {
     // A row never saved has no server side yet — drop it locally.
     if (row._new) { setCurRows((rs) => rs.filter((_, k) => k !== i)); return }
     if (!window.confirm(`Remove session ${row.session_no} from the curriculum?`)) return
-    api.deleteCurriculumRow(row.session_no)
+    api.deleteCurriculumRow(row.session_no, courseName || undefined)
       .then((d) => { setCurRows(d.rows || []); setCurLogs([`Removed session ${row.session_no}.`]) })
       .catch((e) => setCurLogs([`Could not remove: ${e.message}`]))
   }
@@ -156,7 +181,7 @@ export default function App() {
   // whole reason a sync no longer costs a full re-download of the course.
   function ingestDecks(force) {
     setCurIngesting(true); setCurLogs([])
-    api.ingestDecks(force).then(({ job_id }) => {
+    api.ingestDecks(force, null, courseName || undefined).then(({ job_id }) => {
       const t = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -483,7 +508,32 @@ export default function App() {
         </div>
       </header>
 
-      <p className="sub">Generate a recording-ready Word TR doc for one session, in sync with your curriculum Google Sheet.</p>
+      <p className="sub">Generate a recording-ready Word TR doc for one session, from the curriculum your team keeps in the agent.</p>
+
+      {/* THE COURSE PICKER. A course belongs to a TEAM, so whatever one member imports
+          is what everyone on that team opens — no re-pasting a sheet, no second copy of
+          the same course under a slightly different name. The list is exactly the
+          courses this person's teams own. */}
+      {courses.length > 0 && (
+        <div className="coursebar">
+          <label htmlFor="coursepick">Course</label>
+          <select id="coursepick" value={courseName}
+                  onChange={(e) => switchCourse(e.target.value)}>
+            {!courses.some((c) => c.name === courseName) && courseName && (
+              <option value={courseName}>{courseName} (not imported yet)</option>
+            )}
+            {courses.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name} — {c.sessions} session{c.sessions === 1 ? '' : 's'}
+                {c.teams?.length ? ` · ${c.teams.join(', ')}` : ''}
+              </option>
+            ))}
+          </select>
+          <button className="link" onClick={() => setShowImport((v) => !v)}>
+            + Import another course
+          </button>
+        </div>
+      )}
 
       {/* Cost of the TR doc being generated right now — sticky side panel
           (falls back to a normal block on narrow screens). */}
@@ -523,10 +573,13 @@ export default function App() {
           {curRows.length ? 'Re-import from a sheet' : 'Import your course'}</h2>
         <div className="settingsrow">
           <div className="settingcol">
-            <label>Course name</label>
+            <label>Course</label>
             <input value={courseName} onChange={(e) => setCourseName(e.target.value)}
                    placeholder="e.g. Computer Networks" />
-            <span className="hint">Groups your docs, history & team by course.</span>
+            <span className="hint">
+              The name this course is imported under. Once imported it appears in the
+              course picker for everyone on your team.
+            </span>
           </div>
           <div className="settingcol">
             <label>Course type</label>
@@ -1117,17 +1170,18 @@ function TemplateSidePanel({ markdown, onClose }) {
 function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest,
                                saving, ingesting, dirty, pending, importedFrom,
                                onReimport, logs }) {
-  const [openRow, setOpenRow] = useState(null)
   function edit(i, field, value) {
     setRows((rs) => rs.map((r, k) => (k === i ? { ...r, [field]: value, _dirty: true } : r)))
   }
   function addRow() {
     const next = rows.reduce((m, r) => Math.max(m, Number(r.session_no) || 0), 0) + 1
     setRows((rs) => [...rs, {
+      // A stable key: React must not remount the row when its session number is edited,
+      // or the field being typed into loses focus on every keystroke.
+      _key: `new-${Date.now()}`,
       session_no: next, topic: '', session_name: '', key_takeaways: [],
       ppt_link: '', deck_status: 'none', extracted: false, _dirty: true, _new: true,
     }])
-    setOpenRow(rows.length)
   }
   const deckChip = (r) => {
     if (!r.ppt_link) return <span className="chip">no deck</span>
@@ -1164,53 +1218,43 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
 
       {logs?.length > 0 && <pre className="logs">{logs.join('\n')}</pre>}
 
-      <div className="curtable">
+      {/* THE SHEET'S OWN SHAPE. Takeaways and the deck link used to hide behind a
+          per-row expander, so reading the course meant opening every session one at a
+          time — the opposite of what a spreadsheet is for. Every column is inline now,
+          and the takeaways cell is a real multi-line box, so the whole curriculum reads
+          at a glance exactly as it does in the sheet it came from. */}
+      <div className="curtable sheetlike">
         <div className="currow curhead">
-          <span className="c-no">#</span>
+          <span className="c-no">Session</span>
+          <span className="c-topic">Topic name</span>
           <span className="c-name">Session name</span>
-          <span className="c-topic">Topic</span>
-          <span className="c-kt">Key takeaways</span>
+          <span className="c-kt">Key takeaways — one per line</span>
+          <span className="c-ppt">PPT link</span>
           <span className="c-deck">Deck</span>
           <span className="c-act" />
         </div>
         {rows.map((r, i) => (
-          <div key={`${r.session_no}-${i}`} className={`currow ${r._dirty ? 'dirty' : ''}`}>
+          <div key={r._key ?? `${r.session_no}-${i}`} className={`currow ${r._dirty ? 'dirty' : ''}`}>
             <input className="c-no" type="number" value={r.session_no}
                    onChange={(e) => edit(i, 'session_no', Number(e.target.value))} />
-            <input className="c-name" value={r.session_name || ''} placeholder="Session name"
-                   onChange={(e) => edit(i, 'session_name', e.target.value)} />
             <input className="c-topic" value={r.topic || ''} placeholder="Topic"
                    onChange={(e) => edit(i, 'topic', e.target.value)} />
-            <button className="c-kt ktbtn" onClick={() => setOpenRow(openRow === i ? null : i)}>
-              {(r.key_takeaways || []).length} takeaway{(r.key_takeaways || []).length === 1 ? '' : 's'}
-              {openRow === i ? ' ▲' : ' ▼'}
-            </button>
+            <input className="c-name" value={r.session_name || ''} placeholder="Session name"
+                   onChange={(e) => edit(i, 'session_name', e.target.value)} />
+            <textarea className="c-kt" rows={Math.max(3, (r.key_takeaways || []).length)}
+                      value={(r.key_takeaways || []).join('\n')}
+                      placeholder={'1. Topic: sub-topic; sub-topic\n2. Topic: sub-topic'}
+                      title="Each line becomes an agenda item, a section and a Key Takeaway verbatim. Everything after the colon is a promise the session must teach."
+                      onChange={(e) => edit(i, 'key_takeaways', e.target.value.split('\n'))} />
+            <textarea className="c-ppt" rows={2} value={r.ppt_link || ''}
+                      placeholder="https://docs.google.com/presentation/d/…"
+                      title="The deck for this session, if it has been recorded. Blank means the session still needs a TR doc. Changing this link is the only thing that makes the agent download a deck again."
+                      onChange={(e) => edit(i, 'ppt_link', e.target.value)} />
             <span className="c-deck">{deckChip(r)}</span>
             <span className="c-act">
               <button className="ghostbtn tiny" title="Remove this session"
                       onClick={() => onDelete(r, i)}>✕</button>
             </span>
-            {openRow === i && (
-              <div className="ktedit">
-                <label>Key takeaways — one per line, exactly as they should appear in the doc</label>
-                <textarea rows={Math.max(4, (r.key_takeaways || []).length + 1)}
-                          value={(r.key_takeaways || []).join('\n')}
-                          placeholder={'1. Topic: sub-topic; sub-topic\n2. Topic: sub-topic'}
-                          onChange={(e) => edit(i, 'key_takeaways', e.target.value.split('\n'))} />
-                <span className="hint">
-                  Each line becomes an agenda item, a section and a Key Takeaway verbatim.
-                  Everything after the colon is treated as a promise the session must teach.
-                </span>
-                <label>PPT link (the deck for this session, if it has been recorded)</label>
-                <input value={r.ppt_link || ''} placeholder="https://docs.google.com/presentation/d/…/edit"
-                       onChange={(e) => edit(i, 'ppt_link', e.target.value)} />
-                <span className="hint">
-                  Leave blank for a session not recorded yet — those are the sessions
-                  offered for a TR doc. Changing this link is the only thing that makes
-                  the agent download a deck again.
-                </span>
-              </div>
-            )}
           </div>
         ))}
         {rows.length === 0 && (
@@ -1219,6 +1263,11 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
           </div>
         )}
       </div>
+      <span className="hint">
+        Each takeaway line becomes an agenda item, a section and a Key Takeaway
+        <b> verbatim</b>; everything after the colon is treated as a promise the session
+        must teach. A blank PPT link means the session still needs a TR doc.
+      </span>
     </section>
   )
 }

@@ -266,15 +266,24 @@ function viewUsers(d){ return `<div class="card"><h2>Users (${d.users.length})</
 async function viewTeams(){
   const d = await api('/admin/teams')
   const opts = d.users.map(e=>`<option value="${esc(e)}">${esc(e)}</option>`).join('')
-  return `<div class="card"><h2>Create team</h2>
+  // A team's COURSE is what its members are allowed to see, matched by exact name — so
+  // a typo ("Operating System" for "Operating Systems") silently shows them nothing.
+  // Offer the courses the agent actually holds instead of relying on careful typing.
+  let known = []
+  try { known = ((await api('/courses')).courses || []).map(c => c.name) } catch (e) {}
+  const clist = `<datalist id="knowncourses">${known.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>`
+  return `${clist}<div class="card"><h2>Create team</h2>
     <div class="row">
       <input id="tname" placeholder="Team name" />
-      <input id="tcourse" placeholder="Course (e.g. Computer Networks)" />
+      <input id="tcourse" list="knowncourses" placeholder="Course (pick one the agent holds)" />
       <button class="btn primary" onclick="createTeam()">Create</button>
-    </div></div>
+    </div>
+    <div class="muted" style="margin-top:6px">Members of a team see that team's course in
+      the agent — its curriculum and everything the team has generated for it. The name
+      must match the course exactly, so choose from the list where you can.</div></div>
    ${d.teams.map(t=>`<div class="card">
       <div class="row"><b>${esc(t.name)}</b> <span class="muted">— course:</span>
-        <input id="c_${t.id}" value="${esc(t.course||'')}" style="width:180px" />
+        <input id="c_${t.id}" list="knowncourses" value="${esc(t.course||'')}" style="width:180px" />
         <button class="btn sm" onclick="setCourse(${t.id})">Set course</button>
         <button class="btn sm" style="margin-left:auto" onclick="delTeam(${t.id})">Delete team</button>
       </div>

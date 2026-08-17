@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.45"
+  version: "1.46"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1083,6 +1083,42 @@ meta:
               keeps being told a deck was 'already taught' for a session the course says has
               none. Guarded so an empty curriculum prunes nothing — a database that has not
               been restored yet can never wipe the knowledge base."
+    - "1.46 — THE CURRICULUM READS LIKE THE SHEET, AND A COURSE BELONGS TO A TEAM.
+              (a) THE DASHBOARD IS FLAT AGAIN. Takeaways and the deck link sat behind a
+              per-row expander, so reading a course meant opening every session one at a
+              time — the opposite of what a spreadsheet is for. Every column is inline now
+              (Session · Topic · Session name · Key takeaways · PPT link · Deck), takeaways
+              in a real multi-line box, so the whole curriculum reads at a glance in the
+              shape it was imported from. Below 1100px the row stacks instead of shrinking
+              to nothing; there is still no expander to click.
+              (b) A COURSE IS A SHARED, TEAM-OWNED THING. It used to be typed into a text
+              box, which made it a private label: two people spelling it differently ended
+              up with two separate curricula, and a course one person imported was invisible
+              to everyone else. New GET /api/courses + POST /api/courses/select and a course
+              picker at the top of the app. Visibility follows the team model that already
+              existed: admins see every course; a member of one or more teams sees exactly
+              those teams' courses and nothing else; someone on no team yet sees all of them,
+              because scoping a new user to nothing would lock them out of an agent they are
+              entitled to use. Verified: asha (Networks team) sees only PROBE-CN, meera (DB
+              team) only PROBE-DBMS, a teamless user sees both, and both members of a team
+              open the identical imported curriculum.
+              (c) COURSE IS NOW EXPLICIT ON EVERY CURRICULUM REQUEST (?course=…). It was read
+              from app_settings, a single instance-wide setting — so on a shared deployment
+              one person switching course silently moved everybody else's. Reading is fully
+              per-request now; only STARTING a generation still consults the active course,
+              which POST /api/courses/select writes. Two people generating for DIFFERENT
+              courses at the same moment would still contend for that one setting: a known
+              limit, written down rather than papered over.
+              (d) TEAM HISTORY IS SCOPED BY COURSE, NOT BY THE team_id STAMPED ON A RUN. That
+              stamp is written at generation time from team_for_user_course(), so it is null
+              for a run made before the team existed, before the person joined it, or by
+              someone on no team — and every one of those was invisible to the team it
+              belonged to. Measured on a probe: by team_id the team saw 1 of its 2 runs; by
+              course it sees both, each labelled with who made it. A team with no course set
+              keeps the old team_id behaviour rather than showing nothing.
+              (e) The admin page's course fields now offer the courses the agent actually
+              holds (datalist). A team's course is matched by exact name, so 'Operating
+              System' for 'Operating Systems' silently showed its members nothing."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

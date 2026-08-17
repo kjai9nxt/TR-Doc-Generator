@@ -70,19 +70,26 @@ export const api = {
   // ONE sheet: the curriculum, whose "PPT Links" column carries each session's deck.
   sync: (course_link, course_type, course_name) =>
     req('/sync', { method: 'POST', body: JSON.stringify({ course_link, course_type, course_name }) }),
-  sessions: () => req('/sessions'),
+  sessions: (course) => req(`/sessions${qs({ course })}`),
+
+  // Courses this person may work on — their teams' courses. A course one member
+  // imports is the course everyone on that team opens.
+  courses: () => req('/courses'),
+  selectCourse: (course, course_type) =>
+    req('/courses/select', { method: 'POST', body: JSON.stringify({ course, course_type }) }),
 
   // The agent's own curriculum — the source of truth once a course has been imported.
-  // The sheet is an import format; everything after that happens here.
-  curriculum: () => req('/curriculum'),
-  saveCurriculum: (rows) =>
-    req('/curriculum', { method: 'POST', body: JSON.stringify({ rows }) }),
-  deleteCurriculumRow: (session_no) =>
-    req(`/curriculum/${session_no}`, { method: 'DELETE' }),
+  // The sheet is an import format; everything after that happens here. The course is
+  // always explicit, so two people on different courses never write into each other's.
+  curriculum: (course) => req(`/curriculum${qs({ course })}`),
+  saveCurriculum: (rows, course) =>
+    req('/curriculum', { method: 'POST', body: JSON.stringify({ rows, course }) }),
+  deleteCurriculumRow: (session_no, course) =>
+    req(`/curriculum/${session_no}${qs({ course })}`, { method: 'DELETE' }),
   // Fetches ONLY decks that are new or whose link changed. force=true re-checks decks
   // whose link is unchanged — the only way to pick up an edit to the slides themselves.
-  ingestDecks: (force = false, sessions = null) =>
-    req('/curriculum/ingest', { method: 'POST', body: JSON.stringify({ force, sessions }) }),
+  ingestDecks: (force = false, sessions = null, course = undefined) =>
+    req('/curriculum/ingest', { method: 'POST', body: JSON.stringify({ force, sessions, course }) }),
   job: (id) => req(`/jobs/${id}`),
   downloadUrl: (session_no, run_id, name) => `/api/download/${session_no}${qs({ run_id, name })}`,
 

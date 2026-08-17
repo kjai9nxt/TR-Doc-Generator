@@ -96,9 +96,13 @@ class CurriculumRow(BaseModel):
 
 class CurriculumSaveBody(BaseModel):
     rows: list[CurriculumRow]
+    # Which course these rows belong to. Sent explicitly so two people working on
+    # different courses on the same instance cannot write into each other's.
+    course: str | None = None
 
 
 class IngestBody(BaseModel):
+    course: str | None = None
     # Re-fetch decks whose link has not changed. The only way to pick up an edit made to
     # the SLIDES behind an unchanged link, since Google's export endpoint exposes no
     # ETag/Last-Modified to ask cheaply.
@@ -304,6 +308,60 @@ def do_sync(body: SyncBody, user: dict = Depends(current_user)):
 # once per link, because Google's export endpoint gives no way to ask whether it
 # changed without downloading the whole file (~4.7 MB, ~3.4 s each).
 # --------------------------------------------------------------------------- #
+def _course_for(user: dict, course: str | None) -> str:
+    """Resolve which course a request is about.
+
+    Explicit wins. The app_settings value is only a DEFAULT for a client that did not
+    say — it is a single instance-wide setting, so treating it as the answer would mean
+    one person switching course silently moved everybody else's.
+    """
+    return (course or "").strip() or app_settings.course_name() or "default"
+
+
+@app.get("/api/courses")
+def list_courses(user: dict = Depends(current_user)):
+    """Courses this person may work on — the team's shelf, not a text box.
+
+    The course used to be typed by hand, which made it a private label: two people
+    spelling it differently ended up with two separate curricula, and a course one
+    person imported was invisible to everyone else. It is a shared thing now, so it is
+    chosen from a list.
+    """
+    courses = db.courses_for_user(user.get("email"), is_admin=user.get("is_admin", False))
+    return {"courses": courses, "active": app_settings.course_name()}
+
+
+class SelectCourseBody(BaseModel):
+    course: str
+    course_type: str | None = None
+
+
+@app.post("/api/courses/select")
+def select_course(body: SelectCourseBody, user: dict = Depends(current_user)):
+    """Make a course the active one and hand back everything the app needs to show it.
+
+    Generation reads the active course from app_settings (one setting per instance), so
+    switching is a write — two people driving DIFFERENT courses at the same moment on
+    the same instance would still contend for it. Reading is already per-request
+    (every curriculum endpoint takes an explicit course), so browsing another team's
+    course never disturbs anyone; only starting a generation depends on this.
+    """
+    course = (body.course or "").strip()
+    if not course:
+        raise HTTPException(status_code=400, detail={"message": "No course given."})
+    allowed = {c["name"] for c in db.courses_for_user(
+        user.get("email"), is_admin=user.get("is_admin", False))}
+    # A brand-new name is allowed (that is how a course is created); an EXISTING course
+    # this user has no team for is not.
+    if course in {c for c in db.curriculum_courses()} and allowed and course not in allowed:
+        raise HTTPException(status_code=403, detail={
+            "message": f"'{course}' belongs to a team you are not on. Ask an admin to "
+                       f"add you to it."})
+    app_settings.save(course_name=course, course_type=body.course_type)
+    return {"course": course, "rows": _curriculum_rows(course),
+            "sessions": _session_list(course), "imported_from": sync.last_link()}
+
+
 def _curriculum_rows(course: str) -> list[dict]:
     """The course's rows, each tagged with whether its deck is REALLY held.
 
@@ -326,8 +384,8 @@ def _curriculum_rows(course: str) -> list[dict]:
 
 
 @app.get("/api/curriculum")
-def get_curriculum(user: dict = Depends(current_user)):
-    course = app_settings.course_name() or "default"
+def get_curriculum(course: str | None = None, user: dict = Depends(current_user)):
+    course = _course_for(user, course)
     rows = _curriculum_rows(course)
     return {"course": course, "rows": rows,
             "imported_from": sync.last_link(),
@@ -336,9 +394,10 @@ def get_curriculum(user: dict = Depends(current_user)):
 
 
 @app.post("/api/curriculum")
-def save_curriculum(body: CurriculumSaveBody, user: dict = Depends(current_user)):
+def save_curriculum(body: CurriculumSaveBody, course: str | None = None,
+                    user: dict = Depends(current_user)):
     """Create or update rows. Only the rows sent are touched — nothing is deleted."""
-    course = app_settings.course_name() or "default"
+    course = _course_for(user, course or body.course)
     saved = 0
     for row in body.rows:
         ok = db.curriculum_upsert(
@@ -358,24 +417,26 @@ def save_curriculum(body: CurriculumSaveBody, user: dict = Depends(current_user)
 
 
 @app.delete("/api/curriculum/{session_no}")
-def delete_curriculum_row(session_no: int, user: dict = Depends(current_user)):
-    course = app_settings.course_name() or "default"
+def delete_curriculum_row(session_no: int, course: str | None = None,
+                          user: dict = Depends(current_user)):
+    course = _course_for(user, course)
     db.curriculum_delete(course, session_no)
     sync.prune_orphan_decks(course)
     sync.write_course_cache(course)
     return {"ok": True, "rows": _curriculum_rows(course)}
 
 
-def _run_ingest(job_id: str, force: bool, sessions: list[int] | None):
+def _run_ingest(job_id: str, force: bool, sessions: list[int] | None,
+                course: str | None = None):
     def on_event(msg: str):
         with _lock:
             JOBS[job_id]["logs"].append(msg)
     try:
-        res = sync.ingest_decks(force=force, only_sessions=sessions,
+        res = sync.ingest_decks(course, force=force, only_sessions=sessions,
                                 verbose=True, on_event=on_event)
         with _lock:
             JOBS[job_id].update(status="done", result={
-                "sessions": _session_list(),
+                "sessions": _session_list(course),
                 "changelog": res.changelog,
                 "errors": res.errors,
                 "extraction_warnings": res.extraction_warnings,
@@ -395,11 +456,12 @@ def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,
                         "error": None, "error_kind": None}
     threading.Thread(target=_run_ingest,
-                     args=(job_id, body.force, body.sessions), daemon=True).start()
+                     args=(job_id, body.force, body.sessions,
+                           _course_for(user, body.course)), daemon=True).start()
     return {"job_id": job_id}
 
 
-def _session_list():
+def _session_list(course: str | None = None):
     """Sessions that still need a TR doc.
 
     A session whose deck has been ingested has already been recorded, so it is course
@@ -419,7 +481,7 @@ def _session_list():
     # the row said "no deck" while the session stayed invisible, with no way to put it
     # back. The curriculum is the source of truth, so it decides here too; the disk scan
     # remains only as the fallback for a process with no curriculum rows (offline evals).
-    course = app_settings.course_name() or "default"
+    course = (course or "").strip() or app_settings.course_name() or "default"
     rows = db.curriculum(course)
     if rows:
         have_decks = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
@@ -431,8 +493,8 @@ def _session_list():
 
 
 @app.get("/api/sessions")
-def sessions():
-    return {"sessions": _session_list()}
+def sessions(course: str | None = None):
+    return {"sessions": _session_list(course)}
 
 
 # --------------------------------------------------------------------------- #
@@ -1301,16 +1363,30 @@ def my_history(user: dict = Depends(current_user)):
 
 @app.get("/api/my/teams")
 def my_teams(user: dict = Depends(current_user)):
-    """Teams the user belongs to, each with the docs the team is building together
-    (all members' runs) grouped by course."""
+    """Teams the user belongs to, each with EVERY doc the team has produced.
+
+    Scoped by the team's COURSE, not by the team_id stamped on a run. That stamp is
+    written at generation time from team_for_user_course(), so it is null for a run
+    made before the team existed, before the person was added to it, or by someone who
+    is on no team at all — and every one of those runs was invisible to the team even
+    though it is exactly the shared work they need to see. The course is the thing a
+    team owns, so the course is what gathers the history.
+
+    Each run carries who made it, so the list reads as a team feed rather than an
+    anonymous pile.
+    """
     email = user.get("email")
     out = []
     for t in db.teams_for_user(email):
         members = t.get("members", [])
-        team_runs = [r for r in db.runs(team_id=t["id"])]
-        # also fold in members' runs for the team's course (belt-and-suspenders)
-        out.append({"team": t, "courses": _group_by_course(team_runs),
-                    "summary": _rollup(team_runs), "members": members})
+        course = t.get("course")
+        runs = db.runs(course=course) if course else db.runs(team_id=t["id"])
+        # A team with no course set can only be identified by the stamp, so that case
+        # keeps the old behaviour rather than showing nothing.
+        out.append({"team": t, "courses": _group_by_course(runs),
+                    "summary": _rollup(runs), "members": members,
+                    "contributors": sorted({r.get("user_email") for r in runs
+                                            if r.get("user_email")})})
     return {"teams": out}
 
 

@@ -196,6 +196,14 @@ a.download, button.download { background: linear-gradient(145deg, #3ad38f, #23a8
 /* ---------- Curriculum dashboard ----------
    The agent's own copy of the course, edited in place. A grid rather than a <table> so
    each row can expand into a takeaway editor without fighting table layout. */
+/* Course picker — a shared shelf, sitting above everything because it decides what
+   the rest of the page is about. */
+.coursebar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+             margin: 0 0 18px; padding: 12px 16px; background: var(--card2);
+             border: 1px solid var(--line); border-radius: var(--r); }
+.coursebar label { margin: 0; white-space: nowrap; }
+.coursebar select { width: auto; min-width: 320px; flex: 1 1 320px; }
+
 .curactions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
 .curspacer { flex: 1 1 auto; }
 .curtable { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
@@ -203,20 +211,39 @@ a.download, button.download { background: linear-gradient(145deg, #3ad38f, #23a8
 .currow { display: grid; gap: 8px; align-items: center; padding: 8px 10px;
           grid-template-columns: 62px minmax(160px, 2fr) minmax(110px, 1fr) 130px 92px 34px;
           border-top: 1px solid var(--line); background: var(--bg2); }
+/* Sheet-like: every column inline, takeaways given the room they need. Aligned to the
+   TOP rather than centred, because the takeaways cell is several lines tall and a
+   vertically-centred session number beside it reads as misaligned. */
+.sheetlike .currow {
+  align-items: start;
+  grid-template-columns: 74px minmax(120px, 0.9fr) minmax(150px, 1.2fr)
+                         minmax(260px, 2.4fr) minmax(150px, 1fr) 92px 30px;
+}
+.sheetlike .curhead { align-items: center; }
+.sheetlike textarea { resize: vertical; font-size: 12.5px; line-height: 1.5;
+                      padding: 8px 10px; min-height: 38px; }
+.sheetlike .c-ppt { font-size: 11.5px; word-break: break-all; }
+.sheetlike .c-deck, .sheetlike .c-act { padding-top: 8px; }
+@media (max-width: 1100px) {
+  /* Below this the seven columns stop being readable, so the row becomes a stacked
+     card — still every field visible, no expander to click. */
+  .sheetlike .currow { grid-template-columns: 74px 1fr 92px 30px; }
+  .sheetlike .c-name { grid-column: 2 / -1; }
+  .sheetlike .c-kt, .sheetlike .c-ppt { grid-column: 1 / -1; }
+  .sheetlike .curhead .c-kt, .sheetlike .curhead .c-ppt,
+  .sheetlike .curhead .c-topic { display: none; }
+  .sheetlike .c-topic { grid-column: 2 / -1; }
+}
 .currow:first-child { border-top: none; }
 .curhead { background: transparent; font-size: 11px; text-transform: uppercase;
            letter-spacing: .04em; color: var(--muted); font-weight: 700; }
 .currow.dirty { background: rgba(124,147,255,.08); }
 .currow input { margin: 0; padding: 7px 9px; font-size: 13px; }
 .curhead span { padding: 0 2px; }
-.ktbtn { background: var(--bg); border: 1px solid var(--line); border-radius: 7px;
-         color: var(--accent); font-size: 12px; padding: 7px 8px; cursor: pointer; }
-.ktbtn:hover { border-color: var(--line2); }
+/* The per-row expander (.ktbtn/.ktedit) is gone: every column is inline now, so there
+   is nothing left to open. */
 .c-act { display: flex; justify-content: center; }
 .ghostbtn.tiny { padding: 4px 8px; font-size: 12px; }
-.ktedit { grid-column: 1 / -1; padding: 10px 4px 6px; border-top: 1px dashed var(--line); }
-.ktedit textarea { width: 100%; font-size: 13px; line-height: 1.6; }
-.ktedit label { display: block; margin: 10px 0 4px; font-size: 12px; color: var(--muted); }
 .curempty { padding: 16px; text-align: center; }
 @media (max-width: 900px) {
   .currow { grid-template-columns: 54px 1fr 92px 34px; }
