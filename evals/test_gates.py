@@ -764,6 +764,42 @@ check("both pacing models are reachable",
       time_grader.estimate(_doc_of(8))["pacing"] == "per_slide"
       and "narration_minutes" in time_grader.estimate(_doc_of(8)))
 
+print("\n== every list line carries exactly ONE marker ==")
+# Reported from a real document: the recap and agenda read "• 1. Buffering" — a bullet
+# glyph in front of the model's own number. The numbers are REQUIRED (the agenda gate
+# demands 1..N so it mirrors the numbered Key Takeaways), so the renderer is what has
+# to stop adding a second marker. Both renderers, since the review pane is what a human
+# approves and the .docx is what they hand over.
+from src import docx_writer                                            # noqa: E402
+
+numbered = ["1. Buffering: single, double & circular", "2) Spooling for printers",
+            "3 - Disk structure", "4: Seek time"]
+plain = ["Buffering and caching", "Disk structure"]
+
+md_num = docx_writer._md_list(numbered)
+check("a numbered item keeps its number and loses the dash",
+      all(not ln.startswith("- ") for ln in md_num.splitlines()), md_num)
+check("…and the number itself survives",
+      md_num.splitlines()[0].startswith("1."), md_num.splitlines()[0])
+md_plain = docx_writer._md_list(plain)
+check("an unnumbered item is still bulleted",
+      all(ln.startswith("- ") for ln in md_plain.splitlines()), md_plain)
+
+import docx as _docxlib                                                # noqa: E402
+_d = _docxlib.Document()
+styles = [docx_writer._list_item(_d, t).style.name for t in numbered]
+check("numbered lines are not written with a bullet style",
+      "List Bullet" not in styles, str(styles))
+check("unnumbered lines still are",
+      all(docx_writer._list_item(_d, t).style.name == "List Bullet" for t in plain))
+
+# End to end through the real writer: the opening chunk exactly as the live run
+# produced it must not come back double-marked.
+opening = {"recap": {"prev_session_no": 31, "prev_session_name": "Spooling",
+                     "bullets": numbered}, "agenda": numbered}
+md = docx_writer.chunk_to_markdown("opening", opening)
+check("no '- 1.' anywhere in the rendered opening", "- 1." not in md, md)
+
 print("\n== policy flags ==")
 check("judge is always on", pipeline.judge_always_on())
 check("40-minute budget is always enforced", pipeline.time_always_enforced())

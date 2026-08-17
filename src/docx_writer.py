@@ -1,6 +1,7 @@
 """Render a TR-doc JSON into a styled .docx matching the golden format,
 and a parallel Markdown file for quick review."""
 from __future__ import annotations
+import re
 from pathlib import Path
 
 import docx as docxlib
@@ -8,6 +9,43 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 
 BREAKER = "---------------------------------------"
+
+# A list item that already carries its own marker: "1.", "2)", "3 -", "•", "- ".
+_ENUMERATED = re.compile(r"^\s*\d+\s*[.)\-:]\s+")
+
+
+def _list_item(doc, text: str, style: str = "List Bullet"):
+    """Add one list line, with EXACTLY ONE marker in front of it.
+
+    The agenda is required to be numbered "1."…"N." so it mirrors the numbered Key
+    Takeaways (guardrails enforces it), and the model numbers the recap to match. Both
+    were then written with style="List Bullet", which puts a bullet glyph in front of
+    the number — so the document read "• 1. Buffering", two markers deep, in the recap,
+    the agenda and the Key Takeaways alike.
+
+    Fixing this in the prompt would be fighting the guardrail that demands the numbers.
+    So the RENDERER decides: text that already numbers itself keeps its own number and
+    loses the glyph (an indented paragraph, no bullet); everything else is bulleted as
+    before. The model's numbers are used verbatim rather than Word's automatic ones,
+    which continue counting across consecutive lists and would number the agenda 6..10
+    straight after a five-line recap.
+    """
+    body = str(text)
+    if _ENUMERATED.match(body):
+        p = doc.add_paragraph(body.strip(), style="List Paragraph")
+        return p
+    return doc.add_paragraph(body, style=style)
+
+
+def _md_list(items) -> str:
+    """One Markdown line per item, with EXACTLY ONE marker — the .docx rule (see
+    _list_item) applied to the review pane and the .md preview, so what a reviewer
+    approves on screen is what the document shows."""
+    out = []
+    for i in items or []:
+        body = str(i)
+        out.append(body.strip() if _ENUMERATED.match(body) else f"- {body}")
+    return "\n".join(out)
 
 
 def _labelled(doc, label: str, value: str):
@@ -25,7 +63,7 @@ def _render_content(doc, blocks):
             doc.add_paragraph(block.get("text", ""))
         elif t == "bullets":
             for item in block.get("items", []):
-                doc.add_paragraph(str(item), style="List Bullet")
+                _list_item(doc, item)
         elif t == "table":
             cols = block.get("columns", [])
             rows = block.get("rows", [])
@@ -59,11 +97,11 @@ def write_docx(doc_json: dict, out_path: Path) -> Path:
             f"RECAP: Session {recap['prev_session_no']} : {recap['prev_session_name']}",
             level=2)
         for b in recap.get("bullets", []):
-            d.add_paragraph(str(b), style="List Bullet")
+            _list_item(d, b)
 
     d.add_heading("Agenda for Today's Session", level=2)
     for a in doc_json.get("agenda", []):
-        d.add_paragraph(str(a), style="List Bullet")
+        _list_item(d, a)
 
     for sec in doc_json.get("sections", []):
         d.add_paragraph()
@@ -85,7 +123,7 @@ def write_docx(doc_json: dict, out_path: Path) -> Path:
 
     d.add_heading("Key Takeaways", level=2)
     for k in doc_json.get("key_takeaways", []):
-        d.add_paragraph(str(k), style="List Bullet")
+        _list_item(d, k)
 
     d.add_paragraph()
     up = doc_json.get("upcoming_session")
@@ -111,7 +149,7 @@ def _content_blocks(content) -> list[str]:
         if bt == "text":
             out.append(block.get("text", ""))
         elif bt == "bullets":
-            out.append("\n".join(f"- {i}" for i in block.get("items", [])))
+            out.append(_md_list(block.get("items", [])))
         elif bt == "table":
             cols = block.get("columns", [])
             tbl = ["| " + " | ".join(cols) + " |",
@@ -149,12 +187,12 @@ def chunk_to_markdown(kind: str, fragment: dict) -> str:
             blocks.append(f"## RECAP: Session {recap.get('prev_session_no','')} : "
                           f"{recap.get('prev_session_name','')}")
             if recap.get("bullets"):
-                blocks.append("\n".join(f"- {b}" for b in recap["bullets"]))
+                blocks.append(_md_list(recap["bullets"]))
         else:
             blocks.append("_(First session — no recap.)_")
         blocks.append("## Agenda for Today's Session")
         if fragment.get("agenda"):
-            blocks.append("\n".join(f"- {a}" for a in fragment["agenda"]))
+            blocks.append(_md_list(fragment["agenda"]))
     else:  # section
         sec = fragment.get("section", fragment)
         idx = sec.get("index", "")
@@ -178,11 +216,11 @@ def write_markdown(doc_json: dict, out_path: Path) -> Path:
     if recap:
         blocks.append(f"## RECAP: Session {recap['prev_session_no']} : {recap['prev_session_name']}")
         if recap.get("bullets"):
-            blocks.append("\n".join(f"- {b}" for b in recap["bullets"]))
+            blocks.append(_md_list(recap["bullets"]))
 
     blocks.append("## Agenda for Today's Session")
     if doc_json.get("agenda"):
-        blocks.append("\n".join(f"- {a}" for a in doc_json["agenda"]))
+        blocks.append(_md_list(doc_json["agenda"]))
 
     for sec in doc_json.get("sections", []):
         blocks.append(f"## {BREAKER} SECTION {sec['index']}: {sec['name']} {BREAKER}")
@@ -191,7 +229,7 @@ def write_markdown(doc_json: dict, out_path: Path) -> Path:
 
     blocks.append("## Key Takeaways")
     if doc_json.get("key_takeaways"):
-        blocks.append("\n".join(f"- {k}" for k in doc_json["key_takeaways"]))
+        blocks.append(_md_list(doc_json["key_takeaways"]))
     if doc_json.get("upcoming_session"):
         blocks.append(f"**Upcoming Session :** {doc_json['upcoming_session']}")
     blocks.append(f"**{doc_json.get('closing','Thank You  |  All the Best')}**")

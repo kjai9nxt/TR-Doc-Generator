@@ -202,6 +202,11 @@ class GuidedStartBody(BaseModel):
     session_no: int
     use_judge: bool = True
     enforce_time: bool = True
+    # The workspace this run belongs to. Sent explicitly rather than guessed from the
+    # user's memberships, so a doc made in a TEAM workspace is stamped with that team
+    # and is visible to every member — including one added months later.
+    team_id: int | None = None
+    course: str | None = None
 
 
 class RegenerateBody(BaseModel):
@@ -848,6 +853,11 @@ _GUIDED_PERSIST_KEYS = (
     # server loading its whole state or re-deriving the title from a course that may
     # have been re-synced since (see db.unfinished_guided).
     "session_title",
+    # The curriculum this document is being written FROM. A run must keep reading the
+    # course it started on: without this, resuming after a restart re-read whichever
+    # course happened to be selected then, so a doc could be finished out of a
+    # different curriculum than it was begun in.
+    "course",
 )
 
 
@@ -882,7 +892,7 @@ def _guided_rehydrate(gid: str) -> dict | None:
         return None
     session_no = snap.get("session_no")
     try:
-        sessions = course_loader.load_sessions(None)
+        sessions = course_loader.load_sessions(None, course=snap.get("course"))
         prev, cur, nxt = course_loader.neighbours(session_no, sessions)
     except Exception as e:
         # Don't fail silently: without this line a failed restore looks identical to
@@ -1453,7 +1463,12 @@ def _guided_view(state: dict) -> dict:
 def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     if config.api_key() is None:
         raise HTTPException(status_code=400, detail={"message": "No API key configured in .env"})
-    sessions = course_loader.load_sessions(None)
+    # Read the curriculum of the course THIS REQUEST names. Falling back to the
+    # process-wide "selected course" made the content depend on whoever selected last:
+    # two people generating for different courses at the same time got each other's
+    # sessions, and the run was still stamped with the course it was asked for.
+    run_course = (body.course or "").strip() or app_settings.course_name()
+    sessions = course_loader.load_sessions(None, course=run_course)
     prev, cur, nxt = course_loader.neighbours(body.session_no, sessions)
     labels = ["Opening (recap + agenda)"] + [
         f"Key takeaway {i + 1}: {kt[:70]}" for i, kt in enumerate(cur.key_takeaways)]
@@ -1471,8 +1486,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # override, or the harness default. Resolved once and carried on the run, so the
     # prompt, the gates and the repair pass all speak about the same numbers.
     from src import budgets as budget_rules
-    run_budgets = budget_rules.for_session(
-        (body.course or "").strip() or app_settings.course_name(), body.session_no)
+    run_budgets = budget_rules.for_session(run_course, body.session_no)
     base_context = (context_builder.build_guided_base(prev, cur, nxt)
                     + context_builder.time_mode_block(body.enforce_time, guided=True,
                                                       budgets=run_budgets))
@@ -1485,7 +1499,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
             "total": 1 + len(cur.key_takeaways), "index": 0, "labels": labels,
             "chunks": [], "regen_index": None, "use_judge": body.use_judge,
             "enforce_time": body.enforce_time, "user_email": user.get("email"),
-            "budgets": run_budgets,
+            "budgets": run_budgets, "course": run_course,
             "logs": [], "result": None, "error": None,
         }
     # Checkpoint before any chunk is generated, so even a restart during the very
@@ -1495,9 +1509,8 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # show live and persist in the dashboard, exactly like one-shot runs.
     try:
         email = user.get("email")
-        course = (body.course or "").strip() or app_settings.course_name()
-        db.create_run(gid, user_email=email, course=course,
-                      team_id=_run_team(user, body.team_id, course),
+        db.create_run(gid, user_email=email, course=run_course,
+                      team_id=_run_team(user, body.team_id, run_course),
                       session_no=body.session_no, title=cur.name,
                       enforce_time=body.enforce_time)
     except Exception:

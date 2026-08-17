@@ -60,8 +60,8 @@ def _cache_path() -> Path:
     return config.DATA_ROOT / config.harness()["context"]["knowledge_base_dir"] / "course_structure.json"
 
 
-def load_sessions_from_cache() -> list[Session] | None:
-    """The course the agent holds, or None if it holds none yet.
+def load_sessions_from_cache(course: str | None = None) -> list[Session] | None:
+    """The curriculum for `course`, or None if the agent holds none yet.
 
     Two sources, in order of authority:
       1. the CURRICULUM TABLE — what the user last saved in the app. This is the source
@@ -69,10 +69,16 @@ def load_sessions_from_cache() -> list[Session] | None:
          must be what generation sees, immediately and without a re-sync.
       2. knowledge_base/course_structure.json — the table's projection on disk, and the
          fallback for an offline/eval process running without a database.
+
+    `course` NAMES THE CURRICULUM TO READ, and callers that know it must pass it. The
+    fallback — the last course selected in this process — is one global shared by every
+    signed-in user, so on the deployed server one person opening their course silently
+    repointed everyone else's generation at it. Only the on-disk cache path (offline
+    evals, which have no database) still relies on that global.
     """
     try:
         from . import db, app_settings
-        rows = db.curriculum(app_settings.course_name() or "default")
+        rows = db.curriculum((course or "").strip() or app_settings.course_name() or "default")
         if rows:
             sessions = [
                 Session(number=r["session_no"], name=r.get("session_name", ""),
@@ -100,10 +106,11 @@ def load_sessions_from_cache() -> list[Session] | None:
     return sessions
 
 
-def load_sessions(course_file: str | Path | None = None) -> list[Session]:
+def load_sessions(course_file: str | Path | None = None,
+                  course: str | None = None) -> list[Session]:
     # Prefer the live-synced sheet cache unless an explicit file is requested.
     if course_file is None:
-        cached = load_sessions_from_cache()
+        cached = load_sessions_from_cache(course)
         if cached:
             return cached
     path = Path(course_file) if course_file else _find_course_file()

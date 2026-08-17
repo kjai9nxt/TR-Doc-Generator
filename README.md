@@ -182,9 +182,19 @@ only for quick review.
 ```bash
 python -m evals.run_eval          # offline: golden through all gates (no API)
 python -m evals.test_gates        # offline: each gate fires on its own defect (no API)
+python -m evals.test_api_contracts # offline: handlers only read fields their model declares
+python -m evals.test_endpoints    # boots the real server, real HTTP, throwaway DB (no API)
+npm --prefix frontend run test:ui # mounts the real App.jsx in jsdom
 python -m evals.run_sets --session N   # score one doc against all 24 eval sets
 python -m evals.run_eval --live   # full pipeline on sample sessions (needs API)
 ```
+
+`test_endpoints` and `test_api_contracts` exist because the content suites all call the
+pipeline directly and the UI harness stubs the API, so for a while **nothing ran the
+HTTP handlers** — a request field a handler read but its model never declared shipped
+broken with every suite green. `test_endpoints` starts uvicorn and posts real JSON;
+only sign-in and the generation thread are faked, and the thread only after the handler
+has finished, so body parsing, curriculum lookup and the run row are all real.
 
 ## Tuning
 

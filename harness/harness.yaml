@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.57"
+  version: "1.58"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1411,6 +1411,39 @@ meta:
               run finishes, which is when it can change.
               Requests on load, asserted by the UI harness so it cannot creep back:
               auth/config and bootstrap — two, from eight."
+    - "1.58 — THE ONE CALL THAT STARTS A DOCUMENT WAS NEVER TESTED, AND IT WAS BROKEN.
+              POST /api/guided/start died on every click with 'GuidedStartBody' object has
+              no attribute 'course': the handler read body.course and body.team_id, and the
+              edit that was to declare them on the model was lost. Every suite was green,
+              because none of them go through the endpoint — the content suites call the
+              pipeline directly, and the UI harness stubs the response, so the frontend was
+              being tested against a server that existed only in the stub.
+              (a) The fields are declared. (b) Two suites now cover the gap, and both
+              reproduce the exact user-visible error when the fields are removed again:
+              evals/test_api_contracts.py reads server.py's AST and fails if a handler ever
+              reads a field its request model does not declare (16 handlers, no server
+              needed); evals/test_endpoints.py boots uvicorn and posts real JSON to a
+              throwaway database, faking only sign-in and the generation thread — and the
+              thread only after the handler has returned, so body parsing, the curriculum
+              lookup, budget resolution and the run row are all real.
+              (c) Found by that test: GENERATION READ A PROCESS-WIDE 'SELECTED COURSE'.
+              The request carried a course and the run was STAMPED with it, but the
+              curriculum was loaded from one global shared by everyone signed in, so on the
+              deployed server two people generating for different courses at the same time
+              got each other's sessions — and a run resumed after a restart re-read
+              whichever course was selected then. load_sessions() now takes the course,
+              guided_start passes the one the request named, and the run carries it in its
+              checkpoint so it finishes on the curriculum it began on.
+              (d) Also from that live run: EVERY LIST LINE HAD TWO MARKERS. The recap and
+              agenda read '1. Buffering' under a bullet glyph, because the agenda gate
+              requires the model to number 1..N (mirroring the numbered Key Takeaways) and
+              the renderers then wrote every line with style='List Bullet'. The renderer
+              now decides: a line that numbers itself keeps its number and loses the glyph,
+              anything else is bulleted as before — in the .docx, the .md and the review
+              pane alike, so what a reviewer approves on screen is what is handed over.
+              The model's own numbers are kept rather than Word's automatic ones, which
+              continue across consecutive lists and would number the agenda 6..10 after a
+              five-line recap."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
