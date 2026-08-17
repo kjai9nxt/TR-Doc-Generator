@@ -40,6 +40,28 @@ app.add_middleware(
     allow_methods=["*"], allow_headers=["*"],
 )
 
+@app.exception_handler(Exception)
+async def _unhandled(request, exc):
+    """Say WHAT failed, and leave a traceback in the logs.
+
+    An unhandled error used to reach the browser as a bare 500, which the client
+    rendered as "Request failed (HTTP 500). Is the backend running?" — a message that
+    names neither the request nor the reason. Twice now that has meant a defect could
+    only be guessed at from a screenshot. The traceback goes to the server log (where
+    the platform keeps it) and the path plus the exception type come back to the
+    caller, so the next failure can be read instead of reconstructed.
+    """
+    import traceback
+    path = getattr(getattr(request, "url", None), "path", "?")
+    traceback.print_exc()
+    print(f"[error] {request.method} {path} -> {type(exc).__name__}: {exc}", flush=True)
+    return Response(
+        content=json.dumps({"detail": {
+            "message": f"{type(exc).__name__} on {path}: {exc}",
+            "path": path, "kind": "server_error"}}),
+        status_code=500, media_type="application/json")
+
+
 JOBS: dict[str, dict] = {}
 GUIDED: dict[str, dict] = {}
 _lock = threading.Lock()
@@ -49,35 +71,63 @@ _lock = threading.Lock()
 # config lookup a request happens to make) the backend would flip mid-process: the
 # schema created here would land in one database and later reads/writes in the other.
 config.load_env()
-db.init()   # create the schema on the configured backend + import the legacy JSON log
-# On an ephemeral host (Render free + Turso) the disk is wiped on every restart,
-# so bring the previously-synced knowledge base back from the DB. No-op locally.
+
+# ---------------------------------------------------------------------------- #
+# STARTUP — get the port answering FIRST, then do the housekeeping.
+#
+# All of this used to run at IMPORT time, so the process did not bind its port until
+# every step had finished. On the deployed (free, ephemeral) host that meant a cold
+# start paid, before serving anything: the schema round-trips, a 1.3 MB knowledge-base
+# restore pulled back from the cloud database, a learned-rule sweep and a checkpoint
+# purge. Every one of those is a network call to a database that may itself be cold.
+# While it ran, the health check had nothing to talk to and the platform returned 503.
+#
+# Worse, `db.init()` was not wrapped: a single hiccup there raised through the import
+# and the service never started at all — a permanent 503 until the next deploy.
+#
+# So: schema first (nothing can query without it) but never fatal, and everything else
+# on a background thread. /api/auth/config — the health check — touches no database at
+# all, so the instance is answerable within milliseconds of the port opening.
+# ---------------------------------------------------------------------------- #
+STARTUP: dict = {"ready": False, "steps": [], "error": None}
+
 try:
-    _restored = db.kb_restore()
-    if _restored:
-        print(f"[startup] restored {_restored} knowledge-base file(s) from cloud storage")
+    db.init()   # create the schema + import the legacy JSON log
 except Exception as _e:
-    print(f"[startup] knowledge-base restore skipped: {_e}")
-# Retire learned rules that a deterministic gate now enforces (harness 1.29 turned
-# three of them into hard guardrails). Idempotent, and needed at startup because the
-# rule store is runtime data restored from the DB — a deployed instance would otherwise
-# keep feeding those rules to the judge, which re-adjudicates them from prose and can
-# fail a compliant doc on a violation that isn't there. See src/learning.retire_gated.
-try:
-    from src import learning as _learning
-    _retired = _learning.retire_gated()
-    if _retired:
-        print(f"[startup] retired {_retired} learned rule(s) now enforced by a guardrail")
-except Exception as _e:
-    print(f"[startup] learned-rule retirement skipped: {_e}")
-# Guided-run checkpoints are rehydrated lazily (on the first request for that id),
-# not eagerly — we only drop the ones too old for anyone to come back to.
-try:
-    _purged = db.purge_guided(72)
-    if _purged:
-        print(f"[startup] purged {_purged} stale guided-run checkpoint(s)")
-except Exception as _e:
-    print(f"[startup] guided-checkpoint purge skipped: {_e}")
+    # A boot that cannot reach the database must still serve: the UI can render, the
+    # health check passes, and each request retries on its own.
+    STARTUP["error"] = f"schema init failed: {_e}"
+    print(f"[startup] WARNING — {STARTUP['error']}")
+
+
+def _startup_housekeeping() -> None:
+    """The slow, optional work — off the critical path, best effort, never fatal."""
+    import time as _t
+    for label, fn in (
+            # On an ephemeral host the disk is wiped on every restart, so bring the
+            # previously-synced knowledge base back from the DB. No-op locally.
+            ("knowledge-base restore", db.kb_restore),
+            # Retire learned rules a deterministic gate now enforces, or the judge
+            # re-adjudicates them from prose and can fail a compliant doc.
+            ("learned-rule retirement", lambda: __import__(
+                "src.learning", fromlist=["learning"]).retire_gated()),
+            # Guided checkpoints nobody can resume any more.
+            ("guided-checkpoint purge", lambda: db.purge_guided(72)),
+    ):
+        t0 = _t.time()
+        try:
+            n = fn() or 0
+            took = _t.time() - t0
+            STARTUP["steps"].append({"step": label, "count": n, "seconds": round(took, 2)})
+            if n:
+                print(f"[startup] {label}: {n} in {took:.1f}s")
+        except Exception as e:
+            STARTUP["steps"].append({"step": label, "error": str(e)})
+            print(f"[startup] {label} skipped: {e}")
+    STARTUP["ready"] = True
+
+
+threading.Thread(target=_startup_housekeeping, daemon=True).start()
 
 
 # --------------------------------------------------------------------------- #
@@ -222,6 +272,20 @@ def auth_config():
         "configured": config.google_client_id() is not None,
         "auth_disabled": config.auth_disabled(),
     }
+
+
+@app.get("/api/health")
+def health():
+    """Is the instance up, and has its housekeeping finished?
+
+    Deliberately touches NOTHING: no database, no disk, no auth. A health check that
+    queries a cold cloud database is a health check that fails when the database is
+    slow — which is exactly when you least want the platform to take the instance out
+    of service. `ready` tells you whether the background restore has finished; the
+    app serves either way, so this is for diagnosis, not gating.
+    """
+    return {"ok": True, "ready": STARTUP["ready"],
+            "steps": STARTUP["steps"], "error": STARTUP["error"]}
 
 
 @app.post("/api/auth/login")

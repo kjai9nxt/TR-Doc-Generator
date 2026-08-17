@@ -9,6 +9,20 @@
 #   TURSO_DATABASE_URL    libsql://<your-db>.turso.io   (from https://turso.tech)
 #   TURSO_AUTH_TOKEN      your Turso token
 #
+# WHY THE LINK SOMETIMES RETURNS 503, and what is and is not fixable here.
+#   A FREE web service SPINS DOWN after ~15 minutes without traffic. The next visit
+#   wakes it, and until the new container has booted the platform answers 502/503 —
+#   typically 30-60s. That is how the free plan works; no code change removes it. The
+#   real fixes are a paid instance (no spin-down) or accepting the first-visit wait.
+#   What WAS ours to fix, and now is:
+#     · the app used to do all its startup work — schema round-trips, a 1.3 MB
+#       knowledge-base restore from the cloud DB, a rule sweep, a checkpoint purge —
+#       BEFORE binding its port, stretching that window well past the wake-up itself;
+#     · db.init() was unwrapped, so one database hiccup raised through the import and
+#       the service never started at all: a permanent 503 until the next deploy.
+#   Both are handled: the schema step is non-fatal, everything else is on a background
+#   thread, and the port now answers in well under a second.
+#
 # Note: the free instance's disk is wiped on every spin-down and redeploy. Since 1.30
 # that no longer costs anyone their document — each run's rendered .docx and .md are
 # stored in the DB (run_files) at render time and served from there when the disk no
@@ -23,7 +37,12 @@ services:
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /api/auth/config
+    # A health check that queries the database fails exactly when the database is slow
+    # — which is when you least want the platform to pull the instance out of service.
+    # /api/health touches nothing: no DB, no disk, no auth. The slow startup work
+    # (knowledge-base restore, rule sweep, checkpoint purge) runs on a background
+    # thread, so the port answers within a second of boot instead of after all of it.
+    healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"

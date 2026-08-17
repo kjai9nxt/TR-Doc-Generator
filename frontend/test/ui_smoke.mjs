@@ -71,6 +71,10 @@ const ROUTES = {
   '/learned-rules': { rules: [{ text: 'Do not restate the paragraph in the bullets', scope: 'course', session_no: 30, source: 'judge', hits: 2, applies: true }], course: 'Operating Systems' },
   // An abandoned run for a DIFFERENT session than the one selected — the situation
   // that produces a document for a session you did not think you asked for.
+  '/course-settings': { course: 'Operating Systems', settings: {},
+                        effective: { max_pages: 26, max_slides: 26, target_pages: 23,
+                                     source: 'harness default' },
+                        defaults: { max_pages: 26, max_slides: 26, target_pages: 23 } },
   '/guided/resumable': { runs: [{ guided_id: 'g31', session_no: 31,
                                   title: 'Spooling, Buffering & Disk Structure',
                                   status: 'reviewing', chunks_done: 2, total: 6,
@@ -235,6 +239,19 @@ check('the panel names the session the RUN is for',
       text().includes('Generating Session 31'))
 check('…and the doc it will produce is stated when it differs from the picker',
       $('.runhead.mismatch').length === 0 || text().includes('will produce that document'))
+
+console.log('\n== the budget lives in Settings, not in the curriculum actions ==')
+await click(byLabel('Curriculum'))
+check('no budget control among the curriculum actions',
+      !$('.curactions').some((el) => /budget/i.test(el.textContent)))
+check('…and Settings is offered in the rail', byLabel('Settings') !== undefined)
+await click(byLabel('Settings'))
+check('Settings shows the course length budget',
+      text().includes('Document length for every session'))
+check('…and states what is currently applied', text().includes('Currently applied'))
+await click(byLabel('Curriculum'))
+check('the per-SESSION override stays in the table',
+      $('.curhead .c-lim').length === 2)
 
 console.log('\n== the context line says where you are ==')
 await click(byLabel('Curriculum'))

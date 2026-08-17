@@ -304,6 +304,9 @@ a.download, button.download { background: linear-gradient(145deg, #3ad38f, #23a8
 .insertbar.last { height: 34px; margin: 2px 0 0; }
 .insertbar.last span { opacity: 1; }
 .currow.dupe { box-shadow: inset 3px 0 0 var(--err); }
+.setrowpair { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 6px; }
+.setfield { display: flex; flex-direction: column; gap: 4px; max-width: 200px; }
+.setfield input { width: 110px; }
 .sharebox { display: inline-flex; align-items: center; gap: 7px; }
 .sharebox select { width: auto; padding: 6px 28px 6px 10px; font-size: 12.5px; }
 .sharedby { color: var(--ok); }

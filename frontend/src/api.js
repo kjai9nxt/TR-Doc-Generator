@@ -41,9 +41,12 @@ async function req(path, opts = {}) {
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
     const detail = data.detail || data
+    // Name the request. "Request failed (HTTP 500)" told nobody which call broke, so
+    // a server error could only be guessed at from a screenshot.
     const msg = typeof detail === 'string'
       ? detail
-      : detail.message || `Request failed (HTTP ${res.status}). Is the backend (server.py) running?`
+      : detail.message
+        || `Request failed (HTTP ${res.status}) on ${path}. Is the backend (server.py) running?`
     if (res.status === 401) onUnauthorized()
     const err = new Error(msg)
     err.kind = detail.kind

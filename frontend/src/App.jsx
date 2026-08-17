@@ -611,6 +611,7 @@ export default function App() {
     { id: 'history', icon: '🗂', label: 'History' },
     ...(workspace.kind === 'team' ? [{ id: 'team', icon: '👥', label: 'Team' }] : []),
     { id: 'rules', icon: '🧠', label: 'Agent rules' },
+    { id: 'settings', icon: '⚙️', label: 'Settings' },
   ]
 
   return (
@@ -1271,6 +1272,12 @@ export default function App() {
           courses={courses} course={courseName} onPick={switchCourse} />
       )}
 
+      {tab === 'settings' && (
+        <CourseSettings course={courseName} budget={budget} onChange={saveBudget}
+                        courseType={courseType}
+                        onCourseType={(v) => { setCourseType(v); api.selectCourse(courseName, v).catch(() => {}) }} />
+      )}
+
       {/* rules defaults to [] — LearnedRules filters the list on render, so passing the
           null it holds before the first fetch would throw. */}
       {tab === 'rules' && (
@@ -1281,6 +1288,46 @@ export default function App() {
         </main>
       </div>
     </div>
+  )
+}
+
+// Per-course settings: how long its documents may be, and how the course is taught.
+// Set once per course and then left alone, which is why it lives here rather than in
+// the curriculum's action bar — where it crowded out the buttons you press every visit.
+function CourseSettings({ course, budget, onChange, courseType, onCourseType }) {
+  const d = budget?.defaults || {}
+  const eff = budget?.effective || {}
+  const set = budget?.settings || {}
+  return (
+    <section className="card">
+      <h2><span className="num">⚙️</span> Settings — {course || 'no course'}</h2>
+
+      <label>Course type</label>
+      <select value={courseType} onChange={(e) => onCourseType(e.target.value)}>
+        <option value="semester">Semester — deep theoretical dive</option>
+        <option value="interview">Interview-targeted</option>
+      </select>
+      <span className="hint">Both aim at clearing interviews; semester goes deeper on theory.</span>
+
+      <label>Document length for every session in this course</label>
+      <div className="setrowpair">
+        <span className="setfield">
+          <input type="number" value={set.max_pages ?? ''} placeholder={String(d.max_pages ?? '')}
+                 onChange={(e) => onChange({ max_pages: e.target.value === '' ? null : Number(e.target.value) })} />
+          <span className="hint">pages (blank = {d.max_pages} default)</span>
+        </span>
+        <span className="setfield">
+          <input type="number" value={set.max_slides ?? ''} placeholder={String(d.max_slides ?? '')}
+                 onChange={(e) => onChange({ max_slides: e.target.value === '' ? null : Number(e.target.value) })} />
+          <span className="hint">slides (blank = {d.max_slides} default)</span>
+        </span>
+      </div>
+      <span className="hint">
+        Currently applied: <b>{eff.max_pages} pages</b> and <b>{eff.max_slides} slides</b>
+        {eff.source ? ` (${eff.source})` : ''}. A single session can differ — set its own
+        Pages/Slides in the curriculum table, which overrides this for that session only.
+      </span>
+    </section>
   )
 }
 
@@ -1588,22 +1635,11 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
                 title="Re-downloads every deck. Only needed if you edited the slides behind a link that did not change.">
           ↻ Re-check all decks
         </button>
-        {/* THE COURSE'S OWN LENGTH BUDGET. A semester course and an interview course
-            are not the same shape, and this used to be one number in a config file that
-            applied to every course in the agent. Blank restores the built-in default. */}
-        <span className="budgetbox">
-          <span className="hint">Budget</span>
-          <input type="number" value={budget?.settings?.max_pages ?? ''}
-                 placeholder={String(budget?.defaults?.max_pages ?? '')}
-                 title="Maximum pages for every doc in this course"
-                 onChange={(e) => onBudget({ max_pages: e.target.value === '' ? null : Number(e.target.value) })} />
-          <span className="hint">pages ·</span>
-          <input type="number" value={budget?.settings?.max_slides ?? ''}
-                 placeholder={String(budget?.defaults?.max_slides ?? '')}
-                 title="Maximum slides for every doc in this course"
-                 onChange={(e) => onBudget({ max_slides: e.target.value === '' ? null : Number(e.target.value) })} />
-          <span className="hint">slides</span>
-        </span>
+        {/* The course's length budget moved OUT of here into its own Settings section:
+            it is set once per course, not something you touch while editing sessions,
+            and as a labelled number box wedged between the action buttons it dominated
+            a row meant for actions. The per-session override stays in the table, where
+            a value that belongs to one row belongs. */}
         <span className="curspacer" />
         {/* Hand a solo course to a team. Offered only while a team exists that does not
             already own it — once shared there is nothing left to do here. */}

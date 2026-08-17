@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.52"
+  version: "1.54"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1301,6 +1301,53 @@ meta:
               a SELECT per course; team history ran one query per course), and the
               'has this session got a deck?' check stopped parsing 1.1 MB of deck JSON three
               times per load in favour of reading the filenames — 5.8 ms to 0.3 ms."
+    - "1.53 — WHY THE PUBLISHED LINK KEEPS RETURNING 503.
+              Two causes, one of them ours.
+              THEIRS (unfixable in code): a FREE web service spins down after ~15 minutes
+              without traffic. The next visit wakes it and the platform answers 502/503 for
+              the 30-60s the container takes to boot. That is the plan working as sold; the
+              only real fixes are a paid instance or living with a slow first visit.
+              OURS: the app made that window far longer than it had to be, and could make it
+              permanent. Everything ran at IMPORT time, so the process did not bind its port
+              until it had finished the schema round-trips, a 1.3 MB knowledge-base restore
+              pulled back from the cloud database, a learned-rule sweep and a checkpoint
+              purge — every one a network call to a database that may itself be cold. The
+              health check had nothing to talk to for all of it. And db.init() was NOT
+              wrapped: one hiccup there raised through the import, so the service never
+              started at all — a permanent 503 until someone redeployed.
+              Now: the schema step is best-effort and never fatal, the other three run on a
+              background thread, and a new /api/health touches no database, no disk and no
+              auth — because a health check that queries a cold database fails precisely
+              when you least want the instance pulled out of service. render.yaml points at
+              it. Measured: the port answers 0.52s after launch instead of after all the
+              housekeeping, and /api/health reports each step with its timing so the next
+              slow boot can be read rather than guessed at."
+    - "1.54 — A 500 THAT COULD NOT BE DIAGNOSED, AND A BUDGET BOX IN THE WRONG PLACE.
+              (a) THE ERROR MESSAGE NAMED NOTHING. A screenshot reading 'Request failed
+              (HTTP 500). Is the backend (server.py) running?' is the second time a failure
+              could only be guessed at, because the client named neither the request nor the
+              reason and the server logged nothing a user could quote. Reproduction was
+              attempted properly first — every read endpoint (workspaces, courses, my/teams,
+              my/history, curriculum, course-settings, sessions) and every write (course
+              settings across four payload shapes, a curriculum save) returned 200, including
+              under the reviewer's own account and their exact team setup — so no fix could
+              honestly be claimed for the cause. What CAN be fixed is the blindness: an
+              exception handler now prints the traceback server-side (where the platform
+              keeps logs) and returns the path and exception type, and the client puts the
+              failing path in the message. The next occurrence can be read rather than
+              reconstructed from a screenshot.
+              (b) THE COURSE BUDGET MOVED OUT OF THE CURRICULUM ACTION BAR. Wedged between
+              the action buttons a labelled number box stretched full width and dominated a
+              row meant for the things you press every visit — and it is set once per course,
+              not touched while editing sessions. It has its own Settings section now,
+              alongside course type, showing what is currently applied and which level it
+              came from. The per-SESSION override stays in the table, because a value
+              belonging to one row belongs on that row.
+              (c) ON THE MISSING TEAM: with the reviewer's exact data the rail DOES list
+              their team — but its course reads 'Operating System' against a curriculum named
+              'Operating Systems', so the workspace opens empty. /api/workspaces reports that
+              as unknown_courses and the Team panel says so in words; the fix is one edit in
+              /admin -> Teams."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
