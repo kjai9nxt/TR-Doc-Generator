@@ -1,0 +1,4 @@
+
+# UI smoke-test build artifacts (regenerated on every run)
+test/_app.bundle.mjs
+test/_stub.mjs

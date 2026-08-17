@@ -36,6 +36,44 @@ export default function App() {
   const [curLogs, setCurLogs] = useState([])
   const [importedFrom, setImportedFrom] = useState(null)
   const [showImport, setShowImport] = useState(false)
+  // Which job the import card is doing: creating a course that does not exist yet
+  // (name editable, becomes a new entry in the picker) or re-importing the sheet into
+  // the course already open (name locked, so a re-import cannot silently fork a second
+  // copy of the course under a different name).
+  const [newCourse, setNewCourse] = useState(true)
+
+  // WHERE the user is working, and WHICH view they are looking at. The whole app used
+  // to be one scrolling column; these two pieces of state are what turn it into an
+  // application with places you can be.
+  const [tab, setTab] = useState('curriculum')
+  const [workspace, setWorkspace] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('tr_workspace')) || { kind: 'individual' } }
+    catch (e) { return { kind: 'individual' } }
+  })
+  const [myTeams, setMyTeams] = useState([])
+  const activeTeamInfo = myTeams.find((t) => t.id === workspace.team_id)
+  function switchWorkspace(ws) {
+    setWorkspace(ws)
+    localStorage.setItem('tr_workspace', JSON.stringify(ws))
+    // Moving into a team means working on ITS courses, so land on one of them rather
+    // than leaving the previous course selected and quietly writing into the wrong place.
+    const t = myTeams.find((x) => x.id === ws.team_id)
+    if (ws.kind === 'team' && t?.courses?.length && !t.courses.includes(courseName)) {
+      switchCourse(t.courses[0])
+    }
+  }
+  function startNewCourse() {
+    // The form lives in the Curriculum section, so go there — pressing this from
+    // History or Generate otherwise looked like it did nothing at all.
+    setTab('curriculum')
+    setNewCourse(true); setShowImport(true)
+    setCourseName(''); setCourseLink(''); setSyncErr(null); setSyncOut(null); setSyncLogs([])
+  }
+  function startReimport() {
+    setTab('curriculum')
+    setNewCourse(false); setShowImport(true)
+    setCourseLink(importedFrom || courseLink); setSyncErr(null)
+  }
   const curDirty = curRows.some((r) => r._dirty)
   // Courses this person may work on. A course is a shared, team-owned thing now, so it
   // is picked from a list rather than typed — two people spelling the same course
@@ -47,6 +85,7 @@ export default function App() {
       setCourses(d.courses || [])
       if (d.active && !courseName) setCourseName(d.active)
     }).catch(() => {})
+    api.workspaces().then((d) => setMyTeams(d.teams || [])).catch(() => {})
   }
   function switchCourse(name) {
     if (!name || name === courseName) return
@@ -134,8 +173,11 @@ export default function App() {
       .then((d) => { setLearned(d.rules || []); setLearnedCourse(d.course || '') })
       .catch(() => {})
   }
-  // Reload after a result appears or an eval run finishes — both can add rules.
-  useEffect(() => { if (result) refreshLearned() }, [result, evalReport])
+  // Load on sign-in, and reload after a result or an eval run (both can add rules).
+  // It used to fetch ONLY after a generation finished, which was fine while the list
+  // was appended to the result page — but it has its own section now, and that section
+  // sat empty until you happened to generate something in the same visit.
+  useEffect(() => { if (user) refreshLearned() }, [user, result, evalReport])
 
   // The user's own history (grouped by course) + their teams' shared docs.
   const [history, setHistory] = useState(null)
@@ -327,9 +369,17 @@ export default function App() {
             const out = job.result
             setSyncOut(out); setSessions(out.sessions || [])
             if (out.sessions?.length) setSel(out.sessions[0].number)
-            // The import wrote into the agent's curriculum — show it, and put the
-            // import form away again.
-            loadCurriculum(); setShowImport(false)
+            // The course now exists in the agent: show its curriculum, put the form
+            // away, and refresh the picker so the new course is in the list from here on.
+            // A course created inside a TEAM workspace belongs to the team from the
+            // moment it exists — otherwise the person who imported it would be the
+            // only one able to see it, which is the failure this model exists to end.
+            if (workspace.kind === 'team' && workspace.team_id && courseName) {
+              api.teamAddCourse(workspace.team_id, courseName)
+                 .catch(() => {}).finally(loadCourses)
+            }
+            loadCurriculum(); loadCourses()
+            setShowImport(false); setNewCourse(false)
           } else if (job.status === 'error') {
             clearInterval(syncPollRef.current); setSyncing(false)
             setSyncErr({ kind: job.error_kind, message: job.error })
@@ -382,7 +432,9 @@ export default function App() {
 
   function startGuided() {
     setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null); setShowCost(true)
-    api.guidedStart(sel, true, policy.time_always_enforced).then(({ guided_id }) => {
+    api.guidedStart(sel, true, policy.time_always_enforced,
+                    workspace.kind === 'team' ? workspace.team_id : null,
+                    courseName || undefined).then(({ guided_id }) => {
       setGuidedId(guided_id)
       rememberGuided(guided_id)
       pollGuided(guided_id)
@@ -395,9 +447,13 @@ export default function App() {
   // Forget a run without resuming it. Local only: the server checkpoint expires on its
   // own after the purge window, and deleting it here would take away the ability to come
   // back to it from another browser — the exact gap the server list exists to close.
+  // Discard a run for good. Recorded on the SERVER: forgetting it only in this browser
+  // meant the next page load asked the server for unfinished runs and was handed the
+  // same one straight back, so the prompt kept reappearing with no way to dismiss it.
   function discardGuided(gid) {
     setServerResumable((rs) => rs.filter((r) => r.guided_id !== gid))
     if (gid === resumableGid) rememberGuided(null)
+    api.guidedDiscard(gid).catch(() => {}).finally(refreshResumable)
   }
 
   function resumeGuided(gidArg) {
@@ -484,6 +540,16 @@ export default function App() {
 
   const selSession = sessions.find((s) => s.number === sel)
   const gStatus = guided?.status
+  // In a team workspace the course list narrows to that team's courses — that is what
+  // "working in a team" means here, and it stops a doc being generated into a course
+  // the team does not own.
+  // `teams` is null until its fetch lands, so it MUST be guarded here: this runs on
+  // the very first render and an unguarded .find() blanked the whole page.
+  const activeTeam = (teams || []).find((x) => x.team.id === workspace.team_id)
+  const visibleCourses = workspace.kind === 'team' && activeTeamInfo
+    ? courses.filter((c) => (activeTeamInfo.courses || []).includes(c.name))
+    : courses
+
   const guidedGenAll = gStatus === 'generating_all'
   const guidedReviewing = gStatus === 'reviewing' || gStatus === 'regenerating'
   const guidedAssembling = gStatus === 'assembling'
@@ -493,6 +559,16 @@ export default function App() {
   // --- Auth gate: block the whole app until a valid @nxtwave.co.in login ---
   if (!authCfg) return <div className="app"><p className="sub">Loading…</p></div>
   if (!user) return <LoginGate cfg={authCfg} onSignIn={onSignIn} err={authErr} />
+
+  const courseCount = curRows.length
+  const tabs = [
+    { id: 'curriculum', icon: '📚', label: 'Curriculum',
+      badge: courseCount ? String(courseCount) : null },
+    { id: 'generate', icon: '✨', label: 'Generate' },
+    { id: 'history', icon: '🗂', label: 'History' },
+    ...(workspace.kind === 'team' ? [{ id: 'team', icon: '👥', label: 'Team' }] : []),
+    { id: 'rules', icon: '🧠', label: 'Agent rules' },
+  ]
 
   return (
     <div className="app">
@@ -508,33 +584,80 @@ export default function App() {
         </div>
       </header>
 
-      <p className="sub">Generate a recording-ready Word TR doc for one session, from the curriculum your team keeps in the agent.</p>
-
-      {/* THE COURSE PICKER. A course belongs to a TEAM, so whatever one member imports
-          is what everyone on that team opens — no re-pasting a sheet, no second copy of
-          the same course under a slightly different name. The list is exactly the
-          courses this person's teams own. */}
-      {courses.length > 0 && (
-        <div className="coursebar">
-          <label htmlFor="coursepick">Course</label>
-          <select id="coursepick" value={courseName}
-                  onChange={(e) => switchCourse(e.target.value)}>
-            {!courses.some((c) => c.name === courseName) && courseName && (
-              <option value={courseName}>{courseName} (not imported yet)</option>
-            )}
-            {courses.map((c) => (
-              <option key={c.name} value={c.name}>
-                {c.name} — {c.sessions} session{c.sessions === 1 ? '' : 's'}
-                {c.teams?.length ? ` · ${c.teams.join(', ')}` : ''}
-              </option>
+      {/* THE SHELL. Everything used to be one column of stacked cards — curriculum,
+          generate, result, history, teams — so the page grew without end and finding
+          anything meant scrolling past everything else. Now: a fixed left rail that
+          answers "where am I working and on what", and one focused view at a time. */}
+      <div className="shell">
+        <aside className="nav">
+          <div className="navsec">
+            <div className="navlabel">Workspace</div>
+            {/* Individual vs team. A team workspace is what makes a course and its whole
+                history shared: everything generated in it belongs to the team, so a
+                member added later opens the same curriculum and sees the work already
+                done. */}
+            <button className={`wsopt ${workspace.kind === 'individual' ? 'on' : ''}`}
+                    onClick={() => switchWorkspace({ kind: 'individual' })}>
+              <span className="wsicon">👤</span>
+              <span className="wsbody"><b>Individual</b><span>Just my own docs</span></span>
+            </button>
+            {myTeams.map((t) => (
+              <button key={t.id}
+                      className={`wsopt ${workspace.kind === 'team' && workspace.team_id === t.id ? 'on' : ''}`}
+                      onClick={() => switchWorkspace({ kind: 'team', team_id: t.id })}>
+                <span className="wsicon">👥</span>
+                <span className="wsbody"><b>{t.name}</b>
+                  <span>{t.members.length} member{t.members.length === 1 ? '' : 's'} · {t.courses.length} course{t.courses.length === 1 ? '' : 's'}</span>
+                </span>
+              </button>
             ))}
-          </select>
-          <button className="link" onClick={() => setShowImport((v) => !v)}>
-            + Import another course
-          </button>
-        </div>
-      )}
+            {myTeams.length === 0 && (
+              <div className="navnote">
+                You are not on a team yet. An admin can create one in <b>/admin</b> so a
+                course and its history are shared.
+              </div>
+            )}
+          </div>
 
+          <div className="navsec">
+            <div className="navlabel">Course</div>
+            <select className="navselect" value={courseName}
+                    onChange={(e) => switchCourse(e.target.value)}>
+              {visibleCourses.length === 0 && <option value="">No course yet</option>}
+              {!visibleCourses.some((c) => c.name === courseName) && courseName && (
+                <option value={courseName}>{courseName}</option>
+              )}
+              {visibleCourses.map((c) => (
+                <option key={c.name} value={c.name}>
+                  {c.name} ({c.sessions})
+                </option>
+              ))}
+            </select>
+            <button className="navlink" onClick={startNewCourse}>＋ Create new course</button>
+          </div>
+
+          <nav className="navsec navtabs">
+            <div className="navlabel">Sections</div>
+            {tabs.map((t) => (
+              <button key={t.id} className={`navtab ${tab === t.id ? 'on' : ''}`}
+                      onClick={() => setTab(t.id)}>
+                <span className="tabicon">{t.icon}</span>{t.label}
+                {t.badge && <span className="tabbadge">{t.badge}</span>}
+              </button>
+            ))}
+          </nav>
+
+          <div className="navsec">
+            <button className="navlink" onClick={loadGuide}>📋 Sheet template</button>
+            {syncOut?.extraction_warnings?.length > 0 && (
+              <button className="navlink" onClick={() => { setShowGaps((v) => !v); setShowGuide(false) }}>
+                🔍 Extraction gaps ({syncOut.extraction_warnings.length})
+              </button>
+            )}
+          </div>
+        </aside>
+
+        <main className="main">
       {/* Cost of the TR doc being generated right now — sticky side panel
           (falls back to a normal block on narrow screens). */}
       {showCost && (guidedActive || result) && (
@@ -546,9 +669,6 @@ export default function App() {
         />
       )}
 
-      <button className="link" onClick={loadGuide}>
-        📋 {showGuide ? 'Hide' : 'Show'} the required sheet template
-      </button>
       {showGuide && <TemplateSidePanel markdown={guide} onClose={() => setShowGuide(false)} />}
       {showGaps && syncOut?.extraction_warnings?.length > 0 && (
         <GapsSidePanel warnings={syncOut.extraction_warnings} onClose={() => setShowGaps(false)} />
@@ -556,29 +676,50 @@ export default function App() {
 
       {/* THE CURRICULUM the agent holds. Shown first because it IS the course now —
           the sheet below is only how a course gets in the first time. */}
-      {curRows.length > 0 && (
+      {/* The dashboard shows whenever a course is open — including an EMPTY one, so a
+          course created by hand can have its first session added here rather than
+          forcing a sheet import. */}
+      {tab === 'curriculum' && (courseName || curRows.length > 0) && (
         <CurriculumDashboard
           course={courseName} rows={curRows} setRows={setCurRows}
           onSave={saveCurriculum} onDelete={deleteCurriculumRow} onIngest={ingestDecks}
           saving={curSaving} ingesting={curIngesting} dirty={curDirty}
           pending={curPending} importedFrom={importedFrom} logs={curLogs}
-          onReimport={() => setShowImport((v) => !v)}
+          onReimport={startReimport}
         />
       )}
 
-      {/* IMPORT — asked for when the agent has no curriculum yet, or on request. */}
-      {(showImport || curRows.length === 0) && (
+      {/* CREATE A NEW COURSE. Two ways in, and only two: pick a course the team already
+          has from the picker above, or set one up here. Everything below — the
+          curriculum, the generate panel — belongs to whichever course is selected, so
+          this comes first and nothing else shows until a course exists.
+          `newCourse` distinguishes the two jobs this card does: creating a course that
+          did not exist, and re-importing the sheet into the one already open. */}
+      {/* The create/import card is a deliberate act, not a greeting: it appears when
+          asked for, or when the agent holds no course at all and there is nothing else
+          the user could possibly do first. */}
+      {tab === 'curriculum' && (showImport || courses.length === 0) && (
       <section className="card">
-        <h2><span className="num">{curRows.length ? '↺' : '1'}</span>{' '}
-          {curRows.length ? 'Re-import from a sheet' : 'Import your course'}</h2>
+        <h2><span className="num">{newCourse ? '+' : '↺'}</span>{' '}
+          {newCourse ? 'Create a new course' : `Re-import ${courseName || 'this course'} from its sheet`}</h2>
+        <p className="hint">
+          {newCourse
+            ? 'Name the course and point it at its curriculum sheet. It is imported once; '
+              + 'after that it appears in the course picker for everyone on your team and '
+              + 'is edited here in the agent — no sheet needed again.'
+            : 'Refreshes names, takeaways and links from the sheet. Rows you added in the '
+              + 'agent are kept, and no already-extracted deck is downloaded again.'}
+        </p>
         <div className="settingsrow">
           <div className="settingcol">
-            <label>Course</label>
+            <label>Course name</label>
             <input value={courseName} onChange={(e) => setCourseName(e.target.value)}
+                   disabled={!newCourse}
                    placeholder="e.g. Computer Networks" />
             <span className="hint">
-              The name this course is imported under. Once imported it appears in the
-              course picker for everyone on your team.
+              {newCourse
+                ? 'What your team will see in the course picker. Pick the real course name — it is shared.'
+                : 'Locked: re-importing writes into the course you have open. Use “Create a new course” for a different one.'}
             </span>
           </div>
           <div className="settingcol">
@@ -590,27 +731,27 @@ export default function App() {
             <span className="hint">Both help clear interviews; semester goes deeper on theory.</span>
           </div>
         </div>
-        {/* The sheet is an IMPORT FORMAT, not a dependency. It is asked for when the
-            agent has no curriculum for this course, or when the user explicitly chooses
-            to re-import; the rest of the time the dashboard below is the course. */}
-        <label>Course Curriculum Structure — Google Sheet link</label>
+        {/* The sheet is an IMPORT FORMAT, not a dependency: it seeds the course and is
+            then out of the loop. */}
+        <label>Curriculum sheet link</label>
         <input value={courseLink} onChange={(e) => setCourseLink(e.target.value)}
                placeholder="https://docs.google.com/spreadsheets/d/.../edit" />
         <span className="hint">
-          One sheet only. Its <b>PPT Links</b> column holds each past session's Google
-          Slides deck — leave that cell blank for a session not recorded yet.
-          <b> You only need this once</b>: after importing, the curriculum lives in the
-          agent and you edit it in the dashboard below.
+          One sheet, shared as “Anyone with the link → Viewer”. Its <b>PPT Links</b> column
+          holds each recorded session's Google Slides deck — leave that cell blank for a
+          session not recorded yet.
         </span>
-        <button className="primary" disabled={!courseLink || syncing} onClick={doSync}>
-          {syncing ? 'Importing…' : (curRows.length ? '↺ Re-import from this sheet' : '📥 Import this course')}
-        </button>
-        {curRows.length > 0 && (
-          <span className="hint">
-            Re-importing refreshes names, takeaways and links from the sheet. Rows you
-            added in the agent are kept, and no already-extracted deck is downloaded again.
-          </span>
-        )}
+        <div className="curactions">
+          <button className="primary" disabled={!courseLink || !courseName || syncing} onClick={doSync}>
+            {syncing ? 'Importing…' : (newCourse ? '＋ Create course' : '↺ Re-import')}
+          </button>
+          {curRows.length > 0 && (
+            <button className="ghostbtn" disabled={syncing}
+                    onClick={() => { setShowImport(false); setNewCourse(false) }}>
+              Cancel
+            </button>
+          )}
+        </div>
 
         {(syncing || syncLogs.length > 0) && (
           <>
@@ -659,7 +800,17 @@ export default function App() {
       {/* Gated on the curriculum the agent HOLDS, not on having just run a sync in this
           browser: the course is in the database now, so generation is available the
           moment you open the app. */}
-      {sessions.length > 0 && (
+      {tab === 'generate' && sessions.length === 0 && (
+        <section className="card">
+          <h2><span className="num">✨</span> Generate a TR doc</h2>
+          <p className="hint">
+            Every session in <b>{courseName || 'this course'}</b> already has a deck, or
+            the course has no sessions yet. Add a session in <b>Curriculum</b> — a row
+            with no PPT link is a session that still needs a TR doc.
+          </p>
+        </section>
+      )}
+      {tab === 'generate' && sessions.length > 0 && (
         <section className="card">
           <h2><span className="num">2</span> Generate a TR doc</h2>
           <label>Session</label>
@@ -744,7 +895,7 @@ export default function App() {
                       <span className="ractions">
                         <button className="ghostbtn" disabled={busyAction}
                                 onClick={() => resumeGuided(resumableGid)}>↩ Resume</button>
-                        <button className="ghostbtn" onClick={() => rememberGuided(null)}>
+                        <button className="ghostbtn" onClick={() => discardGuided(resumableGid)}>
                           Discard
                         </button>
                       </span>
@@ -865,8 +1016,7 @@ export default function App() {
         </section>
       )}
 
-      {/* STEP 3 */}
-      {result && (
+      {tab === 'generate' && result && (
         <section className="card">
           <h2><span className="num">3</span> Result</h2>
           <div className="metrics">
@@ -968,9 +1118,9 @@ export default function App() {
 
           {result.cost?.calls?.length > 0 && <CostBreakdown cost={result.cost} />}
 
-          {learned && <LearnedRules rules={learned} sessionNo={result.session_no}
-                                    course={learnedCourse} isAdmin={!!user.is_admin}
-                                    onChanged={refreshLearned} />}
+          {/* The learned-rule list lives in its own "Agent rules" section now: it is
+              about the AGENT across every future doc, not about the one just produced,
+              and appended here it made an already-long result page longer. */}
 
           {result.markdown && (
             <details className="panel preview" open>
@@ -981,12 +1131,102 @@ export default function App() {
         </section>
       )}
 
-      {/* MY HISTORY — everything this user has generated, grouped by course */}
-      {history?.courses?.length > 0 && <MyHistory history={history} />}
+      {/* HISTORY. In a TEAM workspace this is the team's shelf — every doc anyone on
+          the team has produced for its courses, so someone added last week can see what
+          was built last month. Individually it is just this user's own. */}
+      {tab === 'history' && (
+        workspace.kind === 'team'
+          ? (activeTeam
+              ? <MyTeams teams={(teams || []).filter((x) => x.team.id === workspace.team_id)} />
+              : <section className="card"><p className="hint">That team is no longer available.</p></section>)
+          : (history?.courses?.length > 0
+              ? <MyHistory history={history} />
+              : <section className="card"><h2><span className="num">🗂</span> History</h2>
+                  <p className="hint">Nothing generated yet — your finished docs appear here.</p>
+                </section>)
+      )}
 
-      {/* MY TEAMS — docs the team is building together, per course */}
-      {teams?.length > 0 && <MyTeams teams={teams} />}
+      {/* The team's own page. `activeTeam` carries the run history and arrives with
+          /api/my/teams; `activeTeamInfo` is the lighter workspace record and is there
+          immediately — so the panel renders from whichever has landed rather than
+          showing nothing while the heavier call is still in flight. */}
+      {tab === 'team' && (activeTeam || activeTeamInfo) && (
+        <TeamPanel
+          entry={activeTeam || { team: activeTeamInfo, summary: {}, contributors: [] }}
+          courses={courses} course={courseName} onPick={switchCourse} />
+      )}
+
+      {/* rules defaults to [] — LearnedRules filters the list on render, so passing the
+          null it holds before the first fetch would throw. */}
+      {tab === 'rules' && (
+        <LearnedRules rules={learned || []} sessionNo={result?.session_no ?? sel}
+                      course={learnedCourse} isAdmin={user.is_admin}
+                      onChanged={refreshLearned} />
+      )}
+        </main>
+      </div>
     </div>
+  )
+}
+
+// The team you are working inside: who is on it, which courses it owns, and what it
+// has produced. Separate from History on purpose — this answers "who am I working
+// with", History answers "what has been made".
+function TeamPanel({ entry, courses, course, onPick }) {
+  const t = entry.team
+  const owned = t.courses || (t.course ? [t.course] : [])
+  const known = new Set(courses.map((c) => c.name))
+  const missing = owned.filter((c) => !known.has(c))
+  const s = entry.summary || {}
+  return (
+    <section className="card">
+      <h2><span className="num">👥</span> {t.name}</h2>
+      <div className="metrics">
+        <Metric label="Members" value={t.members?.length ?? 0} />
+        <Metric label="Courses" value={owned.length} />
+        <Metric label="Docs built" value={s.runs ?? 0} />
+        {entry.contributors?.length > 0 && (
+          <Metric label="Contributors" value={entry.contributors.length} />
+        )}
+      </div>
+
+      <label>Courses this team works on</label>
+      <div className="teamcourses">
+        {owned.length === 0 && <span className="hint">No course attached yet.</span>}
+        {owned.map((c) => (
+          <button key={c} className={`coursechip ${c === course ? 'on' : ''}`}
+                  onClick={() => onPick(c)}>
+            {c}{!known.has(c) && ' ⚠'}
+          </button>
+        ))}
+      </div>
+      {missing.length > 0 && (
+        <div className="alert warn">
+          <b>⚠ {missing.length === 1 ? 'A course name does not match' : 'Course names do not match'}
+             any curriculum the agent holds:</b> {missing.join(', ')}.
+          <div className="hint">
+            A team's course is matched by <b>exact name</b>, so a near miss (for example
+            “Operating System” against a curriculum called “Operating Systems”) leaves
+            this team looking empty. Fix it in <b>/admin → Teams</b>, or import a course
+            under that exact name.
+          </div>
+        </div>
+      )}
+
+      <label>Members</label>
+      <div className="memberlist">
+        {(t.members || []).map((m) => (
+          <span key={m} className="memberchip">
+            {m}{entry.contributors?.includes(m) && <span className="mdot" title="has built docs for this team">●</span>}
+          </span>
+        ))}
+      </div>
+      <span className="hint">
+        Everything generated in this workspace belongs to the team, so anyone added later
+        opens the same curriculum and sees every doc built before they arrived. Members
+        are managed by an admin in <b>/admin → Teams</b>.
+      </span>
+    </section>
   )
 }
 
@@ -1211,8 +1451,9 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
           ↻ Re-check all decks
         </button>
         <span className="curspacer" />
-        <button className="link" onClick={onReimport}>
-          {importedFrom ? '↺ Re-import from the sheet' : '📥 Import from a sheet'}
+        <button className="link" onClick={onReimport}
+                title="Refresh this course's rows from its sheet. Rows added in the agent are kept and no extracted deck is re-downloaded.">
+          {importedFrom ? '↺ Re-import this course from its sheet' : '📥 Import rows from a sheet'}
         </button>
       </div>
 

@@ -168,6 +168,15 @@ _SCHEMA = [
     # entirely instead of re-downloading multiple megabytes to discover nothing
     # changed (Google's export endpoint offers no ETag, no Last-Modified and says
     # no-store, so there is no cheap remote way to ask).
+    # A team owns COURSES, plural. `teams.course` held exactly one, so a team working
+    # across two courses needed two teams with the same members, and "select the team,
+    # then pick a course" was impossible to express. The single column stays as the
+    # team's primary course (nothing that reads it had to change) and is mirrored into
+    # this table, which is what ownership is actually resolved against.
+    """CREATE TABLE IF NOT EXISTS team_courses (
+         team_id INTEGER, course TEXT, added_at TEXT,
+         PRIMARY KEY (team_id, course))""",
+    "CREATE INDEX IF NOT EXISTS idx_team_courses_course ON team_courses(course)",
     """CREATE TABLE IF NOT EXISTS curriculum (
          course TEXT, session_no INTEGER, topic TEXT, session_name TEXT,
          key_takeaways TEXT, ppt_link TEXT, deck_hash TEXT, deck_status TEXT,
@@ -270,11 +279,59 @@ def delete_team(team_id: int) -> None:
     _exec("DELETE FROM teams WHERE id=?", (team_id,))
 
 
+def team_add_course(team_id: int, course: str) -> bool:
+    """Give a team another course to work on."""
+    course = (course or "").strip()
+    if not course:
+        return False
+    try:
+        _exec("INSERT OR IGNORE INTO team_courses (team_id, course, added_at) "
+              "VALUES (?,?,?)", (int(team_id), course, _now()))
+        # Keep the legacy single column meaningful: the first course a team is given is
+        # its primary one, which is what older readers (and the admin page) show.
+        row = _query("SELECT course FROM teams WHERE id=?", (int(team_id),))
+        if row and not (row[0].get("course") or "").strip():
+            _exec("UPDATE teams SET course=? WHERE id=?", (course, int(team_id)))
+        return True
+    except Exception:
+        return False
+
+
+def team_remove_course(team_id: int, course: str) -> bool:
+    try:
+        _exec("DELETE FROM team_courses WHERE team_id=? AND course=?",
+              (int(team_id), course))
+        return True
+    except Exception:
+        return False
+
+
+def team_course_list(team_id: int) -> list[str]:
+    """Every course this team owns — the join table, plus the legacy primary column so
+    a team created before team_courses existed is not suddenly course-less."""
+    out = []
+    try:
+        out = [r["course"] for r in _query(
+            "SELECT course FROM team_courses WHERE team_id=? ORDER BY course",
+            (int(team_id),)) if r.get("course")]
+    except Exception:
+        out = []
+    try:
+        row = _query("SELECT course FROM teams WHERE id=?", (int(team_id),))
+        primary = (row[0].get("course") or "").strip() if row else ""
+        if primary and primary not in out:
+            out.insert(0, primary)
+    except Exception:
+        pass
+    return out
+
+
 def teams() -> list[dict]:
     rows = _query("SELECT * FROM teams ORDER BY created_at DESC")
     for t in rows:
         t["members"] = [r["user_email"] for r in _query(
             "SELECT user_email FROM team_members WHERE team_id=?", (t["id"],))]
+        t["courses"] = team_course_list(t["id"])
     return rows
 
 
@@ -287,9 +344,31 @@ def teams_for_user(email: str) -> list[dict]:
 def team_for_user_course(email: str, course: str | None):
     """The team this user belongs to for a given course (first match), or None."""
     for t in teams_for_user(email):
+        if course and course in (t.get("courses") or []):
+            return t["id"]
         if (t.get("course") or None) == (course or None):
             return t["id"]
     return None
+
+
+def team_runs(team_id: int) -> list[dict]:
+    """Everything the team has produced — by its stamp OR by any course it owns.
+
+    Both halves are needed. The stamp is missing on runs made before the team existed,
+    before a member joined, or by someone on no team; the course catches those. And a
+    run stamped with the team but for a course since removed from it is still the
+    team's work, so the stamp catches that. A member added next month sees the whole
+    history either way, which is the point of gathering it here.
+    """
+    seen, out = set(), []
+    for r in runs(team_id=team_id):
+        seen.add(r["id"]); out.append(r)
+    for course in team_course_list(team_id):
+        for r in runs(course=course):
+            if r["id"] not in seen:
+                seen.add(r["id"]); out.append(r)
+    out.sort(key=lambda r: r.get("ts") or "", reverse=True)
+    return out
 
 
 def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
@@ -309,17 +388,16 @@ def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
     known = set(curriculum_courses())
     all_teams = teams()
     for t in all_teams:
-        if t.get("course"):
-            known.add(t["course"])
+        known.update(t.get("courses") or [])
     mine = teams_for_user(email)
-    my_courses = {t["course"] for t in mine if t.get("course")}
+    my_courses = {c for t in mine for c in (t.get("courses") or [])}
     if is_admin or not mine:
         visible = known
     else:
         visible = my_courses
     out = []
     for name in sorted(visible):
-        owners = [t for t in all_teams if (t.get("course") or "") == name]
+        owners = [t for t in all_teams if name in (t.get("courses") or [])]
         members = sorted({m for t in owners for m in (t.get("members") or [])})
         out.append({
             "name": name,
@@ -750,9 +828,10 @@ def unfinished_guided(user_email: str | None, limit: int = 5) -> list[dict]:
             st = json.loads(r.get("state_json") or "null") or {}
         except Exception:
             continue
-        # A finished or dead run is not resumable — it is history, and the runs table
-        # already carries it.
-        if st.get("status") in ("done", "error"):
+        # A finished, dead or explicitly discarded run is not resumable — the first two
+        # are history (the runs table carries them) and the third is a decision the user
+        # already made, which must survive a page reload.
+        if st.get("status") in ("done", "error", "discarded"):
             continue
         out.append({
             "guided_id": r.get("id"),
@@ -766,6 +845,30 @@ def unfinished_guided(user_email: str | None, limit: int = 5) -> list[dict]:
         if len(out) >= limit:
             break
     return out
+
+
+def discard_guided(gid: str) -> bool:
+    """Mark an unfinished guided run as discarded, so it is never offered again.
+
+    Discard used to be a purely local act — the browser forgot the id and stopped
+    showing it. The checkpoint stayed on the server, so the very next page load asked
+    the server for unfinished runs and got it straight back: the prompt returned again
+    and again with no way to make it stop. Discarding is a decision about the RUN, not
+    about one browser's memory of it, so it has to be recorded where the run lives.
+
+    The row is kept (marked, not deleted) until the normal purge window clears it, so a
+    mis-click is recoverable by an admin from the database rather than gone instantly.
+    """
+    snap = load_guided(gid)
+    if snap is None:
+        return False
+    snap["status"] = "discarded"
+    try:
+        _exec("UPDATE guided_sessions SET state_json=?, updated=? WHERE id=?",
+              (json.dumps(snap, ensure_ascii=False), _now(), gid))
+        return True
+    except Exception:
+        return False
 
 
 def load_guided(gid: str) -> dict | None:

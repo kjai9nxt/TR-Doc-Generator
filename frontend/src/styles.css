@@ -37,7 +37,70 @@ body::before {
 *::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
 *::-webkit-scrollbar-thumb:hover { background: #45506680; }
 
-.app { max-width: 940px; margin: 0 auto; padding: 0 20px 100px; }
+.app { max-width: 1360px; margin: 0 auto; padding: 0 20px 100px; }
+
+/* ---------- Application shell ----------
+   A fixed left rail (where am I working, on what, which section) beside one focused
+   view. Everything used to be a single column of stacked cards, so the page grew
+   without end and finding anything meant scrolling past everything else. */
+.shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 22px;
+         align-items: start; }
+.nav { position: sticky; top: 74px; display: flex; flex-direction: column; gap: 18px;
+       padding: 16px 14px; background: linear-gradient(180deg, var(--card), #131824);
+       border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh); }
+.navsec { display: flex; flex-direction: column; gap: 6px; }
+.navlabel { font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--faint); margin-bottom: 2px; }
+.navselect { width: 100%; padding: 8px 30px 8px 10px; font-size: 13px; }
+.navlink { background: none; border: none; color: var(--accent); text-align: left;
+           font-size: 12.5px; font-weight: 600; padding: 5px 2px; cursor: pointer; }
+.navlink:hover { color: #a7b6ff; }
+.navnote { font-size: 12px; color: var(--muted); line-height: 1.5; padding: 6px 2px; }
+
+/* Workspace options read as places, not radio buttons: name on top, what it contains
+   underneath, so choosing one is an informed act. */
+.wsopt { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+         background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r-sm);
+         padding: 9px 10px; cursor: pointer; color: var(--text); transition: border-color .15s, background .15s; }
+.wsopt:hover { border-color: var(--line2); }
+.wsopt.on { border-color: var(--accent); background: rgba(124,147,255,.12); box-shadow: var(--ring); }
+.wsicon { font-size: 15px; flex: none; }
+.wsbody { display: flex; flex-direction: column; min-width: 0; }
+.wsbody b { font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wsbody span { font-size: 11.5px; color: var(--muted); }
+
+.navtab { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+          background: none; border: 1px solid transparent; border-radius: var(--r-sm);
+          padding: 8px 10px; font-size: 13.5px; font-weight: 600; color: var(--muted);
+          cursor: pointer; transition: background .15s, color .15s; }
+.navtab:hover { background: var(--bg2); color: var(--text); }
+.navtab.on { background: rgba(124,147,255,.14); color: var(--text); border-color: var(--line); }
+.tabicon { font-size: 14px; }
+.tabbadge { margin-left: auto; font-size: 11px; color: var(--muted);
+            background: var(--bg2); border: 1px solid var(--line);
+            border-radius: 999px; padding: 1px 7px; }
+.main { min-width: 0; }
+.main > .card:first-child { margin-top: 0; }
+
+/* Team panel */
+.teamcourses, .memberlist { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 4px; }
+.coursechip { background: var(--bg2); border: 1px solid var(--line); border-radius: 999px;
+              padding: 5px 13px; font-size: 12.5px; color: var(--text); cursor: pointer; }
+.coursechip:hover { border-color: var(--line2); }
+.coursechip.on { border-color: var(--accent); background: rgba(124,147,255,.14); }
+.memberchip { background: var(--bg2); border: 1px solid var(--line); border-radius: 999px;
+              padding: 4px 11px; font-size: 12px; color: var(--muted); }
+.mdot { color: var(--ok); margin-left: 6px; font-size: 9px; vertical-align: middle; }
+
+@media (max-width: 900px) {
+  /* The rail becomes a strip above the content rather than a column squeezed to
+     nothing — every control stays reachable. */
+  .shell { grid-template-columns: 1fr; }
+  .nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 12px; }
+  .navsec { flex: 1 1 200px; }
+  .navtabs { flex-direction: row; flex-wrap: wrap; }
+  .navtabs .navlabel { width: 100%; }
+}
 
 /* ---------- Top bar (sticky, blurred) ---------- */
 .topbar {

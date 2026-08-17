@@ -318,6 +318,70 @@ def _course_for(user: dict, course: str | None) -> str:
     return (course or "").strip() or app_settings.course_name() or "default"
 
 
+@app.get("/api/workspaces")
+def workspaces(user: dict = Depends(current_user)):
+    """Where this person can work: on their own, or inside each of their teams.
+
+    A team workspace is what makes a course shared — its curriculum and its whole
+    history belong to the team, so somebody added to it next month opens the same
+    dashboard and sees everything produced before they arrived.
+
+    Each team reports the courses it owns AND whether any of them names a curriculum
+    the agent does not hold: a team's course is matched by exact name, so 'Operating
+    System' against a curriculum called 'Operating Systems' silently shows its members
+    an empty workspace, and that is worth saying out loud rather than leaving as a
+    mystery.
+    """
+    email = user.get("email")
+    known = set(db.curriculum_courses())
+    out = []
+    for t in db.teams_for_user(email):
+        courses = t.get("courses") or []
+        out.append({
+            "id": t["id"], "name": t["name"], "courses": courses,
+            "members": t.get("members") or [],
+            "unknown_courses": [c for c in courses if c not in known],
+        })
+    return {
+        "individual": {"courses": sorted(known)} if user.get("is_admin") else
+                      {"courses": sorted(known)},
+        "teams": out,
+    }
+
+
+def _run_team(user: dict, team_id: int | None, course: str | None) -> int | None:
+    """Which team a run belongs to.
+
+    The workspace the user is actually working in decides — but only if they are really
+    on that team, since the id arrives from the client. Falling back to the course-based
+    guess keeps runs started outside a team workspace attributed as they were before.
+    """
+    if team_id is not None:
+        if any(t["id"] == team_id for t in db.teams_for_user(user.get("email"))):
+            return team_id
+    return db.team_for_user_course(user.get("email"), course)
+
+
+class TeamCourseBody(BaseModel):
+    course: str
+
+
+@app.post("/api/teams/{team_id}/courses")
+def team_add_course(team_id: int, body: TeamCourseBody,
+                    user: dict = Depends(current_user)):
+    """Attach a course to a team the user belongs to.
+
+    Members can do this, not just admins: a course created inside a team workspace has
+    to become the team's immediately, or the person who made it would be the only one
+    who could see it — which is the whole failure this workspace model exists to end.
+    """
+    if not any(t["id"] == team_id for t in db.teams_for_user(user.get("email"))):
+        raise HTTPException(status_code=403, detail={
+            "message": "You are not a member of that team."})
+    ok = db.team_add_course(team_id, body.course)
+    return {"ok": ok, "courses": db.team_course_list(team_id)}
+
+
 @app.get("/api/courses")
 def list_courses(user: dict = Depends(current_user)):
     """Courses this person may work on — the team's shelf, not a text box.
@@ -1135,9 +1199,9 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # show live and persist in the dashboard, exactly like one-shot runs.
     try:
         email = user.get("email")
-        course = app_settings.course_name()
+        course = (body.course or "").strip() or app_settings.course_name()
         db.create_run(gid, user_email=email, course=course,
-                      team_id=db.team_for_user_course(email, course),
+                      team_id=_run_team(user, body.team_id, course),
                       session_no=body.session_no, title=cur.name,
                       enforce_time=body.enforce_time)
     except Exception:
@@ -1163,6 +1227,19 @@ def guided_resumable(user: dict = Depends(current_user)):
         return {"runs": db.unfinished_guided(user.get("email"))}
     except Exception:
         return {"runs": []}
+
+
+@app.post("/api/guided/{gid}/discard")
+def guided_discard(gid: str, user: dict = Depends(current_user)):
+    """Stop offering this unfinished run. Recorded server-side, so it stays discarded.
+
+    Previously the browser just forgot the id, and the next page load asked the server
+    for unfinished runs and was handed the same one back — the prompt kept returning
+    with no way to dismiss it for good.
+    """
+    with _lock:
+        GUIDED.pop(gid, None)          # drop the in-memory copy too, if it is loaded
+    return {"ok": db.discard_guided(gid)}
 
 
 @app.get("/api/guided/{gid}")
@@ -1379,10 +1456,7 @@ def my_teams(user: dict = Depends(current_user)):
     out = []
     for t in db.teams_for_user(email):
         members = t.get("members", [])
-        course = t.get("course")
-        runs = db.runs(course=course) if course else db.runs(team_id=t["id"])
-        # A team with no course set can only be identified by the stamp, so that case
-        # keeps the old behaviour rather than showing nothing.
+        runs = db.team_runs(t["id"])
         out.append({"team": t, "courses": _group_by_course(runs),
                     "summary": _rollup(runs), "members": members,
                     "contributors": sorted({r.get("user_email") for r in runs

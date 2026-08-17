@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.46"
+  version: "1.49"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1119,6 +1119,89 @@ meta:
               (e) The admin page's course fields now offer the courses the agent actually
               holds (datalist). A team's course is matched by exact name, so 'Operating
               System' for 'Operating Systems' silently showed its members nothing."
+    - "1.47 — CREATE A COURSE, AND DISCARD THAT ACTUALLY DISCARDS.
+              (a) DISCARDING AN UNFINISHED RUN DID NOT STICK — the prompt came back on every
+              page load, with no way to dismiss it. Self-inflicted in 1.42: Discard was made
+              deliberately LOCAL so a run could still be resumed from another browser, which
+              got the trade backwards. The multi-browser benefit belongs to RESUMING; a
+              discard is a decision about the RUN, so it has to be recorded where the run
+              lives — otherwise the very next call to /api/guided/resumable hands the same
+              run straight back. db.discard_guided() marks the checkpoint, unfinished_guided()
+              skips 'discarded' alongside 'done' and 'error', and POST
+              /api/guided/{gid}/discard is what the button calls. The row is MARKED rather
+              than deleted, so a mis-click is still recoverable from the database until the
+              72h purge. Verified: offered → discarded → not offered, across reloads.
+              (b) 'IMPORT ANOTHER COURSE' IS NOW 'CREATE NEW COURSE'. The two jobs that card
+              does were conflated, and the difference matters: creating a course that does not
+              exist (name editable, becomes a new entry in the picker) versus re-importing the
+              sheet into the course already open. With one shared form and a free-text name, a
+              re-import could silently fork a second copy of the same course under a slightly
+              different name — the exact failure the course picker was introduced to end. The
+              name field is now editable only when creating; re-import locks it to the open
+              course, and the heading, help text and button all say which of the two is
+              happening. On success the picker reloads so a new course is selectable from
+              then on.
+              The flow is now the one the reviewer described: pick an existing course from
+              the dropdown, or create a new one — and only then does anything below it appear."
+    - "1.48 — WORKSPACES, AND AN APPLICATION INSTEAD OF A SCROLL.
+              (a) THE UI WAS ONE COLUMN OF STACKED CARDS — curriculum, generate, result,
+              history, teams, learned rules, all on top of each other, so the page grew
+              without end and finding anything meant scrolling past everything else. ('What
+              kind of UI is this' was the reviewer's manager, and it was a fair question.)
+              Rebuilt as a shell: a fixed left rail answering WHERE you are working (an
+              Individual or Team workspace), ON WHAT (the course), and WHICH SECTION you are
+              in — Curriculum · Generate · History · Team · Agent rules — beside one focused
+              view. The learned-rule list moved out of the result page into its own section:
+              it is about the agent across every future doc, not about the doc just made.
+              Below 900px the rail becomes a strip above the content so nothing is squeezed
+              out of reach.
+              (b) A TEAM OWNS COURSES, PLURAL. `teams.course` held exactly one, so a team
+              working across two courses needed two teams with the same members and 'pick the
+              team, then pick its course' could not be expressed. New team_courses table; the
+              old column stays as the primary course, seeded from the first course attached,
+              so nothing that reads it had to change.
+              (c) EVERY CREATION LANDS UNDER THE WORKSPACE. GuidedStartBody now carries
+              team_id + course, validated against real membership server-side (the id comes
+              from the client), so a doc built in a team workspace is stamped with that team.
+              db.team_runs() gathers a team's work by ITS STAMP or by ANY COURSE IT OWNS,
+              which is what makes the history complete: runs made before the team existed,
+              before a member joined, or by someone on no team were invisible under the stamp
+              alone. Verified — a member added afterwards sees all 3 probe runs and both
+              courses, and a colleague added to the OS team opened the 34-row curriculum
+              somebody else had imported without importing anything.
+              (d) A COURSE CREATED INSIDE A TEAM WORKSPACE JOINS THAT TEAM immediately
+              (POST /api/teams/{id}/courses, open to members, not just admins) — otherwise
+              its creator would be the only person able to see it, the exact failure the
+              shared model exists to end.
+              (e) THE NAME-MISMATCH TRAP IS NOW VISIBLE. A team whose course reads 'Operating
+              System' against a curriculum called 'Operating Systems' silently showed its
+              members an empty workspace — seen in a real screenshot. /api/workspaces reports
+              `unknown_courses` and the Team panel says so in plain words, pointing at
+              /admin → Teams.
+              (f) An already-imported course opens straight into its dashboard — including an
+              EMPTY one, so a course created by hand can have its first session added there
+              instead of being pushed back into a sheet import. The create/import card is now
+              a deliberate act: it appears when asked for, or when the agent holds no course
+              at all."
+    - "1.49 — THE UI IS NOW TESTED, NOT ASSUMED. `vite build` proves the JSX PARSES and
+              nothing more, and 1.48 was a large restructure verified only by that plus
+              reading. frontend/test/ui_smoke.mjs mounts the REAL App.jsx in jsdom with the
+              API stubbed, then drives it as a person would — switch tabs, switch workspace,
+              open the create-course form — and asserts what is on screen. Run it with
+              `cd frontend && npm run test:ui`.
+              It paid for itself on the first run by catching three defects a green build had
+              hidden completely:
+                · `teams.find()` on the very first render, where `teams` is null until its
+                  fetch lands — this CRASHED THE WHOLE APP to a blank page on load, for
+                  everyone, every time;
+                · the Agent-rules section was always empty, because the rule list was only
+                  ever fetched after a generation finished (fine when it was appended to the
+                  result page, wrong now that it is its own section);
+                · '＋ Create new course' did nothing when pressed from any tab other than
+                  Curriculum, since that is where the form renders.
+              33 assertions, no API key needed, ~2 seconds. The tabs, the sheet-shaped
+              curriculum columns, the workspace switch narrowing the course list, and a
+              colleague's doc appearing in team history are all now regression-checked."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

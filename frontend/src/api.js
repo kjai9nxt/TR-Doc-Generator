@@ -75,6 +75,12 @@ export const api = {
   // Courses this person may work on — their teams' courses. A course one member
   // imports is the course everyone on that team opens.
   courses: () => req('/courses'),
+  // Where this person can work: alone, or inside each of their teams.
+  workspaces: () => req('/workspaces'),
+  // Attach a course to a team, so a course created inside a team workspace is the
+  // team's from the moment it exists rather than the creator's alone.
+  teamAddCourse: (team_id, course) =>
+    req(`/teams/${team_id}/courses`, { method: 'POST', body: JSON.stringify({ course }) }),
   selectCourse: (course, course_type) =>
     req('/courses/select', { method: 'POST', body: JSON.stringify({ course, course_type }) }),
 
@@ -119,8 +125,10 @@ export const api = {
 
   // Guided generation — the only way a TR doc is written: generate all chunks ->
   // review each -> finalize.
-  guidedStart: (session_no, use_judge, enforce_time) =>
-    req('/guided/start', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time }) }),
+  // team_id/course say which WORKSPACE the doc belongs to, so a doc made in a team is
+  // stamped with that team and visible to every member — including one added later.
+  guidedStart: (session_no, use_judge, enforce_time, team_id, course) =>
+    req('/guided/start', { method: 'POST', body: JSON.stringify({ session_no, use_judge, enforce_time, team_id, course }) }),
   guidedState: (id) => req(`/guided/${id}`),
   // Unfinished runs for the signed-in USER, from the server's checkpoints — so the
   // resume offer survives a different browser, cleared site data or a new machine.
@@ -128,6 +136,9 @@ export const api = {
   guidedRegenerate: (id, index, reason) =>
     req(`/guided/${id}/regenerate`, { method: 'POST', body: JSON.stringify({ index, reason }) }),
   guidedFinalize: (id) => req(`/guided/${id}/finalize`, { method: 'POST' }),
+  // Discarding is a decision about the RUN, recorded on the server — forgetting it only
+  // in this browser meant the next page load fetched it straight back.
+  guidedDiscard: (id) => req(`/guided/${id}/discard`, { method: 'POST' }),
 
   // Teach the agent from a FINISHED doc — a correction spotted after assembly, which
   // a per-chunk regeneration reason can no longer capture.
