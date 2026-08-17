@@ -35,6 +35,20 @@ export default function App() {
   const [curIngesting, setCurIngesting] = useState(false)
   const [curLogs, setCurLogs] = useState([])
   const [importedFrom, setImportedFrom] = useState(null)
+  // The course's length budget (and what it falls back to). Held here because both
+  // the dashboard control and the per-row placeholders need it.
+  const [budget, setBudget] = useState(null)
+  function loadBudget(forCourse) {
+    api.courseSettings(forCourse || courseName || undefined)
+      .then(setBudget).catch(() => {})
+  }
+  function saveBudget(patch) {
+    const next = { ...(budget?.settings || {}), ...patch }
+    setBudget((b) => ({ ...(b || {}), settings: next }))
+    api.saveCourseSettings(courseName || undefined, next)
+      .then((d) => setBudget((b) => ({ ...(b || {}), effective: d.effective })))
+      .catch(() => {})
+  }
   const [showImport, setShowImport] = useState(false)
   // Which job the import card is doing: creating a course that does not exist yet
   // (name editable, becomes a new entry in the picker) or re-importing the sheet into
@@ -68,6 +82,10 @@ export default function App() {
     setTab('curriculum')
     setNewCourse(true); setShowImport(true)
     setCourseName(''); setCourseLink(''); setSyncErr(null); setSyncOut(null); setSyncLogs([])
+    // …and clear the course currently on screen. Only the NAME was being cleared, so
+    // the previous course's curriculum stayed on display underneath the create form —
+    // as if the new course already had 34 sessions in it.
+    setCurRows([]); setCurPending(0); setCurLogs([]); setImportedFrom(null)
   }
   function startReimport() {
     setTab('curriculum')
@@ -102,7 +120,11 @@ export default function App() {
   }
 
   function loadCurriculum(forCourse) {
+    loadBudget(forCourse)
     api.curriculum(forCourse || courseName || undefined).then((d) => {
+      // The server resolves the course when we did not name one, so adopt its answer —
+      // otherwise the picker and the table can drift apart after a cancel.
+      if (d.course) setCourseName((c) => c || d.course)
       setCurRows(d.rows || [])
       setCurPending(d.pending || 0)
       setImportedFrom(d.imported_from || null)
@@ -201,6 +223,8 @@ export default function App() {
       session_name: r.session_name || '',
       key_takeaways: (r.key_takeaways || []).filter((l) => String(l).trim()),
       ppt_link: r.ppt_link ?? null,
+      max_pages: r.max_pages ?? null,
+      max_slides: r.max_slides ?? null,
     })), courseName || undefined).then((d) => {
       setCurLogs([`Saved ${d.saved} session(s).`])
       setCurRows(d.rows || [])
@@ -221,6 +245,25 @@ export default function App() {
 
   // Fetch decks. Without force this touches ONLY links that are new or changed — the
   // whole reason a sync no longer costs a full re-download of the course.
+  // MERGE A COURSE INTO A TEAM. A course started alone stays yours until you say
+  // otherwise; handing it to a team makes its curriculum and its ENTIRE history the
+  // team's, because both are gathered by course — so the people joining you see
+  // everything already built, not just what happens next.
+  const [sharing, setSharing] = useState(false)
+  function shareCourseWithTeam(teamId) {
+    if (!teamId || !courseName) return
+    setSharing(true)
+    api.teamAddCourse(Number(teamId), courseName)
+      .then(() => {
+        setCurLogs([`“${courseName}” now belongs to `
+          + `${myTeams.find((x) => x.id === Number(teamId))?.name || 'the team'}. `
+          + `Everyone on it can open this curriculum and see every doc built for it.`])
+        loadCourses()
+      })
+      .catch((e) => setCurLogs([`Could not share: ${e.message}`]))
+      .finally(() => setSharing(false))
+  }
+
   function ingestDecks(force) {
     setCurIngesting(true); setCurLogs([])
     api.ingestDecks(force, null, courseName || undefined).then(({ job_id }) => {
@@ -658,6 +701,37 @@ export default function App() {
         </aside>
 
         <main className="main">
+      {/* WHERE YOU ARE, in one line, above whatever section is open. The rail holds the
+          controls; this says what they currently add up to — which workspace, which
+          course, and (in a team) who else is in it. In a team with more than one course
+          the alternatives are one click away, so choosing the team and then the course
+          reads as the two steps it actually is. */}
+      <div className="context">
+        <span className="ctxpart">
+          <span className="ctxlabel">{workspace.kind === 'team' ? 'Team' : 'Working'}</span>
+          <b>{workspace.kind === 'team' ? (activeTeamInfo?.name || 'Team') : 'Individual'}</b>
+        </span>
+        <span className="ctxsep">›</span>
+        <span className="ctxpart">
+          <span className="ctxlabel">Course</span>
+          <b>{courseName || 'none yet'}</b>
+        </span>
+        {workspace.kind === 'team' && (activeTeamInfo?.courses?.length || 0) > 1 && (
+          <span className="ctxswitch">
+            {activeTeamInfo.courses.map((c) => (
+              <button key={c} className={`coursechip ${c === courseName ? 'on' : ''}`}
+                      onClick={() => switchCourse(c)}>{c}</button>
+            ))}
+          </span>
+        )}
+        {workspace.kind === 'team' && activeTeamInfo?.members?.length > 0 && (
+          <span className="ctxpart right">
+            <span className="ctxlabel">Shared with</span>
+            <b>{activeTeamInfo.members.length} member{activeTeamInfo.members.length === 1 ? '' : 's'}</b>
+          </span>
+        )}
+      </div>
+
       {/* Cost of the TR doc being generated right now — sticky side panel
           (falls back to a normal block on narrow screens). */}
       {showCost && (guidedActive || result) && (
@@ -686,6 +760,9 @@ export default function App() {
           saving={curSaving} ingesting={curIngesting} dirty={curDirty}
           pending={curPending} importedFrom={importedFrom} logs={curLogs}
           onReimport={startReimport}
+          budget={budget} onBudget={saveBudget}
+          teams={myTeams} sharing={sharing} onShare={shareCourseWithTeam}
+          ownedBy={(courses.find((c) => c.name === courseName)?.teams) || []}
         />
       )}
 
@@ -747,7 +824,11 @@ export default function App() {
           </button>
           {curRows.length > 0 && (
             <button className="ghostbtn" disabled={syncing}
-                    onClick={() => { setShowImport(false); setNewCourse(false) }}>
+                    onClick={() => {
+                      // Put back whatever was open before the create form was raised.
+                      setShowImport(false); setNewCourse(false)
+                      loadCourses(); loadCurriculum()
+                    }}>
               Cancel
             </button>
           )}
@@ -814,9 +895,21 @@ export default function App() {
         <section className="card">
           <h2><span className="num">2</span> Generate a TR doc</h2>
           <label>Session</label>
-          <select value={sel ?? ''} onChange={(e) => setSel(Number(e.target.value))}>
+          {/* LOCKED while a run is in flight. A run's session is fixed the moment it
+              starts, so leaving this editable let the picker drift away from the work
+              actually happening: start a run for 31, change this to 32 while it
+              generates, and the screen says 32 while every chunk — and the finished
+              document — is 31's. That is the "I selected 32 and got 31" report. */}
+          <select value={sel ?? ''} disabled={!!guidedActive}
+                  onChange={(e) => setSel(Number(e.target.value))}>
             {sessions.map((s) => <option key={s.number} value={s.number}>{s.number} — {s.name}</option>)}
           </select>
+          {guidedActive && (
+            <span className="hint">
+              Locked while this run is in progress — it is generating session{' '}
+              <b>{guided?.session_no ?? sel}</b>. Finish or discard it to pick another.
+            </span>
+          )}
           {/* Says out loud what the list is, so a session leaving it after a deck is
               attached reads as the rule working rather than as something going wrong. */}
           <span className="hint">
@@ -910,6 +1003,28 @@ export default function App() {
                 approved before <b>Create final TR Doc</b>.
                 {` Fitted to the ${policy.max_minutes}-minute budget and ${policy.max_pages} pages.`}
               </div>
+
+              {/* WHICH SESSION THIS RUN IS FOR, stated on the panel itself.
+                  A run carries its own session — it is fixed when the run starts and a
+                  resumed run brings its own — so the picker above and the work below can
+                  legitimately disagree (resume an abandoned run for session 31 while the
+                  picker sits on 32, and every chunk you review is 31's). Nothing said so,
+                  which is exactly how a document comes out for a session you did not
+                  think you asked for. Now the panel names its session, and says plainly
+                  when it differs from the one selected. */}
+              {guided && guided.session_no != null && (
+                <div className={`runhead ${guided.session_no !== sel ? 'mismatch' : ''}`}>
+                  <span>Generating <b>Session {guided.session_no}
+                    {guided.session_title ? ` — ${guided.session_title}` : ''}</b></span>
+                  {guided.session_no !== sel && (
+                    <span className="runwarn">
+                      ⚠ The picker above shows session {sel}. This run was started for
+                      session {guided.session_no} and will produce that document —
+                      discard it and start again if that is not what you want.
+                    </span>
+                  )}
+                </div>
+              )}
 
               {guidedGenAll && (
                 <div className="guided">
@@ -1409,20 +1524,42 @@ function TemplateSidePanel({ markdown, onClose }) {
 // "Fetch new decks" collects exactly those.
 function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest,
                                saving, ingesting, dirty, pending, importedFrom,
-                               onReimport, logs }) {
+                               onReimport, logs, teams = [], sharing, onShare,
+                               ownedBy = [], budget, onBudget }) {
   function edit(i, field, value) {
     setRows((rs) => rs.map((r, k) => (k === i ? { ...r, [field]: value, _dirty: true } : r)))
   }
-  function addRow() {
-    const next = rows.reduce((m, r) => Math.max(m, Number(r.session_no) || 0), 0) + 1
-    setRows((rs) => [...rs, {
+  // Insert a blank session AT a position — end of the list, or between any two rows.
+  // The only add button used to be at the top, so adding a session to a 34-row course
+  // meant scrolling back up every time.
+  //
+  // The new row takes the next FREE session number rather than pushing the numbers of
+  // the rows below it down. Renumbering would look tidier for a moment and cost more
+  // than it is worth: a session's extracted deck is stored against its number, so
+  // shifting the rows below would detach every one of those decks and re-download the
+  // lot. Type the number you want in the row — the table re-sorts by number when it
+  // reloads — and a clash is flagged before it can overwrite anything.
+  function addRowAt(index) {
+    const used = new Set(rows.map((r) => Number(r.session_no)))
+    let next = 1
+    while (used.has(next)) next += 1
+    const row = {
       // A stable key: React must not remount the row when its session number is edited,
       // or the field being typed into loses focus on every keystroke.
-      _key: `new-${Date.now()}`,
+      _key: `new-${Date.now()}-${index}`,
       session_no: next, topic: '', session_name: '', key_takeaways: [],
       ppt_link: '', deck_status: 'none', extracted: false, _dirty: true, _new: true,
-    }])
+    }
+    setRows((rs) => [...rs.slice(0, index), row, ...rs.slice(index)])
   }
+  // Two rows claiming the same number are the SAME row as far as the database is
+  // concerned (course + session number is the key), so saving would silently overwrite
+  // one with the other. Say so before that happens.
+  const dupNumbers = (() => {
+    const seen = new Map()
+    rows.forEach((r) => seen.set(Number(r.session_no), (seen.get(Number(r.session_no)) || 0) + 1))
+    return [...seen.entries()].filter(([, n]) => n > 1).map(([no]) => no)
+  })()
   const deckChip = (r) => {
     if (!r.ppt_link) return <span className="chip">no deck</span>
     if (r.extracted) return <span className="chip good" title="Already extracted — syncing will not download it again">extracted</span>
@@ -1438,8 +1575,9 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
       </p>
 
       <div className="curactions">
-        <button className="ghostbtn" onClick={addRow}>+ Add session</button>
-        <button className="primary" disabled={!dirty || saving} onClick={onSave}>
+        <button className="primary" disabled={!dirty || saving || dupNumbers.length > 0}
+                onClick={onSave}
+                title={dupNumbers.length ? `Two rows share session ${dupNumbers.join(', ')}` : ''}>
           {saving ? 'Saving…' : '💾 Save changes'}
         </button>
         <button className="ghostbtn" disabled={ingesting || !pending} onClick={() => onIngest(false)}
@@ -1450,7 +1588,42 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
                 title="Re-downloads every deck. Only needed if you edited the slides behind a link that did not change.">
           ↻ Re-check all decks
         </button>
+        {/* THE COURSE'S OWN LENGTH BUDGET. A semester course and an interview course
+            are not the same shape, and this used to be one number in a config file that
+            applied to every course in the agent. Blank restores the built-in default. */}
+        <span className="budgetbox">
+          <span className="hint">Budget</span>
+          <input type="number" value={budget?.settings?.max_pages ?? ''}
+                 placeholder={String(budget?.defaults?.max_pages ?? '')}
+                 title="Maximum pages for every doc in this course"
+                 onChange={(e) => onBudget({ max_pages: e.target.value === '' ? null : Number(e.target.value) })} />
+          <span className="hint">pages ·</span>
+          <input type="number" value={budget?.settings?.max_slides ?? ''}
+                 placeholder={String(budget?.defaults?.max_slides ?? '')}
+                 title="Maximum slides for every doc in this course"
+                 onChange={(e) => onBudget({ max_slides: e.target.value === '' ? null : Number(e.target.value) })} />
+          <span className="hint">slides</span>
+        </span>
         <span className="curspacer" />
+        {/* Hand a solo course to a team. Offered only while a team exists that does not
+            already own it — once shared there is nothing left to do here. */}
+        {teams.filter((t) => !(t.courses || []).includes(course)).length > 0 && (
+          <span className="sharebox">
+            <span className="hint">Share with</span>
+            <select disabled={sharing} defaultValue=""
+                    onChange={(e) => { onShare(e.target.value); e.target.value = '' }}>
+              <option value="" disabled>a team…</option>
+              {teams.filter((t) => !(t.courses || []).includes(course)).map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </span>
+        )}
+        {ownedBy.length > 0 && (
+          <span className="hint sharedby" title="Everyone on this team can open this curriculum and see its history">
+            👥 shared with {ownedBy.join(', ')}
+          </span>
+        )}
         <button className="link" onClick={onReimport}
                 title="Refresh this course's rows from its sheet. Rows added in the agent are kept and no extracted deck is re-downloaded.">
           {importedFrom ? '↺ Re-import this course from its sheet' : '📥 Import rows from a sheet'}
@@ -1471,11 +1644,20 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
           <span className="c-name">Session name</span>
           <span className="c-kt">Key takeaways — one per line</span>
           <span className="c-ppt">PPT link</span>
+          <span className="c-lim" title="Leave blank to use the course's budget">Pages</span>
+          <span className="c-lim" title="Leave blank to use the course's budget">Slides</span>
           <span className="c-deck">Deck</span>
           <span className="c-act" />
         </div>
         {rows.map((r, i) => (
-          <div key={r._key ?? `${r.session_no}-${i}`} className={`currow ${r._dirty ? 'dirty' : ''}`}>
+          <React.Fragment key={r._key ?? `${r.session_no}-${i}`}>
+          {/* Insert ABOVE this row. A thin strip rather than a button per row, so it is
+              there when wanted and invisible when not. */}
+          <button className="insertbar" onClick={() => addRowAt(i)}
+                  title={`Insert a session above ${r.session_name || `#${r.session_no}`}`}>
+            <span>＋ insert here</span>
+          </button>
+          <div className={`currow ${r._dirty ? 'dirty' : ''} ${dupNumbers.includes(Number(r.session_no)) ? 'dupe' : ''}`}>
             <input className="c-no" type="number" value={r.session_no}
                    onChange={(e) => edit(i, 'session_no', Number(e.target.value))} />
             <input className="c-topic" value={r.topic || ''} placeholder="Topic"
@@ -1491,19 +1673,41 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
                       placeholder="https://docs.google.com/presentation/d/…"
                       title="The deck for this session, if it has been recorded. Blank means the session still needs a TR doc. Changing this link is the only thing that makes the agent download a deck again."
                       onChange={(e) => edit(i, 'ppt_link', e.target.value)} />
+            {/* Per-SESSION overrides. Blank = inherit the course's budget, which is
+                why the placeholder shows the inherited number rather than nothing. */}
+            <input className="c-lim" type="number" value={r.max_pages ?? ''}
+                   placeholder={String(budget?.effective?.max_pages ?? '')}
+                   title="Pages for this session only. Blank inherits the course's budget."
+                   onChange={(e) => edit(i, 'max_pages', e.target.value === '' ? null : Number(e.target.value))} />
+            <input className="c-lim" type="number" value={r.max_slides ?? ''}
+                   placeholder={String(budget?.effective?.max_slides ?? '')}
+                   title="Slides for this session only. Blank inherits the course's budget."
+                   onChange={(e) => edit(i, 'max_slides', e.target.value === '' ? null : Number(e.target.value))} />
             <span className="c-deck">{deckChip(r)}</span>
             <span className="c-act">
               <button className="ghostbtn tiny" title="Remove this session"
                       onClick={() => onDelete(r, i)}>✕</button>
             </span>
           </div>
+          </React.Fragment>
         ))}
+        {/* …and at the END, where you are once you have read to the bottom. */}
+        <button className="insertbar last" onClick={() => addRowAt(rows.length)}>
+          <span>＋ Add a session at the end</span>
+        </button>
         {rows.length === 0 && (
           <div className="hint curempty">
             No curriculum yet — import one from a sheet, or add sessions by hand.
           </div>
         )}
       </div>
+      {dupNumbers.length > 0 && (
+        <div className="alert warn">
+          <b>Two rows share session number {dupNumbers.join(', ')}.</b> A session is
+          identified by its number, so saving would overwrite one with the other. Give
+          each row its own number first.
+        </div>
+      )}
       <span className="hint">
         Each takeaway line becomes an agenda item, a section and a Key Takeaway
         <b> verbatim</b>; everything after the colon is treated as a promise the session

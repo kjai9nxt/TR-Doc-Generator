@@ -88,6 +88,10 @@ export const api = {
   // The sheet is an import format; everything after that happens here. The course is
   // always explicit, so two people on different courses never write into each other's.
   curriculum: (course) => req(`/curriculum${qs({ course })}`),
+  // A course's length budget (pages/slides), and what it inherits when unset.
+  courseSettings: (course) => req(`/course-settings${qs({ course })}`),
+  saveCourseSettings: (course, settings) =>
+    req('/course-settings', { method: 'POST', body: JSON.stringify({ course, ...settings }) }),
   saveCurriculum: (rows, course) =>
     req('/curriculum', { method: 'POST', body: JSON.stringify({ rows, course }) }),
   deleteCurriculumRow: (session_no, course) =>

@@ -44,8 +44,14 @@ const ROUTES = {
                policy: { judge_always_on: true, time_always_enforced: true, max_minutes: 40, max_pages: 26, target_pages: 23 } },
   '/courses': { courses: COURSES, active: 'Operating Systems' },
   '/workspaces': { individual: { courses: ['Operating Systems'] },
-                   teams: [{ id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
-                             members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'], unknown_courses: [] }] },
+                   teams: [
+                     { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
+                       members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'], unknown_courses: [] },
+                     // A second team that does NOT own the open course — that is what
+                     // makes the "share this course with a team" control applicable.
+                     { id: 5, name: 'Networks Team', courses: ['Computer Networks'],
+                       members: ['dev@nxtwave.co.in'], unknown_courses: [] },
+                   ] },
   '/curriculum': { course: 'Operating Systems', rows: ROWS, imported_from: 'https://docs.google.com/spreadsheets/d/X/edit', pending: 0 },
   '/sessions': { sessions: SESSIONS },
   '/my/history': { courses: [{ course: 'Operating Systems', runs: [
@@ -63,7 +69,15 @@ const ROUTES = {
                              { id: 'r2', session_no: 29, title: 'File Systems', user_email: 'colleague@nxtwave.co.in', status: 'done', accepted: true, cost: {}, calls: [] }],
                              summary: { runs: 2 } }] }] },
   '/learned-rules': { rules: [{ text: 'Do not restate the paragraph in the bullets', scope: 'course', session_no: 30, source: 'judge', hits: 2, applies: true }], course: 'Operating Systems' },
-  '/guided/resumable': { runs: [] },
+  // An abandoned run for a DIFFERENT session than the one selected — the situation
+  // that produces a document for a session you did not think you asked for.
+  '/guided/resumable': { runs: [{ guided_id: 'g31', session_no: 31,
+                                  title: 'Spooling, Buffering & Disk Structure',
+                                  status: 'reviewing', chunks_done: 2, total: 6,
+                                  updated: '2026-08-17T09:00:00Z' }] },
+  '/guided/g31': { status: 'reviewing', session_no: 31,
+                   session_title: 'Spooling, Buffering & Disk Structure',
+                   total: 6, index: 2, labels: ['Opening'], chunks: [], logs: [] },
   '/dashboard': { courses: [], summary: {} },
   '/template-guide': { markdown: '# Sheet template\n\nColumns…' },
 }
@@ -212,11 +226,73 @@ check('back to Individual',
       $('.wsopt').find((b) => b.textContent.includes('Individual')).className.includes('on'))
 check('the Team tab disappears again', byLabel('Team') === undefined)
 
+console.log('\n== an open run names its own session, and flags a mismatch ==')
+await click(byLabel('Generate'))
+const sessSel = $('select').find((s) => Array.from(s.options).some((o) => o.textContent.includes('Spooling')))
+check('an abandoned run is offered', text().includes('Unfinished TR doc'))
+await click($('button').find((b) => b.textContent.includes('Resume')))
+check('the panel names the session the RUN is for',
+      text().includes('Generating Session 31'))
+check('…and the doc it will produce is stated when it differs from the picker',
+      $('.runhead.mismatch').length === 0 || text().includes('will produce that document'))
+
+console.log('\n== the context line says where you are ==')
+await click(byLabel('Curriculum'))
+check('it names the workspace and the course',
+      $('.context').length === 1 && text().includes('Individual') && text().includes('Operating Systems'))
+const teamWs2 = $('.wsopt').find((b) => b.textContent.includes('OS Curriculum Team'))
+await click(teamWs2)
+check('in a team it names the team', $('.context')[0].textContent.includes('OS Curriculum Team'))
+check('…and offers its other course in one click',
+      $('.ctxswitch .coursechip').some((b) => b.textContent.includes('Computer Networks')))
+check('…and says who it is shared with', $('.context')[0].textContent.includes('member'))
+await click($('.wsopt').find((b) => b.textContent.includes('Individual')))
+
+console.log('\n== adding a session anywhere, not only from the top ==')
+await click(byLabel('Curriculum'))
+const bars = $('.insertbar')
+check('there is an insert point between rows and at the end',
+      bars.length === ROWS.length + 1, `got ${bars.length} for ${ROWS.length} rows`)
+check('the last one is the add-at-the-end button',
+      bars[bars.length - 1].textContent.includes('at the end'))
+const before = $('.currow').length
+await click(bars[bars.length - 1])
+check('adding at the end inserts a row', $('.currow').length === before + 1)
+const nums = $('input.c-no').map((i) => Number(i.value))
+check('the new row takes a free session number, disturbing none of the others',
+      new Set(nums).size === nums.length, JSON.stringify(nums))
+await click($('.insertbar')[0])
+check('inserting at the TOP puts the row first',
+      $('.currow')[1].querySelector('input.c-name').value === '')
+
+console.log('\n== a duplicate session number is caught before it overwrites anything ==')
+const firstNo = $('input.c-no')[0]
+await act(async () => {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+  setter.call(firstNo, String(ROWS[0].session_no))
+  firstNo.dispatchEvent(new window.Event('input', { bubbles: true }))
+  await new Promise((r) => setTimeout(r, 40))
+})
+check('the clash is reported', text().includes('share session number'))
+const saveBtn = $('button').find((b) => b.textContent.includes('Save changes'))
+check('…and Save is blocked until it is resolved', saveBtn.disabled)
+
+console.log('\n== sharing a course with a team ==')
+check('the team that already owns it is shown, not offered again',
+      text().includes('shared with OS Curriculum Team'))
+check('a team that does NOT own it is offered', text().includes('Share with'))
+const shareSel = $('.sharebox select')[0]
+check('…and it is the only one listed',
+      Array.from(shareSel.options).filter((o) => o.value).map((o) => o.textContent)
+        .join() === 'Networks Team')
+
 console.log('\n== the create-course flow is reachable ==')
 await click($('.navlink').find((b) => b.textContent.includes('Create new course')))
 check('the create form appears', text().includes('Create a new course'))
 check('the course name is editable when creating',
       $('input').some((i) => !i.disabled && i.placeholder?.includes('Computer Networks')))
+check('the PREVIOUS course\'s curriculum is no longer on screen',
+      $('.curtable').length === 0)
 
 console.log(`\n${pass} passed, ${fail} failed`)
 fs.rmSync(tmp, { force: true })

@@ -182,6 +182,21 @@ def load_all_decks() -> list[dict]:
     return decks
 
 
+def deck_session_numbers() -> set[int]:
+    """Which sessions have an extracted deck — from the FILENAMES, nothing parsed.
+
+    Callers that only need "does this session have a deck?" were using load_all_decks(),
+    which reads and JSON-parses every deck in the course (1.1 MB across 30 decks here)
+    and was being called three times on a single page load. The name carries the answer.
+    """
+    out = set()
+    for p in DECKS_DIR.glob("session_*.json"):
+        m = re.search(r"session_(\d+)\.json$", p.name)
+        if m:
+            out.add(int(m.group(1)))
+    return out
+
+
 def decks_before(session_no: int) -> list[dict]:
     return [d for d in load_all_decks()
             if d.get("session_no") is not None and d["session_no"] < session_no]

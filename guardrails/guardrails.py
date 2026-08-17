@@ -249,7 +249,10 @@ def _phrase_hits(text: str, phrases: list[str]) -> list[str]:
 
 
 def check(doc: dict, session, is_first: bool, is_last: bool,
-          *, rich: bool = False) -> GuardrailResult:
+          *, rich: bool = False, budgets: dict | None = None) -> GuardrailResult:
+    """`budgets` (src.budgets.for_session) is the slide/page allowance THIS document
+    is held to — a course may set its own, and a single session may override that.
+    Omitted, the harness numbers apply exactly as before."""
     h = config.harness()
     con = h["constraints"]
     gates = h["gates"]
@@ -291,9 +294,12 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # --- slide count ---
     slides = _slides(doc)
     # Depth mode (40-min limit off) allows more slides for worked examples etc.
-    slide_max = con["slides"].get("max_rich", con["slides"]["max"]) if rich else con["slides"]["max"]
-    if len(slides) < con["slides"]["min"]:
-        fails.append(f"Only {len(slides)} slides (min {con['slides']['min']}) — "
+    slide_max = int((budgets or {}).get("max_slides")
+                    or (con["slides"].get("max_rich", con["slides"]["max"]) if rich
+                        else con["slides"]["max"]))
+    slide_min = int((budgets or {}).get("min_slides") or con["slides"]["min"])
+    if len(slides) < slide_min:
+        fails.append(f"Only {len(slides)} slides (min {slide_min}) — "
                      f"split content across more slides, don't cram.")
     if len(slides) > slide_max:
         # This message is not just for the reviewer: it goes into `issues`, which is what

@@ -85,6 +85,11 @@ except Exception as _e:
 # --------------------------------------------------------------------------- #
 class CurriculumRow(BaseModel):
     session_no: int
+    # Per-session budget overrides. None = inherit the course's (which itself falls
+    # back to the harness default), so a row only carries a number when it needs to
+    # differ from its neighbours.
+    max_pages: int | None = None
+    max_slides: int | None = None
     topic: str | None = ""
     session_name: str | None = ""
     key_takeaways: list[str] | str | None = None
@@ -99,6 +104,12 @@ class CurriculumSaveBody(BaseModel):
     # Which course these rows belong to. Sent explicitly so two people working on
     # different courses on the same instance cannot write into each other's.
     course: str | None = None
+
+
+class CourseSettingsBody(BaseModel):
+    course: str | None = None
+    max_pages: int | None = None
+    max_slides: int | None = None
 
 
 class IngestBody(BaseModel):
@@ -440,11 +451,33 @@ def _curriculum_rows(course: str) -> list[dict]:
     and that is exactly when a re-fetch is genuinely needed.
     """
     rows = db.curriculum(course)
-    have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
-                  if d.get("session_no") is not None}
+    have_decks = pptx_ingest.deck_session_numbers()
     for r in rows:
         r["extracted"] = r["session_no"] in have_decks
     return rows
+
+
+@app.get("/api/course-settings")
+def get_course_settings(course: str | None = None, user: dict = Depends(current_user)):
+    """A course's length budgets, and what they resolve to.
+
+    `defaults` is what the harness would give, so the UI can show what "inherit" means
+    rather than an empty box the user has to guess at.
+    """
+    from src import budgets as budget_rules
+    course = _course_for(user, course)
+    return {"course": course,
+            "settings": db.course_settings(course) or {},
+            "effective": budget_rules.for_session(course),
+            "defaults": budget_rules.harness_defaults()}
+
+
+@app.post("/api/course-settings")
+def save_course_settings(body: CourseSettingsBody, user: dict = Depends(current_user)):
+    from src import budgets as budget_rules
+    course = _course_for(user, body.course)
+    db.set_course_settings(course, max_pages=body.max_pages, max_slides=body.max_slides)
+    return {"ok": True, "effective": budget_rules.for_session(course)}
 
 
 @app.get("/api/curriculum")
@@ -469,6 +502,8 @@ def save_curriculum(body: CurriculumSaveBody, course: str | None = None,
             session_name=row.session_name or "",
             key_takeaways=row.key_takeaways or [],
             ppt_link=row.ppt_link)
+        db.set_session_settings(course, row.session_no,
+                                max_pages=row.max_pages, max_slides=row.max_slides)
         saved += 1 if ok else 0
     # Keep the on-disk projection in step, so the offline loaders and the eval harness
     # see the edit without waiting for a sync.
@@ -550,8 +585,7 @@ def _session_list(course: str | None = None):
     if rows:
         have_decks = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
     else:
-        have_decks = {d["session_no"] for d in pptx_ingest.load_all_decks()
-                      if d.get("session_no") is not None}
+        have_decks = pptx_ingest.deck_session_numbers()
     return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
             for s in sessions if s.number not in have_decks]
 
@@ -641,7 +675,7 @@ def _guided_log(gid: str, msg: str):
 _GUIDED_PERSIST_KEYS = (
     "status", "session_no", "base_context", "total", "index", "labels", "chunks",
     "regen_index", "use_judge", "enforce_time", "logs", "result", "error",
-    "last_error", "user_email",
+    "last_error", "user_email", "budgets",
     # Persisted so an unfinished run can NAME itself in the resume list without the
     # server loading its whole state or re-deriving the title from a course that may
     # have been re-synced since (see db.unfinished_guided).
@@ -807,7 +841,8 @@ def _chunk_spec(state: dict, index: int):
     used, left = _slide_budget_state(state, index)
     return "section", context_builder.takeaway_instruction(
         cur, index - 1, slides_used=used, sections_left=left,
-        enforce_time=state.get("enforce_time", True))
+        enforce_time=state.get("enforce_time", True),
+        budgets=state.get("budgets"))
 
 
 def _chunk_allowance(state: dict, index: int) -> int:
@@ -818,12 +853,94 @@ def _chunk_allowance(state: dict, index: int) -> int:
         enforce_time=state.get("enforce_time", True))
 
 
+def _approved_digest(prior: list[dict]) -> str:
+    """What the NEXT chunk needs to know about the chunks already written — and no more.
+
+    Every chunk used to receive the full JSON of every chunk before it, so a six-takeaway
+    run re-sent the same material five times over: measured at ~25,000 tokens per run,
+    at full price, since it changes on every call and so can never be cached. And it
+    grows with the SQUARE of the takeaway count, so a longer course pays worst.
+
+    A chunk needs exactly two things from its predecessors: what has already been
+    covered (so it does not repeat it) and which slide numbers are taken (so its own
+    continue correctly). It does not need their prose, tables, analogies, visual
+    guidance or speaker notes — which is the other ~90% of the bulk.
+    """
+    if not prior:
+        return ""
+    lines = []
+    for c in prior:
+        frag = c.get("fragment") or {}
+        if c.get("kind") == "opening" or "section" not in frag:
+            agenda = frag.get("agenda") or []
+            if agenda:
+                lines.append("Opening: recap + agenda written ("
+                             + f"{len(agenda)} agenda items).")
+            continue
+        sec = frag.get("section") or {}
+        slides = sec.get("slides") or []
+        nums = [s.get("n") for s in slides if s.get("n") is not None]
+        span = f"slides {min(nums)}-{max(nums)}" if nums else "no slides"
+        titles = "; ".join(f"{s.get('n')}. {s.get('title', '')} [{s.get('role', '')}]"
+                           for s in slides)
+        covered = ", ".join(
+            str(sub.get("name")) for sub in ((frag.get("coverage") or {}).get("sub_concepts") or [])
+            if isinstance(sub, dict) and sub.get("name"))
+        lines.append(f"SECTION “{sec.get('name', '')}” — {span}\n"
+                     f"    {titles}\n"
+                     f"    already covered: {covered}")
+    return ("\n".join(lines)
+            + "\n(Summary only — the full text of these sections is already written and "
+              "approved. Do not repeat any of it; continue your slide numbering after "
+              "the highest number above.)")
+
+
 def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None) -> dict:
-    """Generate one chunk given the prior chunks' fragments (for consistency)."""
-    kind, instruction = _chunk_spec(GUIDED[gid], index)
-    approved_json = json.dumps(prior, ensure_ascii=False) if prior else ""
+    """Generate one chunk, and FIX what we can already see is wrong with it.
+
+    The agent was detecting repeated bullets in a chunk and then… telling the reviewer
+    about it, asking them to press Regenerate. That is the wrong division of labour: a
+    defect the machine can state precisely is a defect the machine should fix, and a
+    human's attention is worth more than one extra call. The reviewer is here to judge
+    teaching, not to relay a checklist back to the model.
+
+    So a chunk whose bullets restate their own paragraph is sent back ONCE, with the
+    offending lines quoted, before anyone is asked to look at it. Once, deliberately:
+    if the second attempt is still imperfect the reviewer sees it with the warning
+    attached and decides — better than burning calls in a loop on a judgement call.
+    """
+    state = GUIDED[gid]
+    kind, instruction = _chunk_spec(state, index)
+    approved_json = _approved_digest(prior)
     fragment = generator.generate_chunk(
-        GUIDED[gid]["base_context"], instruction, approved_json, reason)
+        state["base_context"], instruction, approved_json, reason)
+
+    repeats = _chunk_repetition(fragment)
+    if repeats and index > 0:
+        _guided_log(gid, f"Chunk {index + 1}: {len(repeats)} bullet(s) repeat their "
+                         f"paragraph — fixing before review.")
+        fix = ("The bullets below repeat the paragraph above them, which spends page "
+               "budget without teaching anything new:\n"
+               + "\n".join(f"  · {h}" for h in repeats[:6])
+               + "\nRewrite THOSE bullets to carry what the paragraph does not say — the "
+                 "steps, the values, the conditions, the trade-offs, where it is used. "
+                 "Keep everything else in this section exactly as it is.")
+        try:
+            retry = generator.generate_chunk(
+                state["base_context"], instruction, approved_json,
+                (reason + "\n\n" + fix) if reason else fix)
+            # Only accept the retry if it actually improved matters — a re-roll that
+            # trades one defect for another is not worth the call it cost.
+            if len(_chunk_repetition(retry)) < len(repeats):
+                fragment = retry
+                _guided_log(gid, f"Chunk {index + 1}: repetition reduced to "
+                                 f"{len(_chunk_repetition(fragment))}.")
+            else:
+                _guided_log(gid, f"Chunk {index + 1}: the rewrite did not improve on it "
+                                 f"— keeping the first version for you to judge.")
+        except Exception as e:
+            _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
+
     markdown = docx_writer.chunk_to_markdown(kind, fragment)
     return {"kind": kind, "fragment": fragment, "markdown": markdown}
 
@@ -852,7 +969,8 @@ def _guided_slide_budget_note(gid: str, index: int, allowance: int) -> None:
             return
         got = _fragment_slides(state["chunks"][index].get("fragment"))
         total = sum(_fragment_slides(c.get("fragment")) for c in state["chunks"])
-        ceiling = context_builder.slide_ceiling(state.get("enforce_time", True))
+        ceiling = context_builder.slide_ceiling(state.get("enforce_time", True),
+                                                state.get("budgets"))
         label = state["labels"][index]
     if got > allowance:
         _guided_log(gid, f"⚠ Chunk {index + 1} used {got} slides against a budget of "
@@ -1040,6 +1158,7 @@ def _guided_finalize(gid: str):
             cur, nxt, session_no = state["cur"], state["nxt"], state["session_no"]
             use_judge = state["use_judge"]
             enforce_time = state.get("enforce_time", True)
+            state_budgets = state.get("budgets") or {}
         opening = chunks[0]["fragment"]
         sections = [c["fragment"].get("section", c["fragment"]) for c in chunks[1:]]
         # Each takeaway chunk also reports the sub-concepts it covers and the slide
@@ -1049,6 +1168,7 @@ def _guided_finalize(gid: str):
         doc = pipeline.assemble_doc(cur, nxt, opening, sections, coverage)
         result = pipeline.finalize(session_no, doc, use_judge=use_judge,
                                    enforce_time=enforce_time, run_id=gid,
+                                   budgets=state_budgets,
                                    on_event=lambda m: _guided_log(gid, m))
         final = result.get("final") or result["history"][-1]
         # Persist the rendered outputs BEFORE surfacing the result. A guided run has
@@ -1179,8 +1299,15 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # The 40-minute toggle applies to guided runs exactly as it does to one-shot:
     # ON  -> every chunk is generated under the hard time limit and the doc is graded on it;
     # OFF -> chunks are generated in DEPTH MODE and recording time is never graded.
+    # The budgets THIS document is held to: the course's own, or this session's
+    # override, or the harness default. Resolved once and carried on the run, so the
+    # prompt, the gates and the repair pass all speak about the same numbers.
+    from src import budgets as budget_rules
+    run_budgets = budget_rules.for_session(
+        (body.course or "").strip() or app_settings.course_name(), body.session_no)
     base_context = (context_builder.build_guided_base(prev, cur, nxt)
-                    + context_builder.time_mode_block(body.enforce_time, guided=True))
+                    + context_builder.time_mode_block(body.enforce_time, guided=True,
+                                                      budgets=run_budgets))
     with _lock:
         GUIDED[gid] = {
             "status": "generating_all", "session_no": body.session_no,
@@ -1190,6 +1317,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
             "total": 1 + len(cur.key_takeaways), "index": 0, "labels": labels,
             "chunks": [], "regen_index": None, "use_judge": body.use_judge,
             "enforce_time": body.enforce_time, "user_email": user.get("email"),
+            "budgets": run_budgets,
             "logs": [], "result": None, "error": None,
         }
     # Checkpoint before any chunk is generated, so even a restart during the very
@@ -1456,7 +1584,8 @@ def my_teams(user: dict = Depends(current_user)):
     out = []
     for t in db.teams_for_user(email):
         members = t.get("members", [])
-        runs = db.team_runs(t["id"])
+        # The courses are already on `t` — passing them avoids re-querying them per team.
+        runs = db.team_runs(t["id"], t.get("courses"))
         out.append({"team": t, "courses": _group_by_course(runs),
                     "summary": _rollup(runs), "members": members,
                     "contributors": sorted({r.get("user_email") for r in runs

@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.49"
+  version: "1.52"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1202,6 +1202,105 @@ meta:
               33 assertions, no API key needed, ~2 seconds. The tabs, the sheet-shaped
               curriculum columns, the workspace switch narrowing the course list, and a
               colleague's doc appearing in team history are all now regression-checked."
+    - "1.50 — ADD A SESSION WHERE YOU ARE, MERGE A COURSE INTO A TEAM, AND STOP WAITING.
+              (a) THE APP WAS SLOW because of ROUND-TRIPS, not computation. Measured: 26 DB
+              queries for a single page load, each a network hop on the cloud database the
+              app actually runs against (locally, on a SQLite file, the same work is 6 ms and
+              invisible — which is why it had never shown up). teams() alone was 1 + 2 per
+              team, and was being fetched two or three times per request because
+              teams_for_user() re-fetched it internally; courses_for_user() then ran a full
+              SELECT per course just to count its rows; team_runs() ran one query per course
+              plus one for the stamp. Now: teams() is 3 queries whatever the team count,
+              teams_for_user() accepts a list the caller already holds,
+              curriculum_session_counts() counts every course in one GROUP BY, and
+              team_runs() is a single query. 26 -> 14.
+              Separately, 'does this session have a deck?' was answered by load_all_decks(),
+              which reads and JSON-parses every deck in the course (1.1 MB across 30) and ran
+              three times per page load. The filename carries the answer:
+              pptx_ingest.deck_session_numbers(), 0.3 ms against 5.8 ms.
+              (b) A SESSION CAN BE ADDED WHERE IT BELONGS. The only add button was at the top,
+              so adding to a 34-row course meant scrolling back up every time. There is now an
+              insert strip between every pair of rows and an add button after the last one.
+              The new row takes the next FREE session number rather than pushing the rows
+              below it down: a session's extracted deck is stored against its number, so
+              renumbering would detach every deck below the insertion point and re-download
+              the lot. The number is editable, and two rows claiming the same one are flagged
+              with Save blocked — course+session_no is the primary key, so that save would
+              have silently overwritten one row with the other.
+              (c) CREATE-NEW-COURSE SHOWED THE OLD COURSE'S CURRICULUM underneath the form:
+              startNewCourse() cleared the NAME but not the rows, so the new course appeared
+              to arrive with 34 sessions already in it. Cancel now restores what was open.
+              (d) A SOLO COURSE CAN BE MERGED INTO A TEAM — the case of starting alone and
+              being joined later. The dashboard offers 'Share with <team>' for any team that
+              does not already own the course, and shows which team owns it once shared.
+              Nothing needs migrating: the curriculum and the history are both gathered BY
+              COURSE, so the moment the team owns it everyone on it sees the whole thing,
+              including everything built before they arrived.
+              (e) A context line above each section states where you are — workspace ›
+              course, the team's other courses one click away, and how many people it is
+              shared with — so 'pick the team, then pick the course' reads as the two steps
+              it is.
+              UI harness extended to 48 assertions covering all of the above."
+    - "1.51 — 'I SELECTED 32 AND GOT A DOC FOR 31'. Investigated end to end and the current
+              code does NOT do this: the client posts session_no 32 (checked by intercepting
+              the request in the UI harness), neighbours(32) resolves cur=32 / prev=31, and a
+              LIVE generation of the opening chunk for 32 returned recap.prev_session_no=31
+              with Session 31's five agenda items and session 32's own takeaways as the
+              agenda. So nothing was reproduced, and no fix could honestly be claimed.
+              What DOES produce exactly that symptom is resuming an abandoned run: a run
+              carries its own session, fixed when it started, so resuming one for session 31
+              while the picker sits on 32 means every chunk under review is 31's — and the
+              reviewer had abandoned runs being offered over and over, because until 1.47
+              Discard did not stick. Nothing on screen said which session the open run
+              belonged to, so the two could disagree silently.
+              The panel now names it — 'Generating Session 31 — Spooling, Buffering & Disk
+              Structure' — and says plainly when that differs from the picker, with the
+              consequence spelled out ('will produce that document — discard it and start
+              again'). The disagreement is visible at the moment it matters instead of being
+              discovered in the finished document. Harness at 51 assertions, including a
+              resumed run for a session other than the selected one."
+    - "1.52 — THE OFF-BY-ONE FOUND, AND FOUR THINGS THE AGENT SHOULD HAVE DONE ITSELF.
+              (a) ROOT CAUSE of 'I selected 32 and got 31', from a screenshot showing session
+              32 selected while the log generated session 31's takeaways: THE SESSION PICKER
+              WAS NEVER LOCKED DURING A RUN. A run's session is fixed the moment it starts,
+              so changing the picker mid-flight left the screen saying 32 while every chunk —
+              and the finished document — was 31's. Now disabled while a run is active, with
+              the run's own session named beside it. (1.51 added the mismatch banner; this is
+              the cause it was pointing at.)
+              (b) THE COST PANEL SAT ON TOP OF THE TEXT. It was position:fixed at
+              `left: calc(50% + 490px)` — an offset computed for the old 940px page, which
+              put it in the empty gutter. The shell is 1360px now, so the same offset lands
+              inside the content. Any panel positioned by an assumed page width will do this
+              again, so it is part of the layout instead. The sheet template and extraction
+              gaps moved from the fixed left rail into the content column for the same
+              reason, and because that is where they can actually be read.
+              (c) PER-COURSE LENGTH BUDGETS, PER-SESSION OVERRIDES. The page and slide
+              ceilings were single harness numbers applied to every course — right as a
+              default, wrong as a rule, and changing one meant editing a config file for
+              everybody. New src/budgets.py resolves session override → course default →
+              harness default, and every consumer (prompt, guardrails, page grader, repair
+              pass) asks it rather than reading the harness. Sanity-clamped, so a stray 0 or
+              5000 in a form field cannot become a ceiling no document can satisfy.
+              (d) THE AGENT NOW FIXES WHAT IT DETECTS. It was finding repeated bullets in a
+              chunk and then telling the REVIEWER to press Regenerate — the wrong division of
+              labour: a defect the machine can quote precisely is one it should repair, and a
+              human's attention is worth more than one extra call. A chunk whose bullets
+              restate their paragraph is now sent back once, with the offending lines quoted,
+              before anyone is asked to look at it. Once, and only if the retry is measurably
+              better — a re-roll that trades one defect for another is not worth its cost.
+              (e) COST: 25,470 TOKENS PER RUN WERE SPENT RE-SENDING WORK ALREADY DONE. Every
+              chunk received the full JSON of every chunk before it, at full price (it changes
+              per call, so it can never be cached) and growing with the SQUARE of the takeaway
+              count. A chunk needs two things from its predecessors — what is already covered,
+              and which slide numbers are taken — not their prose, tables, analogies or
+              speaker notes. _approved_digest() sends exactly that: 89% smaller, 25,470 ->
+              3,360 tokens per six-chunk run, verified by a live generation that continued
+              numbering correctly from slide 14 and covered the right takeaway.
+              Also measured and fixed this round: 26 database round-trips per page load down
+              to 14 (teams() was 1+2N and fetched three times per request; course counts ran
+              a SELECT per course; team history ran one query per course), and the
+              'has this session got a deck?' check stopped parsing 1.1 MB of deck JSON three
+              times per load in favour of reading the filenames — 5.8 ms to 0.3 ms."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

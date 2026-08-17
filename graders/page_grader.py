@@ -103,11 +103,15 @@ def _labelled_text(label: str, value) -> str:
     return f"{label} {value}"
 
 
-def estimate(doc: dict) -> dict:
+def estimate(doc: dict, budgets: dict | None = None) -> dict:
     """Estimated rendered page count for a TR-doc JSON, plus the gate verdict.
 
     Mirrors docx_writer.write_docx element for element — if the renderer changes,
     change this in the same commit or the gate silently drifts.
+
+    `budgets` (src.budgets.for_session) carries the ceiling THIS document is held to,
+    which may be the course's own or a single session's override rather than the
+    harness default. Omitted, the harness numbers apply exactly as before.
     """
     cfg = config.harness()["constraints"]["pages"]
     s = _Sheet(_layout())
@@ -172,8 +176,8 @@ def estimate(doc: dict) -> dict:
 
     usable = s.L["usable_height_pt"]
     pages = max(1, math.ceil(s.height / usable))
-    max_pages = cfg["max"]
-    target = cfg.get("target", max_pages)
+    max_pages = int((budgets or {}).get("max_pages") or cfg["max"])
+    target = int((budgets or {}).get("target_pages") or cfg.get("target", max_pages))
     return {
         "estimated_pages": pages,
         "max_pages": max_pages,

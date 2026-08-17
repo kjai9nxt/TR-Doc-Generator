@@ -181,6 +181,12 @@ _SCHEMA = [
          course TEXT, session_no INTEGER, topic TEXT, session_name TEXT,
          key_takeaways TEXT, ppt_link TEXT, deck_hash TEXT, deck_status TEXT,
          updated_at TEXT, PRIMARY KEY (course, session_no))""",
+    # How long a doc may be, per COURSE. A semester course and an interview course are
+    # not the same shape, and editing harness.yaml to say so would change it for
+    # everyone. NULL means "use the harness default".
+    """CREATE TABLE IF NOT EXISTS course_settings (
+         course TEXT PRIMARY KEY, max_pages INTEGER, max_slides INTEGER,
+         updated_at TEXT)""",
     "CREATE INDEX IF NOT EXISTS idx_curriculum_course ON curriculum(course)",
 ]
 
@@ -196,23 +202,35 @@ _RUNS_ADDED_COLUMNS = [
 ]
 
 
+# Same story for `curriculum`: per-SESSION budget overrides, for the odd session that
+# needs more room (or much less) than the rest of its course. NULL = inherit.
+_CURRICULUM_ADDED_COLUMNS = [
+    ("max_pages", "INTEGER"),
+    ("max_slides", "INTEGER"),
+]
+
+
 def _add_missing_columns(conn) -> list[str]:
-    """Bring an existing `runs` table up to date. Idempotent."""
-    try:
-        cur = conn.cursor()
-        cur.execute("PRAGMA table_info(runs)")
-        have = {row[1] for row in cur.fetchall()}
-    except Exception:
-        return []
+    """Bring existing tables up to date. Idempotent."""
     added = []
-    for name, decl in _RUNS_ADDED_COLUMNS:
-        if name in have:
-            continue
+    for table, cols in (("runs", _RUNS_ADDED_COLUMNS),
+                        ("curriculum", _CURRICULUM_ADDED_COLUMNS)):
         try:
-            conn.execute(f"ALTER TABLE runs ADD COLUMN {name} {decl}")
-            added.append(name)
+            cur = conn.cursor()
+            cur.execute(f"PRAGMA table_info({table})")
+            have = {row[1] for row in cur.fetchall()}
         except Exception:
-            pass                 # a racing instance added it first — harmless
+            continue
+        if not have:
+            continue             # table not created yet; _SCHEMA covers it
+        for name, decl in cols:
+            if name in have:
+                continue
+            try:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+                added.append(f"{table}.{name}")
+            except Exception:
+                pass             # a racing instance added it first — harmless
     return added
 
 
@@ -327,18 +345,42 @@ def team_course_list(team_id: int) -> list[str]:
 
 
 def teams() -> list[dict]:
+    """Every team, with its members and courses — in THREE queries, not 1 + 2N.
+
+    It used to fetch the team list and then, per team, one query for members and one
+    for courses. That is invisible on a local SQLite file and expensive on the cloud
+    database the app actually runs against, where every query is a network round-trip:
+    a single page load was making 26 of them, which is where the "everything takes a
+    moment" came from. Fetch the three tables whole and group them here instead.
+    """
     rows = _query("SELECT * FROM teams ORDER BY created_at DESC")
+    if not rows:
+        return []
+    members: dict = {}
+    for r in _query("SELECT team_id, user_email FROM team_members"):
+        members.setdefault(r["team_id"], []).append(r["user_email"])
+    courses: dict = {}
+    try:
+        for r in _query("SELECT team_id, course FROM team_courses ORDER BY course"):
+            if r.get("course"):
+                courses.setdefault(r["team_id"], []).append(r["course"])
+    except Exception:
+        courses = {}
     for t in rows:
-        t["members"] = [r["user_email"] for r in _query(
-            "SELECT user_email FROM team_members WHERE team_id=?", (t["id"],))]
-        t["courses"] = team_course_list(t["id"])
+        t["members"] = members.get(t["id"], [])
+        got = list(courses.get(t["id"], []))
+        primary = (t.get("course") or "").strip()
+        if primary and primary not in got:
+            got.insert(0, primary)      # teams predating team_courses
+        t["courses"] = got
     return rows
 
 
-def teams_for_user(email: str) -> list[dict]:
-    ids = {r["team_id"] for r in _query(
-        "SELECT team_id FROM team_members WHERE user_email=?", (email,))}
-    return [t for t in teams() if t["id"] in ids]
+def teams_for_user(email: str, all_teams: list[dict] | None = None) -> list[dict]:
+    """`all_teams` lets a caller that already holds the team list avoid re-fetching it —
+    teams() is three queries, and this used to be called two or three times per request."""
+    all_teams = teams() if all_teams is None else all_teams
+    return [t for t in all_teams if email in (t.get("members") or [])]
 
 
 def team_for_user_course(email: str, course: str | None):
@@ -351,7 +393,7 @@ def team_for_user_course(email: str, course: str | None):
     return None
 
 
-def team_runs(team_id: int) -> list[dict]:
+def team_runs(team_id: int, courses: list[str] | None = None) -> list[dict]:
     """Everything the team has produced — by its stamp OR by any course it owns.
 
     Both halves are needed. The stamp is missing on runs made before the team existed,
@@ -360,15 +402,20 @@ def team_runs(team_id: int) -> list[dict]:
     team's work, so the stamp catches that. A member added next month sees the whole
     history either way, which is the point of gathering it here.
     """
-    seen, out = set(), []
-    for r in runs(team_id=team_id):
-        seen.add(r["id"]); out.append(r)
-    for course in team_course_list(team_id):
-        for r in runs(course=course):
-            if r["id"] not in seen:
-                seen.add(r["id"]); out.append(r)
-    out.sort(key=lambda r: r.get("ts") or "", reverse=True)
-    return out
+    courses = team_course_list(team_id) if courses is None else courses
+    # ONE query rather than one per course plus one for the stamp: on the cloud database
+    # each of those is a network round-trip, and a team with several courses was paying
+    # for all of them on every page load.
+    q = "SELECT * FROM runs WHERE team_id = ?"
+    args: list = [team_id]
+    if courses:
+        q += " OR course IN (" + ",".join("?" for _ in courses) + ")"
+        args += courses
+    q += " ORDER BY ts DESC LIMIT 1000"
+    try:
+        return [_shape_run(r) for r in _query(q, tuple(args))]
+    except Exception:
+        return []
 
 
 def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
@@ -385,11 +432,14 @@ def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
                            them out of an agent they are entitled to use. Put them in a
                            team and the list narrows to that team's courses.
     """
-    known = set(curriculum_courses())
+    # One count query instead of curriculum(name) per course, and ONE teams() rather
+    # than teams() plus teams_for_user() fetching it all over again.
+    counts = curriculum_session_counts()
+    known = set(counts)
     all_teams = teams()
     for t in all_teams:
         known.update(t.get("courses") or [])
-    mine = teams_for_user(email)
+    mine = teams_for_user(email, all_teams)
     my_courses = {c for t in mine for c in (t.get("courses") or [])}
     if is_admin or not mine:
         visible = known
@@ -401,7 +451,7 @@ def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
         members = sorted({m for t in owners for m in (t.get("members") or [])})
         out.append({
             "name": name,
-            "sessions": len(curriculum(name)),
+            "sessions": counts.get(name, 0),
             "teams": [t["name"] for t in owners],
             "members": members,
             "mine": name in my_courses,
@@ -689,6 +739,9 @@ def _row_to_session(r: dict) -> dict:
         "ppt_link": r.get("ppt_link") or "",
         "deck_hash": r.get("deck_hash") or "",
         "deck_status": r.get("deck_status") or ("linked" if (r.get("ppt_link") or "") else "none"),
+        # Per-session budget overrides; None means "inherit the course's".
+        "max_pages": r.get("max_pages"),
+        "max_slides": r.get("max_slides"),
         "updated_at": r.get("updated_at"),
     }
 
@@ -701,6 +754,61 @@ def curriculum(course: str) -> list[dict]:
     except Exception:
         return []
     return [_row_to_session(r) for r in rows]
+
+
+def course_settings(course: str) -> dict:
+    """A course's own page/slide budgets, or {} when it uses the harness defaults."""
+    try:
+        rows = _query("SELECT max_pages, max_slides FROM course_settings WHERE course=?",
+                      (course,))
+    except Exception:
+        return {}
+    return rows[0] if rows else {}
+
+
+def set_course_settings(course: str, *, max_pages=None, max_slides=None) -> bool:
+    """Set (or clear, by passing None) a course's budgets."""
+    try:
+        _exec("""INSERT INTO course_settings (course, max_pages, max_slides, updated_at)
+                 VALUES (?,?,?,?)
+                 ON CONFLICT(course) DO UPDATE SET
+                   max_pages=excluded.max_pages, max_slides=excluded.max_slides,
+                   updated_at=excluded.updated_at""",
+              (course, max_pages, max_slides, _now()))
+        return True
+    except Exception:
+        return False
+
+
+def session_settings(course: str, session_no: int) -> dict:
+    """One session's overrides, or {} when it inherits the course's."""
+    try:
+        rows = _query("SELECT max_pages, max_slides FROM curriculum "
+                      "WHERE course=? AND session_no=?", (course, int(session_no)))
+    except Exception:
+        return {}
+    return rows[0] if rows else {}
+
+
+def set_session_settings(course: str, session_no: int, *, max_pages=None,
+                         max_slides=None) -> bool:
+    try:
+        _exec("UPDATE curriculum SET max_pages=?, max_slides=?, updated_at=? "
+              "WHERE course=? AND session_no=?",
+              (max_pages, max_slides, _now(), course, int(session_no)))
+        return True
+    except Exception:
+        return False
+
+
+def curriculum_session_counts() -> dict:
+    """course -> number of sessions, in one query. The course list used to run a full
+    SELECT per course just to count its rows."""
+    try:
+        rows = _query("SELECT course, COUNT(*) AS n FROM curriculum GROUP BY course", ())
+    except Exception:
+        return {}
+    return {r["course"]: r["n"] for r in rows if r.get("course")}
 
 
 def curriculum_courses() -> list[str]:

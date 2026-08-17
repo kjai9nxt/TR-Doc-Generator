@@ -54,7 +54,7 @@ def _score_key(accepted: bool, report: dict) -> tuple:
 
 
 def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bool,
-             enforce_time: bool = True):
+             enforce_time: bool = True, budgets: dict | None = None):
     """Run all graders/guardrails on a draft. Returns (accepted, report, issues).
 
     enforce_time=False keeps the recording-time estimate in the report but stops it
@@ -67,13 +67,14 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
         use_judge = True
     if time_always_enforced():
         enforce_time = True
-    gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time)
+    gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time,
+                          budgets=budgets)
     te = time_grader.estimate(doc)
-    pe = page_grader.estimate(doc)
+    pe = page_grader.estimate(doc, budgets)
     # time_enforced travels with the report so downstream consumers (draft ranking,
     # the UI, the dashboard) know the estimate is informational on this run.
     report = {"guardrails": gr.as_dict(), "time": te, "pages": pe,
-              "time_enforced": enforce_time}
+              "time_enforced": enforce_time, "budgets": budgets or {}}
     issues = list(gr.failures)
     time_ok = te["within_budget"] or not enforce_time
     if enforce_time and not te["within_budget"]:
@@ -413,8 +414,9 @@ def _too_long(doc: dict, report: dict) -> list[str]:
     """
     over = []
     con = config.harness()["constraints"]["slides"]
-    ceiling = con.get("max_rich", con["max"]) if not report.get("time_enforced", True) \
-        else con["max"]
+    ceiling = int((report.get("budgets") or {}).get("max_slides")
+                  or (con.get("max_rich", con["max"])
+                      if not report.get("time_enforced", True) else con["max"]))
     n_slides = sum(len(sec.get("slides") or []) for sec in doc.get("sections") or [])
     if n_slides > ceiling:
         over.append(f"slide count ({n_slides}/{ceiling})")
@@ -429,7 +431,8 @@ def _too_long(doc: dict, report: dict) -> list[str]:
 
 
 def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
-             enforce_time: bool = True, on_event=None, run_id: str | None = None) -> dict:
+             enforce_time: bool = True, on_event=None, run_id: str | None = None,
+             budgets: dict | None = None) -> dict:
     """Grade an assembled guided doc and render the .docx + .md + grade report.
 
     This is THE way a TR doc is produced: the chunks were generated one per key
@@ -468,7 +471,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
 
     def grade(d: dict, rnd: int):
         acc, rep, iss, _ = evaluate(d, cur, is_first, is_last, use_judge=use_judge,
-                                    enforce_time=enforce_time)
+                                    enforce_time=enforce_time, budgets=budgets)
         rep["round"] = rnd
         log(f"accepted={acc} | est={rep['time']['estimated_minutes']}min"
             f"{'' if enforce_time else ' (40-min limit OFF — not graded on time)'} "
@@ -497,7 +500,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
             f"document that no single chunk review could see (repair {rnd}/{max_repair}, "
             f"~1-2 min). Coverage is preserved; ritual and off-agenda material are cut.")
         base = (context_builder.build_user_prompt(prev, cur, nxt)
-                + context_builder.time_mode_block(enforce_time))
+                + context_builder.time_mode_block(enforce_time, budgets=budgets))
         doc = generator.revise(base, json.dumps(doc, ensure_ascii=False), issues,
                               enforce_time=enforce_time)
         accepted, report, issues = grade(doc, rnd)

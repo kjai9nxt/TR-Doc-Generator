@@ -237,7 +237,7 @@ def build_user_prompt(prev: Session | None, cur: Session, nxt: Session | None) -
             + f"\nNow produce the TR doc JSON for Session {cur.number}: {cur.name}.\n")
 
 
-def _page_budget_block(guided: bool) -> str:
+def _page_budget_block(guided: bool, budgets: dict | None = None) -> str:
     """The page ceiling, stated in every mode.
 
     It is separate from the time ceiling because the two measure different things: a
@@ -245,7 +245,10 @@ def _page_budget_block(guided: bool) -> str:
     note costs a minute and one line. A doc can sit inside the 40-minute budget and
     still be twenty pages, which is what the reviewer was rejecting.
     """
-    pg = config.harness()["constraints"]["pages"]
+    pg = dict(config.harness()["constraints"]["pages"])
+    if budgets:
+        pg["max"] = budgets.get("max_pages", pg["max"])
+        pg["target"] = budgets.get("target_pages", pg.get("target"))
     share = (" Keep this chunk proportionate to its share of that budget."
              if guided else "")
     return (
@@ -257,17 +260,20 @@ def _page_budget_block(guided: bool) -> str:
         f"that should be bullets, filler. Never drop a sub-concept to fit.\n")
 
 
-def slide_ceiling(enforce_time: bool) -> int:
+def slide_ceiling(enforce_time: bool, budgets: dict | None = None) -> int:
     """The document-wide slide ceiling guardrails will actually enforce.
 
     Mirrors guardrails.check(rich=not enforce_time): depth mode reads `max_rich`,
     which since 1.29 is the same number — the page ceiling binds, not the slide count.
     """
+    if budgets and budgets.get("max_slides"):
+        return int(budgets["max_slides"])
     con = config.harness()["constraints"]["slides"]
     return int(con.get("max_rich", con["max"]) if not enforce_time else con["max"])
 
 
-def content_budget(enforce_time: bool, n_slides: int | None = None) -> dict:
+def content_budget(enforce_time: bool, n_slides: int | None = None,
+                   budgets: dict | None = None) -> dict:
     """How much a slide may carry, derived from whichever limit actually binds.
 
     Under the PER-SLIDE pacing model the recording ceiling is a limit on the NUMBER of
@@ -285,8 +291,13 @@ def content_budget(enforce_time: bool, n_slides: int | None = None) -> dict:
     budget just moves the failure from the slide gate to the length gate.
     """
     rec = config.harness()["constraints"]["recording"]
-    pages = config.harness()["constraints"]["pages"]
-    n = max(int(n_slides or slide_ceiling(enforce_time)), 1)
+    pages = dict(config.harness()["constraints"]["pages"])
+    if budgets:
+        # The COURSE's ceiling (or this session's), so the word budget the model is
+        # given matches the gate it will actually be judged against.
+        pages["max"] = budgets.get("max_pages", pages["max"])
+        pages["target"] = budgets.get("target_pages", pages.get("target"))
+    n = max(int(n_slides or slide_ceiling(enforce_time, budgets)), 1)
 
     if rec.get("pacing") == "per_slide" and rec.get("minutes_per_slide"):
         wpp = float(pages.get("words_per_page", 122))
@@ -323,7 +334,8 @@ def content_budget(enforce_time: bool, n_slides: int | None = None) -> dict:
             "per_slide_target": total_target // n}
 
 
-def _slide_budget_block(enforce_time: bool, *, guided: bool) -> str:
+def _slide_budget_block(enforce_time: bool, *, guided: bool,
+                        budgets: dict | None = None) -> str:
     """STATE the slide ceiling in the prompt.
 
     It was enforced and never said: `constraints.slides.max` is a hard guardrail, but
@@ -336,7 +348,7 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool) -> str:
     page gates together, at finalize, with no revision pass to repair it.
     """
     con = config.harness()["constraints"]["slides"]
-    mx = slide_ceiling(enforce_time)
+    mx = slide_ceiling(enforce_time, budgets)
     scope = ("The number below is for the WHOLE document, across every section — this "
              "chunk gets the share stated in its own instruction."
              if guided else
@@ -349,7 +361,7 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool) -> str:
         f"on one slide, not to add another slide.\n")
     if not enforce_time:
         return block
-    cb = content_budget(enforce_time, mx)
+    cb = content_budget(enforce_time, mx, budgets)
     if cb["bound_by"] != "pages":
         # word_count pacing: the recording ceiling itself bounds the text, so more slides
         # means less on each — say the number, or "you may use N slides" reads as
@@ -376,7 +388,8 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool) -> str:
         f"them: spend the room on the sub-concepts an exam tests, never on ritual.\n")
 
 
-def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
+def time_mode_block(enforce_time: bool, *, guided: bool = False,
+                    budgets: dict | None = None) -> str:
     """The generation tail carrying the LENGTH budget the doc is graded against.
 
     The page ceiling is stated in EVERY mode. The 40-minute time ceiling depends on
@@ -388,7 +401,8 @@ def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
     Used by BOTH generation modes (one-shot whole doc and guided per-chunk) so the
     behaviour is identical in each.
     """
-    pages = _page_budget_block(guided) + _slide_budget_block(enforce_time, guided=guided)
+    pages = (_page_budget_block(guided, budgets)
+             + _slide_budget_block(enforce_time, guided=guided, budgets=budgets))
     if not enforce_time:
         return "\n" + config.depth_mode() + "\n" + pages
     rec = config.harness()["constraints"]["recording"]
@@ -399,7 +413,7 @@ def time_mode_block(enforce_time: bool, *, guided: bool = False) -> str:
     # instinct — trimming a slide's text buys no recording time at all, and dropping a
     # sub-concept to save time buys nothing while costing coverage.
     if rec.get("pacing") == "per_slide" and mps:
-        allowed = int(mx // mps)
+        allowed = min(int(mx // mps), slide_ceiling(enforce_time, budgets))
         how = (f"\nHARD TIME LIMIT: {mx} minutes for the whole session. Recording pace is "
                f"about {mps} minutes PER SLIDE regardless of how much is on it, so the "
                f"budget is spent by the slide COUNT — {allowed} slides is "
@@ -507,7 +521,7 @@ Return ONLY the patch JSON object."""
 
 
 def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
-                          enforce_time: bool = True) -> int:
+                          enforce_time: bool = True, budgets: dict | None = None) -> int:
     """How many slides THIS guided section may use.
 
     Guided mode drafts one section per LLM call, so no single call can see the
@@ -522,7 +536,7 @@ def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
     2,2,2,2,6). The floor is min_sub_concepts_per_takeaway, since a section that cannot
     fit its required sub-concepts would fail the coverage gate instead.
     """
-    budget = slide_ceiling(enforce_time)
+    budget = slide_ceiling(enforce_time, budgets)
     floor = int(config.harness()["constraints"]["coverage"]
                 .get("min_sub_concepts_per_takeaway", 2))
     # A session with more takeaways than budget/floor cannot give every section that
@@ -539,7 +553,8 @@ def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
 
 def takeaway_instruction(cur: Session, idx: int, *, slides_used: int = 0,
                          sections_left: int | None = None,
-                         enforce_time: bool = True) -> str:
+                         enforce_time: bool = True,
+                         budgets: dict | None = None) -> str:
     """idx is 0-based into cur.key_takeaways.
 
     slides_used / sections_left describe the slide budget already spent by the OTHER
@@ -552,14 +567,14 @@ def takeaway_instruction(cur: Session, idx: int, *, slides_used: int = 0,
         sections_left = max(1, cur.key_takeaways_count - idx)
     allowance = chunk_slide_allowance(cur, slides_used=slides_used,
                                      sections_left=sections_left,
-                                     enforce_time=enforce_time)
-    budget = slide_ceiling(enforce_time)
+                                     enforce_time=enforce_time, budgets=budgets)
+    budget = slide_ceiling(enforce_time, budgets)
     # A slide allowance on its own is only half a budget: the section can obey it and
     # still write twice as much per slide as the recording ceiling allows, which is how a
     # doc lands inside the slide gate and outside the time gate.
     words = ""
     if enforce_time:
-        cb = content_budget(enforce_time)
+        cb = content_budget(enforce_time, budgets=budgets)
         tail = ("Teach these slides at FULL depth to that budget — the slide allowance and "
                 "the word budget are independent limits, so using every slide does not "
                 "mean writing thinner ones."

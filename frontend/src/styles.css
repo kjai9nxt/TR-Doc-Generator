@@ -267,6 +267,47 @@ a.download, button.download { background: linear-gradient(145deg, #3ad38f, #23a8
 .coursebar label { margin: 0; white-space: nowrap; }
 .coursebar select { width: auto; min-width: 320px; flex: 1 1 320px; }
 
+/* Which session the open guided run is for. Quiet when it agrees with the picker,
+   loud when it does not — that disagreement is how a doc gets produced for a session
+   you did not think you asked for. */
+.runhead { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 4px;
+           padding: 10px 14px; font-size: 13px; background: var(--bg2);
+           border: 1px solid var(--line); border-radius: var(--r); }
+.runhead.mismatch { border-color: var(--warn); background: rgba(232,179,74,.10); }
+.runwarn { font-size: 12.5px; color: var(--warn); line-height: 1.5; }
+
+/* The context line: which workspace, which course, who it is shared with. */
+.context { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+           padding: 10px 16px; margin-bottom: 14px; font-size: 13px;
+           background: var(--card2); border: 1px solid var(--line); border-radius: var(--r); }
+.ctxpart { display: inline-flex; align-items: baseline; gap: 7px; }
+.ctxpart.right { margin-left: auto; }
+.ctxlabel { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); }
+.ctxsep { color: var(--faint); }
+.ctxswitch { display: inline-flex; gap: 6px; flex-wrap: wrap; margin-left: 6px; }
+.ctxswitch .coursechip { padding: 3px 10px; font-size: 12px; }
+
+/* Insert-a-session strips. Between every pair of rows and after the last one, so a
+   session can be added where it belongs instead of only from a button at the top —
+   which meant scrolling back up on a 34-row course every single time. Quiet until
+   hovered, so 35 of them do not shout over the table. */
+.insertbar { display: block; width: 100%; border: none; background: none; padding: 0;
+             height: 9px; cursor: pointer; position: relative; color: var(--accent); }
+.insertbar span { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+                  font-size: 11px; font-weight: 600; white-space: nowrap; opacity: 0;
+                  background: var(--card2); border: 1px solid var(--line);
+                  border-radius: 999px; padding: 2px 10px; transition: opacity .12s; }
+.insertbar:hover span, .insertbar:focus-visible span { opacity: 1; }
+.insertbar::before { content: ''; position: absolute; left: 10px; right: 10px; top: 50%;
+                     height: 1px; background: var(--accent); opacity: 0; transition: opacity .12s; }
+.insertbar:hover::before { opacity: .45; }
+.insertbar.last { height: 34px; margin: 2px 0 0; }
+.insertbar.last span { opacity: 1; }
+.currow.dupe { box-shadow: inset 3px 0 0 var(--err); }
+.sharebox { display: inline-flex; align-items: center; gap: 7px; }
+.sharebox select { width: auto; padding: 6px 28px 6px 10px; font-size: 12.5px; }
+.sharedby { color: var(--ok); }
+
 .curactions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
 .curspacer { flex: 1 1 auto; }
 .curtable { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
@@ -462,18 +503,23 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .dashtotal { background: var(--card2); }
 .costembed { margin-top: 8px; }
 
-/* ---------- Cost side panel (current generation only) ----------
-   Wide screens (>= 1420px): sticky panel in the empty gutter to the right of the
-   940px content column (50% + 490px + 206px wide still fits at 1420). Narrower
-   screens have no gutter, so it becomes a normal block in the flow, right under
-   the intro line. */
+/* ---------- Cost of the current generation ----------
+   IN the content column, not floating over it. It used to be position:fixed at
+   `left: calc(50% + 490px)` — an offset computed for the old 940px-wide page, which
+   put it in the empty gutter beside the text. The shell is 1360px now, so that same
+   offset lands INSIDE the content and the panel sat on top of the words. A panel
+   whose position depends on the page being one particular width will keep doing
+   that, so it is part of the layout instead: a compact card, laid out beside the
+   content on wide screens and above it on narrow ones, overlapping nothing at any
+   width. */
 .costside {
-  position: fixed; z-index: 15;
-  top: 104px; left: calc(50% + 490px); width: 206px;
   background: linear-gradient(180deg, var(--card), #131824);
   border: 1px solid var(--line); border-radius: var(--r);
   padding: 14px 16px 16px; box-shadow: var(--sh);
+  margin: 0 0 16px;
 }
+.costside .csiderows { flex-direction: row; flex-wrap: wrap; gap: 8px 22px;
+                       border-top: 1px solid var(--line); padding-top: 11px; }
 .csidehead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .csidetitle { font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
 .csideclose {
@@ -488,30 +534,17 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .csiderows span { color: var(--muted); }
 .csidepending { margin-top: 10px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .csidenote { font-size: 11.5px; color: var(--faint); flex: 1 1 100%; }
-@media (max-width: 1419px) {
-  .costside { position: static; left: auto; top: auto; width: auto; margin: 0 0 16px; }
-  .csiderows { flex-direction: row; gap: 22px; border-top: none; padding-top: 0; }
-}
-/* ---------- Sheet-templates side panel ----------
-   Reference material you keep open while filling in the two sheet links, so it
-   docks in the LEFT gutter (the cost panel owns the right one) and scrolls on its
-   own.
 
-   Anchored to the VIEWPORT's left edge and sized to whatever gutter is actually
-   available, rather than offset from the centred column by a fixed width. The first
-   version did the latter (right: calc(50% + 490px); width: 262px) and was clipped
-   off-screen between 1420 and 1520px: the gutter is only (100vw - 940)/2, so at the
-   1420px breakpoint there were 240px to hold a 262px panel and its left edge landed
-   at -42px. Now the width can never exceed the gutter:
-     panel right edge = 16 + w   must stay <= (50vw - 470) - 20px gap
-     => w <= 50vw - 506px                                                          */
+/* ---------- Reference panels (sheet template, extraction gaps) ----------
+   Opened deliberately, and shown IN THE CENTRE where they can be read, rather than
+   squeezed into a fixed rail whose width depended on the viewport. They sit at the
+   top of the content column, above whatever section is open, and push it down
+   instead of covering it. */
 .tmplside {
-  position: fixed; z-index: 15;
-  top: 104px; left: 16px; width: min(300px, calc(50vw - 506px));
-  max-height: calc(100vh - 140px); display: flex; flex-direction: column;
+  display: flex; flex-direction: column; max-height: 62vh; margin: 0 0 16px;
   background: linear-gradient(180deg, var(--card), #131824);
-  border: 1px solid var(--line); border-radius: var(--r);
-  padding: 14px 14px 16px; box-shadow: var(--sh);
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 16px 18px 18px; box-shadow: var(--sh);
 }
 .tsidehead { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: 0 0 auto; }
 .tsidetitle { font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
@@ -527,10 +560,6 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 /* Under ~1420px the gutter beside a 940px centred column is too narrow to hold a
    readable panel (tables inside it), so it becomes a normal card in the flow. */
 @media (max-width: 1419px) {
-  .tmplside {
-    position: static; left: auto; top: auto; width: auto;
-    max-height: none; margin: 0 0 16px;
-  }
   .tsidebody { max-height: 420px; }
 }
 
