@@ -248,10 +248,15 @@ check('…and Settings is offered in the rail', byLabel('Settings') !== undefine
 await click(byLabel('Settings'))
 check('Settings shows the course length budget',
       text().includes('Document length for every session'))
+check('…and is where a single session gets its own budget',
+      text().includes('Sessions that need something different'))
 check('…and states what is currently applied', text().includes('Currently applied'))
 await click(byLabel('Curriculum'))
-check('the per-SESSION override stays in the table',
-      $('.curhead .c-lim').length === 2)
+check('the table is back to its seven columns',
+      $('.curhead span').length === 7, `got ${$('.curhead span').length}`)
+check('every row has exactly as many cells as the header',
+      $('.currow')[1].children.length === 7,
+      `row has ${$('.currow')[1].children.length}`)
 
 console.log('\n== the context line says where you are ==')
 await click(byLabel('Curriculum'))

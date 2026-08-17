@@ -307,6 +307,10 @@ a.download, button.download { background: linear-gradient(145deg, #3ad38f, #23a8
 .setrowpair { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 6px; }
 .setfield { display: flex; flex-direction: column; gap: 4px; max-width: 200px; }
 .setfield input { width: 110px; }
+.ovrow { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 8px; }
+.ovname { font-size: 13px; min-width: 240px; }
+.ovrow input { width: 88px; }
+.ovrow select { width: auto; min-width: 280px; }
 .sharebox { display: inline-flex; align-items: center; gap: 7px; }
 .sharebox select { width: auto; padding: 6px 28px 6px 10px; font-size: 12.5px; }
 .sharedby { color: var(--ok); }
@@ -323,9 +327,14 @@ a.download, button.download { background: linear-gradient(145deg, #3ad38f, #23a8
    vertically-centred session number beside it reads as misaligned. */
 .sheetlike .currow {
   align-items: start;
-  grid-template-columns: 74px minmax(120px, 0.9fr) minmax(150px, 1.2fr)
-                         minmax(260px, 2.4fr) minmax(150px, 1fr) 92px 30px;
+  /* SEVEN cells, seven columns — they must match. Adding two override columns without
+     widening this wrapped Deck and ✕ onto a line of their own and broke the table. */
+  grid-template-columns: 72px minmax(110px, 0.8fr) minmax(150px, 1.1fr)
+                         minmax(280px, 2.6fr) minmax(140px, 1fr) 92px 30px;
 }
+/* A wide table scrolls INSIDE itself rather than pushing the page sideways. */
+.curtable { overflow-x: auto; }
+.sheetlike .currow { min-width: 900px; }
 .sheetlike .curhead { align-items: center; }
 .sheetlike textarea { resize: vertical; font-size: 12.5px; line-height: 1.5;
                       padding: 8px 10px; min-height: 38px; }

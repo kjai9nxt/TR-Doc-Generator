@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.54"
+  version: "1.55"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1348,6 +1348,24 @@ meta:
               'Operating Systems', so the workspace opens empty. /api/workspaces reports that
               as unknown_courses and the Team panel says so in words; the fix is one edit in
               /admin -> Teams."
+    - "1.55 — THE CURRICULUM TABLE BROKE THE MOMENT IT GREW. Adding Pages and Slides
+              columns took each row to NINE cells against a grid still declaring SEVEN, so
+              Deck and the remove button wrapped onto a line of their own under every
+              session and the sheet stopped reading as a sheet. A CSS grid does not
+              complain about this — it silently wraps — which is why it shipped.
+              The columns are gone from the table, which is back to seven cells against
+              seven columns, and per-session overrides moved into Settings beside the course
+              budget: a rare adjustment does not earn permanent width in the view you use
+              every visit. The table also scrolls inside itself now rather than pushing the
+              page sideways.
+              Guarded properly this time: the UI smoke test asserts the header cell count
+              AND that a row has exactly as many cells as the header, so the next column
+              added either updates the grid or fails the test.
+              The override got its own endpoint (POST /api/session-settings) rather than
+              riding on the curriculum save — that path upserts the whole row, so a request
+              carrying a session number and two numbers would have blanked the session name
+              and takeaways. Verified end to end: setting an override leaves the session
+              content intact, and clearing it returns to the course default."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

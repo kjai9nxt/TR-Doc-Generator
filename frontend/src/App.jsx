@@ -42,6 +42,15 @@ export default function App() {
     api.courseSettings(forCourse || courseName || undefined)
       .then(setBudget).catch(() => {})
   }
+  // One session's own budget. Its own call, not part of the curriculum save: that
+  // path upserts the whole row, so a request carrying only a session number and two
+  // numbers would blank the session's name and takeaways.
+  function saveSessionBudget(sessionNo, patch) {
+    api.saveSessionSettings(courseName || undefined, sessionNo, patch)
+      .then((d) => setCurRows(d.rows || []))
+      .catch((e) => setCurLogs([e.message]))
+  }
+
   function saveBudget(patch) {
     const next = { ...(budget?.settings || {}), ...patch }
     setBudget((b) => ({ ...(b || {}), settings: next }))
@@ -223,8 +232,6 @@ export default function App() {
       session_name: r.session_name || '',
       key_takeaways: (r.key_takeaways || []).filter((l) => String(l).trim()),
       ppt_link: r.ppt_link ?? null,
-      max_pages: r.max_pages ?? null,
-      max_slides: r.max_slides ?? null,
     })), courseName || undefined).then((d) => {
       setCurLogs([`Saved ${d.saved} session(s).`])
       setCurRows(d.rows || [])
@@ -1274,6 +1281,7 @@ export default function App() {
 
       {tab === 'settings' && (
         <CourseSettings course={courseName} budget={budget} onChange={saveBudget}
+                        rows={curRows} onSession={saveSessionBudget}
                         courseType={courseType}
                         onCourseType={(v) => { setCourseType(v); api.selectCourse(courseName, v).catch(() => {}) }} />
       )}
@@ -1294,10 +1302,12 @@ export default function App() {
 // Per-course settings: how long its documents may be, and how the course is taught.
 // Set once per course and then left alone, which is why it lives here rather than in
 // the curriculum's action bar — where it crowded out the buttons you press every visit.
-function CourseSettings({ course, budget, onChange, courseType, onCourseType }) {
+function CourseSettings({ course, budget, onChange, courseType, onCourseType,
+                         rows = [], onSession }) {
   const d = budget?.defaults || {}
   const eff = budget?.effective || {}
   const set = budget?.settings || {}
+  const overrides = rows.filter((r) => r.max_pages != null || r.max_slides != null)
   return (
     <section className="card">
       <h2><span className="num">⚙️</span> Settings — {course || 'no course'}</h2>
@@ -1324,9 +1334,44 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType }) 
       </div>
       <span className="hint">
         Currently applied: <b>{eff.max_pages} pages</b> and <b>{eff.max_slides} slides</b>
-        {eff.source ? ` (${eff.source})` : ''}. A single session can differ — set its own
-        Pages/Slides in the curriculum table, which overrides this for that session only.
+        {eff.source ? ` (${eff.source})` : ''}.
       </span>
+
+      {/* PER-SESSION OVERRIDES. A rare adjustment, so it lives here rather than as two
+          more columns in the curriculum table — where it took the row to nine cells
+          against a seven-column grid and wrapped Deck onto a line of its own. */}
+      <label>Sessions that need something different</label>
+      {overrides.length === 0 && (
+        <span className="hint">None — every session uses the course budget above.</span>
+      )}
+      {overrides.map((r) => (
+        <div key={r.session_no} className="ovrow">
+          <span className="ovname">{r.session_no} — {r.session_name}</span>
+          <input type="number" value={r.max_pages ?? ''} placeholder={String(eff.max_pages ?? '')}
+                 onChange={(e) => onSession(r.session_no, {
+                   max_pages: e.target.value === '' ? null : Number(e.target.value),
+                   max_slides: r.max_slides ?? null })} />
+          <span className="hint">pages</span>
+          <input type="number" value={r.max_slides ?? ''} placeholder={String(eff.max_slides ?? '')}
+                 onChange={(e) => onSession(r.session_no, {
+                   max_pages: r.max_pages ?? null,
+                   max_slides: e.target.value === '' ? null : Number(e.target.value) })} />
+          <span className="hint">slides</span>
+          <button className="ghostbtn tiny" title="Back to the course budget"
+                  onClick={() => onSession(r.session_no, { max_pages: null, max_slides: null })}>✕</button>
+        </div>
+      ))}
+      <div className="ovrow">
+        <select value="" onChange={(e) => e.target.value &&
+                  onSession(Number(e.target.value), { max_pages: eff.max_pages, max_slides: eff.max_slides })}>
+          <option value="">＋ give a session its own budget…</option>
+          {rows.filter((r) => r.max_pages == null && r.max_slides == null).map((r) => (
+            <option key={r.session_no} value={r.session_no}>
+              {r.session_no} — {r.session_name}
+            </option>
+          ))}
+        </select>
+      </div>
     </section>
   )
 }
@@ -1680,8 +1725,6 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
           <span className="c-name">Session name</span>
           <span className="c-kt">Key takeaways — one per line</span>
           <span className="c-ppt">PPT link</span>
-          <span className="c-lim" title="Leave blank to use the course's budget">Pages</span>
-          <span className="c-lim" title="Leave blank to use the course's budget">Slides</span>
           <span className="c-deck">Deck</span>
           <span className="c-act" />
         </div>
@@ -1709,16 +1752,10 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
                       placeholder="https://docs.google.com/presentation/d/…"
                       title="The deck for this session, if it has been recorded. Blank means the session still needs a TR doc. Changing this link is the only thing that makes the agent download a deck again."
                       onChange={(e) => edit(i, 'ppt_link', e.target.value)} />
-            {/* Per-SESSION overrides. Blank = inherit the course's budget, which is
-                why the placeholder shows the inherited number rather than nothing. */}
-            <input className="c-lim" type="number" value={r.max_pages ?? ''}
-                   placeholder={String(budget?.effective?.max_pages ?? '')}
-                   title="Pages for this session only. Blank inherits the course's budget."
-                   onChange={(e) => edit(i, 'max_pages', e.target.value === '' ? null : Number(e.target.value))} />
-            <input className="c-lim" type="number" value={r.max_slides ?? ''}
-                   placeholder={String(budget?.effective?.max_slides ?? '')}
-                   title="Slides for this session only. Blank inherits the course's budget."
-                   onChange={(e) => edit(i, 'max_slides', e.target.value === '' ? null : Number(e.target.value))} />
+            {/* Per-session budget overrides are NOT here. Two more columns took the
+                row to nine cells against a seven-column grid, so Deck and ✕ wrapped onto
+                a line of their own and the sheet stopped reading as a sheet. They are a
+                rare adjustment, so they live in Settings; this table stays the course. */}
             <span className="c-deck">{deckChip(r)}</span>
             <span className="c-act">
               <button className="ghostbtn tiny" title="Remove this session"

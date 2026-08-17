@@ -162,6 +162,13 @@ class CourseSettingsBody(BaseModel):
     max_slides: int | None = None
 
 
+class SessionSettingsBody(BaseModel):
+    session_no: int
+    course: str | None = None
+    max_pages: int | None = None
+    max_slides: int | None = None
+
+
 class IngestBody(BaseModel):
     course: str | None = None
     # Re-fetch decks whose link has not changed. The only way to pick up an edit made to
@@ -544,6 +551,24 @@ def save_course_settings(body: CourseSettingsBody, user: dict = Depends(current_
     return {"ok": True, "effective": budget_rules.for_session(course)}
 
 
+@app.post("/api/session-settings")
+def save_session_settings(body: SessionSettingsBody, user: dict = Depends(current_user)):
+    """One session's budget override, on its own.
+
+    Deliberately NOT folded into the curriculum save: that path upserts the whole row,
+    so sending a session number and two numbers would blank the session's name and
+    takeaways. A setting that touches two columns gets an endpoint that touches two
+    columns.
+    """
+    from src import budgets as budget_rules
+    course = _course_for(user, body.course)
+    db.set_session_settings(course, body.session_no,
+                            max_pages=body.max_pages, max_slides=body.max_slides)
+    return {"ok": True,
+            "effective": budget_rules.for_session(course, body.session_no),
+            "rows": _curriculum_rows(course)}
+
+
 @app.get("/api/curriculum")
 def get_curriculum(course: str | None = None, user: dict = Depends(current_user)):
     course = _course_for(user, course)
@@ -566,8 +591,12 @@ def save_curriculum(body: CurriculumSaveBody, course: str | None = None,
             session_name=row.session_name or "",
             key_takeaways=row.key_takeaways or [],
             ppt_link=row.ppt_link)
-        db.set_session_settings(course, row.session_no,
-                                max_pages=row.max_pages, max_slides=row.max_slides)
+        # Only when the caller actually sent one — a row saved from the table carries
+        # no budget fields, and writing None over an existing override would silently
+        # discard it every time the curriculum was saved.
+        if row.max_pages is not None or row.max_slides is not None:
+            db.set_session_settings(course, row.session_no,
+                                    max_pages=row.max_pages, max_slides=row.max_slides)
         saved += 1 if ok else 0
     # Keep the on-disk projection in step, so the offline loaders and the eval harness
     # see the edit without waiting for a sync.

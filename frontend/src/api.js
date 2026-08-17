@@ -95,6 +95,10 @@ export const api = {
   courseSettings: (course) => req(`/course-settings${qs({ course })}`),
   saveCourseSettings: (course, settings) =>
     req('/course-settings', { method: 'POST', body: JSON.stringify({ course, ...settings }) }),
+  // One session's budget override, on its own — folding it into the curriculum save
+  // would upsert the whole row and blank the session's name and takeaways.
+  saveSessionSettings: (course, session_no, settings) =>
+    req('/session-settings', { method: 'POST', body: JSON.stringify({ course, session_no, ...settings }) }),
   saveCurriculum: (rows, course) =>
     req('/curriculum', { method: 'POST', body: JSON.stringify({ rows, course }) }),
   deleteCurriculumRow: (session_no, course) =>
