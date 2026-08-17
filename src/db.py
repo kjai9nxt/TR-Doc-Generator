@@ -418,7 +418,9 @@ def team_runs(team_id: int, courses: list[str] | None = None) -> list[dict]:
         return []
 
 
-def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
+def courses_for_user(email: str, *, is_admin: bool = False,
+                     all_teams: list[dict] | None = None,
+                     counts: dict | None = None) -> list[dict]:
     """Which courses this person may work on, and who else is on each.
 
     A course belongs to the TEAM that owns it, so a curriculum one member imports is
@@ -434,9 +436,11 @@ def courses_for_user(email: str, *, is_admin: bool = False) -> list[dict]:
     """
     # One count query instead of curriculum(name) per course, and ONE teams() rather
     # than teams() plus teams_for_user() fetching it all over again.
-    counts = curriculum_session_counts()
+    # A caller that already holds these passes them in: teams() is three queries and
+    # the counts are one, and a page that needs both was paying for them twice.
+    counts = curriculum_session_counts() if counts is None else counts
     known = set(counts)
-    all_teams = teams()
+    all_teams = teams() if all_teams is None else all_teams
     for t in all_teams:
         known.update(t.get("courses") or [])
     mine = teams_for_user(email, all_teams)

@@ -117,15 +117,13 @@ export default function App() {
   function switchCourse(name) {
     if (!name || name === courseName) return
     setCourseName(name)
-    api.selectCourse(name, courseType).then((d) => {
-      setCurRows(d.rows || [])
-      setSessions(d.sessions || [])
-      setSel((d.sessions || [])[0]?.number ?? null)
-      setImportedFrom(d.imported_from || null)
-      setShowImport(!(d.rows || []).length)
-      setSyncOut(null); setCurLogs([])
-      api.curriculum(name).then((c) => setCurPending(c.pending || 0)).catch(() => {})
-    }).catch((e) => setCurLogs([e.message]))
+    setSyncOut(null); setCurLogs([])
+    // Make it the active course, then draw everything from ONE bootstrap. This used to
+    // be a select call plus a second curriculum call whose only purpose was a count the
+    // first response already had.
+    api.selectCourse(name, courseType)
+      .then(() => bootstrap(name))
+      .catch((e) => setCurLogs([e.message]))
   }
 
   function loadCurriculum(forCourse) {
@@ -208,7 +206,9 @@ export default function App() {
   // It used to fetch ONLY after a generation finished, which was fine while the list
   // was appended to the result page — but it has its own section now, and that section
   // sat empty until you happened to generate something in the same visit.
-  useEffect(() => { if (user) refreshLearned() }, [user, result, evalReport])
+  useEffect(() => {
+    if (user && (tab === 'rules' || result)) refreshLearned()
+  }, [tab, user, result, evalReport])
 
   // The user's own history (grouped by course) + their teams' shared docs.
   const [history, setHistory] = useState(null)
@@ -217,12 +217,18 @@ export default function App() {
     api.myHistory().then(setHistory).catch(() => {})
     api.myTeams().then((d) => setTeams(d.teams || [])).catch(() => {})
   }
-  useEffect(() => { if (user) refreshMine() }, [result, user])
+  // History and Team data is only ever shown in those tabs, so it is fetched when one
+  // is opened rather than on every sign-in — /my/teams alone is four queries. It also
+  // refreshes after a run finishes, since that is when it changes.
+  useEffect(() => {
+    if (user && (tab === 'history' || tab === 'team')) refreshMine()
+  }, [tab, user, result])
   // Ask on sign-in and after each finished doc — a run that just completed must drop
   // off the list, and one abandoned earlier must appear on it.
-  useEffect(() => { if (user) refreshResumable() }, [user, result])
+  // The resumable list comes with the bootstrap; refresh it only when it can change.
+  useEffect(() => { if (user && result) refreshResumable() }, [result])
   // The curriculum is what the app opens onto now, so it loads with the session.
-  useEffect(() => { if (user) { loadCourses(); loadCurriculum() } }, [user])
+  useEffect(() => { if (user) bootstrap() }, [user])
 
   function saveCurriculum() {
     setCurSaving(true); setCurLogs([])
@@ -308,17 +314,34 @@ export default function App() {
     }).catch(() => {})
   }, [])
 
-  // Load status + saved settings once signed in.
-  useEffect(() => {
-    if (!user) return
-    api.status().then((s) => {
-      setStatus(s)
-      if (s.saved_links?.course) setCourseLink(s.saved_links.course)
-      if (s.settings?.course_type) setCourseType(s.settings.course_type)
-      if (s.settings?.course_name) setCourseName(s.settings.course_name)
+  // ONE call for everything the page needs. It used to fan out into eight requests
+  // (status, courses, workspaces, course-settings, curriculum, sessions, history,
+  // teams, resumable), each its own round-trip and each re-reading what the others
+  // had just read — which is what made selecting a course feel slow.
+  function bootstrap(forCourse) {
+    api.bootstrap(forCourse || undefined).then((b) => {
+      setStatus(b.status)
+      if (b.status?.saved_links?.course) setCourseLink(b.status.saved_links.course)
+      if (b.status?.settings?.course_type) setCourseType(b.status.settings.course_type)
+      setCourseName(b.course || '')
+      setCourses(b.courses || [])
+      setMyTeams(b.workspaces?.teams || [])
+      setCurRows(b.curriculum?.rows || [])
+      setCurPending(b.curriculum?.pending || 0)
+      setImportedFrom(b.curriculum?.imported_from || null)
+      setShowImport(!(b.curriculum?.rows || []).length && !(b.courses || []).length)
+      setBudget(b.budget || null)
+      setServerResumable(b.resumable || [])
+      const list = b.sessions || []
+      setSessions(list)
+      setSel((cur) => (list.some((s) => s.number === cur) ? cur : (list[0]?.number ?? null)))
     }).catch(() => {})
-    // Sessions appear ONLY after a successful Connect & Sync — never before.
-  }, [user])
+  }
+
+  // (status/settings arrive with the bootstrap above — this legacy loader is kept for
+  // nothing and removed.)
+  // status, settings and saved links all arrive with the bootstrap call above.
+
 
 
   function onSignIn(credential) {

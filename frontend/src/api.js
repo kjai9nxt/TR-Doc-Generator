@@ -77,6 +77,9 @@ export const api = {
 
   // Courses this person may work on — their teams' courses. A course one member
   // imports is the course everyone on that team opens.
+  // ONE request for everything the page needs to draw itself. Opening the app used to
+  // fire eight, each re-reading tables the others had just read.
+  bootstrap: (course) => req(`/bootstrap${qs({ course })}`),
   courses: () => req('/courses'),
   // Where this person can work: alone, or inside each of their teams.
   workspaces: () => req('/workspaces'),

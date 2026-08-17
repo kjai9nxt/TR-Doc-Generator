@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.55"
+  version: "1.57"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1366,6 +1366,51 @@ meta:
               carrying a session number and two numbers would have blanked the session name
               and takeaways. Verified end to end: setting an override leaves the session
               content intact, and clearing it returns to the course default."
+    - "1.56 — SIGN-IN DIED WHEN GOOGLE WAS UNREACHABLE, AND ASKED GOOGLE FAR TOO OFTEN.
+              The 1.54 error handler paid for itself immediately: instead of another bare
+              500 the screen read TransportError on /api/auth/login ... SSLEOFError, which
+              names the real problem — the SERVER could not open a TLS connection to
+              www.googleapis.com to fetch Google's signing certificates. Typically a proxy
+              or firewall between the host and Google.
+              Two defects behind it:
+              (a) verify_credential() caught only ValueError, so a TransportError escaped as
+              an unhandled exception. A network failure was presented as a broken app.
+              There is now AuthUnavailable — 'we could not ask' — kept distinct from
+              AuthError — 'we asked and the answer was no' — with one retry, because an
+              SSLEOFError is usually gone a moment later. It returns 503, NOT 401:
+              a 401 makes the client discard the session and bounce to the login screen,
+              which is the worst possible response to a passing network blip. It logs the
+              user out over someone else's outage and sends them to re-authenticate against
+              the very service that is unreachable.
+              (b) IT ASKED GOOGLE ON EVERY REQUEST. verify_oauth2_token() fetches Google's
+              certificates over the network each call, and current_user() runs on every
+              single API request — so a page load spent several round-trips to
+              googleapis.com re-verifying a token it had just verified, and one flaky moment
+              on that link locked the whole app out. A Google ID token is signed and carries
+              its own expiry, so re-asking seconds later learns nothing. Verified tokens are
+              now cached for 5 minutes, capped by the token's own exp. Measured: five
+              requests with the same token now cost ONE verification instead of five."
+    - "1.57 — OPENING THE APP, AND SWITCHING COURSE, WERE DEATH BY ROUND-TRIP.
+              Measured rather than guessed. A page load fired EIGHT HTTP requests — status,
+              courses, workspaces, course-settings, curriculum, sessions, my/history,
+              my/teams, guided/resumable — 19 database queries between them, most of it the
+              same tables read over and over by endpoints that did not know about each
+              other. Selecting a course fired two more, the second only to learn a count the
+              first response already contained. On the cloud database every query is a
+              network hop, and until 1.56 every REQUEST also re-verified the session against
+              googleapis.com, so the real cost was several seconds of waiting.
+              (a) GET /api/bootstrap returns everything the page needs to draw itself in one
+              request, with the shared work done once: the curriculum is read a single time
+              and handed to whatever needs it (_session_list now accepts the rows instead of
+              re-reading them), and the team list and course counts are fetched once and
+              passed to courses_for_user rather than being looked up again inside it.
+              19 queries across 8 requests -> 8 queries in 1.
+              (b) PER-TAB DATA IS NOW FETCHED PER TAB. History, Team and Agent-rules data was
+              loaded on every sign-in although it is only ever shown inside those tabs
+              (/my/teams alone is four queries). It loads when its tab is opened, and after a
+              run finishes, which is when it can change.
+              Requests on load, asserted by the UI harness so it cannot creep back:
+              auth/config and bootstrap — two, from eight."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

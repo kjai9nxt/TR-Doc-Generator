@@ -255,6 +255,12 @@ def current_user(authorization: str = Header(default="")) -> dict:
         token = authorization[7:].strip()
     try:
         user = auth.verify_credential(token)
+    except auth.AuthUnavailable as e:
+        # 503, NOT 401. A 401 makes the client discard the session and bounce to the
+        # login screen — the worst possible response to "we could not reach Google for
+        # a moment", since it logs the user out over someone else's network blip and
+        # sends them to re-authenticate against the very thing that is unreachable.
+        raise HTTPException(status_code=503, detail={"message": str(e), "kind": "auth_unreachable"})
     except auth.AuthError as e:
         raise HTTPException(status_code=401, detail={"message": str(e)})
     try:
@@ -299,6 +305,8 @@ def health():
 def auth_login(body: LoginBody):
     try:
         return auth.verify_credential(body.credential)
+    except auth.AuthUnavailable as e:
+        raise HTTPException(status_code=503, detail={"message": str(e), "kind": "auth_unreachable"})
     except auth.AuthError as e:
         raise HTTPException(status_code=401, detail={"message": str(e)})
 
@@ -398,6 +406,67 @@ def _course_for(user: dict, course: str | None) -> str:
     one person switching course silently moved everybody else's.
     """
     return (course or "").strip() or app_settings.course_name() or "default"
+
+
+@app.get("/api/bootstrap")
+def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
+    """Everything the app needs to draw itself, in ONE request.
+
+    Opening the page used to fire eight — status, courses, workspaces, course-settings,
+    curriculum, sessions, history, teams, resumable — each its own HTTP round-trip and
+    each re-reading tables the others had just read (19 database queries between them,
+    and on the cloud database every one of those is a network hop). Selecting a course
+    then fired two more, the second only to learn a number the first already knew.
+
+    Gathering them here lets the shared work happen once: the curriculum is read a
+    single time and handed to everything that needs it, and the team list is fetched
+    once instead of by three separate callers.
+    """
+    course = _course_for(user, course)
+    rows = _curriculum_rows(course)
+    from src import budgets as budget_rules
+    email = user.get("email")
+    all_teams = db.teams()
+    mine = db.teams_for_user(email, all_teams)
+    counts = db.curriculum_session_counts()
+    known = set(counts)
+    return {
+        "user": user,
+        "status": {
+            "key_ok": config.api_key() is not None,
+            "saved_links": {"course": sync.last_link()},
+            "settings": app_settings.load(),
+            "policy": {
+                "judge_always_on": pipeline.judge_always_on(),
+                "time_always_enforced": pipeline.time_always_enforced(),
+                "max_minutes": config.harness()["constraints"]["recording"]["max_minutes"],
+                "max_pages": config.harness()["constraints"]["pages"]["max"],
+                "target_pages": config.harness()["constraints"]["pages"]["target"],
+            },
+        },
+        "course": course,
+        "courses": db.courses_for_user(email, is_admin=user.get("is_admin", False),
+                                       all_teams=all_teams, counts=counts),
+        "workspaces": {
+            "teams": [{"id": tm["id"], "name": tm["name"],
+                       "courses": tm.get("courses") or [],
+                       "members": tm.get("members") or [],
+                       "unknown_courses": [c for c in (tm.get("courses") or [])
+                                           if c not in known]}
+                      for tm in mine],
+        },
+        "curriculum": {
+            "rows": rows,
+            "imported_from": sync.last_link(),
+            "pending": sum(1 for r in rows
+                           if (r.get("ppt_link") or "") and not r["extracted"]),
+        },
+        "sessions": _session_list(course, rows),
+        "budget": {"settings": db.course_settings(course) or {},
+                   "effective": budget_rules.for_session(course),
+                   "defaults": budget_rules.harness_defaults()},
+        "resumable": db.unfinished_guided(email),
+    }
 
 
 @app.get("/api/workspaces")
@@ -653,7 +722,7 @@ def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)
     return {"job_id": job_id}
 
 
-def _session_list(course: str | None = None):
+def _session_list(course: str | None = None, rows: list[dict] | None = None):
     """Sessions that still need a TR doc.
 
     A session whose deck has been ingested has already been recorded, so it is course
@@ -664,23 +733,29 @@ def _session_list(course: str | None = None):
     job. Reverted: the filter is the intended behaviour, and the dropdown stays a list
     of sessions that need writing.)
     """
-    sessions = course_loader.load_sessions_from_cache()
-    if not sessions:
-        return []
     # WHAT COUNTS AS "already recorded" is the CURRICULUM's answer, not whatever deck
     # files happen to sit on disk. Reading the disk meant a deck extracted earlier kept
     # a session out of this list even after its link had been removed from the row —
     # the row said "no deck" while the session stayed invisible, with no way to put it
     # back. The curriculum is the source of truth, so it decides here too; the disk scan
     # remains only as the fallback for a process with no curriculum rows (offline evals).
+    #
+    # `rows` lets a caller that has already fetched the curriculum pass it in. Both
+    # halves of this used to read the same table independently — and every caller had
+    # ALSO just read it — so selecting a course queried the curriculum four times over.
     course = (course or "").strip() or app_settings.course_name() or "default"
-    rows = db.curriculum(course)
-    if rows:
-        have_decks = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
-    else:
-        have_decks = pptx_ingest.deck_session_numbers()
-    return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
-            for s in sessions if s.number not in have_decks]
+    rows = db.curriculum(course) if rows is None else rows
+    if not rows:
+        cached = course_loader.load_sessions_from_cache()
+        if not cached:
+            return []
+        have = pptx_ingest.deck_session_numbers()
+        return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
+                for s in cached if s.number not in have]
+    have_decks = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
+    return [{"number": r["session_no"], "name": r.get("session_name", ""),
+             "takeaways": r.get("key_takeaways", [])}
+            for r in rows if r["session_no"] not in have_decks]
 
 
 @app.get("/api/sessions")

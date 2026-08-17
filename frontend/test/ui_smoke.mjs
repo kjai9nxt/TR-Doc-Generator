@@ -43,6 +43,32 @@ const ROUTES = {
                settings: { course_type: 'semester', course_name: 'Operating Systems' },
                policy: { judge_always_on: true, time_always_enforced: true, max_minutes: 40, max_pages: 26, target_pages: 23 } },
   '/courses': { courses: COURSES, active: 'Operating Systems' },
+  // The single call the app actually opens with; the per-concern endpoints below stay
+  // stubbed because targeted refreshes (after a save, an ingest) still use them.
+  '/bootstrap': {
+    user: { email: 'dev@nxtwave.co.in', is_admin: true },
+    status: { key_ok: true, saved_links: { course: 'https://docs.google.com/spreadsheets/d/X/edit' },
+              settings: { course_type: 'semester', course_name: 'Operating Systems' },
+              policy: { judge_always_on: true, time_always_enforced: true,
+                        max_minutes: 40, max_pages: 26, target_pages: 23 } },
+    course: 'Operating Systems',
+    courses: COURSES,
+    workspaces: { teams: [
+      { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
+        members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'], unknown_courses: [] },
+      { id: 5, name: 'Networks Team', courses: ['Computer Networks'],
+        members: ['dev@nxtwave.co.in'], unknown_courses: [] },
+    ] },
+    curriculum: { rows: ROWS, imported_from: 'https://docs.google.com/spreadsheets/d/X/edit', pending: 0 },
+    sessions: SESSIONS,
+    budget: { settings: {}, effective: { max_pages: 26, max_slides: 26, target_pages: 23,
+                                         source: 'harness default' },
+              defaults: { max_pages: 26, max_slides: 26, target_pages: 23 } },
+    resumable: [{ guided_id: 'g31', session_no: 31,
+                  title: 'Spooling, Buffering & Disk Structure',
+                  status: 'reviewing', chunks_done: 2, total: 6,
+                  updated: '2026-08-17T09:00:00Z' }],
+  },
   '/workspaces': { individual: { courses: ['Operating Systems'] },
                    teams: [
                      { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
@@ -163,6 +189,15 @@ async function selectOption(sel, value) {
     await new Promise((r) => setTimeout(r, 40))
   })
 }
+
+console.log('\n== the page opens with ONE request, not eight ==')
+const bootCalls = calls.filter((c) => c === '/bootstrap').length
+const fanout = calls.filter((c) => ['/courses', '/workspaces', '/curriculum', '/sessions',
+                                    '/course-settings', '/status'].includes(c)).length
+console.log('       requests on load: ' + JSON.stringify(calls))
+check('it bootstraps', bootCalls >= 1)
+check('…instead of fanning out across the per-concern endpoints', fanout <= 1,
+      `${fanout} fan-out calls`)
 
 console.log('\n== the shell renders ==')
 check('a left navigation rail exists', $('.nav').length === 1)
