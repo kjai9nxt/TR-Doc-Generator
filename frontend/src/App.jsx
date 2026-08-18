@@ -2050,6 +2050,27 @@ function RubricPanel({ judge }) {
           )}
         </div>
       )}
+      {/* WHEN THE JUDGE MISCOUNTED. A claim about something the code already measured —
+          how many items a bullet list has, how many sentences a speaker note is — is
+          true or false, not a matter of taste. Session 33 was failed for a "one-item
+          bullet list" on a slide holding four, and nothing said so: the score just came
+          back low. Now the contradiction is checked, corrected, and shown, because a
+          reviewer reading a low score deserves to know part of it was arithmetic. */}
+      {(judge.contradicted_claims || []).length > 0 && (
+        <div className="rubricblock judgefix">
+          ⚠ The judge contradicted a check the code had already run and passed
+          {' '}— re-graded, and the claims below were not counted against this document:
+          <ul>
+            {judge.contradicted_claims.map((c, i) => (
+              <li key={i}>
+                <span className="muted">{c.where}</span> — {c.contradicts.join('; ')}
+                {c.claim && <div className="judgeclaim">“{c.claim}”</div>}
+                <span className="muted"> [{c.action}]</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="scorelist">
         {rows.map((r) => (
           <div key={r.dim} className={`scorerow ${r.lost > 0 ? 'cost' : ''}`}>

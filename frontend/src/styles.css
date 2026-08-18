@@ -596,3 +596,10 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 /* The distilled rule, shown back so a bad distillation is visible immediately
    instead of being applied silently to every future doc. */
 .learnedtext { margin-top: 5px; font-style: italic; color: var(--muted); }
+
+/* The judge miscounted something the code had already measured — see App.jsx. Warm
+   rather than red: the document is fine, the grade needed correcting. */
+.rubricblock.judgefix { border-left: 3px solid var(--warn, #d08b2c); }
+.rubricblock.judgefix ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+.rubricblock.judgefix li { margin-bottom: .35rem; }
+.judgeclaim { opacity: .75; font-style: italic; margin: .15rem 0 .1rem; }

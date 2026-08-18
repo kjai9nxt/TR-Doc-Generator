@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src import config, llm  # noqa: E402
+from guardrails import guardrails  # noqa: E402
 
 
 def _rubric_text(exclude: tuple = ()) -> str:
@@ -34,6 +35,46 @@ JUDGE_SYSTEM = (
     "justification. Do NOT default to straight 5s — a perfect 100 should be rare. "
     "Return ONLY the JSON described in the output contract."
 )
+
+
+_COUNTABLE_CLAIMS = (
+    # (regex over the judge's own words, the deterministic rule it contradicts)
+    # Deliberately NARROW. Each pattern matches a claim about a COUNT that a gate has
+    # already measured — never a claim about quality. "This bullet list is only one
+    # item" is refutable; "this bullet is vague" is the judge's job and is left alone.
+    (r"\b(one|two|1|2|single)[\s-]item\b|\bsingle[- ]bullet\b"
+     r"|\bbullet list (?:with|of|has) (?:only )?(?:one|two|1|2)\b",
+     "bullet_list_sizes"),
+    (r"speaker[_ ]notes?\b[^.]{0,80}?\b(three|four|five|3|4|5)\s+sentences"
+     r"|\b(three|four|five|3|4|5)\s+sentences\b[^.]{0,40}?speaker[_ ]notes?",
+     "speaker_notes_sentences"),
+)
+
+
+def _contradicted(text: str, facts: dict) -> list[str]:
+    """Which PASSED deterministic rules this piece of judge prose claims were broken.
+
+    The judge is required to quote its evidence, and nothing verified the claim built on
+    that quote. On session 33 it failed a document for a "one-item bullet list" on a
+    slide holding four items — the quote was real, the claim about it was not, and no
+    slide in that document was under the minimum. A claim about a count the code has
+    already taken is not a matter of judgement; it is either true or false, and this
+    says which.
+
+    Conservative by construction: a rule is only contradicted when its gate PASSED on
+    every slide, so a real violation is never explained away.
+    """
+    import re
+    if not text:
+        return []
+    passed = {r["field"] for r in facts.get("rules") or [] if r.get("passed")}
+    hits = []
+    low = str(text).lower()
+    for pattern, field in _COUNTABLE_CLAIMS:
+        if field in passed and re.search(pattern, low):
+            rule = next(r["rule"] for r in facts["rules"] if r["field"] == field)
+            hits.append(rule)
+    return hits
 
 
 def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None = None,
@@ -92,6 +133,32 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
         "DETERMINISTIC PAGE-COUNT ESTIMATE (ground truth for the length_discipline "
         "dimension; pages_by_part shows where the length went):\n"
         + json.dumps(page_estimate, indent=2) + "\n\n")
+    # WHAT THE CODE ALREADY COUNTED. Same treatment as time and pages, for the countable
+    # structure rules — and for the same reason. On session 33 the judge scored
+    # slide_content_style 3/5 (below the per-dimension bar, so it failed the run on its
+    # own) citing a "one-item bullet list" on a slide that has four, and speaker_notes
+    # rule violations on two slides that are correctly shaped. All three rules have
+    # deterministic gates that had already PASSED on that document. Handing the judge the
+    # measured counts stops it grading a style dimension on arithmetic it gets wrong.
+    facts_block = ""
+    try:
+        facts = guardrails.deterministic_facts(doc)
+        verified = [r for r in facts["rules"] if r["passed"]]
+        if verified:
+            facts_block = (
+                "DETERMINISTIC STRUCTURE CHECKS — ALREADY VERIFIED BY CODE (ground truth).\n"
+                "Each rule below was checked mechanically against THIS document and passed "
+                "on every slide. Do NOT report a violation of one, do not put it in "
+                "`blocking_issues`, and do not lower any dimension's score for it — if you "
+                "think you see a counter-example, you have miscounted. Grade these "
+                "dimensions on judgement (is the writing tight, is the cue useful), never "
+                "on the counts.\n"
+                + "".join(f"  - PASSED: {r['rule']}\n" for r in verified)
+                + "\nPer-slide counts (authoritative — use these instead of counting "
+                  "yourself):\n"
+                + json.dumps(facts["per_slide"], indent=1) + "\n\n")
+    except Exception:
+        pass
     # Close the self-evolution loop: the judge is also the VERIFIER that the rules
     # learned from the reviewer's earlier corrections were actually applied. Without
     # this, nothing ever checked, so a rule could be silently ignored on every run
@@ -162,7 +229,7 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     prompt = f"""SESSION KEY TAKEAWAYS (coverage must match these):
 {json.dumps(session.key_takeaways, indent=2)}
 
-{time_block}{page_block}TR DOC TO GRADE (JSON):
+{time_block}{page_block}{facts_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
 {web_note}{depth_note}{taught_note}{rules_note}
 
@@ -170,9 +237,9 @@ Grade now. Return only the contract JSON."""
     dims = {d["id"]: d["weight"] for d in config.rubric()["dimensions"]
             if d["id"] not in exclude}
 
-    def _ask() -> dict:
+    def _ask(extra: str = "") -> dict:
         raw = llm.complete(
-            system=JUDGE_SYSTEM, user=prompt,
+            system=JUDGE_SYSTEM, user=prompt + extra,
             model=judge_model, max_tokens=m.get("judge_max_tokens", 8000),
             temperature=0.0, label="judge", cached_context=rubric_block,
         )
@@ -199,6 +266,75 @@ Grade now. Return only the contract JSON."""
         retry = _ask()
         if len(_unscored(retry, dims)) < len(missing):
             result, missing = retry, _unscored(retry, dims)
+
+    # VERIFY THE JUDGE AGAINST THE GATES. The facts block above tells it the counts; this
+    # checks it used them. A claim about a count the code already took is true or false,
+    # not a matter of taste — and on session 33 three such claims were false and one of
+    # them (slide_content_style 3/5) discarded a document the reviewer had approved.
+    #
+    # Two different corrections, because the two failure surfaces differ:
+    #   · a false BLOCKING ISSUE is simply dropped — it fails the run by itself, and a
+    #     provably false one must not;
+    #   · a false claim inside a SCORE's justification cannot be un-scored, so the judge
+    #     is re-asked ONCE with the contradiction named. That call only ever happens when
+    #     the judge has provably miscounted, and it is far cheaper than discarding a good
+    #     document and paying for a repair round that cannot fix a defect that isn't there.
+    contradicted: list[dict] = []
+    try:
+        facts_v = guardrails.deterministic_facts(doc)
+    except Exception:
+        facts_v = {"rules": []}
+
+    kept_blocking = []
+    for b in result.get("blocking_issues") or []:
+        bad = _contradicted(str(b), facts_v)
+        if bad:
+            contradicted.append({"where": "blocking_issues", "claim": str(b)[:300],
+                                 "contradicts": bad, "action": "discarded"})
+        else:
+            kept_blocking.append(b)
+    if len(kept_blocking) != len(result.get("blocking_issues") or []):
+        result["blocking_issues"] = kept_blocking
+
+    scored_lies = []
+    for did, obj in (result.get("scores") or {}).items():
+        if not isinstance(obj, dict):
+            continue
+        bad = _contradicted(str(obj.get("justification") or ""), facts_v)
+        if bad:
+            scored_lies.append((did, bad))
+    if scored_lies:
+        names = ", ".join(d for d, _ in scored_lies)
+        llm.log_debug("JUDGE CONTRADICTED A PASSED DETERMINISTIC GATE — retrying",
+                      json.dumps({d: b for d, b in scored_lies}, indent=2)[:2000],
+                      extra=f"dimensions: {names}")
+        note = ("\n\nCORRECTION — YOUR PREVIOUS GRADE MISCOUNTED.\n"
+                "You reported these rules as broken. Each was measured by code against "
+                "this exact document and PASSED on every slide, and the per-slide counts "
+                "were given to you above:\n"
+                + "".join(f"  - {r}  (cited under '{d}')\n" for d, rs in scored_lies for r in rs)
+                + "Re-grade. Do not repeat those claims, and do not let them affect any "
+                  "dimension's score. Judge these dimensions on style and usefulness, not "
+                  "on counts. Everything else about your grade may stand.")
+        retry = _ask(note)
+        still = [d for d, _ in scored_lies
+                 if _contradicted(str((retry.get("scores") or {}).get(d, {}).get(
+                     "justification") or ""), facts_v)]
+        for did, bad in scored_lies:
+            contradicted.append({
+                "where": f"scores.{did}", "contradicts": bad,
+                "claim": str((result.get("scores") or {}).get(did, {})
+                             .get("justification") or "")[:300],
+                "action": "re-graded" if did not in still else "re-grade still disputed"})
+        # Only take the retry if it actually stopped repeating the false claims; a retry
+        # that repeats them is not an improvement worth swapping a whole grade for.
+        if len(still) < len(scored_lies) and not _unscored(retry, dims):
+            result = retry
+            for ex in exclude:
+                result.get("scores", {}).pop(ex, None)
+            missing = _unscored(result, dims)
+    if contradicted:
+        result["contradicted_claims"] = contradicted
 
     # Recompute the weighted total over the dimensions that were ACTUALLY scored, and
     # renormalise. Counting an unscored dimension as 0 would invent a verdict the judge

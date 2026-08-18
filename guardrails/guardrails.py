@@ -1193,3 +1193,81 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     if gates.get("structural_pass") is True and not passed:
         pass  # already reflected in fails
     return GuardrailResult(passed=passed, failures=fails, warnings=warns)
+
+
+# --------------------------------------------------------------------------- #
+# WHAT THE CODE ALREADY KNOWS — handed to the LLM judge as ground truth
+# --------------------------------------------------------------------------- #
+def deterministic_facts(doc: dict) -> dict:
+    """Per-slide counts for the rules this module checks MECHANICALLY.
+
+    WHY THIS EXISTS. The judge scored session 33's slide_content_style 3/5 — below the
+    per-dimension bar, which fails the run on its own — on four cited grounds, and three
+    of them were false against the document it was grading:
+
+      · "Slide 9 has a one-item bullet list"   — slide 9 has FOUR items, and no slide in
+        that document was under the three-item minimum;
+      · "Slide 2 speaker_notes … violates the speaker_notes rule" — two sentences, no
+        question mark, and the second sentence is the exam hook the rule asks for;
+      · the same claim again about slide 19, which is also correctly shaped.
+
+    Every one of those is a rule with a deterministic gate a few hundred lines up, and
+    every gate had already PASSED on that document. The judge was simply counting wrong,
+    and a 3/5 on an 8-weight dimension discarded a document the reviewer had approved.
+
+    Time and pages were never judged this way: both are handed over as
+    "DETERMINISTIC … (ground truth for this dimension)" precisely so the judge grades
+    against a measured number instead of its own estimate. This is the same treatment
+    for the countable structure rules — the judge is told what the code measured, so a
+    dimension about style is scored on style rather than on arithmetic.
+
+    Reports only what is countable and already gated. Nothing here is an opinion.
+    """
+    con = config.harness()["constraints"]
+    c_cfg = con.get("content", {}) or {}
+    min_items = c_cfg.get("min_bullet_items")
+    max_ns = (con.get("speaker_notes", {}) or {}).get("max_sentences")
+    max_cw = c_cfg.get("max_words_per_text_block")
+    max_cs = c_cfg.get("max_sentences_per_text_block")
+
+    per_slide = []
+    for s in _slides(doc):
+        lists = _bullet_lists(s)
+        texts = _text_blocks(s)
+        per_slide.append({
+            "n": s.get("n"),
+            "role": s.get("role"),
+            "bullet_list_sizes": [len(x) for x in lists],
+            "speaker_notes_sentences": _sentence_count(s.get("speaker_notes")),
+            "has_analogy": bool(s.get("analogy")),
+            "text_block_words": [_word_count(t) for t in texts],
+            "text_block_sentences": [_sentence_count(t) for t in texts],
+        })
+
+    def _all(pred) -> bool:
+        return all(pred(r) for r in per_slide)
+
+    rules = []
+    if min_items:
+        rules.append({
+            "rule": f"every bullet list has at least {min_items} items "
+                    f"(a shorter list is a bulleted sentence)",
+            "passed": _all(lambda r: all(n >= min_items for n in r["bullet_list_sizes"])),
+            "field": "bullet_list_sizes"})
+    if max_ns:
+        rules.append({
+            "rule": f"speaker_notes is at most {max_ns} sentences "
+                    f"(one teaching cue + one exam/interview hook)",
+            "passed": _all(lambda r: r["speaker_notes_sentences"] <= max_ns),
+            "field": "speaker_notes_sentences"})
+    if max_cw:
+        rules.append({
+            "rule": f"every prose text block is at most {max_cw} words",
+            "passed": _all(lambda r: all(w <= max_cw for w in r["text_block_words"])),
+            "field": "text_block_words"})
+    if max_cs:
+        rules.append({
+            "rule": f"every prose text block is at most {max_cs} sentences",
+            "passed": _all(lambda r: all(n <= max_cs for n in r["text_block_sentences"])),
+            "field": "text_block_sentences"})
+    return {"rules": rules, "per_slide": per_slide}

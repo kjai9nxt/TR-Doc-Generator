@@ -383,6 +383,54 @@ except patcher.PatchError:
     ok = True
 check("opening patch rejects a field it may not set", ok)
 
+print("\n== the judge is checked against the gates ==")
+# Session 33 scored slide_content_style 3/5 — below the per-dimension bar, so it failed
+# the run on its own — on four cited grounds. Three were false against the document it
+# was grading: a "one-item bullet list" on a slide holding four, and speaker_notes rule
+# violations on two correctly-shaped slides. All three rules have deterministic gates
+# that had already PASSED. These pin the two halves of the fix: the counts are handed to
+# the judge as ground truth, and a claim contradicting a passed gate is refuted.
+from graders import llm_judge as _lj                                    # noqa: E402
+
+GOOD = {"sections": [{"slides": [
+    {"n": n, "role": "mechanism",
+     "speaker_notes": "Stress the chain. Interviewers probe this.",
+     "content": [{"type": "text", "text": "A short framing sentence."},
+                 {"type": "bullets", "items": ["a", "b", "c", "d"]}]} for n in range(1, 23)]}]}
+FACTS = guardrails.deterministic_facts(GOOD)
+by_field = {r["field"]: r for r in FACTS["rules"]}
+check("the bullet-size rule is reported PASSED on a clean doc",
+      by_field["bullet_list_sizes"]["passed"])
+check("the speaker_notes rule is reported PASSED on a clean doc",
+      by_field["speaker_notes_sentences"]["passed"])
+check("per-slide counts are handed over for every slide",
+      len(FACTS["per_slide"]) == 22 and FACTS["per_slide"][0]["bullet_list_sizes"] == [4])
+
+check("the real 'one-item bullet list' claim is refuted",
+      bool(_lj._contradicted(
+          "Slide 9 has a one-item bullet list: 'Write speed limited to one disk, "
+          "not parallel' — this is a sentence bulleted.", FACTS)))
+check("a speaker_notes QUALITY complaint is left to the judge",
+      _lj._contradicted(
+          "Slide 2 speaker_notes: the second sentence is a question, not a teaching "
+          "cue or exam hook, which violates the speaker_notes rule.", FACTS) == [])
+check("a redundancy complaint is left to the judge",
+      _lj._contradicted(
+          "Redundancy between text and bullets on slides 6 and 8 — the same idea twice.",
+          FACTS) == [])
+check("a sentence-COUNT claim about speaker_notes is refuted",
+      bool(_lj._contradicted("Slide 4 speaker_notes has 3 sentences", FACTS)))
+
+BAD = {"sections": [{"slides": [
+    {"n": 1, "speaker_notes": "a. b.",
+     "content": [{"type": "bullets", "items": ["only one"]}]}]}]}
+BAD_FACTS = guardrails.deterministic_facts(BAD)
+check("a genuinely short bullet list is reported FAILED",
+      not {r["field"]: r for r in BAD_FACTS["rules"]}["bullet_list_sizes"]["passed"])
+check("…so a TRUE claim about it is never explained away",
+      _lj._contradicted("Slide 1 has a one-item bullet list", BAD_FACTS) == [])
+check("empty judge prose is safe", _lj._contradicted("", FACTS) == [])
+
 print("\n== doc patcher: the finalize REPAIR is surgical too ==")
 # The repair pass used to hand the model the whole assembled document and ask for the
 # corrected document back — 42,132 output tokens on session 33 ($0.48, a third of that
