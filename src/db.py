@@ -36,6 +36,13 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+# How far out of the way a row is parked while a renumber is in flight. Any value
+# larger than the longest imaginable course works; the point is only that the parked
+# range provably contains no real session number, so the move cannot collide with a
+# row that has not been moved yet.
+_PARK = 1_000_000
+
+
 _TURSO_UNAVAILABLE_WARNED = False
 
 
@@ -907,26 +914,45 @@ def curriculum_shift_from(course: str, at_session_no: int, by: int = 1) -> dict:
     version of the insert button instead gave a new row the next FREE number, which put
     "35" at the top of a 34-session course and read as nonsense.
 
-    ORDER MATTERS. (course, session_no) is the primary key, so shifting 5->6 while 6
-    still exists collides and loses a row. Shifting UP is therefore applied from the
-    HIGHEST number down (34->35, then 33->34, …); shifting down goes the other way. The
-    whole thing runs in one transaction so a failure halfway cannot leave the course
-    with two rows numbered 6 and none numbered 5.
+    (course, session_no) is the primary key, so a plain `session_no = session_no + 1`
+    over the whole range collides the moment it rewrites 5 to 6 while 6 still exists.
+    The rows are therefore PARKED far outside the real range first and brought back in
+    a second pass: both statements move a set of rows into a range that provably holds
+    no other row, so neither can collide and neither depends on the order SQLite
+    happens to visit rows in (`UPDATE ... ORDER BY` is not available here).
+
+    TWO statements, not one per row. The first version walked the rows highest-first,
+    which is correct but costs one round trip PER SESSION — 34 of them, all inside a
+    single interactive transaction held open across the whole walk. Against Turso that
+    is not merely slow: the stream backing an interactive transaction is reclaimed
+    while the walk is still going, and the insert dies partway with
+
+        Hrana: `api error: `status=404 Not Found, body={"error":"stream not found: …"}``
+
+    Every other write in this module is one statement on a short-lived connection —
+    that is the module's whole contract (see the header) — and this is now the same
+    shape: a fixed two statements, whatever the course's length.
     """
     rows = _query("SELECT session_no FROM curriculum WHERE course=? AND session_no>=? "
                   "ORDER BY session_no", (course, int(at_session_no)))
     nums = [int(r["session_no"]) for r in rows]
     if not nums or not by:
         return {}
-    order = sorted(nums, reverse=True) if by > 0 else sorted(nums)
-    mapping = {n: n + by for n in order}
+    mapping = {n: n + by for n in nums}
+    at, by = int(at_session_no), int(by)
     conn = _connect()
     try:
         cur = conn.cursor()
-        for old in order:
-            cur.execute("UPDATE curriculum SET session_no=?, updated_at=? "
-                        "WHERE course=? AND session_no=?",
-                        (old + by, _now(), course, old))
+        # Park: shifted value, pushed below every real session number. A session number
+        # is >= 1, so nothing else can be sitting in the parked range.
+        cur.execute("UPDATE curriculum SET session_no = session_no + ? - ? "
+                    "WHERE course=? AND session_no >= ?",
+                    (by, _PARK, course, at))
+        # Bring back. The rows still in place are all < at, and every parked row lands
+        # at >= at + by, so this pass cannot collide either.
+        cur.execute("UPDATE curriculum SET session_no = session_no + ?, updated_at=? "
+                    "WHERE course=? AND session_no <= ?",
+                    (_PARK, _now(), course, -(_PARK // 2)))
         conn.commit()
     finally:
         _close(conn)
@@ -1247,10 +1273,19 @@ def kb_rename_decks(mapping: dict) -> int:
     thirty round trips to the cloud database to fix a handful of paths, which is a
     visible pause on a button press.
 
-    Only the `path` column changes; the content is already correct. Done on ONE
-    connection, and through temporary paths, for the same reason the files themselves
-    are: a chain like 3->4, 4->5 would otherwise have the first row collide with the
-    second on a PRIMARY KEY that has not moved yet.
+    Only the `path` column changes; the content is already correct. It goes through
+    temporary paths for the same reason the files themselves do: a chain like 3->4,
+    4->5 would otherwise have the first row collide with the second on a PRIMARY KEY
+    that has not moved yet.
+
+    THREE statements, not three per deck. The first version looped — one park per deck,
+    then a delete and an update per deck, so renumbering a 34-session course sent about
+    seventy statements down one interactive transaction. That is the same shape that
+    broke curriculum_shift_from against Turso ("stream not found", the transaction's
+    stream reclaimed mid-walk); here it was worse to find, because the caller wraps this
+    in a try/except that only prints, so it failed silently and the cloud mirror simply
+    stopped following the curriculum. Set-based now: park all, clear all targets,
+    unpark all.
     """
     pairs = [(f"decks/session_{int(o):02d}.json", f"decks/session_{int(n):02d}.json")
              for o, n in (mapping or {}).items() if int(o) != int(n)]
@@ -1260,14 +1295,25 @@ def kb_rename_decks(mapping: dict) -> int:
     try:
         cur = conn.cursor()
         ts = _now()
-        for old, _new in pairs:
-            cur.execute("UPDATE kb_files SET path=? WHERE path=?", (f"__moving__{old}", old))
-        moved = 0
+        olds = [o for o, _ in pairs]
+        news = [n for _, n in pairs]
+        q = ",".join("?" * len(pairs))
+        # Park every row being moved, out of the way of the paths about to be taken.
+        cur.execute(f"UPDATE kb_files SET path='__moving__' || path "
+                    f"WHERE path IN ({q})", tuple(olds))
+        # Clear whatever is sitting on the destinations (a deck the curriculum no
+        # longer lists, say) so the unpark cannot collide.
+        cur.execute(f"DELETE FROM kb_files WHERE path IN ({q})", tuple(news))
+        # Unpark: one CASE carries the whole old->new mapping in a single statement.
+        cases = " ".join("WHEN ? THEN ?" for _ in pairs)
+        args = []
         for old, new in pairs:
-            cur.execute("DELETE FROM kb_files WHERE path=?", (new,))
-            cur.execute("UPDATE kb_files SET path=?, updated_at=? WHERE path=?",
-                        (new, ts, f"__moving__{old}"))
-            moved += 1
+            args += [f"__moving__{old}", new]
+        args.append(ts)
+        args += [f"__moving__{o}" for o in olds]
+        cur.execute(f"UPDATE kb_files SET path = CASE path {cases} END, updated_at=? "
+                    f"WHERE path IN ({q})", tuple(args))
+        moved = len(pairs)
         conn.commit()
         return moved
     except Exception as e:

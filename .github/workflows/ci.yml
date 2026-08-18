@@ -34,6 +34,14 @@ jobs:
       # endpoints, including recovery when the instance disk has lost the file.
       - name: Run output-delivery regression (download / preview / recovery)
         run: python -m evals.test_outputs
+      # Curriculum ORDER: inserting at the top must produce session 1, not 35, and the
+      # renumber must reach the database in a fixed handful of statements rather than
+      # one per session. The second half is the part a cloud DB cares about: the
+      # per-row version held an interactive transaction open across ~34 round trips and
+      # Turso reclaimed the stream mid-way ("stream not found"), so inserting a session
+      # failed outright while the deck mirror failed silently.
+      - name: Run curriculum-order regression (insert / delete / renumber / deck mirror)
+        run: python -m evals.test_curriculum_order
 
   frontend-build:
     name: Frontend build + committed-bundle check (Vite/React)
