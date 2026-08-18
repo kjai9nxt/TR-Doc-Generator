@@ -230,15 +230,19 @@ export default function App() {
   // The curriculum is what the app opens onto now, so it loads with the session.
   useEffect(() => { if (user) bootstrap() }, [user])
 
-  function saveCurriculum() {
-    setCurSaving(true); setCurLogs([])
-    const dirty = curRows.filter((r) => r._dirty)
-    api.saveCurriculum(dirty.map((r) => ({
+  // The rows the user has edited but not yet saved, in the shape the API wants.
+  function dirtyPayload(rows) {
+    return rows.filter((r) => r._dirty).map((r) => ({
       session_no: Number(r.session_no), topic: r.topic || '',
       session_name: r.session_name || '',
       key_takeaways: (r.key_takeaways || []).filter((l) => String(l).trim()),
       ppt_link: r.ppt_link ?? null,
-    })), courseName || undefined).then((d) => {
+    }))
+  }
+
+  function saveCurriculum() {
+    setCurSaving(true); setCurLogs([])
+    api.saveCurriculum(dirtyPayload(curRows), courseName || undefined).then((d) => {
       setCurLogs([`Saved ${d.saved} session(s).`])
       setCurRows(d.rows || [])
       api.curriculum(courseName || undefined).then((c) => setCurPending(c.pending || 0)).catch(() => {})
@@ -247,12 +251,61 @@ export default function App() {
       .finally(() => setCurSaving(false))
   }
 
+  // Insert and delete RENUMBER on the server and hand back the whole table, so any row
+  // edited-but-not-saved would be replaced by the server's copy of it — the edit gone
+  // without a word. It cannot simply be carried across either: the numbers it was made
+  // against have just moved. So the pending edits are saved FIRST, against the
+  // numbering they were made under, and the shift then carries them along with their
+  // rows. Returns a promise so the caller runs after the save has landed.
+  function savePendingFirst() {
+    const pendingRows = dirtyPayload(curRows)
+    if (!pendingRows.length) return Promise.resolve(0)
+    return api.saveCurriculum(pendingRows, courseName || undefined)
+      .then((d) => d.saved || pendingRows.length)
+  }
+
+  // Insert a session at a POSITION. Done on the server, not locally, because it moves
+  // every row below it AND their extracted decks — one operation, or the course is left
+  // with two rows claiming one number.
+  function insertCurriculumRow(atSessionNo) {
+    let saved = 0
+    savePendingFirst()
+      .then((n) => { saved = n; return api.insertCurriculumRow(atSessionNo, courseName || undefined) })
+      .then((d) => {
+        setCurRows(d.rows || [])
+        setCurLogs([(saved ? `Saved ${saved} edited session(s) first. ` : '') + (d.shifted
+          ? `Inserted session ${d.inserted}. The ${d.shifted} session(s) below it moved `
+            + `down one, and their extracted decks moved with them.`
+          : `Added session ${d.inserted}.`)])
+      })
+      .catch((e) => setCurLogs([`Could not insert: ${e.message}`]))
+  }
+
   function deleteCurriculumRow(row, i) {
     // A row never saved has no server side yet — drop it locally.
     if (row._new) { setCurRows((rs) => rs.filter((_, k) => k !== i)); return }
-    if (!window.confirm(`Remove session ${row.session_no} from the curriculum?`)) return
-    api.deleteCurriculumRow(row.session_no, courseName || undefined)
-      .then((d) => { setCurRows(d.rows || []); setCurLogs([`Removed session ${row.session_no}.`]) })
+    // Say that the numbers move BEFORE it happens: removing session 5 of 34 makes the
+    // old 6 the new 5, which is right for the curriculum but is not what "delete a row"
+    // sounds like.
+    const below = curRows.filter((r) => Number(r.session_no) > Number(row.session_no)).length
+    const warn = below
+      ? `\n\nThe ${below} session(s) below it move up one — the old `
+        + `${Number(row.session_no) + 1} becomes ${row.session_no} — and their decks move `
+        + `with them. Documents already generated keep the numbers they were built under.`
+      : ''
+    if (!window.confirm(`Remove session ${row.session_no} from the curriculum?${warn}`)) return
+    // Same reason as the insert: deleting renumbers and returns the whole table, so
+    // pending edits are saved against the numbering they were made under first.
+    let saved = 0
+    savePendingFirst()
+      .then((n) => { saved = n; return api.deleteCurriculumRow(row.session_no, courseName || undefined) })
+      .then((d) => {
+        setCurRows(d.rows || [])
+        setCurLogs([(saved ? `Saved ${saved} edited session(s) first. ` : '') + (d.shifted
+          ? `Removed session ${d.removed}. The ${d.shifted} session(s) below it moved up `
+            + `one, and their extracted decks moved with them.`
+          : `Removed session ${d.removed}.`)])
+      })
       .catch((e) => setCurLogs([`Could not remove: ${e.message}`]))
   }
 
@@ -788,6 +841,7 @@ export default function App() {
         <CurriculumDashboard
           course={courseName} rows={curRows} setRows={setCurRows}
           onSave={saveCurriculum} onDelete={deleteCurriculumRow} onIngest={ingestDecks}
+          onInsert={insertCurriculumRow}
           saving={curSaving} ingesting={curIngesting} dirty={curDirty}
           pending={curPending} importedFrom={importedFrom} logs={curLogs}
           onReimport={startReimport}
@@ -1650,7 +1704,7 @@ function TemplateSidePanel({ markdown, onClose }) {
 // downloaded once per LINK (Google offers no way to ask "did this change?" without
 // sending the whole ~4.7 MB file), so only a new or changed link is marked pending, and
 // "Fetch new decks" collects exactly those.
-function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest,
+function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert, onIngest,
                                saving, ingesting, dirty, pending, importedFrom,
                                onReimport, logs, teams = [], sharing, onShare,
                                ownedBy = [], budget, onBudget }) {
@@ -1661,24 +1715,22 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onIngest
   // The only add button used to be at the top, so adding a session to a 34-row course
   // meant scrolling back up every time.
   //
-  // The new row takes the next FREE session number rather than pushing the numbers of
-  // the rows below it down. Renumbering would look tidier for a moment and cost more
-  // than it is worth: a session's extracted deck is stored against its number, so
-  // shifting the rows below would detach every one of those decks and re-download the
-  // lot. Type the number you want in the row — the table re-sorts by number when it
-  // reloads — and a clash is flagged before it can overwrite anything.
+  // THE NEW ROW TAKES THE POSITION'S NUMBER, and everything below it moves down one.
+  // The first version handed it the next FREE number instead, to avoid disturbing the
+  // rows below — which meant inserting at the top of a 34-session course produced
+  // "Session 35" sitting above Session 1. A curriculum is an ordered list: the row you
+  // put first IS session 1. The shift happens on the server, in one operation, because
+  // it moves each row's extracted deck along with it (a deck is filed under its session
+  // number, so left behind it would become the wrong session's "already taught"),
+  // and because two rows must never briefly share a number.
   function addRowAt(index) {
-    const used = new Set(rows.map((r) => Number(r.session_no)))
-    let next = 1
-    while (used.has(next)) next += 1
-    const row = {
-      // A stable key: React must not remount the row when its session number is edited,
-      // or the field being typed into loses focus on every keystroke.
-      _key: `new-${Date.now()}-${index}`,
-      session_no: next, topic: '', session_name: '', key_takeaways: [],
-      ppt_link: '', deck_status: 'none', extracted: false, _dirty: true, _new: true,
-    }
-    setRows((rs) => [...rs.slice(0, index), row, ...rs.slice(index)])
+    // Inserting ABOVE row `index` means taking that row's number; at the end, one past
+    // the highest. Numbers need not be contiguous in a hand-edited course, so this
+    // reads the neighbour rather than assuming index + 1.
+    const at = index < rows.length
+      ? Number(rows[index].session_no)
+      : (rows.length ? Math.max(...rows.map((r) => Number(r.session_no))) + 1 : 1)
+    onInsert?.(at)
   }
   // Two rows claiming the same number are the SAME row as far as the database is
   // concerned (course + session number is the key), so saving would silently overwrite

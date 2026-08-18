@@ -197,6 +197,77 @@ def deck_session_numbers() -> set[int]:
     return out
 
 
+def drop_deck(session_no: int) -> bool:
+    """Delete one session's extracted deck. True if there was one.
+
+    Used when a session is REMOVED from the curriculum. sync.prune_orphan_decks cannot
+    do this: it deliberately only touches sessions the curriculum still lists, so that a
+    deck belonging to an unlisted session is never assumed to be rubbish. Here the row
+    has just been deleted on purpose, so the deck is unambiguously orphaned — and if it
+    were left behind, the next session to take that number would inherit it as material
+    it had "already taught".
+    """
+    path = DECKS_DIR / f"session_{int(session_no):02d}.json"
+    existed = path.exists()
+    path.unlink(missing_ok=True)
+    manifest = _load_manifest()
+    if manifest.pop(f"session_{int(session_no):02d}", None) is not None:
+        _save_manifest(manifest)
+    return existed
+
+
+def renumber_decks(mapping: dict) -> list[str]:
+    """Move extracted decks to follow their sessions. Returns what moved.
+
+    An extracted deck lives at knowledge_base/decks/session_NN.json, keyed by the
+    session number — so renumbering the curriculum without moving these would leave
+    Session 6 reading Session 5's deck as "what I already taught". `mapping` is
+    {old_session_no: new_session_no}.
+
+    Written in TWO PASSES through temporary names. A shift like {5:6, 6:7} applied in
+    place would have 5 overwrite 6 before 6 had moved, destroying a deck the user paid
+    to download; parking every affected deck under a temp name first makes the order of
+    operations irrelevant.
+    """
+    if not mapping:
+        return []
+    manifest = _load_manifest()
+    moved: list[str] = []
+    staged: list[tuple[Path, int]] = []      # (temp path, new session number)
+
+    for old, new in mapping.items():
+        if int(old) == int(new):
+            continue
+        src = DECKS_DIR / f"session_{int(old):02d}.json"
+        if not src.exists():
+            continue
+        tmp = DECKS_DIR / f".renumber_{int(old):02d}_to_{int(new):02d}.json"
+        src.replace(tmp)
+        staged.append((tmp, int(new)))
+        manifest.pop(f"session_{int(old):02d}", None)
+
+    for tmp, new in staged:
+        dest = DECKS_DIR / f"session_{new:02d}.json"
+        try:
+            deck = json.loads(tmp.read_text())
+            deck["session_no"] = new          # the number is inside the file too
+            dest.write_text(json.dumps(deck, ensure_ascii=False, indent=2),
+                            encoding="utf-8")
+            tmp.unlink()
+            manifest[f"session_{new:02d}"] = {
+                "hash": deck.get("source_hash") or "",
+                "source_file": deck.get("source_file") or dest.name,
+                "session_no": new,
+                "n_slides": deck.get("n_slides"),
+            }
+            moved.append(f"session_{new:02d}")
+        except Exception:
+            # Leave the temp file rather than losing the deck; a re-fetch can replace it.
+            continue
+    _save_manifest(manifest)
+    return moved
+
+
 def decks_before(session_no: int) -> list[dict]:
     return [d for d in load_all_decks()
             if d.get("session_no") is not None and d["session_no"] < session_no]

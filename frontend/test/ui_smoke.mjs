@@ -122,9 +122,48 @@ const ROUTES = {
 }
 
 const calls = []
-function route(url) {
+// Rows the fake server holds, so an insert can be answered the way the real one does:
+// shift everything at or after the position, then put the new row in. Without this the
+// stub would return the same list forever and the numbering — the whole point of the
+// insert — would be untestable from the UI.
+let SERVER_ROWS = ROWS.map((r) => ({ ...r }))
+const SAVED = []      // rows the fake server was asked to persist
+function route(url, opts) {
   const p = String(url).replace(/^\/api/, '').split('?')[0]
   calls.push(p)
+  if (p === '/curriculum' && opts?.method === 'POST') {
+    const sent = JSON.parse(opts.body || '{}').rows || []
+    SAVED.push(...sent)
+    sent.forEach((row) => {
+      const at = SERVER_ROWS.find((r) => Number(r.session_no) === Number(row.session_no))
+      if (at) Object.assign(at, row)
+    })
+    return { saved: sent.length, rows: SERVER_ROWS }
+  }
+  if (p === '/curriculum/insert') {
+    const at = Number(JSON.parse(opts?.body || '{}').at_session_no)
+    let shifted = 0
+    SERVER_ROWS = SERVER_ROWS.map((r) => {
+      if (Number(r.session_no) >= at) { shifted += 1; return { ...r, session_no: Number(r.session_no) + 1 } }
+      return r
+    })
+    SERVER_ROWS.push({ session_no: at, topic: '', session_name: '', key_takeaways: [],
+                       ppt_link: '', deck_status: 'none', extracted: false })
+    SERVER_ROWS.sort((a, b) => a.session_no - b.session_no)
+    return { course: 'Operating Systems', inserted: at, shifted, rows: SERVER_ROWS }
+  }
+  if (p.startsWith('/curriculum/') && opts?.method === 'DELETE') {
+    const no = Number(p.split('/')[2])
+    let shifted = 0
+    SERVER_ROWS = SERVER_ROWS.filter((r) => Number(r.session_no) !== no)
+      .map((r) => {
+        if (Number(r.session_no) > no) { shifted += 1; return { ...r, session_no: Number(r.session_no) - 1 } }
+        return r
+      })
+    SERVER_ROWS.sort((a, b) => a.session_no - b.session_no)
+    return { ok: true, removed: no, shifted, rows: SERVER_ROWS }
+  }
+  if (p === '/curriculum') return { ...ROUTES[p], rows: SERVER_ROWS }
   if (p in ROUTES) return ROUTES[p]
   return {}
 }
@@ -146,9 +185,9 @@ global.requestAnimationFrame = (cb) => setTimeout(cb, 0)
 global.cancelAnimationFrame = clearTimeout
 global.localStorage = window.localStorage
 global.IS_REACT_ACT_ENVIRONMENT = true
-global.fetch = async (url) => ({
+global.fetch = async (url, opts) => ({
   ok: true, status: 200, headers: { get: () => '' },
-  json: async () => route(url), blob: async () => ({}),
+  json: async () => route(url, opts), blob: async () => ({}),
 })
 
 // ---- bundle the real App ---------------------------------------------------
@@ -334,18 +373,71 @@ check('the last one is the add-at-the-end button',
 const before = $('.currow').length
 await click(bars[bars.length - 1])
 check('adding at the end inserts a row', $('.currow').length === before + 1)
-const nums = $('input.c-no').map((i) => Number(i.value))
-check('the new row takes a free session number, disturbing none of the others',
-      new Set(nums).size === nums.length, JSON.stringify(nums))
+
+// THE REPORTED BUG: inserting at the TOP of the list gave the new row the next FREE
+// number — "35" above session 1 — instead of taking position 1 and pushing the rest
+// down. A curriculum is an ordered list, so the row you put first IS session 1.
+// `.currow` is also the class on the HEADER strip (`currow curhead`), so the data rows
+// are the ones carrying a number input.
+const nums = () => $('.currow:not(.curhead)').map((r) => Number(r.querySelector('.c-no').value))
+const numsBefore = nums()
 await click($('.insertbar')[0])
-check('inserting at the TOP puts the row first',
-      $('.currow')[1].querySelector('input.c-name').value === '')
+const numsAfter = nums()
+check('inserting at the top makes it session 1, not the next free number',
+      numsAfter[0] === 1, `got ${numsAfter[0]} (was ${numsBefore.join(',')} -> ${numsAfter.join(',')})`)
+check('…and the rows below it all move down one',
+      numsAfter.length === numsBefore.length + 1
+      && numsAfter[1] === numsBefore[0] + 1,
+      `${numsBefore.join(',')} -> ${numsAfter.join(',')}`)
+check('…leaving no two rows sharing a number',
+      new Set(numsAfter).size === numsAfter.length, numsAfter.join(','))
+check('…and the user is told the decks moved too',
+      text().includes('moved down one'))
+
+// The mirror image, asked for straight after: deleting must CLOSE the gap, not leave
+// the course jumping from 4 to 6.
+window.confirm = () => true
+const beforeDel = nums()
+await click($('.currow:not(.curhead)')[0].querySelector('.c-act button'))
+const afterDel = nums()
+check('deleting a session closes the gap behind it',
+      afterDel.length === beforeDel.length - 1 && afterDel[0] === beforeDel[1] - 1,
+      `${beforeDel.join(',')} -> ${afterDel.join(',')}`)
+check('…leaving the numbering contiguous from where it was',
+      new Set(afterDel).size === afterDel.length, afterDel.join(','))
+check('…and saying the sessions below moved up',
+      text().includes('moved up one'))
+
+// Insert and delete renumber on the SERVER and replace the whole table, so an edit
+// made but not yet saved would be silently replaced by the server's copy of that row.
+// It cannot just be carried over either — the numbers it was made against have moved —
+// so pending edits are saved first, under the numbering they were made under.
+SAVED.length = 0
+const nameBox = $('.currow:not(.curhead)')[0].querySelector('.c-name')
+await act(async () => {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+  setter.call(nameBox, 'Edited but not saved')
+  nameBox.dispatchEvent(new window.Event('input', { bubbles: true }))
+  await new Promise((r) => setTimeout(r, 40))
+})
+await click($('.insertbar')[0])
+check('an unsaved edit is saved before the renumber, not thrown away',
+      SAVED.some((r) => r.session_name === 'Edited but not saved'),
+      JSON.stringify(SAVED))
+check('…and the user is told it happened', text().includes('edited session(s) first'))
+check('…and the edit survives in the table',
+      $('.currow:not(.curhead)').some((r) => r.querySelector('.c-name').value === 'Edited but not saved'),
+      $('.currow:not(.curhead)').map((r) => r.querySelector('.c-name').value).join(' | '))
 
 console.log('\n== a duplicate session number is caught before it overwrites anything ==')
 const firstNo = $('input.c-no')[0]
+// Collide with whatever the SECOND row is actually numbered, rather than a number from
+// the fixture: the rows have been renumbered by the inserts above, and a hardcoded
+// value silently stopped being a duplicate at all.
+const secondNo = $('input.c-no')[1].value
 await act(async () => {
   const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
-  setter.call(firstNo, String(ROWS[0].session_no))
+  setter.call(firstNo, String(secondNo))
   firstNo.dispatchEvent(new window.Event('input', { bubbles: true }))
   await new Promise((r) => setTimeout(r, 40))
 })

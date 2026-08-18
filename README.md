@@ -184,6 +184,7 @@ python -m evals.run_eval          # offline: golden through all gates (no API)
 python -m evals.test_gates        # offline: each gate fires on its own defect (no API)
 python -m evals.test_api_contracts # offline: handlers only read fields their model declares
 python -m evals.test_endpoints    # boots the real server, real HTTP, throwaway DB (no API)
+python -m evals.test_cloud_driver # the DEPLOYED driver (libSQL) on a local file; skips if absent
 npm --prefix frontend run test:ui # mounts the real App.jsx in jsdom
 python -m evals.run_sets --session N   # score one doc against all 24 eval sets
 python -m evals.run_eval --live   # full pipeline on sample sessions (needs API)

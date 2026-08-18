@@ -204,6 +204,153 @@ check("the history roll-up counts it",
 check("…and reports gates separately",
       "gates_passed_docs" in (hist.get("summary") or {}), str(hist.get("summary")))
 
+print("\n== inserting a session renumbers the ones after it ==")
+# Reported: inserting a row at the TOP of a 34-session course numbered it 35. A
+# curriculum is an ordered list — the row you put first is session 1.
+from src import pptx_ingest                                    # noqa: E402
+
+INS = "Insert Order Course"
+for n in (1, 2, 3):
+    db.curriculum_upsert(INS, n, session_name=f"original {n}",
+                         key_takeaways=[f"takeaway {n}"],
+                         ppt_link=f"https://docs.google.com/presentation/d/D{n}/edit")
+# Give session 2 an extracted deck, so we can check the deck follows its row.
+pptx_ingest.DECKS_DIR.mkdir(parents=True, exist_ok=True)
+(pptx_ingest.DECKS_DIR / "session_02.json").write_text(json.dumps(
+    {"session_no": 2, "deck_title": "Deck of the second session", "n_slides": 3,
+     "slides": [{"n": 1, "title": "T", "text": "x"}]}), encoding="utf-8")
+
+st, r = http("POST", "/curriculum/insert", {"at_session_no": 1, "course": INS})
+check("POST /curriculum/insert -> 200", st == 200, f"got {st}: {detail(r)}")
+rows = {int(x["session_no"]): x for x in (r.get("rows") or [])}
+check("the new row IS session 1", r.get("inserted") == 1, str(r.get("inserted")))
+check("…and it is the blank one", (rows.get(1) or {}).get("session_name") in ("", None),
+      str(rows.get(1)))
+check("every original moved down exactly one",
+      [rows[n]["session_name"] for n in (2, 3, 4)]
+      == ["original 1", "original 2", "original 3"],
+      str([(n, rows[n]["session_name"]) for n in sorted(rows)]))
+check("…keeping its own deck link",
+      rows[2]["ppt_link"].endswith("D1/edit") and rows[4]["ppt_link"].endswith("D3/edit"),
+      str([(n, rows[n]["ppt_link"][-12:]) for n in sorted(rows)]))
+check("no two rows share a number", len(rows) == 4, str(sorted(rows)))
+# The deck that was session 2's must now be session 3's — otherwise the new session 2
+# would read it as what it had already taught.
+moved = pptx_ingest.DECKS_DIR / "session_03.json"
+check("the extracted deck moved with its session", moved.exists(),
+      str(sorted(p.name for p in pptx_ingest.DECKS_DIR.glob("session_*.json"))))
+if moved.exists():
+    check("…and says so inside the file too",
+          json.loads(moved.read_text()).get("session_no") == 3)
+    check("…and did not leave a copy behind",
+          not (pptx_ingest.DECKS_DIR / "session_02.json").exists())
+
+# The deck move must also reach the CLOUD MIRROR. On the deployed instance the decks
+# sit on an ephemeral disk and are restored from kb_files on boot, so a rename that
+# never reached that table would be undone by the next restart — and the renumbered
+# curriculum would then be pointing at the old decks.
+_renames = []
+_real_rename = db.kb_rename_decks
+db.kb_rename_decks = lambda m: _renames.append(dict(m)) or 0
+st, _ = http("POST", "/curriculum/insert", {"at_session_no": 2, "course": INS})
+db.kb_rename_decks = _real_rename
+check("renumbering moves the decks in the DB mirror too", len(_renames) == 1,
+      f"kb_rename_decks called {len(_renames)} time(s)")
+
+# And the mirror move itself, against a real table — including the chain that makes
+# the naive version collide (3->4 while 4 still exists).
+for rel, body in (("decks/session_03.json", "three"), ("decks/session_04.json", "four")):
+    db._exec("INSERT OR REPLACE INTO kb_files (path, content, updated_at) VALUES (?,?,?)",
+             (rel, body, "now"))
+n = db.kb_rename_decks({3: 4, 4: 5})
+stored = {r["path"]: r["content"]
+          for r in db._query("SELECT path, content FROM kb_files WHERE path LIKE 'decks/%'")}
+check("a chained rename moves both rows", n == 2, f"moved {n}")
+check("…without one clobbering the other",
+      stored.get("decks/session_04.json") == "three"
+      and stored.get("decks/session_05.json") == "four", str(stored))
+check("…and leaves no temporary path behind",
+      not [k for k in stored if "__moving__" in k], str(list(stored)))
+check("…and frees the number that moved", "decks/session_03.json" not in stored, str(list(stored)))
+
+# Inserting in the MIDDLE leaves the rows above it alone. Compared against the state
+# actually observed rather than hardcoded numbers, so adding a check above cannot
+# quietly invalidate this one.
+st, r = http("GET", f"/curriculum?course={INS.replace(' ', '%20')}")
+was = {int(x["session_no"]): (x.get("session_name") or "") for x in (r.get("rows") or [])}
+AT = 3
+st, r = http("POST", "/curriculum/insert", {"at_session_no": AT, "course": INS})
+now = {int(x["session_no"]): (x.get("session_name") or "") for x in (r.get("rows") or [])}
+above_kept = all(now.get(n) == name for n, name in was.items() if n < AT)
+below_moved = all(now.get(n + 1) == name for n, name in was.items() if n >= AT)
+check("a middle insert leaves every row ABOVE it untouched", above_kept,
+      f"{sorted(was.items())} -> {sorted(now.items())}")
+check("…and moves every row from that point down by one", below_moved,
+      f"{sorted(was.items())} -> {sorted(now.items())}")
+check("…and the new row is the blank one at that position", now.get(AT) == "",
+      f"got {now.get(AT)!r}")
+st, r = http("POST", "/curriculum/insert", {"at_session_no": 0, "course": INS})
+check("session 0 is rejected", st == 400, f"got {st}")
+
+print("\n== deleting a session closes the gap behind it ==")
+DEL = "Delete Order Course"
+for n in (1, 2, 3, 4):
+    db.curriculum_upsert(DEL, n, session_name=f"original {n}",
+                         key_takeaways=[f"takeaway {n}"],
+                         ppt_link=f"https://docs.google.com/presentation/d/E{n}/edit")
+for n in (2, 3, 4):                       # every one of them has an extracted deck
+    (pptx_ingest.DECKS_DIR / f"session_{n:02d}.json").write_text(
+        json.dumps({"session_no": n, "deck_title": f"deck {n}", "n_slides": 1,
+                    "slides": [{"n": 1, "title": "T", "text": "x"}]}), encoding="utf-8")
+
+st, r = http("DELETE", f"/curriculum/2?course={DEL.replace(' ', '%20')}")
+check("DELETE -> 200", st == 200, f"got {st}: {detail(r)}")
+rows = {int(x["session_no"]): (x.get("session_name") or "") for x in (r.get("rows") or [])}
+check("the numbers close up — no gap where 2 was",
+      sorted(rows) == [1, 2, 3], str(sorted(rows)))
+check("…and the rows below moved up, keeping their content",
+      rows.get(2) == "original 3" and rows.get(3) == "original 4", str(sorted(rows.items())))
+check("…the row above is untouched", rows.get(1) == "original 1", str(rows.get(1)))
+# The decks must follow, and the deleted session's own deck must be gone rather than
+# left sitting on the number the next session just took.
+def deck_at(n):
+    p2 = pptx_ingest.DECKS_DIR / f"session_{n:02d}.json"
+    return json.loads(p2.read_text())["deck_title"] if p2.exists() else None
+check("session 3's deck is now session 2's", deck_at(2) == "deck 3", str(deck_at(2)))
+check("session 4's deck is now session 3's", deck_at(3) == "deck 4", str(deck_at(3)))
+check("nothing is left on the old highest number", deck_at(4) is None, str(deck_at(4)))
+check("the deleted session's own deck is gone",
+      "deck 2" not in [deck_at(n) for n in (1, 2, 3, 4)],
+      str([deck_at(n) for n in (1, 2, 3, 4)]))
+# Deleting the LAST session has nothing to shift, and must not disturb the rest.
+st, r = http("DELETE", f"/curriculum/3?course={DEL.replace(' ', '%20')}")
+rows = {int(x["session_no"]): (x.get("session_name") or "") for x in (r.get("rows") or [])}
+check("deleting the last session shifts nothing", r.get("shifted") == 0, str(r.get("shifted")))
+check("…and leaves the others alone",
+      sorted(rows) == [1, 2] and rows[1] == "original 1", str(sorted(rows.items())))
+# What FUTURE runs read is the point of all of this.
+sess = course_loader.load_sessions(None, course=DEL)
+check("generation reads the closed-up numbering",
+      [(s.number, s.name) for s in sess] == [(1, "original 1"), (2, "original 3")],
+      str([(s.number, s.name) for s in sess]))
+
+print("\n== …but a document already generated keeps its own number ==")
+# Explicitly asked for: renumber the curriculum for FUTURE runs, never the history. A
+# finished document records what was generated, under the number it was generated for.
+db.create_run("histrun", user_email=USER["email"], course=DEL, team_id=None,
+              session_no=4, title="original 4", enforce_time=True)
+db.finish_run("histrun", status="done", accepted=True)
+before = next((x for x in db.runs() if x["id"] == "histrun"), {})
+for at in (1, 2):
+    http("POST", "/curriculum/insert", {"at_session_no": at, "course": DEL})
+http("DELETE", f"/curriculum/1?course={DEL.replace(' ', '%20')}")
+after = next((x for x in db.runs() if x["id"] == "histrun"), {})
+check("an inserted and a deleted session do not move a finished run",
+      after.get("session_no") == before.get("session_no") == 4,
+      f"{before.get('session_no')} -> {after.get('session_no')}")
+check("…and it keeps the title it was generated under",
+      after.get("title") == "original 4", str(after.get("title")))
+
 print("\n== other endpoints answer over HTTP ==")
 for method, path in (("GET", "/status"), ("GET", "/workspaces"), ("GET", "/courses"),
                      ("GET", f"/curriculum?course={COURSE.replace(' ', '%20')}"),

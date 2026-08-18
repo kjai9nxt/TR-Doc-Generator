@@ -899,6 +899,40 @@ def curriculum_upsert(course: str, session_no: int, *, topic: str = "",
         return False
 
 
+def curriculum_shift_from(course: str, at_session_no: int, by: int = 1) -> dict:
+    """Move every session at or after `at_session_no` by `by`. Returns {old: new}.
+
+    A curriculum is an ORDERED list — session 1 is taught first — so inserting a row in
+    the middle has to push the rest down, exactly as it would in the sheet. The first
+    version of the insert button instead gave a new row the next FREE number, which put
+    "35" at the top of a 34-session course and read as nonsense.
+
+    ORDER MATTERS. (course, session_no) is the primary key, so shifting 5->6 while 6
+    still exists collides and loses a row. Shifting UP is therefore applied from the
+    HIGHEST number down (34->35, then 33->34, …); shifting down goes the other way. The
+    whole thing runs in one transaction so a failure halfway cannot leave the course
+    with two rows numbered 6 and none numbered 5.
+    """
+    rows = _query("SELECT session_no FROM curriculum WHERE course=? AND session_no>=? "
+                  "ORDER BY session_no", (course, int(at_session_no)))
+    nums = [int(r["session_no"]) for r in rows]
+    if not nums or not by:
+        return {}
+    order = sorted(nums, reverse=True) if by > 0 else sorted(nums)
+    mapping = {n: n + by for n in order}
+    conn = _connect()
+    try:
+        cur = conn.cursor()
+        for old in order:
+            cur.execute("UPDATE curriculum SET session_no=?, updated_at=? "
+                        "WHERE course=? AND session_no=?",
+                        (old + by, _now(), course, old))
+        conn.commit()
+    finally:
+        _close(conn)
+    return mapping
+
+
 def curriculum_delete(course: str, session_no: int) -> bool:
     try:
         _exec("DELETE FROM curriculum WHERE course=? AND session_no=?",
@@ -1188,6 +1222,59 @@ def run_file_find_by_session(session_no: int, kind: str = "docx") -> tuple[str, 
                 base64.b64decode(rows[0]["content_b64"]))
     except Exception:
         return None
+
+
+def kb_forget(rel_path: str) -> bool:
+    """Drop one KB file from the DB mirror. Best effort.
+
+    Deleting a session removes its deck from disk; without this the mirror would hand
+    it back on the next restart, on a number that now belongs to a different session.
+    """
+    try:
+        _exec("DELETE FROM kb_files WHERE path=?", ((rel_path or "").lstrip("/"),))
+        return True
+    except Exception:
+        return False
+
+
+def kb_rename_decks(mapping: dict) -> int:
+    """Re-point the stored copies of decks that were renumbered. Returns rows moved.
+
+    The targeted alternative to kb_backup() for the one case that needs it. Renumbering
+    a curriculum renames deck files on disk, and the DB mirror they are restored from
+    has to follow, or the next restart hands the old numbering back. kb_backup() would
+    do that — but it re-uploads EVERY KB file through a fresh connection each, roughly
+    thirty round trips to the cloud database to fix a handful of paths, which is a
+    visible pause on a button press.
+
+    Only the `path` column changes; the content is already correct. Done on ONE
+    connection, and through temporary paths, for the same reason the files themselves
+    are: a chain like 3->4, 4->5 would otherwise have the first row collide with the
+    second on a PRIMARY KEY that has not moved yet.
+    """
+    pairs = [(f"decks/session_{int(o):02d}.json", f"decks/session_{int(n):02d}.json")
+             for o, n in (mapping or {}).items() if int(o) != int(n)]
+    if not pairs:
+        return 0
+    conn = _connect()
+    try:
+        cur = conn.cursor()
+        ts = _now()
+        for old, _new in pairs:
+            cur.execute("UPDATE kb_files SET path=? WHERE path=?", (f"__moving__{old}", old))
+        moved = 0
+        for old, new in pairs:
+            cur.execute("DELETE FROM kb_files WHERE path=?", (new,))
+            cur.execute("UPDATE kb_files SET path=?, updated_at=? WHERE path=?",
+                        (new, ts, f"__moving__{old}"))
+            moved += 1
+        conn.commit()
+        return moved
+    except Exception as e:
+        print(f"[db] kb_rename_decks failed: {e!r}")
+        return 0
+    finally:
+        _close(conn)
 
 
 def kb_backup() -> int:

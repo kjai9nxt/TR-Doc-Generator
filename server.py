@@ -156,6 +156,17 @@ class CurriculumSaveBody(BaseModel):
     course: str | None = None
 
 
+class CurriculumInsertBody(BaseModel):
+    # The number the NEW session should take. Everything from here on moves down one,
+    # because a curriculum is an ordered list — see db.curriculum_shift_from.
+    at_session_no: int
+    course: str | None = None
+    topic: str | None = ""
+    session_name: str | None = ""
+    key_takeaways: list[str] | str | None = None
+    ppt_link: str | None = None
+
+
 class CourseSettingsBody(BaseModel):
     course: str | None = None
     max_pages: int | None = None
@@ -682,14 +693,91 @@ def save_curriculum(body: CurriculumSaveBody, course: str | None = None,
     return {"saved": saved, "rows": _curriculum_rows(course)}
 
 
+@app.post("/api/curriculum/insert")
+def insert_curriculum_row(body: CurriculumInsertBody, course: str | None = None,
+                          user: dict = Depends(current_user)):
+    """Insert a session AT a position, moving the rest down.
+
+    A curriculum is an ordered list: session 1 is taught first. The insert button used
+    to hand a new row the next FREE number instead, so inserting at the TOP of a
+    34-session course produced "Session 35" sitting above Session 1 — which is not a
+    curriculum, it is a list with a number stuck on the wrong end.
+
+    Three things move together, and they have to move in one operation or the course is
+    left inconsistent:
+      · the rows themselves (highest number first, or they overwrite each other);
+      · each row's EXTRACTED DECK, which is filed on disk under its session number —
+        left behind, Session 6 would read Session 5's deck as "already taught";
+      · each row's per-session page/slide override, which is a column on the row and so
+        travels with it for free.
+    Run HISTORY is deliberately NOT renumbered: a finished document records what was
+    generated, under the number it was generated for, and rewriting that would falsify
+    the record rather than correct it.
+    """
+    course = _course_for(user, course or body.course)
+    at = int(body.at_session_no)
+    if at < 1:
+        raise HTTPException(status_code=400,
+                            detail={"message": "A session number starts at 1."})
+    moved = db.curriculum_shift_from(course, at, by=1)
+    if moved:
+        try:
+            pptx_ingest.renumber_decks(moved)
+            # …and move them in the DB mirror too, or the rename survives only until the
+            # next restart. On the deployed instance the decks live on an EPHEMERAL disk
+            # and are mirrored into kb_files, which kb_restore writes back whenever a
+            # file is missing — which, after a spin-down, is all of them. Renaming
+            # session_02.json to session_03.json on disk alone would therefore be undone
+            # on the next boot while the renumbered curriculum rows stayed put, and the
+            # new session 2 would inherit the old session 2's deck as "already taught".
+            db.kb_rename_decks(moved)
+        except Exception as e:
+            print(f"[curriculum] deck renumber failed after insert at {at}: {e!r}")
+    db.curriculum_upsert(course, at, topic=body.topic or "",
+                         session_name=body.session_name or "",
+                         key_takeaways=body.key_takeaways or [],
+                         ppt_link=body.ppt_link)
+    sync.write_course_cache(course)
+    return {"course": course, "inserted": at, "shifted": len(moved),
+            "rows": _curriculum_rows(course)}
+
+
 @app.delete("/api/curriculum/{session_no}")
 def delete_curriculum_row(session_no: int, course: str | None = None,
                           user: dict = Depends(current_user)):
+    """Remove a session and CLOSE THE GAP behind it.
+
+    The mirror image of inserting: a curriculum is an ordered list, so removing session
+    5 of 34 makes the old 6 the new 5, not a course that jumps from 4 to 6. Everything
+    moves together for the same reasons as the insert — the rows, their extracted decks,
+    and the cloud mirror those decks are restored from.
+
+    Run HISTORY is deliberately untouched: a finished document records what was
+    generated under the number it was generated for, and renumbering it would falsify
+    the record. This is about what FUTURE runs read.
+    """
     course = _course_for(user, course)
     db.curriculum_delete(course, session_no)
+    # The deleted row's own deck goes first: its curriculum row is gone, so it is now an
+    # orphan, and it must not be sitting on the number the next session is about to take.
+    # prune_orphan_decks will not do it — it only touches sessions the curriculum still
+    # lists — so the removal is explicit.
+    try:
+        pptx_ingest.drop_deck(session_no)
+        db.kb_forget(f"decks/session_{int(session_no):02d}.json")
+    except Exception as e:
+        print(f"[curriculum] could not drop deck for session {session_no}: {e!r}")
     sync.prune_orphan_decks(course)
+    moved = db.curriculum_shift_from(course, int(session_no) + 1, by=-1)
+    if moved:
+        try:
+            pptx_ingest.renumber_decks(moved)
+            db.kb_rename_decks(moved)   # see insert_curriculum_row: not optional
+        except Exception as e:
+            print(f"[curriculum] deck renumber failed after deleting {session_no}: {e!r}")
     sync.write_course_cache(course)
-    return {"ok": True, "rows": _curriculum_rows(course)}
+    return {"ok": True, "removed": int(session_no), "shifted": len(moved),
+            "rows": _curriculum_rows(course)}
 
 
 def _run_ingest(job_id: str, force: bool, sessions: list[int] | None,

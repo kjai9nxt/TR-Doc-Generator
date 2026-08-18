@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.61"
+  version: "1.62"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1563,6 +1563,76 @@ meta:
               section that teaches it, and a COMPARISON takeaway carries a table of the
               totals already computed, not a second set of traces. Cheaper and better
               teaching — the comparison is the point, not the re-derivation."
+    - "1.62 — INSERTING A SESSION AT THE TOP NUMBERED IT 35.
+              A curriculum is an ORDERED list — session 1 is taught first — and the
+              insert button was handing a new row the next FREE number instead of the
+              position's. Inserting at the top of a 34-session course therefore produced
+              'Session 35' sitting above Session 1. The reviewer's question answers
+              itself: why would anyone append to the START of a curriculum.
+              That choice was made to avoid disturbing the rows below, since a session's
+              extracted deck is filed on disk under its number and shifting the rows
+              would strand every one of them. The right fix is to move the decks too,
+              which is what happens now. POST /api/curriculum/insert does all of it in
+              one operation:
+              · rows shift from the HIGHEST number DOWN — (course, session_no) is the
+                primary key, so shifting 5->6 while 6 still exists collides and loses a
+                row;
+              · each row's extracted deck moves with it, through temporary filenames so
+                a chain of shifts cannot have one deck overwrite the next before it has
+                moved, and the session_no inside the file is rewritten too;
+              · per-session page/slide overrides are columns on the row, so they follow
+                for free.
+              DELETING DOES THE MIRROR IMAGE — it closes the gap. Removing session 5
+              of 34 makes the old 6 the new 5, rather than leaving a course that jumps
+              from 4 to 6. Same three movements, plus one the insert does not need: the
+              REMOVED session's own deck is dropped explicitly, because
+              sync.prune_orphan_decks will not touch it — that function only considers
+              sessions the curriculum still lists, by design, so a deck whose row has
+              just been deleted would have been left sitting on the number the next
+              session was about to take.
+              Run HISTORY is deliberately NOT renumbered, in either direction: a finished
+              document records what was generated under the number it was generated for,
+              and rewriting that falsifies the record rather than correcting it. This is
+              about what FUTURE runs read, and there is a test that inserts and deletes
+              around a finished run and asserts its number and title do not move.
+              AND THE CLOUD MIRROR MOVES WITH THEM, which is what makes the rename
+              survive. On the deployed instance the decks sit on an EPHEMERAL disk and
+              are mirrored into kb_files, which kb_restore writes back for every file
+              that is missing — after a spin-down, all of them. Renaming
+              session_02.json on disk alone would therefore be undone at the next boot
+              while the renumbered rows stayed put, and the new session 2 would inherit
+              the old session 2's deck as 'already taught'.
+              db.kb_rename_decks moves just the affected rows, on one connection, through
+              temporary paths (a chain 3->4, 4->5 collides on a PRIMARY KEY that has not
+              moved yet — the same hazard as the files). The first cut called kb_backup,
+              which is correct but re-uploads EVERY KB file on a fresh connection each —
+              about thirty round trips to the cloud database to fix a handful of paths,
+              a visible pause on a button press.
+              PENDING EDITS ARE SAVED FIRST. Both operations renumber on the server and
+              hand back the whole table, so a row edited but not yet saved would be
+              replaced by the server's copy of it and the edit would vanish without a
+              word — a regression this change introduced, since the old insert was purely
+              local. Carrying the edit across is not an option either: the numbers it was
+              made against have just moved. So the dirty rows are saved under the
+              numbering they were made under, and the shift then carries them along.
+              AND IT IS PROVEN ON THE DEPLOYED DRIVER. Every other suite runs on local
+              SQLite, so the libSQL (Turso) path had no coverage at all — tolerable while
+              every write went through _exec() (one statement, one connection), but the
+              renumber is the first thing in the codebase to issue SEVERAL execute()s
+              before a single commit(), with an order chosen so rows do not collide on a
+              primary key that has not moved yet. A driver that handled that differently
+              could half-apply a shift and leave two sessions sharing a number.
+              evals/test_cloud_driver.py runs the real src.db functions against the real
+              driver on a LOCAL libsql file — never the deployed database, which is a
+              live curriculum — and confirms the shift, the gap-close, the kb_files
+              rename and the schema migration all land. It skips cleanly where the driver
+              is not installed.
+              Covered end to end — eighteen checks over real HTTP (evals/test_endpoints.py)
+              including that session 2's deck becomes session 3's and leaves no copy
+              behind, and four in the jsdom harness driving the actual button. Two UI
+              assertions that encoded the OLD rule ('the new row takes a free session
+              number, disturbing none of the others') were deleted: they were asserting
+              the defect."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]

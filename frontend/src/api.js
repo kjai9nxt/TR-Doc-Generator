@@ -104,6 +104,12 @@ export const api = {
     req('/session-settings', { method: 'POST', body: JSON.stringify({ course, session_no, ...settings }) }),
   saveCurriculum: (rows, course) =>
     req('/curriculum', { method: 'POST', body: JSON.stringify({ rows, course }) }),
+  // Insert a session AT a position: everything from there on moves down one, and each
+  // row's extracted deck moves with it. A curriculum is an ordered list, so a row added
+  // at the top is session 1 — not "the next free number", which put 35 above 1.
+  insertCurriculumRow: (at_session_no, course) =>
+    req('/curriculum/insert', { method: 'POST',
+                                body: JSON.stringify({ at_session_no, course }) }),
   deleteCurriculumRow: (session_no, course) =>
     req(`/curriculum/${session_no}${qs({ course })}`, { method: 'DELETE' }),
   // Fetches ONLY decks that are new or whose link changed. force=true re-checks decks
