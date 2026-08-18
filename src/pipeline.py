@@ -13,7 +13,8 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src import config, course_loader, context_builder, generator, docx_writer  # noqa: E402
+from src import (config, course_loader, context_builder, generator, docx_writer,  # noqa: E402
+                 patcher)
 from guardrails import guardrails  # noqa: E402
 from graders import time_grader, page_grader, llm_judge  # noqa: E402
 
@@ -501,8 +502,26 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
             f"~1-2 min). Coverage is preserved; ritual and off-agenda material are cut.")
         base = (context_builder.build_user_prompt(prev, cur, nxt)
                 + context_builder.time_mode_block(enforce_time, budgets=budgets))
-        doc = generator.revise(base, json.dumps(doc, ensure_ascii=False), issues,
-                              enforce_time=enforce_time)
+        doc_json = json.dumps(doc, ensure_ascii=False)
+        # PATCH FIRST. A repair names a handful of defects; asking for the corrected
+        # DOCUMENT back costs an output token per word of a document a human already
+        # approved — 42,132 of them on session 33, a third of that run's whole cost,
+        # and the slowest call in the pipeline. The patch names only what changes, and
+        # patcher applies it, so the untouched slides are the same Python objects and
+        # cannot drift. A full re-draft stays as the fallback: a patch that will not
+        # apply must not silently leave the document unrepaired.
+        try:
+            patch = generator.repair_patch(doc_json, issues,
+                                           enforce_time=enforce_time,
+                                           base_context=base)
+            doc, psum = patcher.apply_doc_patch(doc, patch)
+            log(f"Repair patch: {len(psum['slides_changed'])} slide(s) edited, "
+                f"{len(psum['slides_removed'])} removed, {psum['slides_added']} added, "
+                f"{len(psum['slides_untouched'])} of {psum['slides_total']} untouched"
+                + (f" — {psum['note']}" if psum.get("note") else ""))
+        except (patcher.PatchError, ValueError, KeyError, TypeError) as e:
+            log(f"Repair patch unusable ({e}) — falling back to a full re-draft.")
+            doc = generator.revise(base, doc_json, issues, enforce_time=enforce_time)
         accepted, report, issues = grade(doc, rnd)
         history.append(report)
         key = _score_key(accepted, report)

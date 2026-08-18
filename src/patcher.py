@@ -185,3 +185,187 @@ def apply(kind: str, prev_fragment: dict, patch: dict) -> tuple[dict, dict]:
     if kind == "opening":
         return apply_opening_patch(prev_fragment, patch)
     return apply_section_patch(prev_fragment, patch)
+
+
+# --------------------------------------------------------------------------- #
+# WHOLE-DOCUMENT patch — the repair pass in pipeline.finalize
+# --------------------------------------------------------------------------- #
+# Same argument as the section patch above, applied to the one place it was still
+# missing. finalize's repair used generator.revise(), which hands the model the entire
+# assembled document and asks for the corrected document back. On a 22-slide doc that
+# is ~42,000 OUTPUT tokens to fix a handful of defects — measured on run 2ec34ea9384a
+# (session 33) at $0.48, a third of the whole run's cost and 36% of every output token
+# it spent, and the single slowest call in the pipeline by a wide margin. The four
+# regenerate_patch calls in that same run averaged ~1,700 output tokens.
+#
+# It is also the same drift risk the section patcher was written for, one level up: 21
+# slides the reviewer approved get re-sampled to fix one.
+#
+# Slide numbers here are the DOCUMENT's global numbering — which is exactly how the
+# graders name defects ("Slide 19: speaker_notes has 3 sentences"), so a repair patch
+# addresses slides by the same number the issue it fixes does.
+
+_DOC_SETTABLE = ("recap", "agenda", "coverage_map")
+
+
+def _doc_slides(doc: dict) -> list[tuple[dict, dict]]:
+    """(section, slide) for every slide in the document, in reading order."""
+    out = []
+    for sec in doc.get("sections") or []:
+        if not isinstance(sec, dict):
+            continue
+        for slide in sec.get("slides") or []:
+            if isinstance(slide, dict):
+                out.append((sec, slide))
+    return out
+
+
+def _renumber_doc(doc: dict) -> dict:
+    """Renumber every slide 1..N and carry the coverage map's references with them.
+
+    The mirror of the remap in pipeline.assemble_doc, for a document that already
+    exists: removing slide 12 of 22 makes the old 13 the new 12, and a coverage entry
+    still pointing at 13 would then name a different slide. Returns {old: new}; a slide
+    that was ADDED has no old number and is absent from the map.
+    """
+    remap: dict[object, int] = {}
+    seen: dict[object, int] = {}
+    next_n = 1
+    for _sec, slide in _doc_slides(doc):
+        old = slide.get("n")
+        if old is not None:
+            seen[old] = seen.get(old, 0) + 1
+            remap[old] = next_n
+        slide["n"] = next_n
+        next_n += 1
+    # A number that appeared twice cannot be resolved; drop it rather than guess, and
+    # let the coverage gate report the reference for what it is.
+    remap = {k: v for k, v in remap.items() if seen.get(k) == 1}
+
+    for entry in doc.get("coverage_map") or []:
+        if not isinstance(entry, dict):
+            continue
+        for sub in entry.get("sub_concepts") or []:
+            if not isinstance(sub, dict) or sub.get("slide") in (None, ""):
+                continue
+            try:
+                old = int(sub["slide"])
+            except (TypeError, ValueError):
+                continue
+            if old in remap:
+                sub["slide"] = remap[old]
+            else:
+                # The slide it named is gone. Leave it unmapped rather than pointing it
+                # at whatever slide inherited the number — the coverage gate then
+                # reports a real dangling reference on the re-grade, which is the truth,
+                # and the best-draft rule means this repair simply does not win.
+                sub.pop("slide", None)
+    return remap
+
+
+def apply_doc_patch(doc: dict, patch: dict) -> tuple[dict, dict]:
+    """Apply a repair patch to an assembled document. Returns (new_doc, summary).
+
+    Raises PatchError if the patch is unusable, which the caller treats as a signal to
+    fall back to a full re-draft rather than ship an unrepaired document.
+    """
+    if not isinstance(patch, dict):
+        raise PatchError("patch is not a JSON object")
+
+    new_doc = copy.deepcopy(doc)
+    pairs = _doc_slides(new_doc)
+    if not pairs:
+        raise PatchError("document has no slides to patch")
+    by_n = {s.get("n"): s for _sec, s in pairs}
+
+    changed: dict[object, list[str]] = {}
+    removed: list[int] = []
+    added = 0
+    fields_set: list[str] = []
+
+    # --- document-level fields (recap / agenda / coverage_map) ---
+    for key, value in (patch.get("set_fields") or {}).items():
+        if key not in _DOC_SETTABLE:
+            raise PatchError(
+                f"set_fields may only set {', '.join(_DOC_SETTABLE)} — not {key!r}")
+        new_doc[key] = value
+        fields_set.append(key)
+
+    # --- per-slide field edits ---
+    for edit in patch.get("edit_slides") or []:
+        if not isinstance(edit, dict):
+            raise PatchError("edit_slides entry is not an object")
+        n = edit.get("n")
+        target = by_n.get(n)
+        if target is None:
+            raise PatchError(
+                f"edit_slides names slide {n!r}, which is not in this document "
+                f"(it has 1..{len(pairs)})")
+        touched = _apply_fields(target, edit.get("fields") or {})
+        if touched:
+            changed[n] = touched
+
+    # --- removals, before insertions, so after_n still means the numbering above ---
+    to_remove = set()
+    for n in patch.get("remove_slides") or []:
+        if n not in by_n:
+            raise PatchError(f"remove_slides names slide {n!r}, which is not in this document")
+        to_remove.add(n)
+    if to_remove:
+        for sec in new_doc.get("sections") or []:
+            if isinstance(sec, dict) and isinstance(sec.get("slides"), list):
+                sec["slides"] = [s for s in sec["slides"] if s.get("n") not in to_remove]
+        removed = sorted(to_remove)
+        if not _doc_slides(new_doc):
+            raise PatchError("patch removes every slide in the document")
+
+    # --- insertions ---
+    for add in patch.get("add_slides") or []:
+        if not isinstance(add, dict) or not isinstance(add.get("slide"), dict):
+            raise PatchError("add_slides entry needs a 'slide' object")
+        after = add.get("after_n")
+        new_slide = copy.deepcopy(add["slide"])
+        new_slide["n"] = None                  # assigned by the renumber below
+        if after in (None, "", 0):
+            target_sec = (new_doc.get("sections") or [{}])[0]
+            target_sec.setdefault("slides", []).insert(0, new_slide)
+        else:
+            placed = False
+            for sec in new_doc.get("sections") or []:
+                slides = sec.get("slides") if isinstance(sec, dict) else None
+                if not isinstance(slides, list):
+                    continue
+                for i, s in enumerate(slides):
+                    if s.get("n") == after:
+                        slides.insert(i + 1, new_slide)
+                        placed = True
+                        break
+                if placed:
+                    break
+            if not placed:
+                raise PatchError(
+                    f"add_slides wants to insert after slide {after!r}, which is not in "
+                    f"this document")
+        added += 1
+
+    if not (changed or removed or added or fields_set):
+        raise PatchError("patch is empty — nothing was changed")
+
+    total = len(pairs)
+    _renumber_doc(new_doc)
+    touched_count = len(changed) + len(removed) + added
+    summary = {
+        "mode": "patch",
+        "slides_total": total,
+        "slides_changed": sorted(changed, key=lambda k: (k is None, k)),
+        "fields_changed": {str(k): v for k, v in changed.items()},
+        "slides_removed": removed,
+        "slides_added": added,
+        "doc_fields_set": fields_set,
+        "slides_untouched": sorted(
+            n for n in by_n
+            if n is not None and n not in changed and n not in set(removed)),
+        "changed_share": round(touched_count / total, 2) if total else 1.0,
+        "note": str(patch.get("note") or "").strip()[:300],
+    }
+    return new_doc, summary

@@ -383,6 +383,65 @@ except patcher.PatchError:
     ok = True
 check("opening patch rejects a field it may not set", ok)
 
+print("\n== doc patcher: the finalize REPAIR is surgical too ==")
+# The repair pass used to hand the model the whole assembled document and ask for the
+# corrected document back — 42,132 output tokens on session 33 ($0.48, a third of that
+# run's cost, and the slowest call in the pipeline) to fix a handful of defects, with
+# every human-approved slide re-sampled on the way. These pin the patch that replaced it.
+DOC = {"recap": {"bullets": ["r"]}, "agenda": ["1. A"],
+       "sections": [{"index": 1, "name": "S1", "slides": [
+                        {"n": 1, "heading": "h1", "speaker_notes": "a. b. c."},
+                        {"n": 2, "heading": "h2", "analogy": "an"},
+                        {"n": 3, "heading": "h3"}]},
+                    {"index": 2, "name": "S2", "slides": [
+                        {"n": 4, "heading": "h4"}, {"n": 5, "heading": "h5"}]}],
+       "coverage_map": [{"takeaway": "T", "sub_concepts": [
+                            {"name": "c1", "slide": 2}, {"name": "c2", "slide": 4},
+                            {"name": "c3", "deferred_to": "Session 34"}]}]}
+
+new, sm = patcher.apply_doc_patch(
+    DOC, {"edit_slides": [{"n": 1, "fields": {"speaker_notes": "one. two."}}]})
+check("a repair edits only the slide it names",
+      new["sections"][0]["slides"][0]["speaker_notes"] == "one. two."
+      and sm["slides_changed"] == [1])
+check("…and leaves the other 4 of 5 untouched", sm["slides_untouched"] == [2, 3, 4, 5])
+check("…without mutating the document it was given",
+      DOC["sections"][0]["slides"][0]["speaker_notes"] == "a. b. c.")
+check("an untouched slide is preserved literally",
+      new["sections"][1]["slides"][1] == DOC["sections"][1]["slides"][1])
+
+new, sm = patcher.apply_doc_patch(DOC, {"edit_slides": [{"n": 2, "fields": {"analogy": None}}]})
+check("null deletes a field (the analogy-placement repair)",
+      "analogy" not in new["sections"][0]["slides"][1]
+      and new["sections"][0]["slides"][1]["heading"] == "h2")
+
+new, sm = patcher.apply_doc_patch(DOC, {"remove_slides": [2]})
+check("removing a slide renumbers the whole document",
+      [s["n"] for sec in new["sections"] for s in sec["slides"]] == [1, 2, 3, 4])
+subs = new["coverage_map"][0]["sub_concepts"]
+check("…carries the coverage map with it", subs[1]["slide"] == 3)
+check("…and leaves a reference to the removed slide UNMAPPED rather than pointing it "
+      "at whatever inherited the number", "slide" not in subs[0])
+check("…leaving a deferred entry alone", subs[2] == {"name": "c3", "deferred_to": "Session 34"})
+
+new, sm = patcher.apply_doc_patch(DOC, {"add_slides": [{"after_n": 3, "slide": {"heading": "NEW"}}]})
+check("an added slide lands in the right place and renumbers",
+      new["sections"][0]["slides"][3]["heading"] == "NEW"
+      and [s["n"] for sec in new["sections"] for s in sec["slides"]] == [1, 2, 3, 4, 5, 6]
+      and new["coverage_map"][0]["sub_concepts"][1]["slide"] == 5)
+
+for bad in ({"edit_slides": [{"n": 99, "fields": {"heading": "x"}}]},
+            {"remove_slides": [99]},
+            {"add_slides": [{"after_n": 99, "slide": {}}]},
+            {"set_fields": {"sections": []}},
+            {"remove_slides": [1, 2, 3, 4, 5]},
+            {}):
+    try:
+        patcher.apply_doc_patch(DOC, bad); ok = False
+    except patcher.PatchError:
+        ok = True
+    check(f"repair patch rejects {str(bad)[:44]}", ok)
+
 print("\n== guided assembly: renumbering + coverage remap ==")
 secs = [{"name": "A", "slides": [{"n": 1}, {"n": 2}]},
         {"name": "B", "slides": [{"n": 3}, {"n": 99}, {"n": 4}]}]   # 99 = patch-inserted

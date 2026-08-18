@@ -132,6 +132,27 @@ def generate_patch(base_context: str, kind: str, prev_fragment: dict,
                           cached_context=base_context)
 
 
+def repair_patch(prev_doc_json: str, issues: list[str], *,
+                 enforce_time: bool = True, base_context: str | None = None) -> dict:
+    """Ask for a SURGICAL PATCH to the assembled document. src.patcher applies it.
+
+    The repair counterpart of generate_patch, and it exists for the same two reasons:
+    the document that comes back should not be a fresh sampling of 21 slides a human
+    already approved, and asking for the whole document back costs an output token per
+    word of it. On session 33 the one `revise` call spent 42,132 output tokens — $0.48,
+    a third of that run's entire cost — to fix a handful of defects; the patch calls in
+    the same run averaged ~1,700.
+
+    `base_context` is the same cached block the chunk generators use, so the repair
+    reads the course context from cache instead of paying for it again — `revise` was
+    the only generator that never passed it.
+    """
+    from . import context_builder
+    prompt = context_builder.repair_instruction(prev_doc_json, issues,
+                                                enforce_time=enforce_time)
+    return _complete_json(prompt, label="repair_patch", cached_context=base_context)
+
+
 def revise(user_prompt: str, prev_doc_json: str, issues: list[str],
            *, enforce_time: bool = True) -> dict:
     """Repair a draft given concrete failures from guardrails + graders.

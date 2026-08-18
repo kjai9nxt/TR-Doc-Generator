@@ -564,6 +564,67 @@ RULES FOR THE PATCH
 Return ONLY the patch JSON object."""
 
 
+def repair_instruction(doc_json: str, issues: list[str], *,
+                       enforce_time: bool = True) -> str:
+    """Ask for a SURGICAL PATCH to the assembled document, not the document back.
+
+    The same argument as patch_instruction, one level up. finalize's repair used to
+    hand the whole document to the model and ask for the corrected document — ~42,000
+    output tokens on a 22-slide doc, a third of the run's cost, and every approved
+    slide re-sampled to fix a handful of defects.
+
+    The graders name defects by the document's own slide numbers ("Slide 19:
+    speaker_notes has 3 sentences"), so the patch addresses slides by exactly the
+    number the issue it fixes already cites.
+    """
+    issue_block = "\n".join(f"- {i}" for i in issues)
+    budget_line = ("" if enforce_time else
+                   "\nThe 40-minute recording limit is OFF on this run, so do NOT trim "
+                   "for time — only fix what is listed.")
+    return f"""REPAIR THE ASSEMBLED DOCUMENT — SURGICAL PATCH ONLY.
+
+Here is the finished document EXACTLY as it stands:
+{doc_json}
+
+It FAILED review for these reasons:
+{issue_block}
+
+Every slide in this document was written one section at a time and APPROVED by a human
+reviewer. Fix the listed failures and change nothing else.{budget_line}
+
+Return a JSON PATCH — not the document. The patch is applied programmatically, so
+**anything you do not name stays exactly as it is**:
+{{
+  "edit_slides": [                              // change specific FIELDS of specific slides
+    {{"n": <slide number>,
+     "fields": {{"heading": "<new>", "content": [ ...full replacement blocks... ],
+                "analogy": null}}}}              // null DELETES that field
+  ],
+  "add_slides":    [{{"after_n": <slide number>, "slide": {{ ...full slide... }}}}],
+  "remove_slides": [<slide number>, ...],
+  "set_fields":    {{ "recap": {{...}}, "agenda": [...], "coverage_map": [...] }},
+  "note": "<one line: what changed and why>"
+}}
+
+RULES FOR THE PATCH
+- Address the listed failures and NOTHING else. Do not "improve" a slide no failure
+  mentions, do not re-word a heading nobody complained about, do not reorder slides.
+- Touch the FEWEST fields that fully resolve each failure. A note about one slide's
+  speaker_notes is one `edit_slides` entry with one field.
+- `n` values are the slide numbers AS SHOWN ABOVE — the same numbers the failures cite.
+  Do not renumber anything; final numbering is reassigned when the patch is applied.
+- To cut LENGTH, prefer tightening the wordiest slides' `content` over removing a
+  slide. Remove a slide only when the document genuinely has one to spare — and if you
+  do, supply an updated `coverage_map` in `set_fields` re-pointing anything that cited
+  it, or the document will fail its coverage gate instead.
+- Every field you DO supply must satisfy all the house rules (word caps, roles, the
+  analogy placement rule, realistic figures, no second person, no navigation).
+- The agenda lines and recap items are copied verbatim from the curriculum — never
+  reword them to satisfy a failure.
+
+Return ONLY the patch JSON object."""
+
+
 def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
                           enforce_time: bool = True, budgets: dict | None = None) -> int:
     """How many slides THIS guided section may use.

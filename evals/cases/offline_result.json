@@ -1,11 +1,11 @@
 {
   "kind": "offline",
-  "generated_at": "2026-08-18T11:51:27",
+  "generated_at": "2026-08-18T14:10:15",
   "overall_pass": true,
   "extraction": {
     "ok": false,
-    "decks_checked": 30,
-    "decks_with_issues": 7,
+    "decks_checked": 32,
+    "decks_with_issues": 9,
     "decks": [
       {
         "session_no": 1,
@@ -318,36 +318,36 @@
       {
         "session_no": 16,
         "source_file": "Synchronization Tools: Semaphores, Mutex & Monitors",
-        "n_slides": 70,
+        "n_slides": 72,
         "source_slides": null,
         "empty_slides": [
           1,
-          69,
-          70
+          71,
+          72
         ],
         "interior_empty_slides": [],
         "with_body": 65,
-        "with_notes": 7,
+        "with_notes": 56,
         "with_tables": 5,
-        "body_coverage": 0.929,
+        "body_coverage": 0.903,
         "ok": true,
         "issues": []
       },
       {
         "session_no": 17,
         "source_file": "Classic Synchronization Problems & IPC",
-        "n_slides": 69,
+        "n_slides": 71,
         "source_slides": null,
         "empty_slides": [
           1,
-          68,
-          69
+          70,
+          71
         ],
         "interior_empty_slides": [],
         "with_body": 64,
-        "with_notes": 12,
+        "with_notes": 61,
         "with_tables": 7,
-        "body_coverage": 0.928,
+        "body_coverage": 0.901,
         "ok": true,
         "issues": []
       },
@@ -589,6 +589,56 @@
         "body_coverage": 0.909,
         "ok": true,
         "issues": []
+      },
+      {
+        "session_no": 31,
+        "source_file": "Spooling, Buffering & Disk Structure",
+        "n_slides": 77,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          73,
+          74,
+          76,
+          77
+        ],
+        "interior_empty_slides": [
+          73,
+          74
+        ],
+        "with_body": 69,
+        "with_notes": 0,
+        "with_tables": 6,
+        "body_coverage": 0.896,
+        "ok": false,
+        "issues": [
+          "2 interior slide(s) with no title/body/table: [73, 74]"
+        ]
+      },
+      {
+        "session_no": 32,
+        "source_file": "Disk Scheduling Algorithms",
+        "n_slides": 56,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          52,
+          53,
+          55,
+          56
+        ],
+        "interior_empty_slides": [
+          52,
+          53
+        ],
+        "with_body": 48,
+        "with_notes": 2,
+        "with_tables": 8,
+        "body_coverage": 0.857,
+        "ok": false,
+        "issues": [
+          "2 interior slide(s) with no title/body/table: [52, 53]"
+        ]
       }
     ]
   },
