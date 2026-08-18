@@ -36,7 +36,7 @@ jobs:
         run: python -m evals.test_outputs
 
   frontend-build:
-    name: Frontend build (Vite/React)
+    name: Frontend build + committed-bundle check (Vite/React)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,11 +45,18 @@ jobs:
           node-version: '20'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install & build
+      - name: Install dependencies
         working-directory: frontend
-        run: |
-          npm ci
-          npm run build
+        run: npm ci
+      # Builds AND checks the result against what is committed in frontend/dist. That
+      # second half is the point: frontend/dist is committed and is what the deployed
+      # instance serves (render.yaml runs pip install only — nothing rebuilds the
+      # bundle on deploy), so a green "it compiles" said nothing about whether the
+      # bundle people are actually running is this source. It was not, for weeks: the
+      # curriculum insert button kept numbering new rows 35 at the top of a 34-session
+      # course after both server.py and App.jsx had been fixed.
+      - name: Build, and verify the committed bundle matches the source
+        run: frontend/scripts/verify-dist.sh
 
   live-eval:
     name: Live eval (generates + judges, uses API) — manual only

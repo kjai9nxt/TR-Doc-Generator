@@ -1,0 +1,42 @@
+#!/bin/sh
+# Blocks a commit that changes the frontend SOURCE without rebuilding frontend/dist.
+#
+# frontend/dist is committed and is what the deployed instance serves — render.yaml's
+# buildCommand is `pip install` only, so nothing rebuilds the bundle on deploy. Edit
+# App.jsx, commit, deploy, and the browser still runs the old bundle; the repo says one
+# thing and the live UI does another, with nothing to signal the gap. The curriculum
+# insert button numbered new rows "35" at the top of a 34-session course for exactly
+# this reason: source fixed, bundle never rebuilt.
+#
+# This check compares STAGED PATHS only — no Node, no build, no measurable time added
+# to a commit. It is the fast local warning; CI does the authoritative version
+# (rebuild + byte compare, frontend/scripts/verify-dist.sh).
+#
+# Install:  git config core.hooksPath .githooks
+# Bypass:   SKIP_DIST_CHECK=1 git commit …     (or git commit --no-verify)
+[ -n "$SKIP_DIST_CHECK" ] && exit 0
+
+# Anything that changes what the bundle contains: the app itself, the HTML entry Vite
+# rewrites, the build config, and the dependency set the lockfile pins.
+src=$(git diff --cached --name-only \
+      | grep -E '^frontend/(src/|index\.html$|vite\.config\.js$|package\.json$|package-lock\.json$)' || true)
+[ -z "$src" ] && exit 0
+
+dist=$(git diff --cached --name-only | grep -E '^frontend/dist/' || true)
+[ -n "$dist" ] && exit 0
+
+echo ""
+echo "✗ Frontend source is staged, but frontend/dist is not."
+echo ""
+echo "  Staged source files:"
+echo "$src" | sed 's/^/    /'
+echo ""
+echo "  frontend/dist is COMMITTED and is what the deployed instance serves — nothing"
+echo "  rebuilds it on deploy. Committing this as-is ships the old UI."
+echo ""
+echo "  Fix:  cd frontend && npm run build"
+echo "        git add frontend/dist"
+echo ""
+echo "  If this change genuinely cannot affect the bundle:  SKIP_DIST_CHECK=1 git commit …"
+echo ""
+exit 1

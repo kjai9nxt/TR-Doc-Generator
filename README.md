@@ -149,6 +149,43 @@ Outputs land in `outputs/`:
 - `Session N _ <Name>.md`  — same content, quick to review
 - `Session N _ <Name>.grade.json` — per-round guardrail/time/rubric report
 
+#### Changing the UI: rebuild the bundle, always
+
+`frontend/dist` is **committed**, and it is what the deployed instance serves —
+`render.yaml`'s build command is `pip install -r requirements.txt`, so nothing rebuilds
+the bundle on deploy. Editing `frontend/src` alone therefore ships the *old* UI: the
+repo shows the new code and the browser runs the old, indefinitely and silently. That
+is how the curriculum "insert a session" button went on numbering new rows **35** at
+the top of a 34-session course long after both `server.py` and `App.jsx` had been
+fixed.
+
+So every frontend change is two things:
+
+```bash
+cd frontend && npm run build
+git add frontend/dist
+```
+
+Two guards make sure that is not something anyone has to remember:
+
+- **A pre-commit hook** blocks a commit that stages `frontend/src` (or `index.html`,
+  `vite.config.js`, `package.json`, `package-lock.json`) without staging
+  `frontend/dist`. It compares staged paths only — no Node, no build, no delay.
+  Install it once per clone:
+
+  ```bash
+  git config core.hooksPath .githooks
+  ```
+
+  Bypass for a change that genuinely cannot affect the bundle:
+  `SKIP_DIST_CHECK=1 git commit …`
+
+- **CI** does the authoritative check in the `frontend-build` job: it rebuilds and
+  fails if the result differs byte-for-byte from what is committed. Vite's output is
+  deterministic for a given source and lockfile (verified identical across Node 18 and
+  Node 22, and across repeated builds), so any difference means a stale bundle. Run the
+  same check yourself with `npm run verify:dist` from `frontend/`.
+
 ## Layout
 
 | Path | Role |
