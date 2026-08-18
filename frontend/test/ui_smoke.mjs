@@ -80,10 +80,19 @@ const ROUTES = {
                    ] },
   '/curriculum': { course: 'Operating Systems', rows: ROWS, imported_from: 'https://docs.google.com/spreadsheets/d/X/edit', pending: 0 },
   '/sessions': { sessions: SESSIONS },
+  // Two runs on purpose: one the reviewer approved AND the graders passed, and one
+  // approved with a grader flag still on it. The second is the normal case, and the
+  // one the dashboard used to count as un-approved.
   '/my/history': { courses: [{ course: 'Operating Systems', runs: [
       { id: 'r1', session_no: 30, title: 'I/O Systems', user_email: 'dev@nxtwave.co.in',
-        status: 'done', accepted: true, rubric: 100, cost: {}, calls: [], ts: '2026-08-16T10:00:00Z' }],
-      summary: { runs: 1 } }], summary: { runs: 1 } },
+        status: 'done', accepted: true, approved: true, gates_passed: true,
+        rubric: 100, cost: {}, calls: [], ts: '2026-08-16T10:00:00Z' },
+      { id: 'r3', session_no: 32, title: 'Disk Scheduling', user_email: 'dev@nxtwave.co.in',
+        status: 'done', accepted: false, approved: true, gates_passed: false,
+        rubric: 86, cost: {}, calls: [], ts: '2026-08-17T10:00:00Z' }],
+      summary: { runs: 2, total_runs: 2, approved_docs: 2, gates_passed_docs: 1 } }],
+      summary: { total_runs: 2, approved_docs: 2, gates_passed_docs: 1,
+                 total_cost: 1.2, total_tokens: 400000 } },
   '/my/teams': { teams: [{ team: { id: 4, name: 'OS Curriculum Team', course: 'Operating Systems',
                                   courses: ['Operating Systems', 'Computer Networks'],
                                   members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'] },
@@ -233,6 +242,16 @@ check('the session needing a doc is offered', text().includes('Spooling, Bufferi
 await click(byLabel('History'))
 check('History shows past runs', text().includes('I/O Systems'))
 check('…and not the generate panel', !text().includes('Generate all chunks'))
+// The reported defect: "Approved" read 0 against docs the reviewer had approved,
+// because the card counted the GRADERS' verdict. Both numbers are shown now, and they
+// are different numbers — 2 approved, 1 of them clean.
+check('Approved counts the human sign-offs, not the graders',
+      /2\s*Approved/.test(text().replace(/\s+/g, ' ')),
+      text().replace(/\s+/g, ' ').match(/.{0,40}Approved.{0,40}/)?.[0])
+check('…and the graders verdict is shown separately',
+      text().includes('Passed all gates'))
+check('a doc approved WITH a grader flag still reads approved',
+      text().includes('approved') && text().includes('flagged'))
 
 check('no Team tab while working individually — there is no team to show',
       byLabel('Team') === undefined)

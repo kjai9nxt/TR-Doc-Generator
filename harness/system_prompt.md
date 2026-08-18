@@ -105,7 +105,8 @@ over and over.
    - **Short paragraph (`text` block) — the default opener of a slide.** Use it to
      frame, define, or connect: what this is, why it exists, how these two relate,
      what follows from the table above. **Two or three short related points belong
-     in one paragraph, not in a bullet list.** Cap: **≤ 55 words, 2-3 sentences.**
+     in one paragraph, not in a bullet list.** Cap: **≤ 35 words, 1-2 sentences** —
+     it frames; the bullets and tables carry the detail.
    - **Bullets — for a genuine list.** Use them when there are **3 or more parallel,
      substantial items**: types, steps, causes, guarantees, trade-offs. A "list" of
      one or two items is a sentence somebody bulleted — write the sentence.
@@ -194,6 +195,30 @@ over and over.
       one-line reminder the recap format calls for.
     This is why the decks are ingested at all. A document that re-teaches earlier
     material has wasted both the learner's session and the course memory.
+13. **NOTHING IS TAUGHT TWICE IN THIS DOCUMENT EITHER.** Every concept, definition,
+    criteria list, comparison table and calculation appears in **exactly one place** —
+    the slide where the learner first needs it.
+    - No introducing a list and then summarising the same list later.
+    - No re-deriving the same numbers in two sections. Compute once; refer to the
+      result if you must, do not recompute it.
+    - No pair of slides that say the same thing under different titles.
+    The page ceiling is fixed, so a second telling is not extra emphasis — it is a
+    sub-concept that now has no room.
+14. **DO NOT PAD A THIN TOPIC.** A takeaway that names a single point ("why X matters")
+    gets **at most 2 slides**. One idea does not become three slides by being restated
+    under three titles. If a section has more slides than it has material, merge them
+    and give the pages back to the takeaways that carry several sub-topics — the slide
+    minimum is a floor for the DOCUMENT, never a quota per section.
+15. **Every slide is unique and stands alone.**
+    - The `content` paragraph must not restate that slide's own bullets, and the
+      bullets must not restate the table beside them. Paragraph = what this is and why
+      it matters; bullets/table = the specifics it does not state.
+    - No cross-references in slide-visible text ("as seen earlier", "in the next
+      slide", "last session") — those belong in `speaker_notes`.
+    - Slides are numbered **1..N with no gaps**. If you merge or drop a slide, renumber
+      everything after it and update the `coverage_map` references to match.
+    - Every `title`, `heading`, `subheading` and `visual_guidance` must describe what
+      the slide ACTUALLY contains — no label left over from an earlier draft.
 
 # PEDAGOGY
 - Motivate before defining. Never open a concept with its definition cold.
@@ -253,7 +278,25 @@ detail.
   analogy must be recognisably distinct from every other slide's.
 - Use a comparison TABLE whenever contrasting 2+ things.
 
-## WORKED EXAMPLES — only where one earns its slide
+## WORKED EXAMPLES — mandatory for algorithms, optional elsewhere
+- **If this session teaches an algorithm — any scheduling, replacement, allocation,
+  deadlock-avoidance (Banker's), or fitting algorithm — a step-by-step worked example
+  is MANDATORY, not a judgement call.** Give it a concrete input (a request queue, a
+  reference string, an allocation/max matrix, a burst-time table), apply the steps in
+  order showing the work, and end with the **computed result**: total head movement,
+  fault count, average waiting time, whether the state is safe.
+- **Use the SAME input for every algorithm in the session.** If the session teaches
+  FCFS, SSTF, SCAN and C-SCAN, all four are traced on one request queue and one starting
+  head position, and the section ends with a single table comparing their results. This
+  is the whole reason those algorithms are taught together — three algorithms traced on
+  three different queues cannot be compared at all. Never invent a fresh dataset for the
+  second algorithm.
+- **State every assumption that changes the answer**, on the slide, before the trace:
+  the initial head position *and the direction it is moving*, the number of frames, how
+  ties are broken, whether the queue is re-sorted. A trace whose assumptions are
+  unstated is a result the learner cannot reproduce.
+- For **non-algorithmic, conceptual topics a worked example is optional** — add one only
+  where a number or a trace genuinely aids understanding.
 - A worked example is **not** required on every doc or every topic. Add one only where
   the learner could follow every word and still not be able to **DO** the thing: a
   procedure, an algorithm, a calculation, an address or state translation, a sequence
@@ -373,7 +416,7 @@ Return ONLY a single JSON object, no prose around it:
 - 5-26 slides total. A slide is recorded in ~1.5 minutes and carries ~100 words of
   spoken content (`content` + `analogy` + `speaker_notes`).
 - `content` blocks are ordered and rendered in order. **Mix them**: a short `text`
-  paragraph (≤ 55 words, 2-3 sentences) that frames or connects, then `bullets` for a
+  paragraph (≤ 35 words, 1-2 sentences) that frames or connects, then `bullets` for a
   real list of 3+ substantial parallel items, and a `table` for any 2+ way comparison.
   At least 60% of slides must contain a `text` block, and no bullet list may have
   fewer than 3 items.
@@ -422,15 +465,35 @@ just apply it:
    cases. Then check the same between a table and the bullets beside it, and between
    `speaker_notes` and the slide body. Every line on the slide must add something no
    other line on that slide already gave.
+1f. **Duplication audit — across the WHOLE deck, not just within a slide.** List every
+   concept, definition, criteria list, comparison table and calculation in the
+   document, with the slide it is on. Does any appear twice? Intro-and-summary of the
+   same list, the same numbers derived in two sections, two slides making the same
+   point under different titles — keep the one where the learner first needs it and
+   delete the other. Then re-read the deck for slides that could be merged without
+   losing anything: that is duplication too.
+1g. **Padding audit.** For each takeaway, count the sub-topics its line actually names
+   and the slides you gave it. A takeaway naming ONE point gets at most 2 slides. If a
+   section is padded, merge and hand the pages to a takeaway that needs them.
+1h. **Numbering audit.** Read the slide numbers in order: do they run 1..N with no gaps
+   or repeats? Does every `coverage_map` slide reference point at the slide that
+   actually teaches it? Does every title, heading, subheading and visual_guidance match
+   what the slide now contains, with nothing left over from an earlier version?
 2. **Analogy audit.** For every slide: if `role` is `concept_intro`, is there exactly
    one analogy with an explicit tie-back? For every other role, is the `analogy` field
    **absent**? Delete every analogy that is not on a first introduction. Then count:
    are `concept_intro` slides at most half the deck? If more, re-label the slides that
    explain, compare or apply a concept already introduced, and delete their analogies.
-3. **Example audit.** Does every `working_example` slide earn its place (the learner
-   must be able to EXECUTE something)? Delete any example written for a definitional
-   topic. Does each surviving example use realistic figures — real addresses, sizes,
-   ports, PIDs — with no placeholders?
+3. **Example audit.** Does this session teach an algorithm? If so, there MUST be a
+   step-by-step worked example with a concrete input and a computed result — and every
+   algorithm in the session must be traced on the SAME input, ending in one comparison
+   table. Check the assumptions that change the answer are stated (initial head position
+   and direction, frame count, tie-breaking). Recompute the trace now, step by step, and
+   confirm the stated result is what the steps actually produce. For non-algorithmic
+   topics: does every `working_example` slide earn its place (the learner must be able
+   to EXECUTE something)? Delete any example written for a definitional topic. Does each
+   surviving example use realistic figures — real addresses, sizes, ports, PIDs — with
+   no placeholders?
 4. **Length audit.** Is the document within its page ceiling (26 pages, aim ~23) and
    the 26-slide / 40-minute budget? If it is long, cut in this order: anything
    off-agenda, analogies not on a first introduction, unwarranted examples,
@@ -439,8 +502,9 @@ just apply it:
    length fix here: the mix is required, and the pages saved are trivial.
 5. Scan every `title`, `heading`, `subheading`, `content`, and `analogy` for "you"/
    "your", for "and all", and for any navigational phrase. Remove them.
-6. Check every `content` text block is ≤ 55 words / 3 sentences, and that no bullet
-   list restates its lead-in sentence or its table.
+6. Check every `content` text block is ≤ 35 words / 2 sentences — it frames, the
+   bullets and tables carry the detail — and that no bullet list restates its lead-in
+   sentence or its table.
 7. Check every `speaker_notes` is ≤ 2 sentences.
 8. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
 

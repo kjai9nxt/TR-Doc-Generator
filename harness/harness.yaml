@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.58"
+  version: "1.61"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1444,6 +1444,125 @@ meta:
               The model's own numbers are kept rather than Word's automatic ones, which
               continue across consecutive lists and would number the agenda 6..10 after a
               five-line recap."
+    - "1.59 — THE CONTENT RULES THE REVIEWER STATED, MADE ENFORCEABLE.
+              Nine rules, each given a deterministic gate where one is possible and a
+              prompt+rubric statement where it is not, because 1.24's lesson stands: a
+              rule that lives only in a prompt is one the model talks itself out of.
+              (a) WORKED EXAMPLES ARE MANDATORY FOR ALGORITHM SESSIONS, and one input
+              must serve all of them. A session whose TITLE names an algorithm, or two
+              of whose takeaway lines do, now FAILS without a traced example — and fails
+              again if its examples use different datasets, since three algorithms traced
+              on three different request queues cannot be compared, which is the only
+              reason they are taught together. Detection is deliberately narrow: the
+              first cut asked whether any marker appeared anywhere in the session text
+              and fired on 'SCTP & Quality of Service', whose fifth takeaway happens to
+              read 'Techniques to Improve QoS: Scheduling, Traffic Shaping'. That case is
+              a warning for the judge now, not a failure.
+              (b) NOTHING IS TAUGHT TWICE IN ONE DOCUMENT. The existing rules were all
+              within one slide; this one is across the deck — the same line on two
+              slides, intro-and-summary of one list, the same numbers derived in two
+              sections. Threshold 0.8, well above the within-slide 0.5, because partial
+              overlap across slides is normal and wanted: the comparison slide names the
+              criteria the concept slide introduced.
+              (c) NO PADDING A THIN TOPIC: a takeaway whose curriculum line names ONE
+              point gets at most 2 slides. This is what a slide minimum plus a thin
+              syllabus line produces — the same point under three titles. Narrowed after
+              it fired on a real, correct Session 32 section: '4. LOOK Family: LOOK &
+              C-LOOK' splits into one sub-topic, but it names two algorithms. The
+              splitter is right to keep '&' inside a sub-topic ('Bit & byte' really is
+              one), so the GATE carries the extra test — a lone sub-topic that
+              coordinates two things is two ideas, and a takeaway with no colon to split
+              at is 'cannot tell', not 'one idea'.
+              (d) A BULLET MAY NOT RESTATE A TABLE ROW. The rule existed but matched only
+              VERBATIM cells, and a bullet that re-says a row says it in prose. Same
+              overlap measure as the paragraph rule, bullet against whole row.
+              (e) PARAGRAPHS CAPPED AT 35 WORDS / 2 SENTENCES, from 55 / 3. A paragraph
+              that long stops framing and starts carrying the same detail as the bullets
+              under it, which is where much of the duplication came from.
+              (f) NO TEACHING THE NEXT SESSION'S MATERIAL, mirroring the prior-deck gate:
+              introducing a next-session sub-topic fails, lesser overlap warns, since one
+              forward-looking line is explicitly allowed.
+              (g) Slides asserted contiguous 1..N — assembly already renumbers, this is
+              the assertion that it worked, since a gap silently invalidates every
+              coverage_map reference.
+              Ten new offline checks in evals/test_gates.py (169 total), each firing on
+              its own defect and silent on the golden."
+    - "1.60 — THE AGENT'S OWN REPETITION FIX DID NOT CONVERGE.
+              Reported verbatim: 'even after the agent is regenerating on its own, if it
+              detects the repetition, sometimes again giving the repetition'. The log said
+              it plainly — 'Chunk 4: the rewrite did not improve on it — keeping the first
+              version for you to judge' — and then shipped three repeated bullets to the
+              reviewer anyway. Three causes, all in server._gen_one:
+              (a) THE MODEL WAS NEVER SHOWN WHAT IT COLLIDED WITH. The repair prompt
+              quoted a 60-character excerpt of the BULLET and not one word of the
+              paragraph sentence duplicating it, so the rewrite had to guess which
+              sentence to avoid — and often collided with the same one again. The
+              detector had that sentence all along and threw it away; it is now kept
+              (_chunk_repetition_hits) and both sides are quoted, with the only two
+              acceptable outcomes stated: replace the bullet with something the paragraph
+              does not say, or delete it. 'Reword it' is explicitly ruled out, since a
+              reworded duplicate is still a duplicate.
+              (b) ONE ATTEMPT, ALL-OR-NOTHING: the retry was accepted only if STRICTLY
+              better, so a rewrite that fixed three defects of four was discarded whole.
+              Now up to auto_fix_attempts rounds, keeping the BEST version seen.
+              (c) NO FLOOR. A failed rewrite shipped the duplication unchanged. Now
+              anything still duplicating after the attempts is DROPPED — a bullet that
+              only restates its own paragraph carries nothing by definition, so removing
+              it costs no teaching and returns the page budget it was spending. Bounded by
+              content.min_bullet_items so a list is never taken below its own minimum;
+              what that protects reaches the reviewer flagged, which is the honest
+              outcome for a case the machine cannot fix without inventing content."
+    - "1.61 — TWO REPORTS FROM THE DASHBOARD: A COUNT THAT NEVER MOVED, AND A PRICE.
+              (a) APPROVED READ 0 AGAINST SEVENTEEN APPROVED DOCUMENTS. The card was
+              counting `accepted`, which is the GRADERS verdict — every guardrail passed,
+              inside time and pages, judge above bar — and not the human sign-off it was
+              labelled with. Those are different things, and the second was recorded
+              nowhere at all: the reviewers per-chunk ticks lived in React state and died
+              with the page. Finalize IS the approval (its button is disabled until every
+              chunk is ticked), so it now stamps approved_by/approved_at, before assembly
+              rather than after, since the person approved the CONTENT and that fact does
+              not depend on what the graders say next. Existing rows are backfilled at
+              the moment the column is added — guided review is the only path to a
+              document, so a run that reached status=done was approved by someone. Both
+              numbers are now shown: Approved, and Passed all gates.
+              (b) A DOCUMENT COST $1.70. Measured per call rather than guessed:
+              caching was already working (33k of every 35k-token chunk prompt was a
+              cache hit), so the money was in output tokens and in calls that should not
+              have existed.
+              · THE OPENING IS NOW DERIVED, NOT GENERATED. It was a full request —
+              ~34,000 prompt tokens, the priciest call after the sections — to produce
+              ~400 tokens that were fully determined before it was made: hard rule 3 says
+              the agenda IS the key-takeaway lines verbatim, hard rule 4 says the recap IS
+              the previous sessions agenda, and both are already gates. The model was
+              being paid to copy text it had been handed, then graded on the copy.
+              context_builder.build_opening does it in code, which also makes those two
+              rules structurally unbreakable rather than merely checked.
+              · ONE REPAIR REWRITE, NOT TWO. 1.60 gave the repetition auto-fix two
+              attempts; each is a FULL chunk regeneration (~6,000 completion tokens,
+              ~$0.09), and three affected chunks meant up to six of them — most of the
+              gap between a $0.60 run and a $1.70 one. The deterministic drop already
+              guarantees convergence at zero cost, so later attempts were buying only the
+              chance of a better line instead of a deleted one. One chance is worth
+              paying for; two is not.
+              · The judge sends the rubric as CACHED context instead of inside the user
+              prompt, where it was re-charged in full on every call, retry and repair
+              round.
+              · THE AUTO-REPAIR PATCHES INSTEAD OF RE-DRAFTING. Regenerating a whole
+              chunk to fix three bullets was measured at 25,143 completion tokens and
+              $0.27 on one Session 32 repair — more than the chunk it was repairing. The
+              surgical patcher already existed for reviewer regenerations; the repair
+              uses it now, so the output is the few lines being replaced. It also cannot
+              disturb the slides the defect was not about, which a re-draft always could.
+              · AN ALGORITHM IS TRACED ONCE. Measured on a live Session 32: output per
+              chunk had DOUBLED (4-9k completion tokens to 14-18k) once worked examples
+              became mandatory, and the comparison section was re-tracing FCFS, SSTF and
+              SCAN on slides 22-23 after chunks 2 and 3 had already traced them — 9 of 26
+              slides were worked examples, past the 30% cap, and it broke the reviewer's
+              own rule that the same numbers must not be derived in two sections. The
+              chunk instruction now says it plainly: trace each algorithm once, in the
+              section that teaches it, and a COMPARISON takeaway carries a table of the
+              totals already computed, not a second set of traces. Cheaper and better
+              teaching — the comparison is the point, not the re-derivation."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -1633,12 +1752,19 @@ constraints:
     # loses exactly the connective tissue ("why this exists", "how these two relate")
     # that a bullet cannot carry. The caps below therefore allow a real short
     # paragraph, and the mix rules make one mandatory on most slides.
-    # Still bounded: a paragraph is 2-3 sentences, not an essay, and the page ceiling
-    # is unchanged — a slide that needs more than this needs to be two slides.
-    max_words_per_text_block: 55
-    max_sentences_per_text_block: 3
+    # Still bounded, and TIGHTENED at the reviewer's instruction: "Content <= ~35 words
+    # (1-2 sentences); let bullets/tables carry detail." 55 words over 3 sentences was
+    # a paragraph competing with the bullets under it for the same job, which is where
+    # much of the paragraph/bullet duplication came from in the first place. The
+    # paragraph frames; the bullets and tables carry the detail.
+    max_words_per_text_block: 35
+    max_sentences_per_text_block: 2
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
+    # Verbatim cell matches were all the table rule ever caught, and a bullet that
+    # re-says a table row almost never re-says it word for word — it re-says it in
+    # prose. Same overlap measure as the paragraph rule, applied bullet-vs-row.
+    table_bullet_overlap: 0.6
     # ---- THE PARAGRAPH AND THE BULLETS MUST CARRY DIFFERENT INFORMATION --------
     # The rule above only ever caught VERBATIM repeats, and nothing on a real slide is
     # verbatim — it is paraphrase:
@@ -1672,6 +1798,52 @@ constraints:
     # table. Reported as a warning, not a hard failure: a genuine keyword list (field
     # names, port numbers) is legitimate and the judge can tell the difference.
     short_bullet_words: 4
+  duplication:
+    # NOTHING IS TAUGHT TWICE IN ONE DOCUMENT. The per-slide rules above stop a bullet
+    # repeating its own paragraph or table; this one stops the same material appearing
+    # on two DIFFERENT slides — the reviewer's instruction: "any concept, definition,
+    # criteria list, comparison table, or calculation must appear in exactly one place.
+    # Intro-and-summary of the same list, or re-deriving the same numbers in two
+    # sections, is not allowed."
+    #
+    # It is the same economics as every other repetition rule: the page ceiling is
+    # fixed, so a line that appears twice has spent a line of coverage the document
+    # will not get back.
+    check_across_slides: true
+    # Deliberately higher than the within-slide threshold (0.5). Across slides, partial
+    # overlap is often legitimate — the criteria a comparison applies were named when
+    # the concept was introduced, and saying "seek time" on two slides is not a repeat.
+    # At 0.8 what fires is the same LINE written twice, which is never justified.
+    near_duplicate_overlap: 0.8
+    # Short lines collide by accident ("Advantages", "FCFS example"), so a line needs
+    # this many distinctive words before it can be called a duplicate of another.
+    min_tokens: 5
+  padding:
+    # NO SPREADING ONE IDEA OVER THREE SLIDES. The reviewer's instruction: "A single-line
+    # syllabus point (e.g. 'why X matters') gets at most 2 slides."
+    #
+    # Padding is what a slide MINIMUM plus a thin topic produces: the model owes the
+    # section three slides, the syllabus gave it one idea, and the result is the same
+    # point restated under three titles. Measured against the curriculum line itself —
+    # a takeaway that names one sub-topic is one idea, however many slides it was given.
+    max_slides_for_single_point: 2
+  numbering:
+    # Slides run 1..N with no gaps. Assembly already renumbers (pipeline.assemble), so
+    # this is the assertion that it worked: a gap or a repeat here means a regenerated
+    # chunk changed length and the remap missed it, which also silently invalidates
+    # every coverage_map slide reference.
+    contiguous: true
+  leakage:
+    # COVERAGE = THIS SESSION'S SYLLABUS, NO MORE. Prior sessions are guarded by
+    # constraints.repetition (do not re-teach); this is the other edge — do not teach
+    # NEXT session's material either. It is not generosity: it spends this document's
+    # pages on a topic that already has its own session, and it makes that session's
+    # deck the second telling.
+    check_next_session: true
+    # Mirrors the prior-deck gate: an outright INTRODUCTION of a next-session topic is
+    # unambiguous and fails; lesser overlap is a warning, because naming a topic in one
+    # forward-looking line is explicitly allowed ("reference them in one line if needed").
+    title_match: 0.8
   speaker_notes:
     # One core teaching cue + one exam/interview hook. Nothing else.
     max_sentences: 2
@@ -1731,6 +1903,36 @@ constraints:
       and an invented example only adds length.
     # A deck that is mostly examples has stopped teaching the concepts.
     max_share_of_slides: 0.3
+    # ---- ALGORITHMS ARE THE CASE WHERE AN EXAMPLE IS NOT OPTIONAL ----------------
+    # The reviewer's instruction: "Any session teaching an algorithm (scheduling,
+    # replacement, allocation, Banker's, etc.) must include a step-by-step worked
+    # example with a concrete input and the computed result — and the same example
+    # reused across all algorithms in that session for comparison."
+    #
+    # Both halves matter, and the second is the one that gets dropped. An algorithm
+    # explained in prose is a procedure the learner has watched but not executed; and
+    # three algorithms each traced on a DIFFERENT request queue cannot be compared at
+    # all, which is the entire reason a session teaches them together. One input, one
+    # table of results, and the comparison makes itself.
+    required_for_algorithm_sessions: true
+    # What makes a session an "algorithm session": one of these in the SESSION TITLE,
+    # or in at least two separate takeaway lines. Not "anywhere in the session's text" —
+    # that fired on "SCTP & Quality of Service", whose fifth takeaway happens to read
+    # "Techniques to Improve QoS: Scheduling, Traffic Shaping". One sub-topic of one
+    # takeaway is a topic that gets a slide, not a session that owes a traced example;
+    # that case is raised as a warning for the judge instead.
+    # Generic words are deliberately absent ("priority", "paging", "page fault"): they
+    # name concepts at least as often as they name algorithms.
+    algorithm_markers: ["algorithm", "scheduling", "replacement", "allocation",
+                        "banker", "deadlock avoidance",
+                        "fcfs", "sstf", "c-scan", "c-look", "lru", "lfu", "fifo",
+                        "round robin", "shortest job", "shortest seek",
+                        "best fit", "first fit", "worst fit"]
+    shared_input_across_algorithms: true
+    # Two example slides "share an input" when this many concrete values appear on
+    # both. A request queue, a reference string or a page-frame set is far longer than
+    # this, so genuine reuse clears it easily and two different datasets do not.
+    min_shared_values: 3
   examples:
     # Figures inside an example must be ones a practitioner would recognise, because a
     # toy number teaches a toy mental model: base register 0x00400000 and a 4 KB page,
@@ -1815,6 +2017,30 @@ constraints:
     # overlap becomes a warning for the reviewer and is left to the judge, which can tell
     # "goes deeper" from "says it again" and now has the material to do so.
     near_duplicate_jaccard: 0.7
+    # HOW HARD THE AGENT TRIES TO FIX ITS OWN REPEATED BULLETS, before a human is asked
+    # to look. The reviewer's report: "even after the agent regenerates on its own, it
+    # sometimes gives the repetition again" — the log ending "the rewrite did not
+    # improve on it — keeping the first version for you to judge". Three causes, all
+    # addressed in server._gen_one:
+    #   · the repair prompt quoted a 60-character excerpt of the BULLET and never the
+    #     paragraph sentence it collided with, so the rewrite kept colliding;
+    #   · one attempt, accepted only if STRICTLY better, so a rewrite that fixed three
+    #     defects of four was discarded whole;
+    #   · a failed rewrite shipped the duplication to the reviewer unchanged.
+    # ONE rewrite, then the free fix. Each attempt is a FULL chunk regeneration —
+    # ~6,000 completion tokens, about $0.09 — and a document with three affected chunks
+    # was paying for up to six of them, which is most of the gap between a $0.6 run and
+    # the $1.7 one the reviewer reported. The deterministic drop below guarantees
+    # convergence at zero cost, so the second and later rewrites were buying only the
+    # chance of a BETTER line rather than a deleted one. One chance is worth paying for;
+    # two is not.
+    auto_fix_attempts: 1
+    # The last resort, and the reason this now converges. A bullet that only restates
+    # its own paragraph carries nothing by definition, so deleting it costs no teaching
+    # and gives back the page budget it was spending. Bounded by
+    # content.min_bullet_items so a list is never taken below its own minimum; what
+    # that protects reaches the reviewer flagged rather than silently wrong.
+    drop_unfixable_bullets: true
     # The map is a PLANNING artifact for the graders, not lecture material — it is not
     # rendered into the .docx or the Markdown preview, so it costs no pages.
     rendered_in_docx: false

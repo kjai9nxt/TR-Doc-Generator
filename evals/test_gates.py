@@ -764,6 +764,150 @@ check("both pacing models are reachable",
       time_grader.estimate(_doc_of(8))["pacing"] == "per_slide"
       and "narration_minutes" in time_grader.estimate(_doc_of(8)))
 
+print("\n== the same thing is not taught on two slides ==")
+# Deck-wide duplication: "any concept, definition, criteria list, comparison table or
+# calculation must appear in exactly one place".
+LINE = ("Seek time dominates disk access cost because moving the arm across cylinders "
+        "takes milliseconds while rotation and transfer take microseconds")
+d = copy.deepcopy(GOLDEN)
+d["sections"][0]["slides"][0]["content"].append({"type": "bullets", "items": [
+    LINE, "Arm movement is mechanical and cannot be pipelined",
+    "Transfer time scales with block size, not distance"]})
+d["sections"][2]["slides"][0]["content"].append({"type": "bullets", "items": [
+    LINE, "Rotational latency averages half a revolution",
+    "Controller overhead is fixed per request"]})
+gate(d, "teach the same thing twice", label="the same line on two slides FAILS")
+# …but the criteria a comparison re-applies are NOT a duplicate.
+d = copy.deepcopy(GOLDEN)
+d["sections"][0]["slides"][0]["content"].append({"type": "bullets", "items": [
+    "Seek time is the dominant cost on a mechanical disk",
+    "Rotational latency averages half a revolution",
+    "Transfer time scales with block size"]})
+d["sections"][2]["slides"][0]["content"].append({"type": "bullets", "items": [
+    "Compare the three policies on total head movement across the same queue",
+    "Starvation risk separates SSTF from the elevator family",
+    "Implementation cost differs only in the tie-breaking rule"]})
+gate(d, "teach the same thing twice", want=False,
+     label="…but related-but-different lines do NOT")
+
+print("\n== no padding a one-idea takeaway into three slides ==")
+d = copy.deepcopy(GOLDEN)
+# Takeaway 1 of the golden ("SCTP: Stream Control Transmission Protocol") names one
+# point; give its section three slides and the padding rule must fire.
+sec = d["sections"][0]
+sec["slides"] = [copy.deepcopy(sec["slides"][0]) for _ in range(3)]
+for i, s in enumerate(sec["slides"]):
+    s["n"] = i + 1
+    s["title"] = f"{s['title']} ({i + 1})"
+gate(d, "names ONE point", label="3 slides on a single-point takeaway FAILS")
+# …but only when the takeaway really names ONE thing. Both of these fired on real,
+# correct output before the rule was narrowed.
+def _pad_check(kt, n_slides):
+    """Would the padding rule fire on a takeaway `kt` given `n_slides` slides?"""
+    doc = copy.deepcopy(GOLDEN)
+    s0 = doc["sections"][0]
+    s0["slides"] = [copy.deepcopy(s0["slides"][0]) for _ in range(n_slides)]
+    for i, s in enumerate(s0["slides"]):
+        s["n"] = i + 1
+        s["title"] = f"{s['title']} ({i + 1})"
+    sess = course_loader.Session(number=32, name="T", module="M", topic="T",
+                                 key_takeaways=[kt])
+    doc["sections"] = doc["sections"][:1]
+    return any("names ONE point" in f
+               for f in guardrails.check(doc, sess, False, False).failures)
+
+
+check("a takeaway naming one point FAILS at 3 slides",
+      _pad_check("1. Why disk scheduling matters: reducing seek time", 3))
+check("…a coordinated pair ('LOOK & C-LOOK') does NOT",
+      not _pad_check("4. LOOK Family: LOOK & C-LOOK", 5))
+check("…nor does a takeaway with no colon to split at",
+      not _pad_check("4. Introduction to Disk Scheduling", 5))
+check("…and 2 slides on a single point is allowed",
+      not _pad_check("1. Why disk scheduling matters: reducing seek time", 2))
+
+print("\n== slides are numbered 1..N ==")
+d = copy.deepcopy(GOLDEN)
+d["sections"][1]["slides"][0]["n"] = 99
+gate(d, "must run 1..", label="a gap in the numbering FAILS")
+
+print("\n== an algorithm session must work an example through ==")
+
+
+def _algo_session(next_kts=()):
+    """A real Session whose TITLE names an algorithm — the case the rule is for."""
+    s = course_loader.Session(
+        number=32, name="Disk Scheduling Algorithms", module="Storage",
+        topic="Disk Scheduling",
+        key_takeaways=["FCFS disk scheduling", "Shortest seek time first (SSTF)",
+                       "SCAN and C-SCAN", "Comparison & total head movement"])
+    s.next_key_takeaways = list(next_kts)
+    return s
+
+
+def algo_gate(doc, needle, *, want=True, label=None):
+    r = guardrails.check(doc, _algo_session(), False, False)
+    got = any(needle in f for f in r.failures)
+    check(label or needle[:60], got == want, f"\n        failures: {r.failures[:2]}")
+
+
+d = copy.deepcopy(GOLDEN)                      # golden has no working_example slide
+algo_gate(d, "no slide works one through",
+          label="an algorithm session with no worked example FAILS")
+# Two examples traced on DIFFERENT inputs cannot be compared — the half that gets
+# dropped, and the reason the session teaches them together at all.
+QUEUE_A = ("Queue 98, 183, 37, 122, 14 with the head at 53: FCFS serves them in "
+           "arrival order for 640 cylinders of total head movement")
+QUEUE_B = ("Queue 45, 21, 67, 90, 12 with the head at 50: SSTF takes the nearest "
+           "each time for 208 cylinders of total head movement")
+d = copy.deepcopy(GOLDEN)
+for i, blob in enumerate((QUEUE_A, QUEUE_B)):
+    s = d["sections"][i]["slides"][0]
+    s["role"] = "working_example"
+    s.pop("analogy", None)
+    s["content"] = [{"type": "text", "text": blob}]
+algo_gate(d, "use a different input", label="two examples on different inputs FAILS")
+# The same queue traced twice is exactly what the rule wants.
+d = copy.deepcopy(GOLDEN)
+for i, algo in enumerate(("FCFS serves them in arrival order for 640 cylinders",
+                          "SSTF takes the nearest each time for 236 cylinders")):
+    s = d["sections"][i]["slides"][0]
+    s["role"] = "working_example"
+    s.pop("analogy", None)
+    s["content"] = [{"type": "text",
+                     "text": f"Queue 98, 183, 37, 122, 14 with the head at 53: {algo}"}]
+algo_gate(d, "use a different input", want=False,
+          label="…the SAME queue reused across both PASSES")
+
+print("\n== do not teach the next session's material ==")
+
+
+WITH_NEXT = _algo_session(["RAID levels 0, 1, 5 and 6",
+                           "Storage attachment: NAS & SAN"])
+d = copy.deepcopy(GOLDEN)
+d["sections"][0]["slides"][0]["title"] = "RAID levels 0, 1, 5 and 6"
+d["sections"][0]["slides"][0]["role"] = "concept_intro"
+r = guardrails.check(d, WITH_NEXT, False, False)
+check("introducing a next-session topic FAILS",
+      any("NEXT session's material" in f for f in r.failures),
+      f"\n        failures: {r.failures[:2]}")
+r = guardrails.check(copy.deepcopy(GOLDEN), WITH_NEXT, False, False)
+check("…and this session's own slides do not trip it",
+      not any("NEXT session's material" in f for f in r.failures))
+
+print("\n== a bullet must not restate the table on its own slide ==")
+d = copy.deepcopy(GOLDEN)
+s = d["sections"][1]["slides"][0]
+s["content"] = [
+    {"type": "table", "columns": ["Policy", "Head movement", "Risk"],
+     "rows": [["SSTF", "236 cylinders", "starvation of far requests"],
+              ["SCAN", "331 cylinders", "none, bounded by a sweep"]]},
+    {"type": "bullets", "items": [
+        "SSTF totals 236 cylinders but risks starvation of far requests",
+        "The elevator sweep bounds waiting time for every cylinder",
+        "Tie-breaking decides which of two equidistant requests is served"]}]
+gate(d, "repeats a row of the table", label="a bullet paraphrasing a table row FAILS")
+
 print("\n== every list line carries exactly ONE marker ==")
 # Reported from a real document: the recap and agenda read "• 1. Buffering" — a bullet
 # glyph in front of the model's own number. The numbers are REQUIRED (the agenda gate
@@ -799,6 +943,97 @@ opening = {"recap": {"prev_session_no": 31, "prev_session_name": "Spooling",
                      "bullets": numbered}, "agenda": numbered}
 md = docx_writer.chunk_to_markdown("opening", opening)
 check("no '- 1.' anywhere in the rendered opening", "- 1." not in md, md)
+
+print("\n== the agent's own repetition fix must CONVERGE ==")
+# The reviewer's report: "even after the agent is regenerating on its own, if it detects
+# the repetition, sometimes again giving the repetition". The log said it out loud —
+# "the rewrite did not improve on it — keeping the first version for you to judge" —
+# and shipped the duplication anyway. These cover the three things that were wrong.
+import server as _server                                              # noqa: E402
+
+_PARA = ("Direction reverses only at the physical end of the disk, so the last pending "
+         "request in the current direction is served before the sweep turns")
+_FRAG = {"section": {"name": "SCAN", "slides": [{"n": 12, "content": [
+    {"type": "text", "text": _PARA + "."},
+    {"type": "bullets", "items": [
+        "Direction reverses only at the physical end or last pending request",
+        "Head sweeps end to end serving every request it passes",
+        "Starvation is bounded because each cylinder is visited every sweep",
+        "Average seek time beats FCFS once the queue is deep"]}]}]}}
+
+_hits = _server._chunk_repetition_hits(copy.deepcopy(_FRAG))
+check("the detector finds the repeated bullet", len(_hits) == 1, str(_hits))
+# 1. The model must be shown the SENTENCE it collided with, not just its own bullet.
+_instr = _server._repetition_fix_instruction(_hits)
+check("the repair prompt quotes the paragraph it duplicates",
+      "physical end of the disk" in _instr, _instr[:200])
+check("…and the bullet, in full",
+      "Direction reverses only at the physical end or last pending request" in _instr)
+check("…and rules out rewording it",
+      "NOT one of the options" in _instr)
+# 2/3. What cannot be rewritten is dropped — and a drop never empties a list below the
+# minimum a two-item list would itself fail.
+_fixed, _dropped, _kept = _server._drop_repeating_bullets(copy.deepcopy(_FRAG), _hits)
+check("the unfixable bullet is dropped", _dropped == 1 and _kept == 0,
+      f"dropped={_dropped} kept={_kept}")
+check("dropping actually clears the repetition",
+      not _server._chunk_repetition_hits(_fixed))
+check("the other bullets are untouched",
+      len(_fixed["section"]["slides"][0]["content"][1]["items"]) == 3)
+# A list already at the floor is left alone: removing a line there would fail the
+# min_bullet_items gate, so the reviewer is told instead of the doc being damaged.
+_tight = copy.deepcopy(_FRAG)
+_tight["section"]["slides"][0]["content"][1]["items"] = [
+    "Direction reverses only at the physical end or last pending request",
+    "Head sweeps end to end serving every request it passes",
+    "Starvation is bounded because each cylinder is visited every sweep"]
+_th = _server._chunk_repetition_hits(_tight)
+_, _d2, _k2 = _server._drop_repeating_bullets(_tight, _th)
+check("a list at the minimum is NOT emptied", _d2 == 0 and _k2 == 1,
+      f"dropped={_d2} kept={_k2}")
+
+print("\n== the opening is DERIVED, not generated ==")
+# It was costing a full ~34,000-token request per document to copy text the prompt had
+# just handed the model — and the two rules it was copying under (agenda verbatim,
+# recap = the previous session's agenda) are gates, so the copy was also graded.
+from src import context_builder as _cb                                # noqa: E402
+
+_prev, _cur, _ = course_loader.neighbours(15, sessions)
+_op = _cb.build_opening(_cur, _prev)
+check("the agenda is one line per takeaway",
+      len(_op["agenda"]) == len(_cur.key_takeaways), str(_op["agenda"]))
+check("…every line numbered",
+      all(__import__("re").match(r"^\d+\.", a) for a in _op["agenda"]), str(_op["agenda"]))
+check("…and verbatim (the gate compares normalised lines)",
+      all(guardrails._norm_line(a) == guardrails._norm_line(k)
+          for a, k in zip(_op["agenda"], _cur.key_takeaways)))
+check("the recap names the previous session",
+      _op["recap"]["prev_session_no"] == _prev.number
+      and _op["recap"]["prev_session_name"] == _prev.name)
+check("…and carries ALL its agenda items",
+      len(_op["recap"]["bullets"]) == len(_prev.key_takeaways))
+check("session 1 has no recap", _cb.build_opening(_cur, None)["recap"] is None)
+# A curriculum that already numbers its lines must not end up double-numbered.
+_numbered_kt = course_loader.Session(
+    number=32, name="Disk Scheduling", module="M", topic="T",
+    key_takeaways=["1. Need for Disk Scheduling: why it matters",
+                   "2. FCFS & SSTF: arrival order; nearest first"])
+_op2 = _cb.build_opening(_numbered_kt, None)
+check("a pre-numbered curriculum line is not numbered twice",
+      _op2["agenda"][0].startswith("1. Need") and "1. 1." not in _op2["agenda"][0],
+      str(_op2["agenda"]))
+# End to end: the derived opening satisfies the gates it replaced.
+_doc = copy.deepcopy(GOLDEN)
+_doc["agenda"] = _op["agenda"]
+_doc["key_takeaways"] = _op["agenda"]
+_doc["recap"] = _op["recap"]
+_r = guardrails.check(_doc, cur, False, False)
+# GRAND-filtered like every other check here: the golden's own section names predate
+# the one-section-per-takeaway rule, and that message mentions "the agenda item too".
+_agenda_fails = [f for f in _r.failures if not any(g in f for g in GRAND)
+                 and ("Agenda item" in f or "Agenda has" in f or "Recap has" in f)]
+check("the derived opening trips no agenda/recap failure",
+      not _agenda_fails, str([f[:90] for f in _agenda_fails]))
 
 print("\n== policy flags ==")
 check("judge is always on", pipeline.judge_always_on())

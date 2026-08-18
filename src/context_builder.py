@@ -435,6 +435,50 @@ def time_mode_block(enforce_time: bool, *, guided: bool = False,
 # shared base for ONE chunk, telling the model exactly which small JSON fragment
 # to emit. Section indices / boilerplate are filled at assembly, not here.
 # --------------------------------------------------------------------------- #
+def _numbered(items) -> list[str]:
+    """The curriculum lines, each carrying its own number exactly once.
+
+    Some courses write the number into the sheet ("2. FCFS & SSTF: …") and some do not;
+    the agenda gate requires one either way, and a doubled "1. 1." would read as a
+    defect on the slide.
+    """
+    import re as _re
+    out = []
+    for i, k in enumerate(items or []):
+        text = str(k).strip()
+        out.append(text if _re.match(r"^\s*\d+\s*[.)\-:]", text) else f"{i + 1}. {text}")
+    return out
+
+
+def build_opening(cur: Session, prev: Session | None) -> dict:
+    """The opening chunk (recap + agenda), DERIVED — no model call.
+
+    This chunk was costing a full generation request per document: ~34,000 prompt
+    tokens, the single most expensive call in a run after the long sections, to produce
+    about 400 tokens of output. And every one of those tokens was already determined
+    before the call was made —
+
+      · HARD RULE 3: the agenda IS the key-takeaway lines, verbatim and numbered;
+      · HARD RULE 4: the recap IS the previous session's full agenda — which, by rule 3,
+        is that session's key-takeaway lines, verbatim;
+      · the recap heading is the previous session's number and name.
+
+    Both rules are already enforced as gates (agenda.text_must_equal_key_takeaway,
+    recap.must_cover_all_prev_agenda_items), so the model was being paid to copy text
+    it had been handed, and graded on whether it had copied it correctly. Deriving it
+    here removes the call, removes the latency, and makes those two rules structurally
+    unbreakable rather than merely checked.
+    """
+    return {
+        "recap": None if prev is None else {
+            "prev_session_no": prev.number,
+            "prev_session_name": prev.name,
+            "bullets": _numbered(prev.key_takeaways),
+        },
+        "agenda": _numbered(cur.key_takeaways),
+    }
+
+
 def opening_instruction(cur: Session, prev: Session | None) -> str:
     if prev is None:
         recap_rule = 'This is the FIRST session — set "recap" to null.'
@@ -656,7 +700,7 @@ one type, one formula or one step.
 
 PROSE AND BULLETS — MIX THEM. A section made only of bullet lists reads as choppy and
 loses the reasoning that connects the points.
-- A short `text` paragraph (<= 55 words, 2-3 sentences) frames, defines or connects.
+- A short `text` paragraph (<= 35 words, 1-2 sentences) frames, defines or connects.
   At least 60% of the slides in this section must carry one, and no slide should open
   straight into a list with nothing saying what the list is.
 - `bullets` are for a REAL list: 3 or more parallel, substantial items (types, steps,
@@ -698,11 +742,36 @@ ROLES AND ANALOGIES: every slide declares a "role". An analogy is REQUIRED on a
 working_example, comparison, advantages_limitations, reasoning, application, summary) —
 omit the field there. At most half the slides in this section may be "concept_intro".
 
-WORKED EXAMPLES: include one only if this takeaway is something the learner must be
-able to EXECUTE (a procedure, calculation, translation, trace, numeric trade-off). For a
-definitional or classificatory takeaway, do not manufacture one. Where one belongs, use
-realistic figures (hex base addresses, power-of-two sizes, real ports/PIDs), never
-placeholders.
+WORKED EXAMPLES: if this takeaway is an ALGORITHM (scheduling, replacement, allocation,
+Banker's, a fitting policy), a step-by-step worked example is MANDATORY — a concrete
+input (request queue, reference string, allocation matrix, burst-time table), the steps
+applied in order, and the COMPUTED RESULT (total head movement, fault count, average
+waiting time, safe/unsafe). Trace it on the SAME input any earlier algorithm in this
+session was traced on, shown in the approved chunks above, so the results can be
+compared.
+TRACE EACH ALGORITHM ONCE, IN THE SECTION THAT TEACHES IT. If an algorithm has already
+been traced in an approved chunk above, do NOT trace it again: cite the total that was
+already computed. A COMPARISON or PRACTICE takeaway therefore carries a TABLE of the
+results already derived — one row per algorithm, the same input, the totals — and not a
+second set of traces. Re-deriving the same numbers in a later section is duplication:
+it spends pages the document does not have and gives the learner nothing the first
+trace did not.
+State the assumptions that change the answer before the trace: initial head position AND
+direction, frame count, tie-breaking. Recompute the trace before you emit it — the
+result you state must be what the steps actually produce. Otherwise include an example
+only if the learner must be able to EXECUTE something (a procedure, calculation,
+translation, trace, numeric trade-off); for a definitional or classificatory takeaway,
+do not manufacture one. Where one belongs, use realistic figures (hex base addresses,
+power-of-two sizes, real ports/PIDs), never placeholders.
+
+NOTHING TWICE, AND NOTHING PADDED. Every concept, definition, criteria list, comparison
+table and calculation appears exactly ONCE in this document — check what the approved
+chunks above already said before you write. Do not introduce a list and summarise the
+same list later, and do not re-derive numbers another section already derived. If this
+takeaway names a SINGLE point, it gets at most 2 slides: one idea does not become three
+slides by being restated under three titles, and the pages belong to the takeaways that
+carry several sub-topics. Every title, heading, subheading and visual_guidance must
+describe what that slide actually contains.
 
 Slide numbers ("n") continue consecutively AFTER the already-approved slides shown above,
 and "coverage" refers to them by those numbers. Do not repeat anything already covered in

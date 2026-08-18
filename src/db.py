@@ -199,6 +199,14 @@ _SCHEMA = [
 _RUNS_ADDED_COLUMNS = [
     ("est_pages", "REAL"),      # 1.29: the 16-page ceiling, shown in the dashboards
     ("docx_name", "TEXT"),      # 1.30: exact output filename, so downloads never re-derive it
+    # 1.61: WHO signed off, and when. Distinct from `accepted`, which is the GRADERS'
+    # verdict (every guardrail passed, inside time and pages, judge above bar). The
+    # dashboard counted `accepted` under the label "Approved" and so showed 0 out of 17
+    # documents that people had reviewed chunk by chunk and finalised — the human
+    # approval was never recorded anywhere, because the per-chunk ticks lived only in
+    # the reviewer's browser.
+    ("approved_by", "TEXT"),
+    ("approved_at", "TEXT"),
 ]
 
 
@@ -229,6 +237,16 @@ def _add_missing_columns(conn) -> list[str]:
             try:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
                 added.append(f"{table}.{name}")
+                if table == "runs" and name == "approved_at":
+                    # BACKFILL, once, at the moment the column appears. Every finished
+                    # run got there through Create final TR Doc, which the UI enables
+                    # only after every chunk has been approved — guided review is the
+                    # only path to a document. So a run with status='done' WAS approved
+                    # by a person; the fact simply had nowhere to be written down until
+                    # now. Without this, seventeen documents the reviewer approved would
+                    # go on reading "Approved: 0" forever.
+                    conn.execute("UPDATE runs SET approved_at=updated "
+                                 "WHERE status='done' AND approved_at IS NULL")
             except Exception:
                 pass             # a racing instance added it first — harmless
     return added
@@ -551,7 +569,16 @@ def _is_abandoned(r: dict) -> bool:
 
 
 def _shape_run(d: dict) -> dict:
+    # TWO different verdicts, and conflating them is what made the dashboard read
+    # "Approved: 0" for seventeen finished documents:
+    #   · gates_passed — the GRADERS' verdict. Every guardrail passed, inside the time
+    #     and page budgets, judge above bar. Strict by design; most real documents
+    #     finish with something still flagged, and a reviewer signs off anyway.
+    #   · approved      — a PERSON reviewed every chunk and pressed Create final TR Doc.
+    # `accepted` is kept as the old name of the first so nothing reading it breaks.
     d["accepted"] = None if d.get("accepted") is None else bool(d["accepted"])
+    d["gates_passed"] = d["accepted"]
+    d["approved"] = bool(d.get("approved_at"))
     d["enforce_time"] = None if d.get("enforce_time") is None else bool(d["enforce_time"])
     d["cost"] = json.loads(d.pop("cost_json", None) or "{}")
     d["calls"] = json.loads(d.pop("calls_json", None) or "[]")
@@ -559,12 +586,23 @@ def _shape_run(d: dict) -> dict:
     d["abandoned"] = _is_abandoned(d)
     # A single, UI-friendly outcome: completed | approved | failed | abandoned | running
     if d["status"] == "done":
-        d["outcome"] = "approved" if d["accepted"] else "completed"
+        d["outcome"] = "approved" if d["approved"] else "completed"
     elif d["status"] == "error":
         d["outcome"] = "failed"
     else:
         d["outcome"] = "abandoned" if d["abandoned"] else "running"
     return d
+
+
+def mark_approved(run_id: str, user_email: str | None) -> None:
+    """Record that a PERSON signed this document off.
+
+    Called at finalize, which the UI only enables once every chunk has been ticked, so
+    reaching it IS the approval. Nothing recorded this before: the ticks lived in React
+    state and died with the page, and the dashboard fell back to the graders' verdict.
+    """
+    _exec("UPDATE runs SET approved_by=?, approved_at=?, updated=? WHERE id=?",
+          (user_email, _now(), _now(), run_id))
 
 
 def runs(*, user_email: str | None = None, course: str | None = None,

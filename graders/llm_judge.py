@@ -154,10 +154,12 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     except Exception:
         pass
 
-    prompt = f"""RUBRIC
-{_rubric_text(exclude)}
-
-SESSION KEY TAKEAWAYS (coverage must match these):
+    # The rubric is the same text on every judge call — every document, every retry,
+    # every repair round — so it is sent as CACHED context rather than inside the user
+    # prompt, where it was re-charged at full price each time. It sits behind the
+    # system prompt, which is also static, so the two form one cacheable prefix.
+    rubric_block = f"RUBRIC\n{_rubric_text(exclude)}"
+    prompt = f"""SESSION KEY TAKEAWAYS (coverage must match these):
 {json.dumps(session.key_takeaways, indent=2)}
 
 {time_block}{page_block}TR DOC TO GRADE (JSON):
@@ -172,7 +174,7 @@ Grade now. Return only the contract JSON."""
         raw = llm.complete(
             system=JUDGE_SYSTEM, user=prompt,
             model=judge_model, max_tokens=m.get("judge_max_tokens", 8000),
-            temperature=0.0, label="judge",
+            temperature=0.0, label="judge", cached_context=rubric_block,
         )
         r = llm.extract_json(raw)
         # Drop the excluded dimension from the scores entirely (not shown/gated).

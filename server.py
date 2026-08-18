@@ -1082,42 +1082,88 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
     human's attention is worth more than one extra call. The reviewer is here to judge
     teaching, not to relay a checklist back to the model.
 
-    So a chunk whose bullets restate their own paragraph is sent back ONCE, with the
-    offending lines quoted, before anyone is asked to look at it. Once, deliberately:
-    if the second attempt is still imperfect the reviewer sees it with the warning
-    attached and decides — better than burning calls in a loop on a judgement call.
+    So a chunk whose bullets restate their own paragraph is sent back before anyone is
+    asked to look at it, with BOTH sides of every collision quoted — the bullet and the
+    paragraph sentence it duplicates.
+
+    Three things were wrong with the first version of this, all of them visible in the
+    reviewer's log as "the rewrite did not improve on it — keeping the first version":
+      · the model was shown a 60-character excerpt of the bullet and never the sentence
+        it collided with, so it could not reliably avoid colliding again;
+      · one attempt, all-or-nothing — a rewrite that fixed three of four defects was
+        thrown away whole because it was not strictly better on the count;
+      · when the rewrite failed, the duplication simply shipped to the reviewer.
+    Now: the evidence is quoted, we keep the BEST attempt rather than the last, and
+    anything still duplicating after the attempts is DROPPED — a bullet that only says
+    what the paragraph already said loses nothing when it goes. Dropping stops short of
+    taking a list below its minimum length; those few reach the reviewer flagged, which
+    is the honest outcome for a case the machine cannot fix without inventing content.
     """
     state = GUIDED[gid]
     kind, instruction = _chunk_spec(state, index)
+    # The opening is DERIVED, not generated. Its two fields are the curriculum's own
+    # lines copied verbatim (hard rules 3 and 4, both already gates), so a model call
+    # here bought nothing and cost ~34,000 prompt tokens — the most expensive call in
+    # the run after the sections themselves. See context_builder.build_opening.
+    if kind == "opening":
+        fragment = context_builder.build_opening(state["cur"], state["prev"])
+        if reason:
+            _guided_log(gid, "The recap and agenda are copied verbatim from the "
+                             "curriculum — that is the rule they are graded on, so "
+                             "there is nothing here for a rewrite to change. To alter "
+                             "them, edit the session's key takeaways in Curriculum.")
+        return {"kind": kind, "fragment": fragment,
+                "markdown": docx_writer.chunk_to_markdown(kind, fragment)}
     approved_json = _approved_digest(prior)
     fragment = generator.generate_chunk(
         state["base_context"], instruction, approved_json, reason)
 
-    repeats = _chunk_repetition(fragment)
-    if repeats and index > 0:
-        _guided_log(gid, f"Chunk {index + 1}: {len(repeats)} bullet(s) repeat their "
+    hits = _chunk_repetition_hits(fragment)
+    if hits and index > 0:
+        rep_cfg = config.harness()["constraints"].get("repetition", {})
+        attempts = int(rep_cfg.get("auto_fix_attempts", 2))
+        _guided_log(gid, f"Chunk {index + 1}: {len(hits)} bullet(s) repeat their "
                          f"paragraph — fixing before review.")
-        fix = ("The bullets below repeat the paragraph above them, which spends page "
-               "budget without teaching anything new:\n"
-               + "\n".join(f"  · {h}" for h in repeats[:6])
-               + "\nRewrite THOSE bullets to carry what the paragraph does not say — the "
-                 "steps, the values, the conditions, the trade-offs, where it is used. "
-                 "Keep everything else in this section exactly as it is.")
-        try:
-            retry = generator.generate_chunk(
-                state["base_context"], instruction, approved_json,
-                (reason + "\n\n" + fix) if reason else fix)
-            # Only accept the retry if it actually improved matters — a re-roll that
-            # trades one defect for another is not worth the call it cost.
-            if len(_chunk_repetition(retry)) < len(repeats):
-                fragment = retry
-                _guided_log(gid, f"Chunk {index + 1}: repetition reduced to "
-                                 f"{len(_chunk_repetition(fragment))}.")
+        for attempt in range(attempts):
+            if not hits:
+                break
+            fix = _repetition_fix_instruction(hits)
+            try:
+                # PATCH, don't re-draft. Re-generating the chunk to fix three bullets
+                # cost a full chunk's OUTPUT — measured at 25,143 completion tokens and
+                # $0.27 on one Session 32 repair, more than the chunk it was repairing.
+                # A patch names the slides and replaces their content blocks, so the
+                # output is the few lines being changed. It also cannot disturb the
+                # slides the defect was not about, which a re-draft always could.
+                from src import patcher
+                patch = generator.generate_patch(
+                    state["base_context"], kind, fragment, fix)
+                retry, _scope = patcher.apply(kind, fragment, patch)
+            except Exception as e:
+                _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
+                break
+            retry_hits = _chunk_repetition_hits(retry)
+            # Keep whichever version repeats itself least — including this one when it
+            # ties, since a fresh draft that fixed the same number of defects has at
+            # least been written against the explicit instruction.
+            if len(retry_hits) <= len(hits):
+                fragment, hits = retry, retry_hits
+                _guided_log(gid, f"Chunk {index + 1}: repetition down to {len(hits)} "
+                                 f"after rewrite {attempt + 1}.")
             else:
-                _guided_log(gid, f"Chunk {index + 1}: the rewrite did not improve on it "
-                                 f"— keeping the first version for you to judge.")
-        except Exception as e:
-            _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
+                _guided_log(gid, f"Chunk {index + 1}: rewrite {attempt + 1} was worse "
+                                 f"({len(retry_hits)}) — keeping the better version.")
+        if hits and rep_cfg.get("drop_unfixable_bullets", True):
+            fragment, dropped, kept = _drop_repeating_bullets(fragment, hits)
+            if dropped:
+                _guided_log(gid, f"Chunk {index + 1}: removed {dropped} bullet(s) that "
+                                 f"only restated the paragraph — the paragraph already "
+                                 f"makes those points.")
+            hits = _chunk_repetition_hits(fragment)
+        if hits:
+            _guided_log(gid, f"Chunk {index + 1}: {len(hits)} repeated bullet(s) could "
+                             f"not be fixed without emptying a list — flagged for you "
+                             f"below.")
 
     markdown = docx_writer.chunk_to_markdown(kind, fragment)
     return {"kind": kind, "fragment": fragment, "markdown": markdown}
@@ -1195,7 +1241,10 @@ def _guided_generate_all(gid: str):
                 if i >= total:
                     break
                 prior = [c["fragment"] for c in state["chunks"]]
-            _guided_log(gid, f"Generating chunk {i + 1}/{total}: {GUIDED[gid]['labels'][i]} …")
+            # Say which chunks cost a model call and which do not — the opening is
+            # copied from the curriculum, and "Generating" would misreport that.
+            verb = "Building" if i == 0 else "Generating"
+            _guided_log(gid, f"{verb} chunk {i + 1}/{total}: {GUIDED[gid]['labels'][i]} …")
             with _lock:
                 allowance = _chunk_allowance(GUIDED[gid], i) if i else 0
             chunk = _gen_one(gid, i, prior)
@@ -1270,7 +1319,15 @@ def _guided_regenerate(gid: str, index: int, reason: str):
         # regenerated at all.
         rcfg = config.harness().get("regeneration", {}) or {}
         chunk = scope = None
-        if rcfg.get("mode", "patch") == "patch":
+        # The opening is derived from the curriculum, so both paths that can produce it
+        # must derive it — otherwise a patch here would reword an agenda that is
+        # required to be verbatim, and the run would fail at finalize for obeying the
+        # reviewer. _gen_one rebuilds it and says why in the log.
+        if index == 0:
+            chunk = _gen_one(gid, 0, prior, reason)
+            scope = {"mode": "derived",
+                     "note": "recap and agenda are copied from the curriculum"}
+        elif rcfg.get("mode", "patch") == "patch":
             try:
                 chunk, scope = _patch_one(gid, index, reason)
                 warn_at = rcfg.get("warn_above_changed_share", 0.5)
@@ -1398,37 +1455,124 @@ def _chunk_repetition(fragment: dict) -> list[str]:
     Same measure as the guardrail (constraints.content.bullet_echo_overlap), so the
     reviewer is warned about exactly what would fail the run later.
     """
+    return [h["summary"] for h in _chunk_repetition_hits(fragment)]
+
+
+def _chunk_repetition_hits(fragment: dict) -> list[dict]:
+    """The same detection, keeping the EVIDENCE rather than just a count.
+
+    Each hit carries the slide, the offending bullet IN FULL, and the exact paragraph
+    clause it duplicates. The repair pass used to be handed only a 60-character excerpt
+    of the bullet — "62% of 'Direction reverses only at the physical end or last pend'
+    is already in the paragraph above it" — so the model had to guess which sentence it
+    was colliding with, and its rewrite often collided with the same one again. That is
+    the loop the reviewer kept seeing end in "the rewrite did not improve on it".
+    """
     from guardrails.guardrails import _norm_tokens
     import re as _re
     c = config.harness()["constraints"].get("content", {})
     if not c.get("no_bullet_echoes_lead_in", False):
         return []
     thr = float(c.get("bullet_echo_overlap", 0.5))
-    out = []
+    out: list[dict] = []
     section = (fragment or {}).get("section") or {}
     for s in section.get("slides") or []:
         blocks = s.get("content") or []
-        clauses = [x for b in blocks if b.get("type") == "text"
+        clauses = [x.strip() for b in blocks if b.get("type") == "text"
                    for x in _re.split(r"[;.!?]", str(b.get("text") or ""))
                    if len(_norm_tokens(x)) >= 3]
         if not clauses:
             continue
-        for b in blocks:
+        for bi, b in enumerate(blocks):
             if b.get("type") != "bullets":
                 continue
-            for it in b.get("items") or []:
+            for ii, it in enumerate(b.get("items") or []):
                 bt = _norm_tokens(it)
                 if len(bt) < 3:
                     continue
-                best = 0.0
+                best, source = 0.0, None
                 for cl in clauses:
                     shared = bt & _norm_tokens(cl)
-                    if len(shared) >= 2:
-                        best = max(best, len(shared) / len(bt))
+                    ratio = len(shared) / len(bt)
+                    if len(shared) >= 2 and ratio > best:
+                        best, source = ratio, cl
                 if best >= thr:
-                    out.append(f"Slide {s.get('n', '?')} · {best:.0%} of \"{str(it)[:60]}\" "
-                               f"is already in the paragraph above it")
+                    out.append({
+                        "slide": s.get("n", "?"), "block": bi, "item": ii,
+                        "bullet": str(it), "paragraph": source or "", "overlap": best,
+                        "summary": (f"Slide {s.get('n', '?')} · {best:.0%} of "
+                                    f"\"{str(it)[:60]}\" is already in the paragraph "
+                                    f"above it"),
+                    })
     return out
+
+
+def _drop_repeating_bullets(fragment: dict, hits: list[dict]) -> tuple[dict, int, int]:
+    """Delete the bullets that still only restate their paragraph. (frag, dropped, kept)
+
+    The last resort, and a safe one: by definition these lines carry nothing the slide
+    does not already say, so removing them costs no teaching — it gives back the page
+    budget they were spending. Two limits, so this can never damage a slide:
+      · a list is never taken below constraints.content.min_bullet_items (a two-item
+        list is a bulleted sentence and would fail its own gate);
+      · a list is never emptied.
+    Whatever those limits protect stays, and is reported to the reviewer instead.
+    """
+    import copy
+    c = config.harness()["constraints"].get("content", {})
+    floor = int(c.get("min_bullet_items", 3) or 0)
+    frag = copy.deepcopy(fragment)
+    by_slide: dict = {}
+    for h in hits:
+        by_slide.setdefault(h["slide"], []).append(h)
+    dropped = kept = 0
+    for s in ((frag or {}).get("section") or {}).get("slides") or []:
+        for h in by_slide.get(s.get("n"), []):
+            blocks = s.get("content") or []
+            if h["block"] >= len(blocks):
+                continue
+            items = blocks[h["block"]].get("items") or []
+            # Match on text, not index: an earlier drop in the same list shifts them.
+            try:
+                at = items.index(h["bullet"])
+            except ValueError:
+                continue
+            if len(items) - 1 < max(floor, 1):
+                kept += 1
+                continue
+            items.pop(at)
+            dropped += 1
+    return frag, dropped, kept
+
+
+def _repetition_fix_instruction(hits: list[dict]) -> str:
+    """The repair order, quoting BOTH sides of every collision.
+
+    Naming the paragraph clause is the whole point: the model cannot avoid restating a
+    sentence it was never shown. Each item also states the only two acceptable outcomes
+    — replace the bullet with information the paragraph does not carry, or delete it —
+    so "reword it" (which keeps the same content and fails again) is off the table.
+    """
+    lines = []
+    for h in hits[:8]:
+        lines.append(
+            f"  Slide {h['slide']}, bullet: \"{h['bullet']}\"\n"
+            f"     duplicates this sentence of the SAME slide's paragraph: "
+            f"\"{h['paragraph']}\"\n"
+            f"     ({h['overlap']:.0%} of the bullet's words are already in it)")
+    return (
+        "REPETITION TO FIX. On the slides below, a bullet says what the paragraph on "
+        "the same slide already says. The document has a hard page ceiling, so a line "
+        "that repeats is a line that cannot teach anything:\n"
+        + "\n".join(lines)
+        + "\n\nFor EACH one, do exactly one of these two things:\n"
+          "  (a) REPLACE the bullet with a specific the paragraph does not state — a "
+          "step of the procedure, a value, a condition or edge case, a trade-off, a "
+          "failure mode, where it is used; or\n"
+          "  (b) DELETE the bullet and let the paragraph carry that point alone.\n"
+          "Rewording the same point in different words is NOT one of the options — it "
+          "leaves the duplication in place. Do not touch anything else in this section: "
+          "keep every other slide, title, table and bullet exactly as it is.")
 
 
 def _guided_view(state: dict) -> dict:
@@ -1584,7 +1728,14 @@ def guided_regenerate(gid: str, body: RegenerateBody):
 
 
 @app.post("/api/guided/{gid}/finalize")
-def guided_finalize(gid: str):
+def guided_finalize(gid: str, user: dict = Depends(current_user)):
+    """Assemble, grade and render the approved document.
+
+    Reaching this endpoint IS the human approval: the button that calls it is disabled
+    until every chunk has been ticked in the review panel. That was previously recorded
+    nowhere — the ticks lived in the browser and the dashboard fell back to the GRADERS'
+    verdict, which is why it read "Approved: 0" against seventeen finished documents.
+    """
     state = _guided_require(gid)
     with _lock:
         if state["status"] != "reviewing":
@@ -1598,6 +1749,13 @@ def guided_finalize(gid: str):
         state["status"] = "assembling"
         state["last_error"] = None
     _guided_save(gid)
+    # Stamp the approval BEFORE the assembly runs, so it survives a failure in
+    # rendering or grading: the person approved the content, and that fact is not
+    # contingent on what the graders say about it afterwards.
+    try:
+        db.mark_approved(gid, user.get("email"))
+    except Exception:
+        pass
     threading.Thread(target=_guided_finalize, args=(gid,), daemon=True).start()
     return {"ok": True}
 
@@ -1714,10 +1872,13 @@ def delete_learned_rule(index: int, user: dict = Depends(current_user)):
 
 
 def _rollup(runs: list) -> dict:
-    approved = [r for r in runs if r.get("accepted")]
+    # "Approved" means a PERSON signed it off, which is what the label says and what
+    # the reviewer expects to see go up when they press Create final TR Doc. The
+    # graders' verdict is reported alongside it rather than instead of it.
     return {
         "total_runs": len(runs),
-        "approved_docs": len(approved),
+        "approved_docs": len([r for r in runs if r.get("approved")]),
+        "gates_passed_docs": len([r for r in runs if r.get("gates_passed")]),
         "total_cost": round(sum((r.get("cost") or {}).get("cost", 0) or 0 for r in runs), 6),
         "total_tokens": sum((r.get("cost") or {}).get("total_tokens", 0) or 0 for r in runs),
     }

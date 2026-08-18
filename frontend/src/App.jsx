@@ -1467,7 +1467,15 @@ function MyHistory({ history }) {
       <h2>📚 My TR Docs — History</h2>
       <div className="metrics">
         <Metric label="Docs generated" value={s.total_runs || 0} />
-        <Metric label="Approved" value={s.approved_docs || 0} />
+        {/* Two different verdicts, and showing only the second under the word
+            "Approved" is what made this read 0 against seventeen finished documents.
+            Approved = a person reviewed every chunk and pressed Create final TR Doc.
+            Passed all gates = the graders had nothing left to flag, which is strict:
+            most documents are signed off with something still noted. */}
+        <Metric label="Approved" value={s.approved_docs || 0}
+                sub="reviewed & finalised" />
+        <Metric label="Passed all gates" value={s.gates_passed_docs || 0}
+                sub="no grader flags left" />
         {/* "Total cost" was read as the price of ONE document — it is the running total
             across every generation. Labelled explicitly, with the per-doc average next to
             it, so the number that matters for a single run is visible directly. */}
@@ -1532,9 +1540,14 @@ function RunTable({ runs }) {
                 <span className="uref"> · {r.user_email || 'unknown'}</span>
               </span>
               <span className="dashcell">
+                {/* A doc the reviewer approved but the graders still flag is the
+                    NORMAL case, so a red "review" chip on it was misleading — it is
+                    approved and shipped. The chip states the human decision; the
+                    graders' verdict rides along as a note. */}
                 {r.status === 'running' ? <span className="chip mid">● {r.stage || 'running'}</span>
                   : r.status === 'error' ? <span className="chip bad">error</span>
-                  : r.accepted ? <span className="chip good">✓</span> : <span className="chip bad">review</span>}
+                  : r.approved ? <span className="chip good">✓ approved{r.gates_passed === false && <span className="ms"> · flagged</span>}</span>
+                  : <span className="chip bad">not approved</span>}
               </span>
               <span className="dashcell">{r.rubric != null ? `${r.rubric}` : '—'}</span>
               <span className="dashcell">${((r.cost || {}).cost || 0).toFixed(4)}</span>

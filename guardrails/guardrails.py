@@ -617,17 +617,140 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                             f"that the page ceiling will not give back.")
 
     if c_cfg.get("no_table_restated_as_bullets", False):
+        # Verbatim cell matches were all this ever caught, and a bullet that re-says a
+        # table row says it in prose, not word for word ("SSTF | 236 | starvation
+        # possible" -> "SSTF totals 236 cylinders but can starve far requests"). So the
+        # same overlap measure as the paragraph rule, bullet against whole row.
+        tbl_thr = float(c_cfg.get("table_bullet_overlap", 0.6))
         for s in slides:
             tag = f"Slide {s.get('n', '?')}"
             cells = {_norm_line(c) for tb in _tables(s)
                      for row in (tb.get("rows") or []) for c in row}
             cells.discard("")
+            rows = [(" ".join(str(c) for c in row), _norm_tokens(" ".join(str(c) for c in row)))
+                    for tb in _tables(s) for row in (tb.get("rows") or [])]
             for items in _bullet_lists(s):
                 dup = [it for it in items if _norm_line(it) in cells]
                 if len(dup) >= 2:            # 2+ overlaps = the table restated
                     fails.append(
                         f"{tag}: {len(dup)} bullet(s) restate cells of the table on the "
                         f"same slide — present the information once, as a table OR bullets.")
+                    continue
+                for it in items:
+                    b_toks = _norm_tokens(it)
+                    if len(b_toks) < 3:
+                        continue
+                    best, source = 0.0, None
+                    for raw, r_toks in rows:
+                        shared = b_toks & r_toks
+                        ratio = len(shared) / len(b_toks)
+                        if len(shared) >= 2 and ratio > best:
+                            best, source = ratio, raw
+                    if best >= tbl_thr:
+                        fails.append(
+                            f"{tag}: a bullet repeats a row of the table on the same "
+                            f"slide ({best:.0%} of its words are already in it) —\n"
+                            f"    table row: {source[:110]}\n"
+                            f"    bullet:    {it[:110]}\n"
+                            f"    The table already carries this. Delete the bullet, or "
+                            f"make it say what the table cannot — why the numbers come "
+                            f"out that way, when the choice flips, what it costs.")
+
+    # --- THE SAME THING IS NOT TAUGHT ON TWO SLIDES ----------------------------
+    # Everything above is within one slide. This is across the deck: the reviewer's
+    # rule that "any concept, definition, criteria list, comparison table or
+    # calculation must appear in exactly one place — intro-and-summary of the same
+    # list, or re-deriving the same numbers in two sections, is not allowed".
+    #
+    # Threshold is well above the within-slide one (0.8 vs 0.5) because partial overlap
+    # ACROSS slides is normal and wanted: the comparison slide names the criteria the
+    # concept slide introduced. What 0.8 catches is the same line written twice.
+    dup_cfg = con.get("duplication", {})
+    if dup_cfg.get("check_across_slides", False):
+        dthr = float(dup_cfg.get("near_duplicate_overlap", 0.8))
+        dmin = int(dup_cfg.get("min_tokens", 5))
+        # (slide n, the line, its tokens) for every teachable line in the document.
+        lines: list[tuple] = []
+        for s in slides:
+            n = s.get("n", "?")
+            for t in _text_blocks(s):
+                for cl in re.split(r"[;.!?]", t):
+                    toks = _norm_tokens(cl)
+                    if len(toks) >= dmin:
+                        lines.append((n, cl.strip(), toks))
+            for items in _bullet_lists(s):
+                for it in items:
+                    toks = _norm_tokens(it)
+                    if len(toks) >= dmin:
+                        lines.append((n, str(it), toks))
+        seen_pairs = set()
+        for i, (n1, l1, t1) in enumerate(lines):
+            for n2, l2, t2 in lines[i + 1:]:
+                if n1 == n2:
+                    continue                  # within one slide: covered above
+                shared = t1 & t2
+                # Symmetric here, unlike the bullet-vs-paragraph rule: neither line is
+                # the "source", so the question is whether they are the same line, not
+                # whether one was consumed by the other.
+                ratio = len(shared) / max(len(t1), len(t2))
+                if ratio < dthr:
+                    continue
+                key = (min(n1, n2, key=str), max(n1, n2, key=str), _norm_line(l1)[:40])
+                if key in seen_pairs:
+                    continue
+                seen_pairs.add(key)
+                fails.append(
+                    f"Slides {n1} and {n2} teach the same thing twice "
+                    f"({ratio:.0%} the same words) —\n"
+                    f"    slide {n1}: {l1[:110]}\n"
+                    f"    slide {n2}: {l2[:110]}\n"
+                    f"    Keep it in ONE place — the slide where it is first needed — "
+                    f"and delete the other. The page ceiling is fixed, so the second "
+                    f"telling costs a line of coverage this document cannot get back.")
+
+    # --- NO PADDING A THIN TOPIC INTO THREE SLIDES -----------------------------
+    # "A single-line syllabus point (e.g. 'why X matters') gets at most 2 slides."
+    # The failure mode is structural, not stylistic: the slide MINIMUM plus a takeaway
+    # that names one idea leaves the model owing slides it has no material for, and it
+    # pays with the same point under three titles. Measured against the curriculum line
+    # itself — one sub-topic is one idea, whatever it was given.
+    pad_cfg = con.get("padding", {})
+    pad_max = int(pad_cfg.get("max_slides_for_single_point", 0) or 0)
+    takeaways = list(getattr(session, "key_takeaways", []) or [])
+    if pad_max and takeaways:
+        for i, sec in enumerate(doc.get("sections") or []):
+            if i >= len(takeaways):
+                break
+            subs = takeaway_subtopics(takeaways[i])
+            got = len(sec.get("slides") or [])
+            # "Names ONE point" is narrower than "has one sub-topic", and both edges
+            # matter. A takeaway with NO colon yields no sub-topics at all — that is
+            # "cannot tell", not "one idea", so it is left alone. And a lone sub-topic
+            # that COORDINATES two things ("LOOK & C-LOOK", "IntServ and DiffServ") is
+            # two ideas sharing a line: the splitter deliberately keeps "&" inside a
+            # sub-topic, since "Bit & byte" really is one. Without this the gate fired
+            # on a real, correct Session 32 section that teaches two algorithms.
+            coordinated = len(subs) == 1 and re.search(
+                r"\s(?:&|and|/|or|vs\.?|versus)\s", subs[0], re.I)
+            if len(subs) == 1 and not coordinated and got > pad_max:
+                fails.append(
+                    f"Section {i + 1} \"{sec.get('name', '')}\" spends {got} slides on a "
+                    f"takeaway that names ONE point (\"{takeaways[i][:70]}\") — max "
+                    f"{pad_max}. One idea does not become three slides by being restated "
+                    f"under three titles. Merge them into {pad_max}, and give the pages "
+                    f"back to the takeaways that carry several sub-topics.")
+
+    # --- slides are numbered 1..N, no gaps, no repeats --------------------------
+    # pipeline.assemble renumbers the whole document; this asserts it worked. A gap or
+    # a duplicate means a regenerated chunk changed length and the remap missed it,
+    # which also silently invalidates every coverage_map slide reference.
+    if con.get("numbering", {}).get("contiguous", False) and slides:
+        nums = [s.get("n") for s in slides]
+        if nums != list(range(1, len(nums) + 1)):
+            fails.append(
+                f"Slides are numbered {nums} — they must run 1..{len(nums)} with no "
+                f"gaps or repeats. Renumber every slide in document order and update "
+                f"the coverage_map references to match.")
 
     # --- speaker notes: 2 sentences, one cue + one exam hook -------------------
     max_ns = con.get("speaker_notes", {}).get("max_sentences")
@@ -685,6 +808,63 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # examples has stopped teaching the concepts.
     we_cfg = con.get("worked_example", {})
     we_slides = [s for s in slides if roles.get(s.get("n")) == "working_example"]
+    # ...but for an ALGORITHM session it is not optional, and one example must serve
+    # all of them. "Any session teaching an algorithm (scheduling, replacement,
+    # allocation, Banker's, etc.) must include a step-by-step worked example with a
+    # concrete input and the computed result — and the same example reused across all
+    # algorithms in that session for comparison."
+    #
+    # The second half is the one that gets dropped, and it is the one that matters:
+    # three algorithms traced on three different request queues cannot be compared,
+    # which is the whole reason a session teaches them together. One input, one results
+    # table, and the comparison makes itself.
+    if we_cfg.get("required_for_algorithm_sessions", False):
+        markers = [m.lower() for m in we_cfg.get("algorithm_markers", [])]
+        # The session must be ABOUT an algorithm, not merely mention one. The first cut
+        # of this asked whether any marker appeared anywhere in the session's text, and
+        # it fired on "SCTP & Quality of Service" — whose fifth takeaway is "Techniques
+        # to Improve QoS: Scheduling, Traffic Shaping". One sub-topic of one takeaway is
+        # a topic that gets a slide, not a session that owes a traced example.
+        # So: the session TITLE names one, or at least two separate takeaway lines do.
+        name_l = str(getattr(session, "name", "") or "").lower()
+        kts = [str(t).lower() for t in getattr(session, "key_takeaways", []) or []]
+        in_title = [m for m in markers if m in name_l]
+        kt_hits = [m for kt in kts for m in markers if m in kt]
+        kt_lines = sum(1 for kt in kts if any(m in kt for m in markers))
+        hits = in_title or (kt_hits if kt_lines >= 2 else [])
+        if not hits and kt_lines == 1 and not we_slides:
+            # Named, not failed: one takeaway may well deserve a traced example, but
+            # "types of X, one of which is an algorithm" often does not, and only the
+            # judge can tell those apart.
+            warns.append(
+                f"A takeaway names an algorithm ({', '.join(sorted(set(kt_hits))[:2])}) "
+                f"and no slide works one through — if the learner is expected to EXECUTE "
+                f"it, it needs a concrete input traced to a computed result.")
+        if hits:
+            if not we_slides:
+                fails.append(
+                    f"This session teaches an algorithm ({', '.join(hits[:3])}) and no "
+                    f"slide works one through. Add a slide with role 'working_example': "
+                    f"a concrete input (a request queue, a reference string, an "
+                    f"allocation matrix), the steps applied in order, and the computed "
+                    f"result — total head movement, fault count, whether the state is "
+                    f"safe. State any assumption that changes the answer (initial head "
+                    f"position and direction, frame count, tie-breaking).")
+            elif we_cfg.get("shared_input_across_algorithms", False) and len(we_slides) > 1:
+                need = int(we_cfg.get("min_shared_values", 3))
+                vals = [(s.get("n", "?"), set(_NUMERIC.findall(_slide_text_blob(s))))
+                        for s in we_slides]
+                base_n, base = vals[0]
+                odd = [n for n, v in vals[1:] if len(v & base) < need]
+                if odd:
+                    fails.append(
+                        f"Worked example(s) on slide(s) {odd} use a different input from "
+                        f"the one on slide {base_n} (fewer than {need} values in common). "
+                        f"Every algorithm in this session must be traced on the SAME "
+                        f"input — the same request queue / reference string / allocation "
+                        f"state — so their results can be compared side by side. Reuse "
+                        f"slide {base_n}'s input and end with one table of results.")
+
     we_cap = we_cfg.get("max_share_of_slides")
     if we_cap and slides and len(we_slides) > we_cap * len(slides):
         fails.append(
@@ -963,6 +1143,51 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"Slide {s.get('n', '?')} \"{title}\" closely matches Session {sn}'s "
                         f"slide \"{ptitle}\" — make sure this goes BEYOND what was already "
                         f"taught rather than repeating it.")
+
+    # --- AND DO NOT TEACH WHAT THE NEXT SESSION IS FOR ---------------------------
+    # The other edge of "coverage = syllabus, no more". The gate above guards the past;
+    # this guards the future. Same shape deliberately: an outright INTRODUCTION of a
+    # next-session topic fails, anything less is a warning — because naming a topic in
+    # one forward-looking line is explicitly allowed, and the Upcoming Session line
+    # requires it.
+    leak_cfg = con.get("leakage", {})
+    nxt_takeaways = list(getattr(session, "next_key_takeaways", []) or [])
+    if leak_cfg.get("check_next_session", False) and nxt_takeaways:
+        thr = float(leak_cfg.get("title_match", 0.8))
+        # Sub-topics, not whole takeaway lines: a takeaway names several, and it is one
+        # of those a leaking slide is built on.
+        future = []
+        for line in nxt_takeaways:
+            for sub in (takeaway_subtopics(line) or [line]):
+                toks = _norm_tokens(sub)
+                if len(toks) >= 2:
+                    future.append((sub, toks))
+        for s in slides:
+            title = str(s.get("title") or "")
+            t_toks = _norm_tokens(title)
+            if len(t_toks) < 2:
+                continue
+            best = (0.0, "")
+            for sub, f_toks in future:
+                union = t_toks | f_toks
+                j = len(t_toks & f_toks) / len(union) if union else 0.0
+                if j > best[0]:
+                    best = (j, sub)
+            j, sub = best
+            if j < thr:
+                continue
+            role = roles.get(s.get("n")) or str(s.get("role") or "")
+            if role in ("concept_intro", "overview"):
+                fails.append(
+                    f"Slide {s.get('n', '?')} \"{title}\" introduces \"{sub}\" — that is "
+                    f"the NEXT session's material, and it has its own session to teach "
+                    f"it properly. Drop the slide; if the connection is needed, one "
+                    f"forward-looking line in the Upcoming Session field is enough. The "
+                    f"pages belong to this session's takeaways.")
+            else:
+                warns.append(
+                    f"Slide {s.get('n', '?')} \"{title}\" overlaps the next session's "
+                    f"\"{sub}\" — keep it to what THIS session needs.")
 
     passed = len(fails) == 0
     if gates.get("structural_pass") is True and not passed:

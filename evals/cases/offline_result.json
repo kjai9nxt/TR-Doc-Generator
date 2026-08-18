@@ -1,6 +1,6 @@
 {
   "kind": "offline",
-  "generated_at": "2026-08-17T14:47:11",
+  "generated_at": "2026-08-18T11:16:36",
   "overall_pass": true,
   "extraction": {
     "ok": false,
@@ -618,7 +618,9 @@
       "Slide 1: bullet list 2 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Connection must restart from scratch; Unacceptable in telecom signalling, wher",
       "Slide 2: bullet list 1 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Multi-Streaming: one association carries; Multi-Homing: both endpoints register mu"
     ],
-    "warnings": [],
+    "warnings": [
+      "A takeaway names an algorithm (scheduling) and no slide works one through — if the learner is expected to EXECUTE it, it needs a concrete input traced to a computed result."
+    ],
     "invariant_failures": [],
     "metrics": {
       "estimated_minutes": 12.0,

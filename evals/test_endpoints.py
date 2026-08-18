@@ -167,6 +167,43 @@ server._guided_save(gid)
 snap = db.load_guided(gid)
 check("course is checkpointed", snap.get("course") == COURSE, f"got {snap.get('course')!r}")
 
+print("\n== finalize records the HUMAN approval ==")
+# The dashboard read "Approved: 0" against seventeen finished documents, because the
+# only approval it could see was the GRADERS' verdict — the reviewer's per-chunk ticks
+# lived in React state and were never sent anywhere. Reaching finalize IS the approval:
+# the button is disabled until every chunk is ticked.
+_row = next((x for x in db.runs() if x["id"] == gid), {})
+check("a fresh run is not approved yet", _row.get("approved") is False,
+      f"got {_row.get('approved')}")
+server.GUIDED[gid]["status"] = "reviewing"
+server.GUIDED[gid]["chunks"] = [{"kind": "opening", "fragment": {}, "markdown": "x"}]
+server._guided_finalize = lambda g: None          # don't assemble/grade/render here
+st, r = http("POST", f"/guided/{gid}/finalize")
+check("POST finalize -> 200", st == 200, f"got {st}: {detail(r)}")
+_row = next((x for x in db.runs() if x["id"] == gid), {})
+check("the run is now approved", _row.get("approved") is True, f"got {_row}")
+check("…by the person who pressed it", _row.get("approved_by") == USER["email"],
+      f"got {_row.get('approved_by')}")
+check("while the run is still assembling, outcome stays 'running'",
+      _row.get("outcome") == "running", f"got {_row.get('outcome')}")
+# …and once it finishes, the outcome reflects the PERSON's sign-off, not the graders'.
+# gates_passed=False here on purpose: that combination — approved by a human, still
+# flagged by a grader — is the normal case, and is exactly what used to show as 0.
+db.finish_run(gid, status="done", accepted=False)
+_row = next((x for x in db.runs() if x["id"] == gid), {})
+check("a finished, human-approved run reads 'approved'",
+      _row.get("outcome") == "approved", f"got {_row.get('outcome')}")
+check("…even though the graders did NOT pass it",
+      _row.get("gates_passed") is False and _row.get("approved") is True, str(_row))
+check("the graders' verdict is reported separately",
+      "gates_passed" in _row, str(sorted(_row)[:12]))
+st, hist = http("GET", "/my/history")
+check("the history roll-up counts it",
+      (hist.get("summary") or {}).get("approved_docs", 0) >= 1,
+      str(hist.get("summary")))
+check("…and reports gates separately",
+      "gates_passed_docs" in (hist.get("summary") or {}), str(hist.get("summary")))
+
 print("\n== other endpoints answer over HTTP ==")
 for method, path in (("GET", "/status"), ("GET", "/workspaces"), ("GET", "/courses"),
                      ("GET", f"/curriculum?course={COURSE.replace(' ', '%20')}"),

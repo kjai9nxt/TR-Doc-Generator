@@ -98,9 +98,12 @@ A TR doc is a SKELETON, not an essay. Every line must be tight enough to read at
 glance. Enforce these caps:
 - **Bullets: ≤ 12 words each.** One idea per bullet. No sub-clauses, no "and also".
   If a bullet needs a comma-plus-conjunction, split it into two bullets.
-- **`content` text blocks: ≤ 55 words TOTAL, 2-3 sentences.** Enough for a real
-  framing paragraph, not enough for an essay. A 90-word block is a defect — this cap
-  holds in depth mode too.
+- **`content` text blocks: ≤ 35 words TOTAL, 1-2 sentences.** Enough to frame the
+  slide, not enough to compete with the bullets under it. This cap holds in depth mode
+  too. It was 55 words over 3 sentences, and a paragraph that long ends up carrying the
+  same detail as the bullets beside it — which is where most paragraph/bullet
+  duplication came from. The paragraph says what this is and why it matters; the
+  bullets and tables carry the steps, values, conditions and trade-offs.
 - **No redundancy on a slide.** Do not restate the lead-in sentence in the bullets
   under it, and do not restate a table's contents as bullets on the same slide —
   pick the table or the bullets, never both for the same information.
@@ -186,9 +189,24 @@ afterwards, and that is where a session loses people.
   slides build on a concept already introduced; labelling them otherwise to keep
   writing analogies is a failure.
 
-## Worked examples (only where one earns its slide)
-- Add a worked example only where the learner could follow every word and still not be
-  able to **DO** the thing: a procedure, an algorithm, a calculation, an address or
+## Worked examples (mandatory for algorithms, optional elsewhere)
+- **An algorithm session owes a worked example — it is not a judgement call.** Any
+  session teaching a scheduling, replacement, allocation, deadlock-avoidance (Banker's)
+  or fitting algorithm must trace one step by step: a concrete input (request queue,
+  reference string, allocation/max matrix, burst-time table), the steps applied in
+  order, and the **computed result** — total head movement, fault count, average
+  waiting time, safe or unsafe.
+- **One input for all of them.** Every algorithm in the session is traced on the SAME
+  data, and the section ends with a single table comparing the results. Three
+  algorithms on three different queues cannot be compared, which is the only reason
+  they are taught together. Never invent a fresh dataset for the second algorithm.
+- **State the assumptions that change the answer** on the slide, before the trace:
+  initial head position *and direction*, frame count, tie-breaking, whether the queue
+  is re-sorted. A trace with unstated assumptions is a result nobody can reproduce.
+- **For conceptual topics an example is optional** — include one only where a number or
+  a trace genuinely aids understanding.
+- Otherwise, add a worked example only where the learner could follow every word and
+  still not be able to **DO** the thing: a procedure, a calculation, an address or
   state translation, a traced sequence, a numeric trade-off.
 - **Omit it** for definitional, classificatory or terminological topics — "what a file
   is", "types of scheduling", "components of a process". A manufactured example there
@@ -198,6 +216,33 @@ afterwards, and that is where a session loses people.
   counts (1500-byte MTU), timings in ms. Round toy numbers are acceptable only as
   counts of things ("3 processes", "4 frames"), never as an address, size or
   identifier — and never a placeholder ("some address", "value X", "xyz", "foo").
+
+## Nothing is taught twice (across the whole deck)
+- Every concept, definition, criteria list, comparison table and calculation appears in
+  **exactly one place** — the slide where the learner first needs it.
+- No introducing a list and then summarising the same list later. No re-deriving the
+  same numbers in two sections: compute once, refer to the result. No two slides making
+  the same point under different titles.
+- This is arithmetic, not taste. The page ceiling is fixed, so a second telling is a
+  sub-concept that now has no room.
+
+## No padding a thin topic
+- A takeaway naming a single point ("why X matters") gets **at most 2 slides**. One idea
+  does not become three slides by being restated under three titles.
+- The slide minimum is a floor for the DOCUMENT, never a quota per section. If a section
+  has more slides than material, merge them and give the pages to a takeaway that
+  carries several sub-topics.
+
+## Every slide is unique and stands alone
+- The paragraph must not restate that slide's own bullets; the bullets must not restate
+  the table beside them. Paragraph = what this is and why it matters. Bullets and
+  tables = the specifics it does not state.
+- No cross-references in slide-visible text ("as seen earlier", "in the next slide",
+  "last session") — those belong in `speaker_notes`.
+- Slides are numbered **1..N with no gaps**. Merge or drop a slide and everything after
+  it renumbers, `coverage_map` included.
+- Every title, heading, subheading and visual_guidance describes what the slide
+  ACTUALLY contains — no label left over from an earlier draft.
 
 ## Coverage rules (the most serious failure mode)
 - **The takeaway line is a contract.** The curriculum writes it as

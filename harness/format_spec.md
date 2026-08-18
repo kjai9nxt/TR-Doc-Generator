@@ -143,11 +143,11 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 
 ## Per-slide content rules
 - **Mix prose and bullets — a document of nothing but bullets is a defect.**
-  - `content` text blocks (short paragraphs): **≤ 55 words, 2-3 sentences.** They
+  - `content` text blocks (short paragraphs): **≤ 35 words, 1-2 sentences.** They
     frame, define or connect — what this is, why it exists, how it relates to what
     came before. Two or three short related points belong here as a sentence, not as
-    a bullet list. A 90-word essay paragraph is still a hard failure, in every mode
-    including depth mode.
+    a bullet list. Anything longer is a hard failure, in every mode including depth
+    mode: the paragraph frames, the bullets and tables carry the detail.
   - `bullets`: **minimum 3 items**, parallel and substantial (types, steps, causes,
     guarantees, trade-offs), each ≤ 12 words. A one- or two-item list is a sentence
     somebody bulleted — write the sentence.

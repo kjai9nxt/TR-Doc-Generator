@@ -26,6 +26,11 @@ class Session:
     # reproduce all of them, and guardrails check that — but guardrails only receive
     # the target session, so the count has to travel with it.
     prev_key_takeaways: list[str] = field(default_factory=list)
+    # The NEXT session's takeaways, filled in by neighbours() alongside prev. Coverage
+    # is this session's syllabus and no more: teaching next session's material spends
+    # this document's pages on a topic that already has its own session, and makes that
+    # session's deck the second telling. The leakage gate needs to know what they are.
+    next_key_takeaways: list[str] = field(default_factory=list)
 
     @property
     def key_takeaways_count(self) -> int:
@@ -174,4 +179,5 @@ def neighbours(number: int, sessions: list[Session] | None = None):
     # Carry the previous session's takeaways on `cur` so downstream graders that only
     # get the target session can still check the recap covers all of them.
     cur.prev_key_takeaways = list(prev.key_takeaways) if prev else []
+    cur.next_key_takeaways = list(nxt.key_takeaways) if nxt else []
     return prev, cur, nxt

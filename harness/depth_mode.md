@@ -16,7 +16,7 @@ on every doc — which produced documents nobody could record and nobody wanted 
 - **Slide ceiling unchanged** (`constraints.slides.max_rich` = 26). Depth is not more
   slides for their own sake.
 - `heading` / `subheading` stay 3-4 words, hard maximum 4.
-- A `content` text block stays ≤ 55 words / 2-3 sentences. Depth goes into bullets,
+- A `content` text block stays ≤ 35 words / 1-2 sentences. Depth goes into bullets,
   tables and better-chosen slides — never into a longer paragraph. A 90-word paragraph
   is a defect in this mode too.
 - **The prose/bullet mix is unchanged**: at least 60% of slides carry a `text` block,

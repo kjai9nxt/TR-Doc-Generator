@@ -170,14 +170,16 @@ dimensions:
     question: >
       Does slide CONTENT read as tight slide text, not spoken narration — and is it a
       MIX of short paragraphs and bullets rather than wall-to-wall bullets? The mix is a
-      house rule: a short `text` paragraph frames, defines or connects (<= 55 words, 2-3
+      house rule: a short `text` paragraph frames, defines or connects (<= 35 words, 1-2
       sentences), bullets carry a genuine list of 3+ parallel substantial items (<= 12
       words each), and tables carry any 2+ way comparison. A document that is almost
       entirely bullet lists caps this at 2 — it reads as choppy and loses the connective
       reasoning a bullet cannot carry. A one- or two-item bullet list (a sentence that was
       bulleted) caps at 3, as does a slide that opens straight into a list with no
-      framing sentence. In the other direction, a 90-word essay paragraph as slide
-      content caps at 2 (in depth mode too).
+      framing sentence. In the other direction, a paragraph past 35 words or 2 sentences
+      caps at 2 (in depth mode too) — at that length it stops framing and starts
+      competing with its own bullets, which is where most of the duplication below
+      comes from.
       NO REDUNDANCY, AND THIS MEANS PARAPHRASE — the heaviest part of this dimension.
       The paragraph and the bullets beneath it must carry DIFFERENT information: the
       paragraph frames (what this is, why it exists, how it relates), the bullets carry
@@ -192,6 +194,16 @@ dimensions:
       fixed, so every repeated line is a line that cannot teach something new. The same
       applies between a table and the bullets beside it, and between speaker_notes and
       the slide body.
+      THEN CHECK THE WHOLE DECK, NOT JUST EACH SLIDE. Every concept, definition,
+      criteria list, comparison table and calculation must appear in EXACTLY ONE place.
+      Introducing a list and summarising the same list later, re-deriving the same
+      numbers in two sections, or two slides making the same point under different
+      titles all cap this at 2 — name both slide numbers and say which one should keep
+      the material. Also check for PADDING: a takeaway whose curriculum line names a
+      single point should have at most 2 slides, and one idea spread over three
+      near-identical slides caps at 2. And check the slides are numbered 1..N with no
+      gaps, with every title, heading, subheading and visual_guidance describing what
+      that slide actually contains — a label left over from an earlier draft caps at 3.
       Slide-visible text must carry NO second person ("you"/"your") and NO navigational
       phrases ("last/previous/next session", "as we saw earlier", "in the previous/next
       slide", "in this slide we will", "now let us", "moving on") — every slide stands
@@ -230,7 +242,20 @@ dimensions:
       plausible PIDs, byte counts, ms timings. Toy values used as addresses, sizes or
       identifiers ("base = 5"), or any placeholder ("some address", "value X", "xyz"), cap
       this at 2. Round numbers as COUNTS of things ("3 processes", "4 frames") are fine.
-      An example that states a result without tracing the steps caps at 3. [G24]
+      An example that states a result without tracing the steps caps at 3.
+      ALGORITHM SESSIONS ARE THE EXCEPTION TO "warranted": a session teaching a
+      scheduling, replacement, allocation, deadlock-avoidance or fitting algorithm OWES a
+      step-by-step trace with a concrete input and a computed result — its absence caps
+      this at 2, not a deduction. And every algorithm in that session must be traced on
+      the SAME input, ending in one comparison table: different datasets per algorithm
+      make the comparison impossible and cap this at 2. RECOMPUTE the trace yourself
+      before scoring — apply the stated steps to the stated input and check the stated
+      result is what actually comes out; a wrong total, fault count or safe/unsafe
+      verdict is a technical_accuracy defect too, so name the slide and the correct value
+      in `blocking_issues`. An assumption that changes the answer and is not stated on
+      the slide (initial head position AND direction, frame count, tie-breaking) caps
+      this at 3 — the learner cannot reproduce a trace whose starting conditions are
+      unstated. [G24]
   - id: clarity_and_language
     weight: 4
     question: >
