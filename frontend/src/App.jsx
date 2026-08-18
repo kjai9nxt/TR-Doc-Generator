@@ -47,7 +47,7 @@ export default function App() {
   // numbers would blank the session's name and takeaways.
   function saveSessionBudget(sessionNo, patch) {
     api.saveSessionSettings(courseName || undefined, sessionNo, patch)
-      .then((d) => setCurRows(d.rows || []))
+      .then(applyCurriculumReply)
       .catch((e) => setCurLogs([e.message]))
   }
 
@@ -240,13 +240,25 @@ export default function App() {
     }))
   }
 
+  // EVERY curriculum-mutating reply lands here. The table and the Generate dropdown are
+  // two views of one curriculum, and they used to be updated in two different places:
+  // save refreshed both (the dropdown via a second request), while insert and delete
+  // refreshed only the table — so a session deleted from the curriculum stayed in the
+  // dropdown, and picking it started a run against a session that no longer existed.
+  // The server now returns both in one reply; applying it is one function.
+  function applyCurriculumReply(d) {
+    setCurRows(d.rows || [])
+    if (d.sessions) setSessions(d.sessions)
+  }
+
   function saveCurriculum() {
     setCurSaving(true); setCurLogs([])
     api.saveCurriculum(dirtyPayload(curRows), courseName || undefined).then((d) => {
       setCurLogs([`Saved ${d.saved} session(s).`])
-      setCurRows(d.rows || [])
+      // The dropdown comes back WITH the save now, so the extra /api/sessions round
+      // trip this used to fire afterwards is gone.
+      applyCurriculumReply(d)
       api.curriculum(courseName || undefined).then((c) => setCurPending(c.pending || 0)).catch(() => {})
-      api.sessions(courseName || undefined).then((s) => setSessions(s.sessions || [])).catch(() => {})
     }).catch((e) => setCurLogs([`Could not save: ${e.message}`]))
       .finally(() => setCurSaving(false))
   }
@@ -272,7 +284,7 @@ export default function App() {
     savePendingFirst()
       .then((n) => { saved = n; return api.insertCurriculumRow(atSessionNo, courseName || undefined) })
       .then((d) => {
-        setCurRows(d.rows || [])
+        applyCurriculumReply(d)
         setCurLogs([(saved ? `Saved ${saved} edited session(s) first. ` : '') + (d.shifted
           ? `Inserted session ${d.inserted}. The ${d.shifted} session(s) below it moved `
             + `down one, and their extracted decks moved with them.`
@@ -300,7 +312,7 @@ export default function App() {
     savePendingFirst()
       .then((n) => { saved = n; return api.deleteCurriculumRow(row.session_no, courseName || undefined) })
       .then((d) => {
-        setCurRows(d.rows || [])
+        applyCurriculumReply(d)
         setCurLogs([(saved ? `Saved ${saved} edited session(s) first. ` : '') + (d.shifted
           ? `Removed session ${d.removed}. The ${d.shifted} session(s) below it moved up `
             + `one, and their extracted decks moved with them.`

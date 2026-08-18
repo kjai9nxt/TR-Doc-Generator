@@ -589,11 +589,11 @@ def select_course(body: SelectCourseBody, user: dict = Depends(current_user)):
             "message": f"'{course}' belongs to a team you are not on. Ask an admin to "
                        f"add you to it."})
     app_settings.save(course_name=course, course_type=body.course_type)
-    return {"course": course, "rows": _curriculum_rows(course),
-            "sessions": _session_list(course), "imported_from": sync.last_link()}
+    return {"course": course, **_curriculum_reply(course),
+            "imported_from": sync.last_link()}
 
 
-def _curriculum_rows(course: str) -> list[dict]:
+def _curriculum_rows(course: str, rows: list[dict] | None = None) -> list[dict]:
     """The course's rows, each tagged with whether its deck is REALLY held.
 
     Every response that returns rows goes through here. It used to be inlined in the
@@ -605,12 +605,35 @@ def _curriculum_rows(course: str) -> list[dict]:
     The flag is what the knowledge base ACTUALLY holds, not what the table believes: an
     ephemeral disk can lose the extracted text while the row still says "extracted",
     and that is exactly when a re-fetch is genuinely needed.
+
+    `rows` lets a caller that has already read the table hand it over: against a cloud
+    database every read is a fresh connection, and the mutating endpoints were each
+    re-reading the same curriculum two or three times over on their way out.
     """
-    rows = db.curriculum(course)
+    rows = db.curriculum(course) if rows is None else rows
     have_decks = pptx_ingest.deck_session_numbers()
     for r in rows:
         r["extracted"] = r["session_no"] in have_decks
     return rows
+
+
+def _curriculum_reply(course: str, rows: list[dict] | None = None) -> dict:
+    """The shape EVERY curriculum-mutating endpoint returns: the table, and the list of
+    sessions still needing a document.
+
+    Both, always, from one read — because they are one fact. The dashboard table and the
+    Generate dropdown are two views of the curriculum, and the endpoints that changed it
+    used to return only the first: insert and delete handed back `rows` and nothing
+    else, so deleting session 35 removed it from the table while the dropdown went on
+    offering it, and picking it started a run against a session that no longer existed.
+    Saving got it right only because it fired a SECOND request for the dropdown
+    afterwards — the same drift, patched at one of the three call sites.
+
+    So the reply carries both and no caller has to remember. It is also one round trip
+    cheaper than the request-a-refresh-afterwards version it replaces.
+    """
+    rows = _curriculum_rows(course, rows)
+    return {"rows": rows, "sessions": _session_list(course, rows)}
 
 
 @app.get("/api/course-settings")
@@ -651,7 +674,7 @@ def save_session_settings(body: SessionSettingsBody, user: dict = Depends(curren
                             max_pages=body.max_pages, max_slides=body.max_slides)
     return {"ok": True,
             "effective": budget_rules.for_session(course, body.session_no),
-            "rows": _curriculum_rows(course)}
+            **_curriculum_reply(course)}
 
 
 @app.get("/api/curriculum")
@@ -689,8 +712,10 @@ def save_curriculum(body: CurriculumSaveBody, course: str | None = None,
     # keep an extracted deck, or the session stays hidden from the generate list and the
     # writer goes on treating that deck as material already taught.
     sync.prune_orphan_decks(course)
-    sync.write_course_cache(course)
-    return {"saved": saved, "rows": _curriculum_rows(course)}
+    # ONE read, shared by the cache projection and the reply (rows + sessions).
+    fresh = db.curriculum(course)
+    sync.write_course_cache(course, rows=fresh)
+    return {"saved": saved, **_curriculum_reply(course, fresh)}
 
 
 @app.post("/api/curriculum/insert")
@@ -737,9 +762,10 @@ def insert_curriculum_row(body: CurriculumInsertBody, course: str | None = None,
                          session_name=body.session_name or "",
                          key_takeaways=body.key_takeaways or [],
                          ppt_link=body.ppt_link)
-    sync.write_course_cache(course)
+    fresh = db.curriculum(course)
+    sync.write_course_cache(course, rows=fresh)
     return {"course": course, "inserted": at, "shifted": len(moved),
-            "rows": _curriculum_rows(course)}
+            **_curriculum_reply(course, fresh)}
 
 
 @app.delete("/api/curriculum/{session_no}")
@@ -775,9 +801,10 @@ def delete_curriculum_row(session_no: int, course: str | None = None,
             db.kb_rename_decks(moved)   # see insert_curriculum_row: not optional
         except Exception as e:
             print(f"[curriculum] deck renumber failed after deleting {session_no}: {e!r}")
-    sync.write_course_cache(course)
+    fresh = db.curriculum(course)
+    sync.write_course_cache(course, rows=fresh)
     return {"ok": True, "removed": int(session_no), "shifted": len(moved),
-            "rows": _curriculum_rows(course)}
+            **_curriculum_reply(course, fresh)}
 
 
 def _run_ingest(job_id: str, force: bool, sessions: list[int] | None,

@@ -229,17 +229,21 @@ def adopt_existing_decks(course: str | None = None) -> int:
 # --------------------------------------------------------------------------- #
 # 2. CACHE — mirror the table to the JSON the offline loaders/RAG already read.
 # --------------------------------------------------------------------------- #
-def write_course_cache(course: str | None = None) -> int:
+def write_course_cache(course: str | None = None, rows: list | None = None) -> int:
     """Write knowledge_base/course_structure.json from the curriculum table.
 
     Kept because pptx_ingest, the offline loaders and the eval harness read this file;
     the table is authoritative and this is its projection, so nothing downstream had to
     learn about the database.
+
+    `rows` lets a caller that has just read the curriculum pass it in rather than have
+    this read it again — against Turso each read is its own connection, and the insert
+    and delete endpoints were reading the same table two and three times on one request.
     """
     from . import db
     course = course or _course()
     out = {}
-    for r in db.curriculum(course):
+    for r in (db.curriculum(course) if rows is None else rows):
         out[str(r["session_no"])] = {
             "number": r["session_no"],
             "name": r["session_name"],

@@ -79,10 +79,50 @@ def deck_state():
     return {r["path"]: r["content"] for r in db._query("SELECT path, content FROM kb_files")}
 
 
+def isolate() -> Path:
+    """Point EVERY piece of state this test touches at a throwaway directory.
+
+    Not optional, and not just the database. These checks drive the real endpoints, and
+    a curriculum endpoint does far more than write a table: it renumbers extracted decks
+    on disk, rewrites course_structure.json and manifest.json, and — on delete — prunes
+    every deck the curriculum no longer links. Run against the real knowledge base with
+    a synthetic 35-session course that has no deck links, that prune is indiscriminate:
+    it deletes the whole extracted course. It did, the first time this file was run.
+
+    The module-level paths are resolved at import, so redirecting config alone is not
+    enough — each one has to be re-pointed by name.
+    """
+    tmp = Path(tempfile.mkdtemp(prefix="curriculum_order_"))
+    kb = tmp / "knowledge_base"
+    (kb / "decks").mkdir(parents=True, exist_ok=True)
+
+    from src import config, pptx_ingest, sync
+    config.KB_DIR = kb
+    pptx_ingest.KB_DIR = kb
+    pptx_ingest.DECKS_DIR = kb / "decks"
+    pptx_ingest.MANIFEST = kb / "manifest.json"
+    sync.KB = kb
+    sync.COURSE_CACHE = kb / "course_structure.json"
+    db.DB_PATH = kb / "renumber_test.db"
+    return kb
+
+
 def main() -> int:
-    # A scratch file, so a developer's real curriculum is never touched.
-    db.DB_PATH = Path(tempfile.mkdtemp()) / "renumber_test.db"
+    kb = isolate()
     db.init()
+
+    # Prove the isolation before anything is allowed to run: if the real knowledge base
+    # is still reachable from here, the checks below would eat it.
+    real_kb = Path(__file__).resolve().parent.parent / "knowledge_base"
+    from src import config, pptx_ingest, sync
+    for name, got in (("config.KB_DIR", config.KB_DIR),
+                      ("pptx_ingest.DECKS_DIR", pptx_ingest.DECKS_DIR),
+                      ("pptx_ingest.MANIFEST", pptx_ingest.MANIFEST),
+                      ("sync.COURSE_CACHE", sync.COURSE_CACHE),
+                      ("db.DB_PATH", db.DB_PATH)):
+        assert real_kb not in Path(got).parents and Path(got) != real_kb, \
+            f"{name} still points inside the real knowledge base ({got})"
+    print(f"(isolated: {kb})\n")
 
     print("== insert takes the POSITION's number, not the next free one ==")
     reset()
@@ -212,6 +252,55 @@ def main() -> int:
         held = max((c.n for c in seen), default=0)
         check(f"renaming {size} decks sends {held} statement(s), not {3 * size}",
               held <= 4, f"{held} statements on one connection")
+
+    print("\n== the Generate dropdown follows the curriculum ==")
+    # The third bug in this feature. The dashboard table and the dropdown are two views
+    # of one curriculum, and only the table was being refreshed by insert and delete —
+    # so a session removed from the curriculum stayed in the dropdown, and picking it
+    # started a run against a session that no longer existed. Both views now come back
+    # in the same reply, which is what these pin.
+    import os
+    os.environ["AUTH_DISABLED"] = "1"
+    from server import (insert_curriculum_row, delete_curriculum_row,   # noqa: E402
+                        save_curriculum, CurriculumInsertBody,
+                        CurriculumSaveBody, CurriculumRow)
+    user = {"email": "regression@test", "is_admin": True}
+
+    reset(35)
+    d = delete_curriculum_row(35, C, user)
+    check("a delete reply carries the dropdown at all", "sessions" in d)
+    check("the deleted session is gone from the TABLE",
+          35 not in [r["session_no"] for r in d["rows"]])
+    check("…and from the DROPDOWN",
+          35 not in [s["number"] for s in d["sessions"]])
+    check("the two views agree",
+          sorted(s["number"] for s in d["sessions"]) ==
+          sorted(r["session_no"] for r in d["rows"]))
+
+    reset(34)
+    d = insert_curriculum_row(CurriculumInsertBody(at_session_no=1, course=C), None, user)
+    check("an insert reply carries the dropdown too", "sessions" in d)
+    check("the dropdown shows 1..35", sorted(s["number"] for s in d["sessions"]) ==
+          list(range(1, 36)))
+
+    reset(5)
+    d = save_curriculum(CurriculumSaveBody(course=C, rows=[
+        CurriculumRow(session_no=3, session_name="Renamed", topic="",
+                      key_takeaways=["A: b"], ppt_link=None)]), None, user)
+    check("a save reply carries the dropdown", "sessions" in d)
+    check("a rename reaches the dropdown",
+          next(s["name"] for s in d["sessions"] if s["number"] == 3) == "Renamed")
+
+    # The rule the dropdown is FOR: a session whose deck is already recorded does not
+    # need a TR doc, so it is not offered. Pinned so the fix above cannot quietly turn
+    # the dropdown into a plain copy of the table.
+    reset(4)
+    db.curriculum_upsert(C, 2, topic="", session_name="S2", key_takeaways=["A: b"],
+                         ppt_link="https://docs.google.com/presentation/d/x")
+    d = save_curriculum(CurriculumSaveBody(course=C, rows=[]), None, user)
+    check("a session with a deck link stays IN the table",
+          2 in [r["session_no"] for r in d["rows"]])
+    check("…and OUT of the dropdown", 2 not in [s["number"] for s in d["sessions"]])
 
     print(f"\n{OK} passed, {FAIL} failed")
     return 1 if FAIL else 0
