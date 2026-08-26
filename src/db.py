@@ -184,6 +184,25 @@ _SCHEMA = [
          team_id INTEGER, course TEXT, added_at TEXT,
          PRIMARY KEY (team_id, course))""",
     "CREATE INDEX IF NOT EXISTS idx_team_courses_course ON team_courses(course)",
+    # WHO CREATED A COURSE — the other half of ownership, and the reason a course is
+    # not simply on everybody's shelf.
+    #
+    # Visibility used to be: on a team -> that team's courses; on NO team -> EVERY
+    # course the agent holds, on the reasoning that scoping a person to nothing would
+    # lock them out. The effect was the opposite of what a private workspace means:
+    # anyone signing in for the first time opened the app and found every course anyone
+    # in the org had ever imported, could switch to it, edit its curriculum and
+    # generate against it. Nothing recorded who a course belonged to, so nothing could
+    # narrow it.
+    #
+    # A course is created ONCE, by one person, and that fact never changes — so it is
+    # written down here on the creating request and read back on every visibility
+    # decision. `created_by` is the INDIVIDUAL owner; team ownership lives in
+    # team_courses and is resolved alongside it (a course can be both: mine, and shared
+    # with the team I made it in).
+    """CREATE TABLE IF NOT EXISTS course_owners (
+         course TEXT PRIMARY KEY, created_by TEXT, created_at TEXT)""",
+    "CREATE INDEX IF NOT EXISTS idx_course_owners_by ON course_owners(created_by)",
     """CREATE TABLE IF NOT EXISTS curriculum (
          course TEXT, session_no INTEGER, topic TEXT, session_name TEXT,
          key_takeaways TEXT, ppt_link TEXT, deck_hash TEXT, deck_status TEXT,
@@ -273,6 +292,21 @@ def init() -> None:
     if added:
         print(f"[db] migrated runs table: added column(s) {', '.join(added)}")
     _migrate_json_log()
+    # Attribute courses that predate ownership being recorded — once, here, so the
+    # first request after a deploy already draws a correctly scoped shelf instead of
+    # every course on the instance. See backfill_course_owners.
+    try:
+        claimed = backfill_course_owners()
+        if claimed:
+            print(f"[db] attributed {len(claimed)} pre-existing course(s) to a creator: "
+                  + ", ".join(f"{c} -> {who}" for c, who in claimed.items()))
+        loose = unclaimed_courses()
+        if loose:
+            print(f"[db] {len(loose)} course(s) have no recorded creator and no owning "
+                  f"team, so they stay visible to everyone until something writes to "
+                  f"them: " + ", ".join(loose))
+    except Exception as e:
+        print(f"[db] course-owner backfill skipped: {e!r}")
 
 
 # --------------------------------------------------------------------------- #
@@ -443,21 +477,201 @@ def team_runs(team_id: int, courses: list[str] | None = None) -> list[dict]:
         return []
 
 
+# --------------------------------------------------------------------------- #
+# course ownership
+#
+# Two independent facts decide who may open a course, and BOTH are needed:
+#   · course_owners.created_by — the person who created it (their individual shelf);
+#   · team_courses             — the teams it has been shared with (their shelves).
+# Everything below resolves visibility from those two and nothing else.
+# --------------------------------------------------------------------------- #
+def claim_course(course: str, email: str | None) -> str | None:
+    """Record `email` as the creator of `course`. FIRST CLAIM WINS.
+
+    Called on the paths that bring a course into existence (selecting a new name,
+    saving or importing a curriculum for it). Idempotent by design: a course is created
+    once, so a later caller writing its own email over the original would quietly hand
+    somebody else's course to whoever edited it most recently.
+
+    Returns the effective owner after the call — which is the EXISTING owner when there
+    already was one, so a caller can tell a claim from a no-op.
+    """
+    course = (course or "").strip()
+    email = (email or "").strip().lower() or None
+    if not course or not email:
+        return course_owner(course) if course else None
+    try:
+        _exec("INSERT OR IGNORE INTO course_owners (course, created_by, created_at) "
+              "VALUES (?,?,?)", (course, email, _now()))
+    except Exception:
+        return None
+    return course_owner(course)
+
+
+def course_owners() -> dict:
+    """{course: creator_email} for every course whose creator is recorded."""
+    try:
+        return {r["course"]: (r.get("created_by") or "").lower()
+                for r in _query("SELECT course, created_by FROM course_owners")
+                if r.get("course") and r.get("created_by")}
+    except Exception:
+        return {}
+
+
+def course_owner(course: str) -> str | None:
+    """One course's creator. A targeted read, not course_owners() filtered: this is on
+    the authorisation path of every request, and on the cloud database each query is a
+    network round-trip."""
+    course = (course or "").strip()
+    if not course:
+        return None
+    try:
+        rows = _query("SELECT created_by FROM course_owners WHERE course = ?", (course,))
+    except Exception:
+        return None
+    if not rows:
+        return None
+    return (rows[0].get("created_by") or "").lower() or None
+
+
+def backfill_course_owners() -> dict:
+    """Attribute the courses that existed before ownership was recorded. Runs once, at
+    init, and is a no-op afterwards.
+
+    Without this every pre-existing course would be owner-less on the day this ships,
+    and the person who imported a 34-session curriculum would open the app to an empty
+    shelf. Two signals stand in for the missing record, strongest first:
+
+      1. the EARLIEST run against the course — whoever generated the first document
+         for it is who was working on it, and on a real instance almost every course
+         has one;
+      2. the creator of a team that owns it — a course attached to a team was imported
+         by somebody who was working in that team.
+
+    A course with neither signal stays unattributed on purpose: guessing would be
+    inventing an owner. `can_use_course` treats those as UNCLAIMED rather than
+    forbidden, so an imported-but-never-used curriculum is not stranded, and the first
+    write to it claims it properly.
+    """
+    have = course_owners()
+    known: set = set()
+    try:
+        known.update(r["course"] for r in
+                     _query("SELECT DISTINCT course FROM curriculum WHERE course IS NOT NULL"))
+    except Exception:
+        pass
+    all_teams = teams()
+    for t in all_teams:
+        known.update(t.get("courses") or [])
+    todo = sorted(c for c in known if c and c not in have)
+    if not todo:
+        return {}
+    # One query for the earliest run per course rather than one per course: on the
+    # cloud database each is a network round-trip, and this runs during startup.
+    first_run: dict = {}
+    try:
+        for r in _query("SELECT course, user_email, MIN(ts) AS first_ts FROM runs "
+                        "WHERE course IS NOT NULL AND user_email IS NOT NULL "
+                        "GROUP BY course"):
+            if r.get("course") and r.get("user_email"):
+                first_run[r["course"]] = r["user_email"].lower()
+    except Exception:
+        first_run = {}
+    team_creator: dict = {}
+    for t in all_teams:
+        for c in (t.get("courses") or []):
+            if c not in team_creator and (t.get("created_by") or "").strip():
+                team_creator[c] = t["created_by"].lower()
+    done = {}
+    for course in todo:
+        owner = first_run.get(course) or team_creator.get(course)
+        if not owner:
+            continue
+        if claim_course(course, owner):
+            done[course] = owner
+    return done
+
+
+def unclaimed_courses() -> list[str]:
+    """Courses nobody is recorded as having created and no team owns.
+
+    Not an error state — a curriculum can be imported and never generated against — but
+    worth naming at startup, because these are the ones every signed-in user can still
+    see until somebody writes to them.
+    """
+    have = set(course_owners())
+    owned_by_team = {c for t in teams() for c in (t.get("courses") or [])}
+    try:
+        known = {r["course"] for r in
+                 _query("SELECT DISTINCT course FROM curriculum WHERE course IS NOT NULL")
+                 if r.get("course")}
+    except Exception:
+        known = set()
+    return sorted(known - have - owned_by_team)
+
+
+def can_use_course(email: str, course: str, *, is_admin: bool = False,
+                   all_teams: list[dict] | None = None,
+                   owners: dict | None = None) -> bool:
+    """May this person read and write this course?
+
+    · admin              — yes, everything (the admin dashboard reports on the whole
+                           instance, and an admin is who fixes a mis-scoped course);
+    · created it         — yes, it is on their individual shelf;
+    · a team owns it     — yes if they are on that team, no if they are not;
+    · nobody owns it     — yes: an UNCLAIMED course belongs to no one, so there is no
+                           one to keep it from, and refusing would strand a curriculum
+                           imported before ownership was recorded with no way back in.
+                           The first write claims it.
+    """
+    course = (course or "").strip()
+    if not course:
+        return True                      # nothing named — the caller resolves a default
+    if is_admin:
+        return True
+    email = (email or "").lower()
+    # Owner first, and on its own query: the common case is somebody opening a course
+    # they created, and that answers it in ONE round-trip without reading the team
+    # tables at all.
+    owner = owners.get(course) if owners is not None else course_owner(course)
+    if owner and owner == email:
+        return True
+    all_teams = teams() if all_teams is None else all_teams
+    owning_teams = [t for t in all_teams if course in (t.get("courses") or [])]
+    if owning_teams:
+        return any(email in (t.get("members") or []) for t in owning_teams)
+    return owner is None                 # unclaimed and team-less
+
+
 def courses_for_user(email: str, *, is_admin: bool = False,
                      all_teams: list[dict] | None = None,
-                     counts: dict | None = None) -> list[dict]:
+                     counts: dict | None = None,
+                     owners: dict | None = None) -> list[dict]:
     """Which courses this person may work on, and who else is on each.
 
-    A course belongs to the TEAM that owns it, so a curriculum one member imports is
-    immediately the curriculum everyone on that team opens — that is the whole point of
-    keeping it in the database rather than in a sheet someone has to re-paste.
+    A course belongs to the person who CREATED it, and to any team it has been shared
+    with. Those are the only two ways onto this list:
 
-    Visibility:
       · admin            — every course the agent holds;
-      · on ≥ 1 team      — exactly the courses those teams own, and nothing else;
-      · on no team yet   — every course, because scoping a person to nothing would lock
-                           them out of an agent they are entitled to use. Put them in a
-                           team and the list narrows to that team's courses.
+      · created by them  — their own shelf, whether or not a team is involved;
+      · their teams'     — every course each team they are on owns, and nothing else;
+      · unclaimed        — a course with no recorded creator and no owning team, which
+                           is what a curriculum imported before ownership was recorded
+                           looks like. Visible so it is not stranded; the first write
+                           to it claims it.
+
+    It used to be "on a team -> that team's courses, on no team -> EVERYTHING", which
+    meant a new signee saw every course anyone in the org had imported, and someone on
+    a team could not see the course they had made themselves. Both halves of that are
+    fixed here.
+
+    Each row carries WHY it is visible, so the UI can keep the individual shelf and the
+    team shelf apart instead of pooling them:
+      `created_by`  who made it (None if unclaimed)
+      `mine`        this user created it        -> individual workspace
+      `teams`       teams that own it           -> team workspaces
+      `shared`      one of THIS user's teams owns it
+      `unclaimed`   nobody owns it yet
     """
     # One count query instead of curriculum(name) per course, and ONE teams() rather
     # than teams() plus teams_for_user() fetching it all over again.
@@ -468,22 +682,27 @@ def courses_for_user(email: str, *, is_admin: bool = False,
     all_teams = teams() if all_teams is None else all_teams
     for t in all_teams:
         known.update(t.get("courses") or [])
+    owners = course_owners() if owners is None else owners
+    email = (email or "").lower()
     mine = teams_for_user(email, all_teams)
-    my_courses = {c for t in mine for c in (t.get("courses") or [])}
-    if is_admin or not mine:
-        visible = known
-    else:
-        visible = my_courses
+    my_team_courses = {c for t in mine for c in (t.get("courses") or [])}
+    my_own = {c for c, who in owners.items() if who == email}
+    team_owned = {c for t in all_teams for c in (t.get("courses") or [])}
+    unclaimed = {c for c in known if c not in owners and c not in team_owned}
+    visible = known if is_admin else (my_own | my_team_courses | unclaimed) & known
     out = []
     for name in sorted(visible):
-        owners = [t for t in all_teams if name in (t.get("courses") or [])]
-        members = sorted({m for t in owners for m in (t.get("members") or [])})
+        owning = [t for t in all_teams if name in (t.get("courses") or [])]
+        members = sorted({m for t in owning for m in (t.get("members") or [])})
         out.append({
             "name": name,
             "sessions": counts.get(name, 0),
-            "teams": [t["name"] for t in owners],
+            "teams": [t["name"] for t in owning],
             "members": members,
-            "mine": name in my_courses,
+            "created_by": owners.get(name),
+            "mine": name in my_own,
+            "shared": name in my_team_courses,
+            "unclaimed": name in unclaimed,
         })
     return out
 
@@ -627,6 +846,34 @@ def runs(*, user_email: str | None = None, course: str | None = None,
         q += " AND status=?"; args.append(status)
     q += " ORDER BY ts DESC LIMIT ?"; args.append(limit)
     return [_shape_run(r) for r in _query(q, tuple(args))]
+
+
+def run_for_output(run_id: str | None = None,
+                   filename: str | None = None) -> dict | None:
+    """The run that produced a given output, found by id or by rendered filename.
+
+    Used to answer "whose document is this?" on the download / preview / Google-Doc
+    paths, which identify an output by run id or exact filename and so cannot otherwise
+    tell one team's document from another's. Returns None when nothing matches — an
+    output on disk from before runs were recorded has no owner to check.
+    """
+    if run_id:
+        rows = _query("SELECT * FROM runs WHERE id = ?", (run_id,))
+        if rows:
+            return _shape_run(rows[0])
+    if filename:
+        rows = _query("SELECT * FROM runs WHERE docx_name = ? ORDER BY ts DESC LIMIT 1",
+                      (filename,))
+        if rows:
+            return _shape_run(rows[0])
+        # The .md preview and the .docx share a run; match on the stem so a preview
+        # request for "X.md" still finds the run that rendered "X.docx".
+        stem = filename.rsplit(".", 1)[0]
+        rows = _query("SELECT * FROM runs WHERE docx_name LIKE ? ORDER BY ts DESC "
+                      "LIMIT 1", (stem + ".%",))
+        if rows:
+            return _shape_run(rows[0])
+    return None
 
 
 def live_runs() -> list[dict]:

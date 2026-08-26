@@ -386,6 +386,21 @@ export default function App() {
   function bootstrap(forCourse) {
     api.bootstrap(forCourse || undefined).then((b) => {
       setStatus(b.status)
+      // The SERVER's idea of who this is, which is the one that decides what the reply
+      // contains. With AUTH_DISABLED the client invents a stand-in admin so the login
+      // gate can be skipped locally; letting that placeholder stand meant the UI kept
+      // admin-shaped rules (see visibleCourses) for whoever the server actually is.
+      //
+      // It MUST return the same object when nothing changed. The effect that calls
+      // bootstrap is keyed on `user`, so handing back a fresh object every time is an
+      // infinite loop — bootstrap -> setUser -> effect -> bootstrap — which hangs the
+      // page rather than failing visibly.
+      if (b.user?.email) {
+        setUser((cur) => (cur && cur.email === b.user.email
+                          && cur.is_admin === b.user.is_admin
+                          ? cur
+                          : { ...(cur || {}), ...b.user }))
+      }
       if (b.status?.saved_links?.course) setCourseLink(b.status.saved_links.course)
       if (b.status?.settings?.course_type) setCourseType(b.status.settings.course_type)
       setCourseName(b.course || '')
@@ -684,9 +699,16 @@ export default function App() {
   // `teams` is null until its fetch lands, so it MUST be guarded here: this runs on
   // the very first render and an unguarded .find() blanked the whole page.
   const activeTeam = (teams || []).find((x) => x.team.id === workspace.team_id)
+  // THE INDIVIDUAL SHELF IS WHAT YOU MADE, not everything the server will let you read.
+  // `courses` is the union of both shelves (your own courses AND your teams'), because
+  // the picker in a team workspace needs the team's entries too — so the individual
+  // view has to narrow it, or a course shared with you through a team shows up in your
+  // private workspace as if it were yours. `unclaimed` is a course imported before
+  // ownership was recorded: it has no owner to file it under, so it stays reachable
+  // here rather than disappearing from every shelf. An admin sees the lot.
   const visibleCourses = workspace.kind === 'team' && activeTeamInfo
     ? courses.filter((c) => (activeTeamInfo.courses || []).includes(c.name))
-    : courses
+    : courses.filter((c) => user?.is_admin || c.mine || c.unclaimed)
 
   const guidedGenAll = gStatus === 'generating_all'
   const guidedReviewing = gStatus === 'reviewing' || gStatus === 'regenerating'

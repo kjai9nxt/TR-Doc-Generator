@@ -42,6 +42,13 @@ jobs:
       # failed outright while the deck mirror failed silently.
       - name: Run curriculum-order regression (insert / delete / renumber / deck mirror)
         run: python -m evals.test_curriculum_order
+      # WHO CAN SEE WHOSE COURSE. Every individual user could see every course on the
+      # instance: visibility was "on a team -> that team's courses, on no team ->
+      # everything", and nothing recorded who had created a course. Boots the API and
+      # drives four real users against it — what each is offered, and what each is
+      # allowed to open, edit, generate against and download. Free, no API key.
+      - name: Run course-scoping regression (individual vs team visibility + access)
+        run: python -m evals.test_course_scoping
 
   frontend-build:
     name: Frontend build + committed-bundle check (Vite/React)

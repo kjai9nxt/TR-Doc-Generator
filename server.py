@@ -368,15 +368,19 @@ def template_guide():
 # --------------------------------------------------------------------------- #
 # sync
 # --------------------------------------------------------------------------- #
-def _run_sync(job_id: str, course_link: str | None):
+def _run_sync(job_id: str, course_link: str | None, course: str | None = None):
     def on_event(msg: str):
         with _lock:
             JOBS[job_id]["logs"].append(msg)
     try:
-        res = sync.sync(course_link, verbose=True, on_event=on_event)
+        # The course is passed EXPLICITLY. sync() otherwise falls back to
+        # app_settings.course_name(), one instance-wide setting, so an import would land
+        # in whichever course was selected last — by anybody — and the caller's own
+        # authorisation check would have been about a different course entirely.
+        res = sync.sync(course_link, course=course, verbose=True, on_event=on_event)
         with _lock:
             JOBS[job_id].update(status="done", result={
-                "sessions": _session_list(),
+                "sessions": _session_list(course),
                 "changelog": res.changelog,
                 "errors": res.errors,
                 "extraction_warnings": res.extraction_warnings,
@@ -393,6 +397,11 @@ def _run_sync(job_id: str, course_link: str | None):
 
 @app.post("/api/sync")
 def do_sync(body: SyncBody, user: dict = Depends(current_user)):
+    # An import REPLACES a curriculum, so it is gated exactly like editing one: you may
+    # not re-import over a course somebody else created. Checked before anything is
+    # written, or a refused sync would still have moved the instance's active course.
+    course = _require_course(user, body.course_name)
+    _claim_course(user, course)
     # Persist the course type + course name chosen at connect time so generation
     # (context_builder) can use them later.
     app_settings.save(course_type=body.course_type, course_name=body.course_name)
@@ -401,7 +410,7 @@ def do_sync(body: SyncBody, user: dict = Depends(current_user)):
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,
                         "error": None, "error_kind": None}
     threading.Thread(target=_run_sync,
-                     args=(job_id, body.course_link), daemon=True).start()
+                     args=(job_id, body.course_link, course), daemon=True).start()
     return {"job_id": job_id}
 
 
@@ -414,14 +423,69 @@ def do_sync(body: SyncBody, user: dict = Depends(current_user)):
 # once per link, because Google's export endpoint gives no way to ask whether it
 # changed without downloading the whole file (~4.7 MB, ~3.4 s each).
 # --------------------------------------------------------------------------- #
-def _course_for(user: dict, course: str | None) -> str:
-    """Resolve which course a request is about.
+def _default_course(user: dict) -> str:
+    """Which course to open for a request that did not name one.
 
-    Explicit wins. The app_settings value is only a DEFAULT for a client that did not
-    say — it is a single instance-wide setting, so treating it as the answer would mean
-    one person switching course silently moved everybody else's.
+    `app_settings.course_name()` is a single INSTANCE-WIDE setting — whoever selected a
+    course last set it for everybody — so it cannot be the answer on its own now that
+    a course can belong to one person. Handing it back unchecked would 403 the app's
+    own bootstrap for anyone who cannot open whatever the last person selected, which
+    is a locked-out user rather than a scoped one.
+
+    So the global default is used only if this person may actually have it; otherwise
+    they land on one of their own courses, preferring one they created over one shared
+    with them through a team.
     """
-    return (course or "").strip() or app_settings.course_name() or "default"
+    email = user.get("email")
+    is_admin = user.get("is_admin", False)
+    active = (app_settings.course_name() or "").strip()
+    if active and db.can_use_course(email, active, is_admin=is_admin):
+        return active
+    theirs = db.courses_for_user(email, is_admin=is_admin)
+    for pick in (lambda c: c.get("mine"), lambda c: c.get("shared"), lambda c: True):
+        for c in theirs:
+            if pick(c):
+                return c["name"]
+    # Nothing of their own yet. "default" is the same placeholder the app has always
+    # used for an instance with no course selected, and the UI shows the import card.
+    # Deliberately NOT `active or "default"`: handing back a course this person cannot
+    # open would put its curriculum in their bootstrap reply — the very leak this is
+    # here to close — with only the 403 on the next explicit request to catch it.
+    return "default"
+
+
+def _require_course(user: dict, course: str | None) -> str:
+    """Resolve the course a request is about AND check the caller may have it.
+
+    Filtering the course LIST was never enough on its own: every curriculum, settings,
+    session and generation endpoint takes the course as a plain parameter, so a name
+    typed into a URL reached another team's curriculum whatever the sidebar showed. The
+    list narrows what you are offered; this decides what you are allowed.
+
+    A name that does not exist yet is allowed through — that is how a course is created.
+    """
+    named = (course or "").strip()
+    if not named:
+        return _default_course(user)
+    if db.can_use_course(user.get("email"), named,
+                         is_admin=user.get("is_admin", False)):
+        return named
+    raise HTTPException(status_code=403, detail={"message":
+        f"'{named}' was created by someone else and is not shared with a team you are "
+        f"on, so you cannot open it. Ask its owner to add you to the team that owns it."})
+
+
+def _claim_course(user: dict, course: str | None) -> None:
+    """Record this user as the creator of `course`, if it has no creator yet.
+
+    Called from the paths that BRING A COURSE INTO EXISTENCE — selecting a new name,
+    saving or importing a curriculum for it. First claim wins, so re-saving somebody
+    else's curriculum never transfers it.
+    """
+    try:
+        db.claim_course((course or "").strip(), user.get("email"))
+    except Exception as e:
+        print(f"[courses] could not record the creator of {course!r}: {e!r}")
 
 
 @app.get("/api/bootstrap")
@@ -438,7 +502,7 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
     single time and handed to everything that needs it, and the team list is fetched
     once instead of by three separate callers.
     """
-    course = _course_for(user, course)
+    course = _require_course(user, course)
     rows = _curriculum_rows(course)
     from src import budgets as budget_rules
     email = user.get("email")
@@ -446,6 +510,9 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
     mine = db.teams_for_user(email, all_teams)
     counts = db.curriculum_session_counts()
     known = set(counts)
+    # Who created what, read ONCE and handed to both the course list and the workspace
+    # split below — the two answers have to agree, and this is one query.
+    owners = db.course_owners()
     return {
         "user": user,
         "status": {
@@ -462,8 +529,18 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
         },
         "course": course,
         "courses": db.courses_for_user(email, is_admin=user.get("is_admin", False),
-                                       all_teams=all_teams, counts=counts),
+                                       all_teams=all_teams, counts=counts,
+                                       owners=owners),
+        # WHICH SHELF each course sits on. The app has an individual workspace and one
+        # per team, and they are not the same shelf: `individual` is what THIS person
+        # created, each team's is what THAT team owns. Sending one pooled list let the
+        # individual view show a team-mate's course (and, before ownership was recorded,
+        # every course on the instance).
         "workspaces": {
+            "individual": {
+                "courses": sorted(c for c, who in owners.items()
+                                  if who == (email or "").lower() and c in known),
+            },
             "teams": [{"id": tm["id"], "name": tm["name"],
                        "courses": tm.get("courses") or [],
                        "members": tm.get("members") or [],
@@ -499,7 +576,7 @@ def workspaces(user: dict = Depends(current_user)):
     an empty workspace, and that is worth saying out loud rather than leaving as a
     mystery.
     """
-    email = user.get("email")
+    email = (user.get("email") or "").lower()
     known = set(db.curriculum_courses())
     out = []
     for t in db.teams_for_user(email):
@@ -509,9 +586,25 @@ def workspaces(user: dict = Depends(current_user)):
             "members": t.get("members") or [],
             "unknown_courses": [c for c in courses if c not in known],
         })
+    # THE INDIVIDUAL SHELF IS THIS PERSON'S OWN COURSES — the ones they created. It
+    # used to be `sorted(known)`: every course on the instance, for everybody, admin or
+    # not (both branches of that conditional returned the same thing). So a new signee
+    # opened the app and found colleagues' courses sitting in their private workspace,
+    # switchable and editable. An admin still sees everything, because the admin
+    # dashboard is instance-wide by design — but that is now a deliberate branch.
+    owners = db.course_owners()
+    team_owned = {c for t in db.teams() for c in (t.get("courses") or [])}
+    if user.get("is_admin"):
+        individual = sorted(known)
+    else:
+        individual = sorted(c for c in known
+                            if owners.get(c) == email
+                            # A curriculum imported before ownership was recorded has no
+                            # creator to compare against; leaving it off every shelf
+                            # would strand it. The first write to it claims it.
+                            or (c not in owners and c not in team_owned))
     return {
-        "individual": {"courses": sorted(known)} if user.get("is_admin") else
-                      {"courses": sorted(known)},
+        "individual": {"courses": individual},
         "teams": out,
     }
 
@@ -545,6 +638,9 @@ def team_add_course(team_id: int, body: TeamCourseBody,
     if not any(t["id"] == team_id for t in db.teams_for_user(user.get("email"))):
         raise HTTPException(status_code=403, detail={
             "message": "You are not a member of that team."})
+    # …and only a course you may already open. Otherwise this endpoint is a way to take
+    # somebody else's course: name it here and it is on your whole team's shelf.
+    _require_course(user, body.course)
     ok = db.team_add_course(team_id, body.course)
     return {"ok": ok, "courses": db.team_course_list(team_id)}
 
@@ -580,14 +676,14 @@ def select_course(body: SelectCourseBody, user: dict = Depends(current_user)):
     course = (body.course or "").strip()
     if not course:
         raise HTTPException(status_code=400, detail={"message": "No course given."})
-    allowed = {c["name"] for c in db.courses_for_user(
-        user.get("email"), is_admin=user.get("is_admin", False))}
-    # A brand-new name is allowed (that is how a course is created); an EXISTING course
-    # this user has no team for is not.
-    if course in {c for c in db.curriculum_courses()} and allowed and course not in allowed:
-        raise HTTPException(status_code=403, detail={
-            "message": f"'{course}' belongs to a team you are not on. Ask an admin to "
-                       f"add you to it."})
+    # A brand-new name is allowed — that is how a course is created — and claiming it
+    # here is what makes it the creator's rather than everyone's. An EXISTING course
+    # someone else created, and no team of this user's owns, is refused.
+    #
+    # The check used to be `allowed and course not in allowed`, and `allowed` was every
+    # course on the instance for anyone not on a team, so in practice it refused nothing.
+    _require_course(user, course)
+    _claim_course(user, course)
     app_settings.save(course_name=course, course_type=body.course_type)
     return {"course": course, **_curriculum_reply(course),
             "imported_from": sync.last_link()}
@@ -644,7 +740,7 @@ def get_course_settings(course: str | None = None, user: dict = Depends(current_
     rather than an empty box the user has to guess at.
     """
     from src import budgets as budget_rules
-    course = _course_for(user, course)
+    course = _require_course(user, course)
     return {"course": course,
             "settings": db.course_settings(course) or {},
             "effective": budget_rules.for_session(course),
@@ -654,7 +750,7 @@ def get_course_settings(course: str | None = None, user: dict = Depends(current_
 @app.post("/api/course-settings")
 def save_course_settings(body: CourseSettingsBody, user: dict = Depends(current_user)):
     from src import budgets as budget_rules
-    course = _course_for(user, body.course)
+    course = _require_course(user, body.course)
     db.set_course_settings(course, max_pages=body.max_pages, max_slides=body.max_slides)
     return {"ok": True, "effective": budget_rules.for_session(course)}
 
@@ -669,7 +765,7 @@ def save_session_settings(body: SessionSettingsBody, user: dict = Depends(curren
     columns.
     """
     from src import budgets as budget_rules
-    course = _course_for(user, body.course)
+    course = _require_course(user, body.course)
     db.set_session_settings(course, body.session_no,
                             max_pages=body.max_pages, max_slides=body.max_slides)
     return {"ok": True,
@@ -679,7 +775,7 @@ def save_session_settings(body: SessionSettingsBody, user: dict = Depends(curren
 
 @app.get("/api/curriculum")
 def get_curriculum(course: str | None = None, user: dict = Depends(current_user)):
-    course = _course_for(user, course)
+    course = _require_course(user, course)
     rows = _curriculum_rows(course)
     return {"course": course, "rows": rows,
             "imported_from": sync.last_link(),
@@ -691,7 +787,10 @@ def get_curriculum(course: str | None = None, user: dict = Depends(current_user)
 def save_curriculum(body: CurriculumSaveBody, course: str | None = None,
                     user: dict = Depends(current_user)):
     """Create or update rows. Only the rows sent are touched — nothing is deleted."""
-    course = _course_for(user, course or body.course)
+    course = _require_course(user, course or body.course)
+    # Saving rows for a name nobody has claimed is how a course is created by hand
+    # (rather than by import), so this is a creation path and records the creator.
+    _claim_course(user, course)
     saved = 0
     for row in body.rows:
         ok = db.curriculum_upsert(
@@ -739,7 +838,8 @@ def insert_curriculum_row(body: CurriculumInsertBody, course: str | None = None,
     generated, under the number it was generated for, and rewriting that would falsify
     the record rather than correct it.
     """
-    course = _course_for(user, course or body.course)
+    course = _require_course(user, course or body.course)
+    _claim_course(user, course)
     at = int(body.at_session_no)
     if at < 1:
         raise HTTPException(status_code=400,
@@ -782,7 +882,7 @@ def delete_curriculum_row(session_no: int, course: str | None = None,
     generated under the number it was generated for, and renumbering it would falsify
     the record. This is about what FUTURE runs read.
     """
-    course = _course_for(user, course)
+    course = _require_course(user, course)
     db.curriculum_delete(course, session_no)
     # The deleted row's own deck goes first: its curriculum row is gone, so it is now an
     # orphan, and it must not be sitting on the number the next session is about to take.
@@ -838,7 +938,7 @@ def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)
                         "error": None, "error_kind": None}
     threading.Thread(target=_run_ingest,
                      args=(job_id, body.force, body.sessions,
-                           _course_for(user, body.course)), daemon=True).start()
+                           _require_course(user, body.course)), daemon=True).start()
     return {"job_id": job_id}
 
 
@@ -866,6 +966,16 @@ def _session_list(course: str | None = None, rows: list[dict] | None = None):
     course = (course or "").strip() or app_settings.course_name() or "default"
     rows = db.curriculum(course) if rows is None else rows
     if not rows:
+        # The on-disk cache is the fallback for a process with NO database (the offline
+        # evals), and only that. On a real instance it is the projection of whichever
+        # course was synced last, so reaching for it whenever THIS course happens to
+        # have no rows would list one course's sessions under another's name — which is
+        # what a user with no course of their own would have been shown.
+        try:
+            if db.curriculum_courses():
+                return []
+        except Exception:
+            pass
         cached = course_loader.load_sessions_from_cache()
         if not cached:
             return []
@@ -879,8 +989,14 @@ def _session_list(course: str | None = None, rows: list[dict] | None = None):
 
 
 @app.get("/api/sessions")
-def sessions(course: str | None = None):
-    return {"sessions": _session_list(course)}
+def sessions(course: str | None = None, user: dict = Depends(current_user)):
+    """Sessions still needing a doc, for a course the caller is allowed to open.
+
+    This had no auth dependency at all — the only /api route besides health and the
+    auth handshake that did not — so an unauthenticated request naming any course in
+    the query string got its session list back.
+    """
+    return {"sessions": _session_list(_require_course(user, course))}
 
 
 # --------------------------------------------------------------------------- #
@@ -1726,7 +1842,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # process-wide "selected course" made the content depend on whoever selected last:
     # two people generating for different courses at the same time got each other's
     # sessions, and the run was still stamped with the course it was asked for.
-    run_course = (body.course or "").strip() or app_settings.course_name()
+    run_course = _require_course(user, body.course)
     sessions = course_loader.load_sessions(None, course=run_course)
     prev, cur, nxt = course_loader.neighbours(body.session_no, sessions)
     labels = ["Opening (recap + agenda)"] + [
@@ -1805,21 +1921,57 @@ def guided_discard(gid: str, user: dict = Depends(current_user)):
     for unfinished runs and was handed the same one back — the prompt kept returning
     with no way to dismiss it for good.
     """
+    # Checked against the checkpoint rather than through _guided_require_mine, which
+    # 404s on an id the purge window has already collected — dismissing a stale offer
+    # has to keep working.
+    try:
+        snap = db.load_guided(gid) or {}
+    except Exception:
+        snap = {}
+    owner = (snap.get("user_email") or "").lower()
+    if owner and not user.get("is_admin") and owner != (user.get("email") or "").lower():
+        raise HTTPException(status_code=403, detail={
+            "message": "That unfinished run belongs to someone else."})
     with _lock:
         GUIDED.pop(gid, None)          # drop the in-memory copy too, if it is loaded
     return {"ok": db.discard_guided(gid)}
 
 
+def _guided_require_mine(gid: str, user: dict) -> dict:
+    """The run, if this person is entitled to it.
+
+    These two endpoints had NO auth dependency: a guided id is the whole document —
+    every generated chunk, in full — and anyone holding one could read it and spend
+    somebody else's tokens regenerating chunks of it. Entitlement is the run's owner,
+    an admin, or anyone who may open the course the run belongs to (a team-mate working
+    in the same workspace, which is the point of a shared workspace).
+
+    A checkpoint written before runs recorded an email has no owner to compare against;
+    those fall back to the course check rather than locking their own author out.
+    """
+    state = _guided_require(gid)       # restores from the checkpoint if needed
+    email = (user.get("email") or "").lower()
+    owner = (state.get("user_email") or "").lower()
+    if user.get("is_admin") or (owner and owner == email):
+        return state
+    if db.can_use_course(email, state.get("course") or "", is_admin=False):
+        return state
+    raise HTTPException(status_code=403, detail={"message":
+        "That generation belongs to someone else, and not to a course shared with a "
+        "team you are on."})
+
+
 @app.get("/api/guided/{gid}")
-def guided_state(gid: str):
-    state = _guided_require(gid)      # restores from the checkpoint if needed
+def guided_state(gid: str, user: dict = Depends(current_user)):
+    state = _guided_require_mine(gid, user)
     with _lock:
         return _guided_view(state)
 
 
 @app.post("/api/guided/{gid}/regenerate")
-def guided_regenerate(gid: str, body: RegenerateBody):
-    state = _guided_require(gid)
+def guided_regenerate(gid: str, body: RegenerateBody,
+                      user: dict = Depends(current_user)):
+    state = _guided_require_mine(gid, user)
     with _lock:
         if state["status"] != "reviewing":
             raise HTTPException(
@@ -1851,7 +2003,7 @@ def guided_finalize(gid: str, user: dict = Depends(current_user)):
     nowhere — the ticks lived in the browser and the dashboard fell back to the GRADERS'
     verdict, which is why it read "Approved: 0" against seventeen finished documents.
     """
-    state = _guided_require(gid)
+    state = _guided_require_mine(gid, user)
     with _lock:
         if state["status"] != "reviewing":
             raise HTTPException(
@@ -2148,7 +2300,7 @@ def create_gdoc(session_no: int, body: GdocBody, user: dict = Depends(current_us
     Resolved through src.outputs like the download, and for the same reason: this used
     to re-derive the filename from the synced course, so it failed on exactly the docs
     the download failed on — leaving a reviewer with no way to get the document out."""
-    got = _resolve_output(session_no, body.run_id, body.name)
+    got = _resolve_output(session_no, body.run_id, body.name, user=user)
     from src import gdrive
     # The Drive title comes from the OUTPUT's own filename, not from the current
     # curriculum, so a re-synced sheet cannot mislabel the uploaded document either.
@@ -2177,13 +2329,26 @@ _DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.doc
 
 
 def _resolve_output(session_no: int, run_id: str | None, name: str | None,
-                    kind: str = "docx"):
+                    kind: str = "docx", user: dict | None = None):
     """Locate a run's rendered output, or raise a 404 that says what was searched.
 
     Every download path goes through here. It never re-derives the filename from the
     currently-synced course as its first move — that is what made Download and Create
     Google Doc both fail on a finished document (see src/outputs.py).
+
+    It is also where a document's OWNERSHIP is checked. These endpoints identify an
+    output by run id or exact filename, so course scoping in the UI does not reach them:
+    a run id or a filename from someone else's document fetched it in full. The run row
+    says which course it belongs to, and that is the same question the rest of the app
+    asks. An output no run row matches (rendered before runs were recorded, or found
+    only on disk) has nobody to attribute it to and is left as it was.
     """
+    if user is not None and not user.get("is_admin"):
+        row = db.run_for_output(run_id, name)
+        if row and not db.can_use_course(user.get("email"), row.get("course") or "",
+                                         is_admin=False):
+            raise HTTPException(status_code=403, detail={"message":
+                "That document was generated for a course you cannot open."})
     got = outputs.resolve(session_no, run_id=run_id, filename=name, kind=kind)
     if got is None:
         raise HTTPException(status_code=404, detail={"message":
@@ -2203,7 +2368,7 @@ def download(session_no: int, run_id: str | None = None, name: str | None = None
     whereas the session number alone has to be resolved against a curriculum that may
     have been re-synced since the doc was generated.
     """
-    got = _resolve_output(session_no, run_id, name)
+    got = _resolve_output(session_no, run_id, name, user=user)
     if got.path is not None:
         return FileResponse(str(got.path), filename=got.filename, media_type=_DOCX_MIME)
     # Recovered from the DB because the instance disk no longer has it.
@@ -2220,7 +2385,7 @@ def preview(session_no: int, run_id: str | None = None, name: str | None = None,
     The last-resort escape hatch: a reviewer whose .docx cannot be produced for ANY
     reason can still retrieve the full document as text rather than losing the work.
     The result payload carries this while the page is open; this survives a reload."""
-    got = _resolve_output(session_no, run_id, name, kind="md")
+    got = _resolve_output(session_no, run_id, name, kind="md", user=user)
     return {"session_no": session_no, "filename": got.filename,
             "markdown": got.read_bytes().decode("utf-8", "replace"),
             "source": got.source}

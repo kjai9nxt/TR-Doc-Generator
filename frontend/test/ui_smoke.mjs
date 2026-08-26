@@ -21,10 +21,17 @@ import { fileURLToPath } from 'node:url'
 const FRONTEND = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 
 // ---- the fake backend ------------------------------------------------------
+// `mine` is the individual shelf (this user CREATED it); `shared` is a course reaching
+// them through a team. Both are offered inside the team workspace; only `mine` belongs
+// in the individual one, which is the distinction the app used to lack entirely.
 const COURSES = [
   { name: 'Operating Systems', sessions: 34, teams: ['OS Curriculum Team'],
-    members: ['dev@nxtwave.co.in'], mine: true },
-  { name: 'Computer Networks', sessions: 31, teams: [], members: [], mine: false },
+    members: ['dev@nxtwave.co.in'], created_by: 'dev@nxtwave.co.in',
+    mine: true, shared: true, unclaimed: false },
+  { name: 'Computer Networks', sessions: 31, teams: ['OS Curriculum Team', 'Networks Team'],
+    members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'],
+    created_by: 'colleague@nxtwave.co.in',
+    mine: false, shared: true, unclaimed: false },
 ]
 const ROWS = [
   { session_no: 1, topic: 'Foundations', session_name: 'Understanding Binary System',
@@ -46,14 +53,14 @@ const ROUTES = {
   // The single call the app actually opens with; the per-concern endpoints below stay
   // stubbed because targeted refreshes (after a save, an ingest) still use them.
   '/bootstrap': {
-    user: { email: 'dev@nxtwave.co.in', is_admin: true },
+    user: { email: 'dev@nxtwave.co.in', is_admin: false },
     status: { key_ok: true, saved_links: { course: 'https://docs.google.com/spreadsheets/d/X/edit' },
               settings: { course_type: 'semester', course_name: 'Operating Systems' },
               policy: { judge_always_on: true, time_always_enforced: true,
                         max_minutes: 40, max_pages: 26, target_pages: 23 } },
     course: 'Operating Systems',
     courses: COURSES,
-    workspaces: { teams: [
+    workspaces: { individual: { courses: ['Operating Systems'] }, teams: [
       { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
         members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'], unknown_courses: [] },
       { id: 5, name: 'Networks Team', courses: ['Computer Networks'],
@@ -255,6 +262,15 @@ check('workspace options are listed', $('.wsopt').length >= 2, `got ${$('.wsopt'
 check('Individual is a workspace', text().includes('Individual'))
 check('the team appears as a workspace', text().includes('OS Curriculum Team'))
 check('a course picker is in the rail', $('.navselect').length === 1)
+// THE REGRESSION THIS GUARDS: the individual workspace listed every course the server
+// would let the user read, which included a colleague's course reaching them through a
+// team — and, before ownership was recorded at all, every course on the instance.
+const indOpts = $('.navselect option').map((o) => o.textContent.trim())
+console.log('       individual courses offered: ' + JSON.stringify(indOpts))
+check('the individual shelf offers the course this user created',
+      indOpts.some((o) => o.includes('Operating Systems')), JSON.stringify(indOpts))
+check('…and NOT a colleague\'s course shared through a team',
+      !indOpts.some((o) => o.includes('Computer Networks')), JSON.stringify(indOpts))
 const tabs = $('.navtab').map((b) => b.textContent.replace(/\s+/g, ' ').trim())
 check('tabs are present', tabs.length >= 4, JSON.stringify(tabs))
 console.log('       tabs: ' + JSON.stringify(tabs))
@@ -307,6 +323,8 @@ check('a Team tab appears now', byLabel('Team') !== undefined)
 const opts = $('.navselect option').map((o) => o.textContent.trim())
 console.log('       courses offered: ' + JSON.stringify(opts))
 check('the team\'s courses are offered', opts.some((o) => o.includes('Operating Systems')))
+check('…including the one the user did not create — that is what the team shelf is for',
+      opts.some((o) => o.includes('Computer Networks')), JSON.stringify(opts))
 
 await click(byLabel('Team'))
 check('Team shows the team name', text().includes('OS Curriculum Team'))
