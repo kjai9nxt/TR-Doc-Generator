@@ -74,9 +74,14 @@ export default function App() {
   })
   const [myTeams, setMyTeams] = useState([])
   const activeTeamInfo = myTeams.find((t) => t.id === workspace.team_id)
-  function switchWorkspace(ws) {
+  // `keepCourse` is for the one caller that has just made the current course this team's
+  // (see shareCourseWithTeam). `myTeams` is still the pre-share copy at that moment, so
+  // the landing rule below would decide the course does not belong to the team and switch
+  // away from the very curriculum the user was editing.
+  function switchWorkspace(ws, keepCourse = false) {
     setWorkspace(ws)
     localStorage.setItem('tr_workspace', JSON.stringify(ws))
+    if (keepCourse) return
     // Moving into a team means working on ITS courses, so land on one of them rather
     // than leaving the previous course selected and quietly writing into the wrong place.
     const t = myTeams.find((x) => x.id === ws.team_id)
@@ -341,11 +346,17 @@ export default function App() {
   function shareCourseWithTeam(teamId) {
     if (!teamId || !courseName) return
     setSharing(true)
+    const teamName = myTeams.find((x) => x.id === Number(teamId))?.name || 'the team'
     api.teamAddCourse(Number(teamId), courseName)
       .then(() => {
-        setCurLogs([`“${courseName}” now belongs to `
-          + `${myTeams.find((x) => x.id === Number(teamId))?.name || 'the team'}. `
-          + `Everyone on it can open this curriculum and see every doc built for it.`])
+        setCurLogs([`“${courseName}” now belongs to ${teamName}. `
+          + `Everyone on it can open this curriculum and see every doc built for it. `
+          + `It has moved out of your individual workspace and into ${teamName}'s — `
+          + `you are now working there.`])
+        // Sharing MOVES the course: it leaves the individual shelf. Following it into the
+        // team workspace keeps the curriculum the user was editing on screen instead of
+        // having it disappear out from under them.
+        switchWorkspace({ kind: 'team', team_id: Number(teamId) }, true)
         loadCourses()
       })
       .catch((e) => setCurLogs([`Could not share: ${e.message}`]))
@@ -804,16 +815,15 @@ export default function App() {
   // `teams` is null until its fetch lands, so it MUST be guarded here: this runs on
   // the very first render and an unguarded .find() blanked the whole page.
   const activeTeam = (teams || []).find((x) => x.team.id === workspace.team_id)
-  // THE INDIVIDUAL SHELF IS WHAT YOU MADE, not everything the server will let you read.
-  // `courses` is the union of both shelves (your own courses AND your teams'), because
-  // the picker in a team workspace needs the team's entries too — so the individual
-  // view has to narrow it, or a course shared with you through a team shows up in your
-  // private workspace as if it were yours. `unclaimed` is a course imported before
-  // ownership was recorded: it has no owner to file it under, so it stays reachable
-  // here rather than disappearing from every shelf. An admin sees the lot.
+  // THE INDIVIDUAL SHELF IS WHAT YOU MADE AND HAVE NOT SHARED. `courses` is the union of
+  // both shelves, because the picker in a team workspace needs the team's entries too —
+  // so the individual view narrows it by the shelf the SERVER assigned
+  // (db.courses_for_user). Once a course is shared with a team you are on it belongs to
+  // the team and is listed there only: it used to appear in both places at once, which is
+  // not what "moved it to the team" means. An admin sees the lot.
   const visibleCourses = workspace.kind === 'team' && activeTeamInfo
     ? courses.filter((c) => (activeTeamInfo.courses || []).includes(c.name))
-    : courses.filter((c) => user?.is_admin || c.mine || c.unclaimed)
+    : courses.filter((c) => user?.is_admin || c.shelf === 'individual')
 
   const guidedGenAll = gStatus === 'generating_all'
   const guidedReviewing = gStatus === 'reviewing' || gStatus === 'regenerating'
@@ -892,8 +902,15 @@ export default function App() {
             <select className="navselect" value={courseName}
                     onChange={(e) => switchCourse(e.target.value)}>
               {visibleCourses.length === 0 && <option value="">No course yet</option>}
+              {/* The course currently LOADED, when it is not on this workspace's shelf —
+                  a team course while you are in your individual workspace, say. It has to
+                  be here or the select would render blank against a course that is
+                  plainly open, but it is labelled so it reads as "you are working on
+                  something that lives elsewhere" rather than as a second copy of it. */}
               {!visibleCourses.some((c) => c.name === courseName) && courseName && (
-                <option value={courseName}>{courseName}</option>
+                <option value={courseName}>
+                  {courseName} — open, {workspace.kind === 'team' ? 'not this team’s' : 'shared with a team'}
+                </option>
               )}
               {visibleCourses.map((c) => (
                 <option key={c.name} value={c.name}>

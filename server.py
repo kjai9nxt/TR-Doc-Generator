@@ -543,6 +543,10 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
     # Who created what, read ONCE and handed to both the course list and the workspace
     # split below — the two answers have to agree, and this is one query.
     owners = db.course_owners()
+    # Read ONCE and used for both the course picker and the workspace split below, so the
+    # two cannot disagree about which shelf a course sits on.
+    _shelved = db.courses_for_user(email, is_admin=user.get("is_admin", False),
+                                   all_teams=all_teams, counts=counts, owners=owners)
     return {
         "user": user,
         "status": {
@@ -558,9 +562,7 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
             },
         },
         "course": course,
-        "courses": db.courses_for_user(email, is_admin=user.get("is_admin", False),
-                                       all_teams=all_teams, counts=counts,
-                                       owners=owners),
+        "courses": _shelved,
         # WHICH SHELF each course sits on. The app has an individual workspace and one
         # per team, and they are not the same shelf: `individual` is what THIS person
         # created, each team's is what THAT team owns. Sending one pooled list let the
@@ -568,8 +570,11 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
         # every course on the instance).
         "workspaces": {
             "individual": {
-                "courses": sorted(c for c, who in owners.items()
-                                  if who == (email or "").lower() and c in known),
+                # Same authority as the picker — see db.courses_for_user's `shelf`. A
+                # course shared with one of this person's teams belongs to the team, and
+                # is not also listed here.
+                "courses": sorted(c["name"] for c in _shelved
+                                  if c["shelf"] == "individual" and c["name"] in known),
             },
             "teams": [{"id": tm["id"], "name": tm["name"],
                        "courses": tm.get("courses") or [],
@@ -614,9 +619,12 @@ def workspaces(user: dict = Depends(current_user)):
     mystery.
     """
     email = (user.get("email") or "").lower()
-    known = set(db.curriculum_courses())
+    all_teams = db.teams()
+    counts = db.curriculum_session_counts()
+    owners = db.course_owners()
+    known = set(counts)
     out = []
-    for t in db.teams_for_user(email):
+    for t in db.teams_for_user(email, all_teams):
         courses = t.get("courses") or []
         out.append({
             "id": t["id"], "name": t["name"], "courses": courses,
@@ -626,23 +634,23 @@ def workspaces(user: dict = Depends(current_user)):
                           or (t.get("owner_email") or "") == email,
             "unknown_courses": [c for c in courses if c not in known],
         })
-    # THE INDIVIDUAL SHELF IS THIS PERSON'S OWN COURSES — the ones they created. It
-    # used to be `sorted(known)`: every course on the instance, for everybody, admin or
-    # not (both branches of that conditional returned the same thing). So a new signee
-    # opened the app and found colleagues' courses sitting in their private workspace,
-    # switchable and editable. An admin still sees everything, because the admin
-    # dashboard is instance-wide by design — but that is now a deliberate branch.
-    owners = db.course_owners()
-    team_owned = {c for t in db.teams() for c in (t.get("courses") or [])}
+    # THE INDIVIDUAL SHELF IS THIS PERSON'S OWN COURSES — the ones they created that no
+    # team of theirs owns. It used to be `sorted(known)`: every course on the instance,
+    # for everybody, admin or not (both branches of that conditional returned the same
+    # thing). So a new signee opened the app and found colleagues' courses in their
+    # private workspace, switchable and editable.
+    #
+    # The rule now comes from db.courses_for_user's `shelf`, so this and the course
+    # picker cannot disagree about where a course lives. An admin still sees everything,
+    # because their reach is instance-wide by design — a deliberate branch, not a
+    # conditional that forgot to branch.
+    shelved = db.courses_for_user(email, is_admin=user.get("is_admin", False),
+                                  all_teams=all_teams, counts=counts, owners=owners)
     if user.get("is_admin"):
         individual = sorted(known)
     else:
-        individual = sorted(c for c in known
-                            if owners.get(c) == email
-                            # A curriculum imported before ownership was recorded has no
-                            # creator to compare against; leaving it off every shelf
-                            # would strand it. The first write to it claims it.
-                            or (c not in owners and c not in team_owned))
+        individual = sorted(c["name"] for c in shelved
+                            if c["shelf"] == "individual" and c["name"] in known)
     return {
         "individual": {"courses": individual},
         "teams": out,
@@ -2864,16 +2872,30 @@ def admin_list_courses(user: dict = Depends(require_admin)):
     names = set(counts) | set(owners)
     for t in all_teams:
         names.update(t.get("courses") or [])
-    # A course with no rows and no owner but a run history still existed once, and an
-    # admin cleaning up needs to see it rather than have it hidden.
+    # A course with no curriculum rows left but a run history still existed once, and its
+    # DOCUMENTS still exist — deleting a course deliberately keeps them. An admin needs to
+    # see those, so the name stays on this list. It must not look like a live course
+    # though: `state` below says which it is, because a deleted course sitting in the list
+    # under a Delete button reads as a delete that did not work.
     names.update(c for c in by_course if c)
 
     out = []
     for name in sorted(names):
         rs = by_course.get(name, [])
         owning = [t for t in all_teams if name in (t.get("courses") or [])]
+        # THREE STATES, and they are not the same thing:
+        #   live          it has a curriculum — a course you can open and work on;
+        #   history_only  its curriculum has been DELETED, and the documents it produced
+        #                 are still here (that is the point: deleting a course does not
+        #                 un-generate its docs). Nothing left to delete;
+        #   empty         no curriculum and no runs — a name claimed by a request that
+        #                 never meant to create anything, and worth clearing out.
+        state = ("live" if counts.get(name)
+                 else "history_only" if rs
+                 else "empty")
         out.append({
             "name": name,
+            "state": state,
             "sessions": counts.get(name, 0),
             "created_by": owners.get(name),
             "unclaimed": name not in owners and not owning,

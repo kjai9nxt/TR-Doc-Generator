@@ -290,19 +290,24 @@ function viewUsers(d){ return `<div class="card"><h2>Users (${d.users.length})</
 function viewCourses(d){
   const cs = d.courses || []
   COURSES_CACHE = cs
-  const shared = cs.filter(c=>c.teams.length).length
-  const empty = cs.filter(c=>!c.sessions && !c.total_runs).length
-  return `<div class="card"><h2 style="margin-top:0">All courses (${cs.length})</h2>
+  const live = cs.filter(c=>c.state==='live')
+  const gone = cs.filter(c=>c.state==='history_only')
+  const empty = cs.filter(c=>c.state==='empty')
+  return `<div class="card"><h2 style="margin-top:0">All courses (${live.length} live)</h2>
     <div class="metrics">
-      ${metric(cs.length,'Courses')}${metric(shared,'Shared with a team')}
-      ${metric(cs.filter(c=>c.unclaimed).length,'No recorded owner')}
-      ${metric(empty,'No sessions, no docs')}
+      ${metric(live.length,'Live courses')}${metric(live.filter(c=>c.teams.length).length,'Shared with a team')}
+      ${metric(live.filter(c=>c.unclaimed).length,'No recorded owner')}
+      ${metric(gone.length,'Deleted — docs kept')}${metric(empty.length,'Empty — nothing in them')}
     </div>
     <div class="muted" style="margin-top:8px;font-size:12px">
       Deleting a course removes its <b>curriculum rows and length settings</b>.
       <b>Documents already generated are KEPT</b> — they stay downloadable and their costs
-      stay in the reports, because deleting the record would not un-generate them. A course
-      a team works from takes a second confirmation, which names the teams.
+      stay in the reports, because deleting the record would not un-generate them.
+      <br/>That is why a course you have already deleted is still on this list, marked
+      <span class="chip warn">deleted</span>: its documents are still here, and this is the
+      only place they can be found by course. It is gone from every course picker and from
+      every team, and there is nothing left of it to delete.
+      A live course a team works from takes a second confirmation, which names the teams.
     </div>
   </div>
   <div class="card"><table><thead><tr>
@@ -311,7 +316,9 @@ function viewCourses(d){
       <th class="r">Cost</th><th></th>
     </tr></thead><tbody>
    ${cs.map(c=>`<tr>
-      <td><b>${esc(c.name)}</b>${!c.sessions&&!c.total_runs?' <span class="chip warn">empty</span>':''}</td>
+      <td><b>${esc(c.name)}</b>${c.state==='history_only'
+          ? ' <span class="chip warn" title="its curriculum was deleted; the documents it produced are kept">deleted · docs kept</span>'
+          : c.state==='empty' ? ' <span class="chip warn" title="no curriculum and no runs — a name that got claimed by accident">empty</span>' : ''}</td>
       <td class="r">${c.sessions}</td>
       <td class="r">${c.docs_built}</td>
       <td class="r">${c.total_runs}</td>
@@ -319,7 +326,9 @@ function viewCourses(d){
       <td class="muted">${c.teams.length?esc(c.teams.map(t=>t.name).join(', ')):'—'}</td>
       <td class="muted">${esc((c.last_activity||'').replace('T',' ').slice(0,16))||'—'}</td>
       <td class="r">${money(c.total_cost||0)}</td>
-      <td class="r"><button class="btn sm" onclick="delCourse('${esc(c.name).replace(/'/g,"\\'")}')">Delete</button></td>
+      <td class="r">${c.state==='history_only'
+          ? '<span class="muted" title="the curriculum is already gone; its documents are kept on purpose">nothing to delete</span>'
+          : `<button class="btn sm" onclick="delCourse('${esc(c.name).replace(/'/g,"\\'")}')">Delete</button>`}</td>
     </tr>`).join('')||'<tr><td class="muted">No courses yet.</td></tr>'}
   </tbody></table></div>`
 }
@@ -382,9 +391,11 @@ async function viewTeams(){
       member automatically. Only you can (re)assign them.</div></div>
    ${d.teams.map(t=>`<div class="card">
       <div class="row"><b>${esc(t.name)}</b>
+        <button class="btn sm" style="margin-left:auto" onclick="delTeam(${t.id})">Delete team</button>
+      </div>
+      <div class="row" style="margin-top:6px"><span class="muted">team:</span>
         <input id="n_${t.id}" value="${esc(t.name)}" placeholder="team name" style="width:180px" />
         <button class="btn sm" onclick="renameTeam(${t.id})">Rename</button>
-        <button class="btn sm" style="margin-left:auto" onclick="delTeam(${t.id})">Delete team</button>
       </div>
       <div class="row" style="margin-top:6px"><span class="muted">course:</span>
         <input id="c_${t.id}" list="knowncourses" value="${esc(t.course||'')}" style="width:180px" />

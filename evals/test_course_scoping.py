@@ -308,9 +308,86 @@ check("bob's OTHER course is not on it", B_COURSE not in ((team or {}).get("cour
 check("her individual shelf did not grow",
       w.get("individual", {}).get("courses") == [A_COURSE], f"got {w.get('individual')}")
 
+print("\n== sharing a course MOVES it — it leaves the individual shelf ==")
+# "Moved it to the team" has to mean moved. A course listed on both shelves at once is the
+# same course twice, and the reviewer has no way to tell which one they are editing.
+MOVED = "Course That Moves"
+make_course(ALICE, MOVED)
+as_user(ALICE)
+st, r = http("GET", "/workspaces")
+check("a course she has not shared is on her individual shelf",
+      MOVED in (r.get("individual", {}).get("courses") or []),
+      str(r.get("individual")))
+_by = {c["name"]: c for c in http("GET", "/courses")[1]["courses"]}
+check("…and the server files it there", _by[MOVED]["shelf"] == "individual",
+      str(_by[MOVED]["shelf"]))
+st, r = http("POST", f"/teams/{tid}/courses", {"course": MOVED})
+check("she shares it with her team", st == 200, f"got {st}: {detail(r)}")
+st, r = http("GET", "/workspaces")
+check("it is GONE from her individual shelf",
+      MOVED not in (r.get("individual", {}).get("courses") or []),
+      str(r.get("individual")))
+check("…and is on the team's", MOVED in next(
+      (t["courses"] for t in r["teams"] if t["id"] == tid), []),
+      str(next((t["courses"] for t in r["teams"] if t["id"] == tid), None)))
+_by = {c["name"]: c for c in http("GET", "/courses")[1]["courses"]}
+check("…which is what the server now says", _by[MOVED]["shelf"] == "team",
+      str(_by[MOVED]["shelf"]))
+check("…while she can still open it, of course",
+      http("GET", f"/curriculum?course={q(MOVED)}")[0] == 200)
+check("…and it is still recorded as hers", _by[MOVED]["created_by"] == ALICE["email"],
+      str(_by[MOVED]["created_by"]))
+st, b = http("GET", "/bootstrap")
+check("bootstrap agrees with /workspaces about the shelf",
+      MOVED not in (b.get("workspaces", {}).get("individual", {}).get("courses") or []),
+      str(b.get("workspaces", {}).get("individual")))
+
+print("\n== …but a course of yours on a team you are NOT on stays reachable ==")
+# The trap in the rule above. An admin can attach a course to any team; if the shelf rule
+# were "any team owns it", the creator's own course would vanish from every shelf while
+# can_use_course still (correctly) lets them open it — reachable by URL and nothing else.
+STRANDED = "Course On Someone Elses Team"
+make_course(ALICE, STRANDED)
+as_user(ADMIN)
+st, r = http("POST", "/admin/teams",
+             {"name": "A Team Alice Is Not On", "course": STRANDED,
+              "owner": BOB["email"]})
+other_tid = next((t["id"] for t in db.teams() if t["name"] == "A Team Alice Is Not On"), None)
+check("the admin puts it on a team of Bob's", st == 200 and other_tid, f"got {st}: {detail(r)}")
+check("…and that made Bob its owner, as the admin asked",
+      db.course_owner(STRANDED) == BOB["email"], str(db.course_owner(STRANDED)))
+as_user(BOB)
+st, r = http("GET", "/workspaces")
+check("it is on that team's shelf for Bob",
+      STRANDED in next((t["courses"] for t in r["teams"] if t["id"] == other_tid), []),
+      str(r.get("teams")))
+check("…and NOT on his individual shelf, since his team owns it",
+      STRANDED not in (r.get("individual", {}).get("courses") or []),
+      str(r.get("individual")))
+http("DELETE", f"/admin/teams/{other_tid}") if False else None
+as_user(ADMIN)
+http("DELETE", f"/admin/teams/{other_tid}")
+# Deleting a team must take its course ATTACHMENTS with it. They used to be left behind:
+# invisible, because teams() only attaches them to a team that exists, but accumulating
+# and readable by team_course_list(), which does not join.
+check("deleting a team clears its course attachments",
+      db.team_course_list(other_tid) == [], str(db.team_course_list(other_tid)))
+check("…and leaves the course itself alone",
+      len(db.curriculum(STRANDED)) >= 1, str(db.curriculum(STRANDED)))
+as_user(BOB)
+st, r = http("GET", "/workspaces")
+check("with the team gone it returns to its owner's individual shelf, not nowhere",
+      STRANDED in (r.get("individual", {}).get("courses") or []),
+      str(r.get("individual")))
+as_user(ALICE)          # …and hand the session back: the section below is hers
+
 st, r = http("GET", "/courses")
-check("the shared course is now offered to her",
-      names(r) == sorted([A_COURSE, T_COURSE]), f"got {names(r)}")
+# Computed: /courses is the UNION of both her shelves, so it grows as this file creates
+# more of her courses. What matters is that it holds hers and her team's, and nothing else.
+_expect = sorted({A_COURSE} | {c for c in db.team_course_list(tid)}
+                 | {c for c, w in db.course_owners().items() if w == ALICE["email"]})
+check("the shared course is now offered to her", names(r) == _expect,
+      f"got {names(r)}, expected {_expect}")
 st, r = http("GET", f"/curriculum?course={q(T_COURSE)}")
 check("…and she can open it", st == 200, f"got {st}")
 st, r = http("GET", f"/curriculum?course={q(B_COURSE)}")
@@ -322,7 +399,7 @@ print("\n== a member cannot pull somebody else's course onto the team ==")
 as_user(ALICE)
 st, r = http("POST", f"/teams/{tid}/courses", {"course": B_COURSE})
 check("attaching a course she cannot open -> 403", st == 403, f"got {st}")
-check("…and the team shelf is unchanged", db.team_course_list(tid) == [T_COURSE],
+check("…and the team shelf is unchanged", B_COURSE not in db.team_course_list(tid),
       f"got {db.team_course_list(tid)}")
 
 print("\n== adding someone hands them the team's courses, and only those ==")
@@ -514,7 +591,7 @@ print("\n== an admin still sees the instance ==")
 as_user(ADMIN)
 st, r = http("GET", "/courses")
 check("every course is offered to an admin",
-      names(r) == sorted([A_COURSE, B_COURSE, T_COURSE]), f"got {names(r)}")
+      names(r) == sorted(db.curriculum_session_counts()), f"got {names(r)}")
 st, r = http("GET", f"/curriculum?course={q(B_COURSE)}")
 check("…and openable", st == 200, f"got {st}")
 
@@ -793,6 +870,8 @@ check("a course with no curriculum still appears", _g is not None,
       str(sorted(c["name"] for c in r["courses"])))
 check("…and shows as empty", _g and _g["sessions"] == 0 and _g["total_runs"] == 0,
       str(_g))
+check("…distinguished from one that was deleted with docs behind it",
+      _g["state"] == "empty", str(_g.get("state")))
 st, r = http("DELETE", f"/courses?course={q('Ghost Course')}")
 check("the admin can delete it", st == 200, f"got {st}: {detail(r)}")
 st, r = http("GET", "/admin/courses")
@@ -816,6 +895,18 @@ _still = {c["name"]: c for c in r["courses"]}.get(KEPTC)
 check("the deleted course still shows in the admin list, because its docs exist",
       _still is not None and _still["sessions"] == 0 and _still["docs_built"] == 1,
       str(_still))
+# …and it must not look like a live one. A deleted course sitting in the list under a
+# Delete button reads as a delete that did not work, which is exactly how it was reported.
+check("…marked as deleted rather than live", _still["state"] == "history_only",
+      str(_still.get("state")))
+check("a live course says so", {c["name"]: c for c in r["courses"]}[A_COURSE]["state"] == "live",
+      str({c["name"]: c["state"] for c in r["courses"]}))
+check("…and it is off every course picker, which is where it should be gone from",
+      A_COURSE in {c["name"] for c in db.courses_for_user(ALICE["email"])}
+      and KEPTC not in {c["name"] for c in db.courses_for_user(BOB["email"], is_admin=False)},
+      str([c["name"] for c in db.courses_for_user(BOB["email"])]))
+check("…and off every team", not any(KEPTC in (t.get("courses") or []) for t in db.teams()),
+      str([(t["name"], t.get("courses")) for t in db.teams()]))
 
 print("\n== an unclaimed course is the admin's to delete, not anyone's ==")
 ORPHANED = "Nobody's Course"

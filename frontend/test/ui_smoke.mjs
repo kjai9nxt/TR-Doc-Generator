@@ -25,13 +25,22 @@ const FRONTEND = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
 // them through a team. Both are offered inside the team workspace; only `mine` belongs
 // in the individual one, which is the distinction the app used to lack entirely.
 const COURSES = [
+  // `shelf` is what the individual picker filters on — assigned by the server
+  // (db.courses_for_user). A course shared with a team you are on sits on the TEAM shelf
+  // and must NOT also appear in the individual workspace.
+  //
+  // 'Own Draft' is the case that distinguishes the rule from the old one: created by this
+  // user and shared with nobody, so it is the only thing on their individual shelf.
+  { name: 'Own Draft', sessions: 4, teams: [], members: [],
+    created_by: 'dev@nxtwave.co.in',
+    mine: true, shared: false, unclaimed: false, shelf: 'individual' },
   { name: 'Operating Systems', sessions: 34, teams: ['OS Curriculum Team'],
     members: ['dev@nxtwave.co.in'], created_by: 'dev@nxtwave.co.in',
-    mine: true, shared: true, unclaimed: false },
+    mine: true, shared: true, unclaimed: false, shelf: 'team' },
   { name: 'Computer Networks', sessions: 31, teams: ['OS Curriculum Team', 'Networks Team'],
     members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'],
     created_by: 'colleague@nxtwave.co.in',
-    mine: false, shared: true, unclaimed: false },
+    mine: false, shared: true, unclaimed: false, shelf: 'team' },
 ]
 const ROWS = [
   { session_no: 1, topic: 'Foundations', session_name: 'Understanding Binary System',
@@ -60,7 +69,7 @@ const ROUTES = {
                         max_minutes: 40, max_pages: 26, target_pages: 23 } },
     course: 'Operating Systems',
     courses: COURSES,
-    workspaces: { individual: { courses: ['Operating Systems'] }, teams: [
+    workspaces: { individual: { courses: ['Own Draft'] }, teams: [
       { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
         owner_email: 'dev@nxtwave.co.in', can_manage: true,
         members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'], unknown_courses: [] },
@@ -78,7 +87,7 @@ const ROUTES = {
                   status: 'reviewing', chunks_done: 2, total: 6,
                   updated: '2026-08-17T09:00:00Z' }],
   },
-  '/workspaces': { individual: { courses: ['Operating Systems'] },
+  '/workspaces': { individual: { courses: ['Own Draft'] },
                    teams: [
                      { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
                        owner_email: 'dev@nxtwave.co.in', can_manage: true,
@@ -368,10 +377,21 @@ check('a course picker is in the rail', $('.navselect').length === 1)
 // team — and, before ownership was recorded at all, every course on the instance.
 const indOpts = $('.navselect option').map((o) => o.textContent.trim())
 console.log('       individual courses offered: ' + JSON.stringify(indOpts))
-check('the individual shelf offers the course this user created',
-      indOpts.some((o) => o.includes('Operating Systems')), JSON.stringify(indOpts))
+check('the individual shelf offers the course this user created and has not shared',
+      indOpts.some((o) => o.includes('Own Draft')), JSON.stringify(indOpts))
 check('…and NOT a colleague\'s course shared through a team',
       !indOpts.some((o) => o.includes('Computer Networks')), JSON.stringify(indOpts))
+// THE RULE THIS GUARDS: "moved it to the team" has to mean moved. A course this user
+// created but shared with their team belongs to the team, and listing it in both places
+// is not a move — it is the same course twice.
+// It is not offered as a shelf entry (those carry a session count). It appears only as
+// the "currently open, but lives elsewhere" marker, because the select must show what is
+// actually loaded rather than render blank against an open course.
+check('…and NOT their OWN course once it is shared with their team',
+      !indOpts.some((o) => o.includes('Operating Systems (34)')), JSON.stringify(indOpts))
+check('…the open-but-elsewhere course is labelled as such, not listed as a second copy',
+      indOpts.some((o) => o.includes('Operating Systems — open, shared with a team')),
+      JSON.stringify(indOpts))
 const tabs = $('.navtab').map((b) => b.textContent.replace(/\s+/g, ' ').trim())
 check('tabs are present', tabs.length >= 4, JSON.stringify(tabs))
 console.log('       tabs: ' + JSON.stringify(tabs))

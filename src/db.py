@@ -454,7 +454,20 @@ def can_manage_team(email: str, team_id: int, *, is_admin: bool = False,
 
 
 def delete_team(team_id: int) -> None:
+    """Remove a team: its members, its course attachments, and the team itself.
+
+    The `team_courses` rows were being left behind. They were invisible — teams() groups
+    them by team_id and only attaches them to a team that exists — so nothing broke, but
+    the table accumulated rows pointing at nothing, and team_course_list() reads it with
+    no join, so anything that ever reused an id would inherit a dead team's courses.
+    The COURSES themselves are untouched: deleting a team ends the sharing, it does not
+    delete anyone's curriculum.
+    """
     _exec("DELETE FROM team_members WHERE team_id=?", (team_id,))
+    try:
+        _exec("DELETE FROM team_courses WHERE team_id=?", (team_id,))
+    except Exception:
+        pass                      # a database predating team_courses has nothing to clear
     _exec("DELETE FROM teams WHERE id=?", (team_id,))
 
 
@@ -850,6 +863,17 @@ def courses_for_user(email: str, *, is_admin: bool = False,
             "mine": name in my_own,
             "shared": name in my_team_courses,
             "unclaimed": name in unclaimed,
+            # WHICH SHELF THIS SITS ON, for this person — computed once, here, so the
+            # course list, the workspace payload and the picker cannot answer it
+            # differently. A course shared with a team you are on belongs to the TEAM: it
+            # was on both shelves at once, which is not what "moved it to the team" means
+            # and left the same course appearing twice.
+            #
+            # Note the rule is "a team YOU ARE ON", not "any team". A course you created
+            # that an admin attached to a team you are not a member of would otherwise
+            # vanish from every shelf while can_use_course still (correctly) lets you open
+            # it — your own course, reachable by URL and by nothing else.
+            "shelf": "team" if name in my_team_courses else "individual",
         })
     return out
 
