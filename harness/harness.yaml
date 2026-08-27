@@ -2282,6 +2282,12 @@ context:
   # actually matters is always topic-specific. Retrieving against the takeaway puts the
   # nearest already-taught slides in front of the model at the moment it writes.
   rag_top_k_per_takeaway: 5
+  # Assumed-knowledge index, PER PREREQUISITE SESSION. This was once one flat list of 60
+  # topics for a whole prerequisite course, which for a 32-session Operating Systems
+  # course meant sessions 1-4 reached the model and 5-32 never did — 702 of 762 topics
+  # dropped, silently, in deck order. Mirrors max_per_deck for this course's own prior
+  # sessions (taught_digest), because it is the same job on somebody else's decks.
+  prereq_topics_per_session: 40
   sync_poll_seconds: 60                        # --watch mode poll interval
   sync_max_workers: 1                          # decks parsed ONE at a time — image-heavy python-pptx
                                                # decks each spike RAM, and >1 in memory OOM-kills a 512 MB

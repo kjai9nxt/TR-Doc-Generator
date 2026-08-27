@@ -586,10 +586,22 @@ def decks_before(course: str, session_no: int, prereq: str | None = None) -> lis
 # the topic being written rather than dumped wholesale.
 # --------------------------------------------------------------------------- #
 # Deck furniture: structural slides that say nothing about what was taught.
+# The second group is FURNITURE OF A DIFFERENT KIND: a slide titled bare "Overview" or
+# "Examples" is a structural heading under whatever came before it, not a topic the
+# learner was taught. Left in, they became "already taught" entries — so a prerequisite
+# index reported that the learner knows "Overview" and "Analogy", and any takeaway using
+# either word looked like a repeat. Anchored to the WHOLE title, so "Overview of Paging"
+# and "Examples of Deadlock" are still topics and still counted.
 _BOILERPLATE = re.compile(
     r"^(agenda|agenda for today.?s session|recap|quiz ?time!?|quiz|thank ?you|"
     r"key ?takeaways?|takeaways?|summary|questions?\??|q ?& ?a|poll|break|"
-    r"upcoming session|next session|welcome|introduction)\W*$", re.I)
+    r"upcoming session|next session|welcome|introduction|"
+    r"overviews?|examples?|analogy|analogies|comparisons?|differences?|"
+    r"advantages|disadvantages|pros ?(?:& ?|and )?cons|benefits|limitations|"
+    r"applications|use ?cases?|case ?stud(?:y|ies)|conclusions?|objectives?|"
+    r"outline|contents|references?|demo|practice|exercises?|assignments?|"
+    r"problem ?statement|aspects?|so far|whats? next|lets? begin|"
+    r"hands.?on|discussion|activity)\W*$", re.I)
 
 
 def _clean_title(t: str) -> str:
@@ -708,9 +720,23 @@ def deck_completeness(deck: dict) -> dict:
     }
 
 
-def completeness_report(course: str) -> dict:
-    """Extraction health across this course's ingested decks."""
-    decks = load_all_decks(course)
+def completeness_report(course: str | None = None) -> dict:
+    """Extraction health across this course's ingested decks.
+
+    `course=None` sweeps EVERY course's store. Diagnostics — the offline eval reports
+    extraction health, and its golden belongs to a course whose decks are not in the
+    store at all, so it has no single course to ask about.
+    """
+    if course is None:
+        decks = []
+        for d in sorted(DECKS_DIR.glob("*/")) if DECKS_DIR.is_dir() else []:
+            for f in sorted(d.glob("session_*.json")):
+                try:
+                    decks.append(json.loads(f.read_text()))
+                except Exception:
+                    continue
+    else:
+        decks = load_all_decks(course)
     per = [deck_completeness(d) for d in decks]
     problems = [p for p in per if not p["ok"]]
     return {

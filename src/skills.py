@@ -88,6 +88,36 @@ def block(course: str) -> str:
     return "\n".join(out) + "\n"
 
 
+class ModelUnavailable(RuntimeError):
+    """The drafting call itself failed — no answer came back, or it was not JSON.
+
+    Kept DISTINCT from "the model answered and everything it proposed was untraceable".
+    They are the same empty list but completely different problems: one is the service,
+    one is what the person wrote. Collapsing them cost a release — every attempt at path B
+    was reported to the author as "nothing could be drawn from your text" when in fact the
+    call had never been made.
+    """
+
+
+def _default_model(prompt: str) -> dict:
+    """The production drafting call. Small, cheap, deterministic.
+
+    Separated from `from_requirements` so the seam that makes drafting testable is a
+    one-argument callable, and so this — the part that has to agree with `llm.complete`'s
+    signature — sits in one place where it can be read next to the other call sites.
+    """
+    from . import llm, config
+    m = config.harness()["model"]
+    raw = llm.complete(
+        system=("You formalise a course author's rough requirements into atomic, "
+                "checkable skills. You add NOTHING they did not ask for. Reply with "
+                "JSON only."),
+        user=prompt,
+        model=m.get("judge", m["generator"]), max_tokens=1500, temperature=0.0,
+        label="skills")
+    return llm.extract_json(raw)
+
+
 def from_requirements(raw: str, model=None) -> list[dict]:
     """Split free-text requirements into atomic draft skills. Path B.
 
@@ -96,15 +126,17 @@ def from_requirements(raw: str, model=None) -> list[dict]:
     rubber stamp, because the reviewer has no way to tell a rule they asked for from one
     the model thought of.
 
-    `model` is injected so this is testable without a network call; production passes the
-    real completion function.
+    Returns [] only when the model answered and NOTHING it proposed survived that rule.
+    Raises ModelUnavailable when the call or the parse failed — see the class.
+
+    `model` is injected so this is testable without a network call; production uses
+    `_default_model`.
     """
     raw = (raw or "").strip()
     if not raw:
         return []
     if model is None:
-        from .llm import complete as _complete
-        model = lambda prompt: _complete(prompt, label="skills")   # noqa: E731
+        model = _default_model
     prompt = (
         "Split the following course requirements into ATOMIC skills — one instruction "
         "each, in the author's own intent, no additions.\n\n"
@@ -122,8 +154,8 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         data = model(prompt)
         parsed = json.loads(data) if isinstance(data, str) else data
         proposed = parsed.get("skills") or []
-    except Exception:
-        return []
+    except Exception as e:
+        raise ModelUnavailable(str(e) or e.__class__.__name__) from e
 
     out = []
     low = raw.lower()

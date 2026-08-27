@@ -157,6 +157,100 @@ check("the report counts what was indexed",
 check("…and which courses it came from", sorted(rep["prereqs"]) == sorted([CSS, JS]),
       str(rep["prereqs"]))
 
+print("\n== the assumed-knowledge block covers EVERY prerequisite session ==")
+# It used to flatten a prerequisite into one list and keep the first 60 entries. On the
+# real 32-session Operating Systems course that sent sessions 1-4 and dropped 702 of 762
+# topics in deck order — so the model was told the learner knows number systems, and
+# nothing about scheduling, deadlock, paging or virtual memory.
+BIG = "Big Course"
+for n in range(1, 13):
+    deck(BIG, n, f"Unit {n}", [f"Topic {n}.{i}" for i in range(1, 9)])
+    db.curriculum_upsert(BIG, n, topic="B", session_name=f"Unit {n}", key_takeaways=["k"])
+NEW = "Downstream Course"
+db.curriculum_upsert(NEW, 1, topic="D", session_name="One", key_takeaways=["k"])
+db.add_prereq(NEW, BIG, added_by=ALICE)
+blk = prereqs.block(NEW)
+check("every prerequisite session appears",
+      all(f"Session {n}" in blk for n in range(1, 13)),
+      str([n for n in range(1, 13) if f"Session {n}" not in blk]))
+check("…including the LAST one, which flat truncation cut first",
+      "Topic 12.8" in blk, blk[-300:])
+check("…each named by its deck", "Unit 12" in blk, blk[-300:])
+check("nothing is silently dropped at this size", "(+" not in blk, blk)
+
+# The ceiling is per session, so truncation lands evenly rather than amputating the
+# back half of the course — and it says so where it happens.
+deck(BIG, 13, "Fat Unit", [f"Fat Topic {i}" for i in range(1, 60)])
+db.curriculum_upsert(BIG, 13, topic="B", session_name="Fat Unit", key_takeaways=["k"])
+tight = prereqs.block(NEW, max_per_session=5)
+check("a per-session ceiling still shows every session",
+      all(f"Session {n}" in tight for n in range(1, 14)),
+      str([n for n in range(1, 14) if f"Session {n}" not in tight]))
+check("…and marks what it cut, per session", tight.count("(+") >= 13, str(tight.count("(+")))
+check("…saying how many", "(+54 more)" in tight, tight[-400:])
+from src import config as _cfg
+check("the default ceiling comes from the harness, not a literal",
+      prereqs.block(NEW) == prereqs.block(
+          NEW, max_per_session=int(_cfg.harness()["context"]
+                                   ["prereq_topics_per_session"])))
+db.delete_course(NEW); db.delete_course(BIG)
+
+print("\n== an overlap must be EVIDENCE, not a word that happens to appear ==")
+# Shipped over-claiming: the test was `topic.lower() in takeaway.lower()`, so a bare
+# slide title matched anywhere inside any word. Against a real 32-deck OS course every
+# plausible Python takeaway flagged — "Counting" (a counting semaphore) hit "counting
+# loops", "File" hit "profile", "Ready" hit "already". A report that is always wrong is
+# one nobody reads, so the bar is now: word boundaries, no deck furniture, and a
+# single-word topic only when the word is not ordinary English.
+NOISE = "Noise Course"
+deck(NOISE, 1, "Concurrency", ["Counting", "Semaphores", "Ready", "Overview",
+                               "Examples", "Analogy", "Aging", "Virtual Memory"])
+db.curriculum_upsert(NOISE, 1, topic="C", session_name="Concurrency", key_takeaways=["k"])
+VICTIM = "Victim Course"
+db.curriculum_upsert(VICTIM, 1, topic="V", session_name="Basics", key_takeaways=[
+    "Learn how counting loops work and how they are already familiar",
+    "See an overview of the paging model and its analogy",
+    "Understand how virtual memory is managed"])
+db.add_prereq(VICTIM, NOISE, added_by=ALICE)
+rep = prereqs.coverage_report(VICTIM)
+flagged = {o["takeaway"][:20] for o in rep["overlaps"]}
+
+check("bare deck furniture is not indexed as a topic at all",
+      not ({"overview", "examples", "analogy"} & {t.lower()
+            for t in prereqs.assumed_topics(VICTIM)}),
+      str(prereqs.assumed_topics(VICTIM)))
+check("…so a takeaway using those words is not flagged",
+      "See an overview of" not in flagged, str(sorted(flagged)))
+check("an everyday word that is a real topic is indexed",
+      "Counting" in prereqs.assumed_topics(VICTIM), str(prereqs.assumed_topics(VICTIM)))
+check("…but is not treated as evidence on its own",
+      "Learn how counting" not in flagged, str(sorted(flagged)))
+check("…and neither is a word inside another word (\"Aging\" in \"paging\")",
+      not any("Aging" in (o.get("topics") or []) for o in rep["overlaps"]),
+      str(rep["overlaps"]))
+check("a distinctive multi-word topic IS still reported",
+      any("Virtual Memory" in (o.get("topics") or []) for o in rep["overlaps"]),
+      str(rep["overlaps"]))
+check("the report says how many topics it actually compared",
+      rep["topics_compared"] <= rep["topics_indexed"] and rep["topics_compared"] > 0,
+      f"{rep['topics_compared']} of {rep['topics_indexed']}")
+
+# One takeaway naming three prerequisite topics is ONE takeaway. It used to be appended
+# once per topic, and the UI reported that number as a count of takeaways.
+db.curriculum_upsert(VICTIM, 2, topic="V", session_name="More", key_takeaways=[
+    "Compare virtual memory, semaphores and the dispatcher"])
+deck(NOISE, 2, "Scheduling", ["Dispatcher"])
+rep2 = prereqs.coverage_report(VICTIM)
+multi = [o for o in rep2["overlaps"] if o["session_no"] == 2]
+check("a takeaway naming several prerequisite topics is reported once",
+      len(multi) == 1, str(multi))
+check("…carrying all of them", len(multi[0]["topics"]) >= 2 if multi else False,
+      str(multi[0]["topics"] if multi else None))
+check("…so the count is a count of takeaways",
+      len(rep2["overlaps"]) == len({(o["session_no"], o["takeaway"])
+                                    for o in rep2["overlaps"]}), str(rep2["overlaps"]))
+db.delete_course(VICTIM); db.delete_course(NOISE)
+
 print("\n== removing a prerequisite, and deleting a course ==")
 check("a prerequisite can be removed", db.remove_prereq(REACT, CSS))
 check("…and its topics stop being assumed",

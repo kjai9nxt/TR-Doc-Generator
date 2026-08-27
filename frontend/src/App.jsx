@@ -302,14 +302,18 @@ export default function App() {
     }, 1200)
   }
 
+  // Resolves TRUE only if the action actually succeeded, so a caller can decide whether
+  // to clear its input. Clearing on click threw away what the author typed the moment
+  // anything went wrong — and what they typed is the one thing they cannot get back.
   function runSkillAction(fn, note) {
     setSkillBusy(true); setSkillMsg(null)
-    fn().then((r) => {
+    return fn().then((r) => {
       if (r?.skills) setSkillState((st) => ({ ...(st || {}), ...r }))
       if (r?.prereqs) setPrereqState((st) => ({ ...(st || {}), ...r }))
       setSkillMsg({ ok: true, text: note })
       refreshCourseRules()
-    }).catch((e) => setSkillMsg({ ok: false, text: e.message }))
+      return true
+    }).catch((e) => { setSkillMsg({ ok: false, text: e.message }); return false })
       .finally(() => setSkillBusy(false))
   }
   // Ask on sign-in and after each finished doc — a run that just completed must drop
@@ -1871,7 +1875,8 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
                         placeholder="e.g. Show the snippet before explaining it." />
               <div className="gactions">
                 <button className="primary" disabled={busy || !text.trim()}
-                        onClick={() => { onAdd(text); setText('') }}>Add as draft</button>
+                        onClick={() => Promise.resolve(onAdd(text))
+                          .then((ok) => { if (ok !== false) setText('') })}>Add as draft</button>
               </div>
             </>
           )}
@@ -1886,7 +1891,8 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
                         placeholder="e.g. code snippets should be shown, explain the code line by line, give one example and follow that pattern throughout" />
               <div className="gactions">
                 <button className="primary" disabled={busy || !reqs.trim()}
-                        onClick={() => { onFromRequirements(reqs); setReqs('') }}>
+                        onClick={() => Promise.resolve(onFromRequirements(reqs))
+                          .then((ok) => { if (ok !== false) setReqs('') })}>
                   {busy ? 'Drafting…' : 'Draft skills from this'}
                 </button>
               </div>
@@ -1977,7 +1983,9 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
             <> <b>{report.overlaps.length} of this course's takeaways name something a
               prerequisite already taught</b> — often right, if the session deepens it,
               but worth seeing: {report.overlaps.slice(0, 3).map((o) =>
-                `Session ${o.session_no} (“${o.topic}”, from ${o.prereq})`).join('; ')}.</>
+                `Session ${o.session_no} (“${(o.topics || [o.topic]).join('”, “')}”, from `
+                + `${(o.prereqs || [o.prereq]).filter(Boolean).join(' / ')})`).join('; ')}
+              {report.overlaps.length > 3 ? `, and ${report.overlaps.length - 3} more` : ''}.</>
           )}
         </span>
       )}

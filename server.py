@@ -1211,7 +1211,15 @@ def skills_from_requirements(body: SkillFromRequirementsBody,
     """
     from src import skills as skill_rules
     course = _require_skill_author(user, body.course)
-    drafts = skill_rules.from_requirements(body.requirements)
+    try:
+        drafts = skill_rules.from_requirements(body.requirements)
+    except skill_rules.ModelUnavailable as e:
+        # NOT the author's fault, and it must not be reported as if it were.
+        print(f"[skills] drafting failed for {course!r}: {e}", flush=True)
+        raise HTTPException(status_code=502, detail={"message":
+            "The drafting model could not be reached, so nothing was read from your "
+            "text — it is still there, try again. If this keeps happening, write the "
+            "skill yourself under \u201cWrite one\u201d; that path needs no model."})
     if not drafts:
         raise HTTPException(status_code=400, detail={"message":
             "Nothing could be drawn from that. Say what the course needs in plain "

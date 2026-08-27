@@ -30,6 +30,38 @@ owner (src/skills.py); these decks feed knowledge, completely and automatically.
 """
 from __future__ import annotations
 
+import re
+
+# Real topics whose NAME is an everyday word. They belong in the assumed-knowledge index
+# — "Ready" and "Running" are process states, "Counting" is a counting semaphore — but as
+# a probe against a takeaway from ANOTHER course they are evidence of nothing: an OS deck
+# titles a slide "Counting", and a Python takeaway about counting loops then reads as a
+# repeat. Only SINGLE-WORD topics are weighed against this; a multi-word topic is specific
+# enough to stand on its own, so "Working Set" and "Counting Semaphores" still count.
+_WEAK_EVIDENCE = frozenset("""
+counting count working work ready running run waiting blocked images image
+software commands command file files folder folders terminal window windows
+performance protection security structure structures type types value values
+data input output result results steps step state states level levels
+part parts point points topic topics unit units basics need needs use uses
+""".split())
+
+
+def _is_evidence(topic: str) -> bool:
+    """Is a hit on this topic worth showing to a person?
+
+    The coverage report is ADVISORY — it exists so an author can spot a page about to be
+    spent re-teaching something. A false flag on every takeaway is worse than a missed
+    one, because a report that is always wrong is one nobody reads. So the bar is:
+    multi-word topics always, single words only when the word is not ordinary English.
+    """
+    t = " ".join((topic or "").split())
+    if not t:
+        return False
+    if len(t.split()) > 1:
+        return True
+    return t.lower().strip(".,;:!?()") not in _WEAK_EVIDENCE
+
 
 def courses(course: str) -> list[str]:
     """The prerequisite names, in order — both kinds."""
@@ -80,12 +112,28 @@ def assumed_topics(course: str) -> list[str]:
     return out
 
 
-def block(course: str, max_per_course: int = 60) -> str:
+def block(course: str, max_per_session: int | None = None) -> str:
     """The assumed-knowledge block for the generation prompt. Empty when there are none.
 
     Says REFERENCE, not FORBID — the opposite instruction from the prior-session block it
     sits beside, and the reason the two are separate.
+
+    PER SESSION, NOT PER COURSE. This used to flatten a whole prerequisite into one list
+    and keep the first 60 entries. On a 32-session Operating Systems course that meant
+    the model was told the learner knows number systems and what a kernel is — sessions
+    1-4 — and nothing about scheduling, deadlock, paging or virtual memory, because 702
+    of 762 topics fell off the end in deck order. Structuring it by session both raises
+    the ceiling and makes any truncation land evenly instead of amputating the back half
+    of the course. The shape now mirrors taught_digest, which does the same job for this
+    course's own prior sessions.
     """
+    from . import config
+    if max_per_session is None:
+        try:
+            max_per_session = int(config.harness()["context"]
+                                  .get("prereq_topics_per_session", 40))
+        except Exception:
+            max_per_session = 40
     idx = _index(course)
     if not idx:
         return ""
@@ -102,14 +150,18 @@ def block(course: str, max_per_course: int = 60) -> str:
         "prerequisite covered.",
     ]
     for entry in idx:
-        topics: list[str] = []
-        for s in entry["sessions"]:
-            topics += list(s.get("topics") or [])
-        shown = topics[:max_per_course]
-        more = len(topics) - len(shown)
         tag = " (taught elsewhere)" if entry.get("kind") == "external" else ""
-        lines.append(f"  {entry['prereq']}{tag}: " + "; ".join(shown)
-                     + (f" (+{more} more)" if more > 0 else ""))
+        lines.append(f"  {entry['prereq']}{tag} — {len(entry['sessions'])} session(s):")
+        for s in entry["sessions"]:
+            topics = list(s.get("topics") or [])
+            if not topics:
+                continue
+            shown = topics[:max_per_session]
+            more = len(topics) - len(shown)
+            title = s.get("deck_title") or ""
+            head = f"Session {s['session_no']}" + (f" — {title}" if title else "")
+            lines.append(f"    {head}: " + "; ".join(shown)
+                         + (f" (+{more} more)" if more > 0 else ""))
     return "\n".join(lines) + "\n"
 
 
@@ -129,18 +181,29 @@ def coverage_report(course: str) -> dict:
             for t in s.get("topics") or []:
                 by_topic.setdefault(t.lower(), entry["prereq"])
 
+    probes = [(t, re.compile(r"\b" + re.escape(t.lower()) + r"\b"))
+              for t in known if _is_evidence(t)]
+
     overlaps = []
     for row in db.curriculum(course):
         for kt in row.get("key_takeaways") or []:
             low = str(kt).lower()
-            for t in known:
-                if t.lower() in low:
-                    overlaps.append({"session_no": row["session_no"], "takeaway": kt,
-                                     "topic": t, "prereq": by_topic.get(t.lower())})
+            hits = [t for t, rx in probes if rx.search(low)]
+            if not hits:
+                continue
+            # ONE ENTRY PER TAKEAWAY, not per (takeaway, topic) pair. A takeaway that
+            # named three prerequisite topics used to appear three times, and the count
+            # was then reported as a number of takeaways.
+            overlaps.append({"session_no": row["session_no"], "takeaway": kt,
+                             "topics": hits, "topic": hits[0],
+                             "prereq": by_topic.get(hits[0].lower()),
+                             "prereqs": sorted({by_topic.get(h.lower()) for h in hits}
+                                               - {None})})
     return {
         "course": course,
         "prereqs": courses(course),
         "topics_indexed": len(known),
+        "topics_compared": len(probes),
         "overlaps": overlaps,
         "note": ("An overlap is a takeaway naming something a prerequisite already "
                  "taught. Often right — a session that deepens it — but worth seeing, "

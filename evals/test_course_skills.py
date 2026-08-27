@@ -185,6 +185,51 @@ check("a model that invents a skill with no source quote is dropped",
           {"text": "Something nobody asked for.", "kind": "style"}]})) == [],
       "a draft with no traceable source must not be offered for approval")
 
+print("\n== the PRODUCTION drafting call, not just the injected one ==")
+# This shipped broken: the seam that makes drafting testable was a one-argument
+# callable, the production default called llm.complete(prompt, label=...) — a signature
+# that does not exist — and the resulting TypeError was swallowed by a bare except that
+# returned []. Every attempt at path B told the author their own words were untraceable.
+# So the default is exercised here against llm.complete's REAL signature.
+import inspect
+from src import llm
+_calls = []
+_real_complete = llm.complete
+def _spy(*a, **kw):
+    # Binding against the real signature is the whole point — a mismatch raises here.
+    inspect.signature(_real_complete).bind(*a, **kw)
+    _calls.append(kw)
+    return json.dumps({"skills": [
+        {"text": "Show a code snippet for every concept that has one.",
+         "kind": "style", "source_quote": "code snippets should be shown"}]})
+llm.complete = _spy
+try:
+    made = skills.from_requirements("code snippets should be shown")
+finally:
+    llm.complete = _real_complete
+check("the default path reaches the model with a valid call", len(_calls) == 1, str(_calls))
+check("…and its answer becomes a draft", len(made) == 1, str(made))
+check("…asking for a real configured model",
+      bool(_calls and _calls[0].get("model")), str(_calls))
+
+# A failed CALL and an answer nothing survived are the same empty list and completely
+# different problems. The author must not be told their text was the trouble when the
+# model was never reached.
+def _dead(*a, **kw):
+    raise RuntimeError("connection refused")
+llm.complete = _dead
+try:
+    skills.from_requirements("code snippets should be shown")
+    raised = None
+except skills.ModelUnavailable as e:
+    raised = e
+except Exception as e:
+    raised = e
+finally:
+    llm.complete = _real_complete
+check("a model that cannot be reached raises rather than reporting an empty result",
+      isinstance(raised, skills.ModelUnavailable), repr(raised))
+
 print("\n== the checks a skill carries are a CLOSED vocabulary ==")
 ok, why = skills.validate_check({"assert": "block_present", "block": "code",
                                  "on_roles": ["working_example"]})
