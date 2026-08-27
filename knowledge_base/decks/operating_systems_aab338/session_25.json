@@ -1,0 +1,825 @@
+{
+  "session_no": 25,
+  "source_file": "Virtual Memory & Demand Paging",
+  "deck_title": "Virtual Memory & Demand Paging",
+  "n_slides": 62,
+  "summary": "\n    - Slide 2: Virtual Memory & Demand Paging\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Virtual Memory & Demand Paging\n    - Slide 6: Virtual Memory\n    - Slide 7: Physical Memory Limits\n    - Slide 8: What Is VM\n    - Slide 9: What Is VM\n    - Slide 10: What Is VM\n    - Slide 11: What Is VM?\n    - Slide 12: VM Mechanism Overview\n    - Slide 13: Benefits of Virtual Memory\n    - Slide 14: Additional Benefits\n    - Slide 15: Demand Paging\n    - Slide 16: Demand Paging\n    - Slide 17: Demand Paging Mechanism\n    - Slide 18: Eager Loading vs Demand Paging\n    - Slide 19: Demand Paging\n    - Slide 20: Valid vs Invalid Bit\n    - Slide 21: Valid Invalid Bit\n    - Slide 22: Pure Demand Paging\n    - Slide 23: Pure vs Practical Demand Paging\n    - Slide 24: Page Faults\n    - Slide 25: Page Fault Trap\n    - Slide 26: Page Fault vs Invalid Access\n    - Slide 27: Page Fault Handling\n    - Slide 28: Page Fault Trap\n    - Slide 29: Page Fault Handling Steps\n    - Slide 30: Fault Handling Notes\n    - Slide 31: Page Fault Example\n    - Slide 32: Page Fault Example\n    - Slide 33: Page Table Example\n    - Slide 34: Page 4 Fault Trace\n    - Slide 35: Page Fault and Multiprogramming\n    - Slide 36: Page Fault Service Time\n    - Slide 37: Page Fault Time Components\n    - Slide 38: Page Fault Performance Impact\n    - Slide 39: Quiz Time!\n    - Slide 40: Performance\n    - Slide 41: Effective Access Time\n    - Slide 42: EAT Worked Example\n    - Slide 43: Effective Access Time Analysis\n    - Slide 44: Acceptable Fault Rate\n    - Slide 45: Reducing Page Fault Rate\n    - Slide 46: Advanced Mechanisms\n    - Slide 47: Why Copy On Write\n    - Slide 48: Traditional Fork Overhead\n    - Slide 49: Traditional Fork Overhead\n    - Slide 50: Copy-On-Write Mechanism\n    - Slide 51: Copy-On-Write Mechanism\n    - Slide 52: Copy-On-Write Fork\n    - Slide 53: Memory-Mapped Files\n    - Slide 54: Memory-Mapped File Features\n    - Slide 55: Memory-Mapped Files\n    - Slide 56: Memory-Mapped Files Comparison\n    - Slide 57: Quiz Time!\n    - Slide 58: Virtual Memory & Demand Paging\n    - Slide 59: Virtual Memory & Demand Paging\n    - Slide 60: Page Replacement Algorithms & Belady's Anomaly",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Virtual Memory & Demand Paging",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Paging & Segmentation\nPaging\nPages & frames\nPage table & page table entry (PTE)\nLogical-to-physical translation\nPaging Mechanics\nAddress-translation example\nTLB & effective access time",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Paging & Segmentation\nSegmentation\nSegments; segment table (base & limit)\nSegmentation address translation\nSegmentation with Paging\nHybrid Approach; how it works\nComparison & Trade-offs\nPaging vs Segmentation\nAdvantages & Disadvantages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Virtual Memory & Demand Paging",
+      "body": "Virtual Memory & Demand Paging\nThe Dispatcher \u000b& Gantt Basics\nPage Faults\nDemand Paging\nConcept & benefits\nLazy loading; valid / invalid bit; Pure demand paging\nVirtual Memory\nAdvanced Mechanisms\nPerformance\nSteps in handling a page fault; Page fault service time\nPerformance of demand paging\nCopy-on-write; Memory-mapped files (intro)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Virtual Memory",
+      "body": "Virtual Memory",
+      "notes": "Now we will learn about the Virtual Memory.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Physical Memory Limits",
+      "body": "A program's logical size can exceed installed RAM\n01\n02\n03\n04\nOlder schemes need the full process resident before execution\nMultiprogramming degree is capped by physical RAM size\nRarely used code still occupies precious memory space\nWhy RAM Falls Short?",
+      "notes": "Now, before introducing the next memory management technique, \u000blet's understand the limitations of relying only on physical memory. As programs become larger and multiple applications\u000b run simultaneously, RAM alone is often not sufficient. This limits the number of processes that can execute at a time,\u000b and even code that is rarely used continues to occupy valuable memory. \u000bThese challenges led to the need for a more efficient memory management approach.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "What Is VM",
+      "body": "Illusion Of Space\nLarge programs and multiple applications can exceed available RAM\n01\n02\n03\n04\nVirtual Memory allows processes to run without being fully loaded into physical memory\nIt creates an illusion of larger memory by using secondary storage\nOnly required pages stay in RAM; unused pages remain in swap space/page file\n05\nThis improves memory usage and supports more processes simultaneously",
+      "notes": "Let's summarize the idea behind Virtual Memory. Even when a program is larger than the available RAM, \nit can still execute because only the required pages are kept in physical memory.\n The remaining pages are stored in secondary storage, such as the swap space or page file,\n creating the illusion of a much larger memory. This improves memory utilization and allows\n more processes to run concurrently without requiring additional physical RAM.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "What Is VM",
+      "body": "Illusion Of Space",
+      "notes": "Finally, this table highlights how Virtual Memory differs from Physical Memory. \u000bUnlike Physical Memory, which is limited by the installed RAM, Virtual Memory provides the illusion of a much larger \u000baddress space by using both RAM and disk-based backing storage. From the process's perspective, \u000bmemory appears private and contiguous, even though the operating system manages where the pages are actually stored.\u000b This abstraction allows larger programs to execute efficiently without being restricted by the available physical RAM.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Physical Memory",
+            "Virtual Memory"
+          ],
+          [
+            "Size",
+            "Fixed, limited by installed RAM",
+            "Can exceed RAM, limited by address bus width"
+          ],
+          [
+            "Visibility to process",
+            "Hidden, managed by OS",
+            "Appears private and contiguous to process"
+          ],
+          [
+            "Location",
+            "RAM chips only",
+            "RAM plus disk-based backing store"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "title": "What Is VM",
+      "body": "Illusion Of Space",
+      "notes": "Now, the process views its Virtual Memory as a sequence of pages, such as Page 0, Page 1, Page 2, ... Page v.\u000b Using the Memory Map, each page is translated to a frame in Physical Memory. \u000bIf the page is not present in RAM, it is fetched from the disk, the mapping is updated, \u000band execution continues. This creates the illusion of a large, continuous memory space \u000beven though the pages may be spread across Physical Memory and secondary storage.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "What Is VM?",
+      "body": "Analogy",
+      "notes": "think of Virtual Memory using this library analogy. The bookshelf represents the limited RAM,\u000b while the City Library represents the much larger secondary storage. Instead of keeping every book \u000bon the shelf, the Library Card lets you access any required book from the library whenever needed. Similarly, \u000bVirtual Memory allows a process to work with a much larger memory space by keeping only\u000b the required pages in RAM and fetching the remaining pages from the disk on demand.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "VM Mechanism Overview",
+      "body": "Paging Plus Disk\nVirtual address space still split into fixed-size pages\n01\n02\n03\n04\nOnly actively used pages occupy physical frames right now\nIdle pages are parked on disk in swap space\nExtended page table tracks residency of every page",
+      "notes": "Next, let's understand the basic idea behind Virtual Memory. It still uses Paging, but not all pages are kept in RAM at the same time. \u000bOnly the pages that are currently needed remain in physical memory, while the remaining pages \u000bare temporarily stored in swap space on the disk. An extended Page Table keeps track of whether \u000beach page is present in memory or on disk, ensuring the operating system can retrieve it whenever required.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Benefits of Virtual Memory",
+      "body": "Why It Matters",
+      "notes": "Moving on, Virtual Memory offers several practical advantages by loading only the pages that are actually required. \u000bThis allows programs to be larger than the available RAM, supports more processes running simultaneously, \u000band improves overall RAM utilization. Since every process has its own virtual address space, \u000bit also provides better process isolation. Additionally, the operating system automatically manages page loading, \u000bsimplifying programming and enabling shared memory for common code when needed.",
+      "tables": [
+        [
+          [
+            "Benefit",
+            "Why It Happens"
+          ],
+          [
+            "Larger address space",
+            "Program logical size can exceed installed RAM"
+          ],
+          [
+            "Higher multiprogramming",
+            "More processes fit since each loads only its active part"
+          ],
+          [
+            "Process isolation",
+            "Separate virtual spaces stop one process corrupting another"
+          ],
+          [
+            "Efficient RAM use",
+            "Only needed pages occupy frames, less memory wasted"
+          ],
+          [
+            "Simpler programming",
+            "OS manages residency automatically, no manual overlays needed"
+          ],
+          [
+            "Memory sharing groundwork",
+            "Common code pages can later be mapped by many processes"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Additional Benefits",
+      "body": "Beyond Basic Memory Management\nRemoves the old must-fit-fully-in-RAM constraint\nFrees programmers from manual overlay design used earlier\nEnables memory-sharing techniques such as copy-on-write",
+      "notes": "Next, Virtual Memory offers a few additional advantages beyond efficient RAM utilization. \u000bPrograms are no longer restricted by the requirement to fit entirely in RAM, allowing much larger applications to execute.\u000b It also removes the need for manually designing overlays, as the operating system manages page loading automatically. \u000bThis mechanism also lays the foundation for advanced memory-sharing techniques like Copy-on-Write, \u000bwhere memory can be shared efficiently until a modification is made.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Demand Paging",
+      "body": "Demand Paging",
+      "notes": "Next we will look into the Demand Paging",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Demand Paging",
+      "body": "Load Pages on Demand\nLoads a page only when it is first referenced\n01\n02\n03\n04\nThis on-demand approach is called lazy loading\nAvoids loading unused pages into RAM\nReduces startup time and memory usage\n05\nLets a process start before all pages are loaded",
+      "notes": "Now, let's look at one of the most important concepts in Virtual Memory—Demand Paging. \u000bInstead of loading all pages when a process starts, the operating system brings a page into RAM \u000bonly when it is actually needed, a technique known as lazy loading. This avoids loading unused pages, \u000breducing both startup time and memory usage, while allowing a process to begin execution even before all of its pages are loaded.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Demand Paging Mechanism",
+      "body": "How Pages Move Between RAM & Disk\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\nPage in\nPage out\nProgram A\nProgram B\nMain Memory",
+      "notes": "Now, let's see how pages move between Main Memory and the Disk in Demand Paging. Here,\u000b Program A and Program B occupy pages in Main Memory. When memory becomes full,\u000b the operating system performs a Page out, moving a less frequently used page to the Disk. \u000bLater, if that page is needed again, a Page in operation brings it back into RAM. This continuous movement \u000bof pages allows multiple programs to execute efficiently, even when physical memory is limited.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Eager Loading vs Demand Paging",
+      "body": "A Quick Comparison",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Eager Loading",
+            "Demand Paging"
+          ],
+          [
+            "Initial load",
+            "Entire process loaded upfront",
+            "Only first-needed pages loaded"
+          ],
+          [
+            "Memory at start",
+            "Full process size occupied",
+            "Just the active working set"
+          ],
+          [
+            "Startup latency",
+            "High for large programs",
+            "Low, starts almost immediately"
+          ],
+          [
+            "I/O pattern",
+            "One large upfront burst",
+            "Spread across execution via faults"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 19,
+      "title": "Demand Paging",
+      "body": "Analogy",
+      "notes": "Finally, think of Demand Paging like ordering food in a restaurant. The menu represents the \u000bprogram's Virtual Memory, but the chef doesn't prepare every dish in advance. Instead, only \u000bwhen a customer places an order is the required dish prepared and served. Similarly, the \u000boperating system loads only the required page from the disk into RAM when it is first requested, \u000bavoiding unnecessary memory usage and improving efficiency.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Valid vs Invalid Bit",
+      "body": "How the MMU Interprets Page Presence\nEach page table entry gains one extra bit - the valid-invalid bit - recording whether the page is currently present in a physical frame\nMMU checks this bit on every single reference",
+      "notes": "Next, to determine whether a page is available in RAM, the MMU checks the Valid-Invalid Bit in the Page Table Entry.\u000b If the bit is valid, the frame number is used immediately for address translation. If it is invalid, \u000bit means the page is either not currently in memory or the address is not allowed, so the MMU \u000braises a trap and hands control to the operating system. This check happens on every \u000bmemory reference to ensure the requested page is available before access.",
+      "tables": [
+        [
+          [
+            "Bit Value",
+            "Meaning",
+            "MMU Action"
+          ],
+          [
+            "1 (valid)",
+            "Page present in RAM, frame number valid",
+            "Translate address immediately"
+          ],
+          [
+            "0 (invalid)",
+            "Page absent from RAM or illegal address",
+            "Raise a trap to the OS"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 21,
+      "title": "Valid Invalid Bit",
+      "body": "Analogy",
+      "notes": "A hotel receptionist checks your room key: a valid key opens the room immediately, \u000bwhile an invalid key sends you back to the front desk. Similarly, the valid-invalid bit lets the \u000bMMU access a page immediately if it's present, or hands control to the OS if it isn't.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Pure Demand Paging",
+      "body": "Nothing Preloaded Ever\nProcess begins execution with zero pages resident\n01\n02\n03\n04\nEven the first instruction page must fault in\nGuarantees at least one fault before any execution\nPractical systems often preload a few starting pages\n05\nPure form is mainly a theoretical baseline for analysis",
+      "notes": "Now, let's look at Pure Demand Paging, the extreme form of demand paging. Here,\u000b a process starts with no pages loaded in RAM, so even the page containing the first instruction\u000b must be brought into memory through a page fault. This guarantees at least one page fault before \u000bexecution begins. In practice, however, operating systems usually preload a few initial pages to avoid \u000bthis startup delay, making pure demand paging more of a theoretical reference model than a commonly used approach.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Pure vs Practical Demand Paging",
+      "body": "How the First Instruction Is Loaded",
+      "notes": "Finally, let's compare Pure and Practical Demand Paging. In Pure Demand Paging, \u000bthe first instruction is never loaded in advance, so execution always begins with a page fault. \u000bIn contrast, Practical Demand Paging improves startup performance by preloading the entry pages,\u000b allowing the process to begin execution with fewer initial delays. This is why modern operating systems \u000bprefer the practical approach over the pure theoretical model.",
+      "tables": [
+        [
+          [
+            "Approach",
+            "First Instruction Handling"
+          ],
+          [
+            "Pure demand paging",
+            "Always faults, fetched only on first access"
+          ],
+          [
+            "Practical demand paging",
+            "OS may preload entry pages for smooth start"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "title": "Page Faults",
+      "body": "Page Faults",
+      "notes": "Next we will learn about the Page Faults",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Page Fault Trap",
+      "body": "Trigger Condition Explained\nMMU detects an invalid bit (0) during address translation\n01\n02\n03\n04\nCPU halts the current instruction, traps to the OS, \u000band switches to kernel mode\nThe page-fault handler identifies the type of fault\nThe OS either loads the required page or terminates the \u000bprocess if the reference is invalid",
+      "notes": "Next, let's see what happens when a Page Fault occurs. During address translation, \u000bif the MMU finds the Valid Bit set to 0, it immediately stops the current instruction and transfers \u000bcontrol to the operating system by switching to kernel mode. The page-fault handler then checks \u000bwhether the access is legitimate. If the page simply isn't in RAM, the operating system loads it \u000band resumes execution; otherwise, if the reference is invalid, the process is terminated.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Page Fault vs Invalid Access",
+      "body": "OS Decision Flow",
+      "notes": "Moving on, the Valid Bit alone doesn't determine whether an access is a Page Fault or an Invalid Access. \nIf the bit is 1, the address is translated normally and execution continues. However, when the bit is 0,\n the operating system checks whether the requested address belongs to the process's logical address space. \nIf it does, a genuine Page Fault is serviced by loading the page into RAM; otherwise,\n it is treated as an illegal address, and the process is terminated.",
+      "tables": [
+        [
+          [
+            "Reference Outcome",
+            "Valid Bit Seen",
+            "OS Response"
+          ],
+          [
+            "Normal access",
+            "1 (valid)",
+            "Translate address, continue execution normally"
+          ],
+          [
+            "Illegal address",
+            "0 (invalid)",
+            "Address outside process space, abort process"
+          ],
+          [
+            "Genuine page fault",
+            "0 (invalid)",
+            "Page legal but absent, service the fault"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 27,
+      "title": "Page Fault Handling",
+      "body": "Fault Resolution Flow\n6\n1\n2\n3\n4\n5\nPage is on backing store\nrestart instruction\nUpdate page table\nbring in missing page\nreference\ntrap\noperating system\nphysical memory\npage table",
+      "notes": "Now, let's walk through the complete Page Fault Resolution Flow. 1 First, the CPU makes a reference, \nand the Page Table indicates that the required page is not present, 2 causing a trap to the Operating System. \nThe OS then checks whether the 3  page exists on the backing store. If it does, the missing page is \n4 loaded into a free frame in Physical Memory, after which the Page Table is 5 updated with the new frame information.\n Finally, the 6 interrupted instruction is restarted, allowing the process to continue as if the page had always been in memory.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Page Fault Trap",
+      "body": "Analogy",
+      "notes": "Finally, think of a Page Fault Trap like a security checkpoint. When the car reaches the checkpoint, \nit cannot continue immediately—it must first go through a check. Similarly, when the MMU detects\n that a required page is not currently available, it raises a trap and hands control to the Operating System. \nAfter verification, if the request is valid, execution is allowed to continue; otherwise, \nthe request is stopped, just like a vehicle that fails the security check.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Page Fault Handling Steps",
+      "body": "OS Process to Load a Missing Page",
+      "notes": "Now, let's summarize how the operating system handles a Page Fault. \u000b1 It first checks the PCB to confirm that the memory reference is valid and \u000b2 then locates the required page on the disk.3  Next, it finds a free frame in physical memory \u000band reads the missing page into that frame. After loading, 5 the Page Table is updated with the new frame number, \u000band the Valid Bit is set to 1. 6 Finally, the instruction that caused the Page Fault is restarted, allowing the process to continue normally.",
+      "tables": [
+        [
+          [
+            "Step",
+            "Action",
+            "Why It Matters"
+          ],
+          [
+            "1",
+            "Check internal table",
+            "Confirms in the PCB that the reference is valid, just not resident"
+          ],
+          [
+            "2",
+            "Locate page on disk",
+            "Finds where the page's data currently lives, in swap or the executable"
+          ],
+          [
+            "3",
+            "Find a free frame",
+            "Picks an empty frame from the free-frame list"
+          ],
+          [
+            "4",
+            "Schedule disk read",
+            "Issues I/O to load the page's contents into that frame"
+          ],
+          [
+            "5",
+            "Update page table",
+            "Records the frame number, sets valid bit to 1"
+          ],
+          [
+            "6",
+            "Restart the instruction",
+            "Re-executes the instruction that originally caused the trap"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 30,
+      "title": "Fault Handling Notes",
+      "body": "Key Execution Considerations\nStep order is fixed; skipping any step breaks correctness\n01\n02\n03\n04\nIf no free frame exists, a victim must be chosen first\nVictim-selection algorithms handle the no-free-frame case separately\nInstruction restarts fully, it does not resume mid-way",
+      "notes": "Finally, it's important to understand that page fault handling follows a fixed sequence, \u000band each step must be completed in order to ensure correct execution. If no free frame is available,\u000b the operating system first selects a victim page using a page replacement algorithm \u000bbefore loading the required page. Once the page is available, the interrupted instruction \u000bis restarted from the beginning, rather than continuing from where it stopped.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Page Fault Example",
+      "body": "Worked Page Table\nConsider process P2 with a logical address space of 5 pages, numbered 0 to 4. At this instant only pages 0, 1 and 3 are resident in frames 2, 5 and 9, while pages 2 and 4 are still sitting on disk and marked invalid",
+      "notes": "Now here is an example Here, the process has 5 logical pages,\u000b but only pages 0, 1, and 3 are currently loaded into RAM and mapped to their respective frames. \u000bSince pages 2 and 4 are still on the disk, they are marked invalid. So, if the process tries to access either of these pages, \nthe operating system must first bring them into memory before execution can continue.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Page Fault Example",
+      "body": "Page Table Walkthrough\nCPU\nwants page 4\n1\n2\nLocate page \u000b4 on disk",
+      "notes": "CPU wants page 4. It checks the page table entry for page 4 — valid bit is 0, so this is a page fault. \u000bThe OS locates page 4 on disk (secondary memory). It finds a free frame in main memory — frame 11 — \u000band loads page 4 into it. The page table is then updated: page 4's frame changes from \"-\" to 11, and valid flips from 0 to 1.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Page Table Example",
+      "body": "Valid Bit Status of Pages",
+      "notes": "Note: pages 0, 1, and 3 are valid (1) because they're already in frames 2, 5, and 9 — \nmatching main memory exactly. Pages 2 and 4 are invalid (0) because they're still on disk.\nNow, the operating system follows the standard six-step fault handling process\u000b to load the page into RAM before allowing the process to continue execution.",
+      "tables": [
+        [
+          [
+            "Page",
+            "Frame",
+            "Valid Bit",
+            "Status"
+          ],
+          [
+            "0",
+            "2",
+            "1",
+            "In RAM, ready"
+          ],
+          [
+            "1",
+            "5",
+            "1",
+            "In RAM, ready"
+          ],
+          [
+            "2",
+            "-",
+            "0",
+            "On disk, not loaded"
+          ],
+          [
+            "3",
+            "9",
+            "1",
+            "In RAM, ready"
+          ],
+          [
+            "4",
+            "-",
+            "0",
+            "On disk, not loaded"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 34,
+      "title": "Page 4 Fault Trace",
+      "body": "Step-by-Step Resolution",
+      "notes": "Now, let's trace the complete resolution of a Page 4 Fault. The MMU first detects that Page 4 has a Valid Bit of 0 and raises a trap. \u000bThe Operating System confirms that the page is valid but currently resides on the disk. \u000bIt then allocates the free Frame 11, loads Page 4 into it, and updates the Page Table Entry (PTE) \u000bso that Page 4 now points to Frame 11 with the Valid Bit set to 1. \u000bFinally, the interrupted instruction is restarted and completes successfully.",
+      "tables": [
+        [
+          [
+            "Step",
+            "What Happens For Page 4"
+          ],
+          [
+            "Trap fires",
+            "MMU sees valid bit 0 for page 4, raises a trap"
+          ],
+          [
+            "Table check",
+            "OS confirms page 4 is legal, just not resident"
+          ],
+          [
+            "Locate on disk",
+            "OS finds page 4's data at a known swap address"
+          ],
+          [
+            "Free frame found",
+            "Frame 11 is free and gets allocated to page 4"
+          ],
+          [
+            "Disk read scheduled",
+            "Page 4's contents are read from disk into frame 11"
+          ],
+          [
+            "Page table updated",
+            "PTE for page 4 now shows frame 11, valid bit 1"
+          ],
+          [
+            "Instruction restarted",
+            "The original CPU instruction runs again, now succeeding"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 35,
+      "title": "Page Fault and Multiprogramming",
+      "body": "CPU Utilization During Disk I/O\nSame steps apply for any page, in any process\n01\n02\n03\n04\nProcess moves to a wait state during the disk read\nCPU is free to run another ready process meanwhile\nThis reuse of CPU time supports strong multiprogramming",
+      "notes": "Moving on, the page fault handling mechanism works the same regardless of which page or process triggers it. \u000bWhile the required page is being fetched from the disk, the faulting process enters\u000b the wait state instead of occupying the CPU. Rather than remaining idle, the operating system\u000b schedules another ready process for execution. This efficient use of CPU time is one of the \u000bmajor reasons Virtual Memory and Demand Paging work so well with multiprogramming.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Page Fault Service Time",
+      "body": "Disk Dominates Cost\nPage fault service time is the total time the OS takes to complete all six steps, from the trap firing to the instruction successfully restarting. It has three components, and one of them is far larger than the other two combined",
+      "notes": "Next, let's understand what Page Fault Service Time actually represents. \u000bIt is the total time taken from the moment a page fault occurs until the interrupted instruction is restarted successfully. \u000bThis includes all the steps performed by the operating system, but the disk access time \u000bcontributes the most to the overall delay, making it the dominant factor in page fault handling.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Page Fault Time Components",
+      "body": "Disk I/O Dominates the Delay",
+      "notes": "Now, let's examine the three components of Page Fault Service Time. First, the Trap and OS overhead \u000btakes only a few microseconds and includes saving the CPU state and executing the page-fault handler. \u000bNext comes the Disk I/O Time, which is the most expensive part—typically around 1 to 10 milliseconds on an HDD,\u000b as the operating system must locate and transfer the required page into memory. Finally, \u000bthere's a small restart overhead of a few microseconds to resume the fetch-decode-execute cycle. \u000bSince Disk I/O is much slower than the other two components, it dominates the overall page fault delay.",
+      "tables": [
+        [
+          [
+            "Component",
+            "Typical Magnitude",
+            "Notes"
+          ],
+          [
+            "Trap and OS overhead",
+            "A few microseconds",
+            "Saving CPU state, running handler decision logic"
+          ],
+          [
+            "Disk transfer time",
+            "Roughly 1 to 10 ms on HDD, far less on SSD",
+            "Seek, rotate, and transfer the page into the frame"
+          ],
+          [
+            "Restart overhead",
+            "A few microseconds",
+            "Resuming the fetch-decode-execute cycle"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 38,
+      "title": "Page Fault Performance Impact",
+      "body": "Memory vs Disk Access Gap\n01\n02\n03\nA single fault costs orders of magnitude more than one memory access\nTypical RAM access is around 100 nanoseconds\nSSD-backed swap narrows, but does not close, this gap\n04\nEven one avoidable fault can outweigh many normal accesses",
+      "notes": "Moving on, a Page Fault is much more expensive than a normal memory access \u000bbecause it involves accessing the disk instead of just RAM. While a typical RAM access takes \u000baround 100 nanoseconds, fetching a page from secondary storage takes significantly longer. \u000bEven with modern SSDs, this gap remains substantial, which is why avoiding unnecessary \u000bpage faults is essential for maintaining good system performance.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Performance",
+      "body": "Performance",
+      "notes": "Now we will learn about the Performance",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Effective Access Time",
+      "body": "Extending EAT Formula\nEffective access time (EAT) calculates the average memory access cost. With demand paging, page faults add extra delay with probability p\np = probability a reference causes a page fault\n01\n02\n03\n(1 − p) = probability the page is already resident\nma = normal memory access time, no fault\n05\nEAT = (1 − p) × ma + p × (Page Fault Service Time + ma)\n04\nPage fault service time = time to handle the fault and load the page",
+      "notes": "Next, let's extend the Effective Access Time (EAT) formula to include Demand Paging. \u000bHere, p represents the probability of a page fault, while 1−p represents the probability \u000bthat the required page is already present in RAM. If no page fault occurs, only the \u000bnormal memory access time (ma) is incurred. However, when a page fault occurs, the Page Fault Service Time\u000b is added before the memory access can complete. This formula helps us calculate \u000bthe average memory access time by considering both situations together.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "EAT Worked Example",
+      "body": "Calculating Real Slowdown\nTake a typical machine with memory access time ma equal to 200 nanoseconds and an average page fault service time of 8 milliseconds, a realistic value once disk seek and transfer are included. Suppose the fault rate p is 0.001, meaning one in every thousand references faults",
+      "notes": "Now, let's apply the EAT formula using a practical example. Here, the normal memory access time (ma) is 200 nanoseconds, \u000bthe Page Fault Service Time is 8 milliseconds, and the page fault probability (p) is 0.001, \u000bwhich means one out of every 1000 memory references results in a page fault. \u000bIn the next step, we'll substitute these values into the formula to calculate the \u000bEffective Access Time and observe how even a very small page fault rate can significantly impact overall performance.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Effective Access Time Analysis",
+      "body": "Page Fault Impact",
+      "notes": "Now, let's interpret the result of the calculation. Without any page faults, a memory access takes only 200 nanoseconds. \u000bHowever, with a page fault probability of just 0.001—that is, one fault in every 1000 references—\u000bthe Effective Access Time increases to about 8.2 microseconds. This is roughly a 41× slowdown,\u000b showing that even a very small page fault rate can significantly affect overall system performance\u000b because disk access is much slower than RAM.",
+      "tables": [
+        [
+          [
+            "Term",
+            "Value",
+            "Contribution To EAT"
+          ],
+          [
+            "(1 − p) × ma",
+            "0.999 × 200 ns",
+            "≈ 199.8 ns"
+          ],
+          [
+            "p × (service time + ma)",
+            "0.001 × (8,000,000 + 200) ns",
+            "≈ 8000.2 ns"
+          ],
+          [
+            "EAT",
+            "sum of both terms",
+            "≈ 8199.8 ns"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 44,
+      "title": "Acceptable Fault Rate",
+      "body": "Keeping Slowdown Small\nHow small must p be to keep EAT within 10% of the no-fault time? With ma = 200 ns and service time = 8 ms, the target EAT ≤ 220 ns gives p ≤ 0.0000025 - about one fault in every 400,000 references",
+      "notes": "Finally, let's determine what constitutes an acceptable page fault rate. To keep the Effective Access Time\u000b within just 10% of the normal 200 ns memory access time, the page fault probability must be extremely small\u000bp≤0.0000025, which is about one page fault in every 400,000 memory references.\u000b Compare this with the earlier example of p=0.001, or one fault in every 1,000 references, \u000bwhich resulted in a 41× slowdown. This highlights why operating systems strive to keep the page fault rate as low as possible.",
+      "tables": [
+        [
+          [
+            "Target Degradation",
+            "Contribution To EAT"
+          ],
+          [
+            "10 percent slower than ma",
+            "p ≤ 0.0000025 (about 1 in 400,000)"
+          ],
+          [
+            "41 times slower (earlier example)",
+            "p = 0.001 (1 in 1,000)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 45,
+      "title": "Reducing Page Fault Rate",
+      "body": "Keeping p Low\nFault rate must stay extremely low for good performance\n01\n02\n03\n04\nStrong locality of reference keeps p naturally low\nEnough allocated frames per process also reduces p\nFast SSD-backed swap shrinks damage per fault, not p itself",
+      "notes": "Moving on, the key to achieving good Virtual Memory performance is keeping the page fault rate (p) as low as possible. \u000bThis is naturally achieved when programs exhibit locality of reference, repeatedly accessing the same set of pages.\u000b Allocating a sufficient number of frames to each process further reduces page faults, \u000bwhile using a faster SSD-backed swap only decreases the time taken to service a fault—it does not reduce the fault rate itself.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Advanced Mechanisms",
+      "body": "Advanced Mechanisms",
+      "notes": "Now we will look into the Advanced Mechanisms",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Why Copy On Write",
+      "body": "Fork Duplication Problem\nThe fork() system call creates a child process by giving it a copy of the parent's entire address space. Copying every page - code, stack, heap and data - byte for byte is expensive, and most of that work turns out to be wasted\nThe waste is severe: most children call exec() right after fork(), discarding the just-copied address space to load a fresh program. Duplicating megabytes only to throw it away microseconds later is the inefficiency to avoid",
+      "notes": "Now, let's understand why Copy-on-Write (COW) was introduced. During a fork() call, \u000bthe child process is initially given a copy of the parent's entire address space, including the code, data, heap, and stack. \u000bCreating this complete copy is expensive, especially because most child processes\u000b immediately execute exec(), replacing the copied memory with a new program. \u000bAs a result, a large amount of copying effort is wasted, and Copy-on-Write \u000bwas designed to eliminate this unnecessary duplication.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Traditional Fork Overhead",
+      "body": "Why Copying Is Wasteful\nTraditional fork() copies every page of parent memory\n01\n02\n03\n04\nCopying is proportional to process size, can be slow\nMost children call exec() right after forking\nexec() replaces the address space almost immediately\n05\nNearly all of that copied memory is never used",
+      "notes": "Next, let's look at why the traditional fork() approach is inefficient. It creates a complete copy \u000bof the parent's address space, so the time taken increases with the size of the process. \u000bHowever, in most cases, the child process immediately invokes exec(), which replaces\u000b the entire copied address space with a new program. This means that almost all the \u000bcopied memory is never actually used, resulting in unnecessary overhead.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Traditional Fork Overhead",
+      "body": "Full Memory Copy Cost",
+      "notes": "Now, this table summarizes the drawbacks of the traditional full-copy fork() approach. \u000bSince the entire address space is copied, the fork() operation becomes slower as the \u000bprocess size increases and the memory requirement almost doubles immediately. \u000bIf the child process then calls exec(), that copied memory is discarded, \u000bmaking the entire copying effort unnecessary. This inefficiency is exactly what Copy-on-Write aims to eliminate.",
+      "tables": [
+        [
+          [
+            "Requirement",
+            "Naive Full-Copy Fork"
+          ],
+          [
+            "Speed at fork time",
+            "Slow, proportional to process size"
+          ],
+          [
+            "Memory used immediately",
+            "Doubles, parent plus full child copy"
+          ],
+          [
+            "Wasted effort if exec() follows",
+            "Very high, copy is discarded"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 50,
+      "title": "Copy-On-Write Mechanism",
+      "body": "How Read-Only Sharing Works?\nfork() only duplicates page tables, not page contents\n01\n02\n03\n04\nShared frames marked read-only for both processes\nReads from either process proceed with no restriction\nA write attempt raises a write-protection fault",
+      "notes": "Next, let's see how Copy-on-Write (COW) avoids unnecessary memory copying.\u000b Instead of duplicating the actual pages, fork() initially copies only the page tables, \u000ballowing both parent and child to share the same physical memory. These shared pages \u000bare marked read-only, so both processes can continue performing read operations normally.\u000b Only when either process attempts to write to a shared page does a write-protection fault occur, \u000ballowing the operating system to create a separate copy only when it's actually needed.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Copy-On-Write Mechanism",
+      "body": "OS allocates a private frame only for the writer\n05\n06\n07\nWriter's PTE updated to the new frame, write enabled\nThe other process keeps using the original shared frame\nHow Read-Only Sharing Works?",
+      "notes": "Next, notice that a new copy of the page is not created as soon as a write occurs.\u000b Instead, the operating system creates a private copy only for the process that is modifying the data, \u000bwhile the other process continues using the original shared page. This selective copying is what makes\u000b Copy-on-Write both memory-efficient and faster than the traditional fork() approach.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Copy-On-Write Fork",
+      "body": "Lazy Copy On Write\nCopy-on-Write Process\nInitial State (Shared)\nAfter Write by Process A\nWrite Trigger",
+      "notes": "In Copy-on-Write, both Process A and Process B initially share the same Page X in read-only mode,\u000b so no extra frames are allocated. Only when Process A performs a write does the Write Trigger \u000bcreate a separate Page X′ (Copy), while Process B continues using the original Page X. \u000bThis lazy copying makes Copy-on-Write much more memory-efficient.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Traditional Fork",
+            "Copy-On-Write Fork"
+          ],
+          [
+            "Copy timing",
+            "At fork() call itself",
+            "Deferred until first write"
+          ],
+          [
+            "Frames touched",
+            "Every page of the process",
+            "Only pages actually written"
+          ],
+          [
+            "Extra memory at fork",
+            "Full duplicate allocated",
+            "Zero extra frames initially"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 53,
+      "title": "Memory-Mapped Files",
+      "body": "Files As Memory\nA memory-mapped file (mmap()) maps a file into virtual memory, allowing access through normal memory operations instead of read() and write()\nMemory-mapped files use demand paging: file pages are loaded only on first access, with the valid-invalid bit tracking page presence",
+      "notes": "Now, let's look at another important application of Virtual Memory—Memory-Mapped Files. \u000bInstead of accessing a file using read() and write() system calls, the operating system \u000bmaps the file directly into the process's virtual memory, allowing it to be accessed just like normal memory. \u000bSince this mapping uses Demand Paging, only the required file pages are loaded on first access, \u000bwith the Valid-Invalid Bit indicating whether a page is currently present in RAM.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Memory-Mapped File Features",
+      "body": "Lazy Loading and Sharing\nFile pages are loaded lazily from disk on first access through a page fault\n01\n02\n03\n04\nMultiple processes can map the same file into their address spaces\nShared mappings (MAP_SHARED) allow processes to see each other's writes\nThe OS manages file-backed pages using the same demand-paging mechanism",
+      "notes": "Next, Memory-Mapped Files provide both efficiency and easy data sharing. Since they use \u000bDemand Paging, file pages are brought into RAM only when they are first accessed through a page fault. \u000bThe same file can also be mapped into the address spaces of multiple processes, and with MAP_SHARED,\u000b changes made by one process become visible to the others. Behind the scenes, the operating system \u000bmanages these file-backed pages using the same demand-paging mechanism as regular virtual memory.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Memory-Mapped Files",
+      "body": "Shared Disk-Backed Pages\n3\n2\n5\n1\n4\n1\n4\n3\n2\n5\n4\n3\n1\n2\n5\n1\n2\n3\n4\n5\nPhysical Memory\nDisk file\nProcess 1 virtual memory\nProcess 2 virtual memory",
+      "notes": "Now, observe that both Process 1 Virtual Memory and Process 2 Virtual Memory contain pages 1, 2, 3, 4, and 5. \u000bThese virtual pages are mapped to the Physical Memory, where the same physical frames\u000b can be shared by both processes. The physical frames are backed by the Disk File, \u000bwhich also contains pages 1, 2, 3, 4, and 5. This means the operating system keeps only \u000bone copy of the file in Physical Memory, allowing both processes to access the same data efficiently without creating duplicate copies.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Memory-Mapped Files Comparison",
+      "body": "mmap() vs Traditional I/O",
+      "notes": "Moving on, this comparison highlights the main difference between traditional I/O and mmap(). \u000bWith traditional read() and write(), every file operation requires an explicit system call,\u000b and the data is copied through a kernel buffer before reaching the process. \u000bIn contrast, mmap() maps the file directly into the process's virtual memory, \u000breducing data copying and enabling multiple processes to share the same physical frames. \u000bAs a result, traditional I/O is generally suitable for small sequential reads, \u000bwhereas mmap() is more efficient for large files or applications with frequent random access.",
+      "tables": [
+        [
+          [
+            "Stage",
+            "Traditional read write",
+            "Memory-Mapped File"
+          ],
+          [
+            "Access style",
+            "Explicit system call per operation",
+            "Direct memory access, no explicit call"
+          ],
+          [
+            "Data path",
+            "Kernel buffer, then copied to user buffer",
+            "File page mapped straight into process space"
+          ],
+          [
+            "Sharing across processes",
+            "Each process holds its own buffer copy",
+            "Same physical frames can be shared directly"
+          ],
+          [
+            "Good fit for",
+            "Small sequential reads",
+            "Large files or frequent random access"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 57,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Virtual Memory & Demand Paging",
+      "body": "Virtual Memory\nConcept & benefits\nDemand Paging\nLazy loading; valid / invalid bit\nPure demand paging\nPage Faults\nSteps in handling a page fault\nPage fault service time",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Virtual Memory & Demand Paging",
+      "body": "Performance\nPerformance of demand paging\nAdvanced Mechanisms\nCopy-on-write\nMemory-mapped files (intro)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Page Replacement Algorithms & Belady's Anomaly",
+      "body": "Page Replacement Algorithms & Belady's Anomaly",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1rkbtH_dI2S0dMC5_DEoQfW3O5u406ues7vc0hH3lZ0k/edit?slide=id.g3f5d853c2f5_0_1117#slide=id.g3f5d853c2f5_0_1117"
+}

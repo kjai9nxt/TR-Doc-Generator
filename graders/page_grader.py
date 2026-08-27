@@ -82,6 +82,30 @@ class _Sheet:
     def spacer(self, bucket: str):
         self.add(bucket, self.L["empty_paragraph_pt"])
 
+    def code(self, block: dict, bucket: str):
+        """A code block: one paragraph PER LINE, monospace, space-after removed.
+
+        Measured on its own because code does not wrap like prose. Twenty short lines
+        occupy twenty lines on the page; the same characters as one prose paragraph
+        occupy two — and the page ceiling is a hard gate, so grading one as the other is
+        wrong in both directions. The walkthrough that follows is ordinary bullets.
+        """
+        from src import docx_writer
+        font = self.L.get("code_font_pt", 9.5)
+        indent = self.L.get("code_indent_pt", 18)
+        ratio = self.L.get("code_char_width_ratio", 0.60)
+        width = self.L["usable_width_pt"] - indent
+        per_line = max(1.0, width / (font * ratio))
+        h = 0.0
+        for line in docx_writer.code_lines(block):
+            wrapped = max(1, math.ceil(len(line) / per_line)) if line else 1
+            h += wrapped * font * self.L["line_height_factor"]      # no space-after
+        h += self.L.get("code_block_space_after_pt", 10)            # once, at the end
+        self.add(bucket, h)
+        for w in block.get("walkthrough") or []:
+            if isinstance(w, dict) and str(w.get("text") or "").strip():
+                self.bullet(f"Lines {w.get('lines', '')} — {w['text']}", bucket)
+
     def table(self, columns: list, rows: list, bucket: str):
         """A native Word table: one header row plus the data rows. Cell paragraphs
         inherit Normal, so each carries the same 10pt space-after a body paragraph
@@ -151,6 +175,8 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
                 elif btype == "bullets":
                     for item in block.get("items") or []:
                         s.bullet(str(item), "content")
+                elif btype == "code":
+                    s.code(block, "code")
                 elif btype == "table":
                     s.table(block.get("columns") or [], block.get("rows") or [],
                             "tables")

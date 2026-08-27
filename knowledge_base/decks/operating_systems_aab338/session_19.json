@@ -1,0 +1,705 @@
+{
+  "session_no": 19,
+  "source_file": "Deadlock Avoidance: Banker's Algorithm",
+  "deck_title": "Deadlock Avoidance: Banker's Algorithm",
+  "n_slides": 61,
+  "summary": "\n    - Slide 2: Deadlock Avoidance : Banker's Algorithm\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Single-Instance Avoidance\n    - Slide 6: Deadlock Avoidance \n    - Slide 7: Deadlock Avoidance\n    - Slide 8: Deadlock Avoidance\n    - Slide 9: Why Look Beyond Prevention?\n    - Slide 10: Deadlock Avoidance\n    - Slide 11: How Deadlock Avoidance Works\n    - Slide 12: How Deadlock Avoidance Works\n    - Slide 13: Safe & Unsafe States\n    - Slide 14: What Is a Safe State?\n    - Slide 15: Safe Sequence\n    - Slide 16: Safe State\n    - Slide 17: Checking Safety With Numbers\n    - Slide 18: Checking Safety With Numbers\n    - Slide 19: Safe State vs Unsafe State\n    - Slide 20: Safe State vs Unsafe State\n    - Slide 21: Single-Instance Avoidance\n    - Slide 22: Extending the Resource-Allocation Graph\n    - Slide 23: Claim Edge\n    - Slide 24: Extending the Resource-Allocation Graph\n    - Slide 25: Extending the Resource-Allocation Graph\n    - Slide 26: Extending the Resource-Allocation Graph\n    - Slide 27: How the Algorithm Decides\n    - Slide 28: Cycle Test\n    - Slide 29: Cycle Detection Test in RAG\n    - Slide 30: Quiz Time!\n    - Slide 31: Banker's Algorithm\n    - Slide 32: Generalising Avoidance for Multiple Instances\n    - Slide 33: Banker's Algorithm\n    - Slide 34: Banker's Algorithm — Data Structures\n    - Slide 35: Banker's Algorithm\n    - Slide 36: Safety Algorithm\n    - Slide 37: Safety Algorithm\n    - Slide 38: Safety Algorithm\n    - Slide 39: Resource-Request Algorithm\n    - Slide 40: Resource-Request Algorithm\n    - Slide 41: Resource-Request Algorithm\n    - Slide 42: Banker’s Algorithm\n    - Slide 43: Banker’s Algorithm\n    - Slide 44: Banker’s Algorithm\n    - Slide 45: Banker’s Algorithm\n    - Slide 46: Numerical Walkthrough\n    - Slide 47: A Worked Banker's Algorithm Example\n    - Slide 48: Tracing the Safety Check\n    - Slide 49: Tracing the Safety Check\n    - Slide 50: Resource-Request Walkthrough\n    - Slide 51: Can P1's Request Be Granted?\n    - Slide 52: A Request That Is Denied\n    - Slide 53: A Request That Is Denied\n    - Slide 54: A Request That Is Denied\n    - Slide 55: A Request That Is Denied\n    - Slide 56: Quiz Time!\n    - Slide 57: Deadlock Avoidance: Banker's Algorithm\n    - Slide 58: Deadlock Avoidance: Banker's Algorithm\n    - Slide 59: Deadlock Detection & Recovery",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Deadlock Avoidance : Banker's Algorithm",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Deadlock Characterization & Prevention\nDeadlock & System Model\nWhat a deadlock is\nSystem model\nNecessary Conditions\nMutual exclusion, Hold-and-wait\nNo preemption, Circular wait",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Deadlock Characterization & Prevention\nResource Allocation Graph (RAG)\nModeling Deadlocks(Graph)\nHandling Deadlocks\nFour Methods\nDeadlock Prevention\nAttacking each necessary condition\nTrade-offs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Single-Instance Avoidance",
+      "body": "Single-Instance Avoidance\nSafe & Unsafe States\nSafe vs Unsafe States\nDeadlock Avoidance\nBanker's Algorithm\nResource allocation graph algorithm\nData structures: Available, Max, Allocation, Need:Safety algorithm; Resource-request algorithm\nNumerical Walkthrough\nWorked Banker's example\nDeadlock Avoidance: Banker's Algorithm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Deadlock Avoidance ",
+      "body": "Deadlock Avoidance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Deadlock Avoidance",
+      "body": "Why Prevention Falls Short?\nDeadlock prevention denies a condition outright, even when no deadlock would occur",
+      "notes": "Alright, we've seen that prevention guarantees a deadlock-free system, but it's often too restrictive. \u000bIt applies the same rules to every resource request, even in situations where no deadlock would \u000bactually occur. As a result, resource utilization, concurrency, and overall system throughput can suffer. \u000bDeadlock avoidance takes a different approach by making decisions dynamically, granting requests only when it's safe to do so.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Deadlock Avoidance",
+      "body": "Prevention vs Avoidance",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Prevention",
+            "Avoidance"
+          ],
+          [
+            "Approach",
+            "Blocks a necessary condition",
+            "Checks each request at run time"
+          ],
+          [
+            "Information needed",
+            "None extra",
+            "Future maximum resource claims"
+          ],
+          [
+            "Utilization",
+            "Lower",
+            "Higher"
+          ],
+          [
+            "Flexibility",
+            "Rigid rules",
+            "Dynamic decision-making"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 9,
+      "title": "Why Look Beyond Prevention?",
+      "body": "Analogy",
+      "notes": "Prevention is like keeping a door permanently locked so no one can ever get stuck inside — safe, \u000bbut nobody can use the room. Avoidance is like a guard who opens the door whenever it's safe \u000band only stops you when going in would actually trap someone.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Deadlock Avoidance",
+      "body": "Maintaining a Safe State\nAvoidance assumes every process declares its maximum possible resource need in advance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "How Deadlock Avoidance Works",
+      "body": "Grant : What Keeps System Safe\nOS tracks current allocation and future maximum claims\nBefore granting a request, OS simulates the allocation\nRequest granted only if system stays in a safe state\nOtherwise, the request is delayed\nNo necessary condition is completely denied",
+      "notes": "Now, instead of permanently restricting resource requests, deadlock avoidance evaluates each request as it arrives.\u000b The operating system keeps track of the resources already allocated and the maximum resources \u000beach process may need. Before approving a request, it temporarily checks what the system would \u000blook like after the allocation. If the system remains in a safe state, the request is granted; otherwise,\u000b it's simply delayed. This way, deadlocks are avoided without eliminating any of the necessary conditions.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "How Deadlock Avoidance Works",
+      "body": "Analogy",
+      "notes": "A tour guide lets a new person join only after checking there are enough seats on the bus for \u000beveryone already booked plus everyone expected to board later — so no one is ever left stranded.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Safe & Unsafe States",
+      "body": "Safe & Unsafe States",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "What Is a Safe State?",
+      "body": "Safe Sequence Guarantees Completion\nA state is safe if some order lets every process finish without deadlock\n………\nSafe state\nSafe sequence: an order <P1, P2, P3, P4,  ..., Pn> of all processes",
+      "notes": "Next, the key idea in deadlock avoidance is the safe state. A system is considered safe\u000b if there exists at least one order in which all the processes can complete without causing a deadlock. \u000bThis order is called a safe sequence, where each process gets the resources it needs, finishes its execution, \u000band releases its resources for the remaining processes. As long as such a sequence exists, \u000bthe system is said to be in a safe state.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Safe Sequence",
+      "body": "Order of Completion\nEach process's remaining need must fit available plus earlier holdings\nA satisfied process finishes and releases its resources\nFreed resources then unlock the next process in line\nAt least one such sequence must exist for the state to be safe\n………",
+      "notes": "Now, let's understand how a safe sequence is formed. Starting with the currently available resources,\u000b we check whether a process can complete with what is available. Once that process finishes, \u000bit releases its resources, increasing the available resources for the next process. \u000bThis continues until all processes complete. If at least one such order exists, \u000bthe system is considered to be in a safe state.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Safe State",
+      "body": "Analogy",
+      "notes": "A chef checks if ingredients are enough to complete every planned dish, one after another, before starting to cook.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Checking Safety With Numbers",
+      "body": "One Resource Type, Three Processes",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Allocated",
+            "Max Need",
+            "Still Needs"
+          ],
+          [
+            "P1",
+            "3",
+            "7",
+            "4"
+          ],
+          [
+            "P2",
+            "2",
+            "4",
+            "2"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "4"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 18,
+      "title": "Checking Safety With Numbers",
+      "body": "One Resource Type, Three Processes\nTotal 10 units exist; 7 are already allocated, leaving 3 available units\nAvailable = 3 units at the start\nP2 needs only 2 units, so run it first\nP2 finishes, releases 2 units, available becomes 5\nP1 needs 4 units, available covers it, run P1 next\nThe safe sequence:",
+      "notes": "Let's make this concrete with a simple example. Here, there are 10 resource units in total, with 3 currently available. \u000bSince P2 needs only 2 units, it can complete first and release its resources, increasing the available units to 5. \u000bThat is now enough for P1 to finish, and once it releases its resources, P3 can also complete. \u000bThis gives us the safe sequence P2 → P1 → P3, confirming that the system is in a safe state.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Safe State vs Unsafe State",
+      "body": "Unsafe Is Risky, Not Always Fatal\nEvery deadlocked state is unsafe\nNot every unsafe state ends in deadlock\nAvoidance algorithm never lets the system enter an unsafe state",
+      "notes": "The key point to remember is that every deadlocked state is unsafe, but an unsafe state \u000bdoes not always lead to a deadlock, which is why avoidance algorithms stop the system \u000bfrom entering an unsafe state in the first place.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Safe State",
+            "Unsafe State"
+          ],
+          [
+            "Safe sequence",
+            "Exists",
+            "Does not exist"
+          ],
+          [
+            "Deadlock risk",
+            "None",
+            "Possible, not guaranteed"
+          ],
+          [
+            "OS action on request",
+            "Grants it",
+            "Delays or denies it"
+          ],
+          [
+            "Relation to deadlock",
+            "Always deadlock-free",
+            "May or may not deadlock"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "Safe State vs Unsafe State",
+      "body": "Analogy",
+      "notes": "A safe state is like driving with plenty of fuel — you'll surely reach the pump. \u000bAn unsafe state is like the fuel light being on — you might still make it, \u000bbut you can't be sure, so a careful driver never lets it get that low.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Single-Instance Avoidance",
+      "body": "Single-Instance Avoidance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Extending the Resource-Allocation Graph",
+      "body": "New Edge for Future Requests\nThe Resource-Allocation Graph algorithm adapts avoidance to systems with single-instance resources only",
+      "notes": "Moving on, the idea of deadlock avoidance can also be applied using a Resource Allocation Graph, \u000bbut this version works only when each resource type has a single instance. To make avoidance possible, \u000bthe graph is extended so it can represent future resource requests, allowing the operating system\u000b to decide whether granting a request would still keep the system safe.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Claim Edge",
+      "body": "Future Resource Requests\nClaim Edge\nDashed line, Pi may request Rj later\nRequest Edge\nSolid Pi to Rj, active request\nAssignment Edge\nSolid Rj to Pi, resource granted\nClaim edge becomes request edge when process actually asks\nWorks only if every resource type has one instance\n1\n2\n3",
+      "notes": "Now, let's look at the claim edge, which is the key addition to the Resource Allocation \u000bGraph for deadlock avoidance. A dashed claim edge indicates that a process may request a resource in the future. \u000bWhen the process actually makes that request, the claim edge becomes a request edge, \u000band once the resource is allocated, it changes into an assignment edge.\u000b This approach is effective only when each resource type has a single instance.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Extending the Resource-Allocation Graph",
+      "body": "Claim Edges\nR1\nResource Allocation Graph with Claim Edges\nP2 is holding R2\nRequest Edge\nR2\nP2\nP1\nAssignment Edge\nClaim Edge\nClaim Edge",
+      "notes": "Next, this diagram extends the Resource Allocation Graph by introducing claim edges, \u000bshown as dashed arrows. A claim edge indicates that a process may request a resource in the future. \u000bWhen the process actually requests the resource, the claim edge becomes a request edge, \u000band once the resource is allocated, it becomes an assignment edge.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Extending the Resource-Allocation Graph",
+      "body": "Graph Edge Types",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Edge Type",
+            "Direction",
+            "Meaning"
+          ],
+          [
+            "Claim",
+            "Pi → Rj (dashed)",
+            "May request in future"
+          ],
+          [
+            "Request",
+            "Pi → Rj (solid)",
+            "Actively requesting now"
+          ],
+          [
+            "Assignment",
+            "Rj → Pi (solid)",
+            "Resource currently held"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 26,
+      "title": "Extending the Resource-Allocation Graph",
+      "body": "Analogy",
+      "notes": "Telling a hostel warden \"I may need an extra room next month\" is only a heads-up (a claim), \u000bnot an actual booking yet. The warden notes it to plan ahead, \u000bbut the room is reserved only when you truly ask for it.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "How the Algorithm Decides",
+      "body": "Cycle Test\nPi requests Rj: claim edge turns into request edge\nOS hypothetically converts request edge into assignment edge\nIf this creates a cycle, request is denied\nPi must wait, request edge stays as is\nIf no cycle forms, request is granted safely",
+      "notes": "Next, let's see how the operating system decides whether a resource request is safe.\u000b When a process requests a resource, the operating system temporarily assumes the request \u000bhas been granted and checks the updated Resource Allocation Graph.\u000b If this hypothetical allocation creates a cycle, the request is denied and the process must wait. \u000bIf no cycle is formed, the request is granted because the system can still operate safely.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Cycle Test",
+      "body": "Grant Or Wait\nGrant\nIf converting the request edge to an assignment edge forms no cycle, the resource is given immediately\nWait\nIf it would form a cycle, the request is refused for now and the process waits until it's safe\nA cycle in this single-instance graph indicates an unsafe state where deadlock may occur\nClaim edges are treated as potential requests, so they are included when checking for a cycle",
+      "notes": "Finally, the decision is based on a simple cycle test. \nThe operating system temporarily checks what would happen if the requested resource were allocated. \nIf the updated graph does not form a cycle, the request is granted immediately. However, \nif granting the resource creates a cycle, the request is postponed and the process must wait \nuntil the allocation can be made safely. Since claim edges represent possible future requests,\n they are also considered during this cycle check.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Cycle Detection Test in RAG",
+      "body": "Analogy",
+      "notes": "Finally, think of a narrow one-lane bridge. A car is allowed onto the bridge only if it can cross safely.\u000b If allowing it would leave two cars facing each other with neither able to move, the gatekeeper makes it wait. \u000bSimilarly, the operating system grants a resource request only if it does not create a cycle, \u000bpreventing a deadlock from forming.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Banker's Algorithm",
+      "body": "Banker's Algorithm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Generalising Avoidance for Multiple Instances",
+      "body": "Beyond the Single-Instance Graph\nThe Resource-Allocation Graph algorithm fails once a resource type has multiple instances\nReal systems have many instances per resource type\nDijkstra's Banker's Algorithm generalises avoidance using numbers\nNamed after a banker who never over-lends cash\nChecks each request against declared maximum future needs",
+      "notes": "Moving on, the Resource Allocation Graph approach works only when each resource type has a single instance. \u000bSince real systems usually have multiple instances, a different approach is needed. \u000bDijkstra's Banker's Algorithm uses numerical information to check each resource request\u000b against the maximum future needs of a process and grants it only if the system remains safe.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Banker's Algorithm",
+      "body": "Analogy",
+      "notes": "Finally, think of Banker's Algorithm like a bank manager approving loans.\u000b Before sanctioning a new loan, the manager checks whether the bank will still have enough money\u000b to meet every customer's maximum possible future withdrawal. Similarly, \u000bthe operating system grants a resource request only if it can still satisfy the \u000bmaximum future resource needs of all processes",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Banker's Algorithm — Data Structures",
+      "body": "Components\nHere n is the number of processes, m is the number of resource types",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Component",
+            "Dimension",
+            "Meaning"
+          ],
+          [
+            "Available",
+            "Vector of size m",
+            "Free instances of each resource type"
+          ],
+          [
+            "Max",
+            "Matrix n x m",
+            "Maximum instances Pi may ever need"
+          ],
+          [
+            "Allocation",
+            "Matrix n x m",
+            "Instances currently held by Pi"
+          ],
+          [
+            "Need",
+            "Matrix n x m",
+            "Need[i][j] = Max[i][j] - Allocation[i][j]"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 35,
+      "title": "Banker's Algorithm",
+      "body": "Types of Banker’s Algorithm\nSafety Algorithm\nResource Request Algorithm\n1\n2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Safety Algorithm",
+      "body": "Steps\nSet Work = Available, Finish[i] = false for all i\nFind a process i with Finish[i] false and Need[i] <= Work\nIf found, Work += Allocation[i], Finish[i] = true, repeat for remaining Process \nIf no such process exists, check if all Finish[i] are true\nAll true means state is safe; otherwise state is unsafe",
+      "notes": "Now, let's see how the Safety Algorithm checks whether the system is in a safe state.\u000b It starts with the currently available resources and looks for a process whose remaining \u000bresource need can be satisfied. Once that process finishes, it releases its allocated resources, \u000bmaking them available for others. This continues until either all processes complete, indicating \u000ba safe state, or no further process can proceed, which means the state is unsafe.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Safety Algorithm",
+      "body": "Simulating All Processes Completion\nO(m x n^2)\nThe time complexity of the safety check is\nAll vector comparisons such as Need[i] <= Work are element-wise: they must hold for every resource type at once",
+      "notes": "Next, the Safety Algorithm works by simulating the completion of all processes without \u000bactually allocating resources. At each step, it checks whether a process's remaining need \u000bcan be satisfied using the currently available resources. Remember that this comparison is \u000bperformed for every resource type, and the overall safety check has a time complexity of O(m × n²).",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Safety Algorithm",
+      "body": "Analogy",
+      "notes": "An exam invigilator checks, in some order, if enough spare answer sheets exist for every remaining student.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Resource-Request Algorithm",
+      "body": "Steps\nRequest[i] arrives from process Pi for some resources\nPi\nR1\nRequest[i]\nIf Request[i] > Need[i], error: exceeds declared maximum claim\nIf Request[i] > Available, Pi must wait for resources",
+      "notes": "Now, let's see how the Resource-Request Algorithm begins. When a process Pi submits a Request[i],\u000b the operating system first compares Request[i] with Need[i]. If Request[i] is greater than Need[i], \u000bthe request exceeds the process's declared maximum claim and is treated as an error./\u000b If that check passes, the operating system then compares Request[i] with the Available resources.\u000b If enough resources are not available, Pi simply waits until they become available.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Resource-Request Algorithm",
+      "body": "Deciding to Grant a Request\nPretend to allocate: update Available, Allocation and Need\nRun the safety algorithm on this pretended state\nSafe: grant permanently; unsafe: rollback and Pi waits",
+      "notes": "Next, if Request[i] passes the initial checks, the operating system temporarily allocates the requested resources. \u000bThis means Available is reduced by Request[i], Allocation[i] is increased, and Need[i] is reduced accordingly. \u000bThe Safety Algorithm is then executed on this temporary state. If the system remains safe,\u000b the allocation is made permanent; otherwise, the changes are rolled back,\u000b and Pi must wait until the request can be granted safely.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Resource-Request Algorithm",
+      "body": "Analogy",
+      "notes": "A municipal water office releases extra water only after simulating that every locality's sanctioned share still stays fulfillable.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Banker’s Algorithm",
+      "body": "Limitations\nEach process must declare its maximum need in advance — usually unknown before it runs\nThe number of processes is fixed — no new process may arrive while it runs\nBanker’s Algorithm guarantees safety, but only under strict assumptions that real systems rarely satisfy.\n1\n2",
+      "notes": "Finally, while the Banker's Algorithm guarantees that the system stays in a safe state,\u000b it relies on some strict assumptions. First, every process must declare its maximum \u000bresource requirement before execution, which is often difficult to know in advance. \u000bSecond, it assumes the number of processes remains fixed, meaning no new process \u000bcan enter the system while the algorithm is running. These assumptions make the algorithm\u000b less practical in many real-world operating systems.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Banker’s Algorithm",
+      "body": "The number of resource instances is fixed — no resource may fail or be hot-added\nEvery process must release its resources within a finite time\nBanker’s Algorithm guarantees safety, but only under strict assumptions that real systems rarely satisfy.\n4\n3\nLimitations",
+      "notes": "In addition, the algorithm assumes that the number of resource instances remains fixed,\u000b so resources cannot be added or lost while the system is running. It also expects every \u000bprocess to eventually release its resources within a finite time. If these assumptions are violated,\u000b the Banker's Algorithm can no longer guarantee that the system will remain safe.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Banker’s Algorithm",
+      "body": "Conservative by design — it can delay a request that would not actually have deadlocked, lowering utilization\nCostly — the O(m x n^2) safety check runs on every request\nBanker’s Algorithm guarantees safety, but only under strict assumptions that real systems rarely satisfy.\n6\n5\nLimitations",
+      "notes": "inally, the Banker's Algorithm is intentionally conservative. It may delay a resource request \u000beven when granting it would not actually cause a deadlock, which can reduce overall resource utilization. \u000bIn addition, every resource request requires running the Safety Algorithm, with a time complexity of \u000bO(m × n²), making the approach computationally expensive for large systems.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Banker’s Algorithm",
+      "body": "Assumptions",
+      "notes": "To summarize, this table explains why the assumptions of the Banker's Algorithm are \u000bdifficult to satisfy in real systems. Programs rarely know their maximum resource requirement \u000bin advance, processes are created and terminated dynamically, resource availability can change \u000bas devices are added or fail, and some processes may hold resources for an unpredictable amount of time.\u000b Because these assumptions rarely hold together, the Banker's Algorithm is used more as \u000ba theoretical approach than in modern operating systems.",
+      "tables": [
+        [
+          [
+            "Assumption",
+            "Why It Rarely Holds"
+          ],
+          [
+            "Max known in advance",
+            "Programs seldom know peak demand upfront"
+          ],
+          [
+            "Fixed set of processes",
+            "Modern systems create and kill processes constantly"
+          ],
+          [
+            "Fixed set of resources",
+            "Devices can fail or be added at run time"
+          ],
+          [
+            "Finite resource-return time",
+            "A long or buggy process may hold resources indefinitely"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 46,
+      "title": "Numerical Walkthrough",
+      "body": "Numerical Walkthrough",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "A Worked Banker's Algorithm Example",
+      "body": "Five Processes, Three Resource Types\nAvailable = (3, 3, 2), the instances still unallocated\nResource types A, B, C have 10, 5 and 7 total instances respectively",
+      "notes": "At the start, the Available vector is (3, 3, 2), representing the resources that are still free. \u000bUsing this information, we'll determine whether the system is currently in a safe state.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Allocation (A B C)",
+            "Max (A B C)",
+            "Need (A B C)"
+          ],
+          [
+            "P0",
+            "0 1 0",
+            "7 5 3",
+            "7 4 3"
+          ],
+          [
+            "P1",
+            "2 0 0",
+            "3 2 2",
+            "1 2 2"
+          ],
+          [
+            "P2",
+            "3 0 2",
+            "9 0 2",
+            "6 0 0"
+          ],
+          [
+            "P3",
+            "2 1 1",
+            "2 2 2",
+            "0 1 1"
+          ],
+          [
+            "P4",
+            "0 0 2",
+            "4 3 3",
+            "4 3 1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Tracing the Safety Check",
+      "body": "Finding Step by Step Safe Sequence",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Step",
+            "Process Chosen",
+            "Need <= Work?",
+            "Work After"
+          ],
+          [
+            "1",
+            "P1",
+            "(1,2,2) <= (3,3,2)",
+            "(5,3,2)"
+          ],
+          [
+            "2",
+            "P3",
+            "(0,1,1) <= (5,3,2)",
+            "(7,4,3)"
+          ],
+          [
+            "3",
+            "P4",
+            "(4,3,1) <= (7,4,3)",
+            "(7,4,5)"
+          ],
+          [
+            "4",
+            "P0",
+            "(7,4,3) <= (7,4,5)",
+            "(7,5,5)"
+          ],
+          [
+            "5",
+            "P2",
+            "(6,0,0) <= (7,5,5)",
+            "(10,5,7)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 49,
+      "title": "Tracing the Safety Check",
+      "body": "Work starts equal to Available (3,3,2)\nEach chosen process adds its Allocation back to Work\nAll five processes get marked Finish = true\nSafe sequence found: P1, P3, P4, P0, P2\nFinding Step by Step Safe Sequence",
+      "notes": "Next, let's trace how the Safety Algorithm works on this example. We begin with Work = Available = (3, 3, 2) \u000band look for a process whose Need can be satisfied. Each time a process completes, it releases its Allocation, \u000bwhich is added back to Work, making more resources available for the remaining processes. \u000bFollowing this approach, all five processes eventually finish, giving the safe sequence P1 → P3 → P4 → P0 → P2. \u000bSince every process reaches Finish = true, the system is in a safe state.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Resource-Request Walkthrough",
+      "body": "Can P1's Request Be Granted?\nP1 now requests (1, 0, 2) more units of A, B, C respectively\nCheck Request <= Need[P1] = (1,2,2): passes\nCheck Request <= Available = (3,3,2): passes",
+      "notes": "Now, let's see how the Resource-Request Algorithm works using the same example. \u000bSuppose P1 requests Request[P1] = (1, 0, 2). The operating system first checks whether \u000bRequest[P1] ≤ Need[P1], which it does. It then verifies that Request[P1] ≤ Available, and this \u000bcondition is also satisfied. Since both initial checks pass, the operating system can move on to\u000b the final safety check before deciding whether to grant the request.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Can P1's Request Be Granted?",
+      "body": "Resource-Request Walkthrough",
+      "notes": "Next, the operating system temporarily allocates the requested resources to P1.\u000b As a result, Available becomes (2, 3, 0), Allocation[P1] is updated by adding (1, 0, 2), \u000band Need[P1] becomes (0, 2, 0). The Safety Algorithm is then run on this updated state. \u000bSince the system is still safe, the temporary allocation is confirmed, and P1's request is granted permanently.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "A Request That Is Denied",
+      "body": "Granting Leads To An Unsafe State\nContinuing from the state right after P1’s request was granted (Available = (2, 3, 0)), suppose P0 now requests (0, 2, 0)\nCheck Request <= Need[P0] = (7,4,3): passes\nCheck Request <= Available = (2,3,0): passes",
+      "notes": "Now, let's look at a case where a request is not granted. After P1's request has been approved, \u000bsuppose P0 submits Request[P0] = (0, 2, 0). The operating system first checks whether Request[P0] ≤ Need[P0], \u000bwhich passes. It then verifies that Request[P0] ≤ Available, and this condition also passes.\u000b Since both checks succeed, the system proceeds to the final Safety Algorithm to determine\u000b whether granting the request would still keep the system in a safe state.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "A Request That Is Denied",
+      "body": "Granting Leads To An Unsafe State\n1\nPretend Allocate : Available becomes (2,1,0)\n2\nPretend Allocate : Allocation[P0] becomes (0,3,0)\n3\nPretend Allocate : Need[P0] becomes (7,2,3)",
+      "notes": "Next, the operating system temporarily allocates the requested resources to P0. \u000bThis reduces Available to (2, 1, 0), updates Allocation[P0] to (0, 3, 0), and changes Need[P0] to (7, 2, 3).\u000b With these temporary values in place, the Safety Algorithm is run to check whether the system can still\u000b remain in a safe state before making the allocation permanent.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "A Request That Is Denied",
+      "body": "4\nRun the safety algorithm on this pretended state\n5\nNo process has Need <= Work = (2,1,0), so none can finish\n6\nState is unsafe, the request is rolled back and P0 must wait\nGranting Leads To An Unsafe State",
+      "notes": "Finally, the Safety Algorithm is executed on this temporary state.\u000b This time, no process has a Need that can be satisfied with the current Work = (2, 1, 0), \u000bso no process can complete and release its resources. Since the state is unsafe, the temporary \u000ballocation is rolled back, and P0 must wait until the request can be granted safely.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "A Request That Is Denied",
+      "body": "Granting Leads To An Unsafe State",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Need (A B C)",
+            "Need <= Work (2,1,0)?"
+          ],
+          [
+            "P0",
+            "7 2 3",
+            "No"
+          ],
+          [
+            "P1",
+            "0 2 0",
+            "No"
+          ],
+          [
+            "P2",
+            "6 0 0",
+            "No"
+          ],
+          [
+            "P3",
+            "0 1 1",
+            "No"
+          ],
+          [
+            "P4",
+            "4 3 1",
+            "No"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 56,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Deadlock Avoidance: Banker's Algorithm",
+      "body": "Deadlock Avoidance Concept\nSafe & Unsafe States\nSafe sequence: safe vs unsafe states\nSingle-Instance Avoidance\nResource allocation graph algorithm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Deadlock Avoidance: Banker's Algorithm",
+      "body": "Banker's Algorithm\nData structures: Available, Max, Allocation,\nNeed: Safety algorithm \nResource-request algorithm\nNumerical Walkthrough\nWorked Banker's example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Deadlock Detection & Recovery",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/14zViVn-FNskkKsYaruV5g3omeYqXsR7Aq4b3S9XY7ss/edit?slide=id.g3f27ba313c8_0_1531#slide=id.g3f27ba313c8_0_1531"
+}

@@ -12,7 +12,13 @@ from src import config, llm  # noqa: E402
 from guardrails import guardrails  # noqa: E402
 
 
-def _rubric_text(exclude: tuple = ()) -> str:
+def _rubric_text(exclude: tuple = (), weights: dict | None = None) -> str:
+    """The rubric, with THIS COURSE's weights if it has its own.
+
+    A course may redistribute weight — a code-along wants `example_quality` to count for
+    more and `analogy_discipline` for less — but the DIMENSIONS are the same thirteen
+    qualities for any technical course, so only the numbers move (see src/profiles.py).
+    """
     r = config.rubric()
     lines = ["SCALE:"]
     for k, v in r["scale"].items():
@@ -21,9 +27,27 @@ def _rubric_text(exclude: tuple = ()) -> str:
     for d in r["dimensions"]:
         if d["id"] in exclude:
             continue
-        lines.append(f"  [{d['id']}] weight={d['weight']}\n    {d['question'].strip()}")
+        w = (weights or {}).get(d["id"], d["weight"])
+        lines.append(f"  [{d['id']}] weight={w}\n    {d['question'].strip()}")
     lines.append("\nOUTPUT CONTRACT:\n" + r["output_contract"])
     return "\n".join(lines)
+
+
+def _market_note(profile: dict | None) -> str:
+    """The platforms THIS COURSE is measured against.
+
+    The rubric's `market_parity` question names Scaler, GeeksforGeeks and TutorialsPoint
+    inline — right for the course the tool shipped with, and wrong for every other one: a
+    React document was being graded for market parity against a networking syllabus. A
+    course that names its own gets them stated here, overriding what the question says.
+    """
+    plats = list((profile or {}).get("market_reference_platforms") or [])
+    if not plats or plats == list(config.harness().get("market_reference_platforms") or []):
+        return ""
+    return ("\n\nMARKET REFERENCE PLATFORMS FOR THIS COURSE — judge `market_parity` "
+            "against THESE, not against the platforms named in the rubric question, "
+            "which are the instance default and are about a different subject:\n  "
+            + "; ".join(plats))
 
 
 JUDGE_SYSTEM = (
@@ -78,7 +102,8 @@ def _contradicted(text: str, facts: dict) -> list[str]:
 
 
 def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None = None,
-          enforce_time: bool = True) -> dict:
+          enforce_time: bool = True, course: str | None = None,
+          profile: dict | None = None) -> dict:
     h = config.harness()
     m = h["model"]
     judge_model = m["judge"]
@@ -203,7 +228,23 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     taught_note = ""
     try:
         from src import pptx_ingest
-        digest = pptx_ingest.taught_digest(session.number)
+        # Scoped to the course being graded. Read globally, the judge was shown another
+        # course's decks as "already taught in earlier sessions" and scored `coverage`
+        # against them.
+        digest = pptx_ingest.taught_digest(course, session.number) if course else ""
+        # …and what the PREREQUISITES taught, which the learner also already knows. The
+        # coverage dimension scores "no re-teaching a prior concept"; without this it
+        # could only see this course's own earlier sessions, so a React doc re-defining
+        # a JavaScript closure looked like new material.
+        try:
+            from src import prereqs as _prereqs
+            _known = _prereqs.assumed_topics(course) if course else []
+        except Exception:
+            _known = []
+        if _known:
+            digest = ((digest + "\n") if digest.strip() else "") + \
+                "  From this course's PREREQUISITES (known before session 1, may be " \
+                "referenced but not re-taught): " + "; ".join(_known[:80])
         if digest.strip():
             taught_note = (
                 "\n\nALREADY TAUGHT IN EARLIER SESSIONS (extracted from their actual "
@@ -225,17 +266,20 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     # every repair round — so it is sent as CACHED context rather than inside the user
     # prompt, where it was re-charged at full price each time. It sits behind the
     # system prompt, which is also static, so the two form one cacheable prefix.
-    rubric_block = f"RUBRIC\n{_rubric_text(exclude)}"
+    _weights = (profile or {}).get("rubric_weights") or {}
+    rubric_block = f"RUBRIC\n{_rubric_text(exclude, _weights)}"
     prompt = f"""SESSION KEY TAKEAWAYS (coverage must match these):
 {json.dumps(session.key_takeaways, indent=2)}
 
 {time_block}{page_block}{facts_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
-{web_note}{depth_note}{taught_note}{rules_note}
+{web_note}{depth_note}{taught_note}{rules_note}{_market_note(profile)}
 
 Grade now. Return only the contract JSON."""
-    dims = {d["id"]: d["weight"] for d in config.rubric()["dimensions"]
-            if d["id"] not in exclude}
+    # The weights the TOTAL is computed with are the same ones the judge was shown, or
+    # the reported score would not be the score the rubric it read describes.
+    dims = {d["id"]: float(_weights.get(d["id"], d["weight"]))
+            for d in config.rubric()["dimensions"] if d["id"] not in exclude}
 
     def _ask(extra: str = "") -> dict:
         raw = llm.complete(
@@ -350,7 +394,7 @@ Grade now. Return only the contract JSON."""
     # tell that it is mostly 4-out-of-5s ("strong, negligible issues"), which dimension
     # cost the most, or that a doc needs 90 AND at least 4 everywhere to be accepted.
     # Stored per run, so an old result stays self-describing after the rubric changes.
-    gates = config.harness().get("gates", {})
+    gates = {**config.harness().get("gates", {}), **((profile or {}).get("gates") or {})}
     result["weights"] = scored
     result["gates"] = {
         "min_total": gates.get("rubric_min_total"),
@@ -382,8 +426,11 @@ def _unscored(result: dict, dims: dict) -> set:
     return out
 
 
-def passes_gates(judge_result: dict) -> tuple[bool, list[str]]:
-    gates = config.harness()["gates"]
+def passes_gates(judge_result: dict, profile: dict | None = None) -> tuple[bool, list[str]]:
+    """A course may hold itself to MORE than the harness asks (see src/profiles.py —
+    the bar can be raised, never lowered), so the bar this doc is judged against comes
+    from its profile when it has one."""
+    gates = {**config.harness()["gates"], **((profile or {}).get("gates") or {})}
     reasons = []
     if judge_result["weighted_total"] < gates["rubric_min_total"]:
         reasons.append(

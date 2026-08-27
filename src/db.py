@@ -213,6 +213,51 @@ _SCHEMA = [
     """CREATE TABLE IF NOT EXISTS course_settings (
          course TEXT PRIMARY KEY, max_pages INTEGER, max_slides INTEGER,
          updated_at TEXT)""",
+    # WHAT A GOOD DOC LOOKS LIKE, PER COURSE. Everything about that was one set of
+    # numbers in harness.yaml applied to every course on the instance — and several of
+    # them are plainly about Computer Networks: the market platforms a doc is compared
+    # against, a slide-role vocabulary with nothing for a code walkthrough, one prose
+    # density for a theory course and a code-along alike.
+    #
+    # Stored as JSON rather than columns because it is a sparse tree of overrides over
+    # harness.yaml, and a column per knob would mean a migration every time the harness
+    # grows one. What may be overridden is a CLOSED WHITELIST in src/profiles.py — a
+    # profile that can set anything is a config-injection surface.
+    """CREATE TABLE IF NOT EXISTS course_profiles (
+         course TEXT PRIMARY KEY, profile_json TEXT, updated_at TEXT)""",
+    # COURSE SKILLS — the instructions a course is WRITTEN UNDER, authored by a person
+    # and approved before they take effect.
+    #
+    # Distinct from learned_rules.json, which holds rules INFERRED from corrections after
+    # a document was reviewed. A skill is written up front and says what this course
+    # needs that others do not ("explain each snippet line by line"). Both reach the
+    # writer down the same channel, labelled differently, because they carry different
+    # authority.
+    #
+    # RETIRED, NEVER DELETED. A finished document was written under a particular set of
+    # skills, and deleting one leaves no way to explain why an old doc looks as it does.
+    """CREATE TABLE IF NOT EXISTS course_skills (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         course TEXT NOT NULL, text TEXT NOT NULL,
+         kind TEXT, source TEXT, source_quote TEXT, status TEXT,
+         check_json TEXT, version INTEGER DEFAULT 1,
+         created_by TEXT, created_at TEXT,
+         approved_by TEXT, approved_at TEXT, updated_at TEXT)""",
+    "CREATE INDEX IF NOT EXISTS idx_course_skills_course ON course_skills(course)",
+    # PREREQUISITE COURSES — what the learner already knows before session 1.
+    #
+    # "Already taught" used to mean earlier sessions of THIS course, so a React course
+    # whose learners have done a JavaScript course had no way to say so and the writer
+    # guessed whether to define `const`. The page budget is fixed, so every re-taught
+    # concept costs a page from something new.
+    #
+    # A prerequisite is a COURSE THIS AGENT ALREADY HOLDS: its decks are here, so nothing
+    # is uploaded twice and a course library compounds. `prereq` is a course name, the
+    # same key everything else in this schema uses.
+    """CREATE TABLE IF NOT EXISTS course_prereqs (
+         course TEXT, prereq TEXT, kind TEXT, added_by TEXT, added_at TEXT,
+         PRIMARY KEY (course, prereq))""",
+    "CREATE INDEX IF NOT EXISTS idx_course_prereqs_prereq ON course_prereqs(prereq)",
     "CREATE INDEX IF NOT EXISTS idx_curriculum_course ON curriculum(course)",
 ]
 
@@ -239,6 +284,10 @@ _RUNS_ADDED_COLUMNS = [
     # being collapsed into two, so the dashboard could not show the step where people
     # actually stop: review finished, final doc never created.
     ("review_done_at", "TEXT"),
+    # WHICH SET OF COURSE SKILLS produced this document (db.skills_version). Without it
+    # there is no way to explain why last month's doc differs from today's: the skills
+    # changed and nothing recorded which set was in force.
+    ("skills_version", "TEXT"),
 ]
 
 
@@ -267,12 +316,21 @@ _TEAMS_ADDED_COLUMNS = [
 ]
 
 
+# A prerequisite is either a COURSE in this agent or one taught ELSEWHERE — a name and a
+# set of decks. The two differ only in where the decks live, and everything downstream
+# treats them identically, but the store has to know which.
+_PREREQS_ADDED_COLUMNS = [
+    ("kind", "TEXT"),
+]
+
+
 def _add_missing_columns(conn) -> list[str]:
     """Bring existing tables up to date. Idempotent."""
     added = []
     for table, cols in (("runs", _RUNS_ADDED_COLUMNS),
                         ("curriculum", _CURRICULUM_ADDED_COLUMNS),
-                        ("teams", _TEAMS_ADDED_COLUMNS)):
+                        ("teams", _TEAMS_ADDED_COLUMNS),
+                        ("course_prereqs", _PREREQS_ADDED_COLUMNS)):
         try:
             cur = conn.cursor()
             cur.execute(f"PRAGMA table_info({table})")
@@ -888,10 +946,14 @@ def create_run(run_id: str, *, user_email: str | None, course: str | None,
     _exec(
         """INSERT OR REPLACE INTO runs
            (id, ts, updated, user_email, course, team_id, session_no, title,
-            status, stage, enforce_time)
-           VALUES (?,?,?,?,?,?,?,?, 'running', 'queued', ?)""",
+            status, stage, enforce_time, skills_version)
+           VALUES (?,?,?,?,?,?,?,?, 'running', 'queued', ?, ?)""",
         (run_id, now, now, user_email, course, team_id, session_no, title,
-         1 if enforce_time else 0))
+         1 if enforce_time else 0,
+         # Stamped at the START, because that is the set the document was written under.
+         # Reading it at finalize would record whatever the skills happened to be by the
+         # time a long review ended.
+         skills_version(course) or None))
 
 
 def update_stage(run_id: str, stage: str) -> None:
@@ -1293,6 +1355,261 @@ def set_course_settings(course: str, *, max_pages=None, max_slides=None) -> bool
         return False
 
 
+# --------------------------------------------------------------------------- #
+# prerequisite courses (what the learner already knows)
+# --------------------------------------------------------------------------- #
+def prereqs(course: str) -> list[dict]:
+    try:
+        rows = _query("SELECT * FROM course_prereqs WHERE course=? ORDER BY prereq",
+                      ((course or "").strip(),))
+    except Exception:
+        return []
+    for r in rows:
+        # Rows written before the two kinds existed are internal — that was the only kind.
+        r["kind"] = (r.get("kind") or "course")
+    return rows
+
+
+def add_prereq(course: str, prereq: str, *, added_by: str | None = None,
+               kind: str = "course") -> bool:
+    """Link a prerequisite. False if it was already there, or is the course itself.
+
+    `kind` is "course" (one this agent holds — its decks are its own) or "external" (one
+    taught elsewhere — a name, whose decks belong to THIS course because there is no
+    course of their own to hang them on).
+    """
+    course, prereq = (course or "").strip(), (prereq or "").strip()
+    if not course or not prereq or course == prereq:
+        return False
+    if any(p["prereq"] == prereq for p in prereqs(course)):
+        return False
+    kind = "external" if str(kind).lower() == "external" else "course"
+    try:
+        _exec("INSERT OR IGNORE INTO course_prereqs (course, prereq, kind, added_by, "
+              "added_at) VALUES (?,?,?,?,?)",
+              (course, prereq, kind, (added_by or "").lower() or None, _now()))
+        return True
+    except Exception:
+        return False
+
+
+def remove_prereq(course: str, prereq: str) -> bool:
+    """Unlink a prerequisite — and, if it was EXTERNAL, delete its decks.
+
+    An internal prerequisite's decks are its own course's and are left alone. An external
+    one's exist only because this course declared it, so nothing else would ever read
+    them again.
+    """
+    course, prereq = (course or "").strip(), (prereq or "").strip()
+    row = next((p for p in prereqs(course) if p["prereq"] == prereq), None)
+    try:
+        _exec("DELETE FROM course_prereqs WHERE course=? AND prereq=?", (course, prereq))
+    except Exception:
+        return False
+    if row and row.get("kind") == "external":
+        try:
+            from . import pptx_ingest
+            pptx_ingest.drop_prereq_decks(course, prereq)
+        except Exception as e:
+            print(f"[prereqs] could not drop {prereq!r}'s decks: {e!r}")
+    return True
+
+
+# --------------------------------------------------------------------------- #
+# course skills (authored instructions, approved before they take effect)
+# --------------------------------------------------------------------------- #
+def _shape_skill(r: dict) -> dict:
+    try:
+        r["check"] = json.loads(r.pop("check_json", None) or "null")
+    except Exception:
+        r["check"] = None
+    return r
+
+
+def skills(course: str, *, include_retired: bool = False) -> list[dict]:
+    """One course's skills, newest last. Retired ones are excluded unless asked for —
+    they are kept so an old document can still be explained, not to be applied."""
+    q = "SELECT * FROM course_skills WHERE course=?"
+    if not include_retired:
+        q += " AND status != 'retired'"
+    q += " ORDER BY id"
+    try:
+        return [_shape_skill(r) for r in _query(q, ((course or "").strip(),))]
+    except Exception:
+        return []
+
+
+def approved_skills(course: str) -> list[dict]:
+    """The skills that actually govern generation for this course.
+
+    Approved only. A DRAFT that already applied would make the approval step theatre —
+    and the whole point of the workflow is that nothing reaches the writer unreviewed.
+    """
+    try:
+        return [_shape_skill(r) for r in _query(
+            "SELECT * FROM course_skills WHERE course=? AND status='approved' "
+            "ORDER BY id", ((course or "").strip(),))]
+    except Exception:
+        return []
+
+
+def add_skill(course: str, text: str, *, kind: str = "style", source: str = "user",
+              created_by: str | None = None, check: dict | None = None,
+              source_quote: str | None = None) -> int | None:
+    """Add a skill as a DRAFT. Returns its id, or None."""
+    course, text = (course or "").strip(), " ".join((text or "").split())
+    if not course or not text:
+        return None
+    now = _now()
+    try:
+        return _exec(
+            "INSERT INTO course_skills (course, text, kind, source, source_quote, "
+            "status, check_json, version, created_by, created_at, updated_at) "
+            "VALUES (?,?,?,?,?,'draft',?,1,?,?,?)",
+            (course, text, kind, source, source_quote,
+             json.dumps(check) if check else None,
+             (created_by or "").lower() or None, now, now))
+    except Exception as e:
+        print(f"[db] add_skill failed: {e!r}")
+        return None
+
+
+def edit_skill(skill_id: int, text: str, *, check: dict | None = None) -> bool:
+    """Change a skill's wording. It goes BACK TO DRAFT.
+
+    An approval is of the words that were approved. Letting an edit keep the approval
+    would mean a skill nobody signed off governing every document from then on.
+    """
+    text = " ".join((text or "").split())
+    if not text:
+        return False
+    try:
+        _exec("UPDATE course_skills SET text=?, check_json=?, status='draft', "
+              "approved_by=NULL, approved_at=NULL, version=version+1, updated_at=? "
+              "WHERE id=?",
+              (text, json.dumps(check) if check else None, _now(), int(skill_id)))
+        return True
+    except Exception:
+        return False
+
+
+def approve_skill(skill_id: int, who: str | None) -> bool:
+    try:
+        _exec("UPDATE course_skills SET status='approved', approved_by=?, approved_at=?, "
+              "updated_at=? WHERE id=?",
+              ((who or "").lower() or None, _now(), _now(), int(skill_id)))
+        return True
+    except Exception:
+        return False
+
+
+def retire_skill(skill_id: int, who: str | None) -> bool:
+    """Stop a skill applying. The row stays — see the table comment."""
+    try:
+        _exec("UPDATE course_skills SET status='retired', updated_at=? WHERE id=?",
+              (_now(), int(skill_id)))
+        return True
+    except Exception:
+        return False
+
+
+def import_skills(from_course: str, to_course: str, who: str | None) -> int:
+    """Copy another course's APPROVED skills in, as drafts. Returns how many were new.
+
+    Drafts on purpose: a skill that was right for one course is a proposal for the next,
+    not a decision already taken. Skills whose text is already present are skipped, so
+    importing twice is a no-op rather than a pile of duplicates.
+    """
+    src = approved_skills(from_course)
+    if not src:
+        return 0
+    have = {" ".join((s.get("text") or "").split()).lower()
+            for s in skills(to_course, include_retired=True)}
+    n = 0
+    for s in src:
+        text = " ".join((s.get("text") or "").split())
+        if text.lower() in have:
+            continue
+        if add_skill(to_course, text, kind=s.get("kind") or "style",
+                     source=f"imported:{from_course}", created_by=who,
+                     check=s.get("check")):
+            n += 1
+            have.add(text.lower())
+    return n
+
+
+def skills_version(course: str) -> str:
+    """A short fingerprint of the approved skills, stamped on a run.
+
+    Without it there is no way to explain why last month's document differs from today's:
+    the skills changed and nothing recorded which set produced which doc.
+    """
+    import hashlib
+    parts = [f"{s['id']}:{s.get('version', 1)}" for s in approved_skills(course)]
+    if not parts:
+        return ""
+    return hashlib.md5("|".join(parts).encode("utf-8")).hexdigest()[:8]
+
+
+def course_profile(course: str) -> dict:
+    """One course's stored overrides, or {} — the RAW row, not the resolved profile.
+    Callers want src.profiles.for_course(), which merges this over the harness."""
+    try:
+        rows = _query("SELECT profile_json FROM course_profiles WHERE course=?",
+                      ((course or "").strip(),))
+    except Exception:
+        return {}
+    if not rows:
+        return {}
+    try:
+        out = json.loads(rows[0].get("profile_json") or "{}")
+        return out if isinstance(out, dict) else {}
+    except Exception:
+        return {}
+
+
+def course_profiles() -> dict:
+    """{course: overrides} for every course that has any. One query."""
+    try:
+        rows = _query("SELECT course, profile_json FROM course_profiles")
+    except Exception:
+        return {}
+    out = {}
+    for r in rows:
+        try:
+            v = json.loads(r.get("profile_json") or "{}")
+        except Exception:
+            continue
+        if isinstance(v, dict) and r.get("course"):
+            out[r["course"]] = v
+    return out
+
+
+def set_course_profile(course: str, overrides: dict) -> bool:
+    """Store a course's overrides, VALIDATED. False if the profile was rejected.
+
+    Validation lives in src.profiles so the rule and the resolution cannot drift apart;
+    this is only the storage. Returns False rather than raising because every caller —
+    the endpoint, a test, a migration — wants to say what was wrong, not unwind.
+    """
+    course = (course or "").strip()
+    if not course:
+        return False
+    from . import profiles as _profiles
+    ok, cleaned, _why = _profiles.validate(overrides)
+    if not ok:
+        return False
+    try:
+        _exec("DELETE FROM course_profiles WHERE course=?", (course,))
+        if cleaned:
+            _exec("INSERT INTO course_profiles (course, profile_json, updated_at) "
+                  "VALUES (?,?,?)", (course, json.dumps(cleaned), _now()))
+        return True
+    except Exception as e:
+        print(f"[db] set_course_profile({course!r}) failed: {e!r}")
+        return False
+
+
 def session_settings(course: str, session_no: int) -> dict:
     """One session's overrides, or {} when it inherits the course's."""
     try:
@@ -1445,17 +1762,18 @@ def delete_course(course: str, *, detach_teams: bool = True,
     having produced it. Every other renumbering path in this file keeps history for the
     same reason. The docs remain downloadable and the cost roll-ups stay correct.
 
-    `orphan_sessions` is the part the CALLER has to finish: the extracted decks live on
-    disk keyed by session NUMBER alone, not by course, so they are shared ground. Only
-    the numbers that no remaining course claims are safe to clear, and those are the ones
-    reported back — deleting "this course's decks" without that check would take session
-    7's deck away from every other course that has a session 7.
+    The extracted DECKS are the caller's to remove (they live on disk, which this module
+    does not touch) — and now that the store is scoped by course they simply go with it:
+    pptx_ingest.drop_course_decks(course). There used to be an `orphan_sessions`
+    calculation here — "the session numbers no remaining course claims" — because one
+    directory held every course's decks and a number was all there was to go on. It was
+    wrong in both directions, keeping a deleted course's deck whenever another course
+    happened to share the session number.
     """
     course = (course or "").strip()
     if not course:
-        return {"course": course, "sessions": 0, "teams_detached": [],
-                "orphan_sessions": []}
-    mine = {r["session_no"] for r in curriculum(course)}
+        return {"course": course, "sessions": 0, "teams_detached": []}
+    n_sessions = len(curriculum(course))
 
     detached = []
     if detach_teams:
@@ -1468,26 +1786,24 @@ def delete_course(course: str, *, detach_teams: bool = True,
                 team_remove_course(t["id"], course)
                 detached.append({"id": t["id"], "name": t["name"]})
 
+    # EVERY per-course table. A new one that is not listed here leaks a row per deleted
+    # course — which is exactly how the orphaned team_courses rows accumulated.
     for sql in ("DELETE FROM curriculum WHERE course=?",
                 "DELETE FROM course_settings WHERE course=?",
+                "DELETE FROM course_profiles WHERE course=?",
+                "DELETE FROM course_skills WHERE course=?",
+                "DELETE FROM course_prereqs WHERE course=?",
+                # …and where this course was somebody ELSE's prerequisite. A link to a
+                # course that no longer exists would silently assume knowledge from
+                # decks that are gone.
+                "DELETE FROM course_prereqs WHERE prereq=?",
                 "DELETE FROM course_owners WHERE course=?"):
         try:
             _exec(sql, (course,))
         except Exception as e:
             print(f"[db] delete_course({course!r}): {sql.split()[2]} — {e!r}")
 
-    # Which session numbers nothing else covers any more. Read AFTER the delete, so the
-    # course being removed cannot count itself as a claimant.
-    still: set = set()
-    try:
-        still = {r["session_no"] for r in
-                 _query("SELECT DISTINCT session_no FROM curriculum")
-                 if r.get("session_no") is not None}
-    except Exception:
-        still = mine          # could not tell -> assume everything is still claimed
-    return {"course": course, "sessions": len(mine),
-            "teams_detached": detached,
-            "orphan_sessions": sorted(mine - still)}
+    return {"course": course, "sessions": n_sessions, "teams_detached": detached}
 
 
 def curriculum_mark_deck(course: str, session_no: int, deck_hash: str,
@@ -1653,7 +1969,12 @@ def _kb_local_files() -> list[str]:
     out = [name for name in _KB_TOP_FILES if (kb / name).exists()]
     decks = kb / "decks"
     if decks.is_dir():
-        out += [f"decks/{f.name}" for f in sorted(decks.glob("*.json"))]
+        # RECURSIVE. Decks are filed per course now — decks/<course>/session_NN.json —
+        # so a flat glob found nothing and the cloud mirror silently stopped backing up
+        # any deck at all. Manifests go too: they are what tells a restored instance a
+        # deck is already extracted, so without them every deck is re-downloaded.
+        out += [f"decks/{f.relative_to(decks).as_posix()}"
+                for f in sorted(decks.rglob("*.json"))]
     return out
 
 
@@ -1805,7 +2126,33 @@ def kb_forget_many(rel_paths) -> int:
         return 0
 
 
-def kb_rename_decks(mapping: dict) -> int:
+def kb_forget_prefix(prefix: str) -> int:
+    """Drop every mirrored KB file under `prefix`, in ONE statement.
+
+    For deleting a course: its decks are one folder, so the mirror rows are one prefix.
+    Naming them individually would be a round-trip per deck — the shape that made the
+    course delete time out and answer 503.
+    """
+    prefix = (prefix or "").lstrip("/")
+    if not prefix:
+        return 0
+    # ONE statement, and the row count comes from the cursor rather than a SELECT before
+    # it: counting first would make the common case two round-trips to save nothing.
+    conn = _connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM kb_files WHERE path LIKE ?", (prefix + "%",))
+        n = cur.rowcount if cur.rowcount and cur.rowcount > 0 else 0
+        conn.commit()
+        return n
+    except Exception as e:
+        print(f"[db] kb_forget_prefix({prefix!r}) failed: {e!r}")
+        return 0
+    finally:
+        _close(conn)
+
+
+def kb_rename_decks(course: str, mapping: dict) -> int:
     """Re-point the stored copies of decks that were renumbered. Returns rows moved.
 
     The targeted alternative to kb_backup() for the one case that needs it. Renumbering
@@ -1829,7 +2176,8 @@ def kb_rename_decks(mapping: dict) -> int:
     stopped following the curriculum. Set-based now: park all, clear all targets,
     unpark all.
     """
-    pairs = [(f"decks/session_{int(o):02d}.json", f"decks/session_{int(n):02d}.json")
+    from . import pptx_ingest       # for the course-scoped KB path
+    pairs = [(pptx_ingest.kb_rel(course, o), pptx_ingest.kb_rel(course, n))
              for o, n in (mapping or {}).items() if int(o) != int(n)]
     if not pairs:
         return 0

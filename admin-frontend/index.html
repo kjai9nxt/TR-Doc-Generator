@@ -109,6 +109,7 @@ let PAGE_LIMIT = 16
 // The course rows last rendered, so the delete confirmation can state what goes and what
 // stays without a second request for facts already on screen.
 let COURSES_CACHE = []
+let PROFILE_COURSE = null
 function signOut(){ TOKEN=''; localStorage.removeItem('tr_auth_token'); ME=null; if(window.google?.accounts?.id) google.accounts.id.disableAutoSelect(); boot() }
 
 // run_id + the exact filename pin the output. Resolving by session number alone made
@@ -328,9 +329,74 @@ function viewCourses(d){
       <td class="r">${money(c.total_cost||0)}</td>
       <td class="r">${c.state==='history_only'
           ? '<span class="muted" title="the curriculum is already gone; its documents are kept on purpose">nothing to delete</span>'
-          : `<button class="btn sm" onclick="delCourse('${esc(c.name).replace(/'/g,"\\'")}')">Delete</button>`}</td>
+          : `<button class="btn sm" onclick="editProfile('${esc(c.name).replace(/'/g,"\\'")}')">Rules</button>
+             <button class="btn sm" onclick="delCourse('${esc(c.name).replace(/'/g,"\\'")}')">Delete</button>`}</td>
     </tr>`).join('')||'<tr><td class="muted">No courses yet.</td></tr>'}
   </tbody></table></div>`
+}
+
+// WHAT A COURSE IS GRADED AGAINST. These were one set of numbers for every course, and
+// several were plainly about the subject the tool shipped with — a React document was
+// being judged for market parity against a university networking syllabus. Editing them
+// per course is the admin's, because they decide how strictly work is measured.
+//
+// The four that matter in practice are here; the rest of the profile is reachable through
+// /api/course-profile, which validates every key the same way.
+async function editProfile(name){
+  let d
+  try { d = await api(`/course-profile?course=${encodeURIComponent(name)}`) }
+  catch(e){ return alert(e.message) }
+  const p = d.profile || {}, o = d.overrides || {}, def = d.defaults || {}
+  const v = document.getElementById('view')
+  PROFILE_COURSE = name
+  v.innerHTML = `<div class="card"><h2 style="margin-top:0">Rules for ${esc(name)}</h2>
+    <div class="muted" style="font-size:12px;margin-bottom:10px">
+      What this course is <b>graded against</b>. Anything left blank inherits the instance
+      default, shown beside it — a course only carries a value where it needs to differ.
+      The pass bar may be <b>raised</b> but never lowered: a bar a course can drop is not a bar.
+    </div>
+    <div class="row"><span class="muted" style="width:150px">course type:</span>
+      <select id="p_type">${['semester','interview'].map(t=>
+        `<option value="${t}" ${p.course_type===t?'selected':''}>${t}</option>`).join('')}</select>
+      <span class="muted">${o.course_type?'set for this course':'inherited'}</span>
+    </div>
+    <div class="row" style="margin-top:6px"><span class="muted" style="width:150px">doc kind:</span>
+      <select id="p_kind">${['theory','code_along'].map(t=>
+        `<option value="${t}" ${p.doc_kind===t?'selected':''}>${t}</option>`).join('')}</select>
+      <span class="muted">code_along expects snippets and walkthroughs</span>
+    </div>
+    <div class="row" style="margin-top:6px"><span class="muted" style="width:150px">market platforms:</span>
+      <input id="p_market" style="width:420px" value="${esc((p.market_reference_platforms||[]).join(', '))}" />
+    </div>
+    <div class="muted" style="font-size:12px;margin:2px 0 0 158px">
+      What its depth is compared against. Instance default: ${esc((def.market_reference_platforms||[]).join(', '))}
+    </div>
+    <div class="row" style="margin-top:8px"><span class="muted" style="width:150px">pass bar (rubric):</span>
+      <input id="p_bar" type="number" style="width:90px" value="${(p.gates||{}).rubric_min_total ?? ''}" />
+      <span class="muted">instance floor ${(def.gates||{}).rubric_min_total} — may be raised, not lowered</span>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" onclick="saveProfile()">Save</button>
+      <button class="btn sm" onclick="go('courses')">Back to courses</button>
+    </div>
+   </div>`
+}
+
+async function saveProfile(){
+  const name = PROFILE_COURSE
+  const market = document.getElementById('p_market').value.split(',')
+    .map(x=>x.trim()).filter(Boolean)
+  const bar = document.getElementById('p_bar').value.trim()
+  const profile = {
+    course_type: document.getElementById('p_type').value,
+    doc_kind: document.getElementById('p_kind').value,
+  }
+  if (market.length) profile.market_reference_platforms = market
+  if (bar) profile.gates = { rubric_min_total: Number(bar) }
+  try { await api('/course-profile',{method:'POST',body:JSON.stringify({course:name, profile})}) }
+  catch(e){ return alert(e.message) }   // the server says WHICH key and why
+  alert(`Saved. "${name}" is now graded under its own rules.`)
+  editProfile(name)
 }
 
 async function delCourse(name){
@@ -451,6 +517,7 @@ async function delTeam(id){ if(!confirm('Delete this team?'))return; await api(`
 window.go=go; window.signOut=signOut; window.loadView=loadView; window.createTeam=createTeam
 window.setCourse=setCourse; window.addMember=addMember; window.addMemberTyped=addMemberTyped; window.rmMember=rmMember; window.delTeam=delTeam
 window.setOwner=setOwner; window.renameTeam=renameTeam; window.delCourse=delCourse
+window.editProfile=editProfile; window.saveProfile=saveProfile
 window.UNIT=UNIT
 setTimeout(boot, 400)  // give the GIS script a moment to load
 </script>

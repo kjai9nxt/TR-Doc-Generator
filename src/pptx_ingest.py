@@ -28,7 +28,79 @@ from . import config
 
 KB_DIR = config.KB_DIR
 DECKS_DIR = KB_DIR / "decks"
+# The pre-course-scoping global manifest. Kept ONLY so migrate_legacy_decks can read the
+# hashes out of it; nothing writes it any more.
 MANIFEST = KB_DIR / "manifest.json"
+
+
+# --------------------------------------------------------------------------- #
+# THE STORE IS SCOPED BY COURSE.
+#
+# Decks used to live at knowledge_base/decks/session_07.json — keyed by session NUMBER
+# alone, one directory, one manifest, globbed globally. Invisible on a single-course
+# instance, and wrong the moment there are two:
+#
+#   · two courses that both have a session 7 shared ONE file, so ingesting the second
+#     silently overwrote the first, and both courses then read whichever was fetched
+#     last as "what I have already taught";
+#   · taught_digest() — the "do not teach this again" block in every generation prompt —
+#     was built from whatever was on disk, so a React doc could be told it had already
+#     covered Deadlock Detection;
+#   · taught_titles() feeds the DETERMINISTIC repetition guardrail, so a legitimate
+#     slide in one course could be failed for repeating another course's title;
+#   · deleting or renumbering a session in one course moved another course's decks.
+#
+# Every function below therefore takes the COURSE FIRST and requires it. Deliberately
+# not defaulted to the instance-wide active course: that global is exactly what made
+# this wrong, and a missing argument should be a loud TypeError rather than a silent
+# read of somebody else's decks.
+# --------------------------------------------------------------------------- #
+def course_slug(course: str) -> str:
+    """A stable, filesystem-safe folder name for a course.
+
+    Readable prefix plus a short digest of the FULL name. The digest is what makes it
+    safe: 'C++ / Advanced' and 'C   Advanced' both reduce to the same readable slug, and
+    two courses sharing a folder is the bug this module is being changed to fix.
+    """
+    name = (course or "").strip() or "default"
+    base = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")[:48] or "course"
+    return f"{base}_{hashlib.md5(name.encode('utf-8')).hexdigest()[:6]}"
+
+
+def course_decks_dir(course: str) -> Path:
+    return DECKS_DIR / course_slug(course)
+
+
+def prereq_decks_dir(course: str, prereq: str) -> Path:
+    """Where an EXTERNAL prerequisite's decks live: inside the course that declared it.
+
+    An external prerequisite is a name and a set of slides — a course taught somewhere
+    else, with no course of its own in this agent to hang decks on. So they belong to the
+    course that declared it, and go when it goes.
+
+    A subfolder rather than a sibling, because the two must never be confused: the decks
+    in `decks/<course>/` are what this course has ALREADY TAUGHT (repeating one is a
+    failure), and the decks in `decks/<course>/prereq/<name>/` are what the learner knew
+    before session 1 (referring to one is correct). Same shape, opposite rule.
+    """
+    return course_decks_dir(course) / "prereq" / course_slug(prereq)
+
+
+def _store_dir(course: str, prereq: str | None = None) -> Path:
+    return prereq_decks_dir(course, prereq) if prereq else course_decks_dir(course)
+
+
+def deck_path(course: str, session_no: int, prereq: str | None = None) -> Path:
+    return _store_dir(course, prereq) / f"session_{int(session_no):02d}.json"
+
+
+def _manifest_path(course: str, prereq: str | None = None) -> Path:
+    return _store_dir(course, prereq) / "manifest.json"
+
+
+def kb_rel(course: str, session_no: int) -> str:
+    """The deck's KB-relative path, which is the key the cloud mirror stores it under."""
+    return f"decks/{course_slug(course)}/session_{int(session_no):02d}.json"
 
 
 # --------------------------------------------------------------------------- #
@@ -123,15 +195,56 @@ def extract_deck(path: Path) -> dict:
 # --------------------------------------------------------------------------- #
 # persistent KB
 # --------------------------------------------------------------------------- #
-def _load_manifest() -> dict:
-    if MANIFEST.exists():
-        return json.loads(MANIFEST.read_text())
+def _load_manifest(course: str, prereq: str | None = None) -> dict:
+    path = _manifest_path(course, prereq)
+    if path.exists():
+        try:
+            return json.loads(path.read_text())
+        except Exception:
+            return {}
     return {}
 
 
-def _save_manifest(m: dict):
-    KB_DIR.mkdir(parents=True, exist_ok=True)
-    MANIFEST.write_text(json.dumps(m, indent=2), encoding="utf-8")
+def _save_manifest(course: str, m: dict, prereq: str | None = None):
+    d = _store_dir(course, prereq)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "manifest.json").write_text(json.dumps(m, indent=2), encoding="utf-8")
+
+
+def put_deck(course: str, session_no: int, deck: dict,
+             prereq: str | None = None) -> Path:
+    """Write one extracted deck into this course's store, manifest included.
+
+    The single place a deck is written. sync used to build the path itself, which is how
+    the course scoping went missing there.
+    """
+    d = _store_dir(course, prereq)
+    d.mkdir(parents=True, exist_ok=True)
+    path = deck_path(course, session_no, prereq)
+    path.write_text(json.dumps(deck, ensure_ascii=False, indent=2), encoding="utf-8")
+    manifest = _load_manifest(course, prereq)
+    manifest[f"session_{int(session_no):02d}"] = {
+        "hash": deck.get("source_hash") or "",
+        "source_file": deck.get("source_file") or path.name,
+        "session_no": deck.get("session_no", int(session_no)),
+        "n_slides": deck.get("n_slides"),
+    }
+    _save_manifest(course, manifest, prereq)
+    return path
+
+
+def get_deck(course: str, session_no: int, prereq: str | None = None) -> dict | None:
+    path = deck_path(course, session_no, prereq)
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except Exception:
+        return None
+
+
+def has_deck(course: str, session_no: int, prereq: str | None = None) -> bool:
+    return deck_path(course, session_no, prereq).exists()
 
 
 @dataclass
@@ -141,19 +254,25 @@ class IngestReport:
     total_decks: int
 
 
-def ingest(verbose: bool = True) -> IngestReport:
-    """Incrementally sync inputs/past_ppts/ into the knowledge base."""
-    DECKS_DIR.mkdir(parents=True, exist_ok=True)
+def ingest(course: str, verbose: bool = True) -> IngestReport:
+    """Incrementally sync inputs/past_ppts/ into ONE course's knowledge base.
+
+    The offline path (local .pptx files), used by the eval harness and as the fallback
+    when nothing has been synced. It takes the course for the same reason everything
+    else here does: the decks it writes are that course's memory, not the instance's.
+    """
+    d = course_decks_dir(course)
+    d.mkdir(parents=True, exist_ok=True)
     pattern = config.harness()["context"]["past_ppts_glob"]
     paths = sorted(Path(p) for p in glob.glob(str(config.ROOT / pattern)))
-    manifest = _load_manifest()
+    manifest = _load_manifest(course)
 
     ingested, skipped = [], []
     for path in paths:
         key = _deck_key(path)
         fhash = _file_hash(path)
         rec = manifest.get(key)
-        deck_json = DECKS_DIR / f"{key}.json"
+        deck_json = d / f"{key}.json"
         if rec and rec.get("hash") == fhash and deck_json.exists():
             skipped.append(path.name)   # already in memory, unchanged
             continue
@@ -167,38 +286,172 @@ def ingest(verbose: bool = True) -> IngestReport:
         }
         ingested.append(path.name)
 
-    _save_manifest(manifest)
+    _save_manifest(course, manifest)
     if verbose:
-        print(f"[KB] ingested {len(ingested)} new/changed deck(s), "
+        print(f"[KB] {course}: ingested {len(ingested)} new/changed deck(s), "
               f"skipped {len(skipped)} cached, {len(manifest)} total in memory.")
     return IngestReport(ingested, skipped, len(manifest))
 
 
-def load_all_decks() -> list[dict]:
+def load_all_decks(course: str, prereq: str | None = None) -> list[dict]:
     decks = []
-    for f in sorted(DECKS_DIR.glob("*.json")):
-        decks.append(json.loads(f.read_text()))
+    # A non-recursive glob, deliberately: decks/<course>/prereq/… is a DIFFERENT store
+    # with the opposite rule attached to it, and sweeping it in here would make a
+    # prerequisite's topics look like this course's own prior sessions.
+    for f in sorted(_store_dir(course, prereq).glob("*.json")):
+        if f.name == "manifest.json":
+            continue
+        try:
+            decks.append(json.loads(f.read_text()))
+        except Exception:
+            continue
     decks.sort(key=lambda d: (d.get("session_no") is None, d.get("session_no") or 0))
     return decks
 
 
-def deck_session_numbers() -> set[int]:
-    """Which sessions have an extracted deck — from the FILENAMES, nothing parsed.
+def deck_session_numbers(course: str, prereq: str | None = None) -> set[int]:
+    """Which of this course's sessions have an extracted deck — from the FILENAMES,
+    nothing parsed.
 
     Callers that only need "does this session have a deck?" were using load_all_decks(),
     which reads and JSON-parses every deck in the course (1.1 MB across 30 decks here)
     and was being called three times on a single page load. The name carries the answer.
     """
     out = set()
-    for p in DECKS_DIR.glob("session_*.json"):
+    for p in _store_dir(course, prereq).glob("session_*.json"):
         m = re.search(r"session_(\d+)\.json$", p.name)
         if m:
             out.add(int(m.group(1)))
     return out
 
 
-def drop_deck(session_no: int) -> bool:
-    """Delete one session's extracted deck. True if there was one.
+def courses_with_decks() -> list[str]:
+    """The course SLUGS that have a deck folder. For the migration and for diagnostics —
+    a slug cannot be turned back into a course name, so callers that need names match
+    these against course_slug() of the courses they know about."""
+    if not DECKS_DIR.is_dir():
+        return []
+    return sorted(d.name for d in DECKS_DIR.iterdir()
+                  if d.is_dir() and any(d.glob("session_*.json")))
+
+
+UNASSIGNED = "_unassigned"
+
+
+def legacy_decks() -> dict:
+    """{session_no: path} for decks still in the OLD flat layout, if any.
+
+    `decks/session_NN.json` — written before the store was scoped by course. Present on
+    every instance that ran an earlier version.
+    """
+    out = {}
+    if not DECKS_DIR.is_dir():
+        return out
+    for f in DECKS_DIR.glob("session_*.json"):
+        if not f.is_file():
+            continue
+        m = re.search(r"session_(\d+)\.json$", f.name)
+        if m:
+            out[int(m.group(1))] = f
+    return out
+
+
+def migrate_legacy_decks() -> dict:
+    """Move flat `decks/session_NN.json` files into the folder of the course that owns
+    them. Runs once at startup; a no-op afterwards.
+
+    WHICH COURSE OWNS A DECK is inferred, because the old layout never recorded it. In
+    order of confidence:
+      1. exactly one course whose curriculum has that session number WITH a deck link —
+         a deck exists on disk because a link was extracted, so this is the strong signal;
+      2. exactly one course that merely has that session number;
+      3. otherwise AMBIGUOUS: parked under decks/_unassigned/ and named in the return
+         value. Deliberately not guessed — attributing one course's material to another
+         is worse than leaving it aside, because the writer would then be told it had
+         already taught something it had not.
+
+    The per-course manifests are rebuilt from the legacy global manifest so an already
+    extracted deck is still recognised as extracted and is not re-downloaded.
+
+    Returns {"moved": {session_no: course}, "unassigned": [session_no], "kb_paths": [...]}
+    — `kb_paths` being the new KB-relative paths, so the caller can repoint the cloud
+    mirror in one statement instead of one per deck.
+    """
+    legacy = legacy_decks()
+    if not legacy:
+        return {"moved": {}, "unassigned": [], "kb_paths": []}
+
+    from . import db
+    # ONE read of the curriculum for the whole migration rather than one per deck.
+    rows = []
+    try:
+        rows = db._query("SELECT course, session_no, ppt_link FROM curriculum")
+    except Exception as e:
+        print(f"[decks] migration could not read the curriculum ({e!r}) — "
+              f"leaving the old layout alone.")
+        return {"moved": {}, "unassigned": sorted(legacy), "kb_paths": []}
+
+    linked: dict = {}        # session_no -> {courses that have it WITH a link}
+    present: dict = {}       # session_no -> {courses that have it at all}
+    for r in rows:
+        c, n = r.get("course"), r.get("session_no")
+        if not c or n is None:
+            continue
+        present.setdefault(int(n), set()).add(c)
+        if (r.get("ppt_link") or "").strip():
+            linked.setdefault(int(n), set()).add(c)
+
+    legacy_manifest = {}
+    if MANIFEST.exists():
+        try:
+            legacy_manifest = json.loads(MANIFEST.read_text())
+        except Exception:
+            legacy_manifest = {}
+
+    moved, unassigned, kb_paths = {}, [], []
+    touched_manifests: dict = {}
+    for no, src in sorted(legacy.items()):
+        owners = linked.get(no) or set()
+        if len(owners) != 1:
+            owners = present.get(no) or set()
+        if len(owners) == 1:
+            course = next(iter(owners))
+            dest_dir = course_decks_dir(course)
+            rel = kb_rel(course, no)
+        else:
+            course = None
+            dest_dir = DECKS_DIR / UNASSIGNED
+            rel = f"decks/{UNASSIGNED}/session_{no:02d}.json"
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / f"session_{no:02d}.json"
+        try:
+            src.replace(dest)          # atomic within one filesystem
+        except Exception as e:
+            print(f"[decks] could not move session {no} ({e!r}) — left in place.")
+            continue
+        kb_paths.append(rel)
+        if course:
+            moved[no] = course
+            key = f"session_{no:02d}"
+            rec = legacy_manifest.get(key)
+            if rec:
+                touched_manifests.setdefault(course, _load_manifest(course))[key] = rec
+        else:
+            unassigned.append(no)
+
+    for course, manifest in touched_manifests.items():
+        _save_manifest(course, manifest)
+    if MANIFEST.exists() and not legacy_decks():
+        # The global manifest described the flat layout and nothing reads it now.
+        try:
+            MANIFEST.replace(KB_DIR / "manifest.legacy.json")
+        except Exception:
+            pass
+    return {"moved": moved, "unassigned": sorted(unassigned), "kb_paths": kb_paths}
+
+
+def drop_deck(course: str, session_no: int) -> bool:
+    """Delete one session's extracted deck, in ONE course. True if there was one.
 
     Used when a session is REMOVED from the curriculum. sync.prune_orphan_decks cannot
     do this: it deliberately only touches sessions the curriculum still lists, so that a
@@ -207,20 +460,63 @@ def drop_deck(session_no: int) -> bool:
     were left behind, the next session to take that number would inherit it as material
     it had "already taught".
     """
-    path = DECKS_DIR / f"session_{int(session_no):02d}.json"
+    path = deck_path(course, session_no)
     existed = path.exists()
     path.unlink(missing_ok=True)
-    manifest = _load_manifest()
+    manifest = _load_manifest(course)
     if manifest.pop(f"session_{int(session_no):02d}", None) is not None:
-        _save_manifest(manifest)
+        _save_manifest(course, manifest)
     return existed
 
 
-def renumber_decks(mapping: dict) -> list[str]:
-    """Move extracted decks to follow their sessions. Returns what moved.
+def drop_course_decks(course: str) -> list[int]:
+    """Delete EVERY deck this course holds, and the folder itself. Returns the sessions.
 
-    An extracted deck lives at knowledge_base/decks/session_NN.json, keyed by the
-    session number — so renumbering the curriculum without moving these would leave
+    What deleting a course means now that the store is scoped. It used to be a per-session
+    calculation — "drop the decks whose session number no other course still claims" —
+    which existed only because one directory held every course's decks. That was wrong in
+    both directions: a deck belonging to the deleted course was KEPT whenever some other
+    course happened to have the same session number, and the number was all there was to
+    go on. A course's decks are its own, in its own folder, and they go with it.
+    """
+    d = course_decks_dir(course)
+    if not d.is_dir():
+        return []
+    gone = sorted(deck_session_numbers(course))
+    for f in d.glob("*.json"):
+        f.unlink(missing_ok=True)
+    # …and any EXTERNAL prerequisite decks this course declared: they belong to it,
+    # because there is no course of their own to hang them on.
+    import shutil
+    shutil.rmtree(d / "prereq", ignore_errors=True)
+    try:
+        d.rmdir()
+    except OSError:
+        pass          # something else is in there; the decks are gone, which is the point
+    return gone
+
+
+def drop_prereq_decks(course: str, prereq: str) -> list[int]:
+    """Delete an external prerequisite's decks. Nothing else owns them."""
+    d = prereq_decks_dir(course, prereq)
+    if not d.is_dir():
+        return []
+    gone = sorted(deck_session_numbers(course, prereq))
+    for f in d.glob("*.json"):
+        f.unlink(missing_ok=True)
+    try:
+        d.rmdir()
+        d.parent.rmdir()          # the `prereq/` holder, once it is empty
+    except OSError:
+        pass
+    return gone
+
+
+def renumber_decks(course: str, mapping: dict) -> list[str]:
+    """Move ONE course's extracted decks to follow their sessions. Returns what moved.
+
+    A deck lives at knowledge_base/decks/<course>/session_NN.json, keyed within the
+    course by session number — so renumbering the curriculum without moving these would leave
     Session 6 reading Session 5's deck as "what I already taught". `mapping` is
     {old_session_no: new_session_no}.
 
@@ -231,23 +527,24 @@ def renumber_decks(mapping: dict) -> list[str]:
     """
     if not mapping:
         return []
-    manifest = _load_manifest()
+    d = course_decks_dir(course)
+    manifest = _load_manifest(course)
     moved: list[str] = []
     staged: list[tuple[Path, int]] = []      # (temp path, new session number)
 
     for old, new in mapping.items():
         if int(old) == int(new):
             continue
-        src = DECKS_DIR / f"session_{int(old):02d}.json"
+        src = deck_path(course, old)
         if not src.exists():
             continue
-        tmp = DECKS_DIR / f".renumber_{int(old):02d}_to_{int(new):02d}.json"
+        tmp = d / f".renumber_{int(old):02d}_to_{int(new):02d}.json"
         src.replace(tmp)
         staged.append((tmp, int(new)))
         manifest.pop(f"session_{int(old):02d}", None)
 
     for tmp, new in staged:
-        dest = DECKS_DIR / f"session_{new:02d}.json"
+        dest = deck_path(course, new)
         try:
             deck = json.loads(tmp.read_text())
             deck["session_no"] = new          # the number is inside the file too
@@ -264,12 +561,12 @@ def renumber_decks(mapping: dict) -> list[str]:
         except Exception:
             # Leave the temp file rather than losing the deck; a re-fetch can replace it.
             continue
-    _save_manifest(manifest)
+    _save_manifest(course, manifest)
     return moved
 
 
-def decks_before(session_no: int) -> list[dict]:
-    return [d for d in load_all_decks()
+def decks_before(course: str, session_no: int, prereq: str | None = None) -> list[dict]:
+    return [d for d in load_all_decks(course, prereq)
             if d.get("session_no") is not None and d["session_no"] < session_no]
 
 
@@ -300,13 +597,14 @@ def _clean_title(t: str) -> str:
     return re.sub(r"\s+", " ", str(t or "").replace("\x0b", " ")).strip(" -–—:")
 
 
-def taught_index(before_session: int) -> list[dict]:
-    """Per prior session: the distinct topics its deck actually taught.
+def taught_index(course: str, before_session: int,
+                 prereq: str | None = None) -> list[dict]:
+    """Per prior session OF THIS COURSE: the distinct topics its deck actually taught.
 
     Returns [{session_no, deck_title, topics: [...]}] in session order, oldest first.
     """
     out = []
-    for deck in decks_before(before_session):
+    for deck in decks_before(course, before_session, prereq):
         deck_title = _clean_title(deck.get("deck_title"))
         seen, topics = set(), []
         for s in deck.get("slides") or []:
@@ -325,10 +623,10 @@ def taught_index(before_session: int) -> list[dict]:
     return out
 
 
-def taught_digest(before_session: int, max_per_deck: int = 40) -> str:
+def taught_digest(course: str, before_session: int, max_per_deck: int = 40) -> str:
     """taught_index() rendered for the prompt — one line per prior session."""
     lines = []
-    for entry in taught_index(before_session):
+    for entry in taught_index(course, before_session):
         topics = entry["topics"][:max_per_deck]
         more = len(entry["topics"]) - len(topics)
         tail = f" (+{more} more)" if more > 0 else ""
@@ -337,10 +635,11 @@ def taught_digest(before_session: int, max_per_deck: int = 40) -> str:
     return "\n".join(lines)
 
 
-def taught_titles(before_session: int) -> list[tuple[int, str]]:
-    """(session_no, topic) for every distinct topic already taught — the lookup the
-    repetition guardrail compares a new slide's title against."""
-    return [(e["session_no"], t) for e in taught_index(before_session) for t in e["topics"]]
+def taught_titles(course: str, before_session: int) -> list[tuple[int, str]]:
+    """(session_no, topic) for every distinct topic already taught IN THIS COURSE — the
+    lookup the repetition guardrail compares a new slide's title against."""
+    return [(e["session_no"], t)
+            for e in taught_index(course, before_session) for t in e["topics"]]
 
 
 # --------------------------------------------------------------------------- #
@@ -409,9 +708,9 @@ def deck_completeness(deck: dict) -> dict:
     }
 
 
-def completeness_report() -> dict:
-    """Extraction health across ALL ingested decks."""
-    decks = load_all_decks()
+def completeness_report(course: str) -> dict:
+    """Extraction health across this course's ingested decks."""
+    decks = load_all_decks(course)
     per = [deck_completeness(d) for d in decks]
     problems = [p for p in per if not p["ok"]]
     return {
@@ -443,7 +742,7 @@ def _tok_list(text: str) -> list[str]:
     return [t for t in _WORD.findall(text.lower()) if t not in _STOP]
 
 
-def retrieve(query: str, session_no: int, top_k: int = 6) -> list[dict]:
+def retrieve(course: str, query: str, session_no: int, top_k: int = 6) -> list[dict]:
     """Return the most query-relevant prior slides (across decks < session_no).
 
     BM25 ranking (Okapi, k1=1.5, b=0.75): rewards rare/distinctive query terms
@@ -457,7 +756,7 @@ def retrieve(query: str, session_no: int, top_k: int = 6) -> list[dict]:
 
     # Build the corpus of candidate prior slides.
     docs = []  # (session_no, slide, tokens)
-    for deck in decks_before(session_no):
+    for deck in decks_before(course, session_no):
         for s in deck["slides"]:
             blob = " ".join([s.get("title", ""), s.get("body", ""), s.get("notes", "")])
             toks = _tok_list(blob)

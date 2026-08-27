@@ -57,6 +57,16 @@ export default function App() {
       .then((d) => setBudget((b) => ({ ...(b || {}), effective: d.effective })))
       .catch(() => {})
   }
+  // The course's own instructions, and what its learners already knew. Loaded when the
+  // tab is opened rather than on every sign-in — neither is needed to draw the page.
+  const [skillState, setSkillState] = useState(null)
+  const [prereqState, setPrereqState] = useState(null)
+  const [skillBusy, setSkillBusy] = useState(false)
+  const [skillMsg, setSkillMsg] = useState(null)
+  const approvedSkills = skillState?.approved || 0
+  // Names the course whose creation just finished, so its rules page can say why it
+  // opened. Cleared as soon as the user moves on.
+  const [justCreated, setJustCreated] = useState(null)
   const [showImport, setShowImport] = useState(false)
   // Which job the import card is doing: creating a course that does not exist yet
   // (name editable, becomes a new entry in the picker) or re-importing the sheet into
@@ -87,6 +97,25 @@ export default function App() {
     const t = myTeams.find((x) => x.id === ws.team_id)
     if (ws.kind === 'team' && t?.courses?.length && !t.courses.includes(courseName)) {
       switchCourse(t.courses[0])
+      return
+    }
+    // …AND THE SAME COMING BACK. Only the team direction was handled, so switching to
+    // Individual left a team course selected — which then showed in the individual
+    // picker as the "currently open" entry, exactly the course this workspace is not
+    // supposed to hold. Land on one of your own instead, or on nothing if you have none.
+    if (ws.kind === 'individual' && !user?.is_admin && courses.length) {
+      const mineOnly = courses.filter((c) => c.shelf === 'individual')
+      if (!mineOnly.some((c) => c.name === courseName)) {
+        if (mineOnly.length) {
+          switchCourse(mineOnly[0].name)
+        } else {
+          // Nothing of your own yet: clear the course rather than keep showing a team's
+          // curriculum under a workspace that does not own it. The create-course card is
+          // what should be on screen here.
+          setCourseName(''); setCurRows([]); setCurPending(0); setCurLogs([])
+          setSessions([]); setSel(null); setShowImport(true); setNewCourse(true)
+        }
+      }
     }
   }
   function startNewCourse() {
@@ -238,6 +267,51 @@ export default function App() {
   useEffect(() => {
     if (user && (tab === 'history' || tab === 'team')) refreshMine()
   }, [tab, user, result])
+
+  function refreshCourseRules() {
+    if (!courseName) return
+    api.skills(courseName).then(setSkillState).catch(() => setSkillState(null))
+    api.prereqs(courseName).then(setPrereqState).catch(() => setPrereqState(null))
+  }
+  // Also on a course switch: these are per COURSE, and showing the previous course's
+  // rules under a new one is worse than showing none.
+  useEffect(() => {
+    if (user && tab === 'skills') refreshCourseRules()
+  }, [tab, user, courseName])
+
+  // Follow a background job to completion, then refresh. Used by the external
+  // prerequisite import, which fetches decks and so takes about as long as a sync.
+  function pollJob(id, done) {
+    const t = setInterval(async () => {
+      try {
+        const job = await api.job(id)
+        if (job.status === 'done') {
+          clearInterval(t)
+          const n = job.result?.decks ?? 0
+          setSkillMsg({ ok: true, text:
+            `Read ${n} deck(s). ${job.result?.topics ?? 0} topic(s) are now assumed `
+            + `knowledge for this course.`
+            + (job.result?.errors?.length
+                ? ` ${job.result.errors.length} link(s) could not be read: `
+                  + job.result.errors.join('; ') : '') })
+          done?.()
+        } else if (job.status === 'error') {
+          clearInterval(t); setSkillMsg({ ok: false, text: job.error }); done?.()
+        }
+      } catch (e) { clearInterval(t); setSkillMsg({ ok: false, text: e.message }) }
+    }, 1200)
+  }
+
+  function runSkillAction(fn, note) {
+    setSkillBusy(true); setSkillMsg(null)
+    fn().then((r) => {
+      if (r?.skills) setSkillState((st) => ({ ...(st || {}), ...r }))
+      if (r?.prereqs) setPrereqState((st) => ({ ...(st || {}), ...r }))
+      setSkillMsg({ ok: true, text: note })
+      refreshCourseRules()
+    }).catch((e) => setSkillMsg({ ok: false, text: e.message }))
+      .finally(() => setSkillBusy(false))
+  }
   // Ask on sign-in and after each finished doc — a run that just completed must drop
   // off the list, and one abandoned earlier must appear on it.
   // The resumable list comes with the bootstrap; refresh it only when it can change.
@@ -614,6 +688,13 @@ export default function App() {
             }
             loadCurriculum(); loadCourses()
             setShowImport(false); setNewCourse(false)
+            // A NEW COURSE LANDS ON ITS OWN RULES. What a course is written under —
+            // its skills and what its learners already know — belongs at the start,
+            // before the first document is generated under rules nobody set. Every
+            // one of them stays editable afterwards; this only decides where you
+            // arrive, not when you may decide.
+            setJustCreated(courseName)
+            setTab('skills')
           } else if (job.status === 'error') {
             clearInterval(syncPollRef.current); setSyncing(false)
             setSyncErr({ kind: job.error_kind, message: job.error })
@@ -844,6 +925,11 @@ export default function App() {
     { id: 'generate', icon: '✨', label: 'Generate' },
     { id: 'history', icon: '🗂', label: 'History' },
     ...(workspace.kind === 'team' ? [{ id: 'team', icon: '👥', label: 'Team' }] : []),
+    // WHAT THIS COURSE IS WRITTEN UNDER — its own instructions and what its learners
+    // already knew. Separate from "Agent rules", which are the rules the agent INFERRED
+    // from corrections across every course; these were authored for this one.
+    { id: 'skills', icon: '🎯', label: 'Course rules',
+      badge: approvedSkills ? String(approvedSkills) : null },
     { id: 'rules', icon: '🧠', label: 'Agent rules' },
     { id: 'settings', icon: '⚙️', label: 'Settings' },
   ]
@@ -1599,6 +1685,43 @@ export default function App() {
           memberBusy={memberBusy} memberMsg={memberMsg} />
       )}
 
+      {tab === 'skills' && (
+        <CourseRules course={courseName} skills={skillState} prereqs={prereqState}
+          busy={skillBusy} msg={skillMsg} onClearMsg={() => setSkillMsg(null)}
+          courses={courses} justCreated={justCreated}
+          onDismissNew={() => setJustCreated(null)}
+          onAdd={(text) => runSkillAction(
+            () => api.addSkill(courseName, text),
+            'Added as a draft. It does not affect anything until you approve it.')}
+          onFromRequirements={(text) => runSkillAction(
+            () => api.skillsFromRequirements(courseName, text),
+            'Drafted from your requirements. Approve the ones you want — each shows the words it came from.')}
+          onImport={(from) => runSkillAction(
+            () => api.importSkills(courseName, from),
+            `Imported from ${from} as drafts. They apply once approved here.`)}
+          onApprove={(id) => runSkillAction(
+            () => api.approveSkill(courseName, id), 'Approved — it applies from the next generation.')}
+          onEdit={(id, text) => runSkillAction(
+            () => api.editSkill(courseName, id, text),
+            'Edited. It is back to draft — an approval is of the words that were approved.')}
+          onRetire={(id) => runSkillAction(
+            () => api.retireSkill(courseName, id),
+            'Retired. It is kept on the record, so an old doc can still be explained.')}
+          onAddPrereq={(name) => runSkillAction(
+            () => api.addPrereq(courseName, name),
+            `${name} is now assumed knowledge — its topics will not be re-taught.`)}
+          onAddExternalPrereq={(name, links) => runSkillAction(
+            () => api.addExternalPrereq(courseName, name, links).then((r) => {
+              // Fetching the decks runs in the background, like a sync. Follow the job so
+              // the count of indexed topics is real rather than optimistic.
+              if (r?.job_id) pollJob(r.job_id, refreshCourseRules)
+              return r
+            }),
+            `${name} added. Reading its decks now — its topics become assumed knowledge as they land.`)}
+          onRemovePrereq={(name) => runSkillAction(
+            () => api.removePrereq(courseName, name), `${name} is no longer a prerequisite.`)} />
+      )}
+
       {tab === 'settings' && (
         <CourseSettings course={courseName} budget={budget} onChange={saveBudget}
           canDelete={!!courseName && (user?.is_admin
@@ -1628,6 +1751,245 @@ export default function App() {
 // Per-course settings: how long its documents may be, and how the course is taught.
 // Set once per course and then left alone, which is why it lives here rather than in
 // the curriculum's action bar — where it crowded out the buttons you press every visit.
+// WHAT THIS COURSE IS WRITTEN UNDER: instructions authored for it, and what its
+// learners already knew when they arrived.
+//
+// Deliberately apart from "Agent rules", which are rules the agent INFERRED from
+// corrections across every course. These were written for this one, on purpose, and
+// nothing here affects a document until a person approves it — which is why a draft is
+// visibly a draft rather than just an un-highlighted row.
+function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses = [],
+                      justCreated, onDismissNew,
+                      onAdd, onFromRequirements, onImport, onApprove, onEdit, onRetire,
+                      onAddPrereq, onAddExternalPrereq, onRemovePrereq }) {
+  const [extName, setExtName] = useState('')
+  const [extLinks, setExtLinks] = useState('')
+  const [extOpen, setExtOpen] = useState(false)
+  const [text, setText] = useState('')
+  const [reqs, setReqs] = useState('')
+  const [mode, setMode] = useState('write')
+  const [editing, setEditing] = useState(null)
+  const [editText, setEditText] = useState('')
+  const list = skills?.skills || []
+  const canEdit = skills?.can_edit
+  const report = prereqs?.report || {}
+  const attached = (prereqs?.prereqs || []).map((p) => p.prereq)
+  const available = (prereqs?.available || []).filter((c) => !attached.includes(c))
+
+  if (!course) {
+    return <section className="card"><h2><span className="num">🎯</span> Course rules</h2>
+      <p className="hint">Open a course first — these belong to one course.</p></section>
+  }
+  return (
+    <section className="card">
+      <h2><span className="num">🎯</span> Course rules — {course}</h2>
+      {justCreated === course && (
+        <div className="alert ok">
+          <b>“{course}” is created. Set what it is written under before you generate.</b>
+          <p>A course's <b>skills</b> are the instructions its documents are written to,
+             and its <b>prerequisites</b> are what its learners already know. Both belong
+             here at the start — the alternative is generating a document under rules
+             nobody set, then correcting it a session at a time. Neither is locked: you
+             can add, edit and retire any of it later.</p>
+          <div className="gactions">
+            <button className="ghostbtn" onClick={onDismissNew}>Skip for now</button>
+          </div>
+        </div>
+      )}
+      <p className="hint">
+        What <b>this course</b> is written under. A React course needs things an Operating
+        Systems course does not, and this is where that is said. Nothing here affects a
+        document until it is <b>approved</b>. These are separate from <b>Agent rules</b>,
+        which the agent worked out for itself from corrections.
+      </p>
+      {!canEdit && (
+        <div className="alert warn">
+          Only {skills?.owner || 'an admin'} can change these — working on a course and
+          deciding the rules every document it produces is written under are different
+          things.
+        </div>
+      )}
+
+      <label>Skills ({list.filter((s) => s.status === 'approved').length} approved
+        {list.some((s) => s.status === 'draft')
+          ? `, ${list.filter((s) => s.status === 'draft').length} awaiting approval` : ''})</label>
+      {list.length === 0 && <span className="hint">None yet.</span>}
+      <div className="skilllist">
+        {list.map((s) => (
+          <div key={s.id} className={`skillrow ${s.status}`}>
+            <div className="skillmain">
+              {editing === s.id
+                ? <textarea rows={2} value={editText} onChange={(e) => setEditText(e.target.value)} />
+                : <span className="skilltext">{s.text}</span>}
+              <span className="skillmeta">
+                <span className={`chip ${s.status === 'approved' ? 'good' : 'mid'}`}>{s.status}</span>
+                {s.check && <span className="chip" title={JSON.stringify(s.check)}>checked automatically</span>}
+                {s.source?.startsWith('imported:') && <span className="chip">from {s.source.slice(9)}</span>}
+                {s.source === 'requirements' && s.source_quote &&
+                  <span className="hint" title="the words this was drawn from">
+                    — from your words: “{s.source_quote}”</span>}
+              </span>
+            </div>
+            {canEdit && (
+              <div className="skillacts">
+                {editing === s.id ? (
+                  <>
+                    <button className="btn sm primary" disabled={busy || !editText.trim()}
+                            onClick={() => { onEdit(s.id, editText); setEditing(null) }}>Save</button>
+                    <button className="ghostbtn tiny" onClick={() => setEditing(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    {s.status !== 'approved' && (
+                      <button className="btn sm primary" disabled={busy}
+                              onClick={() => onApprove(s.id)}>Approve</button>)}
+                    <button className="ghostbtn tiny" disabled={busy}
+                            onClick={() => { setEditing(s.id); setEditText(s.text) }}>Edit</button>
+                    <button className="ghostbtn tiny danger" disabled={busy}
+                            onClick={() => onRetire(s.id)}>Retire</button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {canEdit && (
+        <>
+          <label>Add a skill</label>
+          <div className="gactions">
+            {[['write', 'Write one'], ['requirements', 'From my requirements'],
+              ['import', 'Import from a course']].map(([m, l]) => (
+              <button key={m} className={`ghostbtn ${mode === m ? 'on' : ''}`}
+                      onClick={() => setMode(m)}>{l}</button>
+            ))}
+          </div>
+          {mode === 'write' && (
+            <>
+              <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
+                        placeholder="e.g. Show the snippet before explaining it." />
+              <div className="gactions">
+                <button className="primary" disabled={busy || !text.trim()}
+                        onClick={() => { onAdd(text); setText('') }}>Add as draft</button>
+              </div>
+            </>
+          )}
+          {mode === 'requirements' && (
+            <>
+              <span className="hint">
+                Write what this course needs in plain sentences. The agent splits it into
+                separate skills and shows you the words each one came from — it does not
+                invent: anything it cannot trace back to your text is discarded.
+              </span>
+              <textarea rows={4} value={reqs} onChange={(e) => setReqs(e.target.value)}
+                        placeholder="e.g. code snippets should be shown, explain the code line by line, give one example and follow that pattern throughout" />
+              <div className="gactions">
+                <button className="primary" disabled={busy || !reqs.trim()}
+                        onClick={() => { onFromRequirements(reqs); setReqs('') }}>
+                  {busy ? 'Drafting…' : 'Draft skills from this'}
+                </button>
+              </div>
+            </>
+          )}
+          {mode === 'import' && (
+            <>
+              <span className="hint">
+                Copy the approved skills of another course. They arrive as drafts — a rule
+                that was right for one course is a proposal for the next.
+              </span>
+              <div className="gactions">
+                <select defaultValue="" disabled={busy}
+                        onChange={(e) => { if (e.target.value) { onImport(e.target.value); e.target.value = '' } }}>
+                  <option value="" disabled>a course…</option>
+                  {courses.filter((c) => c.name !== course).map((c) => (
+                    <option key={c.name} value={c.name}>{c.name}</option>))}
+                </select>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      <label>Prerequisites — what the learner already knows</label>
+      <span className="hint">
+        Courses taught before this one. Their topics are <b>assumed</b>: the writer will
+        not re-teach them, and may refer to them freely. That is the opposite of the rule
+        for earlier sessions of THIS course, where repeating a topic is a failure.
+      </span>
+      <div className="memberlist">
+        {attached.length === 0 && <span className="hint">None.</span>}
+        {(prereqs?.prereqs || []).map(({ prereq: n, kind }) => (
+          <span key={n} className="memberchip">
+            {n}
+            {kind === 'external' && <span className="mtag" title="taught elsewhere — this agent knows it through its slides">elsewhere</span>}
+            {canEdit && <button className="mx" disabled={busy} title={`Remove ${n}`}
+                                onClick={() => onRemovePrereq(n)}>×</button>}
+          </span>
+        ))}
+      </div>
+      {canEdit && (
+        <div className="gactions">
+          {available.length > 0 && (
+            <select defaultValue="" disabled={busy}
+                    onChange={(e) => { if (e.target.value) { onAddPrereq(e.target.value); e.target.value = '' } }}>
+              <option value="" disabled>a course in this agent…</option>
+              {available.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          )}
+          <button className={`ghostbtn ${extOpen ? 'on' : ''}`} disabled={busy}
+                  onClick={() => setExtOpen((v) => !v)}>
+            ＋ One taught elsewhere
+          </button>
+        </div>
+      )}
+      {canEdit && extOpen && (
+        <div className="regen">
+          <span className="hint">
+            A course your learners did somewhere else. This agent knows it only through
+            its slides, so paste one Google Slides link per session. The decks are read
+            the same way this course's own are, and they belong to <b>{course}</b> — they
+            go if it does.
+          </span>
+          <input value={extName} onChange={(e) => setExtName(e.target.value)}
+                 placeholder="e.g. JavaScript Essentials (taught elsewhere)" />
+          <textarea rows={4} value={extLinks} onChange={(e) => setExtLinks(e.target.value)}
+                    placeholder={'https://docs.google.com/presentation/d/…/edit\nhttps://docs.google.com/presentation/d/…/edit'} />
+          <div className="gactions">
+            <button className="primary"
+                    disabled={busy || !extName.trim() || !extLinks.trim()}
+                    onClick={() => {
+                      onAddExternalPrereq(extName.trim(),
+                        extLinks.split('\n').map((l) => l.trim()).filter(Boolean))
+                      setExtName(''); setExtLinks(''); setExtOpen(false)
+                    }}>
+              {busy ? 'Reading its decks…' : 'Add and read its decks'}
+            </button>
+            <button className="ghostbtn" disabled={busy}
+                    onClick={() => setExtOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {attached.length > 0 && (
+        <span className="hint">
+          {report.topics_indexed || 0} topic(s) indexed from {attached.length} course(s).
+          {report.overlaps?.length > 0 && (
+            <> <b>{report.overlaps.length} of this course's takeaways name something a
+              prerequisite already taught</b> — often right, if the session deepens it,
+              but worth seeing: {report.overlaps.slice(0, 3).map((o) =>
+                `Session ${o.session_no} (“${o.topic}”, from ${o.prereq})`).join('; ')}.</>
+          )}
+        </span>
+      )}
+
+      {msg && (
+        <div className={`alert ${msg.ok ? 'ok' : 'error'}`} onClick={onClearMsg}>{msg.text}</div>
+      )}
+    </section>
+  )
+}
+
+
 function CourseSettings({ course, budget, onChange, courseType, onCourseType,
                          rows = [], onSession,
                          canDelete, sharedWith = [], onAskDelete, onDelete,

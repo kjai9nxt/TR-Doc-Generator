@@ -1,0 +1,643 @@
+{
+  "session_no": 21,
+  "source_file": "Memory Management Fundamentals",
+  "deck_title": "Memory Management Fundamentals",
+  "n_slides": 68,
+  "summary": "\n    - Slide 2: Memory Management Fundamentals\n    - Slide 3: Recap\n    - Slide 4: Scheduling Concepts, Criteria & Types\n    - Slide 5: Memory Management & Hierarchy\n    - Slide 6: Memory Management\n    - Slide 7: Memory Management\n    - Slide 8: Memory Management\n    - Slide 9: Memory Management\n    - Slide 10: Memory Hierarchy\n    - Slide 11: Memory Hierarchy\n    - Slide 12: Memory Hierarchy\n    - Slide 13: 1. Primary Memory\n    - Slide 14: Main Types of Memory\n    - Slide 15: 2. Secondary Memory (Storage)\n    - Slide 16: Main Types of Memory\n    - Slide 17: 3. Tertiary Memory (Backup Storage)\n    - Slide 18: 3. Tertiary Memory (Backup Storage)\n    - Slide 19: Memory Management\n    - Slide 20: Memory Management\n    - Slide 21: Memory Management Requirements\n    - Slide 22: Memory Management\n    - Slide 23: Memory Management\n    - Slide 24: Memory Management Unit\n    - Slide 25: Memory Management\n    - Slide 26: Memory Management\n    - Slide 27: Memory Management\n    - Slide 28: Memory Management\n    - Slide 29: Memory Management\n    - Slide 30: Memory Management\n    - Slide 31: Physical Address Space\n    - Slide 32: Logical vs Physical Address — Side by Side\n    - Slide 33: Memory Management Unit\n    - Slide 34: Memory Management Unit\n    - Slide 35: Memory Management\n    - Slide 36: Memory Management\n    - Slide 37: Memory Management\n    - Slide 38: Memory Management Unit\n    - Slide 39: Quiz Time!\n    - Slide 40: Address Binding\n    - Slide 41: Memory Management\n    - Slide 42: Memory Management\n    - Slide 43: Memory Management\n    - Slide 44: Memory Management\n    - Slide 45: Memory Management\n    - Slide 46: Memory Management\n    - Slide 47: Address Binding — Compare at a Glance\n    - Slide 48: Address Binding\n    - Slide 49: Swapping, Loader & Linker\n    - Slide 50: Loader & Linker — Introduction\n    - Slide 51: Getting a Program Ready to Run\n    - Slide 52: Loader\n    - Slide 53: Loader\n    - Slide 54: Static vs Dynamic Loading\n    - Slide 55: Linker\n    - Slide 56: Linker\n    - Slide 57: Linker\n    - Slide 58: Static vs Dynamic Linking\n    - Slide 59: Memory Management\n    - Slide 60: Memory Management\n    - Slide 61: Swapping\n    - Slide 62: Quiz Time!\n    - Slide 63: Memory Management Fundamentals\n    - Slide 64: Memory Management Fundamentals\n    - Slide 65: Memory Management Fundamentals\n    - Slide 66: Cache Memory & Mapping",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Memory Management Fundamentals",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Deadlock Detection & Recovery\nProcess Creation — fork(), Hierarchy & Parent-Child\nRunning a Program — exec()\nProcess Termination — exit() & wait()\nPutting It Together — fork → exec → wait → exit\nContext Switching — Mechanism & Overhead\nDetection - Single Instance\nWait-for graph\nDetection - Multiple Instances\nDetection algorithm\nDetection Frequency \nWhen & how often to run detection\nRecovery- Process Termination\nAborting processes\nRecovery -  Resource Preemption\nRollback & starvation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Scheduling Concepts, Criteria & Types",
+      "body": "Scheduling Concepts, Criteria & Types\nTypes of Parallelism\n1. Introduction to Scheduling\n        – The CPU-I/O burst cycle\n2. Schedulers & Process Queues\n3. Scheduling Criteria\n        – CPU utilization & throughput\n        – Turnaround time, waiting time, response time\n4. CPU Scheduling\n        – Preemptive & Non - Preemptive \n5. The Dispatcher & Gantt Basics\nMemory Management Fundamentals\n1. Detection - Single Instance : Wait-for graph\n2. Detection - Multiple Instances: Detection algorithm\n3. Detection Frequency: When & how often to run detection\n4. Recovery- Process Termination: Aborting processes\n5. Recovery -  Resource Preemption : rollback & starvation\n1. Memory Management & Hierarchy\n– What memory management is & why it is needed\n– Memory hierarchy: registers, cache, RAM, ROM (internal / external; primary / secondary / tertiary)\n– Speed / cost / size trade-offs\n2. Memory Management Requirements\n– Relocation, protection, sharing\n– Logical & physical organization\n3. Logical vs Physical Address & MMU\n– Logical vs physical address space\n– MMU & relocation register; address translation\n4. Address Binding\n– Compile-time, load-time & run-time binding\n5. Swapping, Loader & Linker\n– Swapping (swap in / swap out)\n– Static vs dynamic loading\n– Static vs dynamic linking\nThe Dispatcher \u000b& Gantt Basics\nLogical vs Physical \nAddress & MMU\nMemory Management Requirements\nIntroduction , Memory Hierarchy\nRelocation, protection, sharing, Logical & physical organization\nMemory Management & Hierarchy\nSwapping, Loader & Linker\nAddress Binding\nLogical vs physical address space, MMU & relocation register; address translation\nCompile-time, load-time & run-time binding\nSwapping (swap in / swap out), Static vs dynamic loading, Static vs dynamic linking",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Memory Management & Hierarchy",
+      "body": "Memory Management & Hierarchy",
+      "notes": "Now we will be learning about the Memory Management & Hierarchy",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Memory Management",
+      "body": "Introduction",
+      "notes": "Imagine your study table. It has limited space, so you can only keep the books you're currently using,\u000b while the rest stay on the shelf. Similarly, a computer also has limited main memory, \u000band the operating system decides which programs should stay in memory and which should wait. \u000bThis process is known as Memory Management.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Memory Management",
+      "body": "Memory holds data and instructions while a program is running\nCPU takes everything it needs from memory during execution\nWhat is Memory?",
+      "notes": "Before we understand Memory Management, let's first understand what memory actually is.\u000b Whenever you open an application, whether it's a browser, a music player, or a document editor, \u000bthe operating system loads its instructions and data into main memory. This is because \u000bthe CPU cannot execute a program directly from storage. Instead, it fetches everything \u000bit needs from memory during execution. In simple terms, memory acts as the CPU's working area, \u000bproviding quick access to the data and instructions required to run a program.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Memory Management",
+      "body": "Tracks memory usage  which parts are free and which are allocated\nAllows programs larger than RAM to run by moving data between RAM and storage\nGives programs a view of large memory even if physical memory is small\nProtects memory so one process cannot corrupt another\nEnables sharing of memory so multiple programs can efficiently use available space\nWhy is it required?",
+      "notes": "Now, let's understand why memory management is important. It keeps track of \nwhich memory is currently in use and which part is free. It also allows large programs to \nrun by moving data between RAM and storage when needed. At the same time,\n it gives programs the impression of having more memory than what's physically available,\n protects one process from accessing another's memory, and helps multiple programs use the available memory efficiently.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Memory Management",
+      "body": "What is Memory Hierarchy?\nMemory Hierarchy is a structure that arranges memory into different levels based on\nCloser to CPU → Faster but expensive\n1\n2\nFarther from CPU → Slower but cheaper & bigger",
+      "notes": "Moving on, let's understand the concept of memory hierarchy. It organizes different types of memory \u000bbased on factors like speed, cost, size, and how close they are to the CPU. In general, \u000bmemory that is closer to the CPU is faster but more expensive and has lower capacity. \u000bOn the other hand, memory farther from the CPU is slower, but it is cheaper and can store much more data.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Memory Hierarchy",
+      "body": "Memory Hierarchy Diagram\nThis Memory Hierarchy Design is divided into 2 main types\nExternal Memory\nInternal Memory\nRegisters\nCache Memory\nMain Memory (Ram)\nUSB/Flash Memory\nMagnetic Disk/ Hard Disk\nMagnetic Tapes / Tape Drives\nBytes\nKB / MB\nGB\nGB\nTB\nPB / EB\nInternal Storage\nPrimary Storage\nSecondary Storage\nTertiary Storage",
+      "notes": "The memory hierarchy shown here can be broadly divided into two categories: Internal Memory and \u000bExternal Memory. Internal Memory includes Registers, Cache Memory, and Main Memory (RAM).\u000b These memories work closely with the CPU and are used while a program is executing, \u000bproviding very fast access to data and instructions. In contrast, External Memory consists\u000b of devices such as USB drives, Hard Disks, and Magnetic Tapes.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Memory Hierarchy",
+      "body": "Memory Hierarchy Diagram\nInternal Memory\nExternal Memory",
+      "notes": "As shown here, memory is broadly classified into two types: Internal Memory and External Memory. Internal Memory, \u000bwhich includes Registers, Cache Memory, and RAM, is directly used by the CPU during program execution. \u000bExternal Memory, such as Hard Disks, USB drives, and Magnetic Tapes, is used for permanent data storage. \u000bIn simple terms, Internal Memory provides speed, while External Memory provides larger storage capacity.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Memory Hierarchy",
+      "body": "Stores data temporarily\nFaster but limited in size\nUsed while programs are running\n1. Primary Memory",
+      "notes": "Next, let's start with the first level of the memory hierarchy, which is primary memory. \nThis is the memory used while programs are actively running, so the CPU can access \ndata quickly. Since speed is the priority, it is faster but has limited storage capacity, \u000band the data is stored only temporarily.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "1. Primary Memory",
+      "body": "Cache\nRAM \n(Random Access Memory)\nRegisters\nData is lost when power is off (volatile)\nExamples",
+      "notes": "Now, let's look at some examples of primary memory. It includes RAM, cache, and registers, \u000bwhich store the data the CPU needs while a program is running. One important thing to\u000b remember is that this memory is volatile, meaning all the stored data is lost when the power is turned off.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Main Types of Memory",
+      "body": "Slower but large storage capacity\nStores data permanently\n2. Secondary Memory",
+      "notes": "Moving on, the second type is secondary memory. Unlike primary memory,\u000b it stores data permanently, so the information remains even after the system is turned off. \u000bAlthough it is slower to access, it provides much larger storage capacity for files, applications, and other data.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "2. Secondary Memory (Storage)",
+      "body": "SSD\nHard Disk (HDD)\nPen Drives\nMemory Cards\n Data stays even after shutdown (non-volatile)\nExamples",
+      "notes": "Next, here are some common examples of secondary memory, such as hard disks, \u000bSSDs, pen drives, and memory cards. These devices are used for long-term storage, \u000band since they are non-volatile, the data remains stored even after the system is shut down.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Main Types of Memory",
+      "body": "Used for long-term storage of data that is rarely accessed, designed for backup, disaster recovery, and archival purposes\nDisaster recovery\nTertiary Memory\nArchival purposes\nBackup\n3. Tertiary Memory",
+      "notes": "Now, let's look at tertiary memory. This type of memory is used to store data that \u000bis accessed very rarely. Its main purpose is to support backups, disaster recovery, \u000band long-term archiving, helping preserve important data safely over an extended period.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "3. Tertiary Memory (Backup Storage)",
+      "body": "Characteristics",
+      "notes": "Moving on, let's understand the characteristics of tertiary memory. It has very slow access speed\n, but offers extremely large storage capacity. Since it is non-volatile, the data is stored permanently,\n and in many cases, the storage devices remain offline or are accessed using \u000bautomated robotic systems when the data is needed.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "3. Tertiary Memory (Backup Storage)",
+      "body": "Optical Archival Discs\nMagnetic Tape Drives\nCloud Archive Storage \nData is permanent and preserved for long durations (non-volatile)\nExamples",
+      "notes": "Next, here are some examples of tertiary memory, including magnetic tape drives, \u000boptical archival discs, and cloud archive storage. These are mainly used for long-term data preservation.\u000b Since they are non-volatile, the data remains stored safely for extended periods, even when not accessed frequently.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Memory Management",
+      "body": "Trade-Offs (Characteristics)\nMemory Management\nTrade-Offs (Characteristics)",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Level",
+            "Speed",
+            "Cost",
+            "Size"
+          ],
+          [
+            "Registers",
+            "Fastest",
+            "Very High",
+            "Smallest"
+          ],
+          [
+            "Cache",
+            "Very Fast",
+            "High",
+            "Small"
+          ],
+          [
+            "RAM",
+            "Fast",
+            "Moderate",
+            "Medium"
+          ],
+          [
+            "Secondary Storage",
+            "Slow",
+            "Low",
+            "Large"
+          ],
+          [
+            "Tertiary Storage",
+            "Very Slow",
+            "Very Low",
+            "Very Large"
+          ]
+        ],
+        [
+          [
+            "Level",
+            "Speed",
+            "Cost",
+            "Size"
+          ],
+          [
+            "Registers",
+            "Fastest",
+            "Very High",
+            "Smallest"
+          ],
+          [
+            "Cache",
+            "Very Fast",
+            "High",
+            "Small"
+          ],
+          [
+            "RAM",
+            "Fast",
+            "Moderate",
+            "Medium"
+          ],
+          [
+            "Secondary Storage",
+            "Slow",
+            "Low",
+            "Large"
+          ],
+          [
+            "Tertiary Storage",
+            "Very Slow",
+            "Very Low",
+            "Very Large"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "Memory Management",
+      "body": "What is Memory Hierarchy?\nRegisters\nCache Memory\nMain Memory (Ram)\nUSB/Flash Memory\nMagnetic Disk/ Hard Disk\nMagnetic Tapes / Tape Drives\nBytes\nKB / MB\nGB\nGB\nTB\nPB / EB\nInternal Storage\nPrimary Storage\nSecondary Storage\nTertiary Storage\nAs you go down: \nSpeed Decreases\nCost/byte Decreases\nSize Increases\nAs you go up: \nSpeed Increases\nCost/byte Increases\nSize Decreases",
+      "notes": "Memory Hierarchy is the arrangement of different types of memory based on their speed, capacity, and cost. \u000bAs we move up the hierarchy, memory becomes faster but smaller and more expensive per byte. \u000bAs we move down, the storage capacity increases, while the access speed decreases and the cost per byte becomes lower. \u000bThis organization helps the system achieve both high performance and efficient storage.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Memory Management Requirements",
+      "body": "Memory Management Requirements",
+      "notes": "Now we will learn about the Memory Management Requirements",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Memory Management",
+      "body": "Main Requirements\nPrograms may be moved in memory during execution, addresses must adjust automatically\nRelocation\nEach process must be prevented from accessing others’ memory without permission\nProtection",
+      "notes": "Now, let's look at two important requirements of memory management. \u000bRelocation means a program can be moved to a different memory location during execution, \nand its addresses are updated automatically. Protection ensures that each process\u000b can access only its own memory, preventing unauthorized access to another process's data.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Memory Management",
+      "body": "Main Requirements\nMultiple processes should be able to share common code or data safely and efficiently\nSharing\nPrograms are written in logical modules, while memory is physically linear, OS maps logical structure to physical memory\nLogical & Physical Organization",
+      "notes": "Moving on, let's look at two more requirements of memory management. \u000bSharing allows multiple processes to safely use the same code or data without affecting each other. \u000bLogical and physical organization means that while programs are written in logical modules,\u000b the operating system maps them to the actual physical memory for efficient execution.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Memory Management Unit",
+      "body": "Memory Management Unit",
+      "notes": "Next we will look into Memory Management Unit",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Memory Management",
+      "body": "How Translation Happens?\nU\nM\nMemory\nManagement \nUnit\nThe Memory Management Unit (MMU) is a hardware component that manages how the CPU accesses memory, its main job is to convert the logical (virtual) addresses used by programs into physical addresses in RAM",
+      "notes": "Next, whenever a program runs, it works with logical or virtual addresses, \u000bnot the actual locations in RAM. The responsibility of the MMU, which is a hardware component, \u000bis to convert these logical addresses into the corresponding physical addresses,\u000b so the CPU can access the required data from memory.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Memory Management",
+      "body": "How Translation Happens?\nUses a relocation register to convert each logical address into its physical address\nTranslation is automatic and hidden from programs\nAllows programs to run without knowing real memory positions\n Memory is accessed using logical (virtual) addresses and physical addresses",
+      "notes": "Moving on, once a program generates a logical address, the system uses a relocation register \u000bto automatically convert it into the corresponding physical address. \u000bThis entire translation happens in the background, so the program doesn't\u000b need to know where it is actually stored in memory. \u000bThat's why memory access is based on logical and physical addresses.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Memory Management",
+      "body": "Logical Address \nA logical address is the address generated by the CPU while a program is running, it is the virtual address that the program uses, and it does not exist physically in RAM\nCPU\nProgram\nLogical address",
+      "notes": "Next, let's understand what a logical address is. Whenever a program is executed,\u000b the CPU generates a logical address to access memory. This is the address that the program works with, \u000bbut it doesn't represent the actual location in RAM. \u000bThe actual physical location is determined later through address translation.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Memory Management",
+      "body": "Logical Address \nLogical Address space\nThe logical address space is the range of all addresses a program can generate\nPrograms always work with logical addresses\nMMU converts them to physical addresses before accessing memory",
+      "notes": "Now, instead of a single logical address, a program can generate many addresses during its execution. \u000bThe complete range of these addresses is called the logical address space. \u000bSince programs always work with logical addresses, \u000bthe MMU converts each one into a physical address before the memory is accessed.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Memory Management",
+      "body": "Logical Address Space\nExample\nIf a program's logical addresses run from:\n0\n4999\nto\nIts logical address space size is\n5000\nGenerated by the CPU\nUsed only by the program itself \nNever touches RAM directly\nEvery process gets its own logical address space, always starting from 0 (or a fixed base), regardless of where it will actually sit in RAM",
+      "notes": "Let's understand this with an example. Suppose a program has logical addresses ranging from 0 to 4999. \u000bThis means the program has a logical address space of 5000 addresses. \u000bThese addresses are generated by the CPU and are used only by the program during execution.\u000b They do not refer to the actual locations in RAM. Instead, \u000bthe operating system later translates these logical addresses into physical addresses before accessing memory.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Memory Management",
+      "body": "Physical Address\nA physical address is the actual location in RAM where data is stored\nThe physical address space contains all real memory locations in RAM",
+      "notes": "Next, let's look at the physical address. Unlike a logical address,\u000b this is the actual location in RAM where the data is stored. The complete set of these \u000breal memory locations is known as the physical address space,\u000b and this is what the system ultimately uses to access memory.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Physical Address Space",
+      "body": "Actual Memory Address Range\nThe complete set of physical addresses that actually exist in RAM\nExample\nThis is one shared space, unlike logical address space\nAll running processes' physical addresses live within this single range\nThe MMU maps each process's logical address space into some portion of this shared physical address space\nFor 4GB of RAM, physical address space = 0 to ~4,294,967,295 (4GB)",
+      "notes": "Moving on, the physical address space refers to the complete range of actual memory addresses\u000b available in RAM. For example, if a system has 4 GB of RAM, the physical addresses range \u000bfrom 0 to around 4.29 billion. Unlike logical address spaces, which are separate for each process, \u000bthere is only one shared physical address space. The MMU maps each process's logical addresses\u000b to a suitable location within this shared memory.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Logical vs Physical Address — Side by Side",
+      "body": "Key Differences",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Attribute",
+            "Logical Address",
+            "Physical Address"
+          ],
+          [
+            "Generated by",
+            "CPU (program)",
+            "MMU"
+          ],
+          [
+            "Visible to program?",
+            "Yes",
+            "No"
+          ],
+          [
+            "Exists physically in RAM?",
+            "No",
+            "Yes"
+          ],
+          [
+            "Changes during execution?",
+            "Can be relocated",
+            "Fixed real location"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 33,
+      "title": "Memory Management Unit",
+      "body": "Relocation Register\nCPU register that holds the base (smallest) physical address of a process\nHow it works?\nPhysical address = Logical address + Relocation register value\nTranslation done at runtime by the MMU",
+      "notes": "Now, let's understand the role of the relocation register. It stores the starting, or base, \u000bphysical address of a process in memory. Whenever the CPU generates a logical address, \u000bthe MMU adds the relocation register value to it, giving the corresponding physical address. \u000bThis translation happens automatically while the program is running.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Memory Management Unit",
+      "body": "Relocation Register\nExample\nRelocation reg = 14000, logical addr = 346 \nPhysical addr = 14346\nAllows a program to be loaded anywhere in memory (dynamic relocation)\nWorks with limit register for memory protection",
+      "notes": "Moving on, let's see how the relocation register works with an example. \u000bIf the relocation register stores 14,000 and the program generates a logical address of 346, \u000bthe MMU combines them to get the physical address 14,346. This allows the same program \u000bto be loaded anywhere in memory without changing its code. Along with the limit register,\u000b it also helps ensure the process accesses only its allocated memory.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Memory Management",
+      "body": "How to access Memory?\nCPU\nMemory\nRelocation Register\n14000\nMMU\nLogical address\n346\nPhysical address\n14346",
+      "notes": "Now, let's see how a program actually accesses memory. When the CPU generates a logical address,\u000b it is first sent to the Memory Management Unit, or MMU. The MMU uses the Relocation Register to\u000b translate this logical address into a physical address by adding the relocation value. In this example,\u000b the logical address 346 is combined with the relocation value 14000, resulting in the physical address 14346. \u000bThis translated address is then used to access the required location in main memory.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Memory Management",
+      "body": "Logical Address\nPhysical Address\nRAM\nProcess running on CPU\nMemory Management Unit\nLogical Address",
+      "notes": "This diagram summarizes how a logical address reaches the actual memory location.\u000b A process running on the CPU first generates a logical address. This address is then sent to the Memory Management Unit, \u000bor MMU, which translates it into the corresponding physical address. \u000bFinally, the physical address is used to access the required location in RAM. \u000bThis translation allows programs to use logical addresses without needing to know where they are actually stored in memory.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Memory Management",
+      "body": "200 (Logical Address)\n2200 (Physical Address)\nMemory Management Unit\nLogical Address",
+      "notes": "Let's understand this with an example. Notice that Google Chrome, Spotify, and VS Code \u000ball use the same logical address range, from 0 to 999. However, each program is actually stored at a different location in physical memory.\u000b Whenever a program generates a logical address, the Memory Management Unit, or MMU, \u000btranslates it into the corresponding physical address. For example, the logical address 200 for Google Chrome \u000bis translated to the physical address 2200, allowing the CPU to access the correct location in RAM.",
+      "tables": [
+        [
+          [
+            "Google Chrome",
+            "0 - 999",
+            "2000 – 2999"
+          ],
+          [
+            "Spotify",
+            "0 - 999",
+            "1000 – 1999"
+          ],
+          [
+            "VS Code",
+            "0 – 999",
+            "0 – 999"
+          ]
+        ],
+        [
+          [
+            "Program",
+            "Logical Memory Addresses",
+            "Physical Memory Address"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 38,
+      "title": "Memory Management Unit",
+      "body": "Analogy",
+      "notes": "Think of the MMU like Google Maps. You search for a place by its name, and Google Maps converts\u000b it into the exact GPS location. Similarly, the MMU translates a logical address \u000binto the physical address where the data is stored.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Address Binding",
+      "body": "Address Binding",
+      "notes": "Next let’s learn about the Address Binding",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Memory Management",
+      "body": "Address Binding\nThe process of mapping logical addresses → physical addresses\nWhat is Address Binding?\nLogical Addresses\nPhysical Addresses\nMapping\nAddress Binding is required because programs don’t know their final location in memory",
+      "notes": "Next, let's understand address binding. It is the process of connecting\u000b the logical addresses used by a program to the corresponding physical addresses in memory. \u000bThis mapping is necessary because, while a program is being created,\u000b it doesn't know where it will finally be loaded in RAM.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Memory Management",
+      "body": "Address Binding\nPrograms may be loaded at different memory locations\nOS may move processes during execution\nEnsures correct address translation at every stage\nSupports relocation, protection, and virtual memory\nWhat is Address Binding?",
+      "notes": "Moving on, address binding makes sure a program can run correctly \u000beven if it is loaded at different memory locations or moved by the operating system during execution.\u000b It ensures that address translation remains accurate at every stage\u000b and also supports important features like relocation, memory protection, and virtual memory.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Memory Management",
+      "body": "Types of Address Binding\nAddress Binding\nExecution-Time (Run-Time Binding)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Memory Management",
+      "body": "Types of Address Binding\nMemory location known during compilation\nCompiler generates absolute addresses\nProgram must be recompiled if loaded elsewhere\n1. Compile-Time Binding",
+      "notes": "Now, suppose the operating system already knows where a program will be placed\u000b in memory before it is compiled. In that case, the compiler directly generates \u000babsolute memory addresses for that location. Since these addresses are fixed, \u000bif the program needs to be loaded somewhere else later, it has to be recompiled.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Memory Management",
+      "body": "Types of Address Binding\n2. Load-Time Binding\nExact location known only when program is loaded\nLoader adjusts addresses → produces relocatable code",
+      "notes": "Moving on, in load-time binding, the program's memory location isn't decided during compilation. \u000bInstead, the loader determines the actual location when the program is loaded into memory \u000band updates the addresses accordingly. This produces relocatable code, \u000ballowing the program to be loaded at different memory locations without recompiling.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Memory Management",
+      "body": "Types of Address Binding\n3. Execution-Time (Run-Time) Binding\nFinal binding happens while program executes\nProgram can move during execution (swapping, compaction)\nRequires MMU for dynamic address translation",
+      "notes": "Next, in execution-time binding, the actual memory address is decided while the program is running. \u000bThis allows the operating system to move the program during execution, \u000bsuch as during swapping or compaction, without interrupting it. \u000bTo support this dynamic address translation, the system relies on the MMU",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Address Binding — Compare at a Glance",
+      "body": "When Does Each Type Happen?",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Binding Type",
+            "When It Happens",
+            "Can Program Move?",
+            "Overhead"
+          ],
+          [
+            "Compile-time",
+            "Before execution",
+            "No — recompile needed",
+            "Lowest"
+          ],
+          [
+            "Load-time",
+            "At load into memory",
+            "No, once loaded",
+            "Low"
+          ],
+          [
+            "Run-time",
+            "During execution",
+            "Yes (needs MMU)",
+            "Highest, most flexible"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Address Binding",
+      "body": "Analogy",
+      "notes": "Think of booking a hotel room. You can be assigned a room number when you book (in advance),\u000b when you check in (at arrival), or be moved to a different room during your stay\u000b (while you're already there). Similarly, a program's logical address can be bound \u000bto a physical memory address at compile-time, load-time, or run-time —\u000band when this binding happens determines whether the program can be moved later or not",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Swapping, Loader & Linker",
+      "body": "Swapping, Loader & Linker",
+      "notes": "Next we will learn about the Swapping, Loader & Linker",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Loader & Linker — Introduction",
+      "body": "Getting a Program Ready to Run\nLinker\nCombines your compiled code with other object files and libraries into a single executable file\nAfter a program is compiled, it isn't ready to run yet — two more steps happen first\nLoader\nTakes that executable and brings it into RAM so the CPU can actually run it",
+      "notes": "Now, once compilation is complete, the program still can't be executed immediately because\u000b a few preparation steps are required. First, the linker brings together the compiled program\u000b and any required libraries or object files to create a single executable. Once that's ready, \u000bthe loader places that executable into RAM, making it available for the CPU to start execution.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Getting a Program Ready to Run",
+      "body": "Order\nBoth can work in two ways — static (done fully in advance) or dynamic (done partly at runtime) — covered next\nCompile\nLink\nLoad\nExecute",
+      "notes": "Moving on, these are the four stages a program goes through before it starts running. \u000bIt is first compiled, then linked to create an executable, loaded into memory, \u000band finally executed by the CPU. Also, the linking and loading steps can happen either statically,\u000b where everything is prepared in advance, or dynamically, where part of the work \u000bis done while the program is running.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Loader",
+      "body": "What is Loader ?\nLoading is done by a loader to bring programs into RAM\nLoader\nLoad Programs\nRAM",
+      "notes": "Now, once the executable file is ready, it still resides on secondary storage, \u000bso the CPU cannot execute it directly. The job of the loader is to transfer that program into RAM, \u000bbecause programs must be present in main memory before execution can begin. \u000bIn simple terms, the loader acts as the bridge between the executable file \u000band the memory where it actually runs.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Loader",
+      "body": "Static vs Dynamic Loading\nStatic Loading\nDynamic Loading\nEntire program is loaded into memory at once\nUses more memory\nOnly loads parts of the program when needed\nSaves memory, unused parts stay on disk until required\nLoading",
+      "notes": "Next, there are two ways a program can be loaded into memory.\u000b In static loading, the entire program is placed into RAM before execution begins, \u000bwhich is simple but occupies more memory even if some parts are never used.\u000b In dynamic loading, only the required parts are loaded when \u000bthe program actually needs them, so unused portions remain on the disk, helping save memory.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Static vs Dynamic Loading",
+      "body": "Analogy",
+      "notes": "A loader is like bringing a book from the shelf and placing it on your table before reading. \u000bIt loads the program from storage into memory so it can run.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Linker",
+      "body": "What is Linker\nLinking combines object files and libraries to create an executable\nObject Files\nlibraries",
+      "notes": "Now, when a program is compiled, it is often split into multiple object files,\u000b and it may also depend on pre-written libraries for common functions. \u000bThe linker brings all these pieces together, resolves their connections, \u000band creates a single executable file that is ready to be loaded into memory for execution.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Linker",
+      "body": "Static vs Dynamic Linking\nStatic Linking\nAll libraries are added inside the executable\nNo need for external files during execution\nLarger file size, but no runtime dependency",
+      "notes": "Moving on, in static linking, all the required library code is copied directly into the executable \u000bwhile it is being created. As a result, the program doesn't have to look for those libraries when it runs,\u000b making it independent of external library files. The trade-off, however,\u000b is that the executable becomes larger because it already contains all the required library code.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Linker",
+      "body": "Static vs Dynamic Linking\nDynamic Linking\nSome libraries are loaded at runtime\nUses small stub to load functions when needed\nSaves space and easier updates",
+      "notes": "Next, in dynamic linking, the executable doesn't contain the complete library code. Instead,\u000b it includes a small stub that knows how to locate and load the required library functions at runtime. \u000bThis keeps the executable smaller and also makes updating shared libraries easier, \u000bsince the program can use the latest library version without being rebuilt.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Static vs Dynamic Linking",
+      "body": "Analogy",
+      "notes": "A linker is like combining different chapters, notes, and references into one complete book. \u000bIt combines program parts and libraries to create a single executable file.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Memory Management",
+      "body": "Primary Memory\nSwap Space in Secondary Memory\nP1\nP2\nSwap Out\nSwap In\nP3\nSwapping is the process of moving a process's memory contents between RAM and a reserved area on secondary storage called swap space.\nSwapping",
+      "notes": "Now, sometimes the operating system runs out of free RAM while multiple processes need to execute.\u000b In that situation, it can swap out a process by temporarily moving its memory contents \u000bfrom RAM to a reserved area on secondary storage called swap space, \u000bcreating room for other processes. When that process needs to run again,\u000b it is swapped back into RAM, allowing execution to continue from where it left off.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Memory Management",
+      "body": "Swap In\nProcess moved from\nTo continue execution\nSwap Space\nRAM\nSwap Out\nProcess moved from\nTo free up RAM\nRAM\nSwap Space\nSwapping",
+      "notes": "Next, let's understand what swap in and swap out actually mean. \u000bSwap out happens when the operating system moves a process from RAM to swap space to\u000b free up memory for other processes. Later, when that process is needed again, \u000bswap in moves it back from swap space to RAM, so it can continue executing from where it was paused.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Swapping",
+      "body": "Analogy",
+      "notes": "Think of a study table with limited space. You keep only the books you are currently using on\u000b the table and move unused books back to the shelf. Similarly, OS moves inactive processes \u000bto disk and brings them back when needed.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Memory Management Fundamentals",
+      "body": "Memory Management & Hierarchy\nIntroduction \nMemory Hierarchy\nMemory Management Requirements\nRelocation, protection, sharing\nLogical & physical organization",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Memory Management Fundamentals",
+      "body": "Logical vs Physical Address & MMU\nLogical vs physical address space\nMMU & relocation register; address translation\nAddress Binding\nCompile-time, load-time & run-time binding",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Memory Management Fundamentals",
+      "body": "Swapping, Loader & Linker\nSwapping (swap in / swap out)\nStatic vs dynamic loading & linking",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Cache Memory & Mapping",
+      "body": "Cache Memory & Mapping",
+      "notes": "In the next session , we will be learning about the Cache Memory & Mapping.",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/116XDcxTu72rHUCDuayFujRNSIIFNXmecQZPkMSN5JAY/edit"
+}

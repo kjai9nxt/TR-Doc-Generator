@@ -1,0 +1,697 @@
+{
+  "session_no": 22,
+  "source_file": "Cache Memory & Mapping",
+  "deck_title": "Cache Memory & Mapping",
+  "n_slides": 67,
+  "summary": "\n    - Slide 2: Cache Memory & Mapping\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Recap\n    - Slide 6: Deadlock Avoidance: Banker's Algorithm\n    - Slide 7: Cache Memory\n    - Slide 8: Cache Memory\n    - Slide 9: Cache Memory\n    - Slide 10: Cache Memory\n    - Slide 11: Cache Memory\n    - Slide 12: Locality of Reference\n    - Slide 13: Locality of Reference\n    - Slide 14: Locality of Reference\n    - Slide 15: Cache Memory\n    - Slide 16: Locality of Reference\n    - Slide 17: Locality of Reference\n    - Slide 18: Locality of Reference\n    - Slide 19: 1. Temporal Locality\n    - Slide 20: Locality of Reference\n    - Slide 21: Locality of Reference\n    - Slide 22: Spatial Locality\n    - Slide 23: Cache Organization\n    - Slide 24: Cache Organization\n    - Slide 25: Cache Organization\n    - Slide 26: Cache Organization\n    - Slide 27: Cache Organization\n    - Slide 28: Cache Organization\n    - Slide 29: Cache Organization\n    - Slide 30: Cache Organization\n    - Slide 31: Cache Organization\n    - Slide 32: Cache Memory\n    - Slide 33: Cache Memory\n    - Slide 34: Cache Memory\n    - Slide 35: Cache Memory\n    - Slide 36: Cache Organization\n    - Slide 37: Cache Organization\n    - Slide 38: Quiz Time!\n    - Slide 39: Cache Performance\n    - Slide 40: Cache Memory\n    - Slide 41: Cache Hit & Cache Miss\n    - Slide 42: Cache Line/Block\n    - Slide 43: Cache Mapping\n    - Slide 44: Cache Mapping\n    - Slide 45: Cache Mapping\n    - Slide 46: Cache Mapping\n    - Slide 47: Direct Mapping\n    - Slide 48: Cache Mapping\n    - Slide 49: Cache Mapping\n    - Slide 50: Cache Mapping\n    - Slide 51: Fully Associative Mapping\n    - Slide 52: Cache Mapping\n    - Slide 53: Cache Mapping\n    - Slide 54: Cache Mapping\n    - Slide 55: Cache Mapping\n    - Slide 56: Cache Mapping\n    - Slide 57: Set-Associative Mapping\n    - Slide 58: Set-Associative Mapping\n    - Slide 59: Set-Associative Mapping\n    - Slide 60: Set-Associative Mapping\n    - Slide 61: Set-Associative Mapping\n    - Slide 62: Quiz Time!\n    - Slide 63: Cache Memory & Mapping\n    - Slide 64: Cache Memory & Mapping\n    - Slide 65: Memory Allocation – Contiguous",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Cache Memory & Mapping",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Memory Management Fundamentals\nMemory Management & Hierarchy\nIntroduction \nMemory Hierarchy\nMemory Management Requirements\nRelocation, protection, sharing\nLogical & physical organization",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Memory Management Fundamentals\nLogical vs Physical Address & MMU\nLogical vs physical address space\nMMU & relocation register; address translation\nAddress Binding\nCompile-time, load-time & run-time binding",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Recap",
+      "body": "Memory Management Fundamentals\nSwapping, Loader & Linker\nSwapping (swap in / swap out)\nStatic vs dynamic loading & linking",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Deadlock Avoidance: Banker's Algorithm",
+      "body": "Deadlock Avoidance: Banker's Algorithm\nCache Memory & Mapping\nThe Dispatcher \u000b& Gantt Basics\nCache Organization\nLocality of Reference\nPurpose of cache, why it is needed (CPU vs RAM speed)\nTemporal locality,\nSpatial locality\nCache Fundamentals\nCache Mapping\nCache Performance\nLevels: L1, L2, L3,\nTypes: instruction, data, unified\nCache hit & miss,\nHit ratio & miss ratio: cache line / block\nDirect mapping, Fully associative mapping, Set-associative mapping (tag / set / offset)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Cache Memory",
+      "body": "Cache Memory",
+      "notes": "First of all we'll be learning about the Cache Memory.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Cache Memory",
+      "body": "The Problem We're Solving\nEvery trip there wastes precious cooking time",
+      "notes": "Now, before understanding cache memory, let's first look at the problem. \u000bThe processor often needs to access data from the main memory, and every such trip takes time. \u000bJust like repeatedly going to the pantry while cooking slows the process, \u000bfrequent memory access also results in wasted processing time.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Cache Memory",
+      "body": "The Problem We're Solving\nThat \"counter\" is what we call cache memory \nWhat if the chef kept the ingredients they use most often on the counter, right next to them?",
+      "notes": "Next, instead of walking to the pantry every time, imagine the chef keeps\u000b the most frequently used ingredients right on the kitchen counter. \u000bThis makes them instantly available whenever needed. Similarly, cache memory acts \u000blike that counter by keeping frequently accessed information close to the CPU for quicker access.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Cache Memory",
+      "body": "Introduction\nCache is very fast memory located close to the CPU\nStores frequently used data and instructions\nReduces the time CPU waits for RAM and helps the CPU run faster and smoother\nCache\nFrequently used data \nInstructions",
+      "notes": "Now, cache memory is a small but extremely fast memory placed close to the CPU. \u000bIt keeps the data and instructions that the processor accesses repeatedly, \u000bso they are readily available whenever needed. This minimizes the CPU's wait \u000bfor data from RAM, resulting in faster and smoother execution.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Cache Memory",
+      "body": "Why Is It Needed?\nA modern CPU executes an instruction in ~0.3 ns (≈3 GHz clock)\nA single RAM access takes ~50–100 ns\nThat means the CPU could run ~150–300 instructions in the time it waits for one memory access\nIf the CPU waited for RAM every time → performance collapses\nCache sits in between and absorbs most of these waits\nCPU is much faster than RAM — this isn't a small gap, it's orders of magnitude",
+      "notes": "Moving on, the need for cache memory comes from the huge speed difference\u000b between the CPU and RAM. While the CPU can execute instructions in a fraction of a nanosecond, \u000baccessing data from RAM takes much longer. During this time, \u000bthe CPU has to wait instead of processing instructions. \u000bCache helps bridge this speed gap by reducing these waiting periods, improving overall performance.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Locality of Reference",
+      "body": "Locality of Reference",
+      "notes": "Next we will learn about the Locality of Reference.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Locality of Reference",
+      "body": "What Does It Actually Mean?\nLocality of reference is the tendency of a running program to access the same small set of memory locations — or locations near each other — repeatedly, over a short window of time",
+      "notes": "Now, before understanding how cache works, let's look at the idea behind it. \u000bMost programs don't access random memory locations all the time. Instead, \u000bthey tend to reuse the same memory locations or nearby ones repeatedly within a short period.\u000bThis behavior is known as locality of reference, and it is the reason cache memory is so effective.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Locality of Reference",
+      "body": "What Does It Actually Mean?\nPrograms don't access memory randomly; they access it in patterns\nThis is the entire reason caching works at all \nIf every memory access were random, keeping a small fast cache would give almost no benefit",
+      "notes": "Now, the key idea here is that programs usually follow a predictable memory access pattern. \u000bSince the required data is often related or repeatedly used, the cache can keep it ready for quick access. \u000bIf memory requests were completely unpredictable, the cache would rarely be useful.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Cache Memory",
+      "body": "Locality of Reference\nSpatial Locality\nCache\nTemporal Locality\n(same location again)\n(nearby locations next)",
+      "notes": "Moving on, locality of reference is broadly classified into two types.\u000bTemporal locality focuses on reusing the same memory location within a short time, \u000bwhile spatial locality refers to accessing memory locations that are close to one another. \u000bWe'll understand each of these in detail now.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Locality of Reference",
+      "body": "1. Temporal Locality\nIf a memory location was accessed recently, it's likely to be accessed again soon\nAll get touched over and over in a short span",
+      "notes": "Next, temporal locality is based on the idea that recently accessed data is likely to be needed again very soon.\u000b This is common with loop counters, frequently used variables, and functions that are called repeatedly. \u000bSince these memory locations are reused often, keeping them in the cache speeds up execution.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Locality of Reference",
+      "body": "In a for loop that runs 1,000 times, the loop counter variable i is accessed on every single iteration\nCache exploits this by keeping recently-used data close by, so the next request for it is fast\n1. Temporal Locality\nExample\nFor loop\nCache\ni",
+      "notes": "Now, let's understand temporal locality with an example. \u000bIn a loop, the loop counter is accessed repeatedly during every iteration.\u000b Instead of fetching it from the main memory each time, the cache keeps it readily available,\u000b allowing the processor to access it much faster.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Locality of Reference",
+      "body": "1. Temporal Locality\nMain Memory\nX \nCache Memory\nx(copy)\n1. Access X - Slow(miss)\n2. X copied to cache\n3. accessed next - fast (hits)",
+      "notes": "Now, let's understand Temporal Locality. \u000bIn the first access, the CPU retrieves X from main memory, which is comparatively slower, \u000band a copy of it is placed in cache memory. If the CPU needs X again shortly after, \u000bit can access it directly from the cache, resulting in much faster execution. \u000bThis repeated access to recently used data is known as Temporal Locality.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "1. Temporal Locality",
+      "body": "Analogy",
+      "notes": "Using the same spoon repeatedly while eating a meal — you don't grab a new spoon \u000bafter every bite; you reach for the one you just used because you know you'll need it again in seconds.\nSO similarly we use the same memory locations in case of the Temporal Locality",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Locality of Reference",
+      "body": "2. Spatial Locality\nIf a memory location was accessed, nearby locations are likely to be accessed soon after\nStored in adjacent memory, accessing one element usually means the next one is coming\nSequential instruction execution\nStructured data",
+      "notes": "Moving on, spatial locality means a program is likely to access nearby memory locations one after another. \u000bThis is commonly seen while traversing arrays, where elements are stored next to each other. \u000bThe same behavior is observed during sequential instruction execution and when working \u000bwith structured data, allowing the cache to fetch nearby information efficiently.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Locality of Reference",
+      "body": "2. Spatial Locality\nMain Memory\nx\nX + 1 \nX + 2\nCache Memory\nx\nX + 1 \nX + 2\n1. Access X - Slow(miss)\n2. Whole block copied\n3. X+1, x+2 accessed next - fast (hits)",
+      "notes": "let's understand Spatial Locality. when X is fetched from main memory, the cache doesn't store only X. \u000bInstead, it loads the entire block containing X, such as X+1 and X+2. As a result, \u000bif these neighboring locations are needed next, the CPU can retrieve them directly from the cache, making memory access much faster.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Spatial Locality",
+      "body": "Analogy",
+      "notes": "After reading one page of a book, you naturally read the next page — you don't jump to a random page.\u000bThe next few pages are \"nearby\" and highly likely to be read soon.Similarly , Spatial Locality is based on the observation\u000b that when a program accesses a particular memory location, it is likely to access the nearby memory locations soon after",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Cache Organization",
+      "body": "Cache Organization",
+      "notes": "Next we will be learning about the Cache Organization",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Cache Organization",
+      "body": "Types of Cache\nCaching isn't unique to the CPU — it's a general idea used in several places in a computer system:",
+      "notes": "Now, the idea of caching is not limited to the CPU alone. It's a general technique used throughout a computer system \u000bwherever faster access to frequently used data is needed. Now, we'll explore the different types of cache and where each one is used.",
+      "tables": [
+        [
+          [
+            "Type",
+            "What It Stores",
+            "Why It Exists"
+          ],
+          [
+            "CPU Cache",
+            "Instructions & data",
+            "Bridges the CPU–RAM speed gap"
+          ],
+          [
+            "Disk Cache",
+            "Recently read/written disk blocks",
+            "Disk is far slower than RAM"
+          ],
+          [
+            "Web Cache",
+            "Web pages, images, files",
+            "Avoids re-downloading from a remote server"
+          ],
+          [
+            "DNS Cache",
+            "Domain name → IP mappings",
+            "Avoids repeating a slow lookup"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "Cache Organization",
+      "body": "CPU Cache\nCPU\nL1 \nL2 \nCore\nL1\nL2 \nCore\nL1 \nL2 \nCore\nL1 \nL2 \nCore\nL3 \nMain Memory",
+      "notes": "This diagram shows how cache memory is organized inside a modern CPU. \u000bEach CPU core has its own dedicated L1 and L2 cache, allowing it to access frequently used data quickly.\u000b Below them is the L3 cache, which is shared by all the CPU cores. If the required data is not available in any cache level, \u000bthe CPU finally accesses the main memory, which takes comparatively more time.\u000bThis layered organization helps reduce memory access time and improves the overall system performance.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Cache Organization",
+      "body": "Disk Cache",
+      "notes": "Now, let's understand Disk Cache. Unlike CPU Cache, which stores frequently used CPU data,\u000b Disk Cache stores frequently accessed disk blocks to reduce the number of slow disk accesses. \u000bThe operating system maintains a page cache in main memory, while the Hard Disk or SSD also \u000bcontains a small onboard buffer for temporarily holding data. When the CPU requests data, \u000bit is first checked in these caches before accessing the actual storage. \u000bThis helps improve disk read and write performance by reducing access time.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Cache Organization",
+      "body": "Web Cache\nClient\nClient\nClient\nClient\nProxy Server Shared Cache\nThe Internet\nWEB Server",
+      "notes": "Web Cache stores frequently requested web content closer to users. \u000bWhen a client requests a webpage, the proxy cache is checked first. \u000bIf the content is available, it is returned immediately. Otherwise, the request is forwarded to the web server. \u000bThis reduces network traffic and provides faster access to frequently visited websites",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Cache Organization",
+      "body": "DNS Cache\nDNS Resolver\nExample = 192.0.2.16\nTTL: 1 Hour\nAuthoritative\u000bName servers\nUsers 2\nUsers 1\n1. First query - miss\n2. Full lookup, then cache\nAnswers instantly, no lookup\n3. Same query - cache hit",
+      "notes": "DNS Cache stores recently resolved domain names and their IP addresses. \u000bWhen a user requests a website for the first time, the DNS Resolver looks up the IP address \u000bfrom the authoritative name server and stores it in the cache. If the same website is requested again before the cache expires, \u000bthe resolver returns the IP address directly, making website access much faster.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Cache Organization",
+      "body": "Inside CPU Cache\nBy Level\nHow far it sits from the CPU core (L1, L2, L3)\nCPU Cache itself isn't one single block — it's organized in two independent ways\nBy Type\nWhat it actually stores (Instruction, Data, Unified)\nCPU Cache",
+      "notes": "Moving on, the CPU cache has its own internal organization and isn't treated as a single memory block.\n It can be understood from two perspectives: by type, which tells us what kind of information the cache stores,\n and by level, which indicates how close the cache is to the CPU core. We'll look at both of these one by one.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Cache Organization",
+      "body": "Why Multiple Levels?\nA cache can't be both very fast and very large \nSpeed and size trade off, and cost per byte rises sharply as memory gets faster",
+      "notes": "Moving on, designing a cache always involves a trade-off. If we try to make it very large, accessing data takes longer.\u000b On the other hand, making it very fast significantly increases the cost per byte. \u000bSince a single cache cannot optimize speed, size, and cost at the same time,\u000b processors organize the cache into multiple levels to achieve a practical balance.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Cache Organization",
+      "body": "Why Multiple Levels?\nSo CPUs use a hierarchy — several caches stacked by distance from the core\nEach level trades a bit of speed for a lot more capacity as you move outward",
+      "notes": "Next, instead of relying on a single cache, processors organize cache into a hierarchy of multiple levels. \u000bAs we move farther away from the CPU core, each cache level offers more capacity, but at the cost of a little speed.\u000bThis layered approach helps the processor balance fast access with enough storage for frequently used data.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Cache Memory",
+      "body": "Levels of Cache",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Level",
+            "Location",
+            "Typical Size",
+            "Typical Speed",
+            "Notes"
+          ],
+          [
+            "L1",
+            "Inside each CPU core",
+            "32–64 KB",
+            "~4 CPU cycles",
+            "Fastest, smallest, private to the core; usually split into L1-instruction and L1-data"
+          ],
+          [
+            "L2",
+            "Per-core or shared by a couple of cores",
+            "256 KB – 1 MB",
+            "~10–20 cycles",
+            "Larger, a bit slower than L1"
+          ],
+          [
+            "L3",
+            "Shared across all cores",
+            "Several MB (4–32 MB)",
+            "~30–50 cycles",
+            "Largest, slowest cache — but still far faster than RAM (~200+ cycles)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 33,
+      "title": "Cache Memory",
+      "body": "Trade-off rule\n The closer to the CPU, the faster but smaller and costlier per byte\nThe Compromise between speed and size, rather than one cache trying (and failing) to be both\nMore levels = a balanced compromise",
+      "notes": "Now, if we tried to build a single cache that was extremely fast while also storing a huge amount of data, \u000bit simply wouldn't be practical. Hardware designers therefore split the responsibility across different cache levels. \u000bThe smaller caches handle requests that need the quickest response, while the larger ones\u000b keep more data available whenever the upper levels don't have it. \u000bThis approach gives the processor good overall performance without relying on one perfect cache.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Cache Memory",
+      "body": "Types of CPU Cache\nSplitting instruction/data caches lets the CPU fetch an instruction and access data at the same time — needed for pipelining\nA single unified cache would force both to queue behind each other",
+      "notes": "Moving on, the processor performs two activities continuously—it fetches the next instruction while also reading \u000bor writing the data required to execute it. If both operations depended on the same cache, \u000bone would have to wait for the other, creating unnecessary delays. To avoid this, \u000bprocessors typically maintain separate Instruction and Data Caches, allowing both operations to happen \u000bsimultaneously and supporting efficient pipelining. In some designs, a Unified Cache \u000bis also used, where instructions and data share the same cache space.",
+      "tables": [
+        [
+          [
+            "Type",
+            "Where",
+            "Used For"
+          ],
+          [
+            "Instruction Cache",
+            "CPU",
+            "Stores instructions"
+          ],
+          [
+            "Data Cache",
+            "CPU",
+            "Stores data"
+          ],
+          [
+            "Unified Cache",
+            "CPU",
+            "Stores both together"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 35,
+      "title": "Cache Memory",
+      "body": "Analogy",
+      "notes": "Imagine a library with two separate sections—one for reading books and another for borrowing reference materials. \u000bPeople reading books don't have to wait behind those borrowing materials. \u000bSimilarly, the CPU uses separate paths for instructions and data, so fetching one doesn't delay the other.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Cache Organization",
+      "body": "How Levels and Types Combine\nInstruction Cache \nL1\nData Cache \nL1, almost always split into Instruction + Data\nL2 and L3, almost always unified",
+      "notes": "This diagram shows how different cache levels are organized. L1 Cache is \u000btypically divided into an Instruction Cache and a Data Cache, \u000ballowing the CPU to fetch instructions and access data simultaneously. \u000bHowever, L2 and L3 are usually unified caches, meaning they store both instructions and data in the same cache. \u000bThis organization provides a good balance between high-speed access at L1 and efficient cache utilization at the lower levels.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Cache Organization",
+      "body": "How Levels and Types Combine\nSplitting only pays off closest to the core, where speed matters most; unified is simpler and used further out, where capacity matters more than parallel access",
+      "notes": "Now, processors don't organize every cache level in the same way because each level has a different purpose. \u000bThe first level is optimized to respond as quickly as possible, so separating instructions and \u000bdata helps avoid unnecessary waiting. Once we move to the lower levels, the emphasis shifts toward \u000bkeeping more information available, making a single shared cache a more practical and efficient design.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Cache Performance",
+      "body": "Cache Performance",
+      "notes": "Now we will learn about the Cache Performance",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Cache Memory",
+      "body": "Cache Hit & Cache Miss\nCache Hit \nData found in cache\nFast access\nCache Miss\nData not in cache\nMust fetch from RAM\nHit Ratio: (Number of Hits) / (Total Accesses)\nCache Line/Block: Unit of data transfer between cache and memory\nMiss Ratio: 1 - Hit Ratio",
+      "notes": "Moving on, every memory request is checked against the cache first. If the required information is already available, \u000bit's a cache hit, allowing the processor to continue without delay. Otherwise, it's a cache miss,\u000b and the data must be fetched from the main memory before execution can proceed. \u000bThe overall effectiveness of the cache is measured using the Hit Ratio, while the remaining accesses \u000bare represented by the Miss Ratio. Also, data is transferred between the cache and main memory in \u000bfixed-size units called cache lines or cache blocks, rather than one byte at a time.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Cache Hit & Cache Miss",
+      "body": "Analogy\n You find pen on your desk = Hit\n You search whole house = Miss\nHigher hit rate = Better performance",
+      "notes": "Imagine you're looking for a pen. If you find it immediately on your desk, you get it quickly with very little effort.\u000b This is similar to a Cache Hit, where the required data is found in the cache. However, \u000bif the pen isn't on the desk and you have to search the entire house, it takes much longer. \u000bThis is similar to a Cache Miss, where the CPU has to retrieve the data from the slower main memory. \u000bTherefore, a higher cache hit rate results in better overall system performance.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Cache Line/Block",
+      "body": "Analogy",
+      "notes": "Imagine you need a pen from a storage room. Instead of bringing back just one pen every time, \u000byou bring the entire box of pens to your desk. If you need another pen later, it's already within reach, \u000bso you don't have to return to the storage room. Similarly, when the CPU requests a memory location, \u000bthe cache loads the entire cache block, not just the requested data. \u000bThis reduces repeated accesses to main memory and improves overall performance.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Cache Mapping",
+      "body": "Cache Mapping",
+      "notes": "Next we will see Cache Mapping",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Cache Mapping",
+      "body": "Introduction\nHelps the CPU quickly find the data when needed\u000b\nMapping is important because cache is smaller than RAM → not everything can fit\nCache mapping is the method used to decide where data from RAM is stored in the cache",
+      "notes": "Now, since the cache is much smaller than the main memory, it isn't possible to keep a copy of every piece of data.\u000b So whenever data is brought from RAM, the processor needs a rule to decide exactly \u000bwhere it should be placed in the cache. This process is known as cache mapping, \u000band it also makes it easier for the CPU to locate the required data quickly during future memory accesses.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Cache Mapping",
+      "body": "Types of Cache Mapping\nHow cache decides where to store data?\nDirect Mapping\nFully Associative Mapping\nSet-Associative Mapping",
+      "notes": "Moving on, there isn't just one way to place data into the cache. Different systems use different \u000bcache mapping techniques depending on how they balance speed, hardware complexity, and cache utilization. \u000bThe three most commonly used approaches are \u000bDirect Mapping, Fully Associative Mapping, and Set-Associative Mapping. \u000bWe'll now understand how each of these methods decides where data is stored and the advantages they offer.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Cache Mapping",
+      "body": "Direct Mapping\nEach block in RAM → fixed place in cache\u000b\nSimple and fast\u000b\nBut conflicts occur if multiple blocks want the same place\nDirect Mapping\nEach block in RAM → fixed place in cache\nSimple and fast\nBut conflicts occur if multiple blocks want the same place",
+      "notes": "Next, let's begin with Direct Mapping, the simplest cache mapping technique. In this approach, \u000bevery block in the main memory has only one predetermined location in the cache where it can be stored. \u000bBecause the processor always knows exactly where to look, this method is very fast and requires simple hardware.\u000b However, if multiple memory blocks are assigned to the same cache location, they keep replacing one another, \u000bleading to conflict misses and reducing the cache's overall efficiency.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Direct Mapping",
+      "body": "Analogy",
+      "notes": "Each student has a fixed seat, If already taken, conflict!Let's understand Direct Mapping with a simple analogy.\u000b Imagine every student in a classroom has a fixed assigned seat. Whenever a student enters the classroom, \u000bthey must sit only in their designated seat and cannot choose any other.\u000b If someone is already occupying that seat, they must leave before the new student can sit there. \u000bSimilarly, in Direct Mapping, each memory block can be placed in only one specific cache line.\u000b This makes cache access simple and fast, but it can also lead to frequent replacements when multiple memory blocks map to the same cache line.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Cache Mapping",
+      "body": "Direct Mapping\nTag → Identifies which memory block is in cache\nLine Number → Which cache line it is placed in\nOffset → Exact byte inside that block\nCache Controller & Logic\nHow cache decides where to store data:\nValid Bit\nData Block\nTag\n1\n2\n3\n.\n.\n.\nn-1\nLine 0\nMain Memory Block X maps only to cache line (x mod N)",
+      "notes": "Now, let's see how Direct Mapping actually determines the cache location for a memory block. \u000bEvery memory address is divided into three parts: the Tag, the Line Number, and the Offset. \u000bThe Line Number is used to identify the exact cache line where the block can be placed, the Tag \u000bverifies whether the required memory block is currently stored in that line, and the Offset selects the \u000bspecific byte within the block. In Direct Mapping, the cache line is calculated using the \u000brule Block Number modulo Number of Cache Lines, so each memory block always \u000bmaps to one fixed cache line, making lookups simple and fast.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Cache Mapping",
+      "body": "Memory Structure in Direct Mapping\nBlock Offset\nIndex Field\nIndex \nBlock Offset\nTag \nS -r bits\nr bits\nn bits\ns bits\nn bits\nMain Memory\nCache Memory",
+      "notes": "The main memory address is made up of s + n bits, where n bits represent the Block Offset,\u000b used to identify the exact byte or word within a block. The remaining s bits identify the memory block. \u000bWhen this address is interpreted by the cache, these s bits are further divided into two parts: r bits form the Index, \u000bwhich selects the cache line, and the remaining s − r bits form the Tag, \u000bwhich is used to verify whether the required memory block is present in that cache line.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 50,
+      "title": "Cache Mapping",
+      "body": "Fully Associative Mapping\nAssociative Mapping\nAny memory block can go to any location in cache\nNo conflicts\nBut searching is slower (check many places)",
+      "notes": "Moving on, unlike Direct Mapping, Fully Associative Mapping allows a memory block to be placed in any cache line. \u000bThis flexibility helps avoid conflict misses and makes better use of the cache. \u000bHowever, since the processor has to search multiple cache lines to find the required block, \u000bthe lookup process is more complex and takes longer.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Fully Associative Mapping",
+      "body": "Analogy",
+      "notes": "Let's understand Fully Associative Mapping with this analogy. Imagine a classroom \u000bwhere students are free to sit at any available seat instead of having an assigned one. \u000bThis provides maximum flexibility, but the student has to search for an empty seat before sitting down.\u000b Similarly, in Fully Associative Mapping, a memory block can be placed in any cache line. \u000bThis improves cache utilization but takes more time to search for the required block.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Cache Mapping",
+      "body": "Fully Associative Mapping\nTag Bits: Show which memory block the data belongs to\u000b\nByte Offset: Shows the exact position of the data inside the block\nTag Bits: Show which memory block the data belongs to\nByte Offset: Shows the exact position of the data inside the block\nCache Controller & Logic\nLine 0\nLine 2\nLine n-1\nMain memory block y can map to any available cache line\nValid Bit\nTag\nValid Bit\nTag\nValid Bit\nTag\nValid Bit\nTag\nData Block\nData Block\nData Block\nLine 1\n.\n.\n.\n.\nData Block",
+      "notes": "Now, let's see how Fully Associative Mapping works. Since a memory block can be placed in any available cache line,\u000b the cache cannot rely on an Index field to locate it. Instead, it compares the Tag with\u000b the tags stored in all cache lines to find the required block. Once a matching tag is found, \u000bthe Byte Offset identifies the exact data within that block. This approach provides maximum\u000b flexibility but requires searching all cache lines, making it slower than Direct Mapping.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Cache Mapping",
+      "body": "Block 0\nBlock 1\n.\n.\n.\n.\nBlock n-1\nBlock n\ntag\ntag\ntag\ntag\nCache Memory\nMain Memory\nLine 0\nLine 1\n.\n.\n.\n.\nLine m-1\nLine m\nFully Associative Mapping",
+      "notes": "This diagram illustrates the mapping in Fully Associative Mapping. Unlike Direct Mapping,\u000b there is no fixed relationship between main memory blocks and cache lines. Any memory block \u000bcan be placed in any available cache line. Each cache line stores a Tag, which identifies\u000b the memory block currently stored in that line. When the CPU requests data, the cache compares \u000bthe requested tag with the tags in all cache lines to locate the required block.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 54,
+      "title": "Cache Mapping",
+      "body": "Set-Associative Mapping\nSet-Associative Mapping\nCache divided into small groups (sets)\nBlock can go anywhere inside its assigned set\nBalance of speed and flexibility\nUsed in most modern CPUs",
+      "notes": "Moving on, Set-Associative Mapping combines the advantages of both Direct Mapping and Fully Associative Mapping.\u000b Instead of allowing a block to go anywhere in the cache or restricting it to a single location, \u000bthe cache is divided into sets. Each memory block is assigned to one particular set, \u000bbut within that set it can occupy any available cache line. This approach reduces conflict misses \u000bwhile keeping the search process efficient, which is why it is widely used in modern processors.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Cache Mapping",
+      "body": "Set-Associative Mapping\nThe cache is organized into multiple sets, and each set contains multiple lines (e.g., 2-way or 4-way)",
+      "notes": "Set-Associative Mapping combines the advantages of Direct Mapping and Fully Associative Mapping.\u000b Instead of treating the cache as a single collection of lines, it is divided into multiple sets, \u000bwith each set containing multiple cache lines, such as 2-way or 4-way. A memory block is\u000b first mapped to a specific set, but within that set, it can be placed in any available cache line. \u000bThis provides greater flexibility than Direct Mapping while requiring less searching than Fully Associative Mapping.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Cache Mapping",
+      "body": "Set-Associative Mapping\nA memory block is assigned to one specific set, but it can be stored in any line within that set",
+      "notes": "Now, the key idea in Set-Associative Mapping is that the memory block is first assigned to a particular set. \u000bOnce the correct set is identified, the block can be placed in any available line within that set.\u000b During a lookup, the processor searches only the lines of that assigned set instead of the entire cache, \u000bmaking the search faster while still providing flexibility in data placement.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Set-Associative Mapping",
+      "body": "Cache Address Breakdown\nTag → Identifies the memory block\u000b\nSet Number → Selects the cache set\u000b\nOffset → Exact byte inside the block\nMain Memory Block X maps to any available line within a specific set",
+      "notes": "Moving on, in Set-Associative Mapping, the memory address is divided into three parts: \u000bthe Tag, Set Number, and Offset.  the Tag is used to determine whether the required memory block is present in one of the lines of that set, \u000bThe Set Number identifies which cache set should be searched,\nand the Offset selects the exact byte within the block. This organization limits the search to a single set, \u000bmaking lookups much more efficient than searching the entire cache while still allowing flexible data placement within the set.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Set-Associative Mapping",
+      "body": "Two Way set Associative Mapping\nLine 0\nLine 1\nLine 2\nLine 3\n.\n.\n.\n.\nLine m-2\nLine m -1\nBlock 0\nBlock 1\n.\n.\n.\n.\nBlock n-1\ntag\ntag\ntag\ntag\ntag\ntag\nSet 0\nSet 1\nSet m/2 - 1\nCache Memory\nMain Memory\nWay 0\nWay 1",
+      "notes": "This diagram illustrates a Two-Way Set-Associative Cache. Here, each set contains two cache lines, \u000balso called two ways. When a memory block is mapped, it first selects the appropriate set, \u000bbut within that set, it can be placed in either Way 0 or Way 1. Each cache line stores a Tag \u000bto identify the memory block it contains. This organization reduces conflicts compared to\u000b Direct Mapping while requiring less searching than Fully Associative Mapping.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 59,
+      "title": "Set-Associative Mapping",
+      "body": "Worked Example With 3 quick steps\nGiven (simple numbers): Assume 16-bit physical addresses, \nCache = 4 KB, Block = 16 bytes, 4-way set-associative\nOffset bits — how many bytes in one block? \n16 bytes → need 4 bits to point to any byte inside it\nSet bits — How many sets exist? \n4 KB ÷ (16 bytes × 4 ways) = 64 sets → need 6 bits to pick one\nTag bits — whatever's left over identifies which block it is → 6 bits",
+      "notes": "Let's calculate the address fields step by step. First, the Offset bits are calculated using log₂(Block Size).\u000b Since the block size is 16 bytes, the offset is 4 bits. \u000bNext, the number of sets is calculated using Cache Size ÷ (Block Size × Number of Ways), \u000bgiving 64 sets. Therefore, Set bits = log₂(64) = 6 bits. Finally, the Tag bits are obtained \u000busing Address bits − Set bits − Offset bits, which gives 16 − 6 − 4 = 6 bits.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Set-Associative Mapping",
+      "body": "Worked Example\nSo an address breaks into: 6 (Tag) + 6 (Set) + 4 (Offset)\nApplied to one address: 0010101001111011",
+      "notes": "Now, let's apply our calculations to this address: 0010101001111011. we divide it into 6 Tag bits, 6 Set bits, and 4 Offset bits. \u000bThe first 6 bits, 001010, form the Tag, identifying Block ID 10. The next 6 bits, 100111, form the Set,\u000b indicating that the block maps to Set 39. Finally, the last 4 bits, 1011, form the Offset,\u000b identifying byte 11 within that memory block.",
+      "tables": [
+        [
+          [
+            "Tag (6 bits)",
+            "Set (6 bits)",
+            "Offset (4 bits)"
+          ],
+          [
+            "001010",
+            "100111",
+            "1011"
+          ],
+          [
+            "= Block ID 10",
+            "= goes in Set 39",
+            "= byte 11 inside that block"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 61,
+      "title": "Set-Associative Mapping",
+      "body": "Analogy",
+      "notes": "Students are assigned to a specific row (the set) but can sit in any seat within that row (any line in the set). \u000bIt's a middle ground — some structure like Direct Mapping (you know which row to go to), \u000bbut some freedom like Fully Associative Mapping (any seat in that row works).",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Cache Memory & Mapping",
+      "body": "Cache Fundamentals\nPurpose of cache: why it is needed (CPU vs RAM speed)\nLocality of Reference\nTemporal locality, Spatial locality\nCache Organization\nLevels: L1, L2, L3\nTypes: instruction, data, unified",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Cache Memory & Mapping",
+      "body": "Cache Performance\nCache hit & miss\nHit ratio & miss ratio; cache line / block\nCache Mapping\nDirect mapping\nFully associative mapping\nSet-associative mapping (tag / set / offset)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Memory Allocation – Contiguous",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1hqkBqj2NtDCM4SONWkUkjBCHA2bvEXxPmtTsp8sQSZc/edit"
+}

@@ -108,6 +108,19 @@ body::before {
              font-size: 13px; color: var(--text); cursor: pointer; }
 .checkline input { margin-top: 2px; flex: none; }
 .checkline .hint { display: block; margin-top: 3px; }
+/* Course rules: a draft has to LOOK like a draft, or the approval step is invisible. */
+.skilllist { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 4px; }
+.skillrow { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px;
+            border: 1px solid var(--line); border-radius: 10px; background: var(--bg2); }
+.skillrow.draft { border-style: dashed; }
+.skillrow.approved { border-color: rgba(66,190,130,.35); }
+.skillrow.retired { opacity: .5; }
+.skillmain { flex: 1; min-width: 0; }
+.skilltext { display: block; font-size: 13px; color: var(--text); }
+.skillmeta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 5px; }
+.skillacts { display: flex; gap: 6px; align-items: center; flex: none; }
+.ghostbtn.on { border-color: var(--accent); background: rgba(124,147,255,.14); }
+.ghostbtn.tiny.danger { border-color: rgba(239,99,99,.42); color: #f2b3b3; }
 .dangerzone { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
 .ghostbtn.danger { border-color: rgba(239,99,99,.42); color: #f2b3b3; }
 .ghostbtn.danger:hover:not(:disabled) { border-color: var(--err); background: rgba(239,99,99,.1); }

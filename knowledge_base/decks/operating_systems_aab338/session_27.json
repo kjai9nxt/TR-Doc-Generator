@@ -1,0 +1,781 @@
+{
+  "session_no": 27,
+  "source_file": "Thrashing, Working Set & Frame Allocation",
+  "deck_title": "Thrashing, Working Set & Frame Allocation",
+  "n_slides": 66,
+  "summary": "\n    - Slide 2: Thrashing, Working Set & Frame Allocation\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Thrashing, Working Set & Frame Allocation\n    - Slide 6: Frame Allocation\n    - Slide 7: Frame Allocation Problem\n    - Slide 8: Frame Allocation Problem\n    - Slide 9: Frame Allocation Problem\n    - Slide 10: Frame Allocation Problem\n    - Slide 11: Minimum Frame Requirement\n    - Slide 12: Minimum Frame Requirement\n    - Slide 13: Equal Allocation Scheme\n    - Slide 14: Equal Allocation Scheme\n    - Slide 15: Proportional Allocation Scheme\n    - Slide 16: Proportional Allocation Scheme\n    - Slide 17: Proportional Allocation Scheme\n    - Slide 18: Proportional Allocation Scheme\n    - Slide 19: Priority Allocation Scheme\n    - Slide 20: Priority Allocation Scheme\n    - Slide 21: Priority Allocation Scheme\n    - Slide 22: Priority Allocation Scheme\n    - Slide 23: Replacement Scope\n    - Slide 24: Replacement Scope\n    - Slide 25: Replacement Scope\n    - Slide 26: Global Replacement\n    - Slide 27: Global Replacement\n    - Slide 28: Local Replacement\n    - Slide 29: Local Replacement\n    - Slide 30: Global Vs Local\n    - Slide 31: Quiz Time!\n    - Slide 32: Thrashing\n    - Slide 33: What Is Thrashing\n    - Slide 34: What Is Thrashing\n    - Slide 35: What Is Thrashing\n    - Slide 36: How Thrashing Begins\n    - Slide 37: How Thrashing Begins\n    - Slide 38: How Thrashing Begins\n    - Slide 39: CPU Utilization Collapse\n    - Slide 40: Locality & Working Set\n    - Slide 41: Locality Model\n    - Slide 42: Locality Model\n    - Slide 43: Working Set Model\n    - Slide 44: Working Set Model\n    - Slide 45: Choosing Window Size\n    - Slide 46: Working Set Demand\n    - Slide 47: Working Set Demand\n    - Slide 48: Working Set Example\n    - Slide 49: Controlling Thrashing\n    - Slide 50: Need For Control\n    - Slide 51: Need For Control\n    - Slide 52: PFF Scheme Concept\n    - Slide 53: PFF Scheme Concept\n    - Slide 54: PFF Scheme Concept\n    - Slide 55: PFF Control Actions\n    - Slide 56: Preventing Thrashing\n    - Slide 57: Preventing Thrashing\n    - Slide 58: Working Set Vs PFF\n    - Slide 59: Thrashing Control Today\n    - Slide 60: Thrashing Control Today\n    - Slide 61: Quiz Time!\n    - Slide 62: Thrashing, Working Set & Frame Allocation\n    - Slide 63: Thrashing, Working Set & Frame Allocation\n    - Slide 64: File System Concepts & Directories",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Thrashing, Working Set & Frame Allocation",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Page Replacement Algorithms & Belady's Anomaly\nPage Replacement Basics\nNeed for page replacement & basic steps\nFIFO & Optimal\nFIFO page replacement\nOptimal page replacement\nLRU & Approximations\nLeast recently used (LRU)\nReference bit & second chance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Page Replacement Algorithms & Belady's Anomaly\nCounting-Based\nLFU / MFU\nBelady's Anomaly & Practice\nBelady's anomaly\nNumerical problems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Thrashing, Working Set & Frame Allocation",
+      "body": "Thrashing, Working Set & Frame Allocation\nThe Dispatcher \u000b& Gantt Basics\nThrashing\nReplacement Scope\nEqual, proportional & priority allocation\nGlobal vs local replacement\nFrame Allocation\nControlling Thrashing\nLocality & Working Set\nCauses & effects\nLocality model, Working set model\nPage-fault frequency (PFF) scheme, Techniques to prevent thrashing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Frame Allocation",
+      "body": "Frame Allocation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Frame Allocation Problem",
+      "body": "Sharing Limited Frames\nMultiple processes compete for a fixed pool of physical frames\nToo few frames per process causes frequent page faults and poor performance",
+      "notes": "So, this diagram shows the basic memory-allocation challenge: P1 through P6 \u000bare all competing for the same fixed pool of physical frames. The OS has to divide these limited frames \u000bamong the active processes, and if a process receives too few, it will repeatedly need pages\u000b that are not currently in memory, causing frequent page faults and poor performance.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 8,
+      "title": "Frame Allocation Problem",
+      "body": "Sharing Limited Frames\nTotal frames are fixed by physical memory size\n01\n02\n03\nFrames must be split across all active processes\nToo few frames per process raises fault rate",
+      "notes": "Now, the key challenge is deciding how to distribute memory efficiently. \u000bThe number of available frames is limited by the physical memory,\u000b so the OS cannot create additional frames when more processes arrive. \u000bThese frames have to be shared among all active processes, and if a process receives too little memory,\u000b it may experience frequent page faults and perform poorly.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Frame Allocation Problem",
+      "body": "Sharing Limited Frames\nThree schemes address this:",
+      "notes": "let’s look at the three common ways the operating system can distribute these limited frames.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Frame Allocation Problem",
+      "body": "Analogy",
+      "notes": "A hostel warden splitting a fixed number of rooms among many students —\u000b just as the operating system splits fixed frames among competing processes.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Minimum Frame Requirement",
+      "body": "Instruction Frame Needs\nEvery process needs a minimum frame count to execute even one instruction without repeated faults, fixed by the instruction set architecture",
+      "notes": "So, a process cannot run with just any number of frames.\u000b It needs enough memory to fetch and execute an instruction properly, \u000band that minimum is determined by the architecture of the system.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Minimum Frame Requirement",
+      "body": "Instruction Frame Needs\nOne instruction may touch several pages at once\n01\n02\n03\nIndirect addressing can chain through pointer pages\nMinimum frame count depends on architecture design",
+      "notes": "Now, an instruction may need to access more than one page, \u000bespecially when indirect addressing involves additional pointer pages. \u000bSo, the minimum number of frames required depends on how the system's architecture handles these memory accesses.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Equal Allocation Scheme",
+      "body": "Same Frames Each\nEqual allocation splits total frames evenly across all processes, regardless of process size or need",
+      "notes": "Moving on, equal allocation simply treats every process the same. In the diagram\u000b, the available frames are divided evenly among P1, P2, P3, and P4, so each process receives the same number of frames, \u000beven if their actual memory requirements are different. It is simple to implement, but a larger process |\u000bmay not get enough frames while a smaller one may receive more than it needs.",
+      "tables": [
+        [
+          [
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Equal Allocation Scheme",
+      "body": "Same Frames Each\nFrames per process equals total frames divided by count\n01\n02\n03\nSimple to implement and easy to reason about\nIgnores actual size differences between processes",
+      "notes": "So, in equal allocation, we simply divide the available frames equally among all processes. \u000bFor example, with 90 frames and 3 processes, each process gets 30 frames.\u000b It’s straightforward to implement, but the drawback is that it treats all processes the same, \u000beven when their memory requirements are different.",
+      "tables": [
+        [
+          [
+            "Processes",
+            "Total Frames",
+            "Frames Each"
+          ],
+          [
+            "3",
+            "90",
+            "30"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Proportional Allocation Scheme",
+      "body": "Size-Based Frame Share\nProportional allocation gives each process frames proportional to its size, so larger processes receive more frames than smaller ones",
+      "notes": "Now, proportional allocation adjusts the split according to process size. In the diagram, \u000bP1 is the largest, so it receives the most frames, P2 receives fewer, and the smaller P3 gets the least. \u000bThe idea is to use the limited frames more fairly by giving a larger share to processes that have greater memory requirements.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 16,
+      "title": "Proportional Allocation Scheme",
+      "body": "ai = (si ÷ S) × m → ai is the number of frames allocated to process i\n01\n02\n03\nsi is the size of process i in pages\nS is the sum of sizes of all processes\n04\nm is the total number of available frames\nAssume total available frames (m) = 62\nSize-Based Frame Share",
+      "notes": "Moving on, proportional allocation gives each process a share of the available frames based on its size. \u000bHere, si is the size of process i in pages, S is the combined size of all processes, \u000band m is the total number of available frames, which is 62. So, we divide si by S\u000b to find that process's share, and multiply it by m to get the actual frames allocated, represented by ai.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Proportional Allocation Scheme",
+      "body": "Size-Based Frame Share",
+      "notes": "Now, let’s apply the formula to these two processes. Since P2 is much larger than P1,\u000b it receives a much larger share of the 62 available frames. This gives P1 approximately 4.53 frames and\u000b P2 approximately 57.47 frames, showing how proportional allocation adjusts \u000bthe memory share according to process size.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Size (pages)",
+            "Frames Allocated"
+          ],
+          [
+            "p1",
+            "10",
+            "≈4.53"
+          ],
+          [
+            "p2",
+            "127",
+            "≈57.47"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 18,
+      "title": "Proportional Allocation Scheme",
+      "body": "Analogy",
+      "notes": "Grain rationed to families in proportion to family size —\n just as proportional allocation gives each process frames in proportion to its size.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Priority Allocation Scheme",
+      "body": "Importance-Based Frames\nPriority allocation uses process importance, not just size, to decide frame share; higher-priority processes receive more frames\nPriority: High\nPriority: Low",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "Priority Allocation Scheme",
+      "body": "Importance-Based Frames\n01\nHigh-priority or interactive processes get more frames\n02\nLow-priority processes may receive fewer frames and experience a higher page-fault rate\n03\nPriority allocation can be combined with process size or other factors in some systems",
+      "notes": "Next, frame allocation can also depend on how important a process is. For example, \u000ban interactive or high-priority process needs quick responses, so giving it more frames helps \u000breduce page faults and improves responsiveness. A low-priority process may receive fewer frames, \nwhich can lead to a higher page-fault rate. In some systems, priority is not used alone;\u000b the OS can combine it with the process size or other factors to decide the final allocation.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Priority Allocation Scheme",
+      "body": "Importance-Based Frames",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Scheme",
+            "Basis",
+            "Drawback"
+          ],
+          [
+            "Equal",
+            "Frame count only",
+            "Ignores process size"
+          ],
+          [
+            "Proportional",
+            "Process size",
+            "Ignores importance or behaviour"
+          ],
+          [
+            "Priority",
+            "Process importance",
+            "May starve low-priority processes"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Priority Allocation Scheme",
+      "body": "Analogy",
+      "notes": "A hospital gives ICU beds to the most critical patients first, not equally to every ward \u000b— just as priority allocation gives more frames to higher-priority processes.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Replacement Scope",
+      "body": "Replacement Scope",
+      "notes": "Now we will be learning about the Replacement Scope",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Replacement Scope",
+      "body": "Whose Frames Change\nOn a page fault, the OS must pick a victim frame. Scope decides which processes' frames are eligible for that choice\nVictim frame",
+      "notes": "Moving on, when a page fault occurs, the OS has to choose a frame to replace. In the diagram,\u000b the OS selects the highlighted frame as the victim frame, which means the page currently occupying \u000bthat frame will be removed and replaced with the required page. The replacement scope determines \u000bwhich processes' frames the OS is allowed to consider for this selection.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "Replacement Scope",
+      "body": "Whose Frames Change\nVictim frame chosen by a replacement algorithm\n01\n02\n03\nScope defines the eligible frame pool\nTwo policies exist: global and local",
+      "notes": "Now, whenever a page fault occurs, the replacement algorithm decides which frame should be removed, \u000bcalled the victim frame. The replacement scope determines the set of frames from which that victim\u000b can be selected. Based on this scope, we have two approaches: global replacement and local replacement.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Global Replacement",
+      "body": "Any Frame Eligible\nA faulting process may select a victim frame from any process in the system, not only from its own frames.\nVictim frame",
+      "notes": "Next, in global replacement, the OS is not restricted to the frames of the process that caused the page fault. \u000bIn the diagram, P2 has the fault, but the highlighted victim frame can be selected from \u000bthe available frames of the system, including frames belonging to other processes such as P1.\u000b This gives the OS greater flexibility in using memory.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 27,
+      "title": "Global Replacement",
+      "body": "Any Frame Eligible\nFaulting process can take another process's frame\n01\n02\n03\nFrame counts per process vary over time\nMay increase page faults in other processes by taking their frames",
+      "notes": "Now, the flexibility of global replacement also means one process can take a frame\u000b that was previously assigned to another process. Because of this, the number of frames available\u000b to each process can keep changing over time. The benefit is better overall flexibility, \u000bbut taking frames from one process can also increase its page faults and affect its performance.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Local Replacement",
+      "body": "Own Frames Only\nA faulting process selects its victim frame only from among its own currently allocated frames.\nVictim frame\nFaulting Process",
+      "notes": "Moving on, local replacement keeps the memory decision within the faulting process itself.\u000b In the diagram, the faulting process has several allocated frames, and the highlighted victim frame \u000bis selected from those frames only. So, unlike global replacement,\u000b the process cannot take a frame belonging to another process.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 29,
+      "title": "Local Replacement",
+      "body": "Own Frames Only\nFaulting process replaces only its own page\n01\n02\n03\nFrame count per process stays fixed\nIsolates one process's faults from others",
+      "notes": "Next, with local replacement, a process handles \u000bits own page faults using only the frames already assigned to it. \u000bSo its frame allocation remains fixed, and one process's page-fault activity\u000b does not take frames away from other processes.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Global Vs Local",
+      "body": "Trade-offs Compared",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Global Replacement",
+            "Local Replacement"
+          ],
+          [
+            "Frame count",
+            "Can vary across processes",
+            "Replacement stays within allocated frames"
+          ],
+          [
+            "Isolation",
+            "Low, one process affects another",
+            "High, processes isolated"
+          ],
+          [
+            "Throughput",
+            "May improve by adapting to changing needs",
+            "May be lower if allocation is poorly matched to needs"
+          ],
+          [
+            "Risk",
+            "One process may increase page faults in others",
+            "A process may be limited by its fixed allocation"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Thrashing",
+      "body": "Thrashing",
+      "notes": "Next we will learn about the Thrashing,",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "What Is Thrashing",
+      "body": "Paging Dominates Execution\nFrames allocated fall below active page need\n01\n02\n03\nA large proportion of referenced pages cause page faults\nCPU utilization collapses despite busy processes\nThrashing occurs when a process spends more time paging than executing, because it holds fewer frames than its actual need",
+      "notes": "Now, imagine a process has fewer frames than the pages it actively needs, \u000bso the pages it needs keep getting pushed out of memory and loaded back again.\u000b As a result, the system spends most of its time handling page faults instead of actually executing processes.\u000b This is called thrashing, and when it becomes severe, \u000bCPU utilization can drop dramatically even though the processes are active.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "What Is Thrashing",
+      "body": "Paging Dominates Execution\nOptimal\nThrashing\nImproving Throughput\nDegree of Multiprogramming\nCPU Utilization",
+      "notes": "Moving on, this graph shows why adding more processes does not always improve performance. \u000bInitially, increasing the degree of multiprogramming keeps more work available and improves CPU utilization.\u000b At the optimal point, utilization is highest. Beyond that, memory pressure increases, \u000bpage faults become frequent, and the system enters thrashing, causing CPU utilization to fall.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "What Is Thrashing",
+      "body": "Analogy",
+      "notes": "A student has only one book on the desk, but needs many books to study.\u000b They keep getting up to bring another book and spend more time fetching books than studying \u000b— just as a process spends more time loading pages than executing.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "How Thrashing Begins",
+      "body": "Vicious Fault Cycle\nThrashing builds as a self-reinforcing cycle: \nFaults grow\nCPU idles\nWorsening the fault rate\nDegree of multiprogramming increases",
+      "notes": "Next, thrashing creates a cycle where the problem keeps getting worse. As page faults increase, \u000bthe CPU spends more time waiting for pages instead of executing processes. This leads to low CPU utilization, \u000band the system may respond by adding more processes, which means fewer frames are available for each process\u000b. That causes even more page faults and makes the situation worse.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "How Thrashing Begins",
+      "body": "Vicious Fault Cycle\nLow frames per process raise fault frequency\n01\n02\n03\nFaulting process queues for the paging device\nCPU sits idle waiting for pages to load\n04\n05\nLow CPU use triggers scheduler to add processes\nMore processes shrink frames per process further",
+      "notes": "Next, the cycle starts when a process has too few frames, causing frequent page faults \u000band forcing it to wait for the paging device to bring pages into memory. \u000bWhile processes are waiting, the CPU remains underutilized, so the scheduler may admit more processes. \u000bThese additional processes compete for the same frames,\u000b reducing the frames available to each process even further and causing more faults.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "How Thrashing Begins",
+      "body": "Analogy",
+      "notes": "A highway is already crowded, but more cars are allowed onto it because some lanes look unused, \u000bmaking the traffic jam worse — just as adding processes when CPU utilization is low can worsen thrashing.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "CPU Utilization Collapse",
+      "body": "Multiprogramming Vs Utilization\nCPU utilization rises with multiprogramming degree up to an optimal point, then collapses sharply once thrashing sets in.",
+      "notes": "Now, the relationship is straightforward: with a low degree of multiprogramming, \u000bframes are plentiful, so there are fewer faults but the CPU may remain underused. \u000bAs we add processes, we reach an optimal point where enough frames are available and CPU utilization is highest.\u000b Beyond that, frames become scarce, page faults dominate, and thrashing causes CPU utilization to crash.",
+      "tables": [
+        [
+          [
+            "Multiprogramming Degree",
+            "System Behaviour"
+          ],
+          [
+            "Low",
+            "Frames plentiful, few faults, CPU underused"
+          ],
+          [
+            "Optimal",
+            "Frames sufficient, CPU utilization peaks"
+          ],
+          [
+            "High (thrashing)",
+            "Frames scarce, faults dominate, utilization crashes"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 40,
+      "title": "Locality & Working Set",
+      "body": "Locality & Working Set",
+      "notes": "Now we will be learning about the Locality & Working Set",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Locality Model",
+      "body": "Clustered Page References\nA process does not reference all its pages uniformly. At any point, execution stays within a small, shifting set of pages called a locality\nPage 1\nPage 2\nPage 3\nPage 4\n.\n.\n.\nLocality",
+      "notes": "Moving on, a process usually does not need all of its pages at the same time. \u000bDuring a particular phase of execution, it tends to repeatedly access a small group of nearby pages.\u000b In the diagram, the process is currently working mainly with Page 2 and Page 3;\u000b this frequently accessed group is called a locality. \u000bAs execution progresses, the locality can shift to another set of pages.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 42,
+      "title": "Locality Model",
+      "body": "Clustered Page References\nExecution moves through distinct phases over time\n01\n02\n03\nEach phase references its own small page set\nLocalities shift as the process progresses\n04\nExplains why few frames can still work",
+      "notes": "Now, a process typically works in phases rather than accessing all its pages randomly.\u000b During each phase, it repeatedly uses a small set of pages, and as the process moves to another phase, \u000bthat set changes. This explains why a process can perform well with relatively few frames, \u000bas long as those frames cover its current locality.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Working Set Model",
+      "body": "Recent Reference Window\nThe working set formalises locality: \nIt is the set of pages referenced in the most recent window of references\nApproximating the process's current locality",
+      "notes": "Moving on, the working set gives us a practical way to identify a process's current locality.\u000b We look at the pages it has referenced within a recent window of memory references;\u000b those pages together form the working set,\u000b which gives us an estimate of what the process currently needs in memory.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Working Set Model",
+      "body": "Recent Reference Window\nWS(t, Δ) = pages referenced in last Δ references\n01\n02\n03\nΔ is the working-set window size\nWSS = |WS(t, Δ)| is the working set size\n04\nWSS approximates frames the process needs now",
+      "notes": "Next, we can represent the working set more precisely. WS(t, Δ) means the distinct pages \u000breferenced during the most recent Δ references, where Δ is the size of our reference window.\u000b The number of pages in that set, written as WSS = |WS(t, Δ)|, \u000bestimates how many frames the process currently needs to run efficiently.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Choosing Window Size",
+      "body": "Delta Sizing Trade-off\nThe window size Δ controls how accurately the working set tracks true locality; picking it wrong distorts the estimate in opposite ways.",
+      "notes": "Moving on, the choice of Δ, or window size, affects how accurately the working set\u000b represents the process's current locality. If Δ is too small, some needed pages may be missed;\u000b if it is too large, pages from different localities may get included together.\u000b So, a well-chosen Δ gives a closer picture of the pages the process currently needs.",
+      "tables": [
+        [
+          [
+            "Δ Value",
+            "Effect"
+          ],
+          [
+            "Too small",
+            "Misses parts of current locality"
+          ],
+          [
+            "Too large",
+            "Spans several localities together"
+          ],
+          [
+            "Well chosen",
+            "Tracks current locality closely"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 46,
+      "title": "Working Set Demand",
+      "body": "Total Demand D\nSumming every process's working set size gives the system's total frame demand, which the operating system compares against available frames\nWorking set 1\nWorking set 2\nWorking set 3",
+      "notes": "Now, we can estimate the total memory demand of the system by\u000b adding the working-set sizes of all active processes. In the diagram, the working sets of P1, P2, and P3 \u000bare combined to get the total demand, which the OS then compares with the number of frames actually available.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Working Set Demand",
+      "body": "Total Demand D\nD = sum of WSSi over all processes\n01\n02\n03\nm is the total number of available frames\nIf D > m, the system may experience thrashing\n04\nOS should keep D ≤ m",
+      "notes": "Next, we calculate the system's total frame demand by adding the working-set size of every process,\u000b which gives us D. Here, WSSᵢ represents the working-set size of process i, \u000bwhile m is the total number of available frames. If D becomes greater than m,\u000b there aren't enough frames to satisfy the processes' current needs, \u000bincreasing the risk of thrashing. So, the OS should try to maintain D ≤ m.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Working Set Example",
+      "body": "Computing WSS Numerically\nA short reference string with a chosen window Δ shows how the working set and its size are computed at a given time t",
+      "notes": "Now, let’s see how the working set is obtained from an actual reference string. \u000bAt t = 10, we look at the most recent 4 references, because Δ is 4. \u000bThese references are 7, 7, 5, and 1; since we count distinct pages only, \u000bthe working set becomes {1, 5, 7}, giving a WSS of 3.",
+      "tables": [
+        [
+          [
+            "Reference String (t=1..10)",
+            "Δ",
+            "WS at t=10",
+            "WSS"
+          ],
+          [
+            "2 6 1 5 7 7 7 7 5 1",
+            "4",
+            "{1,5,7}",
+            "3"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 49,
+      "title": "Controlling Thrashing",
+      "body": "Controlling Thrashing",
+      "notes": "Now we will be learning about the Controlling Thrashing",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Need For Control",
+      "body": "Before Collapse Occurs\nWorking sets reveal when demand exceeds frames, but the operating system still needs a live mechanism to act before utilisation collapses\nOperating systems",
+      "notes": "Moving on, the working set helps us identify when memory demand is becoming too high, \u000bbut simply detecting the problem is not enough. The OS needs a mechanism that can\u000b respond before the system reaches severe thrashing and CPU utilization collapses.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Need For Control",
+      "body": "Before Collapse Occurs\nDetection must happen while faults are rising\n01\n02\n03\nStatic allocation alone cannot react in time\nControl means adjusting frames or process count\nTwo approaches follow: the Page-Fault Frequency (PFF) scheme, and a set of general prevention techniques",
+      "notes": "Next, the OS needs to detect the problem while page faults are still increasing,\u000b rather than waiting for CPU utilization to collapse. \u000bA fixed allocation cannot respond quickly to changing memory needs, \u000bso the OS may need to adjust frame allocation or control the number of active processes.\u000b Two approaches help with this: Page-Fault Frequency (PFF) \u000band other general thrashing prevention techniques.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "PFF Scheme Concept",
+      "body": "Upper Lower Bounds\nThe page-fault frequency scheme directly monitors each process's fault rate and compares it against a defined upper and lower bound\nPage-Fault Frequency",
+      "notes": "Moving on, the Page-Fault Frequency scheme keeps track of how often each process\u000b is experiencing page faults. In the diagram, P1, P2, and P3 each have their own fault rate, \u000band the OS compares these rates with a predefined upper and lower bound to decide\u000b whether a process needs more or fewer frames.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "PFF Scheme Concept",
+      "body": "Upper, Lower Bounds\nFault rate above upper bound signals too few frames\n01\n02\n03\nFault rate below lower bound signals excess frames\nBounds define an acceptable fault-rate band",
+      "notes": "Next, the OS uses these two bounds to judge whether a process has enough memory.\u000b If its fault rate goes above the upper bound, it likely needs more frames. If it falls below the lower bound,\u000b the process may have more frames than necessary, so some can be taken back. \u000bTogether, the bounds create an acceptable range of page-fault frequency.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "PFF Scheme Concept",
+      "body": "Upper, Lower Bounds\nUpper Bound\nNumber of frames\nPage fault rate\nLower Bound\nIncrease number of frames\nDecrease number of frames",
+      "notes": "Now, this graph shows how the OS uses the fault rate to adjust frame allocation.\u000b When the fault rate is above the upper bound, the process is experiencing too many faults, \u000bso the OS should increase its frames. When the rate falls below the lower bound,\u000b the process has more frames than it needs, so the OS can decrease the allocation.\u000b Between these two bounds, the fault rate is considered acceptable.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "PFF Control Actions",
+      "body": "Adjusting Frame Counts\nCrossing a bound triggers a concrete action: frames are added, removed, or a process is suspended when none remain free.",
+      "notes": "Moving on, once the fault rate crosses a bound, the OS takes a specific action.\u000b If it goes above the upper bound, more frames are allocated to the process.\u000b If there are no free frames, the OS may suspend a low-priority process to free memory. \u000bOn the other hand, if the rate falls below the lower bound, excess frames can be taken back from that process.",
+      "tables": [
+        [
+          [
+            "Fault Rate",
+            "Action Taken"
+          ],
+          [
+            "Above upper bound",
+            "Allocate more frames to process"
+          ],
+          [
+            "No free frames left",
+            "Suspend a low-priority process"
+          ],
+          [
+            "Below lower bound",
+            "Remove excess frames from process"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 56,
+      "title": "Preventing Thrashing",
+      "body": "Key Techniques List\nBeyond PFF, several complementary techniques keep total frame demand within the available supply and avoid the fault-idle cycle",
+      "notes": "Next, PFF is one way to control thrashing, but it is not the only option. \u000bThe OS can use other techniques to keep the total memory demand within the available frames \u000band prevent the system from getting trapped in a cycle of continuous page faults and CPU idle time.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Preventing Thrashing",
+      "body": "Key Techniques List\nLimit degree of multiprogramming admitted at once\n01\n02\n03\nUse local replacement to contain a process's faults\nSuspend or swap out processes under memory pressure\n04\nMonitor working set or fault rate continuously",
+      "notes": "Now, the main goal is to make sure processes are not competing for more memory than the system can provide\u000b. One way is to keep the number of active processes under control; another is to isolate memory pressure \u000busing local replacement. If memory becomes heavily constrained, some processes can be temporarily suspended \u000bor swapped out. Meanwhile, monitoring the working set or fault rate helps the OS recognize \u000bincreasing pressure early and take action before thrashing begins.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Working Set Vs PFF",
+      "body": "Two Control Methods",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Working Set Model",
+            "PFF Scheme"
+          ],
+          [
+            "Basis",
+            "Pages in window Δ",
+            "Fault rate thresholds"
+          ],
+          [
+            "Trigger",
+            "Total demand D exceeds available frames m",
+            "Rate crosses upper/lower bound"
+          ],
+          [
+            "Overhead",
+            "Tracking reference window",
+            "Tracking fault timestamps"
+          ],
+          [
+            "Response",
+            "Reallocate by demand D",
+            "Add, remove, or suspend"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 59,
+      "title": "Thrashing Control Today",
+      "body": "Modern Practice Notes\nLarge modern RAM sizes make severe thrashing rarer, but virtual memory managers still track fault rates and cap process counts under memory pressure.",
+      "notes": "Finally, severe thrashing is less common today because modern systems\u000b generally have much more physical memory. However, virtual memory managers still need to\u000b watch page-fault behavior and may limit the number of active processes when \u000bmemory pressure becomes high, preventing the system from falling into the same fault-heavy cycle.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Thrashing Control Today",
+      "body": "Modern Practice Notes\nCloud VMs and containers still enforce memory limits\n01\n02\n03\nHypervisors monitor guest fault rates similarly\nCore concepts remain standard interview fundamentals",
+      "notes": "Finally, these ideas also apply to modern environments. \u000bCloud VMs and containers still have memory limits, \u000bso excessive memory demand can lead to pressure and performance issues. \u000bSimilarly, hypervisors monitor memory and fault behavior across guest systems. \u000bSo, although the technology has evolved, the core ideas of frame allocation, page faults, \u000band thrashing remain important OS fundamentals and common interview concepts.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Thrashing, Working Set & Frame Allocation",
+      "body": "Frame Allocation\nEqual\nProportional & priority allocation\nReplacement Scope\nGlobal vs local replacement\nThrashing\nCauses & effects",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Thrashing, Working Set & Frame Allocation",
+      "body": "Locality & Working Set\nLocality model\nWorking set model\nControlling Thrashing\nPage-fault frequency (PFF) scheme\nTechniques to prevent thrashing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "File System Concepts & Directories",
+      "body": "File System Concepts & Directories",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1-vlG4snags3TPwlLkNhc_VOd30_-5jEN8hxEMcwxuGg/edit"
+}

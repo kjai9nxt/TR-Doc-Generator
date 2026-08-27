@@ -36,7 +36,14 @@ deterministic and lets graders inspect fields directly.
             {"type": "bullets", "items": ["...", "..."]},
             {"type": "table",
              "columns": ["Feature", "Detail"],
-             "rows": [["Standard", "RFC 4960"], ["...", "..."]]}
+             "rows": [["Standard", "RFC 4960"], ["...", "..."]]},
+            {"type": "code",                   // a snippet the learner reads
+             "language": "jsx",                // REQUIRED — the fence/highlight language
+             "code": "line one\nline two",     // REQUIRED — real newlines, no fences
+             "walkthrough": [                  // what each part of it does
+               {"lines": "1", "text": "..."},  // one line
+               {"lines": "2-3", "text": "..."} // …or a range
+             ]}
           ],
           "analogy": "TCP is a single-lane road ...",   // ONLY on concept_intro
           "visual_guidance": "Left: TCP one stream ...",
@@ -58,6 +65,23 @@ deterministic and lets graders inspect fields directly.
   "closing": "Thank You  |  All the Best"
 }
 ```
+
+### The `code` block
+
+For a course that teaches code. Three rules, all gated:
+
+* **`language` and `code` are required.** An empty snippet is a slide that shows nothing.
+* **`code` carries real newlines and no fences.** The renderer adds the fence; a snippet
+  that fences itself renders as literal backticks.
+* **`walkthrough` is what the learner READS about the snippet**, and it is the code
+  slide's prose. A `lines` value is `"4"` or `"2-6"` and must point at lines the snippet
+  actually has — a walkthrough citing line 7 of a four-line snippet is a broken
+  reference, exactly like a coverage entry pointing at a slide that is not there.
+
+A code slide with no walkthrough counts as carrying **no prose**, and the document is
+gated on the share of slides that do (`constraints.content.min_slides_with_text_share`).
+Code without explanation is not teaching, and the gate says so.
+
 
 `role` is one of `overview`, `concept_intro`, `mechanism`, `working_example`,
 `comparison`, `advantages_limitations`, `reasoning`, `application`, `summary`. Like

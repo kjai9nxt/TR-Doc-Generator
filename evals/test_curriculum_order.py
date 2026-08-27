@@ -65,7 +65,10 @@ def names():
 
 
 def deck(n):
-    return f"decks/session_{int(n):02d}.json"
+    """The deck's KB-relative mirror path — course-scoped now, so it comes from the store
+    rather than being spelled out here. Two courses' session 3 are different rows."""
+    from src import pptx_ingest
+    return pptx_ingest.kb_rel(C, n)
 
 
 def put_decks(paths):
@@ -178,7 +181,7 @@ def main() -> int:
 
     print("\n== the deck mirror follows, including the chained-collision case ==")
     put_decks([deck(3), deck(4), deck(5)])
-    moved = db.kb_rename_decks({3: 4, 4: 5, 5: 6})
+    moved = db.kb_rename_decks(C, {3: 4, 4: 5, 5: 6})
     st = deck_state()
     check("a 3->4, 4->5, 5->6 chain does not lose a row", moved == 3 and sorted(st) ==
           [deck(4), deck(5), deck(6)])
@@ -186,12 +189,12 @@ def main() -> int:
     check("no __moving__ placeholder is left behind",
           not any("__moving__" in p for p in st))
     put_decks([deck(3), deck(4)])
-    db.kb_rename_decks({3: 4})
+    db.kb_rename_decks(C, {3: 4})
     st = deck_state()
     check("an orphan on the destination is replaced, not duplicated",
           sorted(st) == [deck(4)] and st[deck(4)] == f"content-of-{deck(3)}")
     put_decks([deck(3), "course_structure.json"])
-    db.kb_rename_decks({3: 4})
+    db.kb_rename_decks(C, {3: 4})
     check("non-deck KB files are untouched",
           deck_state().get("course_structure.json") == "content-of-course_structure.json")
 
@@ -246,7 +249,7 @@ def main() -> int:
         seen.clear()
         db._connect = counting_connect
         try:
-            db.kb_rename_decks({i: i + 1 for i in range(1, size + 1)})
+            db.kb_rename_decks(C, {i: i + 1 for i in range(1, size + 1)})
         finally:
             db._connect = real_connect
         held = max((c.n for c in seen), default=0)

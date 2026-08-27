@@ -269,28 +269,59 @@ check("a renamed section is reported",
 print("\n== do not re-teach what an earlier session already taught ==")
 # The point of ingesting the decks. Only the unambiguous case fails: a slide that
 # RE-INTRODUCES a concept under a title an earlier deck already used.
-from src import pptx_ingest as _ppt
-_prior = _ppt.taught_titles(15)
+#
+# The decks are BUILT HERE, in a temporary store, for two reasons. This file has no
+# TR_DATA_DIR isolation, so writing into the real knowledge base would pollute the
+# developer's own course; and the check is now course-scoped, so depending on whatever
+# happens to be on disk would make it pass or fail by accident. `course=` is passed
+# explicitly below — without it the prior-deck check is skipped rather than run against
+# the wrong course, which is the whole point of the scoping.
+import tempfile as _tf                                       # noqa: E402
+from src import pptx_ingest as _ppt                           # noqa: E402
+_REPEAT_COURSE = "Gate Repetition Course"
+_real_decks_dir = _ppt.DECKS_DIR
+_ppt.DECKS_DIR = Path(_tf.mkdtemp(prefix="tr_gate_decks_"))
+_ppt.put_deck(_REPEAT_COURSE, 3, {
+    "session_no": 3, "deck_title": "Transport Layer Overview", "n_slides": 2,
+    "slides": [{"n": 1, "title": "Stream Control Transmission Protocol", "body": "x"},
+               {"n": 2, "title": "Multi-Streaming And Multi-Homing", "body": "y"}]})
+_prior = _ppt.taught_titles(_REPEAT_COURSE, 15)
 if _prior:
     _title = next((t for _sn, t in _prior if len(t.split()) >= 3), None)
     d = copy.deepcopy(GOLDEN)
     s = d["sections"][0]["slides"][0]
     s["title"] = _title; s["role"] = "concept_intro"
     s["analogy"] = "A shared notice board — just as one association carries many streams."
-    gate(d, "already introduced under the same title",
-         label="re-introducing a prior session's concept fails")
+    r1 = guardrails.check(d, cur, False, False, course=_REPEAT_COURSE)
+    check("re-introducing a prior session's concept fails",
+          any("already introduced under the same title" in f for f in r1.failures),
+          "; ".join(r1.failures)[:200])
     d2 = copy.deepcopy(d)
     d2["sections"][0]["slides"][0]["role"] = "mechanism"
     d2["sections"][0]["slides"][0].pop("analogy", None)
-    r2 = guardrails.check(d2, cur, False, False)
+    r2 = guardrails.check(d2, cur, False, False, course=_REPEAT_COURSE)
     check("...but the same title on a deeper slide is a WARNING, not a failure",
           not any("already introduced under the same title" in f for f in r2.failures)
           and any("closely matches Session" in w for w in r2.warnings))
     check("the golden itself trips no repetition failure",
           not any("already introduced under the same title" in f
-                  for f in guardrails.check(GOLDEN, cur, False, False).failures))
+                  for f in guardrails.check(GOLDEN, cur, False, False,
+                                            course=_REPEAT_COURSE).failures))
 else:
-    check("prior decks available for the repetition gate", False, "(knowledge base empty)")
+    check("prior decks available for the repetition gate", False, "(store empty)")
+# A course with NO decks must not be checked against anybody else's. This is the bug the
+# scoping fixes, stated as an assertion: the same document that fails above passes here.
+_d3 = copy.deepcopy(GOLDEN)
+_d3["sections"][0]["slides"][0]["title"] = "Stream Control Transmission Protocol"
+_d3["sections"][0]["slides"][0]["role"] = "mechanism"
+_d3["sections"][0]["slides"][0].pop("analogy", None)
+check("a DIFFERENT course is not checked against these decks",
+      not any("closely matches Session" in w
+              for w in guardrails.check(_d3, cur, False, False,
+                                        course="Some Other Course").warnings),
+      "; ".join(guardrails.check(_d3, cur, False, False,
+                                 course="Some Other Course").warnings)[:160])
+_ppt.DECKS_DIR = _real_decks_dir          # hand the real store back
 
 print("\n== the judge may not deduct without naming a defect ==")
 # Measured: the same document scored 91.6 and then 100.0 from the same model, the only
@@ -617,7 +648,7 @@ for name, text in (("one-shot", context_builder.time_mode_block(True)),
           f"{cbud['per_slide_target']} words per slide" in text, text[-260:])
 check("depth mode omits the time-derived word budget (no time ceiling there)",
       "CONTENT BUDGET" not in context_builder.time_mode_block(False))
-instr_w = context_builder.takeaway_instruction(cur, 0, slides_used=0,
+instr_w = context_builder.takeaway_instruction(_REPEAT_COURSE, cur, 0, slides_used=0,
                                                sections_left=cur.key_takeaways_count)
 check("the chunk instruction carries a WORD budget too",
       "WORD BUDGET FOR THIS SECTION" in instr_w)
@@ -634,7 +665,8 @@ squeezed = context_builder.chunk_slide_allowance(cur, slides_used=CEIL + 5, sect
 floor = config.harness()["constraints"]["coverage"]["min_sub_concepts_per_takeaway"]
 check("an overspent budget squeezes later sections to the floor, not below",
       squeezed == floor, str(squeezed))
-instr = context_builder.takeaway_instruction(cur, 1, slides_used=3, sections_left=N - 1)
+instr = context_builder.takeaway_instruction(_REPEAT_COURSE, cur, 1, slides_used=3,
+                                             sections_left=N - 1)
 check("the chunk instruction carries its budget", "SLIDE BUDGET FOR THIS SECTION" in instr)
 check("…and tells the model to GROUP rather than drop a sub-concept",
       "do NOT drop one and do NOT add a slide" in instr)

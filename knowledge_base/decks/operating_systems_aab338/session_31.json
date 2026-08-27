@@ -1,0 +1,745 @@
+{
+  "session_no": 31,
+  "source_file": "Spooling, Buffering & Disk Structure",
+  "deck_title": "Spooling, Buffering & Disk Structure",
+  "n_slides": 77,
+  "summary": "\n    - Slide 2: Session 31 : Spooling, Buffering & Disk Structure\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: 1. Buffering: Single, double & circular buffers; Caching vs buffering\n    - Slide 6: Buffering\n    - Slide 7: Subheading: Why And What Types\n    - Slide 8: Buffering Landscape\n    - Slide 9: Subheading: Why And What Types\n    - Slide 10: Heading: Single Buffer\n    - Slide 11: Heading: Single Buffer\n    - Slide 12: Heading: Single Buffer\n    - Slide 13: Heading: Single Buffer\n    - Slide 14: Heading: Double Buffering\n    - Slide 15: Heading: Double Buffering\n    - Slide 16: Heading: Double Buffering\n    - Slide 17: Heading: Circular Buffer\n    - Slide 18: Heading: Circular Buffer\n    - Slide 19: Heading: Circular Buffer\n    - Slide 20: Heading: Circular Buffer\n    - Slide 21: Heading: Buffer Types Compared\n    - Slide 22: Heading: Caching Vs Buffering\n    - Slide 23: Heading: Caching Vs Buffering\n    - Slide 24: Spooling\n    - Slide 25: Heading: Spooling Concept\n    - Slide 26: Heading: Spooling Concept\n    - Slide 27: Heading: Spooling Concept\n    - Slide 28: Heading: Spooling Mechanism\n    - Slide 29: Heading: Spooling Mechanism\n    - Slide 30: Heading: Spooling Mechanism\n    - Slide 31: Heading: Printer Spooling\n    - Slide 32: Heading: Printer Spooling\n    - Slide 33: Heading: Printer Spooling\n    - Slide 34: Buffering and spooling both stage data outside the requesting process, but they \n    - Slide 35: Spooling Vs Buffering\n    - Slide 36: Disk Structure\n    - Slide 37: Heading: Disk Structure\n    - Slide 38: Heading: Disk Structure\n    - Slide 39: Heading: Disk Structure\n    - Slide 40: Heading: Disk Structure\n    - Slide 41: Heading: Disk Structure\n    - Slide 42: Heading: Platters And Tracks\n    - Slide 43: Heading: Platters And Tracks\n    - Slide 44: Heading: Platters And Tracks\n    - Slide 45: Heading: Sectors And Addressing\n    - Slide 46: Heading: Sectors And Addressing\n    - Slide 47: Heading: Cylinders Explained\n    - Slide 48: Heading: Cylinders Explained\n    - Slide 49: Heading: Cylinders Explained\n    - Slide 50: Heading: Heads And Arm\n    - Slide 51: Heading: Heads And Arm\n    - Slide 52: Heading: Disk Geometry Summary\n    - Slide 53: Heading: Disk Geometry Summary\n    - Slide 54: Disk Performance\n    - Slide 55: Heading: Disk Performance Factors\n    - Slide 56: Heading: Disk Performance Factors\n    - Slide 57: Heading: Disk Performance Factors\n    - Slide 58: Heading: Seek Time\n    - Slide 59: Heading: Seek Time\n    - Slide 60: Heading: Rotational Latency\n    - Slide 61: Heading: Rotational Latency\n    - Slide 62: Heading: Total Access Time\n    - Slide 63: Heading: Improving Disk Speed\n    - Slide 64: Disk Organization\n    - Slide 65: Heading: Disk Organization\n    - Slide 66: Heading: Disk Organization\n    - Slide 67: Heading: Low-Level Formatting\n    - Slide 68: Heading: Low-Level Formatting\n    - Slide 69: Heading: High-Level Formatting\n    - Slide 70: Heading: Logical Block Addressing\n    - Slide 71: Heading: Logical Block Addressing\n    - Slide 72: Heading: CHS Vs LBA\n    - Slide 75: Disk Scheduling Algorithms",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Session 31 : Spooling, Buffering & Disk Structure",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "1. Buffering: Single, double & circular buffers; Caching vs buffering",
+      "body": "1. Buffering: Single, double & circular buffers; Caching vs buffering\n2. Spooling: Concept & use (e.g., printers)\n3. Disk Structure: Platters, tracks, sectors & cylinders\n4. Disk Performance: Seek time, rotational latency, transfer time\n5. Disk Organization: Disk formatting; Logical block addressing (LBA)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Buffering",
+      "body": "Buffering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Subheading: Why And What Types",
+      "body": "Subheading: Why And What Types\nContent:\nBuffering temporarily holds data in memory while it moves between a producer and a consumer whose speeds or timing differ, such as a CPU writing to a slow printer or a network card receiving in bursts. Operating systems implement it as one of three schemes, each trading memory for overlap.\nFull overlap: double and circular schemes only\nZero overlap: single buffer scheme\nMemory cost rises with buffer count used\nScheme choice depends on burst size, steady rate\nBuffering Landscape\nWhy And What Types\nBuffering temporarily holds data in memory while it moves between a producer and a consumer whose speeds or timing differ,",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Buffering Landscape",
+      "body": "Subheading: Why And What Types\nContent:\nBuffering temporarily holds data in memory while it moves between a producer and a consumer whose speeds or timing differ, such as a CPU writing to a slow printer or a network card receiving in bursts. Operating systems implement it as one of three schemes, each trading memory for overlap.\nFull overlap: double and circular schemes only\nZero overlap: single buffer scheme\nMemory cost rises with buffer count used\nScheme choice depends on burst size, steady rate\nBuffering Landscape\nWhy And What Types\nsuch as a CPU writing to a slow printer or a network card receiving in bursts.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Subheading: Why And What Types",
+      "body": "Subheading: Why And What Types\nContent:\nBuffering temporarily holds data in memory while it moves between a producer and a consumer whose speeds or timing differ, such as a CPU writing to a slow printer or a network card receiving in bursts. Operating systems implement it as one of three schemes, each trading memory for overlap.\nFull overlap: double and circular schemes only\nZero overlap: single buffer scheme\nMemory cost rises with buffer count used\nScheme choice depends on burst size, steady rate\nBuffering Landscape\nWhy And What Types\nOperating systems implement it as one of three schemes, each trading memory for overlap.\nDouble Scheme\nCircular Scheme\nsingle Buffer Scheme\nFull overlap\nZero overlap\nMemory cost rises with buffer count used\nScheme choice depends on burst size, steady rate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Heading: Single Buffer",
+      "body": "Subheading: One Slot Only\nContent:\nA single buffer offers one memory area between producer and consumer. The producer must wait until the consumer fully drains it before writing again, so production and consumption never proceed together.\nThroughput limited by produce-time + consume-time in series\nMemory cost: exactly one buffer slot only\nApplies to byte-wise devices: keyboard, mouse\nNo concurrency: zero speed-up over raw transfer\nSingle Buffer\nOne Slot Only\nA single buffer offers one memory area between producer and consumer\nso production and consumption never proceed together\nThe producer must wait until the consumer fully drains it before writing again",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Heading: Single Buffer",
+      "body": "Subheading: One Slot Only\nContent:\nA single buffer offers one memory area between producer and consumer. The producer must wait until the consumer fully drains it before writing again, so production and consumption never proceed together.\nThroughput limited by produce-time + consume-time in series\nMemory cost: exactly one buffer slot only\nApplies to byte-wise devices: keyboard, mouse\nNo concurrency: zero speed-up over raw transfer\nSingle Buffer\nOne Slot Only\nThroughput limited by produce-time + consume-time in series\n01\nMemory cost: exactly one buffer slot only\n02\nApplies to byte-wise devices: keyboard, mouse\n03\nNo concurrency: zero speed-up over raw transfer\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Heading: Single Buffer",
+      "body": "Subheading: Diagram\nSingle Buffer\nDiagram\nInput Device/ Producer\nBuffer\u000b(Temporary Memory)\nReceiver",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Heading: Single Buffer",
+      "body": "Subheading: Analogy\nAnalogy:\nA single water bucket under a tap must be emptied before it can be refilled — just as a single buffer blocks the producer until the consumer has drained it.\nSingle Buffer\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Heading: Double Buffering",
+      "body": "Subheading: Two Alternating Buffers\nContent:\nDouble buffering uses two buffers so the producer fills one while the consumer drains the other, then the roles swap. This overlap hides most of the mismatch that a single buffer exposes to the caller.\nSwap trigger: consumer signals buffer-full completion\nMemory cost: twice a single buffer's footprint\nThroughput gain: near full producer speed reached\nAlso known as page flipping in graphics pipelines\nCommon uses: video frame rendering, audio playback\nDouble Buffering\nTwo Alternating Buffers\nDouble buffering uses two buffers so the producer fills one while the consumer drains the other, then the roles swap\n This overlap hides most of the mismatch that a single buffer exposes to the caller",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Heading: Double Buffering",
+      "body": "Subheading: Two Alternating Buffers\nContent:\nDouble buffering uses two buffers so the producer fills one while the consumer drains the other, then the roles swap. This overlap hides most of the mismatch that a single buffer exposes to the caller.\nSwap trigger: consumer signals buffer-full completion\nMemory cost: twice a single buffer's footprint\nThroughput gain: near full producer speed reached\nAlso known as page flipping in graphics pipelines\nCommon uses: video frame rendering, audio playback\nDouble Buffering\nTwo Alternating Buffers\nSwap trigger: consumer signals buffer-full completion\n01\nMemory cost: twice a single buffer's footprint\n02\nThroughput gain: near full producer speed reached\n03\nCommon uses: video frame rendering, audio playback\n04\nAlso known as page flipping in graphics pipelines",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Heading: Double Buffering",
+      "body": "Subheading: Diagram\nDouble Buffering\nDiagram\nInput Device/ Producer\nFirst Buffer\nReceiver\nSecond Buffer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Heading: Circular Buffer",
+      "body": "Subheading: Ring Of Slots\nContent:\nA circular buffer arranges several slots in a ring, with separate head and tail pointers marking the next write and read positions. \nCircular Buffer\nRing Of Slots\nA circular buffer arranges several slots in a ring, with separate head and tail pointers marking the next write and read positions\nWhen a pointer reaches the last slot it wraps back to the first\nletting many writes and reads interleave continuously",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Heading: Circular Buffer",
+      "body": "Subheading: Ring Of Slots\nContent:\nA circular buffer arranges several slots in a ring, with separate head and tail pointers marking the next write and read positions. When a pointer reaches the last slot it wraps back to the first, letting many writes and reads interleave continuously.\nOne slot kept empty to distinguish full from empty\nFixed ring size set at creation, no resize\nO(1) enqueue and dequeue, no data shifting\nUsed for audio streaming, input event queues\nCircular Buffer\nRing Of Slots\nOne slot kept empty to distinguish full from empty\n01\nFixed ring size set at creation, no resize\n02\nO(1) enqueue and dequeue, no data shifting\n03\nUsed for audio streaming, input event queues\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Heading: Circular Buffer",
+      "body": "Subheading: Diagram\nCircular Buffer\nDiagram\nInput Device/ Producer\nFirst Buffer\nReceiver\nSecond Buffer\nNth Buffer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Heading: Circular Buffer",
+      "body": "Subheading: Analogy\nAnalogy:\nA traffic roundabout lets vehicles enter and exit at several points, circling back to the start rather than stopping — just as a circular buffer wraps its write and read pointers back to the first slot without shifting data.\nCircular Buffer\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Heading: Buffer Types Compared",
+      "body": "Subheading: Single Double Circular\nContent:\nThe three schemes trade memory for overlap and implementation complexity, so the right choice depends on whether the workload is a one-shot transfer or a continuous stream.\nBuffer Types Compared\nSingle Double Circular\nThe three schemes trade memory for overlap and implementation complexity, so the right choice depends on whether the workload is a one-shot transfer or a continuous stream",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Type",
+            "Buffers",
+            "Overlap",
+            "Best For"
+          ],
+          [
+            "Single",
+            "1",
+            "None, strict alternation",
+            "Simple, low-rate devices"
+          ],
+          [
+            "Double",
+            "2",
+            "Full overlap on swap",
+            "Streaming media, graphics"
+          ],
+          [
+            "Circular",
+            "N slots in ring",
+            "Continuous, several in flight",
+            "Audio queues, event streams"
+          ]
+        ],
+        [
+          [
+            "Mode",
+            "What Is Logged",
+            "Safety vs Speed"
+          ],
+          [
+            "Journal (data mode)",
+            "Metadata and file data",
+            "Safest, slowest"
+          ],
+          [
+            "Ordered (default)",
+            "Metadata only, data flushed first",
+            "Balanced, common default"
+          ],
+          [
+            "Writeback",
+            "Metadata only, no data ordering guarantee",
+            "Fastest, least safe"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Heading: Caching Vs Buffering",
+      "body": "Subheading: Reuse Versus Transit\nContent:\nBuffering and caching may share the same memory pool but serve different purposes: a buffer holds the only copy of data currently in transit, while a cache holds a duplicate of data that also exists at the source, kept purely to avoid a repeat access.\nInvalidation needed when cached source data changes\nBuffer freed immediately after single consumer read\nOS disk buffer cache serves both transit, reuse roles\nCoherency cost: cache correctness versus buffer simplicity\nBuffer Types Compared\nSingle Double Circular\nBuffering and caching may share the same memory pool but serve different purposes:\nAbuffer holds the only copy of data currently in transit, \nwhile a cache holds a duplicate of data that also exists at the source, kept purely to avoid a repeat access",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Heading: Caching Vs Buffering",
+      "body": "Subheading: Reuse Versus Transit\nContent:\nBuffering and caching may share the same memory pool but serve different purposes: a buffer holds the only copy of data currently in transit, while a cache holds a duplicate of data that also exists at the source, kept purely to avoid a repeat access.\nInvalidation needed when cached source data changes\nBuffer freed immediately after single consumer read\nOS disk buffer cache serves both transit, reuse roles\nCoherency cost: cache correctness versus buffer simplicity\nBuffer Types Compared\nSingle Double Circular\nInvalidation needed when cached source data changes\n01\nBuffer freed immediately after single consumer read\n02\nOS disk buffer cache serves both transit, reuse roles\n03\nCoherency cost: cache correctness versus buffer simplicity\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Spooling",
+      "body": "Spooling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Heading: Spooling Concept",
+      "body": "Subheading: Why It Exists\nContent:\nSpooling holds an entire output job on disk until a single, non-shareable device is free to consume it. Because the whole job is queued rather than a few bytes, many processes submit work without touching the device directly.\nTargets devices only one job can use at a time (printer, tape drive)\nSPOOL: Simultaneous Peripheral Operations On-Line\nPrevents interleaved, mixed-up output from different jobs\nDecouples job submission from job completion\nSpooling Concept\nWhy It Exists\nMany processes submit work without touching the device directly.\nSpooling holds an entire output job on disk until a single, non-shareable device is free to consume it. Because the whole job is queued rather than a few bytes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Heading: Spooling Concept",
+      "body": "Subheading: Why It Exists\nContent:\nSpooling holds an entire output job on disk until a single, non-shareable device is free to consume it. Because the whole job is queued rather than a few bytes, many processes submit work without touching the device directly.\nTargets devices only one job can use at a time (printer, tape drive)\nSPOOL: Simultaneous Peripheral Operations On-Line\nPrevents interleaved, mixed-up output from different jobs\nDecouples job submission from job completion\nSpooling Concept\nWhy It Exists\nTargets devices only one job can use at a time (printer, tape drive)\n01\nSPOOL: Simultaneous Peripheral Operations On-Line\n02\nPrevents interleaved, mixed-up output from different jobs\n03\nDecouples job submission from job completion\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Heading: Spooling Concept",
+      "body": "Subheading: Analogy\nAnalogy:\nAt a railway reservation counter, passengers drop a filled form into a box and leave, while the clerk processes forms one by one from that box — just as spooling lets a process hand off its whole job to a disk queue and continue without waiting for the device.\nSpooling Concept\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Heading: Spooling Mechanism",
+      "body": "Subheading: Queue And Reservation\nContent:\nSpooling is built from a dedicated disk area and a controlling spooler process. Each job is written into this area first, then dispatched to the device strictly one at a time in queue order.\nSpool directory: disk area holding queued jobs\nSpooler process dequeues and dispatches jobs in order\nDevice reservation: exclusive lock held only for the running job, released on completion or abort\nCompleted job entry removed from spool after output\nSpooling Mechanism\nQueue And Reservation\nSpooling is built from a dedicated disk area and a controlling spooler process. Each job is written into this area first, then dispatched to the device strictly one at a time in queue order.\nSpooling is built from a dedicated disk area and a controlling spooler process. Each job is written into this area first, then dispatched to the device strictly one at a time in queue order",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Heading: Spooling Mechanism",
+      "body": "Subheading: Queue And Reservation\nContent:\nSpooling is built from a dedicated disk area and a controlling spooler process. Each job is written into this area first, then dispatched to the device strictly one at a time in queue order.\nSpool directory: disk area holding queued jobs\nSpooler process dequeues and dispatches jobs in order\nDevice reservation: exclusive lock held only for the running job, released on completion or abort\nCompleted job entry removed from spool after output\nSpooling Mechanism\nQueue And Reservation\nSpool directory: disk area holding queued jobs\n01\nSpooler process dequeues and dispatches jobs in order\n02\nDevice reservation: exclusive lock held only for the running job, released on completion or abort\n03\nCompleted job entry removed from spool after output\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Heading: Spooling Mechanism",
+      "body": "Subheading: Diagram\nSpooling Mechanism\nDiagram\nInput Device/\nEx: Card reader\nInput Device/\nEx: Printer\nCPU\nSpool\nSecondary Storage",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Heading: Printer Spooling",
+      "body": "Subheading: Queue In Practice\nContent:\nPrint spooling is the everyday example: several users send documents while only one printer exists. Each submission becomes a queued job, letting a user continue working immediately instead of waiting at the device.\nEach job gets an identifier and a queue position\nAdministrator can view, reorder or cancel queued jobs\nUrgent or small jobs may be prioritised ahead of others\nOS print spooler service manages job order and dispatch\nPrinter Spooling\nQueue In Practice\nPrint spooling is the everyday example: several users send documents while only one printer exists. Each submission becomes a queued job\n Letting a user continue working immediately instead of waiting at the device",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Heading: Printer Spooling",
+      "body": "Subheading: Queue In Practice\nContent:\nPrint spooling is the everyday example: several users send documents while only one printer exists. Each submission becomes a queued job, letting a user continue working immediately instead of waiting at the device.\nEach job gets an identifier and a queue position\nAdministrator can view, reorder or cancel queued jobs\nUrgent or small jobs may be prioritised ahead of others\nOS print spooler service manages job order and dispatch\nPrinter Spooling\nQueue In Practice\nEach job gets an identifier and a queue position\n01\nAdministrator can view, reorder or cancel queued jobs\n02\nUrgent or small jobs may be prioritised ahead of others\n03\nOS print spooler service manages job order and dispatch\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Heading: Printer Spooling",
+      "body": "Subheading: Diagram\nPrinter Spooling\nDiagram\nSpooler/Memory (Print Jobs in Queue",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Buffering and spooling both stage data outside the requesting process, but they ",
+      "body": "Buffering and spooling both stage data outside the requesting process, but they solve different problems\nSpooling Vs Buffering\nTwo Disk Roles",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Spooling Vs Buffering",
+      "body": "Spooling Vs Buffering\nTwo Disk Roles\nBuffering overlaps transfer speed within one job, while spooling queues whole jobs so a non-shareable device can safely serve many processes.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Buffering",
+            "Spooling"
+          ],
+          [
+            "Unit staged",
+            "Bytes or blocks in transit",
+            "Whole job in a queue"
+          ],
+          [
+            "Purpose",
+            "Speed or timing mismatch",
+            "Sharing a non-shareable device"
+          ],
+          [
+            "Typical location",
+            "Memory",
+            "Disk spool area"
+          ],
+          [
+            "Concurrency",
+            "One job's data at a time",
+            "Many jobs queued safely"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 36,
+      "title": "Disk Structure",
+      "body": "Disk Structure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Heading: Disk Structure",
+      "body": "Subheading: Physical Components\nContent:\nA hard disk drive organises its storage into nested physical divisions that together give the disk its addressing geometry. Four structures define this layout, moving from the storage medium down to the addressable unit.\nPlatters: rigid magnetic disks stacked on a spindle\nTracks: concentric circular paths on each surface\nSectors: fixed-size arcs dividing every track\nCylinders: same-numbered track aligned across all platters\nDisk Structure\nPhysical Components\nA hard disk drive organises its storage into nested physical divisions that together give the disk its addressing geometry. Four structures define this layout, moving from the storage medium down to the addressable unit",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Heading: Disk Structure",
+      "body": "Subheading: Physical Components\nContent:\nA hard disk drive organises its storage into nested physical divisions that together give the disk its addressing geometry. Four structures define this layout, moving from the storage medium down to the addressable unit.\nPlatters: rigid magnetic disks stacked on a spindle\nTracks: concentric circular paths on each surface\nSectors: fixed-size arcs dividing every track\nCylinders: same-numbered track aligned across all platters\nDisk Structure\nPhysical Components\nA hard disk drive organises its storage into nested physical divisions that together give the disk its addressing geometry\nA hard disk drive organises its storage into nested physical divisions that together give the disk its addressing geometry",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Heading: Disk Structure",
+      "body": "Subheading: Physical Components\nContent:\nA hard disk drive organises its storage into nested physical divisions that together give the disk its addressing geometry. Four structures define this layout, moving from the storage medium down to the addressable unit.\nPlatters: rigid magnetic disks stacked on a spindle\nTracks: concentric circular paths on each surface\nSectors: fixed-size arcs dividing every track\nCylinders: same-numbered track aligned across all platters\nDisk Structure\nPhysical Components\nFour structures define this layout, moving from the storage medium down to the addressable unit",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Heading: Disk Structure",
+      "body": "Subheading: Physical Components\nContent:\nA hard disk drive organises its storage into nested physical divisions that together give the disk its addressing geometry. Four structures define this layout, moving from the storage medium down to the addressable unit.\nPlatters: rigid magnetic disks stacked on a spindle\nTracks: concentric circular paths on each surface\nSectors: fixed-size arcs dividing every track\nCylinders: same-numbered track aligned across all platters\nDisk Structure\nPhysical Components\nRigid magnetic disks stacked on a spindle\nConcentric circular paths on each surface\nFixed-size arcs dividing every track\nSame-numbered track aligned across all platters",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Heading: Disk Structure",
+      "body": "Subheading: Diagram\nTrack\nSpindle\nSector\nCylinder\nPlatter\nArm\nR/W Head\nArm Assembler\nDisk Structure\nDiagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Heading: Platters And Tracks",
+      "body": "Subheading: Surfaces And Rings\nContent:\nEach platter is a rigid, magnetically coated disk with both faces usable, so several platters stacked on one spindle multiply the surfaces available. Every surface is ruled into tracks — narrow concentric rings holding data along circular paths.\nTrack 0 is the outermost ring, highest number nearest spindle\nTrack density (tracks per inch) sets storage capacity\nEach surface needs its own read-write head\nModern drives pack thousands of tracks per surface\nPlatters And Tracks\nSurfaces And Rings\nEach platter is a rigid, magnetically coated disk with both faces usable\nSeveral platters stacked on one spindle multiply the surfaces available\nEvery surface is ruled into tracks — narrow concentric rings holding data along circular paths",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Heading: Platters And Tracks",
+      "body": "Subheading: Surfaces And Rings\nContent:\nEach platter is a rigid, magnetically coated disk with both faces usable, so several platters stacked on one spindle multiply the surfaces available. Every surface is ruled into tracks — narrow concentric rings holding data along circular paths.\nTrack 0 is the outermost ring, highest number nearest spindle\nTrack density (tracks per inch) sets storage capacity\nEach surface needs its own read-write head\nModern drives pack thousands of tracks per surface\nPlatters And Tracks\nSurfaces And Rings\nTrack 0 is the outermost ring, highest number nearest spindle\n01\nTrack density (tracks per inch) sets storage capacity\n02\nEach surface needs its own read-write head\n03\nModern drives pack thousands of tracks per surface\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Heading: Platters And Tracks",
+      "body": "Subheading: Analogy\nAnalogy:\nA vinyl record has many concentric grooves spiralling from edge toward centre, each holding a different segment of music — just as a platter surface is ruled into concentric tracks, each holding a distinct ring of data.\nPlatters And Tracks\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Heading: Sectors And Addressing",
+      "body": "Track Subdivisions\nSubheading: Track Subdivisions\nContent:\nA track is too large to read or write economically as one piece, so each track is split into sectors — the smallest unit the disk electronics transfer in a single operation. Locating a sector historically needed three coordinates together.\nLegacy sector size: 512 bytes per sector\nAdvanced Format (modern) sector size: 4096 bytes\nCHS addressing: cylinder, head and sector numbers together\nSectors per track vary by zone; outer tracks hold more\nSectors And Addressing\nA track is too large to read or write economically as one piece, so each track is split into sectors\nThe smallest unit the disk electronics transfer in a single operation, Locating a sector historically needed three coordinates together\nSector",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Heading: Sectors And Addressing",
+      "body": "Track Subdivisions\nSubheading: Track Subdivisions\nContent:\nA track is too large to read or write economically as one piece, so each track is split into sectors — the smallest unit the disk electronics transfer in a single operation. Locating a sector historically needed three coordinates together.\nLegacy sector size: 512 bytes per sector\nAdvanced Format (modern) sector size: 4096 bytes\nCHS addressing: cylinder, head and sector numbers together\nSectors per track vary by zone; outer tracks hold more\nSectors And Addressing\nLegacy sector size: 512 bytes per sector\n01\nAdvanced Format (modern) sector size: 4096 bytes\n02\nCHS addressing: cylinder, head and sector numbers together\n03\nSectors per track vary by zone; outer tracks hold more\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Heading: Cylinders Explained",
+      "body": "Subheading: Aligned Track Set\nContent:\nA cylinder is not a separate physical part but a logical grouping: the same-numbered track on every platter surface, stacked one above another since all heads share one arm. Reading within a cylinder needs no arm movement, only a head switch.\nCylinder count on a drive equals tracks per surface\nData spread across a cylinder before the arm moves\nSequential access within a cylinder minimises seek delay\nAligned Track Set\nCylinders Explained\nA cylinder is not a separate physical part but a logical grouping\nThe same-numbered track on every platter surface \nStacked one above another since all heads share one arm\nReading within a cylinder needs no arm movement only a head switch",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Heading: Cylinders Explained",
+      "body": "Subheading: Aligned Track Set\nContent:\nA cylinder is not a separate physical part but a logical grouping: the same-numbered track on every platter surface, stacked one above another since all heads share one arm. Reading within a cylinder needs no arm movement, only a head switch.\nCylinder count on a drive equals tracks per surface\nData spread across a cylinder before the arm moves\nSequential access within a cylinder minimises seek delay\nAligned Track Set\nCylinders Explained\nCylinder count on a drive equals tracks per surface\n01\nData spread across a cylinder before the arm moves\n02\nSequential access within a cylinder minimises seek delay\n03",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Heading: Cylinders Explained",
+      "body": "Subheading: Analogy\nAnalogy:\nAn apartment complex with several identical towers has the same floor number stacked directly above the other in each tower, forming one vertical column — just as a cylinder aligns the same track number across every platter surface into one addressable unit.\nAnalogy\nCylinders Explained",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Heading: Heads And Arm",
+      "body": "Subheading: Actuator Assembly\nContent:\nA single actuator arm carries one read-write head per surface; every head moves together across the disk radius because all are fixed to that one arm. A motor spins the spindle at constant speed while the arm only moves radially.\nHead count equals number of usable surfaces\nVoice-coil motor drives arm to target cylinder\nOnly one head reads or writes at any instant\nHead floats microns above the surface, never touching it\nActuator Assembly\nHeads And Arm\nA single actuator arm carries one read-write head per surface\nEvery head moves together across the disk radius because all are fixed to that one arm\nA motor spins the spindle at constant speed while the arm only moves radially",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Heading: Heads And Arm",
+      "body": "Subheading: Actuator Assembly\nContent:\nA single actuator arm carries one read-write head per surface; every head moves together across the disk radius because all are fixed to that one arm. A motor spins the spindle at constant speed while the arm only moves radially.\nHead count equals number of usable surfaces\nVoice-coil motor drives arm to target cylinder\nOnly one head reads or writes at any instant\nHead floats microns above the surface, never touching it\nActuator Assembly\nHeads And Arm\nHead count equals number of usable surfaces\n01\nVoice-coil motor drives arm to target cylinder\n02\nOnly one head reads or writes at any instant\n03\nHead floats microns above the surface, never touching it\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Heading: Disk Geometry Summary",
+      "body": "Subheading: Structure Hierarchy\nContent:\nStructure Hierarchy\nDisk Geometry Summary\nThe physical layout nests four structures into one addressing scheme: platters stacked on a spindle, each surface ruled into tracks, each track split into sectors, and matching tracks across surfaces forming a cylinder.\nThe physical layout nests four structures into one addressing scheme\nPlatters stacked on a spindle, each surface ruled into tracks\nEach track split into sectors, and matching tracks across surfaces forming a cylinder",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Structure",
+            "Definition",
+            "Typical Count"
+          ],
+          [
+            "Platter",
+            "Rigid magnetic disk on spindle",
+            "2-5 per drive"
+          ],
+          [
+            "Track",
+            "Concentric ring on one surface",
+            "Thousands per surface"
+          ],
+          [
+            "Sector",
+            "Fixed-size arc of a track",
+            "512B or 4096B unit"
+          ],
+          [
+            "Cylinder",
+            "Same track across all surfaces",
+            "Equals tracks per surface"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 53,
+      "title": "Heading: Disk Geometry Summary",
+      "body": "Subheading: Structure Hierarchy\nContent:\nStructure Hierarchy\nDisk Geometry Summary\nThe physical layout nests four structures into one addressing scheme: platters stacked on a spindle, each surface ruled into tracks, each track split into sectors, and matching tracks across surfaces forming a cylinder.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Structure",
+            "Definition",
+            "Typical Count"
+          ],
+          [
+            "Platter",
+            "Rigid magnetic disk on spindle",
+            "2-5 per drive"
+          ],
+          [
+            "Track",
+            "Concentric ring on one surface",
+            "Thousands per surface"
+          ],
+          [
+            "Sector",
+            "Fixed-size arc of a track",
+            "512B or 4096B unit"
+          ],
+          [
+            "Cylinder",
+            "Same track across all surfaces",
+            "Equals tracks per surface"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 54,
+      "title": "Disk Performance",
+      "body": "Disk Performance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Heading: Disk Performance Factors",
+      "body": "Subheading: Three Time Components\nContent:\nEvery disk access takes measurable time before data reaches memory, built from three sequential delays. Seek time and rotational latency come from the disk's mechanical structure, while transfer time is the actual data movement.\nSeek time: arm moves to correct cylinder\nRotational latency: platter spins to target sector\nTransfer time: data moves across head to memory\nValues reported are typically random-access averages\nThree Time Components\nDisk Performance Factors\nEvery disk access takes measurable time before data reaches memory, built from three sequential delays\nSeek time and rotational latency come from the disk's mechanical structure\nTransfer time is the actual data movement",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Heading: Disk Performance Factors",
+      "body": "Subheading: Three Time Components\nContent:\nEvery disk access takes measurable time before data reaches memory, built from three sequential delays. Seek time and rotational latency come from the disk's mechanical structure, while transfer time is the actual data movement.\nSeek time: arm moves to correct cylinder\nRotational latency: platter spins to target sector\nTransfer time: data moves across head to memory\nValues reported are typically random-access averages\nThree Time Components\nDisk Performance Factors\nSeek time: arm moves to correct cylinder\n01\nRotational latency: platter spins to target sector\n02\nTransfer time: data moves across head to memory\n03\nValues reported are typically random-access averages\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Heading: Disk Performance Factors",
+      "body": "Subheading: Diagram\nDiagram\nDisk Performance Factors\nWaiting for device\nWaiting for Channel\nSeek Time\nRotational Delay\nData Transfer\nDevice Busy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Heading: Seek Time",
+      "body": "Head Movement Delay\nSubheading: Head Movement Delay\nContent:\nSeek time is the delay while the actuator arm moves the head to the cylinder holding the target track, growing with distance travelled. Drives publish only an average value from many random-access seeks.\nPhases: acceleration, constant travel, deceleration\nMinimum: adjacent-track seek, near zero\nMaximum: full-stroke seek across all cylinders\nUsually the largest share of access time\nSeek Time\nSeek time is the delay while the actuator arm moves the head to the cylinder holding the target track, growing with distance travelled. Drives publish only an average value from many random-access seeks.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Heading: Seek Time",
+      "body": "Subheading: Analogy\nAnalogy:\nAn autorickshaw's travel time between two addresses depends on distance, not a fixed fare — just as seek time depends on cylinders crossed to reach the target track.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Heading: Rotational Latency",
+      "body": "Subheading: Spin Wait Time\nContent:\nRotational latency is the wait for platter spin to bring the target sector under the head, after the arm reaches the correct cylinder. It depends only on spindle speed.\nAverage latency = half of one rotation\nCommon speeds: 5400, 7200, 10000, 15000 RPM\nWorst case latency: nearly a full rotation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Heading: Rotational Latency",
+      "body": "Subheading: Analogy\nAnalogy:\nA merry-go-round rider must wait for the horse to swing back to the boarding point — just as rotational latency is the wait for the sector to spin back under the head.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Heading: Total Access Time",
+      "body": "Subheading: Worked Calculation\nContent:\nTransfer time is the duration to move data once positioning is complete, found by dividing bytes transferred by the drive's data transfer rate. Total disk access time sums seek time, rotational latency and transfer time.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Component",
+            "Value"
+          ],
+          [
+            "Average seek time",
+            "9 ms (given)"
+          ],
+          [
+            "Spindle speed",
+            "7200 RPM"
+          ],
+          [
+            "Rotational latency",
+            "0.5 x (60000/7200) = 4.17 ms"
+          ],
+          [
+            "Sector transferred",
+            "4 KB"
+          ],
+          [
+            "Transfer rate",
+            "100 MB/s"
+          ],
+          [
+            "Transfer time",
+            "4096 / (100x10^6) = 0.04 ms"
+          ],
+          [
+            "Total access time",
+            "9 + 4.17 + 0.04 = 13.2 ms"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 63,
+      "title": "Heading: Improving Disk Speed",
+      "body": "Subheading: Where Time Goes\nContent:\nSeek time usually dominates total access time for random workloads, followed by rotational latency; transfer time is smallest for a single sector. Reducing seek distance or raising rotational speed improves throughput more than optimising transfer alone.\nSequential access avoids repeated long seeks\nHigher RPM cuts latency, raises power and noise\nDisk scheduling algorithms shorten average seek distance\nSolid-state drives have no seek or rotational delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Disk Organization",
+      "body": "Disk Organization",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Heading: Disk Organization",
+      "body": "Subheading: Formatting And Addressing\nContent:\nA raw disk drive is unusable until it is organized. Disk organization spans two independent layers: preparing the disk physically to hold data, and giving software a way to locate any sector on it.\nLow-level formatting: prepares raw platters for storage\nHigh-level formatting: builds file system structures\nCHS addressing: cylinder-head-sector triplet, legacy scheme\nLBA addressing: single linear sector number, current",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Heading: Disk Organization",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Heading: Low-Level Formatting",
+      "body": "Subheading: Physical Preparation\nContent:\nLow-level formatting, usually done once at the factory, writes header, gap and error-correcting data onto every sector, preparing raw platters before data can be stored.\nMarks sector/track boundaries with header data\nAdds error-correcting code (ECC) per sector\nSector sparing remaps a bad sector to spare\nSector slipping shifts later sectors past a bad one",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Heading: Low-Level Formatting",
+      "body": "Subheading: Analogy\nAnalogy:\nA survey team marks numbered plots with boundary pillars before land can be sold — just as low-level formatting marks sector boundaries before data can be written.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Heading: High-Level Formatting",
+      "body": "Subheading: Logical Preparation\nContent:\nHigh-level (logical) formatting builds the structures an operating system needs on top of already low-level-formatted sectors. Unlike the physical step, it can be redone anytime without re-preparing the platters.\nBoot sector and partition table written at volume start\nFile-system metadata created: root directory, allocation structures\nSectors grouped into clusters, the OS allocation unit\nQuick format rewrites metadata only; full format also verifies sectors",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Heading: Logical Block Addressing",
+      "body": "Subheading: Linear Sector Numbering\nContent:\nCHS addressing tied software to a drive's exact geometry, capping capacity as drives grew larger. Logical Block Addressing (LBA) replaces that triplet with one sequential sector number.\nSectors numbered 0 to total sectors minus one\nFirmware translates LBA to physical location internally\nIndependent of actual cylinder, head or sector counts\nUsed by SATA, SSD and NVMe interfaces today",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Heading: Logical Block Addressing",
+      "body": "Subheading: Analogy\nAnalogy:\nA bank account number identifies an account directly, without stating its branch, ledger and page separately — just as LBA gives each sector one direct number instead of a cylinder-head-sector triplet.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Heading: CHS Vs LBA",
+      "body": "Subheading: Addressing Compared\nContent:\nBoth schemes ultimately let firmware locate a physical sector, but they differ in what software must know beforehand and how far capacity can scale.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "CHS",
+            "LBA"
+          ],
+          [
+            "Addressing unit",
+            "Cylinder-head-sector triplet",
+            "Single sequential number"
+          ],
+          [
+            "Capacity limit",
+            "Capped by fixed field widths",
+            "Scales with sector-count field"
+          ],
+          [
+            "Software awareness",
+            "Needs exact drive geometry",
+            "Geometry hidden by firmware"
+          ],
+          [
+            "Current status",
+            "Legacy, largely retired",
+            "Standard on modern interfaces"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 73,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Disk Scheduling Algorithms",
+      "body": "Disk Scheduling Algorithms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1mngzAmvuLFr3XdDKYMD_E3L2tWyQDSfQPU-LRDn_GYo/edit?slide=id.g3f7100e5878_0_1046#slide=id.g3f7100e5878_0_1046"
+}

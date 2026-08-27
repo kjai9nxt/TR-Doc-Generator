@@ -173,15 +173,13 @@ def prune_orphan_decks(course: str | None = None) -> list[int]:
     linked = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
     known = {r["session_no"] for r in rows}
     cleared = []
-    for path in sorted(pptx_ingest.DECKS_DIR.glob("session_*.json")):
-        m = re.search(r"session_(\d+)\.json$", path.name)
-        if not m:
-            continue
-        no = int(m.group(1))
+    # THIS course's decks only. Globbing the whole store meant a row edited in one
+    # course pruned another course's deck that happened to share a session number.
+    for no in sorted(pptx_ingest.deck_session_numbers(course)):
         # Only sessions this curriculum actually covers: a deck belonging to a session
         # the course does not list is left alone rather than assumed to be rubbish.
         if no in known and no not in linked:
-            path.unlink(missing_ok=True)
+            pptx_ingest.drop_deck(course, no)
             cleared.append(no)
     if cleared:
         state = _load_state()
@@ -219,7 +217,7 @@ def adopt_existing_decks(course: str | None = None) -> int:
         rec = by_link.get(link)
         if not rec:
             continue
-        if not (pptx_ingest.DECKS_DIR / f"session_{no:02d}.json").exists():
+        if not pptx_ingest.has_deck(course, no):
             continue
         if db.curriculum_mark_deck(course, no, rec.get("content_hash") or "adopted"):
             adopted += 1
@@ -305,7 +303,7 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
             continue
         if not link:
             continue
-        have_file = (pptx_ingest.DECKS_DIR / f"session_{no:02d}.json").exists()
+        have_file = pptx_ingest.has_deck(course, no)
         if not force and r.get("deck_hash") and have_file:
             skipped += 1
             res.decks_cached += 1
@@ -319,7 +317,7 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
         emit("No new or changed decks to fetch.")
         state["decks"], state["last_sync"] = decks, _now()
         _save_state(state)
-        _extraction_report(res)
+        _extraction_report(res, course)
         return res
 
     emit(f"Fetching {len(tasks)} deck(s) that are new or changed…")
@@ -335,9 +333,10 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
         except Exception as e:
             return (task, chash, "error", f"extract failed: {e}")
         data = None                      # free the .pptx bytes before writing
-        pptx_ingest.DECKS_DIR.mkdir(parents=True, exist_ok=True)
-        (pptx_ingest.DECKS_DIR / f"session_{no:02d}.json").write_text(
-            json.dumps(deck, ensure_ascii=False, indent=2), encoding="utf-8")
+        # Written through the store, which is what puts it in THIS course's folder and
+        # keeps its manifest in step. Building the path here is how the course scoping
+        # went missing in the first place.
+        pptx_ingest.put_deck(course, no, deck)
         return (task, chash, "ingested", None)
 
     workers = config.harness()["context"].get("sync_max_workers", 1)
@@ -364,7 +363,7 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
     state["decks"] = decks
     state["last_sync"] = _now()
     _save_state(state)
-    _extraction_report(res)
+    _extraction_report(res, course)
 
     try:
         from . import db as _db
@@ -376,9 +375,9 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
     return res
 
 
-def _extraction_report(res: SyncResult) -> None:
+def _extraction_report(res: SyncResult, course: str) -> None:
     try:
-        rep = pptx_ingest.completeness_report()
+        rep = pptx_ingest.completeness_report(course)
         for d in rep["decks"]:
             if not d["ok"]:
                 res.extraction_warnings.append(

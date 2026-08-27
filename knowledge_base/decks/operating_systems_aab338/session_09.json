@@ -1,0 +1,674 @@
+{
+  "session_no": 9,
+  "source_file": "Process Concept, States & PCB",
+  "deck_title": "Process Concept, States & PCB",
+  "n_slides": 80,
+  "summary": "\n    - Slide 2: Process Concept, States & PCB\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Process Concept, States & PCB\n    - Slide 6: Process In Memory\n    - Slide 7: Process Management\n    - Slide 8: Process Management\n    - Slide 9: Process Management\n    - Slide 10: Process Management\n    - Slide 11: Process Management\n    - Slide 12: Process Management\n    - Slide 13: Process Management\n    - Slide 14: Process Management\n    - Slide 15: Process Management\n    - Slide 16: Process Management\n    - Slide 17: Process Management\n    - Slide 18: Process Management\n    - Slide 19: Process Management\n    - Slide 20: Process Management\n    - Slide 21: Process States & \u000bLife Cycle\n    - Slide 22: Process Life Cycle\n    - Slide 23: Process Life Cycle\n    - Slide 24: Process Life Cycle\n    - Slide 25: Process Life Cycle\n    - Slide 26: Process Life Cycle\n    - Slide 27: Process Life Cycle\n    - Slide 28: Wait/Blocked\n    - Slide 29: Process Life Cycle\n    - Slide 30: Wait/Blocked\n    - Slide 31: Process Life Cycle\n    - Slide 32: Ready\n    - Slide 33: Process Life Cycle\n    - Slide 34:  Running\n    - Slide 35: Process Life Cycle\n    - Slide 36: Process Life Cycle\n    - Slide 37: Process Life Cycle\n    - Slide 38: Process Life Cycle\n    - Slide 39: Process Life Cycle\n    - Slide 40: Terminated\n    - Slide 41: Quiz Time!\n    - Slide 42: Process Control Block\n    - Slide 43: Process Control Block\n    - Slide 44: Process Control Block\n    - Slide 45: Process Control Block\n    - Slide 46: Process Control Block\n    - Slide 47: Process Control Block\n    - Slide 48: Process Control Block\n    - Slide 49: Process Control Block\n    - Slide 50: Process Control Block\n    - Slide 51: Process Control Block\n    - Slide 52: Process Control Block\n    - Slide 53: Process Control Block\n    - Slide 54:               Booting\n    - Slide 55: Introduction to Booting\n    - Slide 56: Booting\n    - Slide 57: Booting\n    - Slide 58: Boot Process Steps\n    - Slide 59: Boot Process Steps\n    - Slide 60: Load BIOS\n    - Slide 61: Load BIOS\n    - Slide 62: Boot Process Steps\n    - Slide 63: POST\n    - Slide 64: POST\n    - Slide 65: Boot Process Steps\n    - Slide 66: Finding the Boot Device\n    - Slide 67: Boot Order\n    - Slide 68: Boot Process Steps\n    - Slide 69: Boot Process Steps\n    - Slide 70: Boot Process Steps\n    - Slide 71: Boot Process Steps\n    - Slide 72: Boot Process Steps\n    - Slide 73: Boot Process Steps\n    - Slide 74: Loading System Utilities\n    - Slide 75: Boot Process Steps\n    - Slide 76: Quiz Time!\n    - Slide 77: Process Concept, States & PCB\n    - Slide 78: Threads, Multithreading & Concurrency",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session. f",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Process Concept, States & PCB",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Miscellaneous Commands (PART 1/2)\nSuper User and File Permissions\nAuthorization Levels\nOwnership\nFile Permissions\nChanging Permissions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Miscellaneous Commands (PART 2/2)\nPackaging\nInstalling a Package\nDownloading Files From Web\nRemoving a Package",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Process Concept, States & PCB",
+      "body": "Process Concept, States & PCB\nProcess States & \u000bLife Cycle\nProcess Control Block\nProcess in Memory\nBooting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Process In Memory",
+      "body": "Process In Memory",
+      "notes": "First of all we will start with the Process in Memory",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Process Management",
+      "body": "Process Management\n What is a Program?\nProgram\nA program is a set of instructions stored on disk that tells the computer what to do when executed\nIt is inactive and does not use CPU or memory until run",
+      "notes": "Alright, before we understand processes, let's first see what a program is. \u000bA program is simply a collection of instructions stored on the disk. \u000bAt this stage, it's inactive—it doesn't consume CPU or memory. \u000bIt only becomes active when we execute it, and that's when it turns into a process, which we'll discuss next.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Process Management",
+      "body": "Process Management\nManaging Multiple Programs\nHow does the OS actually run and manage multiple programs?\nKey Question",
+      "notes": "Now, computers don't run just one program at a time. \u000bSo, how does the operating system manage multiple programs efficiently? \u000bLet's understand the concept that makes this possible.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Process Management",
+      "body": "Process Management\nTurning Programs into Processes\nAnswer\nBy turning each running program into a process and controlling them efficiently",
+      "notes": "So, the operating system handles multiple programs by converting each running program into a process. \u000bIt then manages these processes to ensure efficient execution and resource utilization.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Process Management",
+      "body": "Process Management\nWhat Is a Process?\nProcess is a program in execution\nWhen a program is loaded into the memory, it becomes a process\nEach instance of the program is a different process",
+      "notes": "Next, a process is simply a program that is currently running. \u000bOnce a program is loaded into memory, it becomes a process. \u000bAlso, every running instance of the same program is treated as a separate process.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Process Management",
+      "body": "Process Management\nHow a Program Becomes a Process\nOnce this happens, the program becomes an active process",
+      "notes": "Now, let's see how a program becomes a process. \u000bWhen you run a program, the operating system loads it into RAM, \u000bsets up the required information, allocates memory and other resources, \u000band starts giving it CPU time.\u000bOnce these steps are completed, the program becomes an active process.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Process Management",
+      "body": "Process Management\nComponents of a Process\nStores function parameters, local variables,  and return addresses\nDynamic memory allocated during runtime\nStores global and static variables\nExecutable program code (instructions)",
+      "notes": "Moving on, a process is organized into different memory sections. \u000bThe stack keeps track of function parameters, local variables, and return addresses. \u000bThe heap is responsible for memory allocated during runtime. \u000bThe data section contains global and static variables, \u000band the text section holds the program's executable instructions.",
+      "tables": [
+        [
+          [
+            "Stack"
+          ],
+          [
+            ""
+          ],
+          [
+            "Heap"
+          ],
+          [
+            "Data"
+          ],
+          [
+            "Text"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Process Management",
+      "body": "Process Management\nWhat is Process Management ? \nProcess Management is a core function of an Operating System (OS), it deals with creating, scheduling, and coordinating processes to ensure efficient CPU utilization and smooth system performance",
+      "notes": "Now, once a program becomes a process, the operating system has to handle it efficiently. \nThis involves starting processes, deciding when they should run, \u000band coordinating them so the CPU is used effectively and the system runs without interruptions.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Process Management",
+      "body": "Process Management\nWhat Is a Time Slice?\nA time slice (or quantum) is a very short interval of CPU time allocated to a process\nThe OS uses time slices to ensure that multiple processes share the CPU efficiently",
+      "notes": "Next, the CPU is shared among processes by assigning each one a brief interval of execution. \u000bThis short duration, known as a time slice or quantum, \u000ballows multiple processes to run efficiently without letting any single process occupy the CPU for too long.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Process Management",
+      "body": "Process Management\nCPU Switching Between Processes\nTime Slice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Process Management",
+      "body": "Process Management\nCPU Switching Between Processes\nTime Slice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Process Management",
+      "body": "Process Management\nCPU Switching Between Processes\nTime Slice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Process Management",
+      "body": "Process Management\nCPU Switching Between Processes\nTime Slice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Process Management",
+      "body": "Process Management\nCPU Switching Between Processes\nTime Slice\nTime Slice\nTime Slice\nTime Slice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Process Management",
+      "body": "Process Management\nMultitasking in Action\nSwitching between executing different applications so fast that all applications seem to be running simultaneously",
+      "notes": "Next, because the operating system keeps switching the CPU between processes \u000bin a fraction of a second, users get the impression that multiple applications are running at the same time,\u000beven though the CPU executes only one process at a given moment.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Process States & \u000bLife Cycle",
+      "body": "Process States & \u000bLife Cycle",
+      "notes": "Next we have the Process States & Life Cycle",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nIntroduction to Process States \nProcess State\nThe current status or activity of a process at any given moment during its execution",
+      "notes": "Now, as a process executes, it goes through different stages.\u000b At any point in time, the stage or condition a process is currently in is referred to as its process state.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nNeed for Multiple Process States\nWhy are multiple states needed?\nCPU cores are limited, so only a few processes can execute simultaneously\nProcesses may need to wait for I/O operations, \u000buser input, or other resources\nThe OS manages these states to ensure efficient CPU utilization and system responsiveness",
+      "notes": "Next, a process cannot keep running all the time. \u000bIt may have to wait for resources, user input, or an I/O operation, \u000bwhile the CPU also has limited capacity. \u000bTo handle these situations efficiently, the operating system moves processes between different states based on what they are doing and the resources they need.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nProcess States\nRunning\nReady\nNew\nTerminated\nWaiting (Blocked)",
+      "notes": "Moving on, during its execution, a process doesn't remain in a single state. \u000bIt transitions through different stages, ranging from new, Ready, Running, Waiting & Terminated.\u000bLet's understand each of these process states one by one.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nProcess State Diagram\nReady\n New\n Running\nTerminated\nWait/Blocked",
+      "notes": "A process moves from New to Ready, then to Running when the CPU is assigned.\u000b It may switch between Ready and Wait/Blocked during execution, \u000band finally enters the Terminated state when it finishes.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nNew State\nDefinition\nThe New state is when a process is being created by the operating system\nWait/Blocked\n Running\nTerminated\nReady",
+      "notes": "Now, the first stage is the New state. \u000bAt this point, the operating system has just started creating the process \u000band is preparing it for execution. It hasn't entered the ready state yet.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nNew State\nThis state is temporary — once creation is complete, the process moves to the Ready state\nThe program is loaded into main memory\nThe OS initializes the process\nRequired resources are allocated\nThe process’s PCB is created\nProcess is not yet placed in the ready queue\nWhat Happens in New State:",
+      "notes": "Next, during this stage, the operating system prepares the process for execution. \u000bIt creates the PCB(Process Control Block), loads the program into memory, allocates the necessary resources, \u000band completes the initial setup. Once everything is ready, the process is moved to the Ready state.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Wait/Blocked",
+      "body": "Wait/Blocked\n New\nProcess Life Cycle\nReady State\n Running\nTerminated\nDefinition\nThe Ready state means the process is prepared to execute and is waiting for CPU time\nReady",
+      "notes": "Moving on, after the initial setup is complete, the process enters the Ready state. \u000bHere, it has everything required to run and is simply waiting for the scheduler to assign CPU time for its execution.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nReady State\nWhat Happens in Ready State:\nAll necessary resources are allocated (except CPU)\nProcess is loaded in main memory\nA process in Ready state has everything it needs to run except CPU time. It is waiting for the CPU to become available\nProcess can begin execution as soon as CPU is available",
+      "notes": "Next, by this stage, the process is in main memory and has all the resources it needs to run. \nThe only thing it is waiting for is CPU time.\nOnce the scheduler assigns the CPU, the process moves to the Running state and starts executing",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Wait/Blocked",
+      "body": "Wait/Blocked\nReady\n New\nProcess Life Cycle\nRunning State\nTerminated\nDefinition\nThe Running state means the process is currently being executed by the CPU—its instructions are actively being processed\n Running",
+      "notes": "Now, once the scheduler assigns the CPU, the process enters the Running state. \nThis is the stage where the CPU executes its instructions one by one, allowing the process to perform its task.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nRunning State\nWhat Happens in Running State:\nInstructions of the process are actively being executed\nThe process has been assigned the CPU\nProcess can continue running until it finishes, is interrupted, or needs to wait for an I/O event\nCPU registers, program counter, and required resources are in use",
+      "notes": "Next, during this stage, the CPU actively executes the process instructions.\nIt uses the required registers and resources while the process runs.\nThe process stays in this state until it finishes, is interrupted, or needs to wait for an I/O operation.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Ready",
+      "body": "Ready\n New\nTerminated\n Running\nProcess Life Cycle\nWaiting(Blocked) State\nDefinition\nThe Waiting state (also called Blocked state or Sleep state) occurs when a process cannot continue execution until a specific event occurs or some condition is met\nWait/Blocked",
+      "notes": "Moving on, a process doesn't always keep running continuously. \u000bSometimes, it has to pause because it's waiting for an external event, \u000bsuch as an I/O operation or another required condition. \u000bDuring this period, it remains in the Waiting or Blocked state.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nWaiting(Blocked) State\nWhat Happens in Waiting State:\nProcess cannot use CPU, even if CPU becomes available\nProcess is waiting for an external event (e.g., I/O completion)\n      Process will return to Ready state when the awaited event occurs\nProcess is removed from the ready queue and placed in the Waiting (Blocked) queue",
+      "notes": "Next, when a process is waiting for an event like an I/O operation to finish, it cannot continue execution.\n The operating system moves it from the Ready queue to the Waiting queue.\n In this state, it is not eligible for CPU scheduling. Once the required event is completed, the process becomes eligible again and moves back to the Ready state.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": " Running",
+      "body": "Running\nReady\n New\nProcess Life Cycle\nTerminated State\nTerminated\nDefinition\nThe Terminated (or Exit) state is when a process has finished execution or has been stopped by the OS/user\nTerminated\nWait/Blocked",
+      "notes": "Finally, when a process completes its execution or is stopped by the operating system or user, it enters the Terminated state. \nAt this point, the process is no longer active and the operating system will not schedule it for execution again",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nTerminated State\nWhat Happens in Terminated State:\nOS performs final cleanup\nProcess has completed or been killed\nAll allocated resources are released\nPCB is deleted",
+      "notes": "Finally, after the process ends, the operating system performs the necessary cleanup. \u000bIt releases all the resources that were assigned to the process \u000band removes its Process Control Block (PCB), completely clearing it from the system.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nTerminated State\nHow a Process Reaches Terminated State:\nRuntime error\nNormal completion\nOnce cleanup is done, the process no longer exists in the system\nKilled by user or OS",
+      "notes": "Next, a process can reach the Terminated state in different ways.\u000b It may finish its execution successfully, stop because of a runtime error, \u000bor be terminated by the user or the operating system. \nAfter the cleanup is complete, the process is completely removed from the system.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nAdditional Process States\nModern operating systems add two extra states to handle memory limitations and scheduling needs\nSuspend Ready\nSuspend Blocked\nThese additional states allow the OS to move processes to secondary memory and manage RAM more efficiently when many processes are running",
+      "notes": "Moving on, the states we discussed so far are the basic process states.\n However, modern operating systems introduce additional states like Suspend Ready and Suspend Blocked to manage memory more efficiently. \nThese states help move processes from main memory to secondary storage when RAM is limited, improving overall system performance.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nProcess State Diagram\nReady\n New\n Running\nTerminated\nWait/Blocked\nSuspend Ready\nSuspend wait\nAdmitted\nInterrupt\nScheduler\ndispatch\nExit\nI/O or event completion\nI/O or event wait\nSuspend\nResume\nI/O Completed but still in suspend\nSuspend\nResume",
+      "notes": "This diagram illustrates the complete life cycle of a process in an operating system. A process begins in the New state and is admitted to the Ready state, where it waits for CPU allocation. When the CPU selects it, the process enters the Running state and starts executing. If the process is interrupted, it moves back to the Ready state to wait for another turn. If it needs to perform an I/O operation, such as reading from a file or waiting for user input, it enters the Wait/Blocked state. Once the I/O operation is complete, it returns to the Ready state and waits to execute again. To efficiently manage memory and system resources, the operating system may suspend a process, moving it to either the Suspend Ready or Suspend Wait state. A suspended process is temporarily paused and does not compete for the CPU. When it is resumed, it returns to its appropriate state and continues execution. Finally, after completing all its tasks, the process exits and enters the Terminated state.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Process Life Cycle",
+      "body": "Process Life Cycle\nSuspended Blocked State\nTerminated\n Running\nReady\n New\nTerminated\nWait/Blocked\nSuspend Ready\nSecondary Memory\nMain Memory\nProcess moved from blocked state to secondary memory\nSwapped out to free memory for higher-priority processes\nMoves to Suspended Ready state after the awaited event/I/O completes\nMoves to Ready state when brought back to main memory\nSuspend wait/Blocked",
+      "notes": "Now, if a blocked process is waiting for an event and the system needs more memory, \nthe operating system can move it to secondary memory.\nOnce the required event is completed, it moves to the Suspended Ready state while still in secondary memory.\nWhen sufficient main memory becomes available, it is brought back into main memory and then moved to the Ready state for execution.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Terminated",
+      "body": "Terminated\n Running\nReady\n New\nTerminated\nWait/Blocked\nSuspend Ready\nSecondary Memory\nMain Memory\nSuspend wait/Blocked\nProcess Life Cycle\nSuspended Ready State\nProcess is moved from Ready state to secondary memory (Suspended Ready state)\nOccurs when memory is full and higher-priority process needs space\nReturns to Ready state when main memory becomes available\nSuspend Ready",
+      "notes": "Finally, if a process is ready to execute but main memory is full, \u000bthe operating system may temporarily move it to secondary memory to make room for a higher-priority process. \u000bOnce enough main memory becomes available,\n the process is brought back into main memory and then moved to the Ready state.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Process Control Block",
+      "body": "Process Control Block",
+      "notes": "Next we will learn about the Process Control Block",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nIntroduction to PCB\nO.S.\nProcesses\nMain memory\nPCBs are stored here\nA Process Control Block (PCB) is a data structure maintained by the operating system for every process. It contains all the information needed to manage and control the process",
+      "notes": "Now, to manage every process effectively, \u000bthe operating system maintains a dedicated record called the Process Control Block, or PCB. \u000bThis record is stored in main memory and contains all the essential information \u000bthe operating system needs to monitor and control a process.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nWhy is PCB Important?\nThe PCB is essential because\nOS needs to track multiple processes simultaneously\nWhen a process is not running, its state must be saved\nWhen a process resumes, its state must be restored\nOS uses PCB to switch between processes efficiently",
+      "notes": "Next, since multiple processes can exist at the same time, \u000bthe operating system needs a way to keep track of each one. \u000bIt relies on the PCB to save a process's current information and \u000brestore it whenever the process resumes, making process switching seamless.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nWhat Is A Process Table?\nA process table is a data structure maintained by the OS to track all active processes; each entry points to the PCB, which stores all essential process information",
+      "notes": "Moving on, while the PCB stores information about an individual process, \u000bthe operating system also maintains a Process Table. \u000bIt contains an entry for every active process, allowing the operating system to quickly locate \u000bthe corresponding PCB whenever it needs to manage a process.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nPID\nPCB\n1\n2\n3\nPCB\nPCB\nPID 1\nPID 2\nProcess table and process control block",
+      "notes": "Next, this diagram shows the relationship between the Process Table and the PCB. \nThe Process Table maintains entries for all active processes, and each entry contains a reference to the corresponding PCB.\n Whenever the operating system needs information about a process,\u000b it uses the Process Table to quickly locate its PCB and access the required details.",
+      "tables": [
+        [
+          [
+            "",
+            ""
+          ],
+          [
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 47,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nComponents of a PCB\nA process state can be new, ready, running, waiting, etc\nContains the address of the next instruction to be executed\nContains list of I/O devices used by the process, the list of files etc\nAssigned with a unique ID\nHigher priority processes are selected earlier for CPU scheduling\nStores temporary data needed by the CPU during process execution",
+      "notes": "Moving on, each PCB stores important details required to manage a process. \u000bIt includes the process ID for identification, its current state and priority, \u000bthe program counter to track the next instruction, CPU register values, \u000band information related to I/O devices and files being used.",
+      "tables": [
+        [
+          [
+            "Process ID"
+          ],
+          [
+            "Process State"
+          ],
+          [
+            "Process Priority"
+          ],
+          [
+            "Program Counter"
+          ],
+          [
+            "I/O Information"
+          ],
+          [
+            "CPU Registers"
+          ],
+          [
+            "..."
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nPCB Organization\nReady Queue\nPCBs of processes ready for CPU\nWait Queues\u000bPCBs waiting for I/O or events\nJob Queue\u000bPCBs of all processes contains in system\n1\n2\n3\nJob Queue\nReady Queue\nWait Queues\nOther Queues\nAll PCBs",
+      "notes": "Next, to manage processes efficiently, the operating system organizes their PCBs into different queues. \u000bThe Ready Queue holds processes that are ready and waiting for CPU allocation.\u000b The Wait Queues contain processes that are waiting for I/O operations or specific events, and there can be multiple such queues depending on the type of resource or device.\u000bThe Job Queue contains all processes that have been admitted into the system for execution",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nWhat is Context Switching?\nContext switching means the CPU stops one process and starts another\nThe OS uses the PCB to store all important information of the paused process\nThis allows the process to continue later from the exact point it stopped",
+      "notes": "Now, when the CPU needs to switch from one process to another,\u000b the operating system first saves the current process information in its PCB. \u000bLater, when that process gets CPU time again, the saved information is restored, \u000ballowing it to resume execution from where it left off.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nHow Context Switching Works\nStep 1\nSave Current Process\nSave Program Counter\nSave Register values\nSave current state, stored in its PCB\nStep 2\nChoose Next Process\nScheduler selects another process from Ready Queue",
+      "notes": "Next, during a context switch, \u000bthe operating system first saves the execution details of the currently running process, \u000bincluding the program counter, register values, and current state, in its PCB. \u000bIt then uses the scheduler to select the next process from the Ready Queue.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nHow Context Switching Works\nContext switching lets many processes share the CPU smoothly\nStep 3\nRestore Next Process\nLoad Program Counter\nLoad Registers\nChange state to Running",
+      "notes": "Finally, the operating system restores the saved information of the selected process, \u000bsuch as the program counter and register values, updates its state to Running, and resumes execution. \u000bThis rapid switching enables multiple processes to share the CPU efficiently.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nPCB Storage and Management\nOne PCB Per Process\nEvery active process has exactly one PCB\nOS-Protected\u000bUser programs cannot directly access or modify PCBs\n1\n2\nKey Points",
+      "notes": "Lastly, the operating system creates a separate PCB for every active process, \u000bensuring each process is managed independently. \u000bSince PCBs contain critical system information, \u000bthey are protected by the operating system and cannot be accessed or modified directly by user programs.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Process Control Block",
+      "body": "Process Control Block\nPCB Storage and Management\nDynamic\nPCBs are created when processes start, removed when processes terminate\nAlways in Memory\u000bPCBs remain in RAM for quick access by OS\n4\nKey Points\n3",
+      "notes": "Finally, PCBs are created whenever a new process starts and are removed once the process terminates. \u000bTo enable quick process management and context switching, \u000bthe operating system keeps all active PCBs in main memory.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "              Booting",
+      "body": "Booting",
+      "notes": "Now we will be learning about the Booting",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Introduction to Booting",
+      "body": "Introduction to Booting\nWhat is Booting?\nBooting is the process of starting a computer and loading the operating system (OS) into memory so that the user can interact with the system\nBooting",
+      "notes": "Now, let's move on to the booting process. \u000bWhenever you power on a computer, \u000ba sequence of steps is performed to load the operating system into memory. \u000bOnce this process is complete, the system is ready for user interaction.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Booting",
+      "body": "Booting\nTypes of Booting\nCold Boot (Hard Boot)\nStarting the computer from a completely powered-off state\nExample: Pressing the power button when the computer is off\nWarm Boot (Soft Boot)\nRestarting the computer without turning off the power\nExample: Clicking \"Restart\" from the Start menu",
+      "notes": "**Next,** booting can happen in two ways. \u000bA **Cold Boot** starts the computer from a powered-off state, such as pressing the power button. \u000bIn contrast, a **Warm Boot** simply restarts the system without cutting the power,\u000b for example, by selecting the **Restart** option.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Booting",
+      "body": "Booting\nBoot Process Steps\nFind Boot Device\n4\nUser Authentication\n9\nSystem Configuration\n7\nOS Kernel Loading\n6\n Boot Loader\n5\nSystem Utilities\n8",
+      "notes": "Now, let's look at the overall boot process. \u000bFrom the moment you power on the computer until you log in, \u000bthe system follows a series of steps to initialize the hardware, \u000bload the operating system, and prepare the computer for use. \u000bWe'll understand each of these steps one by one.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nPower-ON\nBullet 1: When the computer is powered on, the CPU does not know what to do on its own, it needs instructions.\nBullet 2: These first instructions are stored in a special chip called ROM (Read-Only Memory), non-volatile, so it keeps its data even when the power is off\nBullet 3: The program stored in ROM that gives the CPU its first instructions is the BIOS\nBullet 1: When the computer is powered on, the CPU does not know what to do on its own, it needs instructions\nBullet 2: These first instructions are stored in a special chip called ROM (Read-Only Memory), non-volatile, so it keeps its data even when the power is off\nBullet 3: The program stored in ROM that gives the CPU its first instructions is the BIOS",
+      "notes": "First, as soon as the computer is turned on, the CPU looks for instructions to begin its work.\u000b These startup instructions are available in ROM, a memory that permanently stores its data. \u000bThe BIOS, stored inside the ROM, is the first program that guides the CPU and initiates the boot process.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nLoad (BIOS)\nBasic\nInput \nOutput\nBIOS (Basic Input-Output System):  A small program stored in ROM that executes immediately when the computer powers on\nS\nSystem",
+      "notes": "Next, the first program that runs after the computer is powered on is the BIOS, \u000bwhich stands for Basic Input/Output System. \u000bIt is stored in ROM and starts executing immediately after power-on, \u000bhelping initialize the system and preparing it for the next stages of the boot process.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Load BIOS",
+      "body": "Load BIOS\nFunctions of BIOS",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Function",
+            "Description"
+          ],
+          [
+            "Provides initial instructions",
+            "Tells CPU what to do first"
+          ],
+          [
+            "Initializes hardware",
+            "Prepares keyboard, display, storage for use"
+          ],
+          [
+            "Performs POST",
+            "Tests if hardware is working"
+          ],
+          [
+            "Finds Boot Loader",
+            "Locates and loads the Boot Loader program"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 61,
+      "title": "Load BIOS",
+      "body": "Load BIOS\nFunctions of BIOS\nNote\nBIOS is a lightweight program, It cannot load the entire operating system by itself, Its job is only to initialize hardware and hand over control to the Boot Loader",
+      "notes": "Now, remember that the BIOS is designed only for the initial startup process. \u000bIt isn't capable of loading the complete operating system. \u000bIts responsibility is to prepare the hardware and then pass control to the Boot Loader, \u000bwhich takes over the remaining boot process.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nPOST\nPower\nOn \nSelf\nT\nTest\nPOST (Power-On Self Test): A diagnostic test performed by BIOS to ensure all essential hardware components are working correctly",
+      "notes": "Next, after the BIOS completes the initial hardware setup, it performs POST, \u000bwhich stands for Power-On Self-Test. During this step, \u000bthe BIOS checks whether the essential hardware components \u000bare functioning properly before allowing the boot process to continue.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "POST",
+      "body": "POST\nWhat POST Checks ?\nKeyboard\nRAM(Memory)\nCPU(Processor)\nStorage devices\nDisplay/Monitor",
+      "notes": "Moving on, during the POST phase, \u000bthe BIOS verifies that the essential hardware components are functioning correctly. \u000bThis includes checking the CPU, RAM, keyboard, display, and storage devices. \u000bIf these components are working as expected, the boot process proceeds to the next stage.",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "POST",
+      "body": "POST\nPOST Result\nBooting continues to next stage\nOn Success\nSystem alerts user with beep codes (series of beeps to indicate hardware errors when no display is available) or error messages\nOn Failure",
+      "notes": "Next, if the hardware check is successful, the boot process moves to the next stage. \u000bHowever, if any issue is detected, the system notifies the user through beep codes or error messages, \u000bhelping identify the hardware component causing the problem.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nFinding the Boot Device\nAfter POST succeeds, BIOS needs to find where the operating system is stored\nStep-by-step process:\nBIOS reads the boot order\nBIOS searches for a bootable device in that order\nCommon bootable devices: HDD, SSD, USB Drive, CD-ROM",
+      "notes": "Moving on, once the POST completes successfully,\u000b the BIOS begins searching for the operating system. \u000bIt first checks the configured boot order and then looks for a bootable device accordingly. \u000bCommon boot devices include HDDs, SSDs, USB drives, and CD-ROMs.",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Finding the Boot Device",
+      "body": "Finding the Boot Device\nWhat is Boot Order?\nThe sequence in which BIOS checks devices to find the operating system\nBoot Order",
+      "notes": "Next, to locate the operating system, the BIOS follows a predefined boot order. \u000bThis order specifies the sequence in which different storage devices \u000bare checked until a bootable device containing the operating system is found.",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Boot Order",
+      "body": "Boot Order\nWhat if no bootable device is found?\nBIOS displays error: \n\"No Boot Device Found\" or \n\"Operating System Not Found\"\nSystem halts\nError",
+      "notes": "Next, if the BIOS is unable to find a bootable device after checking the configured boot order, \u000bit cannot proceed with loading the operating system. \u000bAs a result, it displays an error message such as \"No Boot Device Found\" or\u000b \"Operating System Not Found\", and the boot process stops.",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nMaster Boot Record (MBR)\nWhen BIOS finds a bootable device, it reads the first sector (first 512 bytes) of that device, this sector is called the Master Boot Record (MBR)\nR\nB\nMaster\nBoot \nRecord",
+      "notes": "Next, after locating the storage device that contains the operating system, \u000bthe BIOS looks for the information needed to continue the startup process. \u000bIt finds this in a special area called the Master Boot Record (MBR), \u000bwhich contains the instructions required to begin loading the operating system.",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nMaster Boot Record (MBR)\nMaster Boot Record\nPartition Table\n(information about disk divisions) \n(64 bytes)\nBoot Signature\n(Identifies valid boot sector) \n(2 bytes)\nBootstrap Code\n(small stub that locates and loads the full Boot Loader) \u000b\u000b\u000b\nPartition 1\nPartition 2\nPartition 3\n(446 bytes)",
+      "notes": "This diagram shows the structure of the Master Boot Record (MBR), \u000bthe first sector loaded during the boot process. It contains 446 bytes of Bootstrap Code to locate the boot loader,\u000b a 64-byte Partition Table that stores information about the disk partitions, \u000band a 2-byte Boot Signature that verifies the MBR is valid. Together,\u000b these components help the system locate and start the operating system.",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nBoot Loader\nThe Boot Loader is a small program that takes control after the BIOS/UEFI identifies a bootable device\nIts primary task is to load the operating system (OS) kernel into memory and transfer control to it\n1. Runs immediately after MBR (Master Boot Record)\n2. Boot Loader execution",
+      "notes": "Next, once the BIOS or UEFI identifies a bootable device and the MBR has finished its job, \u000bthe Boot Loader takes control. It then locates the operating system's kernel, \u000bloads it into main memory, and finally transfers \u000bcontrol to the kernel so the operating system can continue the startup process.",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nBoot Loader\nRuns immediately after MBR (Master Boot Record)\nThe BIOS reads the MBR from the bootable disk\nThe MBR contains a small bootstrap code, which loads the full Boot Loader\n1",
+      "notes": "First, after identifying the bootable device, the BIOS accesses its Master Boot Record (MBR). \u000bThe MBR contains a small bootstrap program, whose job is to locate and load the complete Boot Loader, allowing the boot process to continue.",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nBoot Loader\nBoot Loader execution\nThe Boot Loader locates the OS kernel on the disk\nIt loads the kernel into RAM\nAfter loading, it passes control to the kernel, allowing the OS to start\n2",
+      "notes": "Next, once the Boot Loader starts running, \u000bit searches for the operating system's kernel on the storage device and loads it into RAM.\u000b After the kernel is ready in memory, the Boot Loader hands over control,\u000b allowing the operating system to take over.",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nSystem Configuration\nAfter the kernel loads, the system needs to communicate with hardware devices, this is done through device drivers\nSystem\nHardware devices\nDevice drivers\nCommunicates",
+      "notes": "Moving on, once the operating system kernel is loaded, \u000bit begins preparing the system for normal operation. \u000bTo interact with hardware components such as the keyboard, mouse, \u000bor display, it loads the required device drivers, \u000bwhich act as a bridge between the operating system and the hardware.",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Loading System Utilities",
+      "body": "Loading System Utilities\nEssential Background Services\nBackground programs that provide essential services for system operation and maintenance. The OS loads these after device drivers\nSystem Utilities",
+      "notes": "Next, after the device drivers are loaded, the operating system starts the essential system utilities. \u000bThese background programs handle important system functions and ensure\u000b that the computer operates smoothly before it becomes ready for use.",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Boot Process Steps",
+      "body": "Boot Process Steps\nUser Authentication",
+      "notes": "Finally, once the system is fully initialized, the login screen is displayed for user authentication. \u000bAfter the user enters valid credentials and they are verified,\u000b the operating system loads the user's desktop or shell, \u000bmaking the system ready for use.",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Process Concept, States & PCB",
+      "body": "Process Management\nProcess Life Cycle\nProcess Control Block\nBooting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "Threads, Multithreading & Concurrency",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1QvACcFgyiEs7GBzWvqJLsKAvCy7Tw6ube1EdWv27XTw/edit"
+}

@@ -1,0 +1,413 @@
+{
+  "session_no": 8,
+  "source_file": "Miscellaneous Commands",
+  "deck_title": "Miscellaneous Commands",
+  "n_slides": 38,
+  "summary": "\n    - Slide 2: Miscellaneous Commands\n    - Slide 3: Working with Files\n    - Slide 4: Working with Files\n    - Slide 5: Miscellaneous Commands\n    - Slide 6: Super User & File Permissions\n    - Slide 7: Commands\n    - Slide 8: Linux Users\n    - Slide 9: Linux Commands\n    - Slide 10: Linux Commands\n    - Slide 11: Linux Commands\n    - Slide 12: Linux Commands\n    - Slide 13: File Permissions\n    - Slide 14: File Permissions\n    - Slide 15: File Permissions\n    - Slide 16: File Permissions\n    - Slide 17: File Permissions\n    - Slide 18: File Permissions\n    - Slide 19: File Permissions\n    - Slide 20: File Permissions\n    - Slide 21: Quiz Time!\n    - Slide 22: Packaging\n    - Slide 23: Packaging\n    - Slide 24: Packaging\n    - Slide 25: Packaging\n    - Slide 26: Packaging\n    - Slide 27: Web Content\n    - Slide 28: Web Content\n    - Slide 29: Web Content\n    - Slide 30: Web Content\n    - Slide 31: Web Content\n    - Slide 32: Quiz Time!\n    - Slide 33: Miscellaneous Commands\n    - Slide 34: Miscellaneous Commands",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Miscellaneous Commands",
+      "body": "",
+      "notes": "In this session, we’ll discuss “Miscellaneous Commands”",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Working with Files",
+      "body": "Working with Files",
+      "notes": "Before diving in , let’s recap what we learned in the previous session\nwe saw the nano command opens a simple text editor right inside the terminal,\u000bmaking it easy to create or edit files. \u000bIf we only want to check the beginning part of a file, we can use head, which prints the top N lines of the file.\u000bSimilarly, tail is used when we want to see the last N lines of a file. \u000bNext we saw wc, which stands for word count, helps us quickly check the number of lines, words, and characters inside a file.\n\nWe also learned about \u000b“| lets us combine commands.\ngrep is used to search for patterns in files.\n> redirects output and overwrites a file.",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "nano",
+            "Easy to use command line text editor for Unix and Linux-based operating systems"
+          ],
+          [
+            "head",
+            "Used to print top N lines of a file"
+          ],
+          [
+            "tail",
+            "Used to print last N lines of a file"
+          ],
+          [
+            "wc",
+            "Used to find out number of lines, word count and characters count in the files"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 4,
+      "title": "Working with Files",
+      "body": "Working with Files",
+      "notes": "We also explored commands that help us compress and manage multiple files easily. \u000bThe tar command is used for compressing files and directories, \u000bzip lets us package everything neatly into a single .zip file, and unzip helps us extract files back from that archive.\u000bThese commands are super handy when we want to share or back up data efficiently.",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "tar",
+            "Used to  compress files & directories"
+          ],
+          [
+            "zip",
+            "Used to package all the files into one file with .zip extension"
+          ],
+          [
+            "unzip",
+            "It extracts all files from the specified ZIP archive"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Miscellaneous Commands",
+      "body": "Miscellaneous Commands\nPackage Management\nsudo, su, chown, chmod\napt, yum, brew\nSuper User and File Permissions",
+      "notes": "In today’s session, we’re going to dive into some very important topics.\nFirst, we’ll look at sudo, su, chown, and chmod — these are powerful commands related to super user access and file permissions.\nAnd then, we’ll wrap up with package management, learning how tools like apt, yum, and brew make installing and managing software much easier.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Super User & File Permissions",
+      "body": "",
+      "notes": "Alright, moving forward — let’s talk about Super User and File Permissions",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Commands",
+      "body": "Linux Users\nThe root user, also known as the superuser or administrator,  has access to all commands and files\nAdmin",
+      "notes": "Now, let’s look at Linux users.\nAt the top, we have the root user, also called the superuser or administrator. \u000bThis user has full access to all commands and files in the system — nothing is restricted.\nAlongside root, we also have admin users, who can perform elevated tasks when needed, usually with the help of sudo.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Linux Users",
+      "body": "Root User\n.sudo. command temporarily elevates the privileges allowing users to complete sensitive tasks without logging in as the root user\n“Super User do”\n$ sudo command\nSyntax\nCommands we have learned so far:  sudo.",
+      "notes": "now let’s talk about the root user.\u000b Sometimes, we need special permissions to perform sensitive tasks, like installing software or changing system files. Instead of logging in as root directly, we use the sudo command.\nsudo stands for ‘Super User Do’, and it temporarily grants  privileges to complete the task.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Linux Commands",
+      "body": "Executable Path\n.which. command is used to identify the location of a given executable path\n$ which command\nSyntax\n$  which sudo\n/usr/bin/sudo\nBash\nCommands we have learned so far:  sudo. .which.",
+      "notes": "Now, moving ahead, let’s talk about the which command.\u000b This command helps us find the location of an executable in the system. For example, when we run which sudo,\u000b it shows /usr/bin/sudo, meaning that’s the path where the sudo program is stored.\nThis is really useful when you want to know where exactly a command is coming from, especially if multiple versions are installed on your system.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Linux Commands",
+      "body": "Create New Users\n. useradd . is used to create a new user with the given username \n$ sudo useradd username\nSyntax\n$  sudo useradd rahul\nBash\nCommands we have learned so far:  sudo. .which. .useradd.",
+      "notes": "Next, we’ll look at how to create new users in Linux.\nFor this, we use the useradd command. It takes a username as input and creates a new user on the system. Since it’s an administrative task, we run it with sudo.\n\nFor example, sudo useradd rahul  creates a new user named rahul.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Linux Commands",
+      "body": "Set/Change User Password\n. passwd . is used to set or change password of a given user\n$ sudo passwd username\nSyntax\n$ sudo passwd rahul\nNew password:\nRetype new password:\npasswd: password updated successfully\nBash\nCommands we have learned so far:  sudo. .which. .useradd. .passwd.",
+      "notes": "Moving ahead, once a user is created, we need to set or update their password.\u000b For this, Linux provides the passwd command. Using sudo passwd username, we can assign or reset a password for that user.\nIn the example, sudo passwd rahul  prompts us to enter and confirm the new password, and then shows “password updated successfully”.\nSo now, in addition to sudo, which, and useradd, we’ve also learned how to manage user passwords with passwd.\n\nPractical",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Linux Commands",
+      "body": "Execute Command as Another User\n. su . is used to execute command as another user \n$ su -c command user\nSyntax\n$ su user\nSyntax\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su.",
+      "notes": "Next, let’s look at how we can execute commands as another user.\u000b The command for this is su.\nWe can either switch directly to another user with su username, or run a specific command as that user using su -c \"command\" username.\nThis is especially useful when you want to test or run something under a different user’s environment without logging out.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "File Permissions",
+      "body": "Authorization Levels\nMulti-user operating systems \u000blike linux provide two levels of authorization in securing the files\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su.",
+      "notes": "Moving on, let’s talk about file permissions in Linux.\u000b Since Linux is a multi-user operating system, security becomes very important. That’s why it provides two levels of authorization to protect files:\nPermission → defines what actions (read, write, execute) a user can perform on a file.\u000b\nOwnership → defines who owns the file and controls its access.\u000b\nThis forms the basis of Linux security. Without proper permissions and ownership, multiple users working on the same system would face risks.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "File Permissions",
+      "body": "User Ownership\nUsers accessing a file/ directory can be categorized into 3 types\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su.",
+      "notes": "Moving ahead, let’s understand how Linux categorizes who can access a file or directory.\u000b There are three types of users:\nOwner → usually the creator of the file, with primary control over it.\u000b\nGroup → a set of users grouped together, all sharing the same level of access.\u000b\nOthers → any remaining users on the system who are neither the owner nor part of the group.\u000b\nThis separation ensures that permissions can be managed in a very controlled way. For example, a project file might be fully editable by the owner, accessible by the team (group), but only viewable or even hidden from everyone else.\nSo far, we’ve been learning important commands like sudo, which, useradd, passwd, and su. Now we’re tying them to file access rules through ownership.",
+      "tables": [
+        [
+          [
+            "Type",
+            "Description"
+          ],
+          [
+            "Owner",
+            "User who is considered as owner"
+          ],
+          [
+            "Group",
+            "A group of users, who are assigned a specific permission"
+          ],
+          [
+            "Others",
+            "Any other users who doesn’t belong to the above two types"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "File Permissions",
+      "body": "Ownership and Permissions\nRead\nWrite\nExecute\nRead\nWrite\nExecute\nRead\nWrite\nExecute\nothers\nuser\ngroup\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su. \nuser",
+      "notes": "Next, let’s combine ownership with the actual permissions a file can have.\u000b In Linux, permissions are divided into three actions:\nRead (r) → allows opening and reading the file.\u000b\nWrite (w) → allows modifying the contents.\u000b\nExecute (x) → gives the right to run the file as a program or script.\u000b\nAnd remember, these permissions are set separately for three categories of users: owner, group, and others.\nSo, a file can have different levels of access depending on who is trying to use it. For example, the owner may have full access, while others might only be able to read it.",
+      "tables": [
+        [
+          [
+            "Permissions",
+            "Description"
+          ],
+          [
+            "Read",
+            "Open and read a file"
+          ],
+          [
+            "Write",
+            "Modify the contents of a file"
+          ],
+          [
+            "Execute",
+            "Authority to run as a program"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 16,
+      "title": "File Permissions",
+      "body": "File Permissions in Linux\n$ ls -l\n$ drwxrwxr-x  2 ib-developer ib-developer  4096 Mar 22 16:42  images\n$ -rw-rw-rwx  1 ib-developer ib-developer  0 Mar 23 10:26  sample.txt\nBash\nfile\ndirectory\nuser\ngroup\nothers\nr  -  read \nw - write \nx  - execute\n-    no permission\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su.",
+      "notes": "Next, let’s look at how permissions actually appear in Linux.\u000b When we run the command ls -l, it displays files and directories along with their permissions.\nFor example:\ndrwxrwxr-x → here, the first letter d means it’s a directory, while - would mean it’s a file.\u000b\nThe next three characters rwx → permissions for the user (owner).\u000b\nThe following three rwx → permissions for the group.\u000b\nThe last three r-x → permissions for others.\nIn short:\nr → read,\nw → write,\nx → execute,\nand - means no permission.\nSo, by reading this code, you can immediately know who can read, edit, or execute a file.\n\u000bQuick check for you: Looking at -rw-rw-rwx, can you tell me which users have full permissions here?",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "File Permissions",
+      "body": "Changing Permissions\n$ chmod permissions filename\nSyntax\n\"chmod\"  stands for change mode\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su. .chmod.  \n$ chmod 702 sample.txt\nBash",
+      "notes": "Now, we will be learning about how to change file permissions using the chmod command.\u000b The syntax is simple:\nchmod permissions filename\n\nHere, permissions is a 3-digit number, and filename is the file you want to change.\nNow, let’s break this down.\nThe first digit represents permissions for the user (the owner of the file).\u000b\nThe second digit represents permissions for the group.\u000b\nThe third digit represents permissions for others (everyone else).\u000b\nSo for example, if the number is 702:\n7 is for the user,\n0 is for the group,\n2 is for others.\nNow, how do we decide what number to put?\u000b Each number corresponds to a combination of permissions:\n0 means no permissions → symbol is ---. The user cannot read, write, or execute.\u000b\n1 means execute only → symbol is --x.\u000b\n2 means write only → symbol is -w-.\u000b\n3 means write + execute → symbol is -wx.\u000b\n4 means read only → symbol is r--.\u000b\n5 means read + execute → symbol is r-x.\u000b\n6 means read + write → symbol is rw-.\u000b\n7 means read + write + execute → symbol is rwx.\u000b\nSo when we use chmod, we’re basically giving a code that tells Linux which permissions should apply.\nNow, notice there’s also a binary column in the table. Why is that there?\nPermissions are actually stored in binary at the system level:\nSo for example when we write 5 it will be represented as “101”, so let's break it down …..\u000b2*0 *1 + 2*1 * 0 + 2*1 * 2 = 5\u000b\u000bSo you understood this right ?",
+      "tables": [
+        [
+          [
+            "No.",
+            "Binary",
+            "Symbol",
+            "Permission Type"
+          ],
+          [
+            "0",
+            "000",
+            "---",
+            "No Permission"
+          ],
+          [
+            "1",
+            "001",
+            "--x",
+            "Execute"
+          ],
+          [
+            "2",
+            "010",
+            "-w-",
+            "Write"
+          ],
+          [
+            "3",
+            "011",
+            "-wx",
+            "Execute + Write"
+          ],
+          [
+            "4",
+            "100",
+            "r--",
+            "Read"
+          ],
+          [
+            "5",
+            "101",
+            "r-x",
+            "Read + Execute"
+          ],
+          [
+            "6",
+            "110",
+            "rw-",
+            "Read +Write"
+          ],
+          [
+            "7",
+            "111",
+            "rwx",
+            "Read + Write +Execute"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 18,
+      "title": "File Permissions",
+      "body": "Changing Permissions\n7 - read, write and execute\n6 - read and write\n4 - only read\n$ chmod 764 sample.txt\n$ ls -l\n$ -rwxrw-r--  1 ib-developer cdrom            0 Mar 23 10:26  sample.txt\nBash\nuser\ngroup\nothers\n7 6 4\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su. .chmod.",
+      "notes": "Moving ahead, let’s see an example of changing file permissions with chmod.\nHere, I’ve run chmod 764 sample.txt.\nThe number 7 applies to the user → it gives full permissions: read, write, and execute.\u000b\nThe number 6 applies to the group → which means read and write only.\u000b\nThe number 4 applies to others → which allows only read.\u000b\nWhen we check with ls -l, you can see it reflected as -rwxrw-r--.\u000b This tells us that the owner has all rights, the group can only read and write, and others can just read.\u000b\u000b\u000bPractical\u000b\n👉 Quick check for you: if I had used chmod 700 sample.txt, what would happen for group and others?",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "File Permissions",
+      "body": "Changing Ownership\nFor changing the user of a file/directory\n$ sudo chown root sample.txt\n$ ls -l\u000b$ -rwxrw-r--  1 root cdrom            0 Mar 23 10:26  sample.txt\nBash\n$ sudo chown user filename\nSyntax\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su. .chmod. .chown.",
+      "notes": "Next, let’s look at how we can change the ownership of a file.\nBy default, when a file is created, the user who created it becomes the owner. But sometimes, we may want to transfer ownership—like assigning it to the root user.\nFor this, we use the chown command.\nIn the example, sudo chown root sample.txt changes the owner of sample.txt to root.\u000b\nWhen we check with ls -l, notice that the owner now shows as root instead of the original user.\u000b\nPractical\n\n👉 Question for you: Why do you think changing ownership might be necessary in a multi-user system?",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "File Permissions",
+      "body": "Changing Ownership\nFor changing the user and group of a file/directory\n$ sudo chown root:root sample.txt\n$ ls -l\u000b$ -rwxrw-r--  1 root root           0 Mar 23 10:26  sample.txt\nBash\nCommands we have learned so far:  sudo. .which. .useradd. .passwd. .su. .chmod. .chown. \n$ sudo chown user:group filename\nSyntax",
+      "notes": "Moving ahead, we can also change both the user and the group that own a file.\nThe syntax for this is:\u000b sudo chown user:group filename\nFor example, in the command sudo chown root:root sample.txt, we are setting both the user and the group of sample.txt to root.\nWhen we run ls -l after this, notice how the ownership now shows root root — meaning both the user and group are assigned to root.\n\nPractical",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Packaging",
+      "body": "",
+      "notes": "Now, lets understand\tabout packaging.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Packaging",
+      "body": "Package & Repository\nA package file is a compressed collection of files that comprise the software package\nPackages are stored in repositories to make them accessible to users",
+      "notes": "So generally when you want to install a particular application on your mobile, so what do you do? Right.\u000b So you generally go to the play store, search for the application and then you install, right. \u000bSo similarly when it comes to installing some software in the Linux based operating system, so these are not exactly the applications that you're thinking that we use generally in the phone. \u000bSo generally in case of the servers, to run these we'll require a lot of software, right. \u000bSo when we have to run such things, right. So generally in case of phones we have a particular app and we install, right. \u000bIn case of this we have package, right. So you can understand it in this way. Right. \u000bSo here we have a package, right. It's related to a particular software, okay, so we can install this package inappropriately. \u000bSo we'll be able to access the software, okay, so these packages are actually stored in repositories. \u000bOkay, these packages are grouped and stored in repositories. There'll be huge number of packages that generally we'll be using. \u000bSo they are appropriately grouped and that group is called as the repository. \u000bThey'll be maintained in various repositories and we can appropriately install these different packages. Okay,",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Packaging",
+      "body": "Packaging Tool\n$ sudo apt\nSyntax\nCommands we have learned so far:  apt.\nAPT stands for the Advanced Packaging Tool\nIt is used to install, upgrade or remove software packages \u000bin linux",
+      "notes": "Next, let’s talk about the APT tool, which stands for Advanced Packaging Tool.\nThis is the default package manager in Debian-based systems like Ubuntu. \u000bWith APT, we can install new software, upgrade existing ones, or even remove packages completely.\nThe basic syntax starts with sudo apt, followed by the action you want — for example, installing or updating a package.\nSo whenever you’re working on Ubuntu and need new software, APT is your go-to command.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Packaging",
+      "body": "Installing Package\nInstalling a package from a repository\n$ sudo apt install package_name\nSyntax\nCommands we have learned so far:  apt.",
+      "notes": "Moving on, let’s see how we can actually install a package using APT.\nThe command is simple:\u000b sudo apt install package_name\nHere, you just replace package_name with the actual software you want to install. For example, if you wanted to install Python, you’d type sudo apt install python3.\nThis command will fetch the package from the repository and set it up on your system. Very straightforward, right?",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Packaging",
+      "body": "Package Managers\n$ yum install firefox\n$ brew install firefox\nMac OSX\nCommands we have learned so far:  apt.  brew. .yum.",
+      "notes": "Moving on, let’s talk about package managers.\u000bThey help us install or update software with a single command. \u000bFor example,On Mac, we use brew install firefox\u000bWhereas,On Debian-based Linux, we might use apt install firefox, while on RHEL-based Linux, it’s yum install firefox.\u000bMuch easier than downloading files manually, right?",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Web Content",
+      "body": "Downloading Files From Web\n.wget. is a command-line utility for downloading files from the web\n$ sudo apt install wget \nSyntax\n$ sudo brew install wget \nSyntax\n$ sudo yum install wget \nSyntax\nCommands we have learned so far:  apt.  brew. .yum. .wget.",
+      "notes": "Moving ahead, let’s see how we can download files from the web directly from the terminal.\nThe command we use is wget, which is a utility that helps us fetch files from the internet.\nBefore using it, we need to make sure it’s installed. Depending on your system:\nOn Ubuntu/Debian, run sudo apt install wget.\u000b\nOn MacOS, use sudo brew install wget.\u000b\nOn CentOS/RHEL, run sudo yum install wget.\nSo once installed, wget can grab files right from a given URL. Pretty useful when you don’t want to open a browser.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Web Content",
+      "body": "Downloading Files From Web\n$ wget \"URL\" \nSyntax\nib-developer@cloud:~$ wget \"https://www.example.com\"\n...\nConnecting to www.example.com (www.example.com)|184.27.123.48|:443... connected.\nHTTP request sent, awaiting response... 200 OK\nLength: 1256 (1.2K) [text/html]\nSaving to: ‘index.html’\n...\nBash\n.wget. will download the resource specified in the url to the current directory\nCommands we have learned so far:  apt.  brew. .yum. .wget.",
+      "notes": "Next, let’s see wget in action. The command is very simple — just type wget followed by the URL.\nFor example, here you can see we downloaded a web page from Lifewire using:\u000b wget \"https://www.lifewire.com/uses-of-command-wget-2201085\"\nIt then connects to the server, fetches the file, and saves it in the current directory. By default, the file will have the same name as the resource you are downloading.\nThis is super handy for downloading web pages, files, or even scripts without needing a browser.\u000b\u000bPractical",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Web Content",
+      "body": "Downloading Files From Web\n.curl. is a command-line utility for transferring data from or to a server designed to work without user interaction\n$ sudo apt install curl \nSyntax\n$ sudo brew install curl \nSyntax\n$ sudo yum install curl \nSyntax\nCommands we have learned so far:  apt.  brew. .yum. .wget. .curl.",
+      "notes": "Moving ahead, let’s talk about another very popular tool — curl. Unlike wget,\u000bwhich mainly downloads files, curl is much more versatile. It can transfer data to and from servers and works without any user interaction.\nBefore using it, we may need to install it. The installation depends on the system we’re using:\nOn Ubuntu/Debian, we use sudo apt install curl.\u000b\nOn MacOS, it’s brew install curl.\u000b\nAnd for RedHat/CentOS, it’s sudo yum install curl.\u000b\nOnce installed, we’ll be able to use curl to interact with APIs, download content, or even send data to servers.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Web Content",
+      "body": "Downloading Files From Web\n.curl. prints the contents of the URL to the output\n$ curl \"URL\" \nSyntax\nib-developer@cloud:~$ curl \"wttr.in\"\nWeather report: Hyderabad, India\n                Haze\n  _ - _ - _ - +28(26) °C     \n   _ - _ - _  ← 0 km/h       \n  _ - _ - _ - 4 km           \n                0.0 mm\nBash\nCommands we have learned so far:  apt.  brew. .yum. .wget. .curl.",
+      "notes": "Now let’s actually see curl in action. Unlike wget, which saves the file to your system, \u000bcurl prints the contents of the URL directly to the terminal output.\nFor example, if we run curl wttr.in, it shows us a weather report right inside the terminal. \u000bHere, it’s displaying the weather details for Hyderabad, including temperature, wind, and visibility.\nSo, curl is super handy not only for downloading files but also for quickly checking APIs or web services without needing a browser.\n\n\nPractical",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Web Content",
+      "body": "Removing a Package\nremove: removes the installed packages\n$ sudo apt remove package_name\nSyntax\nCommands we have learned so far:  apt.  brew. .yum. .wget. .curl.",
+      "notes": "Next, let’s see how to remove a package.\u000b In Linux, if you no longer need a package, you can simply run sudo apt remove package_name. \u000bThis will uninstall the package but keep the configuration files.\nIt’s useful when you want to free up space or clean up unnecessary software. \u000bPractical\u000b\u000bNow one thing to not here is that we can search a package, update a package and add private repository, for these You can refer to the cheatsheet and practice.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Miscellaneous Commands",
+      "body": "Key Takeaways (PART 1/2)\nSuper User and File Permissions\nAuthorization Levels\nOwnership\nFile Permissions\nChanging Permissions",
+      "notes": "Alright, let's recap what we've learned in todays session \u000bSo first we learned about working with files:\nWe covered creating files with touch, viewing contents with cat, renaming with mv, copying with cp, deleting with rm, and viewing hidden files with ls -a.\nThese basic file operations are the foundation of Linux file management.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Miscellaneous Commands",
+      "body": "Key Takeaways (PART 2/2)\nPackaging\nInstalling a Package\nDownloading Files From Web\nRemoving a Package",
+      "notes": "Next, let's summarize what we learned about working with directories:\nWe explored relative paths using dots and absolute paths from the root.\nWe created directories with mkdir to organize our files.\nWe navigated between directories using cd and its variations like cd .., cd ~, and cd /.\nWe learned to move files between directories with mv.\nAnd we used rm -r to delete directories and their contents.\nThese directory skills help you maintain an organized file system.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "",
+      "body": "",
+      "notes": "An important point you always need to remember: \n\nPRACTICE. PRACTICE. PRACTICE. \n\nThe more you practice, the better you will get at working with various question formats.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1WrSooOqq6JVzQjHwOhpaiNvvENzf_Otc9LCRh2LPeic/edit?usp=drive_link"
+}

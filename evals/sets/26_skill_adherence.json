@@ -1,0 +1,73 @@
+{
+  "id": "skill_adherence",
+  "title": "Course Skill Adherence — the rules THIS course is written under",
+  "guideline_refs": [],
+  "capability_status": "implemented",
+  "grader": "deterministic",
+  "applies_to": "per_document",
+  "description": "A course carries SKILLS: instructions authored by its owner and approved before they take effect (src/skills.py) — 'show the snippet before explaining it', 'never teach class components', 'one worked-example pattern throughout'. They are what makes a React course different from an Operating Systems one, and nothing else in this suite measures them: the other 25 sets are the house rules that hold for every course. ONE dimension covers every course, parameterised by that course's own skills — a set per skill, or per course, would mean re-authoring the suite each time a course is created.",
+  "criterion": "Every approved skill carrying a machine-checkable assertion is satisfied by the document. Skills that are prose only are not scored here — they reach the writer through the rules block and are weighed by the LLM judge, which is told to quote evidence for any violation it reports.",
+  "rubric": {
+    "5": "Every checkable skill is satisfied; the course has skills and the document obeys them.",
+    "3": "One checkable skill is violated.",
+    "1": "Several checkable skills are violated, or the document ignores the course's own rules."
+  },
+  "pass_threshold": 4,
+  "cases": [
+    {
+      "id": "sk-good-1",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "skill": "Every worked example must show the code it walks through.",
+        "check": {"assert": "block_present", "block": "code", "on_roles": ["working_example"]},
+        "slide": {"n": 4, "role": "working_example", "content": [{"type": "text", "text": "Tracing the counter."}, {"type": "code", "language": "jsx", "code": "setCount(c + 1)", "walkthrough": [{"lines": "1", "text": "The setter takes the next value."}]}]}
+      },
+      "rationale": "The working_example slide carries the code block the skill requires."
+    },
+    {
+      "id": "sk-bad-1",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "skill": "Every worked example must show the code it walks through.",
+        "check": {"assert": "block_present", "block": "code", "on_roles": ["working_example"]},
+        "slide": {"n": 4, "role": "working_example", "content": [{"type": "text", "text": "Imagine the counter incrementing."}]}
+      },
+      "rationale": "A worked example with no code on a course whose skill requires it — the exact defect the skill was written to stop."
+    },
+    {
+      "id": "sk-bad-2",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "skill": "Every snippet must be explained line by line.",
+        "check": {"assert": "field_present", "field": "walkthrough", "when_block": "code"},
+        "slide": {"n": 2, "role": "mechanism", "content": [{"type": "code", "language": "jsx", "code": "useEffect(() => {}, [])"}]}
+      },
+      "rationale": "A snippet dropped on a slide with nothing said about it. Code without explanation is not teaching."
+    },
+    {
+      "id": "sk-bad-3",
+      "polarity": "bad",
+      "expected": "fail",
+      "input": {
+        "skill": "This course is hooks-first: never teach class components.",
+        "check": {"assert": "forbidden_phrase", "phrases": ["class component", "componentDidMount"]},
+        "slide": {"n": 3, "role": "comparison", "content": [{"type": "text", "text": "A class component keeps state in this.state."}]}
+      },
+      "rationale": "The course has moved on from class components and says so; teaching one contradicts its own rules."
+    },
+    {
+      "id": "sk-good-2",
+      "polarity": "good",
+      "expected": "pass",
+      "input": {
+        "skill": "Keep the tone conversational.",
+        "check": null,
+        "slide": {"n": 1, "role": "concept_intro", "content": [{"type": "text", "text": "State is what a component remembers between renders."}]}
+      },
+      "rationale": "A prose-only skill is not scored deterministically — it reaches the writer and the judge, and this set neither passes nor fails a document on it."
+    }
+  ]
+}

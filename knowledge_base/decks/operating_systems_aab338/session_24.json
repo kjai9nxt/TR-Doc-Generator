@@ -1,0 +1,665 @@
+{
+  "session_no": 24,
+  "source_file": "Paging & Segmentation",
+  "deck_title": "Paging & Segmentation",
+  "n_slides": 72,
+  "summary": "\n    - Slide 2: Paging & Segmentation\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Paging & Segmentation\n    - Slide 6: Memory Allocation\n    - Slide 7: B) Non-Contiguous Allocation\n    - Slide 8: Paging\n    - Slide 9: Logical Memory is divided into equal fixed size partitions called pages\n    - Slide 10: Non-Contiguous Memory Allocation\n    - Slide 11: A process's pages don't need to be stored contiguously - they can be placed in a\n    - Slide 12: Paging Solves This\n    - Slide 13: The generated logical address can be broken into two parts (Page Number + Offset\n    - Slide 14: Consider Page Size of 1000 bytes\n    - Slide 15: The generated physical address can be broken into two parts (Frame Number + Offs\n    - Slide 16: Page No\n    - Slide 17: The page table stores Page Table Entries (PTEs) that contain the frame number wh\n    - Slide 18: The MMU looks up the page number in the page table \u000bto find the frame number\n    - Slide 19: Paging Mechanics\n    - Slide 20: Page Table\n    - Slide 21: Main Memory: 16 KB\u000b\n    - Slide 22: The Page Table for process P1 might look like this\n    - Slide 23: Physical Address = (Frame * Frame size) + Offset = (7 * 1024) + 512 = 7680 bytes\n    - Slide 24: Paging Mechanics\n    - Slide 25: Paging Mechanics\n    - Slide 26: Paging Mechanics\n    - Slide 27: Paging Mechanics\n    - Slide 28: Effective Access Time (EAT)\n    - Slide 29: Effective Access Time (EAT)\n    - Slide 30: Effective Access Time (EAT)\n    - Slide 31: Paging Mechanics\n    - Slide 32: Paging Mechanics\n    - Slide 33: Paging Mechanics\n    - Slide 34: Paging Mechanics\n    - Slide 35: Quiz Time!\n    - Slide 36: Segmentation\n    - Slide 37: Segmentation is a memory management technique where a process is divided into va\n    - Slide 38: It reflects the logical structure of the program, such as code, data, and stack,\n    - Slide 39: Segmentation\n    - Slide 40: Variable-sized divisions: Segments can have different lengths based on program r\n    - Slide 41: Protection and Sharing: Different segments can have access rights (read, write, \n    - Slide 42: Segmentation\n    - Slide 43: Segment Table\n    - Slide 44: Segmentation\n    - Slide 45: Address Translation\n    - Slide 46: Segmentation\n    - Slide 47: Two-dimensional Logical Address to Physical Address.\n    - Slide 48: No Internal Fragmentation: Segments sized exactly to need (external fragmentatio\n    - Slide 49: Segmentation\n    - Slide 50: Segmentation with Paging\n    - Slide 51: Segmentation with Paging is a hybrid memory management technique that combines t\n    - Slide 52: Process Division\n    - Slide 53: Each segment has its own page table to map logical pages to physical frames\n    - Slide 54: Address Translation\n    - Slide 55: Checks the segment table: Finds the base address of the page table\n    - Slide 56: Combining segmentation and paging allows the system to benefit from both techniq\n    - Slide 57: Segmentation with Paging\n    - Slide 58: Since each segment has a page table, the page table is only created for the data\n    - Slide 59: Segmentation provides a logical division (closer to how the program is written),\n    - Slide 60: Combining segmentation with paging helps reduce external fragmentation compared \n    - Slide 61: Internal Fragmentation: Although external fragmentation is reduced, internal fra\n    - Slide 62: Increased Memory Access Time: Translation involves multiple steps, making memory\n    - Slide 63: Comparison & Trade-offs\n    - Slide 64: Heading: 5. Comparison & Trade-offs Sub-heading: Paging vs Segmentation\n    - Slide 65: Heading: 5. Comparison & Trade-offs Sub-heading: Paging vs Segmentation\n    - Slide 66: Comparison & Trade-offs\n    - Slide 67: Quiz Time!\n    - Slide 68: Paging & Segmentation\n    - Slide 69: Paging & Segmentation\n    - Slide 70: Virtual Memory & Demand Paging",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Paging & Segmentation",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Memory Allocation – Contiguous\nAllocation Overview\nUniprogramming vs multiprogramming\nContiguous vs non-contiguous allocation\nPartitioning\nSingle contiguous allocation\nFixed (static) partitioning\nDynamic (variable) partitioning",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Memory Allocation – Contiguous\nFragmentation\nInternal fragmentation\nExternal fragmentation & compaction\nAllocation Strategies\nFirst fit, best fit, worst fit, next fit\nOverlays\nConcept; how overlays work, Advantages & disadvantages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Paging & Segmentation",
+      "body": "Paging & Segmentation\nThe Dispatcher \u000b& Gantt Basics\nSegmentation\nPaging Mechanics\nPages & frames, Page Table & Page Table Entry (PTE), Logical-to-physical Translation\nAddress-Translation Example, TLB & effective Access Time\nPaging\nComparison & Trade-offs\nSegmentation with Paging\nSegments; segment table (base & limit), Segmentation address translation\nHybrid Approach, How It Works\nPaging vs Segmentation, Advantages & Disadvantages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Memory Allocation",
+      "body": "Assigns different blocks of memory in a non consecutive (non-continuous) manner to a process\nPaging\nSegmentation\nSegmented memory allocation with Paging\nProcess\nMemory\nBlocks\nB) Non-Contiguous Allocation",
+      "notes": "Now, let's understand how non-contiguous allocation works. Instead of placing a process in one continuous memory area,\u000b the operating system divides the process into multiple parts and stores them in different memory locations.\u000b Based on how this division is done, non-contiguous allocation uses techniques such \u000bas Paging, Segmentation, and Segmentation with Paging to manage memory efficiently.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 7,
+      "title": "B) Non-Contiguous Allocation",
+      "body": "Overcomes the limitations of contiguous allocation (fragmentation, need for large free block)\nOffers flexibility, better memory utilization and support for large/multiple processes\nWhy It Matters?",
+      "notes": "Moving on, the main idea here is to avoid the restrictions of contiguous allocation.\u000b Instead of waiting for one large free memory block, the operating system can use the available free spaces efficiently. \u000bThis makes memory management more effective, especially when multiple processes are running simultaneously.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Paging",
+      "body": "Paging",
+      "notes": "Now we will learn about the Paging",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Logical Memory is divided into equal fixed size partitions called pages",
+      "body": "Logical Memory is divided into equal fixed size partitions called pages\nEach of this pages corresponds to a frame in physical memory\nPhysical Address Space\nLogical Address Space\nFrames\nPages\nB) Non-Contiguous Memory Allocation\nPaging",
+      "notes": "Next, let's start with Paging. In this technique, the logical memory of a process is divided into fixed-size pages,\u000b while physical memory is divided into fixed-size frames of the same size. When the process is loaded into memory, \u000beach page is mapped to an available frame in physical memory.\u000b This allows the process to be stored efficiently without requiring one continuous block of memory.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "title": "Non-Contiguous Memory Allocation",
+      "body": "Non-Contiguous Memory Allocation\nPages vs Frames\nPages: These are logical divisions of a process. A process is divided into fixed-size pages.\u000b\nThe size of a page is determined by the OS and must be the same size for all pages in a process.\u000b\nFrames: These are fixed-size blocks of physical memory.\u000b\nThe size of a frame matches the size of a page, ensuring that each page can be loaded into a frame without modification.\u000b\nRelationship: Each page of a process is mapped to a frame in physical memory, but they don’t have to be contiguous. This means a process can be scattered throughout memory, improving memory utilization.\u000b\nPages: These are logical divisions of a process. A process is divided into fixed-size pages.\u000b\nThe size of a page is determined by the OS and must be the same size for all pages in a process.\u000b\nFrames: These are fixed-size blocks of physical memory.\u000b\nThe size of a frame matches the size of a page, ensuring that each page can be loaded into a frame without modification.\u000b\nRelationship: Each page of a process is mapped to a frame in physical memory, but they don’t have to be contiguous. This means a process can be scattered throughout memory, improving memory utilization.\u000b\nNon-Contiguous Memory Allocation\nPages vs Frames",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "A process's pages don't need to be stored contiguously - they can be placed in a",
+      "body": "A process's pages don't need to be stored contiguously - they can be placed in any available frames scattered across physical memory\nMain Benefit: Paging solves external fragmentation by allocating memory in fixed-size blocks (pages and frames), allowing processes to run efficiently on fragmented physical memory\nNon-Contiguous Memory Allocation\nPaging",
+      "notes": "Moving on, the pages of a process can be placed in any available frames,\u000b so they don't have to be next to each other in memory. Since all pages and frames are of the same size, \u000bmemory can be allocated more efficiently, helping eliminate the problem of external fragmentation.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Paging Solves This",
+      "body": "Paging Solves This\nSince pages and frames are fixed in size, the process can be allocated across non-contiguous frames, preventing external fragmentation and making better use of memory\nExternal Fragmentation\nThis occurs when free memory is divided into small, scattered blocks that cannot fit a process\nPaging\nSolves External Fragmentation",
+      "notes": "Now, recall that external fragmentation happens when free memory is available \u000bbut is scattered into small blocks. With paging, the operating system can place the \u000bprocess across multiple available frames instead of searching for one continuous space. \u000bThis ensures memory is utilized effectively even when it is fragmented.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "The generated logical address can be broken into two parts (Page Number + Offset",
+      "body": "The generated logical address can be broken into two parts (Page Number + Offset)\nPage Number : Identifies the page within the process.\nPage Offset : Specifies the exact location within the page.\nLogical Address\nPaging Address Structure\nLogical Address",
+      "notes": "Next, every logical address in paging is divided into two parts. The page number tells the operating system \u000bwhich page to access, while the offset identifies the exact location within that page.\u000b Together, these help locate the required data in physical memory.",
+      "tables": [
+        [
+          [
+            "Page Number",
+            "Page Offset"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Consider Page Size of 1000 bytes",
+      "body": "Consider Page Size of 1000 bytes\nLogical Address Location 4020\n= Page 4, Offset 20\nPage 0\nPage 1\nPage 2\nPage 3\nPage 4\n0\n1000\n2000\n3000\n5000\n4000\n4020\nPaging\nLogical Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "The generated physical address can be broken into two parts (Frame Number + Offs",
+      "body": "The generated physical address can be broken into two parts (Frame Number + Offset)\nFrame Number : Identifies where the page is stored in physical memory.\nOffset : Remains the same to locate data within the frame\nPaging Address Structure\nPhysical Address\nPhysical Address",
+      "notes": "Moving on, the physical address also has two parts. \u000bThe frame number indicates the frame where the required page is stored, \u000bwhile the offset remains unchanged and is used to locate the exact data within that frame.",
+      "tables": [
+        [
+          [
+            "Frame Number",
+            "Offset"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 16,
+      "title": "Page No",
+      "body": "Page No\nFrame No\nPage Table\nPaging\nPage Table",
+      "notes": "Now, once the page number is identified, the operating system refers\u000b to the Page Table to find the corresponding frame number. Since every process has its own page table,\u000b one process cannot directly access the memory of another, ensuring proper memory isolation.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 17,
+      "title": "The page table stores Page Table Entries (PTEs) that contain the frame number wh",
+      "body": "The page table stores Page Table Entries (PTEs) that contain the frame number where the page is stored and possibly additional information like access permissions and validity bits\nPaging\nPage Table",
+      "notes": "Moving on, each row in the Page Table is called a Page Table Entry, or PTE. Along with the frame number,\u000b it can also store details like access permissions and validity information, \u000bwhich help the operating system manage memory safely and efficiently.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "The MMU looks up the page number in the page table \u000bto find the frame number",
+      "body": "The MMU looks up the page number in the page table \u000bto find the frame number\nIt combines the frame number with the offset to \u000bgenerate the final physical address\nPaging\nPage Table",
+      "notes": "Now, once the CPU receives a logical address, the MMU performs the translation in the background. \u000bIt identifies the required frame using the Page Table and preserves the offset, \u000bso the exact location in physical memory can be accessed.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Paging Mechanics",
+      "body": "Paging Mechanics",
+      "notes": "Now we will be learning about the Paging Mechanics",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Page Table",
+      "body": "Page Table\nPhysical Address\nLogical Address\nP0\nP1\nP2\nP3\nMemory\nPaging Mechanics\nPaging\nPage No\nOffset\nFrame No\nOffset",
+      "notes": "Now, let's trace the address translation process. The CPU first generates a Logical Address \u000bcontaining the Page Number and Offset. Here, the Page Number is P1, so the Page Table is consulted, \u000bwhich maps P1 to Frame F2. The Frame Number F2 is then combined with the same Offset to form the Physical Address. \u000bFinally, this address points to Frame F2 in Memory, where Page P1 is stored. \u000bThis is how paging translates a logical address into the correct physical location while keeping the Offset unchanged.",
+      "tables": [
+        [
+          [
+            "F5"
+          ],
+          [
+            "F2"
+          ],
+          [
+            "F3"
+          ],
+          [
+            "F0"
+          ]
+        ],
+        [
+          [
+            "F0"
+          ],
+          [
+            "F1"
+          ],
+          [
+            "F2"
+          ],
+          [
+            "F3"
+          ],
+          [
+            "F4"
+          ],
+          [
+            "F5"
+          ]
+        ],
+        [
+          [
+            "P3"
+          ],
+          [
+            ""
+          ],
+          [
+            "P1"
+          ],
+          [
+            "P2"
+          ],
+          [
+            ""
+          ],
+          [
+            "P0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 21,
+      "title": "Main Memory: 16 KB\u000b",
+      "body": "Main Memory: 16 KB\u000b\nFrame Size: 1 KB\u000b\nThe memory is divided into 16 frames, each of size 1 KB\u000b\nIf a process (e.g., P1) is 4 KB, it will be divided into 4 pages (each 1 KB in size)\nPaging Mechanics\nPaging Example",
+      "notes": "Next, let's understand this with a simple example. Since the frame size is 1 KB,\u000b the 16 KB main memory gets divided into 16 frames. Similarly, a 4 KB process \u000bis split into 4 pages, with each page fitting exactly into one frame.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "The Page Table for process P1 might look like this",
+      "body": "The Page Table for process P1 might look like this\nPage 0\nPage 1\nPage 2\nPage 3\nProcess P1\n0\n1\n2\n3\nPage\n3\n1\n7\n0\nFrame\nPage Table\nF0\nF4\nF8\nF12\nF1\nF5\nF9\nF13\nF2\nF6\nF10\nF14\nF3\nF7\nF11\nF15\nPaging Mechanics\nPaging Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Physical Address = (Frame * Frame size) + Offset = (7 * 1024) + 512 = 7680 bytes",
+      "body": "Physical Address = (Frame * Frame size) + Offset = (7 * 1024) + 512 = 7680 bytes\nLogical → Physical Address Translation\nExample \nTranslation of a Logical Address",
+      "notes": "Now, let's work through a complete Logical Address Translation example. \u000bThe Logical Address contains Page 2 and an Offset of 512. During the Page Table Lookup, \u000bPage 2 is mapped to Frame 7. The Physical Address is then formed by combining Frame 7 with the same Offset of 512. \u000bAssuming a Frame Size of 1024 bytes, the physical address is calculated as (7 × 1024) + 512 = 7680 bytes. \u000bThis example shows that while the Page Number changes to a Frame Number, the Offset always remains unchanged.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Paging Mechanics",
+      "body": "The Problem - Two Memory Accesses\nEvery memory reference in paging normally needs two trips to memory:\nRead the Page Table Entry (to find the frame number)\nAccess the actual data at that frame\nThis doubles the effective time to access memory - a real performance cost",
+      "notes": "Moving on, one drawback of paging is that every memory request involves an extra step. \u000bBefore accessing the actual data, the system must first check the Page Table\u000b to find the correct frame, which increases the overall memory access time.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Paging Mechanics",
+      "body": "Analogy",
+      "notes": "Like looking up your friend's address in a phone book before visiting them—you first find the address, then go to the house. \u000bSimilarly, paging first looks up the frame number in the page table and then accesses the actual data.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Paging Mechanics",
+      "body": "Translation Lookaside Buffer (TLB)\nThe TLB is a small, very fast hardware cache inside the CPU that stores recently-used Page Number → Frame Number translations",
+      "notes": "Now, to avoid checking the Page Table every time, the CPU uses a small, \u000bhigh-speed cache called the TLB(Translation Lookaside Buffer). It stores recently used page-to-frame mappings, \u000ballowing address translation to happen much faster.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Paging Mechanics",
+      "body": "Translation Lookaside Buffer (TLB)\nOn every memory reference, the MMU checks the TLB first:\nTLB Hit\nthe frame number is found immediately in the TLB. No need to read the page table from memory. Fast path\nTLB Miss\nnot found in the TLB. The MMU must look it up in the page table (in memory), and that result gets cached in the TLB for next time",
+      "notes": "Moving on, whenever a memory request is made, the MMU first checks the TLB. If the mapping is available, \u000bit's a TLB Hit and the frame is obtained instantly. Otherwise, it's a TLB Miss,\u000b so the system fetches the mapping from the Page Table and stores it in the TLB for future access.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Effective Access Time (EAT)",
+      "body": "Worked Example\nGiven:\nTLB access time = 20 ns\nMain memory access time = 100 ns\nTLB hit ratio = 80%",
+      "notes": "Next, let's calculate the Effective Access Time (EAT) using this example.\u000b Here, the TLB takes 20 ns, main memory access takes 100 ns, and the TLB hit ratio is 80%. \u000bUsing these values, we'll find the average memory access time.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Effective Access Time (EAT)",
+      "body": "Formula & Calculation\nFormula\nEAT = (hit ratio × (TLB time + memory time)) + (miss ratio × (TLB time + memory time + memory time))\nCalculation:\nOn a hit: TLB (20ns) + one memory access (100ns) = 120 ns\nOn a miss: TLB (20ns) + page table access (100ns) + actual data access (100ns) = 220 ns\nEAT = (0.8 × 120) + (0.2 × 220) = 96 + 44 = 140 ns",
+      "notes": ", plus one memory access to read the page table and get the frame number, \u000bplus a second memory access to actually fetch the data — that's why memory time appears twice on the miss side\u000bNow, let's apply these values to the EAT formula. A TLB Hit takes 120 ns, while a TLB Miss takes\u000b 220 ns because of the additional page table access. Substituting the 80% hit ratio into the formula gives us an Effective Access Time of 140 ns.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Effective Access Time (EAT)",
+      "body": "What It Tells Us ?\nA higher TLB hit ratio brings EAT closer to the TLB-hit cost (120 ns); a lower hit ratio pushes it toward the full miss cost (220 ns)\nThis is why TLB hit ratio is such a heavily optimized metric in real CPUs",
+      "notes": "Finally, the EAT mainly depends on the TLB hit ratio. A higher hit ratio keeps the access time closer to 120 ns, \u000bsince most address translations are found directly in the TLB. On the other hand,\u000b frequent TLB misses require accessing the Page Table, increasing the access time toward 220 ns. \u000bThis is why modern processors heavily optimize the TLB to improve overall memory performance.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Paging Mechanics",
+      "body": "Advantages of Paging\nEliminates External Fragmentation\nMemory is allocated in fixed-size frames, so there are no scattered unusable gaps between allocations\nSimple to Implement\nAllocation/deallocation just means tracking which frames are free or used",
+      "notes": "Moving on, let's look at the advantages of Paging. Since memory is managed using fixed-size pages and frames, \u000bit eliminates external fragmentation, making memory utilization more efficient. Also, memory management \u000bbecomes simpler because the operating system only needs to keep track of which frames are free and which are already allocated.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Paging Mechanics",
+      "body": "Advantages of Paging\nEfficient Memory Utilization\nA process's pages can go into any available frames, so there's no need to find one large contiguous block\nMemory Isolation\nEach process has its own page table, keeping processes' memory cleanly separated",
+      "notes": "Next, Paging also improves memory utilization because a process can be loaded into any available frames, \u000bwithout requiring one contiguous memory block. In addition, each process maintains its own Page Table,\u000b which provides memory isolation and prevents processes from accessing each other's memory directly.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Paging Mechanics",
+      "body": "Disadvantages of Paging\nInternal Fragmentation\nIf a process's last page isn't completely full, that unused space inside the page is wasted\nPage Table Overhead\nExtra memory is needed to store a page table for every running process",
+      "notes": "Now, let's discuss some limitations of Paging. Since memory is allocated in fixed-size pages, \u000bthe last page of a process may not be completely filled, leading to internal fragmentation.\u000b Also, every process requires its own Page Table, which consumes additional memory and adds some management overhead.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Paging Mechanics",
+      "body": "Disadvantages of Paging\nExtra Memory Access\nwithout a TLB, every memory reference needs two accesses: one to read the page table, one to read the actual data\nNo Logical Grouping\nUnlike segmentation, pages don't correspond to a program's logical structure (code/data/stack)",
+      "notes": "Moving on, without a TLB, every memory request requires an additional lookup in the Page Table,\u000b increasing the overall access time. Another limitation is that pages are created based on a fixed size, \u000bso they don't represent meaningful program sections like code, data, or stack. \u000bThis makes memory organization less aligned with the program's logical structure.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Segmentation",
+      "body": "Segmentation",
+      "notes": "Now we will learn about the Segmentation",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Segmentation is a memory management technique where a process is divided into va",
+      "body": "Segmentation is a memory management technique where a process is divided into variable-sized chunks called segments\u000b\nUnlike paging, segmentation aligns with the user's logical view of a program, making memory management easier\nNon-Contiguous Memory Allocation\nSegmentation",
+      "notes": "Now, let's move to Segmentation. Instead of dividing a process into fixed-size blocks, \u000bit is split into variable-sized segments based on the program's logical parts, such as code, data, or stack. \u000bThis makes the memory layout more meaningful and closely matches how a programmer views the program.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "It reflects the logical structure of the program, such as code, data, and stack,",
+      "body": "It reflects the logical structure of the program, such as code, data, and stack, enabling better control over memory allocation\nC\nA\nPage 1\nE\nB\nPage 1\nD\nFree\nFree\nC\nA\nE\nB\nD\nUser space\nPhysical Memory Space\nNon-Contiguous Memory Allocation\nLogical View of Segmentation",
+      "notes": "Now, let's understand the logical view of Segmentation. In Physical Memory Space, the segments A, B, C, D, and E \u000bare stored in different locations with free spaces in between, so they are non-contiguous. \u000bHowever, in the User Space, the program simply views them as independent logical segments, \u000bwithout worrying about where they are physically stored. These segments can represent different parts of a program, \u000bsuch as code, data, and stack, making memory management more natural and easier to organize.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Segmentation",
+      "body": "Segmentation\nAnalogy",
+      "notes": "Think of a bookshelf with sections of different sizes for fiction, non-fiction, and journals.\n Each section is sized to fit its contents. Similarly, segmentation divides a program into logical, \nvariable-sized segments like code, data, and stack, instead of fixed-size blocks like paging.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Variable-sized divisions: Segments can have different lengths based on program r",
+      "body": "Variable-sized divisions: Segments can have different lengths based on program requirements\nLogical division of memory: Segments represent logical units of the program\nTwo-part address:\nSegment Number (s): Identifies the segment\nOffset (d): Specifies the exact location within that segment\nLogical Address = ⟨Segment number, Offset⟩\nSegmentation\nKey Features",
+      "notes": "Next, let's look at the key features of Segmentation. Since segments represent logical parts of a program, \u000bthey can have different sizes depending on their purpose. Also, every logical address consists of a Segment Number, \u000bwhich identifies the required segment, and an Offset, which locates the exact position within that segment.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Protection and Sharing: Different segments can have access rights (read, write, ",
+      "body": "Protection and Sharing: Different segments can have access rights (read, write, execute) and can be shared among processes.\nNo internal fragmentation: Segments vary in size, avoiding wasted space within segments.\nExternal Fragmentation: Can occur when free memory is divided into scattered blocks\nSegmentation\nKey Features",
+      "notes": "Moving on, Segmentation also provides better protection and sharing, as different segments \u000bcan have different access permissions like read, write, or execute, and can even be shared\u000b across processes when required. Since segments are variable-sized, it avoids internal fragmentation. \u000bHowever, over time, external fragmentation can still occur because free memory gets scattered into smaller blocks.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Segmentation",
+      "body": "Segmentation\nSegment Table",
+      "notes": "Now, to locate a segment in memory, the operating system uses a Segment Table. \u000bFor each segment, it stores the Base Address, which tells where the segment begins in physical memory, \u000band the Segment Limit, which defines the size of that segment. These values are used to translate a logical address into a physical address.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Segment Table",
+      "body": "Segment Table\nLogical View of Segmentation\n400\n1000\n1200\n1600\n1800\n2300\n2800\n3100\nLogical Address Space\nSegmentation Table\nSegmentation\nNumber\nPhysical Address Space",
+      "notes": "Now, let's see how the Segment Table maps the Logical Address Space to the Physical Address Space. program is divided into Segment 0, 1,2,3 and for each segment, the Segmentation Table stores its Base Address and Limit. For example, Segment 0 …. and so on. Using this information, the operating system places each segment at its corresponding location in the Physical Address Space, leaving free spaces wherever memory is unavailable. This illustrates how Segmentation supports variable-sized segments but can also result in external fragmentation.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Segmentation",
+      "body": "Segmentation\nAddress Translation",
+      "notes": "Next, let's understand how address translation happens in Segmentation.\u000b The CPU first generates a logical address consisting of the Segment Number and an Offset. \u000bThe MMU uses the Segment Number to locate the required entry in the Segment Table and obtains \u000bthe corresponding Base Address. It then adds the Offset to this Base Address to\u000b determine the exact physical address where the required data is stored.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Address Translation",
+      "body": "Address Translation\nSegmentation: Address Translation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Segmentation",
+      "body": "Segmentation\nExample\nSegment 0 (4 KB)\nSegment 2 (3 KB)\nSegment 1 (2 KB)\nFree\nFree\nPhysical Memory\n1000\n6000\n9000",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Two-dimensional Logical Address to Physical Address.",
+      "body": "Translation\nCPU\ns\nd\nd < Limit\nBase Add\nLimit\n+\n{\n{\nLogical Address\nS\nSegment Table\nError\nBase Add\nBase Add. + Limit\nPhysical Address Space\nd\nYES\nNO\nBase Add. + d",
+      "notes": "Now, let's see how a Logical Address is translated into a Physical Address in Segmentation.\u000b The CPU generates a logical address containing the Segment Number (s) and the Offset (d).\u000b The Segment Number is used to access the Segment Table, which provides the Base Address and Limit of that segment. \u000bThe operating system first checks whether d < Limit. If the condition is true, the Offset (d) is added\u000b to the Base Address to generate the Physical Address. Otherwise, the address is outside \u000bthe segment's boundary, resulting in a Segmentation Fault.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "No Internal Fragmentation: Segments sized exactly to need (external fragmentatio",
+      "body": "No Internal Fragmentation: Segments sized exactly to need (external fragmentation still possible)\u000b\nVariable Segment Table Size: Depends on program structure, not always smaller than page table\u000b\nModular Loading: Only needed segments loaded, not entire program\u000b\nCloser to User’s View: Matches the program’s logical structure (functions, arrays, etc.)\u000b\nSecurity & Separation: Isolates sensitive data and operations for security\nSegmentation\nAdvantages",
+      "notes": "Now, let's look at the advantages of Segmentation. Since segments are created according to the program's needs,\u000b internal fragmentation is eliminated, although external fragmentation may still occur.\u000b The Segment Table size depends on the program's structure, and only the required segments are loaded, \u000bsupporting modular loading. Because segmentation reflects the program's logical structure, \u000bsuch as functions, arrays, code, and data, it is easier for programmers to understand and manage. \u000bFinally, separate segments can have different access permissions, providing better security and protection.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Segmentation",
+      "body": "Segmentation\nDisadvantages\nExternal Fragmentation: Free memory gets scattered, leading to wasted space\u000b\nOverhead: Maintaining segment tables requires extra memory and management\u000b\nSlower Access: Two memory lookups (segment table + memory) increase access time\u000b\nComplexity: Managing variable-sized segments is more difficult than paging\u000b\nSegmentation Faults: Occur when a program accesses memory outside its segment",
+      "notes": "Now, although Segmentation has several benefits, it also comes with some challenges. \u000bSince segments are variable-sized, free memory can become scattered over time, leading to external fragmentation. \u000bThe operating system also needs to maintain a Segment Table and perform an additional lookup before accessing memory,\u000b which adds some overhead and slightly increases access time. Moreover, managing segments\u000b is more complex than Paging, and accessing data beyond a segment's limit results in a Segmentation Fault.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Segmentation with Paging",
+      "body": "Segmentation with Paging",
+      "notes": "Now we will be learning about the Segmentation with Paging",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Segmentation with Paging is a hybrid memory management technique that combines t",
+      "body": "Segmentation with Paging is a hybrid memory management technique that combines the advantages of both segmentation and paging\nSegmentation allows for logical division of memory (code, data, stack, heap)\nPaging solves the issue of external fragmentation by dividing memory into fixed-size blocks (pages)\nNon-Contiguous Memory Allocation\nSegmentation with Paging\nCode\nData\nStack\nHeap",
+      "notes": "Finally, let's look at Segmentation with Paging, which combines the strengths of both techniques. \u000bSegmentation first divides the program into logical units such as Code, Data, Stack, and Heap. \u000bThen, instead of storing each segment as one continuous block, Paging further divides \u000bthese segments into fixed-size pages, eliminating external fragmentation while \u000bstill preserving the program's logical organization.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Process Division",
+      "body": "Process Division\nA process is divided into \u000bfour main segments\nCode\nData\nStack\nHeap\nSegment Division\nEach segment is divided into fixed-size pages, allowing for efficient memory usage\nSegmentation with Paging\nHow it works?",
+      "notes": "Instead of directly dividing a process into pages, the operating system first separates it into logical segments like code, data, stack, and heap. Each segment is then divided into fixed-size pages. This combines the logical structure of segmentation with the efficient memory allocation of paging.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Each segment has its own page table to map logical pages to physical frames",
+      "body": "Each segment has its own page table to map logical pages to physical frames\nThe segment table stores the base address and limit of the segment’s page table\nPage Table\nSegmentation with Paging\nHow it works?",
+      "notes": "Moving on, after dividing each segment into pages, the operating system needs a way to track where those pages are stored. Each segment has its own page table, which maps the segment’s pages to physical frames. The segment table stores the location and size of each segment’s page table, helping the system find the correct page table during address translation.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Address Translation",
+      "body": "Address Translation\nThe CPU logical address is divided into:\nSegment Number: Identifies the segment\nPage Number: Identifies the page within the segment\nOffset: Specifies the location within the page\nSegmentation with Paging\nHow it works?\nSeg No\nPage No\nOffset\n31 30\n29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12\n11 10 9 8 7 6 5 4 3 2 1 0",
+      "notes": "Next, let's see how the logical address is interpreted in this hybrid approach. Since both Segmentation and Paging are involved, \u000bthe logical address is divided into three fields. The Segment Number first identifies the required segment, \u000bthe Page Number locates the page within that segment, and finally the Offset pinpoints the exact location inside that page.\u000b This three-level addressing allows the system to preserve the logical structure \u000bwhile still benefiting from efficient page-based memory allocation.\u000bThe operating system first uses the Segment Number to locate the correct page table,\u000b then uses the Page Number to find the corresponding frame, and finally combines that\u000b frame with the Offset to generate the Physical Address.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Checks the segment table: Finds the base address of the page table",
+      "body": "Checks the segment table: Finds the base address of the page table\nUses the page number: Locates the frame number\nCombines with the offset: Forms the final physical address\nThe Memory Management Unit (MMU) follows this process\nSegmentation with Paging\nHow it works?",
+      "notes": "Now, after the logical address is split, the MMU performs the translation in stages.\u000b It first refers to the Segment Table to locate the appropriate Page Table for that segment. \u000bUsing the Page Number, it identifies the required frame, and finally combines the frame number with the Offset\u000b to generate the final physical address. This two-level lookup enables the system to \u000bleverage the benefits of both Segmentation and Paging.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Combining segmentation and paging allows the system to benefit from both techniq",
+      "body": "Combining segmentation and paging allows the system to benefit from both techniques:\nSegmentation provides logical organization of memory, making the program structure more natural\u000b\nPaging helps with efficient memory usage by dividing segments into fixed-size pages, reducing external fragmentation\nSegmentation with Paging\nWhy Segmentation with Paging?",
+      "notes": "Finally, neither Segmentation nor Paging is perfect when used alone. \nSegmentation makes programs easier to organize but can suffer from external fragmentation, \nwhereas Paging uses memory efficiently but ignores the program's logical structure. By combining both, \nthe system retains the logical view of a program while achieving efficient and flexible memory allocation.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Segmentation with Paging",
+      "body": "Segmentation with Paging\nWhy Segmentation with Paging?\nPage Table of Segment 0\nPage Table of Segment 2\nPage Table of Segment 1\nPage Table of Segment 3\nSegment Table",
+      "notes": "Now, let's understand this with the example shown. The Segment Table contains the Base of PT\u000b and Limit for each segment. For instance, Segment 0 has a Base of PT = 512, which points to its own Page Table \u000bcontaining entries like Page 10 and Page 21. Similarly, Segment 1 points to a different Page Table \u000bwith pages 19 and 52, while Segments 2 and 3 have their own page tables as well. This shows that \u000beach segment maintains an independent page table, making memory organization more modular and efficient.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Since each segment has a page table, the page table is only created for the data",
+      "body": "Since each segment has a page table, the page table is only created for the data of segments, reducing memory requirements\nReduced Page Table Size\nSegmentation with Paging\nAdvantages",
+      "notes": "Moving on, one advantage of this approach is that it avoids maintaining one large Page Table for the entire address space. \nInstead, each segment has its own Page Table, and memory is allocated only for segments that are actually used. This can reduce Page Table memory overhead.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Segmentation provides a logical division (closer to how the program is written),",
+      "body": "Segmentation provides a logical division (closer to how the program is written), while paging efficiently manages memory allocation\nProgrammer's View\nSegmentation with Paging\nAdvantages",
+      "notes": "Next, this approach is also more intuitive from a programmer's perspective. \nDevelopers naturally think in terms of code, data, stack, and heap, which are represented through Segmentation. \nBehind the scenes, Paging takes care of allocating memory efficiently, without affecting this logical organization.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Combining segmentation with paging helps reduce external fragmentation compared ",
+      "body": "Combining segmentation with paging helps reduce external fragmentation compared to pure segmentation\nReduced External Fragmentation\nSegmentation with Paging\nAdvantages",
+      "notes": "Now, one of the key benefits of this hybrid approach is the reduction of external fragmentation. \u000bAlthough the program is still organized into segments, memory is actually allocated in fixed-size pages. \u000bThis means the operating system no longer has to search for one large continuous space \u000bfor an entire segment, resulting in much more efficient memory utilization.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Internal Fragmentation: Although external fragmentation is reduced, internal fra",
+      "body": "Internal Fragmentation: Although external fragmentation is reduced, internal fragmentation can still occur within pages\nHardware Requirements: Extra hardware is needed to manage both the segment table and page table\nSegmentation with Paging\nDisadvantages",
+      "notes": "Finally, this hybrid approach also has a few trade-offs. Since memory is still allocated in fixed-size pages, \u000bsome unused space can remain in the last page, leading to internal fragmentation.\u000b In addition, the system has to maintain both the Segment Table and Page Table,\u000b making the hardware and address translation mechanism more complex.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Increased Memory Access Time: Translation involves multiple steps, making memory",
+      "body": "Increased Memory Access Time: Translation involves multiple steps, making memory access slower compared to simpler paging or segmentation alone\nHigher Memory Overhead: Maintaining both segment tables and page tables increases memory usage and makes memory management more complex\nSegmentation-with-Paging\nDisadvantages",
+      "notes": "Finally, this approach provides flexibility but increases complexity. Since the system needs to check both the Segment Table and Page Table before accessing data, address translation takes more steps and can increase access time. Maintaining both tables also requires extra memory.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Comparison & Trade-offs",
+      "body": "Comparison & Trade-offs",
+      "notes": "Now we will see the comparison and the Trade-Offs",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Heading: 5. Comparison & Trade-offs Sub-heading: Paging vs Segmentation",
+      "body": "Heading: 5. Comparison & Trade-offs Sub-heading: Paging vs Segmentation\nComparison & Trade-offs\nPaging vs Segmentation\nVisible to programmer?\nInternal Fragmentation\nDivision basis\nNo - purely a hardware/OS mechanism\nYes - in the last page of a process\nFixed-size physical blocks (pages/frames)\nAspect\nPaging\nYes - reflects the program's logical structure\nNo\nVariable-size logical units (code, data, stack)\nSegmentation\nExternal Fragmentation\nNo\nYes - variable-sized segments leave scattered gaps",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Heading: 5. Comparison & Trade-offs Sub-heading: Paging vs Segmentation",
+      "body": "Heading: 5. Comparison & Trade-offs Sub-heading: Paging vs Segmentation\nComparison & Trade-offs\nPaging vs Segmentation\nTable used\nSpeed\nAddress format\nPage Table (frame numbers)\nFast, especially with TLB\n⟨Page Number, Offset⟩\nAspect\nPaging\nSegment Table (base + limit)\nCan be slower due to variable-length lookups\n⟨Segment Number, Offset⟩\nSegmentation\nProtection & Sharing\nHarder to apply per logical unit\nEasier - natural to protect/share whole segments",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Comparison & Trade-offs",
+      "body": "Which One Wins?",
+      "notes": "Finally, there's no single memory management technique that is best in every situation. \u000bPaging is simpler and more efficient for memory allocation, while Segmentation provides better logical organization and protection. \u000bTo balance these trade-offs, modern systems often use Segmentation with Paging, \u000bcombining the strengths of both approaches while minimizing their individual limitations.",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Paging & Segmentation",
+      "body": "Paging\nPages & frames\nPage table & page table entry (PTE)\nLogical-to-physical translation\nPaging Mechanics\nAddress-translation example\nTLB & effective access time",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Paging & Segmentation",
+      "body": "Segmentation\nSegments; segment table (base & limit)\nSegmentation address translation\nSegmentation with Paging\nHybrid approach; how it works\nComparison & Trade-offs\nPaging vs segmentation\nAdvantages & disadvantages\n1. Paging\n– Pages & frames\n– Page table & page table entry (PTE)\n– Logical-to-physical translation\n2. Paging Mechanics\n– Address-translation example\n– TLB & effective access time\n3. Segmentation\n– Segments; segment table (base & limit)\n– Segmentation address translation\n4. Segmentation with Paging\n– Hybrid approach; how it works\n5. Comparison & Trade-offs\n– Paging vs segmentation\n– Advantages & disadvantages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Virtual Memory & Demand Paging",
+      "body": "Virtual Memory & Demand Paging",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1oMXzYzHHmD04EXv8F0AsdMYtvhTxSaaLOh7d0zZbDo8/edit?slide=id.g3f5c5d8e5ed_0_2013#slide=id.g3f5c5d8e5ed_0_2013"
+}

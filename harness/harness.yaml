@@ -1707,6 +1707,13 @@ constraints:
     # Calibrated against the golden Session 15 (1399 skeleton words -> ~38 min
     # recording across 8 slides). Raising this makes the 40-min gate stricter.
     elaboration_factor: 2.9
+    # A LINE OF CODE COSTS A BEAT, not its word count. Explaining `const x = f(1)` and
+    # explaining `const accountBalanceAfterFees = computeBalance(a, b)` take about the
+    # same breath. Counted as prose, the second costs three times the first — so a
+    # document's recording estimate would swing on how verbosely its variables happen to
+    # be named, which is not a fact about how long it takes to teach. Non-blank lines get
+    # this flat allowance; the WALKTHROUGH is counted as the ordinary prose it is.
+    spoken_words_per_code_line: 6
   pages:
     # LENGTH CEILING, in rendered .docx pages. Recording time alone was not enough of
     # a length gate: a comparison table costs a third of a page and almost no narration,
@@ -1748,6 +1755,14 @@ constraints:
       heading1_space_before_pt: 24
       table_row_padding_pt: 4       # cell margins on top of the row's text height
       empty_paragraph_pt: 25        # the spacer paragraphs between slides/sections
+      # A CODE BLOCK: monospace, one paragraph per LINE with the space-after removed, so
+      # a snippet renders as a block rather than as double-spaced prose. Measured on its
+      # own because code does not wrap like prose — twenty short lines occupy twenty
+      # lines on the page, where the same characters as one paragraph occupy two.
+      code_font_pt: 9.5
+      code_indent_pt: 18
+      code_char_width_ratio: 0.60   # monospace is wider per character than the body face
+      code_block_space_after_pt: 10 # once, after the snippet — not after every line
   agenda:
     # Agenda bullets must not exceed the number of key-takeaway lines.
     max_bullets_rule: "<= key_takeaways_count"

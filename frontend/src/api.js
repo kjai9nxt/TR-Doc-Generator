@@ -126,6 +126,34 @@ export const api = {
   // The sheet is an import format; everything after that happens here. The course is
   // always explicit, so two people on different courses never write into each other's.
   curriculum: (course) => req(`/curriculum${qs({ course })}`),
+  // WHAT THIS COURSE IS WRITTEN UNDER. Skills are authored instructions approved before
+  // they take effect; prerequisites are what the learner already knew at session 1.
+  skills: (course, include_retired = false) =>
+    req(`/skills${qs({ course, include_retired: include_retired ? 'true' : undefined })}`),
+  addSkill: (course, text, check) =>
+    req('/skills', { method: 'POST', body: JSON.stringify({ course, text, check }) }),
+  skillsFromRequirements: (course, requirements) =>
+    req('/skills/from-requirements', { method: 'POST',
+        body: JSON.stringify({ course, requirements }) }),
+  importSkills: (course, from_course) =>
+    req('/skills/import', { method: 'POST',
+        body: JSON.stringify({ course, from_course }) }),
+  approveSkill: (course, id) =>
+    req(`/skills/${id}/approve${qs({ course })}`, { method: 'POST' }),
+  editSkill: (course, id, text) =>
+    req(`/skills/${id}/edit`, { method: 'POST', body: JSON.stringify({ course, text }) }),
+  retireSkill: (course, id) => req(`/skills/${id}${qs({ course })}`, { method: 'DELETE' }),
+  prereqs: (course) => req(`/prereqs${qs({ course })}`),
+  addPrereq: (course, prereq) =>
+    req('/prereqs', { method: 'POST', body: JSON.stringify({ course, prereq }) }),
+  // A prerequisite taught SOMEWHERE ELSE: a name and its deck links. Returns a job,
+  // because fetching the decks takes about as long as a sync.
+  addExternalPrereq: (course, name, links) =>
+    req('/prereqs/external', { method: 'POST',
+        body: JSON.stringify({ course, name, links }) }),
+  removePrereq: (course, prereq) =>
+    req(`/prereqs${qs({ course, prereq })}`, { method: 'DELETE' }),
+
   // A course's length budget (pages/slides), and what it inherits when unset.
   courseSettings: (course) => req(`/course-settings${qs({ course })}`),
   saveCourseSettings: (course, settings) =>

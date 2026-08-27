@@ -1,0 +1,605 @@
+{
+  "session_no": 3,
+  "source_file": "OS Functions and Services",
+  "deck_title": "OS Functions and Services",
+  "n_slides": 77,
+  "summary": "\n    - Slide 2: OS Functions and Services\n    - Slide 3: Recap\n    - Slide 4: OS Functions and Services\n    - Slide 5: OS Functions\n    - Slide 6: Core Functions of an Operating System\n    - Slide 7: Core Functions of an Operating System\n    - Slide 8: Core Functions of an Operating System\n    - Slide 9: Core Functions of an Operating System\n    - Slide 10: Process Management\n    - Slide 11: Process Management\n    - Slide 12: Core Functions of an Operating System\n    - Slide 13: Memory Management\n    - Slide 14: Memory Management\n    - Slide 15: Core Functions of an Operating System\n    - Slide 16: Core Functions of an Operating System\n    - Slide 17: Core Functions of an Operating System\n    - Slide 18: Core Functions of an Operating System\n    - Slide 19: Core Functions of an Operating System\n    - Slide 20: File Management\n    - Slide 21: File Management\n    - Slide 22: Core Functions of an Operating System\n    - Slide 23: Core Functions of an Operating System\n    - Slide 24: OS Objective\n    - Slide 25: Objective of an Operating System\n    - Slide 26: Objective of an Operating System\n    - Slide 27: Quiz Time!\n    - Slide 28: OS Services\n    - Slide 29: Operating System\n    - Slide 30: Operating System\n    - Slide 31: Operating System\n    - Slide 32: Operating System\n    - Slide 33: Operating System\n    - Slide 34: Operating System\n    - Slide 35: System Calls\n    - Slide 36: System Calls\n    - Slide 37: System Calls\n    - Slide 38: System Calls\n    - Slide 39: System Calls\n    - Slide 40: User Mode vs Kernel Mode\n    - Slide 41: User Mode vs Kernel Mode\n    - Slide 42: System Calls\n    - Slide 43: System Calls\n    - Slide 44: System Calls\n    - Slide 45: System Calls\n    - Slide 46: System Calls\n    - Slide 47: System Calls\n    - Slide 48: Context Switching\n    - Slide 49: Context Switching\n    - Slide 50: Context Switching\n    - Slide 51: Context Switching\n    - Slide 52: Context Switching\n    - Slide 53: Context Switching\n    - Slide 54: Context Switching\n    - Slide 55: Context Switching\n    - Slide 56: User Mode & Kernel Mode\n    - Slide 57: Introduction to Kernel\n    - Slide 58: Introduction to Kernel\n    - Slide 59: Kernel\n    - Slide 60: How Kernel works?\n    - Slide 61: User Mode vs Kernel Mode\n    - Slide 62: User Mode vs Kernel Mode\n    - Slide 63: Kernel Mode - Full Control\n    - Slide 64: User Mode vs Kernel Mode\n    - Slide 65: Kernel Mode - Full Control\n    - Slide 66: User Mode vs Kernel Mode\n    - Slide 67: User Mode vs Kernel Mode\n    - Slide 68: User Mode vs Kernel Mode\n    - Slide 69: User Mode vs Kernel Mode\n    - Slide 70: User Mode vs Kernel Mode\n    - Slide 71: Kernel and User Mode\n    - Slide 72: Kernel and User Mode\n    - Slide 73: Quiz Time!\n    - Slide 74: OS Functions and Services\n    - Slide 75: OS Structures and Case Studies",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "OS Functions and Services",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to Operating System\nOverview of Computer Hardware\nInternal Components\nExternal Components\nOperating System\nIntroduction\nTypes of Software\nSystem Software\nApplication Software\nOS Components",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "OS Functions and Services",
+      "body": "OS Functions and Services\nOS Objectives\nOS Functions\nOS Services\nTransition Between Both Modes\nUser Mode & Kernel Mode\nUser Mode & Kernel Mode",
+      "notes": "In today’s session, we’ll start with the basic concept of file handling in Python. \nWe’ll also explore Python File Handling Modes to interact with files .\n\u000bAlright, let’s dive right into it!",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "OS Functions",
+      "body": "OS Functions",
+      "notes": "First of all we will learn about the OS Functions.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Core Functions of an Operating System",
+      "body": "What Does An OS Do?\nProcess Management\nManaging programs and CPU time\nMemory Management\nAllocating and tracking RAM usage\nFile System Management\nOrganizing and storing data\nDevice Management\nControlling hardware devices\nSecurity & Protection\nProtecting system and data\nThe OS performs FIVE essential functions",
+      "notes": "Moving on, what are the main responsibilities of an operating system?\u000b It performs five core functions:1  process management to run programs, 2 memory management to allocate RAM, \u000b3 file system management to organize data, 4 device management to control hardware devices, \u000band 5 security & protection to safeguard the system and its data. We'll explore each of these one by one.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Core Functions of an Operating System",
+      "body": "Visual Representation\nProcess(CPU)\nMemory(RAM)\nFile System(Disk)\nDevice(I/O)\nResource Management\nSecurity & Protection\nOperating System",
+      "notes": "Next, this diagram gives a high-level view of the operating system's responsibilities. \u000bThe OS manages key resources, including the CPU through process management, \u000bRAM through memory management, disk through the file system, and I/O devices through device management.\u000b It also ensures security and protection across the entire system.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Core Functions of an Operating System",
+      "body": "Process Management\nScheduling process  for CPU time (using time-sharing)\nEnsuring memory protection so one process doesn’t overwrite another’s data\nPreventing conflicts between processes, like accessing shared resources\nAllowing safe multitasking , so processes run smoothly",
+      "notes": "Next we have process management is responsible for managing how programs run on the CPU.\u000b It schedules processes using time-sharing, ensures one process doesn't interfere with another's memory, \u000bprevents conflicts when sharing resources,\u000b and enables safe multitasking so multiple applications can run smoothly at the same time.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Core Functions of an Operating System",
+      "body": "Process Management\nOS Responsibilities",
+      "notes": "let's look at the operating system's responsibilities in process management.\u000b It creates and starts new programs, schedules which process gets CPU time, \u000bswitches rapidly between processes to support multitasking, and terminates processes safely when they finish or are closed.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Process Management",
+      "body": "Analogy\n1\n2\n3\nThe chef starts preparing one dish at a time\nThe chef decides which dish to cook next\nThe chef allocates kitchen resources like stoves and ovens",
+      "notes": "Let's relate this to our restaurant example. Just as the chef starts preparing dishes, \u000bdecides which order to cook next, and allocates kitchen resources like stoves and ovens,\u000b the operating system manages processes by deciding what runs, when it runs, and which resources it can use.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Process Management",
+      "body": "Analogy\n4\n5\nThe chef switches between dishes to keep everything cooking properly\nEnsures all dishes are served on time",
+      "notes": "Next, the chef doesn't prepare just one dish from start to finish. \u000bInstead, they switch between multiple dishes to keep everything progressing smoothly. \u000bSimilarly, the operating system rapidly switches between processes, \u000bensuring that all programs make progress and complete their tasks efficiently.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Core Functions of an Operating System",
+      "body": "Memory Management\nThe OS allocates and manages system memory (RAM), ensuring that each process has its own space without overwriting other processes\nOS Responsibilities",
+      "notes": "Going forward, memory management ensures that every program gets the RAM it needs to run.\u000b The operating system 1 allocates memory, 2 tracks its usage,\u000b3 protects one program's memory from another, and uses \u000b4 virtual memory by utilizing disk space when the available RAM is full.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Memory Management",
+      "body": "Memory Allocation\nEach program gets isolated memory space",
+      "notes": "Next, let's see how the operating system allocates RAM. Suppose the system has 8 GB of memory.\u000b The OS reserves a portion for itself and allocates separate memory spaces to applications like Chrome and Word, \u000bwhile keeping some memory free. \u000bThis isolation prevents programs from interfering with one another and ensures stable execution.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Memory Management",
+      "body": "Analogy\nOS acts like a library manager\nTracks available shelf space (memory)\nPlaces books (programs) in the correct spots\nReturns books to shelves when they’re no longer needed",
+      "notes": "think of the operating system as a library manager. \u000bIt keeps track of the available shelf space, places new books, or programs, in the right location, \u000band returns the space when they're no longer needed. \u000bSimilarly, the OS manages RAM efficiently to ensure smooth program execution.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Core Functions of an Operating System",
+      "body": "Device Management\nThe OS handles communication and resource allocation for input/output (I/O) devices such as keyboards, printers, etc.\nAllocating devices to running processes\nManaging device drivers for communication between hardware and software\nReleasing devices when no longer needed\nOS Responsibilities",
+      "notes": "Next, device management enables the operating system to coordinate with \u000bhardware devices such as keyboards, printers, and other I/O (input/output) devices.\u000b It allocates devices to running programs, manages device drivers so software can communicate with hardware, \u000band releases devices once they're no longer in use.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Core Functions of an Operating System",
+      "body": "Device Management\nOS \nMouse\nKeyboard\nPrinter",
+      "notes": "this diagram shows how the Operating System manages different hardware devices through a single interface. \u000bWhether it's receiving input from the mouse and keyboard or sending output to the printer, \u000bthe OS coordinates all communication, allowing applications to interact with hardware without dealing with device-specific details.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Core Functions of an Operating System",
+      "body": "Analogy\nThe OS is like a traffic controller at a busy intersection, managing multiple devices (vehicles), ensuring that each one gets its turn to operate without delay\nSignals STOP to left side of Vehicles\nSignals STOP to Right side of Vehicles",
+      "notes": "An air traffic controller manages a single runway. Many planes want to take off or land, \u000bbut only one can use the runway at a time. The others wait until they receive clearance.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Core Functions of an Operating System",
+      "body": "File Management\nThe OS is responsible for creating, organizing, and accessing files and directories in a structured way",
+      "notes": "Next, file management helps the operating system organize data efficiently.\u000bIt is responsible for creating, storing, accessing, and managing files and directories, \u000bmaking it easy for users and applications to locate and use information whenever needed.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Core Functions of an Operating System",
+      "body": "File Management\nOS Responsibilities",
+      "notes": "Next, the operating system is responsible for organizing and managing data on storage devices.\u000b It creates files and folders, stores data on the disk, retrieves files when requested, \u000bcontrols permissions such as read, write, and delete access, \u000band tracks available storage space to ensure efficient file management.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "File Management",
+      "body": "File System structure\nC:\\ Drive\nUsers\nDocuments\nProgram Files\nApplications\nWindows\nSystem files\nYour files",
+      "notes": "files in a computer are organized in a hierarchical structure, similar to folders within folders.\u000b For example, the C:\\ drive contains folders like Program Files, Windows, and Users. \u000bWithin these, you'll find application files, system files, and your personal documents,\u000b making it easier to organize and locate data.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "File Management",
+      "body": "Analogy",
+      "notes": "The OS is like the school clerk who keeps student records, report cards, and files neatly arranged in cupboards so teachers can find them easily",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Core Functions of an Operating System",
+      "body": "Security and Protection\nThe OS ensures that unauthorized users do not access system resources and that data is protected from threats (viruses, malware)\nOS Responsibilities\nData protection from viruses and unauthorized access\nAccess control (who can access what resources)\nUser authentication (e.g., login, passwords)",
+      "notes": "Finally, security and protection help keep the system and user data safe. \u000bThe operating system authenticates users through logins and passwords, \u000bcontrols access to system resources, and protects data from unauthorized access, viruses, and malware.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Core Functions of an Operating System",
+      "body": "Analogy",
+      "notes": "Think of the OS as a security guard checking IDs at the door, \nallowing only authorized people in, and protecting everything inside from threats",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "OS Objective",
+      "body": "OS Objective",
+      "notes": "Now we will learn about the OS Objective",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Objective of an Operating System",
+      "body": "Primary Goals\nUser Convenience: Makes interaction with hardware easy and user-friendly\nEfficient Resource Utilization: Optimize the use of CPU, memory, storage, and I/O\nSecurity and Protection: Prevent unauthorized access and protect data and programs",
+      "notes": "Moving on, the operating system is designed with three primary goals. \u000bFirst, it provides user convenience by making the computer easy to use.\u000bSecond, it ensures efficient resource utilization by managing the CPU, memory, storage, and I/O devices effectively.\u000bFinally, it provides security and protection to safeguard the system, applications, and user data.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Objective of an Operating System",
+      "body": "Secondary Goals\nReliability & Stability: Prevents system crashes and ensures consistent operation\nAbstraction: Hide hardware complexity and provide a standard interface for applications",
+      "notes": "Finally, an operating system also has secondary goals. \u000bIt ensures reliability and stability by minimizing crashes and keeping the system running consistently.\u000b It also provides abstraction, hiding the complexity of the hardware \nso applications can interact with the system through a simple and standard interface.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "OS Services",
+      "body": "OS Services",
+      "notes": "Next , we will learn about the OS Services",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Operating System",
+      "body": "Services\nPrograms Execution\nGUI\nbatch\nCommand line\nUser interfaces\nSystem Calls\nI/O Operations\nFile System\nCommunication\nResource Allocation\nAccounting\nError Detection\nProtection & Security\nOperating system\nHardware\nServices\nUser & other system programs",
+      "notes": "Besides managing hardware resources, the Operating System also provides a variety of services to applications. \u000bUsers interact with the system through interfaces like the GUI, command line, or batch processing. \u000bThese requests reach the OS through system calls, which provide services such as \u000bprogram execution, file and I/O management, communication, resource allocation, \u000berror detection, accounting, and security, before interacting with the hardware.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Operating System",
+      "body": "Means by which users can issue commands to the system\nDepending on the system these may be a command-line interface ( e.g. sh, csh, ksh, tcsh, etc. ), a GUI ( e.g. Windows, X-Windows, KDE, Gnome, etc. ), or a batch command systems\nUser Interfaces\nServices",
+      "notes": "Next, let's understand user interfaces, which allow users to communicate with the operating system. \u000bDepending on the system, this can be through a Command-Line Interface (CLI), \u000ba Graphical User Interface (GUI), or a batch processing system, \u000bwhere commands are executed automatically without user interaction.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Operating System",
+      "body": "The OS must be able to load a program into RAM, run the program, and terminate the program\nProgram Execution\nThe OS is responsible for transferring data to and from I/O devices, including keyboards, monitors, printers, and storage devices\nI/O Operations\nServices",
+      "notes": "One of the key services provided by the operating system is program execution. \u000bIt loads a program into RAM, executes it, and terminates it once the task is complete. \u000bThe OS also manages I/O operations, handling data transfer between \u000bthe computer and devices such as the keyboard, monitor, printer, and storage devices.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Operating System",
+      "body": "OS is also responsible for maintaining directory and subdirectory structures, mapping file names and providing tools for navigating and utilizing the file system\nFile-System Manipulation\nServices",
+      "notes": "Next, the operating system also provides file-system manipulation services. \u000bIt creates and manages files and folders, maintains the directory structure, \u000bmaps file names to their storage locations, and provides the necessary tools\u000b to navigate, access, and organize the file system efficiently.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Operating System",
+      "body": "Communication between processes, whether they are running on the same computer or on different computers/machines\nCommunications\nBoth hardware and software errors must be detected and handled appropriately, with a minimum harmful impact\nError Detection\nServices",
+      "notes": "Moving on, the operating system also enables communication between processes, \u000bwhether they're running on the same computer or across different systems. \u000bIn addition, it performs error detection, identifying hardware and software issues \u000band handling them in a way that minimizes their impact on the system.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Operating System",
+      "body": "Services",
+      "notes": "The operating system provides several additional services. \u000bIt performs resource allocation by managing the CPU, memory, storage, and devices, \u000baccounting by tracking system and resource usage, and protection & security by \u000bpreventing unauthorized access through authentication, permissions, and access control.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "System Calls",
+      "body": "Why They Exist?\nProblem\nApps run in user mode (restricted)\nApps need to do useful things (read files, use network, print documents)\nBut useful things require hardware access\nUser mode CANNOT access hardware directly!\nSolution\nSystem Calls!",
+      "notes": "Moving on, have you ever wondered how an application reads a file or prints a document? \u000bApplications run in user mode, so they cannot access hardware directly. \u000bTo solve this, they use system calls, which allow them to safely request services from the operating system.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "System Calls",
+      "body": "Definition and Purpose\nA system call is a special function provided by the operating system that allows a program to request services from the kernel\nIt provides a controlled entry point into kernel mode\nEvery operating system has its own set of system calls (E.g., Linux, Windows, MacOS)\nDefinition",
+      "notes": "Next, let's define a system call. \u000bIt is a special function that allows an application to request services from the operating system's kernel. \u000bIt provides a controlled way to enter kernel mode and safely access hardware resources. \u000bDifferent operating systems, such as Linux, Windows, and macOS, provide their own set of system calls.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "System Calls",
+      "body": "Definition and Purpose\nAllocating memory\nCreating or terminating processes\nReading or writing files\nCommunicating over a network",
+      "notes": "Moving on, let's look at some common operations that use system calls. \u000bWhenever a program needs to read or write files, create or terminate a process, allocate memory,\u000bor communicate over a network, it requests these services from the operating system \u000bthrough system calls, which then interact with the hardware safely.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "System Calls",
+      "body": "Purpose\nTypical System Calls\nType\nTypes of System Calls",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            ""
+          ],
+          [
+            "Process Control",
+            "Create, execute, or end processes",
+            "fork(), exec(), exit(), wait()"
+          ],
+          [
+            "File Management",
+            "Create, read, write, delete files",
+            "open(), read(), write(), close()"
+          ],
+          [
+            "Device Management",
+            "Request or release I/O devices",
+            "ioctl(), read(), write()"
+          ],
+          [
+            "Information Maintenance",
+            "Get system data or attributes",
+            "getpid(), time(), alarm()"
+          ],
+          [
+            "Communication",
+            "Exchange data between processes",
+            "pipe(), socket(), read(), write()"
+          ],
+          [
+            "Protection & Security Control",
+            "Access resources and manage them",
+            "chmod(), chown(), umask(), setuid()"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 39,
+      "title": "System Calls",
+      "body": "User Mode\nKernel Mode\nInvokes System Call\nUser Process Executing\nReturn From System Call\nExecute System Call\n1\n2\n4\n3\nHow They Work?\nWorking of a system call",
+      "notes": "Next, let's understand how a system call works.\u000b First, a user process runs in user mode. When it needs an operating system service, \u000bit invokes a system call, which transfers control to kernel mode. \u000bThe kernel executes the requested operation and, once completed, \u000breturns the result to the user process, allowing it to continue execution.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "User Mode vs Kernel Mode",
+      "body": "The Two-Mode Solution\nThe CPU controls which mode is active User Mode or Kernel Mode\nIt uses a small setting called the Mode Bit (1-bit flag)\nThe Mode Bit decides what the CPU can do at that time",
+      "notes": "Moving on, how does the CPU know whether a program can access hardware directly? \u000bIt uses a two-mode system: User Mode and Kernel Mode.\u000b A small mode bit in the CPU indicates the current mode and determines \u000bwhat operations the CPU is allowed to perform, helping keep the system secure and stable.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "User Mode vs Kernel Mode",
+      "body": "The Two-Mode Solution\nExample:\u000b When your computer starts → CPU runs in Kernel Mode (bit = 0).\u000b When you open an app → CPU runs in User Mode (bit = 1).\t\nKey Idea: Separation of privilege\nVisual: Two boxes side by side:\nLeft: \"Kernel Mode - Full Access\" (unlocked)\nRight: \"User Mode - Restricted\" (locked with key)",
+      "notes": "Next, let's understand how the mode bit works. \u000bWhen the mode bit is 0, the CPU operates in Kernel Mode, \u000bgiving the operating system full access to hardware and memory. \u000bWhen the mode bit is 1, the CPU switches to User Mode, where applications have limited access, \u000bhelping protect the system from accidental or unauthorized operations.",
+      "tables": [
+        [
+          [
+            "Mode Bit",
+            "Mode",
+            "CPU Power"
+          ],
+          [
+            "0",
+            "Kernel Mode",
+            "Full access to hardware and memory"
+          ],
+          [
+            "1",
+            "User Mode",
+            "Limited access for safe app use"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 42,
+      "title": "System Calls",
+      "body": "A user clicks \"Print\" in an application\nHow They Work?\nStep 1\nApp Makes a Request (User Mode, Mode Bit = 1)\nThe app sends a print request — it wants the system to start printing the file\nIt calls a system call for this operation\nApp prepares: document data, printer name, settings",
+      "notes": "Now, let's understand the first step in a system call using a print operation. \u000bWhen a user clicks Print, the application is still running in User Mode. \u000bIt cannot access the printer directly, so it prepares the required information—\u000bsuch as the document, printer name, and print settings—\u000band then invokes a system call to request the operating system to handle the printing process.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "System Calls",
+      "body": "How They Work?\nStep 2\nMode Switch to Kernel Mode (1 → 0)\nThe CPU runs a special instruction (called a software interrupt)\nMode Bit changes from 1 → 0\nCPU now in Kernel Mode - full power unlocked!",
+      "notes": "Next, the system call triggers a mode switch. \u000bThe CPU executes a special instruction called a software interrupt, which changes the mode bit from 1 to 0. \u000bThis switches the CPU from User Mode to Kernel Mode, \u000ballowing the operating system to safely access hardware and perform the requested operation.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "System Calls",
+      "body": "Step 3\nKernel Handles the Request (Kernel Mode, Mode Bit = 0)\nThe Kernel receives the request and performs the print operation\nIt talks to the printer driver\nSends the document to print queue\nCoordinates with printer hardware\nHow They Work?",
+      "notes": "Moving on, once the CPU enters Kernel Mode, the kernel takes over. \u000b1 It receives the print request, 2 communicates with the printer driver, \u000b3 places the document in the print queue, and \u000b4 coordinates with the printer hardware to complete the printing operation.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "System Calls",
+      "body": "Step 4\nMode Switch Back (0 → 1)\nOnce printing is scheduled, control returns to the application\nMode Bit changes back from 0 → 1\nCPU back in User Mode\nHow They Work?",
+      "notes": "Finally, after the kernel schedules the print operation, control is returned to the application. \u000bThe mode bit switches back from 0 to 1, moving the CPU from Kernel Mode to User Mode, \u000ballowing the application to continue running normally while the printing proceeds in the background.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "System Calls",
+      "body": "Step 5\nApp Resumes (User Mode, Mode Bit = 1)\nThe app gets a success message like \"Printing job sent successfully\"\nUser sees confirmation\nApp continues normal operation\nHow They Work?",
+      "notes": "Finally, once the request has been handled, the application receives a success response, \u000bsuch as \"Printing job sent successfully.\" \u000bThe user sees the confirmation, and the application continues running in User Mode \u000bwhile the print job is processed in the background.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "System Calls",
+      "body": "Important Note\nA System Call causes the CPU to switch from User Mode (Mode Bit = 1) to Kernel Mode (Mode Bit = 0) so the operating system can handle the request securely",
+      "notes": "Finally, remember this key point: whenever an application needs an operating system service, it makes a system call. \u000bThis causes the CPU to switch from User Mode to Kernel Mode, \u000ballowing the operating system to perform the requested operation securely\u000b before returning control to the application.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Context Switching",
+      "body": "Why Is It Needed?\nBut what happens when the CPU needs to stop one process and start another?\nHow does it ensure each process resumes exactly from where it paused?\nThis leads to the concept of Context Switching",
+      "notes": "Moving on, we've seen that the operating system rapidly switches between multiple processes. \u000bBut how does it pause one process and later resume it from the exact point where it stopped? \u000bThis is made possible through a mechanism called context switching, which we'll understand next.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Context Switching",
+      "body": "Why Is It Needed?\nSystem calls handle mode switching (User ↔ Kernel)\n Context switching handles process switching (Process ↔ Process)",
+      "notes": "Next, it's important not to confuse these two concepts. \u000bSystem calls are responsible for switching between User Mode and Kernel Mode, \u000bwhereas context switching is responsible for switching the CPU from one process to another, \u000benabling efficient multitasking.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Context Switching",
+      "body": "Saving and Restoring State\nThe process of saving the state (context) of one process and restoring the state of another, so each continues as if uninterrupted\nContext Switching",
+      "notes": "context switching is the mechanism that allows \u000bthe CPU to switch between processes without losing their progress. \u000bBefore switching, the operating system saves the current state of the running process and later restores it, \u000ballowing the process to continue exactly from where it was paused.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Context Switching",
+      "body": "Saving and Restoring State\nOpen files & process state\nMemory mappings\nCPU registers & program counter",
+      "notes": "Next, what exactly is saved during a context switch? \u000bThe operating system stores the process's CPU registers and program counter, \u000balong with its memory mappings, \u000bopen files, and the current process state. This ensures the process can resume execution seamlessly later.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Context Switching",
+      "body": "When It Occurs?\nTimer Interrupt – When a process's time slice expires\n1\nThink: An alarm clock for the CPU saying \"time's up for this app!\"\nEnsures fair sharing of CPU time",
+      "notes": "one common situation where a context switch occurs is when a timer interrupt happens. \u000bYou can think of it as an alarm clock for the CPU, indicating that a process's time slice has expired. \u000bThe operating system then switches to another process, \u000bensuring that CPU time is shared fairly among all running processes.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Context Switching",
+      "body": "When It Occurs?\nI/O Wait – When a process requests I/O and must wait\n2\nExample: Reading a file from slow disk\nCPU switches to another process instead of waiting\nSystem Call – When a system call leads to waiting\n3\nExample: Waiting for network data",
+      "notes": "Next, a context switch can also occur when a process is waiting for an I/O operation, \nsuch as reading data from a slow disk. Instead of keeping the CPU idle, \nthe operating system switches to another process. \nSimilarly, if a system call causes a process to wait—for example, while waiting for network data\n—the CPU is assigned to another ready process until the request completes.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Context Switching",
+      "body": "When It Occurs?\nInterrupt Handling – When higher-priority events occur\n4\nExample: Keyboard input, mouse click\nProcess Termination – When a process finishes execution\n5\nCPU needs to pick next process to run",
+      "notes": "Then a context switch also occurs when the CPU needs to handle a higher-priority interrupt, \u000bsuch as a keyboard or mouse event. Another situation is when a process finishes execution. \u000bThe operating system then selects the next ready process and assigns the CPU to continue execution.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Context Switching",
+      "body": "When It Occurs?\nInterrupts and system calls both transfer control to the kernel, but context switching is what allows the CPU to resume or run another process afterward",
+      "notes": "Now, remember that interrupts and system calls transfer control to the kernel, \u000bbut context switching is what enables the CPU to pause the current process and resume or execute another process, \u000bensuring efficient multitasking.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "User Mode & Kernel Mode",
+      "body": "User Mode & Kernel Mode",
+      "notes": "Now we will understand about the User Mode & Kernel Mode.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Introduction to Kernel",
+      "body": "What Is A Kernel?\nThe kernel is the core program inside an operating system that directly controls all hardware and manages all running programs",
+      "notes": "we've mentioned the kernel several times—so what exactly is it? \u000bThe kernel is the core program of an operating system. \u000bIt directly interacts with the hardware, manages running programs, and controls the system's essential resources, \u000bmaking it the most critical part of the operating system.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Introduction to Kernel",
+      "body": "What Is A Kernel?\nUnderstanding \"Kernel\" vs \"Operating System\"",
+      "notes": "Now, let's understand the difference between an Operating System and a Kernel.\nThe Operating System is the complete software, such as Windows, Linux, or macOS.\nThe Kernel is the core part of the operating system. \u000bIt directly communicates with the hardware and manages resources like the CPU, memory, and devices.\nSimply put, every operating system contains a kernel, but the kernel itself is only one part of the operating system.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Kernel",
+      "body": "How Kernel Works ?\nKernel\nCPU\nMemory\nI/O Devices",
+      "notes": "The kernel acts as the central controller of the operating system. \u000bIt communicates directly with the CPU, memory, and I/O devices, \u000bcoordinating how these hardware resources are used.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "How Kernel works?",
+      "body": "The Security Challenge\nWhat could go wrong?\nViruses could steal your passwords\nOne buggy app could crash everything\nPrograms would fight over resources\nEverything would be at risk.\nThe Solution: Two separate operating modes",
+      "notes": "Before we see how the kernel works, let's first understand why it is needed.\u000b1 If every application could directly access the hardware, viruses could steal data, \u000b2 buggy programs could crash the entire system, and \n3 multiple applications could interfere with each other, 4  leaving everything at risk\n To prevent this, operating systems use two operating modes",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "User Mode vs Kernel Mode",
+      "body": "The Two-Mode Solution\nWhen your computer starts\nCPU runs in Kernel Mode (bit = 0)\nWhen you open an app\nCPU runs in User Mode (bit = 1)\nKey Idea: Separation of privilege\nUnlocked\nLocked",
+      "notes": "To keep the system secure, the CPU operates in two different modes. \u000bWhen the computer starts, it runs in Kernel Mode, where the operating system has full access to the hardware.\u000bHowever, when you open an application, it runs in User Mode, where access is restricted. \u000bThis separation of privileges prevents applications from directly accessing hardware, improving both security and system stability.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "User Mode vs Kernel Mode",
+      "body": "Kernel Mode - Full Control\nOperating system runs here\nFull control over hardware\nCan execute any CPU instruction\nTrusted code only\nKernel Mode (Privileged Mode)",
+      "notes": "Let's first look at Kernel Mode. This is the privileged mode where the operating system runs. \u000bIn this mode, the OS has full control over the hardware, can execute any CPU instruction, \u000band directly manage resources like memory and I/O devices.\u000b Since it has complete access, only trusted operating system code is allowed to run in Kernel Mode.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Kernel Mode - Full Control",
+      "body": "Example\nWhen you start your computer, kernel runs in kernel mode to initialize memory, load drivers, and prepare the system\nMemory",
+      "notes": "A simple example of Kernel Mode is when you turn on your computer. \u000bThe kernel prepares the system by setting up memory, loading the required hardware support, \u000band getting the computer ready for use. Since these tasks require full hardware access, \u000bthey are performed in Kernel Mode.",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "User Mode vs Kernel Mode",
+      "body": "Kernel Mode - Full Control\nWhat runs in Kernel Mode?\nOperating system kernel\nDevice drivers\nCritical system services",
+      "notes": "So, what actually runs in Kernel Mode? \u000b1 The operating system kernel runs here, 2 along with device drivers that communicate with hardware and \u000b3 critical system services responsible for managing core system operations. \u000bSince these components directly control hardware and system resources, they must run in Kernel Mode.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Kernel Mode - Full Control",
+      "body": "What Can It Do?\nAccess any memory location\nExecute all CPU instructions\nControl all hardware devices\nModify system settings\nRisk:  If kernel code has a bug the entire system will crash (kernel panic/BSOD)",
+      "notes": "Next, because the kernel has full control, it can access any memory location, \u000bexecute all CPU instructions, control hardware devices, and modify system settings. \u000bHowever, this also means that if there's a bug in the kernel, it can crash the entire system, \u000bresulting in issues like a Kernel Panic or Blue Screen of Death (BSOD).",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "User Mode vs Kernel Mode",
+      "body": "User Mode - Safe Operation\nApplications run here\nLimited access to hardware\nCannot execute privileged instructions\nUntrusted code isolated\nUser Mode (Restricted Mode)",
+      "notes": "Now, let's look at User Mode, where regular applications such as browsers, media players, and editors run.\u000b In this mode, applications have limited access and \u000bcannot directly access hardware or execute privileged CPU instructions. \u000bThis isolation ensures that even if an application fails, it doesn't affect the entire operating system",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "User Mode vs Kernel Mode",
+      "body": "What runs in User Mode?\nYour applications (Chrome, Word, games)\nMost system utilities\nAny untrusted code\nUser Mode - Safe Operation",
+      "notes": "Next, what kind of programs run in User Mode?\u000b This includes applications like Chrome, Word, and games, as well as most system utilities.\u000b In general, any untrusted code runs in User Mode, ensuring it cannot directly access or modify critical system resources.",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "User Mode vs Kernel Mode",
+      "body": "User Mode - Safe Operation\nWhen you save a document, Word doesn't write to disk directly, it asks the kernel, which does it safely in kernel mode\nkernel\nsaving a document\nHardware",
+      "notes": "Next, even simple tasks like saving a document require hardware access. \u000bSince applications can't communicate with the storage device directly, \u000bthey request the kernel to perform the operation. \u000bThe kernel then safely writes the data to the disk and returns control to the application.",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "User Mode vs Kernel Mode",
+      "body": "User Mode - Safe Operation\nOnly that app closes\nSystem keeps running\nOther apps unaffected",
+      "notes": "Finally, what happens if an application crashes? \u000bSince it runs in User Mode, the failure is usually isolated to that application. \u000bThe operating system remains stable, and other applications continue running normally, \u000bwhich is one of the key benefits of User Mode.",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "User Mode vs Kernel Mode",
+      "body": "Benefits of Mode Separation\nStability\nSecurity\nResource Management",
+      "notes": "separating User Mode and Kernel Mode provides three major benefits.\u000b It improves stability by preventing application failures from crashing the entire system, \u000benhances security by restricting direct hardware access, \u000band ensures efficient resource management by allowing the operating system to control how hardware resources are shared.",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Kernel and User Mode",
+      "body": "Transition Between Both Modes\nA computer system switches from kernel mode to user mode to protect the system, ensuring user programs run safely and access privileged resources only through controlled methods",
+      "notes": "Finally, the operating system switches between Kernel Mode and User Mode whenever required. \u000bApplications run in User Mode for safety, \u000band only when privileged operations are needed does the system temporarily switch to Kernel Mode. \u000bOnce the task is complete, it switches back, ensuring both security and system stability.",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Kernel and User Mode",
+      "body": "Transition Between Both Modes\nUser Process\u000bExecuting\nCalls System\u000bCall\nReturn to User\u000bMode\nExecute System\u000bCall\nSet mode bit =0 before switching to kernel mode\nSet mode bit =1 before switching to user mode\nUser mode (mode bit= 1 )\nKernel mode (mode bit = 0)\nKernel mode\nUser mode",
+      "notes": "Let's see how the system transitions between the two modes. \u000bA program starts executing in User Mode. When it needs a privileged operation, it makes a system call, \u000bcausing the CPU to switch to Kernel Mode by changing the mode bit from 1 to 0. \u000bAfter the kernel completes the request, the mode bit changes back to 1, and execution resumes in User Mode. \u000bThis controlled transition ensures both security and efficient hardware access.",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "OS Functions and Services",
+      "body": "OS Functions\nOS Objectives\nOS Services\nUser Mode & Kernel Mode\nTransition Between Both Modes\nUser Mode & Kernel Mode",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "OS Structures and Case Studies",
+      "body": "",
+      "notes": "In the next Session , we will learn about the OS Structures & Case studies",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/12nltkpbwY5R4vFOU7XDNxF6aVyqPklXDF-ln85siDl4/edit"
+}

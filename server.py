@@ -29,7 +29,8 @@ from pydantic import BaseModel
 
 from src import (config, sheets, sync, course_loader, pipeline, pptx_ingest,
                  context_builder, generator, docx_writer, app_settings, auth, db,
-                 outputs, llm)
+                 outputs, llm, gslides)
+from src import prereqs as prereqs_mod
 
 app = FastAPI(title="TR Doc Generator API")
 
@@ -100,6 +101,38 @@ except Exception as _e:
     print(f"[startup] WARNING — {STARTUP['error']}")
 
 
+def _migrate_deck_layout() -> int:
+    """Course-scope the extracted-deck store, once. Returns how many decks moved.
+
+    Announces what it did in full: an unattributable deck is parked rather than guessed
+    at, and an admin has to be told which ones so they can be re-fetched under the right
+    course. Repointing the cloud mirror is a single kb_backup — it re-snapshots the KB
+    and drops rows whose path no longer exists, which is exactly what a layout change
+    needs, and it is a no-op on a local disk.
+    """
+    res = pptx_ingest.migrate_legacy_decks()
+    moved, loose = res.get("moved") or {}, res.get("unassigned") or []
+    if moved:
+        by_course: dict = {}
+        for no, course in moved.items():
+            by_course.setdefault(course, []).append(no)
+        for course, nos in by_course.items():
+            print(f"[startup] decks: moved {len(nos)} deck(s) under {course!r} "
+                  f"(sessions {', '.join(str(n) for n in sorted(nos))})")
+    if loose:
+        print(f"[startup] ⚠ decks: {len(loose)} deck(s) could not be attributed to one "
+              f"course and were parked in decks/_unassigned — sessions "
+              f"{', '.join(str(n) for n in loose)}. Re-fetch them from the course they "
+              f"belong to; nothing reads them where they are.")
+    if moved or loose:
+        try:
+            db.kb_backup()          # repoint the mirror at the new paths, in one pass
+        except Exception as e:
+            print(f"[startup] decks: mirror not repointed ({e!r}) — it will catch up on "
+                  f"the next sync.")
+    return len(moved) + len(loose)
+
+
 def _startup_housekeeping() -> None:
     """The slow, optional work — off the critical path, best effort, never fatal."""
     import time as _t
@@ -107,6 +140,12 @@ def _startup_housekeeping() -> None:
             # On an ephemeral host the disk is wiped on every restart, so bring the
             # previously-synced knowledge base back from the DB. No-op locally.
             ("knowledge-base restore", db.kb_restore),
+            # Move any decks still in the pre-course-scoping flat layout into the folder
+            # of the course that owns them. Runs after the restore, because on an
+            # ephemeral host the files it has to move arrive with that restore. No-op
+            # once done; see pptx_ingest.migrate_legacy_decks for how ownership is
+            # inferred and what happens when it cannot be.
+            ("deck-layout migration", _migrate_deck_layout),
             # Retire learned rules a deterministic gate now enforces, or the judge
             # re-adjudicates them from prose and can fail a compliant doc.
             ("learned-rule retirement", lambda: __import__(
@@ -165,6 +204,43 @@ class CurriculumInsertBody(BaseModel):
     session_name: str | None = ""
     key_takeaways: list[str] | str | None = None
     ppt_link: str | None = None
+
+
+class SkillBody(BaseModel):
+    course: str | None = None
+    text: str
+    kind: str = "style"
+    check: dict | None = None
+
+
+class SkillFromRequirementsBody(BaseModel):
+    course: str | None = None
+    requirements: str
+
+
+class PrereqBody(BaseModel):
+    course: str | None = None
+    prereq: str
+
+
+class ExternalPrereqBody(BaseModel):
+    course: str | None = None
+    name: str
+    # One Google Slides link per session of the prerequisite, in order. There is no
+    # curriculum for a course taught elsewhere — the decks ARE what is known about it.
+    links: list[str] = []
+
+
+class SkillImportBody(BaseModel):
+    course: str | None = None
+    from_course: str
+
+
+class CourseProfileBody(BaseModel):
+    course: str | None = None
+    # A sparse tree of overrides over the harness. What may be set is a closed whitelist
+    # in src/profiles.py — see validate() there for why it is not free-form.
+    profile: dict = {}
 
 
 class CourseSettingsBody(BaseModel):
@@ -818,26 +894,19 @@ def delete_course(course: str, detach_teams: bool = False,
 
     out = db.delete_course(course, detach_teams=True, all_teams=all_teams)
 
-    # The extracted decks: only the session numbers no remaining course claims. They are
-    # filed by number alone, so this is the one thing that cannot be scoped by course.
-    # Only the numbers that HAD a deck, so the count reported back is the number of
-    # decks removed rather than the number of sessions we looked at — a 34-session
-    # course with 32 decks was answering "34 cleared".
-    have = pptx_ingest.deck_session_numbers()
-    cleared = []
-    for no in out.get("orphan_sessions") or []:
-        if no not in have:
-            continue
-        try:
-            pptx_ingest.drop_deck(no)
-            cleared.append(no)
-        except Exception as e:
-            print(f"[courses] could not drop the deck for session {no}: {e!r}")
-    # The disk unlinks above are local and cheap. The cloud MIRROR is dropped in ONE
-    # statement rather than one per session, which is where this request was spending
-    # nearly all of its time.
+    # THE COURSE'S DECKS GO WITH IT. Its own folder, so there is nothing to reason about:
+    # no other course's decks are in there. This used to be a per-session calculation
+    # against every other course's session numbers, which kept a deleted course's deck
+    # whenever some other course happened to share the number.
+    try:
+        cleared = pptx_ingest.drop_course_decks(course)
+    except Exception as e:
+        print(f"[courses] could not drop {course!r}'s decks: {e!r}")
+        cleared = []
+    # And the cloud mirror in ONE statement — one prefix, not one path per deck, which is
+    # the shape that made this request time out and answer 503.
     if cleared:
-        db.kb_forget_many([f"decks/session_{int(n):02d}.json" for n in cleared])
+        db.kb_forget_prefix(f"decks/{pptx_ingest.course_slug(course)}/")
 
     # Never leave the instance-wide active course naming something that is gone: it is
     # what an unnamed request falls back to, and course_name() otherwise drops to a
@@ -888,7 +957,7 @@ def _curriculum_rows(course: str, rows: list[dict] | None = None) -> list[dict]:
     re-reading the same curriculum two or three times over on their way out.
     """
     rows = db.curriculum(course) if rows is None else rows
-    have_decks = pptx_ingest.deck_session_numbers()
+    have_decks = pptx_ingest.deck_session_numbers(course)
     for r in rows:
         r["extracted"] = r["session_no"] in have_decks
     return rows
@@ -952,6 +1021,290 @@ def save_session_settings(body: SessionSettingsBody, user: dict = Depends(curren
     return {"ok": True,
             "effective": budget_rules.for_session(course, body.session_no),
             **_curriculum_reply(course)}
+
+
+# ---- prerequisite courses --------------------------------------------------------
+@app.get("/api/prereqs")
+def list_prereqs(course: str | None = None, user: dict = Depends(current_user)):
+    """This course's prerequisites, what they assume, and where they overlap.
+
+    The coverage report is the one VISIBLE product of attaching them — the other effects
+    (the prompt block, the judge's view of assumed knowledge) are real but invisible, and
+    a feature whose whole result is "stored" gives the user nothing to act on.
+    """
+    from src import prereqs as prereq_rules
+    course = _require_course(user, course)
+    owner = db.course_owner(course)
+    return {"course": course,
+            "prereqs": db.prereqs(course),
+            "report": prereq_rules.coverage_report(course),
+            "available": [c["name"] for c in db.courses_for_user(
+                user.get("email"), is_admin=user.get("is_admin", False))
+                if c["name"] != course],
+            "can_edit": bool(user.get("is_admin"))
+                        or (owner or "") == (user.get("email") or "").lower()}
+
+
+@app.post("/api/prereqs")
+def add_prereq(body: PrereqBody, user: dict = Depends(current_user)):
+    """Attach a prerequisite — a course this agent already holds, so its decks are here
+    and nothing is uploaded twice."""
+    from src import prereqs as prereq_rules
+    course = _require_skill_author(user, body.course)
+    src = _require_course(user, body.prereq)
+    if src == course:
+        raise HTTPException(status_code=400, detail={
+            "message": "A course cannot be its own prerequisite."})
+    if not db.add_prereq(course, src, added_by=user.get("email")):
+        raise HTTPException(status_code=409, detail={
+            "message": f"'{src}' is already a prerequisite of '{course}'."})
+    return {"ok": True, "prereqs": db.prereqs(course),
+            "report": prereq_rules.coverage_report(course)}
+
+
+def _run_prereq_ingest(job_id: str, course: str, name: str, links: list[str]):
+    """Fetch an external prerequisite's decks. Runs in the background, like a sync.
+
+    Each link is a session of a course taught somewhere else. They are extracted exactly
+    as this course's own decks are — same fetch, same extractor — and stored in the
+    prerequisite substore, which is what keeps them out of "what this course has already
+    taught".
+    """
+    def emit(msg: str):
+        with _lock:
+            if job_id in JOBS:
+                JOBS[job_id]["logs"].append(msg)
+
+    ok, errors = 0, []
+    emit(f"Fetching {len(links)} deck(s) for the prerequisite '{name}' …")
+    for i, link in enumerate(links, start=1):
+        try:
+            _chash, data = gslides.content_hash(link)
+            deck = gslides.extract_from_bytes(data, i, f"{name} — session {i}", link)
+            data = None
+            pptx_ingest.put_deck(course, i, deck, prereq=name)
+            ok += 1
+            emit(f"  session {i}: {deck.get('n_slides', '?')} slide(s) extracted.")
+        except Exception as e:
+            errors.append(f"session {i}: {e}")
+            emit(f"  ⚠ session {i} could not be read: {e}")
+    # Whatever came back is kept: a prerequisite half-indexed still tells the writer more
+    # than none, and the failures are named rather than swallowed.
+    if ok:
+        try:
+            db.kb_backup()
+        except Exception:
+            pass
+    with _lock:
+        JOBS[job_id].update(
+            status="done" if ok else "error",
+            error=None if ok else "None of the links could be read: " + "; ".join(errors),
+            error_kind=None if ok else "read",
+            result={"prereq": name, "decks": ok, "errors": errors,
+                    "topics": len(prereqs_mod.assumed_topics(course))})
+
+
+@app.post("/api/prereqs/external")
+def add_external_prereq(body: ExternalPrereqBody, user: dict = Depends(current_user)):
+    """Declare a prerequisite taught SOMEWHERE ELSE — a name and its decks.
+
+    The common case: the learners did a JavaScript course elsewhere and all anybody has
+    is its slides. There is no course of its own in this agent to hang them on, so the
+    decks belong to the course that declared it and go when it goes.
+
+    Everything downstream is identical to an internal prerequisite: same assumed-knowledge
+    block, same judge input, and deliberately NOT in the repetition lookup.
+    """
+    course = _require_skill_author(user, body.course)
+    name = " ".join((body.name or "").split())
+    links = [l.strip() for l in (body.links or []) if l.strip()]
+    if not name:
+        raise HTTPException(status_code=400, detail={"message": "Name the prerequisite."})
+    if not links:
+        raise HTTPException(status_code=400, detail={"message":
+            "Give at least one deck link. A prerequisite taught elsewhere is known to "
+            "this agent only through its slides — with none, there is nothing to assume."})
+    if name in db.curriculum_session_counts():
+        raise HTTPException(status_code=409, detail={"message":
+            f"'{name}' is already a course in this agent — attach it as a prerequisite "
+            f"directly instead, and its own decks are used."})
+    if any(p["prereq"] == name for p in db.prereqs(course)):
+        raise HTTPException(status_code=409, detail={
+            "message": f"'{name}' is already a prerequisite of '{course}'."})
+    db.add_prereq(course, name, added_by=user.get("email"), kind="external")
+    job_id = uuid.uuid4().hex[:12]
+    with _lock:
+        JOBS[job_id] = {"status": "running", "logs": [], "result": None,
+                        "error": None, "error_kind": None}
+    threading.Thread(target=_run_prereq_ingest,
+                     args=(job_id, course, name, links), daemon=True).start()
+    return {"ok": True, "job_id": job_id, "prereqs": db.prereqs(course)}
+
+
+@app.delete("/api/prereqs")
+def remove_prereq(course: str, prereq: str, user: dict = Depends(current_user)):
+    """Detach a prerequisite. Neither course is otherwise touched."""
+    from src import prereqs as prereq_rules
+    course = _require_skill_author(user, course)
+    db.remove_prereq(course, prereq)
+    return {"ok": True, "prereqs": db.prereqs(course),
+            "report": prereq_rules.coverage_report(course)}
+
+
+# ---- course skills ---------------------------------------------------------------
+def _require_skill_author(user: dict, course: str) -> str:
+    """Who may change what a course is written under: its owner, or an admin.
+
+    Not every member of a team that shares the course. A skill governs every document
+    that course will ever produce, which is a different power from being able to work on
+    it — the same distinction the team-membership delegation draws.
+    """
+    course = _require_course(user, course)
+    if user.get("is_admin"):
+        return course
+    owner = db.course_owner(course)
+    if owner and owner == (user.get("email") or "").lower():
+        return course
+    raise HTTPException(status_code=403, detail={"message":
+        f"Only {owner or 'an admin'} can change what '{course}' is written under. "
+        f"Working on a course and deciding its rules are different things."})
+
+
+@app.get("/api/skills")
+def list_skills(course: str | None = None, include_retired: bool = False,
+                user: dict = Depends(current_user)):
+    """This course's skills, and whether the caller may change them."""
+    course = _require_course(user, course)
+    owner = db.course_owner(course)
+    return {"course": course,
+            "skills": db.skills(course, include_retired=include_retired),
+            "approved": len(db.approved_skills(course)),
+            "can_edit": bool(user.get("is_admin"))
+                        or (owner or "") == (user.get("email") or "").lower(),
+            "owner": owner}
+
+
+@app.post("/api/skills")
+def add_skill(body: SkillBody, user: dict = Depends(current_user)):
+    """Path A — write a skill yourself. It starts as a DRAFT."""
+    from src import skills as skill_rules
+    course = _require_skill_author(user, body.course)
+    ok, why = skill_rules.validate_check(body.check)
+    if not ok:
+        raise HTTPException(status_code=400, detail={"message": why})
+    sid = db.add_skill(course, body.text, kind=body.kind, source="user",
+                       created_by=user.get("email"), check=body.check)
+    if not sid:
+        raise HTTPException(status_code=400, detail={
+            "message": "A skill needs some text."})
+    return {"ok": True, "id": sid, "skills": db.skills(course)}
+
+
+@app.post("/api/skills/from-requirements")
+def skills_from_requirements(body: SkillFromRequirementsBody,
+                             user: dict = Depends(current_user)):
+    """Path B — rough requirements become atomic DRAFT skills, each quoting its source.
+
+    The agent formalises; it does not invent. A proposal that cannot quote the words it
+    came from is dropped before it is ever offered for approval — see
+    skills.from_requirements.
+    """
+    from src import skills as skill_rules
+    course = _require_skill_author(user, body.course)
+    drafts = skill_rules.from_requirements(body.requirements)
+    if not drafts:
+        raise HTTPException(status_code=400, detail={"message":
+            "Nothing could be drawn from that. Say what the course needs in plain "
+            "sentences — each draft has to quote the words it came from, so anything "
+            "the model could not trace back to your text is discarded."})
+    skill_rules.store_drafts(course, drafts, created_by=user.get("email"))
+    return {"ok": True, "drafts": len(drafts), "skills": db.skills(course)}
+
+
+@app.post("/api/skills/import")
+def import_skills(body: SkillImportBody, user: dict = Depends(current_user)):
+    """Path C — copy another course's approved skills in, as drafts."""
+    course = _require_skill_author(user, body.course)
+    src = _require_course(user, body.from_course)
+    n = db.import_skills(src, course, user.get("email"))
+    return {"ok": True, "imported": n, "from": src, "skills": db.skills(course)}
+
+
+@app.post("/api/skills/{skill_id}/approve")
+def approve_skill(skill_id: int, course: str | None = None,
+                  user: dict = Depends(current_user)):
+    c = _require_skill_author(user, course)
+    if not any(s["id"] == skill_id for s in db.skills(c, include_retired=True)):
+        raise HTTPException(status_code=404, detail={
+            "message": "No such skill on this course."})
+    db.approve_skill(skill_id, user.get("email"))
+    return {"ok": True, "skills": db.skills(c)}
+
+
+@app.post("/api/skills/{skill_id}/edit")
+def edit_skill(skill_id: int, body: SkillBody, user: dict = Depends(current_user)):
+    """Change a skill's wording. It goes back to DRAFT — an approval is of the words
+    that were approved."""
+    from src import skills as skill_rules
+    c = _require_skill_author(user, body.course)
+    if not any(s["id"] == skill_id for s in db.skills(c, include_retired=True)):
+        raise HTTPException(status_code=404, detail={
+            "message": "No such skill on this course."})
+    ok, why = skill_rules.validate_check(body.check)
+    if not ok:
+        raise HTTPException(status_code=400, detail={"message": why})
+    if not db.edit_skill(skill_id, body.text, check=body.check):
+        raise HTTPException(status_code=400, detail={"message": "A skill needs text."})
+    return {"ok": True, "skills": db.skills(c)}
+
+
+@app.delete("/api/skills/{skill_id}")
+def retire_skill(skill_id: int, course: str | None = None,
+                 user: dict = Depends(current_user)):
+    """Retire a skill. The row is KEPT — a finished document was written under it."""
+    c = _require_skill_author(user, course)
+    if not any(s["id"] == skill_id for s in db.skills(c, include_retired=True)):
+        raise HTTPException(status_code=404, detail={
+            "message": "No such skill on this course."})
+    db.retire_skill(skill_id, user.get("email"))
+    return {"ok": True, "skills": db.skills(c)}
+
+
+@app.get("/api/course-profile")
+def get_course_profile(course: str | None = None, user: dict = Depends(current_user)):
+    """What THIS course counts as a good document, and what it inherits.
+
+    Three things, deliberately: the resolved profile (what actually applies), the raw
+    overrides (what this course has said), and the harness defaults (what "inherit"
+    means). A form showing only the first cannot tell the user which values are theirs.
+    """
+    from src import profiles as profile_rules
+    course = _require_course(user, course)
+    return {"course": course,
+            "profile": profile_rules.for_course(course),
+            "overrides": db.course_profile(course),
+            "defaults": profile_rules.harness_defaults()}
+
+
+@app.post("/api/course-profile")
+def save_course_profile(body: CourseProfileBody, user: dict = Depends(current_user)):
+    """Set a course's overrides. Rejected as a whole if any part is invalid.
+
+    All-or-nothing on purpose: a profile half-applied is a course being graded by rules
+    nobody chose. The reason comes back in the message, because "invalid" on its own
+    gives a curriculum author nothing to act on.
+    """
+    from src import profiles as profile_rules
+    course = _require_course(user, body.course)
+    ok, cleaned, why = profile_rules.validate(body.profile)
+    if not ok:
+        raise HTTPException(status_code=400, detail={"message": why})
+    if not db.set_course_profile(course, cleaned):
+        raise HTTPException(status_code=500, detail={
+            "message": "Could not store the profile."})
+    return {"ok": True, "course": course,
+            "profile": profile_rules.for_course(course),
+            "overrides": db.course_profile(course)}
 
 
 @app.get("/api/curriculum")
@@ -1028,7 +1381,7 @@ def insert_curriculum_row(body: CurriculumInsertBody, course: str | None = None,
     moved = db.curriculum_shift_from(course, at, by=1)
     if moved:
         try:
-            pptx_ingest.renumber_decks(moved)
+            pptx_ingest.renumber_decks(course, moved)
             # …and move them in the DB mirror too, or the rename survives only until the
             # next restart. On the deployed instance the decks live on an EPHEMERAL disk
             # and are mirrored into kb_files, which kb_restore writes back whenever a
@@ -1036,7 +1389,7 @@ def insert_curriculum_row(body: CurriculumInsertBody, course: str | None = None,
             # session_02.json to session_03.json on disk alone would therefore be undone
             # on the next boot while the renumbered curriculum rows stayed put, and the
             # new session 2 would inherit the old session 2's deck as "already taught".
-            db.kb_rename_decks(moved)
+            db.kb_rename_decks(course, moved)
         except Exception as e:
             print(f"[curriculum] deck renumber failed after insert at {at}: {e!r}")
     db.curriculum_upsert(course, at, topic=body.topic or "",
@@ -1070,16 +1423,17 @@ def delete_curriculum_row(session_no: int, course: str | None = None,
     # prune_orphan_decks will not do it — it only touches sessions the curriculum still
     # lists — so the removal is explicit.
     try:
-        pptx_ingest.drop_deck(session_no)
-        db.kb_forget(f"decks/session_{int(session_no):02d}.json")
+        pptx_ingest.drop_deck(course, session_no)
+        db.kb_forget(pptx_ingest.kb_rel(course, session_no))
     except Exception as e:
         print(f"[curriculum] could not drop deck for session {session_no}: {e!r}")
     sync.prune_orphan_decks(course)
     moved = db.curriculum_shift_from(course, int(session_no) + 1, by=-1)
     if moved:
         try:
-            pptx_ingest.renumber_decks(moved)
-            db.kb_rename_decks(moved)   # see insert_curriculum_row: not optional
+            pptx_ingest.renumber_decks(course, moved)
+            # see insert_curriculum_row: not optional
+            db.kb_rename_decks(course, moved)
         except Exception as e:
             print(f"[curriculum] deck renumber failed after deleting {session_no}: {e!r}")
     fresh = db.curriculum(course)
@@ -1160,7 +1514,7 @@ def _session_list(course: str | None = None, rows: list[dict] | None = None):
         cached = course_loader.load_sessions_from_cache()
         if not cached:
             return []
-        have = pptx_ingest.deck_session_numbers()
+        have = pptx_ingest.deck_session_numbers(course)
         return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
                 for s in cached if s.number not in have]
     have_decks = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
@@ -1497,7 +1851,7 @@ def _chunk_spec(state: dict, index: int):
         return "opening", context_builder.opening_instruction(cur, prev)
     used, left = _slide_budget_state(state, index)
     return "section", context_builder.takeaway_instruction(
-        cur, index - 1, slides_used=used, sections_left=left,
+        state.get("course") or "", cur, index - 1, slides_used=used, sections_left=left,
         enforce_time=state.get("enforce_time", True),
         budgets=state.get("budgets"))
 
@@ -2052,6 +2406,10 @@ def _guided_finalize(gid: str):
             # part of the run that has never heard of them.
             standing = [n.get("reason") for n in (state.get("standing_notes") or [])
                         if isinstance(n, dict) and str(n.get("reason") or "").strip()]
+            # The curriculum this run was written FROM. finalize grades against it and
+            # reads its decks; without it, grading fell back to whichever course the
+            # instance had selected, which need not be this one.
+            run_course = state.get("course")
         opening = chunks[0]["fragment"]
         sections = [c["fragment"].get("section", c["fragment"]) for c in chunks[1:]]
         # Each takeaway chunk also reports the sub-concepts it covers and the slide
@@ -2062,6 +2420,7 @@ def _guided_finalize(gid: str):
         result = pipeline.finalize(session_no, doc, use_judge=use_judge,
                                    enforce_time=enforce_time, run_id=gid,
                                    budgets=state_budgets, standing_notes=standing,
+                                   course=run_course,
                                    on_event=lambda m: _guided_log(gid, m))
         final = result.get("final") or result["history"][-1]
         # Persist the rendered outputs BEFORE surfacing the result. A guided run has
@@ -2306,7 +2665,10 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # prompt, the gates and the repair pass all speak about the same numbers.
     from src import budgets as budget_rules
     run_budgets = budget_rules.for_session(run_course, body.session_no)
-    base_context = (context_builder.build_guided_base(prev, cur, nxt)
+    from src import profiles as profile_rules
+    run_profile = profile_rules.for_course(run_course)
+    base_context = (context_builder.build_guided_base(run_course, prev, cur, nxt,
+                                                      run_profile)
                     + context_builder.time_mode_block(body.enforce_time, guided=True,
                                                       budgets=run_budgets))
     with _lock:
@@ -2603,8 +2965,9 @@ def guided_finalize(gid: str, user: dict = Depends(current_user)):
 
 
 @app.get("/api/extraction-check")
-def extraction_check():
-    return pptx_ingest.completeness_report()
+def extraction_check(course: str | None = None,
+                     user: dict = Depends(current_user)):
+    return pptx_ingest.completeness_report(_require_course(user, course))
 
 
 @app.post("/api/feedback")
@@ -2829,7 +3192,8 @@ def _connectors() -> list:
     m = config.harness()["model"]
     c = sync.last_link()
     try:
-        warns = len(pptx_ingest.completeness_report().get("decks", []))
+        warns = len(pptx_ingest.completeness_report(
+            app_settings.course_name() or "default").get("decks", []))
     except Exception:
         warns = None
     return [

@@ -1,0 +1,1037 @@
+{
+  "session_no": 13,
+  "source_file": "Scheduling Algorithms I: FCFS, SJF, SRTF & Round Robin",
+  "deck_title": "Scheduling Algorithms I: FCFS, SJF, SRTF & Round Robin",
+  "n_slides": 60,
+  "summary": "\n    - Slide 2: Scheduling Algorithms | Part I\n    - Slide 3: Recap\n    - Slide 4: Scheduling Algorithms | Part I\n    - Slide 5: Introduction to Scheduling\n    - Slide 6: Introduction to Scheduling\n    - Slide 7: Introduction to Scheduling\n    - Slide 8: First-Come First-Served (FCFS)\n    - Slide 9: Scheduling Algorithms\n    - Slide 10: First-Come First-Served\n    - Slide 11: First-Come First-Served\n    - Slide 12: First-Come First-Served\n    - Slide 13: Scheduling Algorithms\n    - Slide 14: First-Come First-Served\n    - Slide 15: First-Come First-Served\n    - Slide 16: First-Come First-Served\n    - Slide 17: First-Come First-Served\n    - Slide 18: Shortest Job First (SJF)\n    - Slide 19: Scheduling Algorithms\n    - Slide 20: Scheduling Algorithms\n    - Slide 21: Shortest Job First\n    - Slide 22: Shortest Job First\n    - Slide 23: Shortest Job First (Non-Preemptive)\n    - Slide 24: Shortest Job First (Non-Preemptive)\n    - Slide 25: Shortest Job First (Non-Preemptive)\n    - Slide 26: Shortest Job First (Non-Preemptive)\n    - Slide 27: Shortest Job First (Non-Preemptive)\n    - Slide 28: Shortest Job First (Non-Preemptive)\n    - Slide 29: Quiz Time!\n    - Slide 30: Shortest Remaining Time First (SRTF)\n    - Slide 31: CPU Scheduling Algorithms\n    - Slide 32: SRTF – Preemptive SJF\n    - Slide 33: SRTF – Preemptive SJF\n    - Slide 34: SRTF – Preemptive SJF\n    - Slide 35: SRTF – Preemptive SJF\n    - Slide 36: SRTF – Preemptive SJF\n    - Slide 37: SRTF – Preemptive SJF\n    - Slide 38: SJF\n    - Slide 39: SJF\n    - Slide 40: Round Robin (RR)\n    - Slide 41: Scheduling Algorithms\n    - Slide 42: Scheduling Algorithms\n    - Slide 43: Round Robin Scheduling (Preemptive)\n    - Slide 44: Round Robin Scheduling\n    - Slide 45: Round Robin Scheduling\n    - Slide 46: Scheduling Algorithms\n    - Slide 47: Round Robin Scheduling\n    - Slide 48: Round Robin Scheduling\n    - Slide 49: Round Robin Scheduling\n    - Slide 50: Round Robin Scheduling\n    - Slide 51: Scheduling Algorithms\n    - Slide 52: Round Robin Scheduling\n    - Slide 53: Round Robin Scheduling\n    - Slide 54: Comparison of Algorithms\n    - Slide 55: Scheduling Algorithms\n    - Slide 56: Quiz Time!\n    - Slide 57: Scheduling Algorithms | Part I\n    - Slide 58: Scheduling Algorithms | Part II",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Scheduling Algorithms | Part I",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Scheduling Concepts, Criteria & Types\nIntroduction to Scheduling\nThe CPU-I/O burst cycle\nSchedulers & Process Queues\nScheduling Criteria\nCPU utilization & throughput\nTurnaround time, waiting time, response time\nCPU Scheduling\nPreemptive & Non - Preemptive\nThe Dispatcher & Gantt Basics",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Scheduling Algorithms | Part I",
+      "body": "Scheduling Algorithms | Part I\nAgenda\nFirst-Come First-Served (FCFS) — working, Gantt chart & convoy effect\nShortest Job First (SJF) — non-preemptive\nShortest Remaining Time First (SRTF) — preemptive SJF\nRound Robin (RR) — time quantum & effect of quantum size\nComparison of Algorithms\nShortest Job First (SJF)\nShortest Remaining Time First (SRTF)\nFirst-Come First-Served (FCFS)\nRound Robin (RR)\nWorking, Gantt chart & Convoy Effect\nComparison of Algorithms\nTime Quantum & Effect of Quantum size\nNon-Preemptive\nPreemptive SJF",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Introduction to Scheduling",
+      "body": "Terminology\nArrival Time\nTime at which the process arrives in the ready queue\nCompletion Time\nTime at which process completes its execution and terminates",
+      "notes": "Before solving scheduling problems, let's understand important terms. \u000bArrival Time is when a process enters the Ready Queue, making it eligible for execution. \u000bCompletion Time is the exact time at which the process finishes its execution and terminates.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Introduction to Scheduling",
+      "body": "Terminology\nBurst Time\nTime required by a process for CPU execution\nTurnaround Time\nTotal amount of time spent by a process in the system\nTurnaround Time = Completion Time – Arrival Time",
+      "notes": "Next, Burst Time refers to the amount of CPU time a process needs to complete its execution. \u000bAnother important metric is Turnaround Time, which tells us how long a process spends \u000bin the system from arrival until completion. \u000bWe calculate it by subtracting the Arrival Time from the Completion Time.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Introduction to Scheduling",
+      "body": "Terminology\nWaiting Time\nAmount of time spent by a process in the ready queue\nResponse Time\n Time from process arrival in the ready queue to its first CPU execution\nResponse Time =  First Start Time – Arrival Time\nWaiting Time = Turnaround Time – Burst Time",
+      "notes": "Moving on, Waiting Time tells us how long a process waits in the Ready Queue before getting CPU time, \u000band we calculate it as\u000bResponse Time, on the other hand, measures how quickly a process gets the CPU for the first time after arriving. \u000bIt's calculated as",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "First-Come First-Served (FCFS)",
+      "body": "First-Come First-Served (FCFS)",
+      "notes": "Next we will be learning about the First-Come First-Served (FCFS)",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Scheduling Algorithms",
+      "body": "FCFS is non-preemptive. Once a process starts, it runs until completion\nFirst-Come First-Served",
+      "notes": "Now, let's begin with the first CPU scheduling algorithm—First-Come, First-Served, or FCFS. \u000bAs the name suggests, the process that enters the Ready Queue first gets the CPU first. \u000bSince FCFS is a non-preemptive algorithm, once a process starts executing, \u000bit continues until it completes, even if other processes arrive in the meantime.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21"
+          ],
+          [
+            "P2",
+            "1",
+            "3"
+          ],
+          [
+            "P3",
+            "2",
+            "6"
+          ],
+          [
+            "P4",
+            "3",
+            "2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "title": "First-Come First-Served",
+      "body": "0                                21            24                      30    32                                         \nGantt Chart :\nCompletion Time",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival \nTime",
+            "Burst\nTime",
+            "Completion\nTime"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "21"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "24"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "30"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "32"
+          ]
+        ],
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 11,
+      "title": "First-Come First-Served",
+      "body": "Turnaround Time = Completion Time – Arrival Time\nWaiting Time = Turnaround Time – Burst Time\nResponse Time = First Start Time – Arrival Time\nTAT, WT, RT",
+      "notes": "P2 had to wait for 20 units of time just to perform 3 units of execution. \n\nREAD SLIDE TABLE. \n\n\nNEXT> \n\n\n\n\n\n========================\n\nTurn Around time is the total amount of time spent by a process in the system\n\n\n\n\n\n\n\n\nFor FCFS, Response Time = Waiting Time, because the process never gets preempted.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "First-Come First-Served",
+      "body": "TAT, WT, RT",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time",
+            "Turn Around Time",
+            "Waiting Time",
+            "Response Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "21",
+            "21",
+            "0",
+            "0"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "24",
+            "23",
+            "20",
+            "20"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "30",
+            "28",
+            "22",
+            "22"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "32",
+            "29",
+            "27",
+            "27"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Scheduling Algorithms",
+      "body": "0                                21            24                      30    32                                         \nFirst-Come First-Served\nAverage Waiting Time  = (0 + 20 + 22 + 27)/4  = 17.25\nAverage Turnaround Time  = (21 + 23 + 28 + 29)/4 = 25.25\nAverage Response Time  = (0 + 20 + 22 + 27)/4 = 17.25",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "First-Come First-Served",
+      "body": "Convoy Effect\nThe convoy effect happens in FCFS when one long (CPU-heavy) process arrives first and holds the CPU while several short processes wait behind it\nBecause FCFS is non-preemptive, the short jobs can't overtake - they're stuck in a \"convoy\" behind the slow one\nResult: Average waiting time and turnaround time shoot up, and the CPU/devices are used inefficiently",
+      "notes": "However, FCFS has a major drawback called the Convoy Effect. \u000bIf a long CPU-intensive process gets the CPU first, all the shorter processes \u000bhave to wait behind it because FCFS is non-preemptive. \u000bThis increases the average waiting and turnaround times and \u000balso leads to poor utilization of the CPU and I/O devices.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "First-Come First-Served",
+      "body": "Convoy Effect",
+      "notes": "One heavily loaded truck on a single-lane road holds up all the fast cars behind it — everyone moves at the truck's speed.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "First-Come First-Served",
+      "body": "First-Come First-Served\nWhen To Use ?",
+      "notes": "Finally, FCFS works well in batch systems, \u000bwhere processes are long-running and don't require immediate user interaction. \u000bIt's also a good choice when most processes have similar burst times because of its simple implementation. \u000bHowever, it's generally avoided in interactive systems since \u000bthe convoy effect can significantly reduce performance.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "First-Come First-Served",
+      "body": "First-Come First-Served\nNot Ideal For\nTime-sharing systems\nInteractive workloads (poor response time due to the convoy effect)\nSituations where short jobs must complete early",
+      "notes": "On the other hand, FCFS is not a good choice for time-sharing or interactive systems, \u000bwhere quick responses are important. It's also unsuitable when short processes need to finish early, \u000bsince they may end up waiting behind longer processes due to the convoy effect.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Shortest Job First (SJF)",
+      "body": "Shortest Job First (SJF)",
+      "notes": "Next we will be learning about the Shortest Job First (SJF)",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Scheduling Algorithms",
+      "body": "Shortest Job First",
+      "notes": "Now, let's move on to Shortest Job First, or SJF. In this algorithm,\u000b the scheduler selects the process with the smallest CPU burst time from the ready queue and executes it first. \u000bYou may also come across the names Shortest Process Next (SPN) or \u000bShortest Job Next (SJN)—they all refer to the same scheduling approach.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Scheduling Algorithms",
+      "body": "The Core Idea",
+      "notes": "Moving on, the idea behind SJF is quite straightforward. \u000bWhenever the CPU becomes available, the scheduler checks all the processes in the Ready Queue \u000band selects the one with the shortest burst time. If two processes have the same burst time,\u000b the tie is broken using FCFS, so the process that arrived first gets the CPU first.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Shortest Job First",
+      "body": "Why To Use It ?",
+      "notes": "Now, you might wonder why SJF is preferred. \u000bThe reason is that it produces the minimum average waiting time for a given set of processes. \u000bBy executing shorter jobs first, they finish quickly, \u000breducing the number of processes waiting in the queue and improving overall system performance.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Shortest Job First",
+      "body": "Two Forms Of SJF\nNon-preemptive SJF \nPreemptive SJF",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Shortest Job First (Non-Preemptive)",
+      "body": "Example\nGantt Chart :\n0       2            5                  11                               32",
+      "notes": "READ SLIDE> \n\n0 time ⇒ Has 2 processes. So CPU Chooses P4. \n\nBy 2 time, ⇒ the shortest CPU time is required by P2 . \n\n\nNOTE: here, it doesn’t matter when the process has arrived. 0 or 2. \n\nIf by completion of a process, the queue process has a lower CPU requirement, it’s considered. \n\n\n\n\nLet’s look at another. \n\n\n\n-----------------------------------------\n\n\n\n\n\n\n\n\nif the arrival time for processes are different, which means all the processes are not available in the ready queue at time 0, and some jobs arrive after some time, in such situation, sometimes process with short burst time have to wait for the current process's execution to finish, because in Non Pre-emptive SJF, on arrival of a process with short duration, the existing job/process's execution is not halted/stopped to execute the short job first.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21"
+          ],
+          [
+            "P2",
+            "1",
+            "3"
+          ],
+          [
+            "P3",
+            "2",
+            "6"
+          ],
+          [
+            "P4",
+            "0",
+            "2"
+          ]
+        ],
+        [
+          [
+            "P4",
+            "P2",
+            "P3",
+            "P1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "title": "Shortest Job First (Non-Preemptive)",
+      "body": "Completion Time",
+      "notes": "Here, as we’re talking about FCFS, P2 is done ONLY when p1 is done. \nREAD THE IMAGE>>>\nWe have the arrival time, burst time, completion time. \u000b\u000bWe can calculate the other ones. Let’s look at it….\n\nNEXT. \n\n\n\n\n\nThe time when a job or process is completed.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival \nTime",
+            "Burst\nTime",
+            "Completion\nTime"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "32"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "5"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "11"
+          ],
+          [
+            "P4",
+            "0",
+            "2",
+            "2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "Shortest Job First (Non-Preemptive)",
+      "body": "Turnaround Time = Completion Time – Arrival Time\nWaiting Time = Turnaround Time – Burst Time\nResponse Time = First Start Time – Arrival Time\nTAT, WT, RT",
+      "notes": "P2 had to wait for 20 units of time just to perform 3 units of execution. \n\nREAD SLIDE TABLE. \n\n\nNEXT> \n\n\n\n\n\n========================\n\nTurn Around time is the total amount of time spent by a process in the system",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time",
+            "Turn Around Time",
+            "Waiting Time",
+            "Response Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "32",
+            "32",
+            "11",
+            "11"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "5",
+            "4",
+            "1",
+            "1"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "11",
+            "9",
+            "3",
+            "3"
+          ],
+          [
+            "P4",
+            "0",
+            "2",
+            "2",
+            "2",
+            "0",
+            "0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 26,
+      "title": "Shortest Job First (Non-Preemptive)",
+      "body": "Average Waiting Time  = (11 + 1 + 3 + 0)/4  = 3.75\nAverage Turnaround Time  = (32 + 4 + 9 + 2)/4 = 11.75\nAverage Response Time  = (11 + 1 + 3 + 0)/4 = 3.75\n0       2            5                  11                               32                        \nWrap-Up",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "P4",
+            "P2",
+            "P3",
+            "P1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 27,
+      "title": "Shortest Job First (Non-Preemptive)",
+      "body": "When Is It Used?",
+      "notes": "Moving on, Non-Preemptive SJF is commonly used in batch systems, \u000bwhere burst times are already known or can be estimated. \u000bIt's also suitable for long-term job scheduling and works particularly well when \u000bthere's a mix of short and long processes, as it helps minimize the average waiting time.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Shortest Job First (Non-Preemptive)",
+      "body": "When Not To Use?\nNot ideal for\nInteractive/time-sharing systems (burst time isn't known in advance)\nSystems needing predictable response\nEnvironments with many long processes (starvation risk)",
+      "notes": "However, Non-Preemptive SJF isn't suitable for every scenario.\u000bIt's not a good fit for interactive or time-sharing systems, \u000bwhere burst times aren't known in advance and quick responses are expected. \u000bIt can also lead to starvation, as long processes may keep waiting while shorter ones continue to get scheduled.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Shortest Remaining Time First (SRTF)",
+      "body": "Shortest Remaining Time First (SRTF)",
+      "notes": "Next we will learn about the Shortest Remaining Time First (SRTF)",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "CPU Scheduling Algorithms",
+      "body": "SRTF – Preemptive SJF\nSRTF is the preemptive form of Shortest Job First (SJF)\nThe scheduler always chooses the process with the least remaining burst time\nIf a new process arrives with a shorter remaining time than the current process, the CPU is preempted\nContinuously checks remaining times to decide the next CPU allocation",
+      "notes": "Now, unlike SJF, this algorithm can interrupt a running process whenever a better option becomes available.\u000b The operating system keeps comparing the remaining execution times of all ready processes, \u000band if a newly arrived process can finish sooner than the current one, it immediately gets the CPU. \u000bThat's why SRTF is called the preemptive version of SJF.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "SRTF – Preemptive SJF",
+      "body": "Example\n0         1            4            6             12                         32                        \nGantt Chart :",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21"
+          ],
+          [
+            "P2",
+            "1",
+            "3"
+          ],
+          [
+            "P3",
+            "2",
+            "6"
+          ],
+          [
+            "P4",
+            "3",
+            "2"
+          ]
+        ],
+        [
+          [
+            "P1",
+            "P2",
+            "P4",
+            "P3",
+            "P1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 33,
+      "title": "SRTF – Preemptive SJF",
+      "body": "Example",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time",
+            "Turn Around Time",
+            "Waiting Time",
+            "Response Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "32",
+            "32",
+            "11",
+            "0"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "4",
+            "3",
+            "0",
+            "0"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "12",
+            "10",
+            "4",
+            "4"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "6",
+            "3",
+            "1",
+            "1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 34,
+      "title": "SRTF – Preemptive SJF",
+      "body": "Wrap-Up\nAverage Waiting Time  = (11 + 0 + 4 + 1) / 4 = 4.0\nAverage Turnaround Time  = (32 + 3 + 10 + 3) / 4 = 12.0\nAverage Response Time  = (0 + 0 + 4 + 1) / 4 = 1.25",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "SRTF – Preemptive SJF",
+      "body": "Key Points\nCan cause many context switches, increasing overhead\nGives minimum average waiting time among all algorithms\nRisk of starvation for long processes",
+      "notes": "Moving on, one of the biggest strengths of SRTF is that it achieves the lowest average waiting time.\u000b However, because processes can be interrupted frequently,\u000b it results in more context switches, adding overhead. \u000bAlso, long-running processes may keep getting postponed, which can lead to starvation.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "SRTF – Preemptive SJF",
+      "body": "When To Use?",
+      "notes": "Moving on, SRTF is best suited for systems where reducing the average waiting time \u000bis the primary goal and the CPU burst times can be estimated reasonably well.\u000b It also performs well in environments where short processes arrive frequently, \u000ballowing them to complete quickly.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "SRTF – Preemptive SJF",
+      "body": "When Not To Use?\nNot ideal for\nSystems where context-switch overhead is costly (SRTF switches often)\nLong-running processes (high starvation risk)\nHard real-time systems needing guaranteed timing",
+      "notes": "However, SRTF isn't suitable for every system. \u000bIf context switching is expensive, its frequent preemptions can reduce performance. \u000bIt's also not ideal for long-running processes because they may experience starvation, \u000band it's generally avoided in hard real-time systems, where execution deadlines must be guaranteed.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "SJF",
+      "body": "Key Points",
+      "notes": "Finally, there's one practical challenge with SJF. \u000bThe operating system doesn't actually know a process's future CPU burst time. \u000bInstead, it predicts the next burst based on the process's past execution pattern, \u000bcommonly using a technique called exponential averaging.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "SJF",
+      "body": "Key Points\nStarvation - a long process may keep getting pushed back indefinitely if shorter jobs keep arriving. (This is later solved using aging.)\nMain drawback:",
+      "notes": "However, SJF has one major limitation—starvation. \u000bIf short processes keep arriving, a long process may keep waiting without getting CPU time. \u000bLater, we'll see how a technique called aging helps overcome this problem.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Round Robin (RR)",
+      "body": "Round Robin (RR)",
+      "notes": "Next we will be learning about the Round Robin Scheduling Algorithm",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Scheduling Algorithms",
+      "body": "Round Robin Scheduling (Preemptive)\nA CPU scheduling algorithm that gives each process an equal share of CPU time\nProcesses are handled in a cyclic (round-robin) order from the ready queue\nWhat is Round Robin?",
+      "notes": "Now, let's move on to Round Robin Scheduling, a preemptive scheduling algorithm. \u000bInstead of allowing one process to run until completion, it gives every process an equal opportunity to use the CPU.\u000b The processes are executed one after another in a cyclic order, ensuring that each process gets its turn.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Scheduling Algorithms",
+      "body": "Round Robin Scheduling (Preemptive)\nA fixed time slice assigned to each process\u000b\nIf a process doesn’t finish within the quantum, it is preempted and moved to the end of the queue\nTime Quantum",
+      "notes": "Next, Round Robin works using a time quantum, which is a fixed amount of CPU time assigned to each process.\u000b If a process finishes within that time, it exits the CPU. Otherwise,\u000b it's preempted and moved to the end of the Ready Queue, allowing the next process to get its turn.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Round Robin Scheduling (Preemptive)",
+      "body": "Key Characteristics",
+      "notes": "Moving on, Round Robin is considered a fair scheduling algorithm because \u000bevery process gets a chance to execute. \u000bThe trade-off is that frequent switching between processes increases context-switching overhead. \u000bAlso, the algorithm's performance depends heavily on choosing an appropriate time quantum—\u000btoo small or too large can reduce efficiency.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Round Robin Scheduling",
+      "body": "Effect of Time Quantum Size\nQuantum too large\nEach process finishes within its slice, so RR behaves like FCFS - you lose responsiveness and the convoy effect can return\nQuantum too small\nToo many context switches; the CPU wastes time switching instead of doing useful work, lowering throughput",
+      "notes": "Finally, the choice of time quantum has a big impact on Round Robin's performance.\u000b If it's too large, Round Robin starts behaving like FCFS, reducing responsiveness and \u000beven bringing back the convoy effect. On the other hand, if it's too small,\u000b the CPU spends too much time performing context switches, which lowers the overall throughput.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Round Robin Scheduling",
+      "body": "Effect of Time Quantum Size\nThe trade-off\nsmall quantum = better response time but higher overhead; large quantum = lower overhead but poorer response time\nRule of thumb\nthe quantum should be slightly larger than a typical CPU burst - a common guideline is that ~80% of CPU bursts should be shorter than the quantum (typical real values: 10–100 ms)",
+      "notes": "Finally, there's always a trade-off when choosing the time quantum. \u000bA smaller value gives faster responses but increases the cost of context switching, \u000bwhile a larger value reduces that overhead but makes the system less responsive. \u000bIn practice, the quantum is usually set slightly higher than a typical CPU burst, \u000bso that most processes—around 80%—finish within a single time slice. \u000bCommon values range from 10 to 100 milliseconds.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Scheduling Algorithms",
+      "body": "0          5        8           13     15         20   21         26         31   32                                \nGantt Chart :\nRound Robin Scheduling",
+      "notes": "Fixed time. Execution one by one. \n\nComparison with others: \nSJF: \nIf lots of small processes are executed, the large ones will have to wait eternally. \nPriority\nLow priority will never be executed. \nRR\nEach process will have equal opportunity to execute.\n\nThis is not the only RR pattern. There’ always more. \nWe just need to use / design based on the context. \n\n\nSo, as a bottomline we need to understand, if ther are multiple processes: \nThe process to be executed by CPUs is defined by the CPU scheduling Algos. \nThere are multiple Algos. \n\n\n\n\n\n\n\n\n=======================\n\n\nOnce a process is executed for given time period that process is preempted and other process executes for given time period\n\n\n\n\n🔹 Round 1\nP1 (0–5) → 21 − 5 = 16 left\u000b\nP2 (5–8) → needs 3 → finishes at 8\u000b\nP3 (8–13) → 6 − 5 = 1 left\u000b\nP4 (13–15) → needs 2 → finishes at 15\u000b\n🔹 Round 2\nRemaining queue order: P1 → P3 → P1 → P1 → P1 (correct)\nP1 (15–20) → 16 − 5 = 11 left\u000b\nP3 (20–21) → 1 unit → finishes at 21\u000b\n🔹 Round 3\nRemaining: P1 (11 left)\nP1 (21–26) → 11 − 5 = 6 left\u000b\nP1 (26–31) → 6 − 5 = 1 left\u000b\nP1 (31–32) → completes",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P1",
+            "P3",
+            "P1",
+            "P1",
+            "P1"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21"
+          ],
+          [
+            "P2",
+            "1",
+            "3"
+          ],
+          [
+            "P3",
+            "2",
+            "6"
+          ],
+          [
+            "P4",
+            "3",
+            "2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 47,
+      "title": "Round Robin Scheduling",
+      "body": "Round Robin Scheduling\nReady Queue Evolution",
+      "notes": "Fixed time. Execution one by one. \n\nComparison with others: \nSJF: \nIf lots of small processes are executed, the large ones will have to wait eternally. \nPriority\nLow priority will never be executed. \nRR\nEach process will have equal opportunity to execute.\n\nThis is not the only RR pattern. There’ always more. \nWe just need to use / design based on the context. \n\n\nSo, as a bottomline we need to understand, if ther are multiple processes: \nThe process to be executed by CPUs is defined by the CPU scheduling Algos. \nThere are multiple Algos. \n\n\n\n\n\n\n\n\n=======================\n\n\nOnce a process is executed for given time period that process is preempted and other process executes for given time period\n\n\n\n\n🔹 Round 1\nP1 (0–5) → 21 − 5 = 16 left\u000b\nP2 (5–8) → needs 3 → finishes at 8\u000b\nP3 (8–13) → 6 − 5 = 1 left\u000b\nP4 (13–15) → needs 2 → finishes at 15\u000b\n🔹 Round 2\nRemaining queue order: P1 → P3 → P1 → P1 → P1 (correct)\nP1 (15–20) → 16 − 5 = 11 left\u000b\nP3 (20–21) → 1 unit → finishes at 21\u000b\n🔹 Round 3\nRemaining: P1 (11 left)\nP1 (21–26) → 11 − 5 = 6 left\u000b\nP1 (26–31) → 6 − 5 = 1 left\u000b\nP1 (31–32) → completes",
+      "tables": [
+        [
+          [
+            "Time",
+            "CPU Running",
+            "Ready Queue (Before)",
+            "Explanation"
+          ],
+          [
+            "0",
+            "P1",
+            "[ P1 ]",
+            "Only P1 has arrived → CPU picks P1"
+          ],
+          [
+            "5",
+            "P2",
+            "[ P2, P3, P4, P1 ]",
+            "P1 unfinished → moves to back; P2, P3, P4 arrived meanwhile → CPU picks P2"
+          ],
+          [
+            "8",
+            "P3",
+            "[ P3, P4, P1 ]",
+            "P2 completes → removed. CPU picks P3"
+          ],
+          [
+            "13",
+            "P4",
+            "[ P4, P1, P3 ]",
+            "P3 unfinished → moves to back. CPU picks P4"
+          ],
+          [
+            "15",
+            "P1",
+            "[ P1, P3 ]",
+            "P4 completes → removed. CPU picks P1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Round Robin Scheduling",
+      "body": "Round Robin Scheduling\nReady Queue Evolution",
+      "notes": "Fixed time. Execution one by one. \n\nComparison with others: \nSJF: \nIf lots of small processes are executed, the large ones will have to wait eternally. \nPriority\nLow priority will never be executed. \nRR\nEach process will have equal opportunity to execute.\n\nThis is not the only RR pattern. There’ always more. \nWe just need to use / design based on the context. \n\n\nSo, as a bottomline we need to understand, if ther are multiple processes: \nThe process to be executed by CPUs is defined by the CPU scheduling Algos. \nThere are multiple Algos. \n\n\n\n\n\n\n\n\n=======================\n\n\nOnce a process is executed for given time period that process is preempted and other process executes for given time period\n\n\n\n\n🔹 Round 1\nP1 (0–5) → 21 − 5 = 16 left\u000b\nP2 (5–8) → needs 3 → finishes at 8\u000b\nP3 (8–13) → 6 − 5 = 1 left\u000b\nP4 (13–15) → needs 2 → finishes at 15\u000b\n🔹 Round 2\nRemaining queue order: P1 → P3 → P1 → P1 → P1 (correct)\nP1 (15–20) → 16 − 5 = 11 left\u000b\nP3 (20–21) → 1 unit → finishes at 21\u000b\n🔹 Round 3\nRemaining: P1 (11 left)\nP1 (21–26) → 11 − 5 = 6 left\u000b\nP1 (26–31) → 6 − 5 = 1 left\u000b\nP1 (31–32) → completes",
+      "tables": [
+        [
+          [
+            "Time",
+            "CPU Running",
+            "Ready Queue (Before)",
+            "Explanation"
+          ],
+          [
+            "20",
+            "P3",
+            "[ P3, P1 ]",
+            "P1 unfinished → back of queue. CPU picks P3"
+          ],
+          [
+            "21",
+            "P1",
+            "[ P1 ]",
+            "P3 completes. CPU picks P1"
+          ],
+          [
+            "26",
+            "P1",
+            "[ P1 ]",
+            "P1 unfinished (6 left) → rejoins. CPU picks P1"
+          ],
+          [
+            "31",
+            "P1",
+            "[ P1 ]",
+            "P1 unfinished (1 left) → rejoins. CPU picks P1"
+          ],
+          [
+            "32",
+            "—",
+            "[  ]",
+            "P1 completes. Queue empty"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 49,
+      "title": "Round Robin Scheduling",
+      "body": "0          5        8           13     15         20   21         26         31   32                                \nCompletion Time",
+      "notes": "Here, as we’re talking about FCFS, P2 is done ONLY when p1 is done. \nREAD THE IMAGE>>>\nWe have the arrival time, burst time, completion time. \u000b\u000bWe can calculate the other ones. Let’s look at it….\n\nNEXT. \n\n\n\n\n\nThe time when a job or process is completed.",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P1",
+            "P3",
+            "P1",
+            "P1",
+            "P1"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Arrival \nTime",
+            "Burst\nTime",
+            "Completion\nTime"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "32"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "8"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "21"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "15"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 50,
+      "title": "Round Robin Scheduling",
+      "body": "Turnaround Time = Completion Time – Arrival Time\nWaiting Time = Turnaround Time – Burst Time\nResponse Time = First Start Time – Arrival Time\nTurnaround Time & Waiting Time",
+      "notes": "P2 had to wait for 20 units of time just to perform 3 units of execution. \n\nREAD SLIDE TABLE. \n\n\nNEXT> \n\n\n\n\n\n========================\n\nTurn Around time is the total amount of time spent by a process in the system",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time",
+            "Turn Around Time",
+            "Waiting Time",
+            "Response Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "32",
+            "32",
+            "11",
+            "0"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "8",
+            "7",
+            "4",
+            "4"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "21",
+            "19",
+            "13",
+            "6"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "15",
+            "12",
+            "10",
+            "10"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 51,
+      "title": "Scheduling Algorithms",
+      "body": "Scheduling Algorithms\nRound Robin Scheduling\n0          5        8           13     15         20   21         26         31   32                                \nAverage Waiting Time  = (11 + 4 + 13 + 10) / 4 = 9.5\nAverage Turnaround Time  = (32 + 7 + 19 + 12) / 4 = 17.5\nAverage Response Time  = (0 + 4 + 6 + 10) / 4 = 5.0\nRound Robin Scheduling",
+      "notes": "Read Avg… \n\n\nSo, this is how we can try to understand the performance of a CPU scheduling Algo. \n\nIf you’re okay with this, go ahead. If not, take another!!\n\n\n\nRound Robin is a preemptive CPU scheduling algorithm because the CPU is taken away from a process after a fixed time quantum and given to the next ready process.",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+            "P1",
+            "P3",
+            "P1",
+            "P1",
+            "P1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 52,
+      "title": "Round Robin Scheduling",
+      "body": "When To Use ?",
+      "notes": "Moving on, Round Robin is widely used in time-sharing, interactive, \u000band multi-user systems, where many users or processes need CPU time. \u000bIt's preferred in situations where fairness and quick response are more important \u000bthan achieving the lowest possible turnaround time.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Round Robin Scheduling",
+      "body": "When Not To Use ?",
+      "notes": "However, Round Robin isn't the best choice in every situation. \u000bIt's generally avoided in batch systems, where completing jobs quickly is the main objective. \u000bIt also performs poorly in systems where context switching is expensive, \u000band when processes have very different burst times, the overall turnaround time can increase.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Comparison of Algorithms",
+      "body": "Comparison of Algorithms",
+      "notes": "Now lets see the Comparison of the Algorithms we just learned.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Scheduling Algorithms",
+      "body": "Comparison",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Algorithm",
+            "Type",
+            "Avg Waiting Time",
+            "Response",
+            "Starvation",
+            "Best For"
+          ],
+          [
+            "FCFS",
+            "Non-preemptive",
+            "High (convoy effect)",
+            "Poor",
+            "No",
+            "Batch, similar-length jobs"
+          ],
+          [
+            "SJF",
+            "Non-preemptive",
+            "Low (optimal*)",
+            "Good for short jobs",
+            "Possible",
+            "Batch, known burst times"
+          ],
+          [
+            "SRTF",
+            "Preemptive",
+            "Lowest",
+            "Good",
+            "Possible",
+            "Minimizing wait time"
+          ],
+          [
+            "Round Robin",
+            "Preemptive",
+            "Moderate",
+            "Best",
+            "No",
+            "Time-sharing, interactive"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 56,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Scheduling Algorithms | Part I",
+      "body": "Scheduling Algorithms | Part I\nKey Takeaways",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Scheduling Algorithms | Part II",
+      "body": "",
+      "notes": "In the next Session we will be learning about the Scheduling Algorithms | Part II",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1pcbDzbS76ZHHippHGQepbaEfMEoj8DSaKT3fQu0ZYNc/edit"
+}

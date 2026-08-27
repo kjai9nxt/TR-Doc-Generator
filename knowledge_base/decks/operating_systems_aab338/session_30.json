@@ -1,0 +1,888 @@
+{
+  "session_no": 30,
+  "source_file": "I/O Systems & I/O Models",
+  "deck_title": "I/O Systems & I/O Models",
+  "n_slides": 55,
+  "summary": "\n    - Slide 2: I/O Systems & I/O Models\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: I/O Systems & I/O Models\n    - Slide 6: I/O Hardware\n    - Slide 7: I/O Hardware Overview\n    - Slide 8: I/O Hardware Overview\n    - Slide 9: Port Register Types\n    - Slide 10: Port Register Types\n    - Slide 11: Two Addressing Schemes\n    - Slide 12: Bus Types & Hierarchy\n    - Slide 13: Device Controller Internals\n    - Slide 14: I/O Hardware In Practice\n    - Slide 15: Kernel I/O Subsystem:\n    - Slide 16: Kernel I/O Subsystem\n    - Slide 17: Kernel I/O Subsystem\n    - Slide 18: Scheduling orders pending I/O requests\n    - Slide 19: Analogy: A traffic constable at a busy junction holds some vehicles in queue and\n    - Slide 20: Scheduling And Buffering\n    - Slide 22: Caching And Spooling\n    - Slide 23: Application I/O Interface\n    - Slide 24: Analogy: Any bank card works at any ATM through a standard interface — just as o\n    - Slide 25: Device Interface Types\n    - Slide 26: I/O Techniques\n    - Slide 27: Two I/O Notification Ways\n    - Slide 28: Analogy: A watchman repeatedly opening the gate to check for visitors wastes eff\n    - Slide 29: Interrupt Handling Steps\n    - Slide 30: Interrupt Handling Steps\n    - Slide 31: Polling Vs Interrupts\n    - Slide 32: Why DMA Exists\n    - Slide 33: Analogy: A courier company itself loads and moves an entire truckload while the \n    - Slide 34: DMA Transfer Steps\n    - Slide 35: CPU\n    - Slide 36: I/O Models\n    - Slide 37: Blocking Vs Non-Blocking\n    - Slide 38: Analogy: At a railway ticket counter, a passenger either stands in line until se\n    - Slide 39: Sync Vs Async\n    - Slide 40: Analogy: Standing at the stove stirring a pan until it is done is synchronous; s\n    - Slide 41: Heading: I/O Model Comparison\n    - Slide 42: Multiplexing And Async\n    - Slide 43: Choosing I/O Model\n    - Slide 44: OS Networking Basics\n    - Slide 45: Why Sockets Exist\n    - Slide 46: Analogy: A telephone number lets one exchange reach exactly one line for a call \n    - Slide 47: Heading: Socket API Calls\n    - Slide 48: Heading: Stream Vs Datagram\n    - Slide 49: Client-Server Trace\n    - Slide 50: Sockets And I/O Models\n    - Slide 51: I/O Systems & I/O Models\n    - Slide 52: I/O Systems & I/O Models\n    - Slide 53: Spooling, Buffering & Structure",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "I/O Systems & I/O Models",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "File Allocation Methods\nContiguous\nlinked & indexed \nFAT & Inode Structure\nFile Allocation Table (FAT)\nInode structure & direct / indirect blocks\nFile System Implementation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "File System Implementation\nFree Space Management\nBit vector (bitmap)\nLinked list\ngrouping & counting\nFile System Types\nFAT16 / FAT32, NTFS, ext2 / ext3 / ext4\nJournaling file systems\nFragmentation in file systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "I/O Systems & I/O Models",
+      "body": "I/O Systems & I/O Models\nI/O Techniques\nKernel I/O Subsystem\nPorts, buses & device controllers\nI/O subsystem of the kernel; Application I/O interface\nI/O Hardware\nOS Networking Basics\nI/O Models\nPolling vs interrupt-driven I/O; Direct memory access (DMA)\nBlocking vs non-blocking I/O; Synchronous vs asynchronous I/O\nSockets & network I/O",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "I/O Hardware",
+      "body": "I/O Hardware",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "I/O Hardware Overview",
+      "body": "Three Physical Layers\nHeading: I/O Hardware Overview\nSubheading: Three Physical Layers\nContent:\nEvery device connects to the CPU through three hardware layers that standardise wildly different devices into one interface.\nPorts: registers holding device data & status\nBuses: shared wires carrying signals between components\nDevice controllers: hardware managing one device type\nEvery device connects to the CPU through three hardware layers that standardise wildly different devices into one interface\nPorts\nBuses\nDevice controllers\nRegisters holding device data & status\nShared wires carrying signals between components\nHardware managing one device type",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "I/O Hardware Overview",
+      "body": "Analogy: A house has a wall socket, house wiring, and a switchboard for each appliance — just as a CPU reaches devices through ports, buses, and device controllers.\nAnalogy",
+      "notes": "Analogy: A house has a wall socket, house wiring, and a switchboard for each appliance — just as a CPU reaches devices through ports, buses, and device controllers.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Port Register Types",
+      "body": "Four Register Roles\nHeading: Port Register Types\nSubheading: Four Register Roles\nContent:\nAn I/O port exposes a small set of registers that the CPU reads and writes to operate a device.\nAn I/O port exposes a small set of registers that the CPU reads and writes to operate a device",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Port Register Types",
+      "body": "Four Register Roles",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Register",
+            "Purpose"
+          ],
+          [
+            "Status",
+            "Reports device ready, busy or error state"
+          ],
+          [
+            "Control",
+            "Host writes command or mode bits"
+          ],
+          [
+            "Data-in",
+            "Holds byte read from device"
+          ],
+          [
+            "Data-out",
+            "Holds byte queued to write to device"
+          ]
+        ],
+        [
+          [
+            "Register",
+            "Purpose"
+          ],
+          [
+            "Status",
+            "Reports device ready, busy or error state"
+          ],
+          [
+            "Control",
+            "Host writes command or mode bits"
+          ],
+          [
+            "Data-in",
+            "Holds byte read from device"
+          ],
+          [
+            "Data-out",
+            "Holds byte queued to write to device"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 11,
+      "title": "Two Addressing Schemes",
+      "body": "Memory-Mapped vs Port I/O\nHeading: Two Addressing Schemes\nSubheading: Memory-Mapped vs Port I/O\nContent:\nCPUs reach the same device registers using one of two addressing schemes.\nCPUs reach the same device registers using one of two addressing schemes.\nCPUs reach the same device registers using one of two addressing schemes",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Memory-Mapped I/O",
+            "Port-Mapped I/O"
+          ],
+          [
+            "Address space",
+            "Shares main memory address space",
+            "Separate dedicated I/O space"
+          ],
+          [
+            "Instructions used",
+            "Normal load/store instructions",
+            "Special IN/OUT instructions"
+          ],
+          [
+            "Typical use",
+            "ARM, most modern buses like PCIe",
+            "x86 legacy port range"
+          ],
+          [
+            "Protection",
+            "MMU restricts pages like memory",
+            "Privileged instructions only"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Memory-Mapped I/O",
+            "Port-Mapped I/O"
+          ],
+          [
+            "Address space",
+            "Shares main memory address space",
+            "Separate dedicated I/O space"
+          ],
+          [
+            "Instructions used",
+            "Normal load/store instructions",
+            "Special IN/OUT instructions"
+          ],
+          [
+            "Typical use",
+            "ARM, most modern buses like PCIe",
+            "x86 legacy port range"
+          ],
+          [
+            "Protection",
+            "MMU restricts pages like memory",
+            "Privileged instructions only"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Bus Types & Hierarchy",
+      "body": "Daisy Chain to PCIe\nHeading: Bus Types & Hierarchy\nSubheading: Daisy Chain to PCIe\nContent:\nBuses differ in how many devices share the same wires and how far they sit from the CPU.\nBuses differ in how many devices share the same wires and how far they sit from the CPU",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Bus type",
+            "Description",
+            "Example"
+          ],
+          [
+            "Daisy chain",
+            "Devices linked serially, one after another",
+            "SCSI chain"
+          ],
+          [
+            "Shared bus",
+            "All devices tap the same shared wires",
+            "System bus"
+          ],
+          [
+            "Expansion bus",
+            "Slower bus for peripheral cards",
+            "PCI, PCIe"
+          ],
+          [
+            "Local bus",
+            "Fast bus near CPU and memory",
+            "Front-side bus"
+          ]
+        ],
+        [
+          [
+            "Bus type",
+            "Description",
+            "Example"
+          ],
+          [
+            "Daisy chain",
+            "Devices linked serially, one after another",
+            "SCSI chain"
+          ],
+          [
+            "Shared bus",
+            "All devices tap the same shared wires",
+            "System bus"
+          ],
+          [
+            "Expansion bus",
+            "Slower bus for peripheral cards",
+            "PCI, PCIe"
+          ],
+          [
+            "Local bus",
+            "Fast bus near CPU and memory",
+            "Front-side bus"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Device Controller Internals",
+      "body": "Buffer, Registers, Firmware\nHeading: Device Controller Internals\nSubheading: Buffer, Registers, Firmware\nContent:\nA device controller is small hardware, often with its own processor, that operates one device on the CPU's behalf.\nLocal buffer stores data during transfer\nRegisters hold commands, status & addresses\nAssembles raw bits into bytes for CPU\nSignals CPU via interrupt on completion\n1\nLocal buffer stores data during transfer\n2\nRegisters hold commands, status & addresses\n3\nAssembles raw bits into bytes for CPU\n4\nSignals CPU via interrupt on completion\nA device controller is small hardware, often with its own processor, that operates one device on the CPU's behalf\nA device controller is small hardware, often with its own processor, that operates one device on the CPU's behalf",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "I/O Hardware In Practice",
+      "body": "Putting Layers Together\nHeading: I/O Hardware In Practice\nSubheading: Putting Layers Together\nContent:\nA read request travels through controller, bus, and port registers before data reaches the CPU.\nCPU issues command via device driver\nBus carries command to device controller\nController operates device & fills buffer\nData reaches CPU through port registers\n1\nCPU issues command via device driver\n2\nBus carries command to device controller\n3\nController operates device & fills buffer\n4\nData reaches CPU through port registers\nA read request travels through controller, bus, and port registers before data reaches the CPU\nA read request travels through controller, bus, and port registers before data reaches the CPU",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Kernel I/O Subsystem:",
+      "body": "Kernel I/O Subsystem:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Kernel I/O Subsystem",
+      "body": "Six Core Services\nHeading: Kernel I/O Subsystem\nSubheading: Six Core Services\nContent:\nThe kernel's I/O subsystem sits between device drivers and applications, providing generic services every device needs.\nThe kernel's I/O subsystem sits between device drivers and applications, providing generic services every device needs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Kernel I/O Subsystem",
+      "body": "Six Core Services\nI/O Request Scheduling\nKernel I/O Subsystem\nThe text in the image is:\nKernel I/O Subsystem\nI/O Request Scheduling\nBuffering\nCaching\nSpooling & Device Reservation\nError Handling\nI/O Protection\nBuffering\nCaching\nSpooling & Device Reservation\nError Handling\nI/O Protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Scheduling orders pending I/O requests",
+      "body": "Scheduling orders pending I/O requests\nBuffering stages data during transfer\nCaching keeps copies for fast reuse\nSpooling serialises access to shared devices\nError handling retries or reports failures\nDevice-status table tracks state per device",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Analogy: A traffic constable at a busy junction holds some vehicles in queue and",
+      "body": "Analogy: A traffic constable at a busy junction holds some vehicles in queue and waves others through in order — just as the kernel I/O subsystem schedules and buffers requests between processes and devices.",
+      "notes": "Analogy: A traffic constable at a busy junction holds some vehicles in queue and waves others through in order — just as the kernel I/O subsystem schedules and buffers requests between processes and devices.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Scheduling And Buffering",
+      "body": "Ordering And Staging\nHeading: Scheduling And Buffering\nSubheading: Ordering And Staging\nContent:\nI/O scheduling reorders pending requests for efficiency; buffering stages data between device and memory during transfer.\nI/O scheduler reorders requests by priority\nI/O scheduling reorders pending requests for efficiency; buffering stages data between device and memory during transfer\nI/O scheduler reorders requests by priority",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Buffer Type",
+            "Purpose"
+          ],
+          [
+            "Single buffer",
+            "One staging area, next transfer waits"
+          ],
+          [
+            "Double buffer",
+            "Two buffers alternate, overlap transfer & use"
+          ],
+          [
+            "Circular buffer",
+            "Ring of buffers, smooths producer-consumer speed gap"
+          ]
+        ],
+        [
+          [
+            "Buffer Type",
+            "Purpose"
+          ],
+          [
+            "Single buffer",
+            "One staging area, next transfer waits"
+          ],
+          [
+            "Double buffer",
+            "Two buffers alternate, overlap transfer & use"
+          ],
+          [
+            "Circular buffer",
+            "Ring of buffers, smooths producer-consumer speed gap"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Caching And Spooling",
+      "body": "Status And Errors\nHeading: Caching And Spooling\nSubheading: Status And Errors\nContent:\nCaching keeps a fast copy of data for reuse, distinct from buffering which merely stages data in transit.\nCache holds reusable copies, not just staged data\nSpooling queues output for non-shareable devices like printers\nDevice-status table records per-device state and queue\nError handling retries transient faults or reports failures\n1\nCache holds reusable copies, not just staged data\n2\nSpooling queues output for non-shareable devices like printers\n3\nDevice-status table records per-device state and queue\n4\nError handling retries transient faults or reports failures\nCaching keeps a fast copy of data for reuse, distinct from buffering which merely stages data in transit",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Application I/O Interface",
+      "body": "Unified Driver Abstraction\nHeading: Application I/O Interface\nSubheading: Unified Driver Abstraction\nContent:\nApplications call generic read, write and control operations; device drivers translate these into device-specific commands.\nSystem calls expose a uniform I/O interface\nDevice drivers hide hardware-specific command details\nSame read/write call works across device types\n1\nSystem calls expose a uniform I/O interface\n2\nDevice drivers hide hardware-specific command details\n3\nSame read/write call works across device types\nApplications call generic read, write and control operations; device drivers translate these into device-specific commands",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Analogy: Any bank card works at any ATM through a standard interface — just as o",
+      "body": "Analogy: Any bank card works at any ATM through a standard interface — just as one generic read or write call reaches any device, with the driver handling hardware specifics beneath it.",
+      "notes": "Analogy: Any bank card works at any ATM through a standard interface — just as one generic read or write call reaches any device, with the driver handling hardware specifics beneath it.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Device Interface Types",
+      "body": "Four Interface Categories\nHeading: Device Interface Types\nSubheading: Four Interface Categories\nContent:\nKernel exposes distinct interfaces suited to each device's transfer pattern and addressing style.\nKernel exposes distinct interfaces suited to each device's transfer pattern and addressing style",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Interface",
+            "Example Devices",
+            "Access Pattern"
+          ],
+          [
+            "Block device",
+            "Clock/timer interface",
+            "Fixed-size random-access transfers"
+          ],
+          [
+            "Character device",
+            "Keyboards, mice, serial ports",
+            "Byte-stream sequential transfer"
+          ],
+          [
+            "Network interface",
+            "NICs",
+            "Socket-based send and receive"
+          ],
+          [
+            "Clock/timer interface",
+            "System timer",
+            "Get time, schedule alarms"
+          ]
+        ],
+        [
+          [
+            "Interface",
+            "Example Devices",
+            "Access Pattern"
+          ],
+          [
+            "Block device",
+            "Clock/timer interface",
+            "Fixed-size random-access transfers"
+          ],
+          [
+            "Character device",
+            "Keyboards, mice, serial ports",
+            "Byte-stream sequential transfer"
+          ],
+          [
+            "Network interface",
+            "NICs",
+            "Socket-based send and receive"
+          ],
+          [
+            "Clock/timer interface",
+            "System timer",
+            "Get time, schedule alarms"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 26,
+      "title": "I/O Techniques",
+      "body": "I/O Techniques\nI/O Techniques",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Two I/O Notification Ways",
+      "body": "Polling vs Interrupts\nHeading: Two I/O Notification Ways\nSubheading: Polling vs Interrupts\nContent:\nCPU must learn when a device finishes an operation; two techniques differ in how that notification happens.\nPolling: CPU repeatedly checks status register\nBusy-waiting wastes CPU cycles until device ready\nInterrupt: device signals CPU on completion\nCPU works elsewhere until interrupt arrives\n1\nCache holds reusable copies, not just staged data\n2\nSpooling queues output for non-shareable devices like printers\n3\nDevice-status table records per-device state and queue\n4\nError handling retries transient faults or reports failures\nCPU must learn when a device finishes an operation; two techniques differ in how that notification happens",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Analogy: A watchman repeatedly opening the gate to check for visitors wastes eff",
+      "body": "Analogy: A watchman repeatedly opening the gate to check for visitors wastes effort, while a doorbell rings only when someone arrives — just as polling wastes CPU cycles checking status, while an interrupt notifies the CPU only when the device is ready.",
+      "notes": "Analogy: A watchman repeatedly opening the gate to check for visitors wastes effort, while a doorbell rings only when someone arrives — just as polling wastes CPU cycles checking status, while an interrupt notifies the CPU only when the device is ready.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Interrupt Handling Steps",
+      "body": "Vector Table & ISR\nHeading: Interrupt Handling Steps\nSubheading: Vector Table & ISR\nContent:\nHardware interrupts route the CPU to a fixed handler through a well-defined sequence of steps.\nDevice asserts interrupt request line\nCPU finishes current instruction, saves context\nInterrupt controller identifies interrupt vector number\nCPU jumps to matching ISR address\nPriority levels order simultaneous interrupt requests\nMaskable interrupts can be disabled; NMI cannot\nHardware interrupts route the CPU to a fixed handler through a well-defined sequence of steps",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Interrupt Handling Steps",
+      "body": "Vector Table & ISR\nHeading: Interrupt Handling Steps\nSubheading: Vector Table & ISR\nContent:\nHardware interrupts route the CPU to a fixed handler through a well-defined sequence of steps.\nDevice asserts interrupt request line\nCPU finishes current instruction, saves context\nInterrupt controller identifies interrupt vector number\nCPU jumps to matching ISR address\nPriority levels order simultaneous interrupt requests\nMaskable interrupts can be disabled; NMI cannot\n1\nDevice asserts interrupt request line\n2\nCPU finishes current instruction, saves context\n3\nInterrupt controller identifies interrupt vector number\n4\nCPU jumps to matching ISR address\n5\nPriority levels order simultaneous interrupt requests\n6\nMaskable interrupts can be disabled; NMI cannot",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Polling Vs Interrupts",
+      "body": "Trade-off Comparison\nChoosing between polling and interrupts trades CPU utilisation against response latency and hardware complexity\nHeading: Polling Vs Interrupts\nSubheading: Trade-off Comparison\nContent:\nChoosing between polling and interrupts trades CPU utilisation against response latency and hardware complexity.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Polling",
+            "Interrupt-Driven"
+          ],
+          [
+            "CPU utilisation",
+            "Wasted in busy-wait loop",
+            "Freed for other work"
+          ],
+          [
+            "Latency",
+            "Low, checked continuously",
+            "Depends on interrupt response time"
+          ],
+          [
+            "Overhead",
+            "No context switch needed",
+            "Context save/restore per interrupt"
+          ],
+          [
+            "Best suited for",
+            "Very fast, predictable devices",
+            "Slow or infrequent events"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Polling",
+            "Interrupt-Driven"
+          ],
+          [
+            "CPU utilisation",
+            "Wasted in busy-wait loop",
+            "Freed for other work"
+          ],
+          [
+            "Latency",
+            "Low, checked continuously",
+            "Depends on interrupt response time"
+          ],
+          [
+            "Overhead",
+            "No context switch needed",
+            "Context save/restore per interrupt"
+          ],
+          [
+            "Best suited for",
+            "Very fast, predictable devices",
+            "Slow or infrequent events"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 32,
+      "title": "Why DMA Exists",
+      "body": "Offloading Bulk Transfer\nHeading: Why DMA Exists\nSubheading: Offloading Bulk Transfer\nContent:\nInterrupt-driven I/O still burdens the CPU with copying each byte; DMA lets a dedicated controller transfer data directly.\nDMA controller moves data memory-to-device directly\nCPU only sets up transfer, then continues\nSingle interrupt signals whole block completion\nFrees CPU from byte-by-byte copying\n1\nDMA controller moves data memory-to-device directly\n2\nCPU only sets up transfer, then continues\n3\nSingle interrupt signals whole block completion\n4\nFrees CPU from byte-by-byte copying\nInterrupt-driven I/O still burdens the CPU with copying each byte; DMA lets a dedicated controller transfer data directly",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Analogy: A courier company itself loads and moves an entire truckload while the ",
+      "body": "Analogy: A courier company itself loads and moves an entire truckload while the shopkeeper only signs the delivery slip — just as a DMA controller moves the whole data block directly, notifying the CPU only once transfer completes.",
+      "notes": "Analogy: A courier company itself loads and moves an entire truckload while the shopkeeper only signs the delivery slip — just as a DMA controller moves the whole data block directly, notifying the CPU only once transfer completes.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "DMA Transfer Steps",
+      "body": "Cycle Stealing Explained\nHeading: DMA Transfer Steps\nSubheading: Cycle Stealing Explained\nContent:\nA DMA transfer follows fixed steps between CPU, DMA controller, memory and device.\nCPU programs DMA controller with source, destination, count\nDMA controller requests bus access from CPU\nData moves directly between device and memory\nCycle stealing briefly pauses CPU for bus cycles\nController interrupts CPU once transfer completes\n1\nCPU programs DMA controller with source, destination, count\n2\nDMA controller requests bus access from CPU\n3\nData moves directly between device and memory\n4\nCycle stealing briefly pauses CPU for bus cycles\n5\nController interrupts CPU once transfer completes\nA DMA transfer follows fixed steps between CPU, DMA controller, memory and device",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "CPU",
+      "body": "CPU\nBus\nMemory\nThe text in the image is:\nCPU\nAttached Device\nDMA Controller\nMemory\nAttached Device\nDMA Controller",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "I/O Models",
+      "body": "I/O Models",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Blocking Vs Non-Blocking",
+      "body": "Two Call Behaviors\nHeading: Blocking Vs Non-Blocking\nSubheading: Two Call Behaviors\nContent:\nA system call either suspends the caller until data is ready, or returns immediately with whatever is available.\nBlocking call: process suspended until I/O completes\nNon-blocking call: returns immediately, maybe with partial data\nNon-blocking often needs repeated checking (polling)\n1\nBlocking call: process suspended until I/O completes\n2\nNon-blocking call: returns immediately, maybe with partial data\n3\nNon-blocking often needs repeated checking (polling)\nA system call either suspends the caller until data is ready, or returns immediately with whatever is available",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Analogy: At a railway ticket counter, a passenger either stands in line until se",
+      "body": "Analogy: At a railway ticket counter, a passenger either stands in line until served, or takes a token and checks the display board repeatedly — just as blocking I/O suspends the calling process, while non-blocking I/O returns immediately and lets it check status later.",
+      "notes": "Analogy: At a railway ticket counter, a passenger either stands in line until served, or takes a token and checks the display board repeatedly — just as blocking I/O suspends the calling process, while non-blocking I/O returns immediately and lets it check status later.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Sync Vs Async",
+      "body": "Waiting Vs Notification\nHeading: Sync Vs Async\nSubheading: Waiting Vs Notification\nContent:\nSynchronous I/O blocks the caller until the operation finishes; asynchronous I/O returns at once and signals completion later.\nSynchronous: caller waits, execution pauses\nAsynchronous: caller continues, no waiting at all\nCompletion signalled via callback, interrupt or event\nDiffers from non-blocking: no repeated polling needed\n1\nSynchronous: caller waits, execution pauses\n2\nAsynchronous: caller continues, no waiting at all\n3\nCompletion signalled via callback, interrupt or event\n4\nDiffers from non-blocking: no repeated polling needed\nSynchronous I/O blocks the caller until the operation finishes; asynchronous I/O returns at once and signals completion later",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Analogy: Standing at the stove stirring a pan until it is done is synchronous; s",
+      "body": "Analogy: Standing at the stove stirring a pan until it is done is synchronous; setting a pressure cooker and doing other chores until its whistle blows is asynchronous — just as synchronous I/O blocks until completion while asynchronous I/O signals completion later without waiting.",
+      "notes": "Analogy: Standing at the stove stirring a pan until it is done is synchronous; setting a pressure cooker and doing other chores until its whistle blows is asynchronous — just as synchronous I/O blocks until completion while asynchronous I/O signals completion later without waiting.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Heading: I/O Model Comparison",
+      "body": "Heading: I/O Model Comparison\nSubheading: Three I/O Models\nContent:\nThree practical I/O models trade off caller waiting against notification style for a pending operation.\nThree practical I/O models trade off caller waiting against notification style for a pending operation",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Model",
+            "Caller Suspended",
+            "Returns Immediately",
+            "Notification",
+            "Example"
+          ],
+          [
+            "Blocking (sync)",
+            "Yes, until done",
+            "No",
+            "None needed",
+            "read() on disk file"
+          ],
+          [
+            "Non-blocking (sync)",
+            "No",
+            "Yes, with partial data",
+            "Caller must poll again",
+            "select(), poll(), O_NONBLOCK socket"
+          ],
+          [
+            "Asynchronous",
+            "No",
+            "Yes, immediately",
+            "Callback or interrupt signals completion",
+            "POSIX aio_read(), io_uring"
+          ]
+        ],
+        [
+          [
+            "Model",
+            "Caller Suspended",
+            "Returns Immediately",
+            "Notification",
+            "Example"
+          ],
+          [
+            "Blocking (sync)",
+            "Yes, until done",
+            "No",
+            "None needed",
+            "read() on disk file"
+          ],
+          [
+            "Non-blocking (sync)",
+            "No",
+            "Yes, with partial data",
+            "Caller must poll again",
+            "select(), poll(), O_NONBLOCK socket"
+          ],
+          [
+            "Asynchronous",
+            "No",
+            "Yes, immediately",
+            "Callback or interrupt signals completion",
+            "POSIX aio_read(), io_uring"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 42,
+      "title": "Multiplexing And Async",
+      "body": "Select Poll Epoll AIO\nHeading: Multiplexing And Async\nSubheading: Select Poll Epoll AIO\nContent:\nNon-blocking multiplexing checks many descriptors at once; true asynchronous I/O uses kernel completion queues instead.\nselect()/poll(): scan file descriptor set for readiness\nepoll (Linux): scalable event notification, avoids full rescans\nSignal-driven I/O: kernel sends SIGIO on readiness\nio_uring/POSIX aio: kernel completes operation, queues result\nNon-blocking multiplexing checks many descriptors at once; true asynchronous I/O uses kernel completion queues instead",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Choosing I/O Model",
+      "body": "Real World Deployments\nHeading: Choosing I/O Model\nSubheading: Real World Deployments\nContent:\nProduction systems pick an I/O model based on connection scale, latency needs and programming complexity.\nNginx, Node.js: non-blocking event loop with epoll\nDatabase engines: asynchronous I/O via io_uring, less CPU spin\nSimple utilities: blocking I/O, code stays straightforward\nGUI apps: non-blocking keeps interface responsive\nProduction systems pick an I/O model based on connection scale, latency needs and programming complexity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "OS Networking Basics",
+      "body": "OS Networking Basics",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Why Sockets Exist",
+      "body": "Network Endpoint Abstraction\nHeading: Why Sockets Exist\nSubheading: Network Endpoint Abstraction\nContent:\nA socket gives applications a uniform handle to send and receive data over a network, hiding protocol details.\nIdentified by IP address plus port number\nKernel treats socket as a file descriptor\nSame read/write calls work over network\n1\nIdentified by IP address plus port number\n2\nKernel treats socket as a file descriptor\n3\nSame read/write calls work over network\nA socket gives applications a uniform handle to send and receive data over a network, hiding protocol details",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Analogy: A telephone number lets one exchange reach exactly one line for a call ",
+      "body": "Analogy: A telephone number lets one exchange reach exactly one line for a call — just as a socket's IP-and-port pair identifies one endpoint for a network conversation.",
+      "notes": "Analogy: A telephone number lets one exchange reach exactly one line for a call — just as a socket's IP-and-port pair identifies one endpoint for a network conversation.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Heading: Socket API Calls",
+      "body": "Heading: Socket API Calls\nSubheading: Server And Client Steps\nContent:\nServer and client sockets follow a fixed sequence of system calls to establish and use a connection.\nServer and client sockets follow a fixed sequence of system calls to establish and use a connection\nServer and client sockets follow a fixed sequence of system calls to establish and use a connection",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Step",
+            "Server Call",
+            "Client Call"
+          ],
+          [
+            "1",
+            "socket() — create socket",
+            "socket() — create socket"
+          ],
+          [
+            "2",
+            "bind() — attach to port",
+            "—"
+          ],
+          [
+            "3",
+            "listen() — mark passive, set backlog",
+            "—"
+          ],
+          [
+            "4",
+            "accept() — wait for connection",
+            "connect() — request connection"
+          ],
+          [
+            "5",
+            "recv()/send() — exchange data",
+            "send()/recv() — exchange data"
+          ]
+        ],
+        [
+          [
+            "Step",
+            "Server Call",
+            "Client Call"
+          ],
+          [
+            "1",
+            "socket() - create socket",
+            "socket() - create socket"
+          ],
+          [
+            "2",
+            "bind() - attach to port",
+            "-"
+          ],
+          [
+            "3",
+            "listen() - mark passive, set backlog",
+            "-"
+          ],
+          [
+            "4",
+            "accept() - wait for connection",
+            "connect() - request connection"
+          ],
+          [
+            "5",
+            "recv()/send() - exchange data",
+            "send()/recv() - exchange data"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Heading: Stream Vs Datagram",
+      "body": "Heading: Stream Vs Datagram\nSubheading: Two Socket Types\nContent:\nSockets expose two transport styles, connection-oriented streams and connectionless datagrams, chosen by protocol needs.\nSockets expose two transport styles, connection-oriented streams and connectionless datagrams, chosen by protocol needs",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Stream (SOCK_STREAM)",
+            "Datagram (SOCK_DGRAM)"
+          ],
+          [
+            "Protocol",
+            "TCP",
+            "UDP"
+          ],
+          [
+            "Connection",
+            "Connection-oriented, handshake first",
+            "Connectionless, no setup"
+          ],
+          [
+            "Ordering & reliability",
+            "Guaranteed, in order",
+            "Not guaranteed"
+          ],
+          [
+            "Overhead",
+            "Higher, per-connection state",
+            "Lower, minimal state"
+          ],
+          [
+            "Typical use",
+            "Web, file transfer, SSH",
+            "DNS, streaming, gaming"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Stream (SOCK_STREAM)",
+            "Datagram (SOCK_DGRAM)"
+          ],
+          [
+            "Protocol",
+            "TCP",
+            "UDP"
+          ],
+          [
+            "Connection",
+            "Connection-oriented, handshake first",
+            "Connectionless, no setup"
+          ],
+          [
+            "Ordering & reliability",
+            "Guaranteed, in order",
+            "Not guaranteed"
+          ],
+          [
+            "Overhead",
+            "Higher, per-connection state",
+            "Lower, minimal state"
+          ],
+          [
+            "Typical use",
+            "Web, file transfer, SSH",
+            "DNS, streaming, gaming"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 49,
+      "title": "Client-Server Trace",
+      "body": "Concrete Socket Values\nHeading: Client-Server Trace\nSubheading: Concrete Socket Values\nContent:\nA web server accepts one client connection, illustrating how file descriptors and addresses appear at each step.\nServer: socket() returns fd 3\nbind() attaches fd 3 to 0.0.0.0:8080\nlisten() sets backlog of 128\naccept() blocks, returns new fd 4\nClient 203.0.113.7:53211 now mapped to fd 4\nA web server accepts one client connection, illustrating how file descriptors and addresses appear at each step\nServer: socket() returns fd 3\nbind() attaches fd 3 to 0.0.0.0:8080\nlisten() sets backlog of 128\naccept() blocks, returns new fd 4\nClient 203.0.113.7:53211 now mapped to fd 4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Sockets And I/O Models",
+      "body": "Blocking To Async Reuse\nHeading: Sockets And I/O Models\nSubheading: Blocking To Async Reuse\nContent:\nNetwork sockets reuse the same blocking, non-blocking and asynchronous models introduced earlier for disks and devices.\nBlocking accept()/recv() suspend until data arrives\nO_NONBLOCK socket returns EWOULDBLOCK if empty\nepoll multiplexes thousands of open sockets\nio_uring gives asynchronous socket completion today\nNetwork sockets reuse the same blocking, non-blocking and asynchronous models introduced earlier for disks and devices\nBlocking accept()/recv() suspend until data arrives\nO_NONBLOCK socket returns EWOULDBLOCK if empty\nepoll multiplexes thousands of open sockets\nio_uring gives asynchronous socket completion today",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "I/O Systems & I/O Models",
+      "body": "The Dispatcher \u000b& Gantt Basics\nThrashing\nReplacement Scope\nEcation\nGlobal vs local replacement\nFrame Allcation\nControlling Thrashing\nLocality & Working Set\nCauses & effects\nLocality model, Working set model\nPage-fault frequency (PFF) scheme, Techniques to prevent thrashing\n1. I/O Hardware: Ports, buses & device controllers\n2. Kernel I/O Subsystem: I/O subsystem of the kernel; Application I/O interface\n3. I/O Techniques: Polling vs interrupt-driven I/O; Direct memory access (DMA)\n4. I/O Models: Blocking vs non-blocking I/O; Synchronous vs asynchronous I/O\n5. OS Networking Basics: Sockets & network I/O\nI/O Hardware\nPorts, buses & device controllers\nKernel I/O Subsystem\nI/O subsystem of the kernel; Application I/O interface\nI/O Techniques\nPolling vs interrupt-driven I/O; Direct memory access (DMA)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "I/O Systems & I/O Models",
+      "body": "I/O Models: \nBlocking vs non-blocking I/O; Synchronous vs asynchronous I/O\nOS Networking Basics: \nSockets & network I/O",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Spooling, Buffering & Structure",
+      "body": "Spooling, Buffering & Structure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1jfNBFxpzh3XfgAzlWAj8hYk0iW2V0x2-K4GjZOmA0XU/edit?slide=id.g3f6df857198_0_307#slide=id.g3f6df857198_0_307"
+}

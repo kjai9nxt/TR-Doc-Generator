@@ -138,6 +138,27 @@ python run.py --sync
 A browser front end covering the whole flow:
 1. **Connect your sheet** — paste the curriculum Google Sheet link; the template is
    validated (mismatches are shown and rejected) and the decks are synced.
+1b. **Set what the course is written under** (Course rules tab) — optional, and the
+   thing that makes the agent multi-course rather than one course with several
+   curricula:
+   - **Skills** — instructions authored for THIS course ("show the snippet before
+     explaining it", "never teach class components"). Write them yourself, or write
+     rough requirements and have the agent split them into separate skills — each one
+     shows the words it came from, and anything it cannot trace back to your text is
+     discarded. Or import a course's approved skills. **Nothing applies until you
+     approve it**, an edit sends a skill back to draft, and a retired skill is kept so
+     an old document can still be explained. Skills that are mechanically checkable
+     become deterministic gates; the rest reach the writer and the judge.
+   - **Prerequisites** — courses taught before this one. Their topics become *assumed
+     knowledge*: the writer will not re-teach them and may refer to them freely. That is
+     the opposite of the rule for earlier sessions of the same course, where repeating a
+     topic is a failure. Two kinds: a course **this agent already holds** (its decks are
+     already here, nothing is uploaded twice), or one taught **somewhere else** — a name
+     plus one Google Slides link per session, whose decks belong to the course that
+     declared it.
+   - **Profile** (`/api/course-profile`) — the reference platforms this course is
+     compared against, its slide-role vocabulary, prose density, rubric weights and pass
+     bar. A course may raise the bar, never lower it.
 2. **Generate all chunks** — pick a session; one chunk is generated per key takeaway.
 3. **Review each chunk** — approve it, or change it:
    - **Regenerate with a reason** (the reason is also distilled into a durable rule for

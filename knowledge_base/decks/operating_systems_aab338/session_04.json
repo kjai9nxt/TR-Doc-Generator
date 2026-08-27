@@ -1,0 +1,472 @@
+{
+  "session_no": 4,
+  "source_file": "OS Structures & Case Studies",
+  "deck_title": "OS Structures & Case Studies",
+  "n_slides": 66,
+  "summary": "\n    - Slide 2: OS Structures and Case Studies\n    - Slide 3: Recap\n    - Slide 4: OS Structures and Case Studies\n    - Slide 5: OS Evolution\n    - Slide 6: Learning How OS Evolved\n    - Slide 7: Learning How OS Evolved\n    - Slide 8: Learning How OS Evolved\n    - Slide 9: Learning How OS Evolved\n    - Slide 10: Learning How OS Evolved\n    - Slide 11: Learning How OS Evolved\n    - Slide 12: Learning How OS Evolved\n    - Slide 13: Learning How OS Evolved\n    - Slide 14: Batch Operating System (1960s)\n    - Slide 15: Learning How OS Evolved\n    - Slide 16: Multiprogramming Operating System (1970s)\n    - Slide 17: Learning How OS Evolved\n    - Slide 18: Learning How OS Evolved\n    - Slide 19: Multi-tasking Operating System\n    - Slide 20: Learning How OS Evolved\n    - Slide 21: Learning How OS Evolved\n    - Slide 22: Multi-user Operating System\n    - Slide 23: Learning How OS Evolved\n    - Slide 24: Multi-Processing Operating System\n    - Slide 25: Exploring Specialized Operating Systems\n    - Slide 26: Real-Time Operating System (RTOS)\n    - Slide 27: Exploring Specialized Operating Systems\n    - Slide 28: Exploring Specialized Operating Systems\n    - Slide 29: Distributed Operating System (DOS)\n    - Slide 30: Exploring Specialized Operating Systems\n    - Slide 31: Embedded Operating System (EOS)\n    - Slide 32: Quiz Time!\n    - Slide 33: OS Structure\n    - Slide 34: OS Structure\n    - Slide 35: Types of OS Structure \n    - Slide 36: Types of OS Structure\n    - Slide 37: Types of OS Structure\n    - Slide 38: Types of OS Structure\n    - Slide 39: Types of OS Structure\n    - Slide 40: Types of OS Structure\n    - Slide 41: Types of OS Structure\n    - Slide 42: Types of OS Structure\n    - Slide 43: Types of OS Structure\n    - Slide 44: Types of OS Structure\n    - Slide 45: Types of OS Structure\n    - Slide 46: Types of OS Structure\n    - Slide 47: Types of OS Structure\n    - Slide 48: Types of OS Structure\n    - Slide 49: Types of OS Structure\n    - Slide 50: Types of OS Structure\n    - Slide 51: Types of OS Structure\n    - Slide 52: Case Studies\n    - Slide 53: Case Study\n    - Slide 54: Case Study\n    - Slide 55: Case Study\n    - Slide 56: Case Study\n    - Slide 57: Case Study\n    - Slide 58: Case Study\n    - Slide 59: Operating System\n    - Slide 60: Handheld Devices\n    - Slide 61: Quiz Time!\n    - Slide 62: OS Structures and Case Studies\n    - Slide 64: Getting Started with Command Line",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "OS Structures and Case Studies",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "OS Functions and Services\nOS Functions\nOS Objectives\nOS Services\nUser Mode & Kernel Mode\nTransition Between Both Modes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "OS Structures and Case Studies",
+      "body": "OS Structures and Case Studies\nTimeline, Challenges,\nTypes of OS\nWindows, Linux, Mac\nOS Structure\nCase Studies\nOS Evolution\nTypes of Structures",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "OS Evolution",
+      "body": "OS Evolution",
+      "notes": "First of all we will be learning about the OS Evolution",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Learning How OS Evolved",
+      "body": "The OS Evolution Timeline\n1940s–50s\n1960s\n1970s\n1980s\nManual operation\nno OS\nSerial processing\nSimple batch systems\nMultiprogramming\nEarly Multi-tasking (UNIX)\nPersonal computing\nEarly GUIs (Mac OS, Windows)",
+      "notes": "Now, let’s look at how operating systems evolved over time.\u000bIn the 1940s and 50s, there were no modern operating systems, and programs were run manually using low-level instructions.\u000bIn the 1960s, batch systems were introduced to automate job execution.\u000bIn the 1970s, operating systems evolved with multiprogramming and multitasking, and UNIX introduced strong multi-user and time-sharing capabilities.\\\u000bIn the 1980s, personal computers became popular, and graphical interfaces like Mac OS and Windows made computers easier to use.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Learning How OS Evolved",
+      "body": "The OS Evolution Timeline\n1990s\n2000s\n2010s\n2020s\nNetworking\nInternet-connected OS\nMobile OS\nVirtualization\nEarly cloud computing\nExpansion of IoT\ncontainerization (Docker)\nAI-integrated operating systems\nAI-driven \nDistributed cloud\nEdge computing",
+      "notes": "Moving on, from the 1990s, operating systems became widely networked with strong internet support.\u000bIn the 2000s, mobile operating systems, virtualization, and cloud computing emerged.\u000bIn the 2010s, technologies like IoT, containerization, and early AI integration became important.\u000bToday, operating systems continue to evolve with AI, distributed cloud systems, and edge computing, powering modern applications",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Learning How OS Evolved",
+      "body": "Early Computing: The No OS Era\nNo operating system, one program runs at a time\nDirect machine-level programming\nManual operation using switches, punch cards\nProgrammer had complete control over hardware",
+      "notes": "Next, let's go back to the early days of computing, when operating systems didn't exist. \u000bComputers could run only one program at a time, and programmers \u000binteracted directly with the hardware using switches and punch cards(Punch cards were thick paper \u000bcards with holes in specific positions, where each pattern of holes represented data or instructions for the computer to read). \u000bWhile this gave complete control over the machine, it made computing slow, complex, and error-prone.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Learning How OS Evolved",
+      "body": "Why Did OS Emerge?\nEarly Computing Problems (1940s-1950s):\nProblem 1: Hardware was EXPENSIVE and idle most of the time\nComputers cost millions of dollars\nMost of the time, it was doing nothing while waiting for the next task",
+      "notes": "Now, let's understand why operating systems became necessary. \u000bEarly computers were extremely expensive, but they remained idle for long periods while waiting for the next task. \u000bThis poor utilization of costly hardware highlighted the need for a system that could manage and keep the computer busy more efficiently.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Learning How OS Evolved",
+      "body": "Why Did OS Emerge?\nEarly Computing Problems (1940s-1950s):\nOperators had to set up each job manually\nSwitching between programs took lots of time\nThe CPU stayed idle (not working) during this time\nProblem 2: Humans were too slow to operate them",
+      "notes": "Next, another major challenge was the slow manual operation. \u000bBefore every program, operators had to set up the system manually, and switching between jobs took a lot of time. \u000bDuring this entire process, the CPU remained idle, leading to inefficient use of the computer.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Learning How OS Evolved",
+      "body": "Why Did OS Emerge?\nEarly Computing Problems (1940s-1950s):\nProblem 3: Programs were loaded by hand\nPrograms were loaded using switches, plugboards, or punch cards\nTook a lot of time and caused many errors",
+      "notes": "Moving on, programs also had to be loaded manually using switches, plugboards, or punch cards. \u000bThis process was time-consuming and prone to human errors, making program execution inefficient and unreliable.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Learning How OS Evolved",
+      "body": "Types of Operating Systems\nBatch OS \nMultiprogramming OS\nMulti-tasking OS\nMulti-Processing OS \nOperating systems evolved step by step to solve growing challenges\nHere are the main types of OS developed over time\nMulti-User OS\nDistributed OS\nReal-Time OS\nNetwork OS\nEmbedded OS",
+      "notes": "Now, let's explore the different types of operating systems.\u000b As computing needs evolved, operating systems also evolved to solve new challenges. \u000bWe'll look at each type one by one, understand why it was introduced, and see where it is commonly used.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Learning How OS Evolved",
+      "body": "Batch Operating System (1960s)\nA Batch Operating System groups similar jobs together and \u000bexecutes them sequentially without user interaction \u000bduring the execution process\nBatch Operating System\nUse Cases\nPayroll processing\nBank transaction processing\nLarge-scale scientific computation",
+      "notes": "Next, let's understand the Batch Operating System, one of the earliest operating systems. \u000bIt groups similar jobs into batches and executes them one after another without requiring user interaction during execution.\u000b This approach was widely used for repetitive tasks such as payroll processing, \u000bbank transactions, and large-scale scientific computations.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Batch Operating System (1960s)",
+      "body": "How Batch Operating System Works?\nJob 1\nJob 2\nJob n\nBatch\nBatch\nBatch\nOperating  System\nCPU",
+      "notes": "Moving on, let's see how a Batch Operating System works. \u000bIndividual jobs are first collected and grouped into batches by the operating system.\u000bThese batches are then sent to the CPU one after another for execution, \u000bwithout requiring any user intervention during the process.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Learning How OS Evolved",
+      "body": "Multiprogramming OS (1970s)\nA Multiprogramming Operating System loads multiple programs into memory and runs them on a single processor by switching when one program waits for I/O, improving CPU usage by keeping it busy\nMultiprogramming Operating System\nUse Cases\nAirline reservation systems\nGovernment and corporate data centers",
+      "notes": "in memory at the same time. \u000bWhenever one program waits for an I/O operation, the CPU switches to another program, improving CPU utilization. \u000bThis approach was widely used in airline reservation systems and large data centers.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Multiprogramming Operating System (1970s)",
+      "body": "How it Works\nCPU\nSecondary Storage\nMain Memory\nJOB A is doing I/O Operation\nJOB B is IN Execution\nJOB C, D, E, F  are Waiting for CPU",
+      "notes": "Now, let's see how multiprogramming works. Multiple jobs are loaded into the main memory together. \u000bIf one job is waiting for an I/O operation, the CPU immediately switches to another ready job instead of staying idle. \u000bThis keeps the CPU busy and improves overall system efficiency.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Learning How OS Evolved",
+      "body": "Multi-tasking Operating System\nA Multi-tasking operating system allows a user to run multiple programs or tasks at the same time by rapidly switching the CPU between them\nMulti-tasking Operating System",
+      "notes": "Next, let's understand the Multi-tasking Operating System. \u000bIt allows a single user to run multiple applications at the same time by rapidly switching the CPU between them. \u000bThis creates the impression that all the programs are running simultaneously, making the system more responsive.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Learning How OS Evolved",
+      "body": "Multi-tasking Operating System\nUnlike Multiprogramming, Multitasking uses time-based context switching allowing the CPU to switch between tasks at regular intervals, even if no task is waiting for I/O\nUse Cases\nDesktop OS (Windows, macOS, Linux)\nMobile devices\nMulti-tasking Operating System",
+      "notes": "Moving on, unlike multiprogramming, multitasking switches the CPU between tasks at regular time intervals, \u000beven if no task is waiting for I/O. This provides a smooth user experience by allowing multiple \u000bapplications to appear as if they're running simultaneously. It's commonly used in desktop and mobile operating systems.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Multi-tasking Operating System",
+      "body": "Time-Sharing OS\nIt is a multi-user extension of multitasking where CPU time is divided into fixed intervals called time slices (quantum). \nWhile multitasking focuses on a single user running multiple programs, time-sharing enables multiple users to interact with the system simultaneously, each receiving a fair share of CPU time\nTime-sharing OS is a multi-user extension of multitasking where CPU time is divided into fixed time slices (quantum), allowing multiple users to interact with the system simultaneously, each receiving a fair share of CPU time\nUse Cases\nUniversity labs (multiple students)\nCloud multi-user systems\nTime-Sharing Operating System",
+      "notes": "Next, let's understand Time-Sharing Operating Systems. \u000bIt extends the idea of multitasking to support multiple users. \u000bThe CPU divides its time into small time slices and allocates them fairly among users, \u000ballowing everyone to interact with the system as if they have dedicated access.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Learning How OS Evolved",
+      "body": "Multi-tasking Operating System\nOperating System\nCPU\nProcess\nProcess\nProcess",
+      "notes": "Moving on, this diagram shows multitasking in action. \u000bHere, applications like Word, Web Browser, and Email run as separate processes. \u000bThe operating system rapidly switches the CPU between these processes, \u000bmaking it appear as though all the applications are running simultaneously.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Learning How OS Evolved",
+      "body": "Multi-user Operating System\nA Multi-user Operating System enables multiple users to access and \u000buse a computer system concurrently, either remotely or locally\nMulti-user\nOperating System\nUse Cases\nEducation and Universities\nBanking and Financial Systems",
+      "notes": "Next, let's look at the Multi-user Operating System. \u000bIt allows multiple users to access the same computer system simultaneously, either locally or over a network. \u000bEach user gets an independent working environment, \u000bmaking it ideal for universities, banks, and other organizations with many users.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Multi-user Operating System",
+      "body": "Multi-user Operating System\nCentral Computer OS",
+      "notes": "Now, let's see how a Multi-user Operating System works. \u000bA central computer running the operating system serves multiple client systems at the same time. \u000bIt manages resources efficiently and ensures that each user can work independently without affecting others.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Learning How OS Evolved",
+      "body": "Multi-Processing Operating System\nA Multi-Processing Operating System uses two or more CPUs (or CPU cores) within a single computer system to execute multiple processes truly simultaneously\nMulti-Processing\nOperating System\nUse Cases\nScientific Computing & Simulations\nVideo and Graphics Rendering",
+      "notes": "Next, let's understand the Multi-Processing Operating System. \u000bUnlike previous operating systems, it uses two or more CPUs or CPU cores to execute multiple processes simultaneously. \u000bThis improves performance and is commonly used in scientific computing, simulations, and video or graphics rendering.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Multi-Processing Operating System",
+      "body": "How it Works\nMemory",
+      "notes": "Moving on, this diagram shows how a multiprocessing system works. \u000bEach CPU has its own registers and cache, but they all share the same main memory. \u000bThis allows multiple processors to execute different tasks simultaneously while accessing common data efficiently.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Exploring Specialized Operating Systems",
+      "body": "Real-Time Operating System (RTOS)\n A Real-Time Operating System (RTOS) guarantees a response to inputs or events within a fixed, predictable time limit (often called a \"deadline\")\nReal-Time\nOperating System\nUse Cases\nIndustrial robot control systems\nAerospace applications",
+      "notes": "Next, let's discuss the Real-Time Operating System, or RTOS.\u000b It is designed to respond to events within a guaranteed time limit, making timely execution its highest priority.\u000b This makes RTOS ideal for time-critical applications such as industrial robots and aerospace systems.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Real-Time Operating System (RTOS)",
+      "body": "How it Works?",
+      "notes": "Moving on, let's see how an RTOS works. \u000bUser requests are handled by the application, which passes them to the RTOS.\u000b The RTOS then communicates with the hardware and ensures \u000bevery task is completed within its specified deadline, providing fast and predictable responses.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Exploring Specialized Operating Systems",
+      "body": "Network Operating System (NOS)\nA Network Operating System (NOS) provides services and manages resources across a network, enabling multiple computers to share files, printers, and applications\nNetwork\nOperating System\nUse Cases\nEnterprise Resource Sharing\nClient-Server Management",
+      "notes": "Next, let's understand the Network Operating System, or NOS. \u000bIt manages resources across a network, allowing multiple computers to share \u000bfiles, printers, and applications efficiently. It is commonly used in enterprise environments and \u000bclient-server systems where centralized resource management is important.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Exploring Specialized Operating Systems",
+      "body": "Distributed Operating System (DOS)\nA Distributed Operating System (DOS) manages a group of interconnected computers (nodes) that work together as a single, coordinated system, allowing them to function efficiently as one entity\nDistributed\nOperating System\nUse Cases\nCloud computing platforms (Google, AWS)\nDistributed databases",
+      "notes": "Moving on, let's look at the Distributed Operating System. \u000bIt connects multiple computers and manages them as if they were a single system. \u000bThis enables efficient resource sharing and coordinated processing, \u000bmaking it ideal for cloud computing platforms and distributed databases.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Distributed Operating System (DOS)",
+      "body": "Architecture of Distributed OS(DOS)",
+      "notes": "Now, let's see the architecture of a Distributed Operating System. \u000bHere, multiple computers, each with their own CPU, memory, and storage, are connected through a communication network. \u000bThe operating system coordinates these nodes so they work together and \u000bappear as a single unified system to the user.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Exploring Specialized Operating Systems",
+      "body": "Embedded Operating System (EOS)\nAn embedded operating system runs on dedicated hardware for specific tasks and is optimized for efficiency and reliability\nEmbedded\nOperating System",
+      "notes": "Finally, let's look at the Embedded Operating System.\u000b It is designed for dedicated devices that perform specific tasks and is optimized for\u000b efficiency, reliability, and low resource usage. \u000bExamples include smart appliances, medical devices, and automotive systems.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Embedded Operating System (EOS)",
+      "body": "Examples\nEmbedded Systems\nATMs\nSmart TVs\nWashing machines\nAutomotive systems\nFitness trackers",
+      "notes": "To conclude, embedded operating systems are found in many everyday devices. \u000bCommon examples include ATMs, Smart TVs, washing machines, automotive systems,\u000b and fitness trackers, where they ensure efficient and reliable operation for specific tasks.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "OS Structure",
+      "body": "OS Structure",
+      "notes": "Now we will understand the OS Structure",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "OS Structure",
+      "body": "OS Structure\nWhat is an OS Structure ?\nOS structure defines how components are organized and interact\nSimplifying the structure makes customization easier\nBreaking the OS into parts, like solving smaller tasks, helps manage complexity\nComponents are integrated within the kernel to form a cohesive system\nOperating System Structure",
+      "notes": "Now, let's understand what an Operating System Structure is. \u000bIt defines how different OS components are organized and work together.\u000b By dividing the operating system into smaller components, it becomes easier to design, \u000bcustomize, maintain, and manage, while all these components work together through the kernel as a single system.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Types of OS Structure ",
+      "body": "Types of OS Structure \nTypes of Structures\nMonolithic Structure\nLayered Structure\nMicrokernel Structure\nHybrid Structure\nExoKernel Structure\nClient-Server Structure\nModular Structure\nVirtual Machines Structure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nMonolithic Structure\nHigh performance due to direct communication between components\nAll OS services (process management, memory management, file systems, etc.) are bundled into a single, large block of code running in kernel mode\nAdvantages\nDifficult to maintain and debug \u000bdue to its large size\nDisadvantages",
+      "notes": "Next, let's look at the Monolithic OS Structure. In this structure,\u000b all core operating system services run together inside a single kernel. \u000bThis provides high performance because components communicate directly, \u000bbut it also makes the system harder to maintain and debug due to its large and tightly coupled design.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nMonolithic Structure\nApplication\nApplication\nApplication\nFile\u000bSystems\nNetwork\u000bSubSystems\nMemory\u000bManagement\nProcess\u000bManagement\nDrivers\nHardware\nMonolithic Kernel\nUnPrivileged\u000bMode\nPrivileged\u000bMode",
+      "notes": "Moving on, this diagram shows the Monolithic Structure. \u000bApplications run in unprivileged mode, while all core services like memory management, ……..\u000band drivers run together inside a single kernel in privileged mode, \u000bwhich directly interacts with the hardware. This direct interaction improves performance \u000bbut also makes the kernel more complex to maintain.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nLayered Structure\nSimplifies debugging and maintenance by isolating errors to specific layers\nAdvantages\nAdds overhead as data has to be passed through multiple layers\nDisadvantages\nThe OS is divided into layers, where each layer depends on the services provided by the layer below it. The bottom layer is the hardware, and the topmost layer is the user interface",
+      "notes": "Next, let's understand the Layered Structure. \u000bIn this approach, the operating system is divided into multiple layers, where each layer uses the services of the layer below it. \u000bThis makes the OS easier to debug and maintain, \u000bbut passing data through multiple layers can introduce some performance overhead.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nLayered Structure\nLayer 0 Hardware\nLayer1\nLayer N\u000bUser Interface",
+      "notes": "Moving on, this diagram shows the Layered Structure. \u000bThe hardware forms the bottom layer, and each higher layer builds on the services of the layer below it. \u000bThe topmost layer is the user interface, allowing users to interact with the system in an organized and modular way.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nMicrokernel Structure\nMore modular, secure, and easier to maintain\nAdvantages\nSlower due to added communication overhead between user space and kernel\nDisadvantages\nThe kernel provides only basic services like inter-process communication, scheduling, and hardware abstraction. Other services, such as file systems and device drivers, run in user space",
+      "notes": "Next, let's understand the Microkernel Structure. \u000bHere, the kernel handles only essential services like process scheduling, \u000binter-process communication, and hardware abstraction, while services like file systems and device drivers run in user space. \u000bThis makes the system more modular and secure, \u000bbut communication between user space and the kernel can reduce performance.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nMicrokernel Structure\nApplication\nBasic IPC,\u000bVirtual Memory Scheduling\nHardware\nFile Server\nUnix Server\nDevice Driver\nApplication IPC\nMicrokernel Operating System",
+      "notes": "Moving on, this diagram shows the Microkernel Structure. \u000bOnly essential services like IPC, scheduling, and virtual memory remain inside the kernel, \u000bwhile components such as device drivers, file servers, and UNIX services run separately in user space. \u000bThis modular design improves security and maintainability.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nHybrid Structure\nProvides a balance between performance and modularity\nAdvantages\nComplex design and implementation\nDisadvantages\nCombines aspects of both monolithic and microkernel architectures, Some OS services run in user space (like in a microkernel), but others are included in the kernel for performance (like in a monolithic kernel)",
+      "notes": "Next, let's look at the Hybrid Structure.\u000bAs the name suggests, it combines features of both Monolithic and Microkernel architectures.\u000bPerformance-critical services are kept inside the kernel for speed, \u000bwhile some other services run in user space for better modularity and maintainability.\u000bThis provides a balance between performance and modularity, but it also makes the design more complex.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nHybrid Structure\nFile\u000bSystems\nNetwork\u000bSubSystems\nMemory\u000bManagement\nProcess\u000bManagement\nDrivers\nHardware\nMonolithic Kernel",
+      "notes": "Moving on, this diagram shows the Hybrid Structure. \u000bApplications and some services run in user mode and communicate with the hybrid kernel through system calls. \u000bThe kernel handles performance-critical components like scheduling, memory, processes, file systems, I/O, and core drivers, \u000bwhile directly interacting with the hardware. \u000bThis design combines the performance of a monolithic kernel with the modularity of a microkernel.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nExokernel Structure\nHigh performance and \u000bflexibility for applications\nAdvantages\nRequires applications to handle most tasks, which can be complex and error-prone\nDisadvantages\nA minimal kernel that provides only the most basic services, like hardware access and resource management, while allowing applications to manage resources directly",
+      "notes": "Next, let's understand the Exokernel Structure. \u000bIt provides only basic services like hardware access and resource management, \u000ballowing applications to manage resources directly. \u000bThis offers high performance and flexibility but also makes application development more complex.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nExokernel Structure\nAPPLICATION\nKERNEL\nLIBRARY\nLIBRARY\nLIBRARY",
+      "notes": "Moving on, this diagram shows the Exokernel Structure. \u000bThe kernel provides only basic hardware access, while libraries offer higher-level services to applications. \u000bThis allows applications to interact with hardware more directly, giving better performance and flexibility.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nModular Structure\nFlexibility to add or remove components as needed\nAdvantages\nComplexity in managing the interaction between modules\nDisadvantages\nOS components are divided into modules that can be loaded or unloaded dynamically, Each module handles specific tasks like networking, device management, etc\n(modular kernel)",
+      "notes": "Next, let's understand the Modular Structure. \u000bIn this approach, the operating system is divided into independent modules, \u000beach responsible for a specific task, such as networking or device management. \u000bThese modules can be loaded or unloaded dynamically, making the system flexible, \u000balthough managing the modules adds some complexity.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nModular Structure\nScheduling Classes\nDevice\u000bDrivers\nExecutable Formats\nCore Kernel\nStream\u000bModules\nLoadable\u000bSystem Calls\nFile\u000bSystem",
+      "notes": "Moving on, this diagram shows the Modular Structure. \u000bAt the center is the core kernel, while components like the file system, device drivers, \u000bscheduling classes, stream modules, and system calls are organized as separate modules around it. \u000bThese modules can be loaded or removed as needed, making the operating system flexible and easier to extend.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nClient-Server Structure\nEasy to scale and distribute across multiple machines\nAdvantages\nRequires network management and adds communication overhead\nDisadvantages\nOS is structured around a client-server model, where clients (user programs) communicate with servers (kernel services) over a network or within the system\n(with network services)",
+      "notes": "Next, let's understand the Client-Server Structure.\nIn this model, user programs are called clients, and they request services from servers.\nThese servers provide operating system functions like handling files, memory, or devices.\nThis structure is easy to scale across multiple machines, but communication between clients and servers can cause some delay or overhead.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nClient-Server Structure\nInternet\nClient\nClient\nServer",
+      "notes": "Moving on, this diagram shows the Client-Server Structure. \u000bHere, multiple clients send requests over the network to a server, \u000bwhich processes those requests and provides the required services. \u000bThis centralized approach makes the system easier to manage and scale.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nVirtual Machine Structure\nIsolation between different environments, allowing for testing, security, and resource efficiency\nAdvantages\nOverhead of managing multiple virtual machines\nDisadvantages\nThe OS creates and manages virtual machines, each with its own set of resources and OS environment",
+      "notes": "Next, let's understand the Virtual Machine Structure. In this approach, \u000bthe operating system creates and manages multiple virtual machines, each with its own operating system and resources. \u000bThis provides strong isolation for security and testing, but managing multiple virtual machines introduces additional overhead.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Types of OS Structure",
+      "body": "Types of OS Structure\nVirtual Machine Structure\nKernel\nHardware\nProcesses\nVirtual Machine Manager\nHardware\nProcesses\nKernel\nVM1\nProcesses\nKernel\nVM2\nProcesses\nKernel\nVM3\nProgramming\u000bInterface",
+      "notes": "Moving on, this diagram compares a traditional system with a Virtual Machine Structure. \u000bInstead of a single kernel running directly on the hardware, a Virtual Machine Manager \u000bcreates multiple virtual machines. Each virtual machine has its own kernel and processes, \u000ballowing multiple operating systems to run independently on the same hardware.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Case Studies",
+      "body": "Case Studies",
+      "notes": "Now we will be learning about the Case Studies",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Case Study",
+      "body": "Windows OS\nDeveloped by Microsoft\nClosed-source, proprietary operating system\nUses Hybrid Kernel architecture\nStrong support for GUI, applications, and gaming\nWidely used in personal computers and business environments\nOffers strong backward compatibility\nIncludes built-in security tools like Windows Defender",
+      "notes": "Now, let's take Windows as a case study. Developed by Microsoft,\u000b it is a closed-source operating system that uses a hybrid kernel design. \u000bIt is widely used in personal and business environments due to its strong GUI support,\u000b broad application compatibility, backward compatibility, and built-in security features like Windows Defender.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Case Study",
+      "body": "Key Features of Windows OS\nUser-friendly desktop interface\nExtensive driver and hardware support\nSupports multitasking and virtual memory\nFrequent updates and patch management\nIntegration with Microsoft ecosystem (Office, OneDrive)",
+      "notes": "Next, let's look at some key features of Windows OS. It offers a user-friendly interface, \u000bsupports a wide range of hardware and device drivers, enables multitasking with virtual memory, \u000breceives regular security updates, and integrates seamlessly with Microsoft services like Office and OneDrive.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Case Study",
+      "body": "Linux\nOpen-source and community-driven (various distributions)\nMonolithic\nModular Kernel Architecture\nHighly customizable and secure\nWidely used in servers, cloud systems, networking, and development\nFree to use and modify\nPopular distros: Ubuntu, Fedora, Red Hat, Kali Linux",
+      "notes": "Moving on, let's take Linux as another case study. \u000bIt is an open-source operating system that uses a monolithic modular kernel. \u000bLinux is highly customizable, secure, and widely used in \u000bservers, cloud computing, networking, and software development. \u000bPopular distributions include Ubuntu, Fedora, Red Hat, and Kali Linux.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Case Study",
+      "body": "Key Features of Linux\nStrong command-line support\nFlexible file system and permissions\nBetter performance & security for server environments\nSupports multiple desktop environments",
+      "notes": "Next, let's explore some key features of Linux. \u000bIt offers powerful command-line support, a flexible file system with strong permission management, \u000bexcellent performance and security for server environments, \u000band supports multiple desktop environments to suit different user preferences.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Case Study",
+      "body": "MacOS\nApple\nMade by\nUsed in Apple computers (MacBook, iMac, etc.)\nUsed in\nUnix (very stable and secure)\nBased on\nSmooth design and high performance\nKnown for\nUses a :\nHybrid Kernel",
+      "notes": "Now, let's look at macOS. Developed by Apple, it uses a hybrid kernel and is designed for \u000bApple devices like MacBooks and iMacs. Based on Unix, macOS is known for its stability, \u000bsecurity, smooth user experience, and high performance.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Case Study",
+      "body": "Key Features of MacOS\nGood for video editing, music, and programming\nStrong security and privacy protection\nWorks very well with other Apple devices (iPhone, iPad, Watch)\nComes with many useful apps already installed\nGets regular software updates",
+      "notes": "Finally, let's look at the key features of macOS. It integrates seamlessly with other Apple devices, \u000boffers strong security and privacy, is widely used for creative work and programming, \u000bcomes with many built-in applications, and receives regular software updates.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Operating System",
+      "body": "Handheld Devices\nDesigned for \nFocus on\nTouch-friendly UI\nLow power consumption\nApp-based functionality\nWireless connectivity (Wi-Fi, Bluetooth, 5G)\nExamples\nAndroid OS (Linux-based)\niOS \u000b(Apple proprietary OS)",
+      "notes": "Next, let's look at operating systems used in handheld devices.\nThese operating systems are designed for smartphones and tablets.\nThey focus on providing a touch-friendly user interface, low power consumption, app-based functionality, and strong wireless connectivity like Wi-Fi, Bluetooth, and 5G.\nCommon examples include Android OS, which is Linux-based, and iOS, which is Apple's proprietary operating system.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Handheld Devices",
+      "body": "Key Features\nUses less power to save battery\nSupports many apps (App Store / Play Store)\nWorks with phone sensors like camera, GPS, motion sensor\nCan update software through the internet\nSecure login using fingerprint or face unlock",
+      "notes": "Finally, let's look at the key features of handheld operating systems. \u000bThey are optimized for low power consumption, support a wide range of mobile apps,\u000bwork seamlessly with built-in sensors like GPS and cameras, receive software updates over the internet, \u000band provide secure authentication using fingerprint or face unlock.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "OS Structures and Case Studies",
+      "body": "OS Evolution\nTimeline\nChallenges\nTypes of OS\nOS Structure\nTypes of Structure\nCase Studies\nWindows\nLinux\nMac",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Getting Started with Command Line",
+      "body": "",
+      "notes": "In the next session we will be learning about the Getting Started with Command Line",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "",
+      "body": "",
+      "notes": "Thank you",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1jV6JtkC_KaI9v0bzd5F7Q0fm_59UFhk0q-7xAxqBmhw/edit"
+}

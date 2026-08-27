@@ -1,0 +1,938 @@
+{
+  "session_no": 23,
+  "source_file": "Memory Allocation - Contiguous",
+  "deck_title": "Memory Allocation - Contiguous",
+  "n_slides": 71,
+  "summary": "\n    - Slide 2: Memory Allocation – Contiguous\n    - Slide 3: Recap\n    - Slide 4: Recap (Part 2/2)\n    - Slide 5: Memory Allocation – Contiguous\n    - Slide 6: Allocation Overview\n    - Slide 7: Memory Management Techniques\n    - Slide 8: Memory Management Techniques\n    - Slide 9: Memory Management\n    - Slide 10: Memory Management\n    - Slide 11: Memory Management Techniques\n    - Slide 12: Memory Management Techniques\n    - Slide 13: Memory Management Techniques\n    - Slide 14: Partitioning\n    - Slide 15: Multiprogramming\n    - Slide 16: Multiprogramming\n    - Slide 17: A) Contiguous Memory Allocation\n    - Slide 18: A) Contiguous Memory Allocation\n    - Slide 19: II. Multiple Partitioning\n    - Slide 20: II. Multiple Partitioning\n    - Slide 21: II. Multiple Partitioning\n    - Slide 22: II. Multiple Partitioning\n    - Slide 23: II. Multiple Partitioning\n    - Slide 24: II. Multiple Partitioning\n    - Slide 25: Fragmentation\n    - Slide 26: Fragmentation\n    - Slide 27: Fragmentation\n    - Slide 28: Internal Fragmentation\n    - Slide 29: 2. Dynamic Partitioning\n    - Slide 30: Multiple Partitioning\n    - Slide 31: Multiple Partitioning\n    - Slide 32: Multiple Partitioning\n    - Slide 33: Multiple Partitioning\n    - Slide 34: Compaction\n    - Slide 35: Quiz Time!\n    - Slide 36: Allocation Strategies \n    - Slide 37: Contiguous Memory Allocation\n    - Slide 38: Contiguous Memory Allocation\n    - Slide 39: Contiguous Memory Allocation\n    - Slide 40: Contiguous Memory Allocation\n    - Slide 41: Contiguous Memory Allocation\n    - Slide 42: Contiguous Memory Allocation\n    - Slide 43: Contiguous Memory Allocation\n    - Slide 44: Allocation Strategies — Best Fit\n    - Slide 45: Contiguous Memory Allocation\n    - Slide 46: Contiguous Memory Allocation\n    - Slide 47: Contiguous Memory Allocation\n    - Slide 48: Contiguous Memory Allocation\n    - Slide 49: Contiguous Memory Allocation\n    - Slide 50: Contiguous Memory Allocation\n    - Slide 51: Contiguous Memory Allocation\n    - Slide 52: Contiguous Memory Allocation\n    - Slide 53: Overlays\n    - Slide 54: Contiguous Memory Allocation\n    - Slide 55: Overlay\n    - Slide 56: Contiguous Memory Allocation\n    - Slide 57: Contiguous Memory Allocation\n    - Slide 58: Overlays: Example\n    - Slide 59: Overlays: Example\n    - Slide 60: Overlays: Example\n    - Slide 61: Process of using overlays\n    - Slide 62: Process of using overlays\n    - Slide 63: Process of using overlays\n    - Slide 64: Overlays\n    - Slide 65: Overlays\n    - Slide 66: Quiz Time!\n    - Slide 67: Memory Allocation – Contiguous\n    - Slide 68: Memory Allocation – Contiguous\n    - Slide 69: Paging & Segmentation",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Memory Allocation – Contiguous",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Cache Memory & Mapping\nCache Fundamentals\nPurpose of cache: why it is needed (CPU vs RAM speed)\nLocality of Reference\nTemporal locality, Spatial locality\nCache Organization\nLevels: L1, L2, L3\nTypes: instruction, data, unified",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap (Part 2/2)",
+      "body": "Cache Memory & Mapping\nCache Performance\nCache hit & miss\nHit ratio & miss ratio; cache line / block\nCache Mapping\nDirect mapping\nFully associative mapping\nSet-associative mapping (tag / set / offset)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Memory Allocation – Contiguous",
+      "body": "Memory Allocation – Contiguous\n1. Allocation Overview\n– Uniprogramming vs multiprogramming\n– Contiguous vs non-contiguous allocation\n2. Partitioning\n– Single contiguous allocation\n– Fixed (static) partitioning\n– Dynamic (variable) partitioning\n3. Fragmentation\n– Internal fragmentation\n– External fragmentation & compaction\n4. Allocation Strategies\n– First fit, best fit, worst fit, next fit\n5. Overlays\n– Concept; how overlays work\n– Advantages & disadvantages\nThe Dispatcher \u000b& Gantt Basics\nFragmentation\nPartitioning\nUniprogramming & multiprogramming, Contiguous vs non-contiguous allocation\nSingle contiguous allocation, Fixed (static) partitioning, Dynamic (variable) partitioning\nAllocation Overview\nOverlays\nAllocation Strategies\nInternal fragmentation, External fragmentation & compaction\nFirst fit, best fit, worst fit, next fit\nConcept; how overlays work, Advantages & disadvantages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Allocation Overview",
+      "body": "Allocation Overview",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Memory Management Techniques",
+      "body": "Introduction\n These techniques ensure better performance, protection, and utilization of memory resources\nMemory management techniques used by the OS to allocate, use, and manage memory efficiently for processes\nMemory Management Techniques\nAllocate Memory\nUse Memory\nManage Memory",
+      "notes": "Now, let's move on to Memory Management Techniques. As multiple processes execute simultaneously, \u000bthe operating system must decide how memory is allocated, used, and managed efficiently. \u000bThese techniques help ensure that each process gets the memory it needs while preventing interference between processes. \u000bAs a result, the system achieves better performance, improved memory utilization, and stronger protection of memory resources.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Memory Management Techniques",
+      "body": "Single Contiguous Allocation\nSegmented Memory Management with Paging\nSegmented Memory Management \nPaged Memory Management \nPartitioned Allocation\nNon-Contiguous Memory Allocation\nContiguous Memory Allocation\nMultiprogramming\nUniprogramming\nMemory Management Techniques\nClassification\nFixed Partition Allocation\nDynamic Partition Allocation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Memory Management",
+      "body": "Uniprogramming\nOnly one process is loaded in memory and executed at a time\nNo sharing of memory\nSimple but wastes memory if process doesn’t use entire space\nUsed in very old systems\nP2\nDisk\nMain Memory\nP3\nP1\nOperating System\nCPU",
+      "notes": "In Uniprogramming, only one process is loaded into memory and executed at a time, \u000bso there is no memory sharing. Although this approach is simple, it can waste memory\u000b if the running process doesn't utilize the entire allocated space. As shown in the diagram, \u000bP1 is loaded into main memory and is being executed by the CPU, while P2 and P3 remain \u000bon the disk waiting for their turn. Once P1 finishes, one of the waiting processes is loaded into memory.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Memory Management",
+      "body": "Multiprogramming\nMultiple processes reside in memory at the same time\nCPU switches between \u000bprocesses → better utilization\nOperating System\nP4\nP3\nP2\nP1\nSecondary Storage\nCPU\nI/O\nAfter\nBefore\nSwitching\nMain memory",
+      "notes": "In this approach, several programs are kept in memory together instead of loading just one.\u000b Whenever the currently running process has to wait, such as for an I/O operation, \u000bthe operating system immediately gives the CPU to another ready process. \u000bAs shown in the diagram, P1, P2, P3, and P4 are already available in main memory, \u000ballowing the CPU to move from one process to another instead of remaining idle. \u000bThis improves the overall utilization of system resources.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 11,
+      "title": "Memory Management Techniques",
+      "body": "Contiguous vs Non-Contiguous Allocation\nHeading: Memory Management Techniques\nSub-heading: Contiguous vs Non-Contiguous Allocation",
+      "notes": "Let's compare these two memory allocation techniques. In Contiguous Allocation,\u000b a process is stored in one continuous block of memory, making address translation straightforward. \u000bIn Non-Contiguous Allocation, a process is divided across multiple memory locations, \u000bso the MMU uses mapping tables to locate each part. Another major difference is fragmentation.\u000b Contiguous Allocation is more prone to fragmentation, whereas Non-Contiguous Allocation, \u000bespecially Paging, significantly reduces this problem and makes memory utilization more efficient.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Contiguous Allocation",
+            "Non-Contiguous Allocation"
+          ],
+          [
+            "Definition",
+            "Each process is allocated one single, continuous block of memory",
+            "A process can occupy multiple, scattered (non-adjacent) blocks of memory"
+          ],
+          [
+            "Address translation",
+            "Simple — one base + limit register",
+            "Needs a mapping table (page table / segment table) looked up by the MMU"
+          ],
+          [
+            "Fragmentation",
+            "Suffers both internal (fixed partitioning) and external (dynamic partitioning) fragmentation",
+            "Largely eliminates external fragmentation (paging); segmentation alone can still see it"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Memory Management Techniques",
+      "body": "Contiguous vs Non-Contiguous Allocation\nHeading: Memory Management Techniques\nSub-heading: Contiguous vs Non-Contiguous Allocation",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Contiguous Allocation",
+            "Non-Contiguous Allocation"
+          ],
+          [
+            "Overhead",
+            "Low — no translation structures needed",
+            "Higher — extra memory and lookup time for page/segment tables"
+          ],
+          [
+            "Examples",
+            "Single contiguous allocation, Fixed partitioning, Dynamic partitioning",
+            "Paging, Segmentation, Segmentation with Paging"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Memory Management Techniques",
+      "body": "Analogy",
+      "notes": "Contiguous is like booking one single row of adjacent seats for a group — everyone sits together, \u000bbut you're stuck if no single row is free. Non-contiguous is like the group being fine\u000b with scattered seats across the theatre, as long as each person gets a seat somewhere.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Partitioning",
+      "body": "Partitioning",
+      "notes": "Now we will be learning about the Partitioning",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Multiprogramming",
+      "body": "A) Contiguous Memory Allocation\n The entire memory space assigned to a process lies in adjacent addresses without gaps\nContiguous Memory Allocation is a memory management technique where each process is allocated one single, continuous block of physical memory\nMemory",
+      "notes": "Now, in Contiguous Memory Allocation, the operating system allocates a process as one continuous block of physical memory. \u000bThis means the entire memory assigned to the process is stored in adjacent memory addresses\n instead of being scattered across different locations. Because everything is kept together, \u000bthe operating system can manage and access the process more easily.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Multiprogramming",
+      "body": "P1\nfinished\nP4, P5\nadded\nP4\nfinished\nA) Contiguous Memory Allocation",
+      "notes": "Let's see how memory changes as processes are completed and new ones arrive. Initially, P1, P2, and P3 \u000boccupy contiguous memory blocks. When P1 finishes, its memory becomes free. \u000bLater, P4 and P5 are allocated in that available space. As the execution continues, P4 also completes, \u000bfreeing its memory, while P5 continues running. This shows how processes are continuously loaded and removed, \u000bmaking efficient use of the available contiguous memory.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            "P1"
+          ],
+          [
+            ""
+          ],
+          [
+            "P2"
+          ],
+          [
+            ""
+          ],
+          [
+            "P3"
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            "P2"
+          ],
+          [
+            ""
+          ],
+          [
+            "P3"
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            "P4"
+          ],
+          [
+            "P5"
+          ],
+          [
+            ""
+          ],
+          [
+            "P2"
+          ],
+          [
+            ""
+          ],
+          [
+            "P3"
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            "P5"
+          ],
+          [
+            ""
+          ],
+          [
+            "P2"
+          ],
+          [
+            ""
+          ],
+          [
+            "P3"
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 17,
+      "title": "A) Contiguous Memory Allocation",
+      "body": "I. Single Contiguous Allocation\nOne of the oldest memory management techniques\nDivides memory into two partitions: one for the OS and one for user processes\nSimple but leads to memory waste\nLargely impractical for modern systems, though foundational for advanced techniques",
+      "notes": "Now, let's begin with Single Contiguous Allocation, one of the earliest memory management techniques.\u000b In this approach, the main memory is divided into two partitions—one reserved for the Operating System \u000band the other for user processes. While this design is simple to implement, it often leaves a significant \u000bportion of memory unused, resulting in memory waste. Although it is no longer practical for modern operating systems, \u000bit provides the foundation for understanding more advanced memory allocation techniques.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "A) Contiguous Memory Allocation",
+      "body": "II. Multiple Partitioning\nDivides memory into separate partitions for multiple processes\nSupports concurrent execution of processes\nCan be implemented with Fixed Partitioning or Dynamic Partitioning\nOffers more flexibility than single contiguous allocation",
+      "notes": "Moving on, Multiple Partitioning improves upon Single Contiguous Allocation by dividing the main memory into multiple partitions,\u000b allowing several processes to reside in memory at the same time. \u000bThis enables the operating system to support the concurrent execution of processes and utilize memory more efficiently. \u000bDepending on how these partitions are created, this technique can be implemented using \u000bFixed Partitioning or Dynamic Partitioning, both of which we'll explore next.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "II. Multiple Partitioning",
+      "body": "1. Fixed Partitioning \nMemory is divided into a fixed number of partitions at system startup, sizes may be equal or unequal, but cannot change during execution\n5MB\n5MB\n5MB\nOperating System\nMain Memory\nP1 (Size 3MB)\nP2 (Size 1MB)\nP3 (Size 4MB)\nInput Process Queue\nFixed Size Partition",
+      "notes": "In Fixed Partitioning, the operating system divides the memory into a fixed number of partitions when the system starts, \u000band these partition sizes remain unchanged during execution. As shown in the diagram, \u000bthe processes P1, P2, and P3 are first placed in the input queue. \u000bEach process is then assigned to a 5 MB partition in main memory, even if it requires less space. \u000bThe remaining portion of that partition cannot be used by another process, which leads to Internal Fragmentation.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "II. Multiple Partitioning",
+      "body": "Advantages\nSimple and easy to manage\nNo need for complex bookkeeping for variable blocks\n1. Fixed Partitioning",
+      "notes": "Now, let's look at the advantages of Fixed Partitioning. Since the memory partitions are created \u000bin advance and remain unchanged, the operating system can allocate processes quickly without making\u000b complex allocation decisions. It is also simple and easy to manage, because the operating system \u000bdoesn't have to continuously keep track of different-sized free memory spaces or \u000bupdate memory allocation information during execution.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "II. Multiple Partitioning",
+      "body": "Disadvantage\nInternal Fragmentation — wasted space inside a partition\nLimits on multiprogramming, number of partitions fixes the max processes\n1. Fixed Partitioning",
+      "notes": "Now, let's look at the disadvantages of Fixed Partitioning. One major issue is Internal Fragmentation, \u000bwhere part of an allocated partition remains unused if the process doesn't require all of its space, \u000bleading to wasted memory. Another limitation is that the number of partitions determines the maximum \u000bnumber of processes that can stay in memory at the same time. Once all partitions are occupied,\u000b additional processes have to wait, even if processor time is available.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "II. Multiple Partitioning",
+      "body": "2. Dynamic Partitioning \nAlso known as (Variable Allocation), here Memory is divided dynamically at runtime based on process size, a partition is created exactly matching the process’s memory requirement\nOS\u000bReserved\nP1 (Size 3MB)\nP2 (Size 1MB)\nP3 (Size 4MB)\nP1\u000b3 MB exact\nP2\u000b1 MB\nP3\u000b4 MB exact\nFree Remaining\nInput process Queue",
+      "notes": "Unlike Fixed Partitioning, this approach creates memory space only when a process arrives\u000b. Instead of assigning a fixed-size partition, the operating system allocates just enough memory\u000b to meet the process's requirement. As shown in the diagram, P1 receives 3 MB, P2 gets 1 MB, \u000band P3 is allocated 4 MB, leaving the remaining memory available for future processes.\u000b Since each process receives only the space it needs, unused memory within a partition is minimized.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "II. Multiple Partitioning",
+      "body": "2. Dynamic Partitioning \nAdvantages\nPartition size matches exactly the process’s need → reduces internal fragmentation\nMore flexible supports variable sized processes without predefined partitioning",
+      "notes": "Moving on, let's look at the advantages of Dynamic Partitioning. \u000bSince each partition is created to exactly match the process's memory requirement, \u000bit significantly reduces Internal Fragmentation by avoiding unused space within an allocated partition. \u000bIt is also more flexible, as the operating system can allocate memory for \u000bvariable-sized processes without relying on predefined fixed partitions.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "II. Multiple Partitioning",
+      "body": "2. Dynamic Partitioning \nExternal Fragmentation — memory scattered into unusable holes over time\nAllocation becomes more complex (search for holes, track free space)\nDisadvantage",
+      "notes": "Next, Dynamic Partitioning also has a few limitations. Over time, as processes are loaded and removed,\u000b the free memory becomes scattered into small unused gaps, a problem known as External Fragmentation.\u000b Although the total free memory may be sufficient, it may not exist as one continuous block for a new process. \u000bIn addition, memory allocation becomes more complex because the operating system must continuously\u000b search for suitable free spaces and keep track of the available memory.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Fragmentation",
+      "body": "Fragmentation",
+      "notes": "Now we will be learning about the Fragmentation",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Fragmentation",
+      "body": "What is Fragmentation?\nFragmentation is wasted memory that occurs while allocating memory to processes — it reduces how much of the total free memory is actually usable\nTwo types occur, depending on the partitioning technique used:\nInternal Fragmentation\nHappens with Fixed Partitioning\nExternal Fragmentation\nHappens with Dynamic Partitioning",
+      "notes": "Now, whenever memory is allocated and released repeatedly, some portions of memory can no longer be utilized effectively. \u000bThis condition is known as Fragmentation. Although the system may still have free memory available,\u000b not all of it can be used efficiently for new processes. Based on the memory allocation technique, \u000bFragmentation is classified into Internal Fragmentation, which occurs in Fixed Partitioning,\u000b and External Fragmentation, which occurs in Dynamic Partitioning.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Fragmentation",
+      "body": "Internal fragmentation occurs when allocated partition size is larger than the memory required by the process, leaving unused space inside the partition\nFragment\nFragment\nAssigned space\nAssigned space\nUsed space\nUsed space\nInternal Fragmentation\n1. Internal Fragmentation",
+      "notes": "Internal Fragmentation occurs when a process is allocated more memory than it actually requires. \u000bThe extra space cannot be assigned to another process, so it remains unused. \u000bAs shown in the diagram, each process occupies only a portion of its allocated partition, \u000bwhile the remaining area, labeled as Fragment, represents the wasted memory inside the partition.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Internal Fragmentation",
+      "body": "Analogy",
+      "notes": "Let's understand Internal Fragmentation with a simple analogy. Imagine booking a large room but using \u000bonly a small corner of it. Even though you've paid for the entire room, the remaining space cannot be\u000b used by someone else, so it goes to waste. Similarly, in Internal Fragmentation,\u000b a process is allocated a larger memory partition than it actually needs, leaving the unused space inside the allocated partition wasted.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "2. Dynamic Partitioning",
+      "body": "External Fragmentation\nExternal fragmentation occurs when free memory exists but is split into small, non-contiguous blocks, preventing allocation of a large process even though total free memory is enough\nFree Fragment\n40 KB\nFree Fragment\n10 KB\nTotal memory\nExternal Fragmentation\nFree Fragment - 5 KB\nAssigned space\nProcess A- Allocated\nProcess B- Allocated\nAssigned space",
+      "notes": "External Fragmentation occurs when the available memory is broken into several small free spaces \u000binstead of one continuous block. Although the total free memory may be sufficient, a large process \u000bstill cannot be allocated because it requires one contiguous block. As shown in the diagram, \u000bthe free memory is scattered into 40 KB, 10 KB, and 5 KB fragments between allocated processes,\u000b making it difficult to accommodate a larger process.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Multiple Partitioning",
+      "body": "2. Dynamic Partitioning — Compaction\nCompaction is a technique that solves external fragmentation by relocating all occupied memory blocks \nSo that they sit next to each other, combining all scattered free space into one large contiguous block\nOccupied memory blocks \nUnoccupied memory blocks",
+      "notes": "Now, to overcome External Fragmentation, the operating system uses a technique called Compaction.\u000b In this process, all the occupied memory blocks are moved so that they are placed next to one another.\u000b This brings together the scattered unoccupied memory blocks, creating one large contiguous block of free memory. \u000bAs a result, larger processes can be allocated memory more easily.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "Multiple Partitioning",
+      "body": "2. Dynamic Partitioning — Compaction\nShuffles processes toward one end of memory\nRequires dynamic relocation — the base register of each process must be updated at run time as it moves\nComes with overhead: CPU time is spent copying process data during the shuffle\nOnly possible when relocation is dynamic (not usable with compile-time/load-time binding)",
+      "notes": "Next, after creating one large free memory block, the operating system has to physically move the \u000bprocesses so they are grouped together at one end of memory. Because each process changes its memory location, \u000bthe operating system must update its base register while the process is running, a mechanism known as dynamic relocation. \u000bThis movement is not free—it consumes CPU time because process data has to be copied \u000bfrom one location to another. For this reason, Compaction can only be performed in systems \u000bthat support dynamic relocation and is not possible when addresses are fixed during compile-time or load-time binding.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Multiple Partitioning",
+      "body": "Analogy",
+      "notes": "Let's understand Compaction with a simple analogy. Imagine a room where furniture is scattered,\u000b leaving several small empty spaces that are too small for a new sofa. By moving the existing furniture to one side,\u000b all the small gaps combine into one large empty space where the sofa can easily fit. Similarly, in Compaction,\u000b the operating system moves processes closer together, combining scattered free memory\u000b into one large contiguous block, making it easier to allocate memory to larger processes.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Multiple Partitioning",
+      "body": "Compaction — How it works\nP1\nUsed\nP2\nUsed\nP3\nUsed\nFree 5KB\nFree 3KB\nFree 2KB\nP1\nP2\nP3\nUsed\nFree 10KB - Combined \nBefore Compaction\nAfter Compaction",
+      "notes": "Let's see how Compaction works. Before compaction, the free memory is scattered into 5 KB, 3 KB, and 2 KB gaps \u000bbetween P1, P2, and P3. Although the total free memory is 10 KB, it is not available as one continuous block. \u000bDuring compaction, the operating system moves the processes closer together, \u000bcombining these small gaps into a single 10 KB contiguous free space, making it possible to allocate larger processes.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 34,
+      "title": "Compaction",
+      "body": "Eliminates external fragmentation\nBut at the cost of movement time and \nTemporarily pausing the processes being moved\nTrade-off",
+      "notes": "Finally, Compaction helps eliminate External Fragmentation by combining scattered free memory into one large contiguous block.\u000b However, this comes at a cost. The operating system must spend time moving processes in memory, \u000band those processes are temporarily paused until the movement is complete.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Allocation Strategies ",
+      "body": "Allocation Strategies",
+      "notes": "Now we will be learn about Allocation Strategies",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Schemes \nWhen a process needs memory, OS searches free “holes” (free blocks) and picks one using a strategy",
+      "notes": "Moving on, when a process requests memory, the operating system searches the available free holes,\u000b or unused memory blocks, to find a suitable location. The selection depends on the allocation scheme being used.\u000b First Fit allocates the first free hole that is large enough, Best Fit chooses the smallest suitable hole to reduce unused space, \u000bWorst Fit selects the largest available hole, and Next Fit works like \u000bFirst Fit but continues searching from the location of the previous allocation instead of starting from the beginning.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies\nA process wants memory\nThe OS has 5 free holes in memory \nWorked Example: The Setup",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Hole",
+            "Size"
+          ],
+          [
+            "H1",
+            "100 KB"
+          ],
+          [
+            "H2",
+            "500 KB"
+          ],
+          [
+            "H3",
+            "200 KB"
+          ],
+          [
+            "H4",
+            "300 KB"
+          ],
+          [
+            "H5",
+            "600 KB"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 39,
+      "title": "Contiguous Memory Allocation",
+      "body": "Incoming requests, in this order:\nAllocation Strategies\nMain Memory\nH1\u000b100 KB\nH2\u000b500 KB\nH3\u000b200 KB\nH4\u000b300 KB\nH5\u000b600 KB",
+      "notes": "Let's now look at the complete allocation example. The processes arrive in the order P1, P2, P3, and P4, \u000brequesting 212 KB, 417 KB, 112 KB, and 426 KB, respectively. The operating system must allocate these processes \u000busing the available memory holes H1 to H5, shown in the diagram. \u000bWe'll now see how different allocation strategies choose different holes for the same set of requests.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — First Fit",
+      "notes": "Let's apply the First Fit strategy. Here, the operating system scans the memory from the\u000b beginning for every incoming process and selects the first hole that is large enough. \u000bSo, P1 is allocated to H2, P2 is allocated to H5, and P3 fits into the remaining space of H2. \u000bWhen P4 arrives, none of the available holes are large enough to accommodate 426 KB, \u000bso P4 has to wait until sufficient contiguous memory becomes available.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Hole allocated",
+            "Leftover in that hole"
+          ],
+          [
+            "P1 = 212 KB",
+            "H2 (500 KB) — first hole big enough",
+            "288 KB"
+          ],
+          [
+            "P2 = 417 KB",
+            "H5 (600 KB) — first hole ≥417 KB found scanning from start",
+            "183 KB"
+          ],
+          [
+            "P3 = 112 KB",
+            "H2's leftover (288 KB) — first hole ≥112 KB found scanning from start",
+            "176 KB"
+          ],
+          [
+            "P4 = 426 KB",
+            "No hole fits (100, 176, 200, 300, 183 all < 426) → P4 waits",
+            "-"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 41,
+      "title": "Contiguous Memory Allocation",
+      "body": "First Fit scans from the beginning of memory every time and takes the first hole that's big enough\nAllocation Strategies — First Fit\nFast, but can leave many small unusable leftovers near the start\nMain Memory\nH1\nH2\nH3\nH4\nH5",
+      "notes": "First Fit always starts searching from the beginning of memory and allocates the\u000b first hole that is large enough for the process. As shown in the diagram, \u000bit checks the holes in order until it finds a suitable one. This makes the allocation process simple and fast.\u000b However, over time, it can leave many small unused holes near the beginning of memory,\u000b reducing the chances of accommodating larger processes later.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — Best Fit",
+      "notes": "Now, let's apply the Best Fit strategy. Unlike First Fit, the operating system \u000bchecks all available holes and selects the smallest hole that can accommodate the process. \u000bAs a result, P1 is allocated to H4, P2 to H2, P3 to H3, and P4 to H5. \u000bBy choosing the closest-sized hole each time, Best Fit minimizes the unused space left after each allocation.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Hole allocated",
+            "Leftover in that hole"
+          ],
+          [
+            "P1 = 212 KB",
+            "H4 (300 KB) — smallest hole that still fits",
+            "88 KB"
+          ],
+          [
+            "P2 = 417 KB",
+            "H2 (500 KB) — smallest hole ≥417 KB",
+            "83 KB"
+          ],
+          [
+            "P3 = 112 KB",
+            "H3 (200 KB) — smallest hole ≥112 KB",
+            "88 KB"
+          ],
+          [
+            "P4 = 426 KB",
+            "H5 (600 KB) — only hole left ≥426 KB",
+            "174 KB"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 43,
+      "title": "Contiguous Memory Allocation",
+      "body": "All 4 processes get allocated — Best Fit minimizes wasted space per allocation, so it succeeds here where First Fit failed\nAllocation Strategies — Best Fit\nMain Memory\nP1\nP2\nP3\nP4\nBest Fit",
+      "notes": "This example highlights the advantage of Best Fit. \u000bSince it always chooses the smallest suitable hole, memory is utilized more efficiently.\u000b As shown in the diagram, all four processes—P1, P2, P3, and P4—are allocated successfully. \u000bIn this case, Best Fit succeeds where First Fit could not, because it leaves behind more useful free memory for future allocations.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Allocation Strategies — Best Fit",
+      "body": "Trade-off:\nMust search all holes every time (slower), and \nTends to create many tiny, useless leftover holes",
+      "notes": "However, Best Fit also has its limitations. Since the operating system must examine all the \u000bavailable free holes before making a decision, the allocation process is slower than First Fit. \u000bIn addition, repeatedly choosing the smallest suitable hole often leaves behind many tiny free holes \u000bthat are too small to be used effectively for future memory allocations.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — Worst Fit",
+      "notes": "Now, let's apply the Worst Fit strategy. Here, the operating system always allocates the\u000b largest available hole to the incoming process. As a result, P1 is allocated to H5, P2 to H2, \u000band P3 is placed in the remaining space of H5. However, when P4 requests 426 KB,\u000b no hole of sufficient size remains, so P4 has to wait. This shows that choosing the\u000b largest hole first does not always lead to better memory utilization.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Hole allocated",
+            "Leftover in that hole"
+          ],
+          [
+            "P1 = 212 KB",
+            "H5 (600 KB) — largest hole available",
+            "388 KB"
+          ],
+          [
+            "P2 = 417 KB",
+            "H2 (500 KB) — largest hole available",
+            "83 KB"
+          ],
+          [
+            "P3 = 112 KB",
+            "H5's leftover (388 KB) — largest hole available",
+            "276 KB"
+          ],
+          [
+            "P4 = 426 KB",
+            "No hole ≥426 KB left (100, 83, 200, 300, 276) → P4 waits",
+            "—"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 46,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — Worst Fit\nWorst Fit always picks the largest hole, gambling that the leftover stays big enough to be useful\nIn practice it performs similarly to or worse than First Fit and is rarely used in real systems\nMain Memory\nH1\nH2\nH3\nH4\nH5",
+      "notes": "Worst Fit follows a different approach by always selecting the largest available hole for allocation.\u000b The idea is to leave behind a relatively large free space that can still be useful for future requests.\u000b As shown in the diagram, the operating system keeps choosing the largest hole in memory. \u000bHowever, in practice, this strategy often performs no better than First Fit and \u000bis rarely used because it does not consistently improve memory utilization.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — Next Fit",
+      "notes": "Now, let's apply the Next Fit strategy. Similar to First Fit, it allocates\u000b the first suitable hole, but instead of restarting the search from the beginning each time,\u000b it continues from where the previous allocation ended. In this example,\u000b P1 is allocated to H2, P2 to H5, and P3 is placed in the remaining space of H2.\u000b When P4 arrives, no suitable hole is found while continuing the search, so P4 has to wait.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Hole allocated",
+            "Leftover",
+            "Search resumes from"
+          ],
+          [
+            "P1 = 212 KB",
+            "H2 (500 KB)",
+            "288 KB",
+            "after H2"
+          ],
+          [
+            "P2 = 417 KB",
+            "H5 (600 KB) — scanning forward from H3",
+            "183 KB",
+            "after H5 (wraps to H1)"
+          ],
+          [
+            "P3 = 112 KB",
+            "H2's leftover (288 KB) — scanning forward from H1",
+            "176 KB",
+            "after H2"
+          ],
+          [
+            "P4 = 426 KB",
+            "No hole fits scanning forward from H3 → P4 waits",
+            "—",
+            "—"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — Next Fit\nNext Fit behaves like First Fit but never restarts the search from the beginning \nIt continues from where the last allocation left off, wrapping around when it reaches the end of memory\nMain Memory\nP1\nP2\nP3\nP4\nNext Fit\nH1\nH2\nH3",
+      "notes": "Next Fit is an extension of First Fit. Instead of starting the search from the beginning for every new process,\u000b it continues searching from the point where the previous allocation was made.\u000b If it reaches the end of memory without finding a suitable hole, it wraps around \u000band continues searching from the beginning. This reduces repeated scanning\u000b of the same memory locations and can make allocation more efficient than First Fit in some cases.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — Next Fit\nUsually faster than First Fit on average, since it doesn't repeatedly rescan memory it already knows is full",
+      "notes": "One advantage of Next Fit is that it avoids repeatedly checking the same memory locations. \u000bSince the search resumes from the previous allocation point, it often spends less time \u000bsearching for a suitable hole than First Fit. As a result, Next Fit is generally faster on average, \u000bespecially when memory contains many occupied blocks.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Contiguous Memory Allocation",
+      "body": "Allocation Strategies — Comparison\nHeading: Contiguous Memory Allocation Sub-heading: Allocation Strategies — Comparison",
+      "notes": "Let's summarize the four allocation strategies. In our example, Best Fit was the only strategy \u000bthat successfully allocated all four processes, while First Fit, Worst Fit, and Next Fit could allocate only three. \u000bFirst Fit and Next Fit are generally faster because they perform less searching, \u000bwhereas Best Fit and Worst Fit take longer since they examine more memory holes before making a decision. \u000bEach strategy also creates fragmentation differently, so the most suitable choice \u000bdepends on the system's performance and memory utilization requirements.",
+      "tables": [
+        [
+          [
+            "Strategy",
+            "Processes Allocated",
+            "Speed",
+            "Fragmentation Behavior"
+          ],
+          [
+            "First Fit",
+            "3 of 4",
+            "Fast",
+            "Leaves small, unusable leftovers near the start"
+          ],
+          [
+            "Best Fit",
+            "4 of 4",
+            "Slow (full scan)",
+            "Leaves many tiny unusable holes"
+          ],
+          [
+            "Worst Fit",
+            "3 of 4",
+            "Slow (full scan)",
+            "Leftover holes shrink quickly"
+          ],
+          [
+            "Next Fit",
+            "3 of 4",
+            "Fast (no rescanning)",
+            "Similar to First Fit, spread more evenly"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 51,
+      "title": "Contiguous Memory Allocation",
+      "body": "KeyNote\nNo single strategy is best in every case — Best Fit wastes less space per allocation but is slower and fragments memory into unusable slivers over time\nAllocation Strategies — First Fit",
+      "notes": "Before we move on, it's important to remember that no single allocation strategy is ideal for every situation. \u000bWhile Best Fit reduces unused space during each allocation, it takes more time because it searches all available holes. \u000bOver time, it can also create many small, unusable free memory blocks, making future memory allocation less efficient.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Contiguous Memory Allocation",
+      "body": "Why Contiguous Allocation?\nSimple to implement and control good for small systems or embedded systems\nLess overhead compared to non-contiguous schemes (no paging tables)\nPredictable memory layout (useful for real-time or performance-sensitive tasks)\nBut as process creation/deletion continues → fragmentation grows → non-contiguous schemes (paging/segmentation) are usually preferred",
+      "notes": "Finally, let's understand why Contiguous Memory Allocation was widely used. It is simple to implement and manage, \u000bmaking it suitable for small or embedded systems. Since memory is allocated as one continuous block,\u000b it also has less overhead because there is no need to maintain page tables. \u000bAnother advantage is its predictable memory layout, which is useful for real-time and performance-sensitive applications. \u000bHowever, as processes are repeatedly created and removed, fragmentation gradually increases. \u000bBecause of this limitation, modern operating systems generally prefer \u000bnon-contiguous memory allocation techniques, such as Paging and Segmentation.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Overlays",
+      "body": "Overlays",
+      "notes": "Next we will be learning about the Overlays",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Contiguous Memory Allocation",
+      "body": "What are Overlays?\n1\nA memory management technique used to run programs larger than the available memory.\n2\nDivides a program into smaller sections or overlays, which       are loaded into memory only as needed.\n3\nEnsures that only the necessary parts of the program are in memory at any given time, optimizing memory usage.",
+      "notes": "Moving on, consider a situation where a program is larger than the available main memory.\u000b In such cases, loading the entire program at once is simply not possible. To overcome this limitation, \u000bthe program is organized into overlays, where different parts of the program are brought into memory \u000bonly when they are actually needed for execution. As the execution progresses, one overlay can replace another,\u000b so only the required portion of the program occupies memory at any given time. \u000bThis allows even large programs to execute successfully while making efficient use of the limited available memory.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Overlay",
+      "body": "Overlay\nAnalogy",
+      "notes": "Let's understand Overlays with a simple analogy. Imagine borrowing books from a library \u000bwith limited space on your study table. Instead of bringing all the books at once, you take\u000b only the book you need, read it, return it, and then bring the next one. Similarly, \u000bOverlays load only the required part of a program into memory. Once that part finishes execution,\u000b it is removed, and the next required part is loaded, allowing large programs to run even when memory is limited.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Contiguous Memory Allocation",
+      "body": "How Overlays work?\nThe program is divided into modules or overlays             (e.g., functions or parts of the program).\nOne overlay is loaded into memory at a time while others stay in disk storage.\nOnce an overlay completes its task, it is unloaded, and the next overlay is loaded, making efficient use of memory.",
+      "notes": "Let's understand how Overlays work. First, a large program is divided into smaller modules called overlays.\u000b Initially, only the overlay required for the current task is loaded into memory, \u000bwhile the remaining overlays stay on the disk. Once that overlay finishes execution, \u000bit is unloaded, and the next required overlay is loaded. This process continues until \u000bthe entire program executes, allowing large programs to run efficiently even with limited memory.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Contiguous Memory Allocation",
+      "body": "How Overlays work?\n20K\n50K\n50K\n20K\nRead()\nFunct1()\nFunct2()\nDisplay()\nWithout Overlay (140k)\nRead()\nDisplay()\nFunct1()\nFunct2()\nWith Overlay (90k)\n20K\n20K\nOverlay A (50k)\nOverlay B (50k)\nOVERLAYS",
+      "notes": "This example shows how overlays reduce memory usage. Without overlays, all four program modules\u000b—Read(), Funct1(), Funct2(), and Display()—must remain in memory together, requiring 140 KB. \u000bWith overlays, Read() and Display() stay in memory, while Funct1() and Funct2() \u000bare treated as overlays because they are not needed at the same time. \u000bAs shown, Overlay A is loaded first, and once it finishes, it is replaced by Overlay B. \u000bThis reduces the memory requirement from 140 KB to just 90 KB.",
+      "tables": [
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ],
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 58,
+      "title": "Overlays: Example",
+      "body": "Without Overlays\nTotal Program Size: 140 KB\nRead(): 20 KB\nFunc1(): 50 KB\nFunc2(): 50 KB\nDisplay(): 20 KB\nAll modules are loaded simultaneously, consuming 140 KB of memory.",
+      "notes": "Let's first see the program without using overlays. Here, all four modules—\u000bRead(), Func1(), Func2(), and Display()—are loaded into memory at the same time. \u000bSince each module occupies its own space, the total memory required becomes 140 KB. \u000bEven though some modules may not be used simultaneously, they still occupy memory throughout the program's execution.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Overlays: Example",
+      "body": "With Overlays\nRead() and Display() stay resident in memory at all times — combined 40 KB\nOnly one overlay loads into the remaining 50 KB slot at a time, keeping total memory at 90 KB\nTotal Program Size: 140 KB\nFunc1() (50 KB)\nOverlay A \nFunc2() (50 KB)\nOverlay B",
+      "notes": "This example shows how overlays reduce the memory required during execution. \u000bAlthough the complete program is 140 KB, only Read() and Display(), which together occupy 40 KB, \u000bremain in memory throughout execution. The remaining 50 KB memory region is shared by \u000bOverlay A containing Func1() and Overlay B containing Func2(). S\u000bince only one overlay is loaded at a time, the total memory required is reduced to 90 KB.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Overlays: Example",
+      "body": "Process of using Overlays\nLoad Overlay\nExecute\nSwap Overlay",
+      "notes": "The execution of overlays follows three simple steps. \u000bFirst, the required overlay is loaded from disk into memory. The CPU then executes the instructions in that overlay. \u000bOnce its task is complete, the current overlay is removed, and the next required overlay \u000bis loaded into the same memory space. This cycle repeats until the entire program has finished executing.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Process of using overlays",
+      "body": "Load Overlay\nThe required part of the program (overlay) is loaded into memory from disk storage. Only the necessary module for the current task is brought into memory, saving space.",
+      "notes": "Let's begin with the first step, which is loading an overlay. When the program starts or requires a new functionality,\u000b the operating system identifies the specific overlay needed for that stage of execution and \u000bloads it from disk storage into the available main memory. Instead of bringing the entire program into memory, \u000bonly this required module is loaded. This approach conserves memory, \u000bleaving the remaining space available for other processes or future overlays.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Process of using overlays",
+      "body": "Execute\nThe CPU executes the instructions in the loaded overlay. The overlay is active in memory and performs its task, such as running a function or processing data.",
+      "notes": "After the overlay is loaded, the execution phase begins.\u000b The CPU starts processing the instructions present in that overlay, allowing it to perform the specific task \u000bit was loaded for. Depending on the program, this could involve executing a function, processing data, \u000bor carrying out a particular operation. During this stage, the overlay remains in main memory until its execution is complete.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Process of using overlays",
+      "body": "Swap Overlay\nOnce the task is complete, the current overlay is unloaded, and the next required overlay is loaded into memory. This ensures that only the parts of the program needed at that moment are in memory.",
+      "notes": "Finally, once the current overlay finishes its execution, it is no longer required in memory.\u000b At this point, the operating system removes that overlay and brings in the next one needed for the program's execution. \u000bThis replacement process continues throughout the program, ensuring that main memory contains\u000b only the portion of the program that is actively being used. As a result, \u000blarge programs can run efficiently even when the available memory is limited.",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Overlays",
+      "body": "Advantages\nAdvantages\nMemory Efficiency: Enables large programs to run in systems with limited memory by loading only the required parts.\nReduced Memory Footprint: By loading only needed overlays,   overall memory usage is reduced, allowing more programs to  run simultaneously.\nSimplicity: The overlay technique is relatively simple to   implement and doesn’t require complex algorithms.",
+      "notes": "Overlays offer several advantages. Since only the required part of a program is loaded into memory,\u000b even large programs can run on systems with limited memory. This also reduces the overall memory usage, \u000ballowing the operating system to accommodate more programs simultaneously.\u000b Another advantage is that the overlay technique is relatively straightforward to\u000b implement and does not require complex memory management mechanisms.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Overlays",
+      "body": "Disadvantages\nIncreased Overhead: Constantly swapping overlays in and out of memory can decrease performance.\nComplex Program Design: Requires careful planning of how \n           the program is divided into overlays and when each part is   \n           Loaded\n           Limited Flexibility: Overlays are less flexible compared to \n           modern techniques like paging and segmentation, which \n           offer more dynamic memory allocation.\nDisadvantage",
+      "notes": "Despite its benefits, overlays also have some limitations. Frequently loading and unloading overlays\u000b from disk adds extra execution time, which can reduce performance. In addition, \u000bdevelopers must carefully decide how to divide the program into overlays \u000band determine the correct loading sequence. Because of these limitations,\u000b overlays are less flexible than modern memory management techniques such as\u000b Paging and Segmentation, which handle memory allocation more dynamically.",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Memory Allocation – Contiguous",
+      "body": "Allocation Overview\nUniprogramming vs multiprogramming\nContiguous vs non-contiguous allocation\nPartitioning\nSingle contiguous allocation\nFixed (static) partitioning\nDynamic (variable) partitioning",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Memory Allocation – Contiguous",
+      "body": "Fragmentation\nInternal fragmentation\nExternal fragmentation & compaction\nAllocation Strategies\nFirst fit, best fit, worst fit, next fit\nOverlays\nConcept; how overlays work, Advantages & disadvantages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Paging & Segmentation",
+      "body": "Paging & Segmentation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1rIsUan-cG5CCbLErOERffrj-kKRU9EZy27W_2at6ocQ/edit?slide=id.g3f27ba313c8_0_1528#slide=id.g3f27ba313c8_0_1528"
+}

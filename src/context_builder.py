@@ -58,7 +58,7 @@ def past_docs_summary(before_session: int) -> str:
     return "\n\n".join(chunks)
 
 
-def past_ppts_context(cur: Session) -> str:
+def past_ppts_context(course: str, cur: Session) -> str:
     """What earlier sessions ALREADY TAUGHT, from the ingested decks.
 
     Two layers, deliberately:
@@ -74,10 +74,11 @@ def past_ppts_context(cur: Session) -> str:
     The KB is populated by the sync engine (Google Slides); if it is empty we fall
     back to any local .pptx files (offline/dev mode).
     """
-    prior = pptx_ingest.decks_before(cur.number)
-    if not prior and not pptx_ingest.load_all_decks():
-        pptx_ingest.ingest(verbose=True)   # offline fallback: local inputs/past_ppts/
-        prior = pptx_ingest.decks_before(cur.number)
+    prior = pptx_ingest.decks_before(course, cur.number)
+    if not prior and not pptx_ingest.load_all_decks(course):
+        # Offline fallback: local inputs/past_ppts/, ingested into THIS course's store.
+        pptx_ingest.ingest(course, verbose=True)
+        prior = pptx_ingest.decks_before(course, cur.number)
 
     parts = []
     if prior:
@@ -95,11 +96,11 @@ def past_ppts_context(cur: Session) -> str:
             f"earlier session did not cover — never repeat the introduction.\n"
             f"  · A one-line reminder inside the Recap is the only place repetition is "
             f"allowed.\n"
-            f"{pptx_ingest.taught_digest(cur.number)}")
+            f"{pptx_ingest.taught_digest(course, cur.number)}")
 
         query = cur.name + " " + " ".join(cur.key_takeaways)
         top_k = config.harness()["context"].get("rag_top_k", 6)
-        hits = pptx_ingest.retrieve(query, cur.number, top_k=top_k)
+        hits = pptx_ingest.retrieve(course, query, cur.number, top_k=top_k)
         if hits:
             rag = "\n".join(
                 f"  [S{h['session_no']} · Slide {h['slide']}] {h['title']}: {h['excerpt']}"
@@ -112,13 +113,25 @@ def past_ppts_context(cur: Session) -> str:
         parts.append("(No prior decks in the knowledge base yet — treat earlier "
                       "sessions' scope as given by the course structure above.)")
 
+    # WHAT THE LEARNER KNEW BEFORE SESSION 1. A separate block with the OPPOSITE
+    # instruction from the one above: prior-session topics may not be repeated, a
+    # prerequisite's may be referenced freely. See src/prereqs.py.
+    try:
+        from . import prereqs as _prereqs
+        pre = _prereqs.block(course)
+    except Exception:
+        pre = ""
+    if pre:
+        parts.append(pre)
+
     docs = past_docs_summary(cur.number)
     if docs.strip():
         parts.append("PRIOR TR DOCS (secondary reference):\n" + docs)
     return "\n\n".join(parts)
 
 
-def prior_coverage_block(cur: Session, takeaway: str, *, top_k: int | None = None) -> str:
+def prior_coverage_block(course: str, cur: Session, takeaway: str, *,
+                        top_k: int | None = None) -> str:
     """What prior decks already said about ONE takeaway — injected into that chunk.
 
     The session-level block above is retrieved once, against the whole session, and is
@@ -130,7 +143,8 @@ def prior_coverage_block(cur: Session, takeaway: str, *, top_k: int | None = Non
     if top_k is None:
         top_k = config.harness()["context"].get("rag_top_k_per_takeaway", 5)
     try:
-        hits = pptx_ingest.retrieve(f"{cur.name} {takeaway}", cur.number, top_k=top_k)
+        hits = pptx_ingest.retrieve(course, f"{cur.name} {takeaway}", cur.number,
+                                    top_k=top_k)
     except Exception:
         return ""
     if not hits:
@@ -148,18 +162,25 @@ def prior_coverage_block(cur: Session, takeaway: str, *, top_k: int | None = Non
             f"as a slide re-introducing it.\n")
 
 
-def course_type_block() -> str:
-    """Inject the course-type teaching strategy the user chose at connect time
-    (src/app_settings). Both course types must ultimately help the learner clear
-    interview questions; a semester course additionally goes deep on theory.
+def course_type_block(profile: dict | None = None) -> str:
+    """Inject the course-type teaching strategy. Both course types must ultimately help
+    the learner clear interview questions; a semester course additionally goes deep on
+    theory.
+
+    It comes from the COURSE's profile now. It used to come from app_settings, which is a
+    single instance-wide value — so every course on the instance shared one course type,
+    and whoever set it last set it for everybody.
 
     There is deliberately NO "current as of <date>" baseline here. A fixed date
     forces "newest version wins", which is wrong for coding sessions where the
     version or tool the industry actually uses is often not the newest one. What
     remains is the version-agnostic rule: never pass off something deprecated as
     the present state of the art."""
-    from . import app_settings
-    ct = app_settings.course_type()
+    if profile and profile.get("course_type"):
+        ct = str(profile["course_type"]).lower()
+    else:
+        from . import app_settings
+        ct = app_settings.course_type()      # pre-profile instances, unchanged
     if ct == "interview":
         type_line = (
             "COURSE TYPE: INTERVIEW-TARGETED. Prioritise the concepts, patterns, and "
@@ -180,10 +201,30 @@ def course_type_block() -> str:
         f"{type_line}\n"
         "IN BOTH CASES: the doc must ultimately help the learner CLEAR INTERVIEW "
         "QUESTIONS on this topic — frame each major concept so it also answers the "
-        "questions an interviewer would ask.")
+        "questions an interviewer would ask."
+        + _market_block(profile))
 
 
-def build_guided_base(prev: Session | None, cur: Session, nxt: Session | None) -> str:
+def _market_block(profile: dict | None) -> str:
+    """The platforms this course must match or beat.
+
+    Stated only when the course names its own. The default set is about the subject the
+    tool shipped with, and telling a React course to match a university networking
+    syllabus is worse than saying nothing.
+    """
+    plats = list((profile or {}).get("market_reference_platforms") or [])
+    if not plats:
+        return ""
+    default = list(config.harness().get("market_reference_platforms") or [])
+    if plats == default:
+        return ""
+    rule = str(config.harness().get("market_rule") or "").strip()
+    return ("\n\n=== MARKET REFERENCE FOR THIS COURSE ===\n"
+            + "; ".join(plats) + "\n" + rule)
+
+
+def build_guided_base(course: str, prev: Session | None, cur: Session,
+                      nxt: Session | None, profile: dict | None = None) -> str:
     """The shared context block (course + target + prev/next + course memory),
     WITHOUT a final 'produce the doc' instruction. One-shot generation appends the
     whole-doc instruction (build_user_prompt); guided generation appends a
@@ -200,13 +241,13 @@ def build_guided_base(prev: Session | None, cur: Session, nxt: Session | None) -
         f"Next session (for the sign-off): {nxt.name}" if nxt
         else "This is the FINAL session — set upcoming_session to null."
     )
-    past = past_ppts_context(cur)
+    past = past_ppts_context(course, cur)
 
     return f"""COURSE: Computer Networks
 MODULE: {cur.module}
 TOPIC: {cur.topic}
 
-{course_type_block()}
+{course_type_block(profile)}
 
 === TARGET SESSION ===
 Session {cur.number}: {cur.name}
@@ -231,9 +272,10 @@ Build on this; do NOT re-teach it. Use it for an accurate recap and smooth trans
 #      given mid-run never reached the remaining chunks.
 
 
-def build_user_prompt(prev: Session | None, cur: Session, nxt: Session | None) -> str:
+def build_user_prompt(course: str, prev: Session | None, cur: Session,
+                      nxt: Session | None, profile: dict | None = None) -> str:
     """Assemble the full user message for one-shot whole-doc generation."""
-    return (build_guided_base(prev, cur, nxt)
+    return (build_guided_base(course, prev, cur, nxt, profile)
             + f"\nNow produce the TR doc JSON for Session {cur.number}: {cur.name}.\n")
 
 
@@ -386,6 +428,25 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool,
         f"— this is not a thin skeleton. The slide ceiling and this word budget are "
         f"independent limits, so using every slide allowed does NOT require shortening "
         f"them: spend the room on the sub-concepts an exam tests, never on ritual.\n")
+
+
+def course_skills_block(course: str | None) -> str:
+    """The course's approved skills, for a prompt that REWRITES approved content.
+
+    Generation gets them through the system-level rules block (learning.learned_rules_block,
+    re-read per call). The repair pass at finalize does not go through that path — it
+    builds its own context — so without this it edits slides the reviewer approved while
+    knowing nothing about the rules the course is written under, and a trim can put back
+    exactly what the skills forbid. Same failure the standing notes had.
+    """
+    if not course:
+        return ""
+    try:
+        from . import skills as _skills
+        blk = _skills.block(course)
+    except Exception:
+        return ""
+    return f"\n\n{blk}" if blk else ""
 
 
 def standing_notes_block(notes) -> str:
@@ -682,7 +743,7 @@ def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
     return max(floor, base + (1 if extra else 0))
 
 
-def takeaway_instruction(cur: Session, idx: int, *, slides_used: int = 0,
+def takeaway_instruction(course: str, cur: Session, idx: int, *, slides_used: int = 0,
                          sections_left: int | None = None,
                          enforce_time: bool = True,
                          budgets: dict | None = None) -> str:
@@ -731,7 +792,7 @@ def takeaway_instruction(cur: Session, idx: int, *, slides_used: int = 0,
         f"once) and map each of them to that slide in \"coverage\". Cut ritual first: an "
         f"analogy is only allowed on a concept_intro slide, and a worked example only "
         f"where the learner must EXECUTE something.\n")
-    return budget_block + prior_coverage_block(cur, takeaway) + f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
+    return budget_block + prior_coverage_block(course, cur, takeaway) + f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
 {{
   "section": {{
     "name": "<section title>",

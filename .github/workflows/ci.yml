@@ -55,6 +55,58 @@ jobs:
       # against the REAL guardrails on the assembled document, not just field by field.
       - name: Run review-edit regression (slide split + renumbering + standing notes)
         run: python -m evals.test_review_edits
+      # THE DECK STORE IS SCOPED BY COURSE. It was one directory keyed by session number,
+      # so two courses that both had a session 7 shared one file, and the "already taught"
+      # block and the repetition guardrail read across courses. Covers the store, the
+      # readers, and the one-time migration out of the flat layout — including the case
+      # where ownership cannot be inferred and must not be guessed.
+      - name: Run deck-store regression (course scoping + legacy migration)
+        run: python -m evals.test_course_decks
+      # A slide's content could be text, bullets or a table and nothing else, so a course
+      # about code could not put code on a slide. Adding the block is the easy half; this
+      # covers the half that matters — that the PAGE ceiling measures code as code (one
+      # line per line, monospace, not wrapped like prose), that the recording model
+      # charges a line a beat rather than its word count, and that the prose/bullet mix
+      # gate reads a walkthrough as the slide's prose.
+      - name: Run code-block regression (rendering + page/time measurement + gates)
+        run: python -m evals.test_code_block
+      # PER-COURSE CONFIGURATION. What a good doc looks like was one set of numbers for
+      # every course, several of them plainly about Computer Networks (the market
+      # platforms, a slide-role vocabulary with nothing for a code walkthrough, one prose
+      # density for every subject). Covers the whitelist, the two rules that are not
+      # about shape — a course may raise the bar but never lower it, and a new slide role
+      # must come with its analogy rule — and the regression that matters most: a course
+      # with no profile grades exactly as the instance did before.
+      - name: Run course-profile regression (per-course config + inherit-unchanged)
+        run: python -m evals.test_course_profile
+      # COURSE SKILLS — the instructions a course is written under, authored and approved.
+      # The two properties that carry the weight: a DRAFT must not reach generation (or
+      # the approval step is theatre), and a skill must never leak into another course.
+      # Also covers path B's traceability rule — a draft the model could not tie back to
+      # the author's own words is discarded rather than offered for approval.
+      - name: Run course-skills regression (authoring, approval, scoping, provenance)
+        run: python -m evals.test_course_skills
+      # A skill that is only prose in a prompt is unenforceable. The ones carrying a
+      # check are settled deterministically, and this covers the closed vocabulary, the
+      # rule that a DRAFT's check must not fire, and the requirement that a failure
+      # QUOTES the skill it came from. Also the single parameterised eval dimension that
+      # scores skill adherence for any course.
+      - name: Run skill-enforcement regression (checks fire, drafts do not)
+        run: python -m evals.test_skill_enforcement
+      # PREREQUISITE COURSES. "Already taught" meant earlier sessions of THIS course, so
+      # a React course whose learners have done JavaScript had no way to say so. The
+      # property this guards is the distinction: a prior session's topic may not be
+      # re-taught, a prerequisite's may be REFERENCED — and prerequisite topics must stay
+      # out of the deterministic repetition lookup, or a doc is failed for building on
+      # exactly what it was told to build on.
+      - name: Run prerequisite regression (assumed knowledge vs prior sessions)
+        run: python -m evals.test_prerequisites
+      # …and the ordinary case: a prerequisite taught SOMEWHERE ELSE, known to this agent
+      # only through its slides. Its decks live inside the course that declared it, which
+      # is the trap this guards — a careless reader would treat them as that course's own
+      # prior sessions and fail a slide for building on exactly what it was told to.
+      - name: Run external-prerequisite regression (decks with no course of their own)
+        run: python -m evals.test_external_prereq
 
   frontend-build:
     name: Frontend build + committed-bundle check (Vite/React)

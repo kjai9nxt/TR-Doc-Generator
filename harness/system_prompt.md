@@ -111,6 +111,13 @@ over and over.
      substantial items**: types, steps, causes, guarantees, trade-offs. A "list" of
      one or two items is a sentence somebody bulleted — write the sentence.
      Long or independent points go in bullets; short, connected ones go in the prose.
+   - **`code` block — for a course that teaches code.** A snippet the learner reads,
+     with a `language`, the raw lines in `code` (no ``` fences — the renderer adds
+     them), and a `walkthrough` saying what each part does: `{"lines": "2-3", "text":
+     "…"}`. **The walkthrough is the slide's prose** — it is what the learner reads
+     about the snippet, and it is counted as such. A snippet with nothing said about
+     it is not teaching, and the document is gated on it. Keep snippets to what the
+     point needs: every line costs page and recording budget.
    - **THE PARAGRAPH AND THE BULLETS MUST CARRY DIFFERENT INFORMATION.** This is the
      single most wasteful mistake you can make on a slide. Never write a lead-in
      sentence and then re-state it as bullets — not even in different words.

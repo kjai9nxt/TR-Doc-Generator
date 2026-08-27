@@ -685,44 +685,76 @@ make_course(ALICE, BUDGET)
 for n in range(2, 30):          # a course the size of a real one
     db.curriculum_upsert(BUDGET, n, topic="T", session_name=f"s{n}", key_takeaways=["k"])
 from src import pptx_ingest as _pi                            # noqa: E402
-_pi.DECKS_DIR.mkdir(parents=True, exist_ok=True)
 for n in range(1, 30):
-    (_pi.DECKS_DIR / f"session_{n:02d}.json").write_text(
-        json.dumps({"session_no": n, "slides": []}), encoding="utf-8")
-    db.kb_put(f"decks/session_{n:02d}.json")
+    _pi.put_deck(BUDGET, n, {"session_no": n, "slides": []})
+    db._exec("INSERT OR REPLACE INTO kb_files (path, content, updated_at) VALUES (?,?,?)",
+             (_pi.kb_rel(BUDGET, n), "{}", "now"))
 
-before_disk = _pi.deck_session_numbers()
+before_disk = _pi.deck_session_numbers(BUDGET)
+# Counted at the CONNECTION, not at _exec/_query: some of this work goes through a
+# connection directly (kb_forget_prefix, kb_rename_decks) and instrumenting the two
+# helpers alone silently missed it — which is how a "single statement" assertion passed
+# while reporting zero.
 CALLS = []
-_real_exec, _real_query = db._exec, db._query
-db._exec = lambda sql, args=(): (CALLS.append(sql) or _real_exec(sql, args))
-db._query = lambda sql, args=(): (CALLS.append(sql) or _real_query(sql, args))
+
+
+class _CountingCursor:
+    """A cursor PROXY. The obvious version — assigning over cur.execute — does not work:
+    sqlite3.Cursor rejects attribute assignment, and db.course_owner() swallows the
+    resulting AttributeError and answers None, so every ownership check quietly failed
+    and the delete came back 403 instead of counting anything."""
+
+    def __init__(self, real):
+        self._real = real
+
+    def execute(self, sql, *a):
+        CALLS.append(sql)
+        return self._real.execute(sql, *a)
+
+    def __getattr__(self, k):
+        return getattr(self._real, k)
+
+
+class _Counting:
+    def __init__(self, real):
+        self._real = real
+
+    def cursor(self):
+        return _CountingCursor(self._real.cursor())
+
+    def __getattr__(self, k):
+        return getattr(self._real, k)
+
+
+_real_connect = db._connect
+db._connect = lambda: _Counting(_real_connect())
 as_user(ALICE)
 st, r = http("DELETE", f"/courses?course={q(BUDGET)}&detach_teams=true")
-db._exec, db._query = _real_exec, _real_query
+db._connect = _real_connect
 check("the delete succeeds", st == 200, f"got {st}: {detail(r)}")
-# Not "all 29": decks are filed by session NUMBER, so any number another course still
-# has keeps its deck. Computed rather than hard-coded, so the assertion says the rule
-# instead of a number that depends on what the tests above happened to leave behind.
-still_claimed = {row["session_no"] for row in
-                 db._query("SELECT DISTINCT session_no FROM curriculum")
-                 if row.get("session_no") is not None}
-check("every deck no remaining course claims is cleared",
-      _pi.deck_session_numbers() == {n for n in before_disk if n in still_claimed},
-      f"left={sorted(_pi.deck_session_numbers())} "
-      f"expected={sorted({n for n in before_disk if n in still_claimed})}")
-check("…and the reply counts exactly those",
-      len(r.get("decks_cleared") or [])
-      == len({n for n in before_disk if n not in still_claimed}),
-      f"{len(r.get('decks_cleared') or [])} vs "
-      f"{len({n for n in before_disk if n not in still_claimed})}")
+# ALL of them: a course's decks are its own folder, so deleting the course takes every
+# one. There is no session-number arithmetic against other courses any more — that
+# calculation existed only because one directory held everybody's decks, and it kept a
+# deleted course's deck whenever another course shared the number.
+check("every one of the course's decks is cleared",
+      _pi.deck_session_numbers(BUDGET) == set(),
+      str(sorted(_pi.deck_session_numbers(BUDGET))))
+check("…and the reply counts them all",
+      sorted(r.get("decks_cleared") or []) == sorted(before_disk),
+      f"{sorted(r.get('decks_cleared') or [])} vs {sorted(before_disk)}")
+check("…and the folder itself is gone",
+      not _pi.course_decks_dir(BUDGET).exists(),
+      str(_pi.course_decks_dir(BUDGET)))
 # The mirror is dropped in ONE statement, not one per session. This is the 32-vs-1 that
 # made the difference between a request that answers and one the platform kills.
 mirror = [c for c in CALLS if c.strip().upper().startswith("DELETE FROM KB_FILES")]
 check("the deck mirror is cleared in a single statement", len(mirror) == 1,
       f"{len(mirror)} statements")
+_pref = f"decks/{_pi.course_slug(BUDGET)}/"
 check("…and it really is cleared",
-      db._query("SELECT COUNT(*) AS n FROM kb_files WHERE path LIKE 'decks/%'")[0]["n"] == 0,
-      str(db._query("SELECT COUNT(*) AS n FROM kb_files WHERE path LIKE 'decks/%'")))
+      db._query("SELECT COUNT(*) AS n FROM kb_files WHERE path LIKE ?",
+                (_pref + "%",))[0]["n"] == 0,
+      str(db._query("SELECT path FROM kb_files WHERE path LIKE ?", (_pref + "%",))))
 # A flat ceiling rather than an exact number: the point is that it does not grow with the
 # size of the course, which is what turned a 34-session delete into a timeout.
 check(f"the whole request stays under 30 round-trips (was 60)", len(CALLS) < 30,
@@ -782,11 +814,16 @@ check("…but the course itself is untouched", len(db.curriculum(T_COURSE)) >= 1
 check("…and its owner is unchanged", db.course_owner(T_COURSE) == owner_before,
       f"{owner_before!r} -> {db.course_owner(T_COURSE)!r}")
 
-print("\n== a deleted course only takes the decks nothing else claims ==")
-# THE SUBTLE ONE. Extracted decks are filed by session NUMBER alone — decks/session_02
-# .json — with no course anywhere in the path, so they are shared ground. Deleting "this
-# course's decks" would take session 1's deck away from every other course that has a
-# session 1, and every course has a session 1.
+print("\n== a deleted course takes ITS decks, and only its own ==")
+# THIS USED TO BE THE SUBTLE ONE. Decks were filed by session NUMBER alone —
+# decks/session_02.json, no course anywhere in the path — so they were shared ground, and
+# the delete had to work out which numbers no OTHER course still claimed. That was wrong
+# in both directions: it KEPT a deleted course's deck whenever another course happened to
+# have the same session number, and a number was all it had to go on.
+#
+# A course's decks are its own folder now, so the rule is simply "they go with it" — and
+# the assertion below is the stronger one: two courses sharing session numbers, and each
+# keeps exactly its own.
 from src import pptx_ingest                                  # noqa: E402
 DECKA, DECKB = "Deck Course A", "Deck Course B"
 make_course(ALICE, DECKA)
@@ -794,19 +831,30 @@ for n in (91, 92):
     db.curriculum_upsert(DECKA, n, topic="T", session_name=f"a{n}", key_takeaways=["k"])
 make_course(BOB, DECKB)
 db.curriculum_upsert(DECKB, 91, topic="T", session_name="b91", key_takeaways=["k"])
-pptx_ingest.DECKS_DIR.mkdir(parents=True, exist_ok=True)
-for n in (91, 92):
-    (pptx_ingest.DECKS_DIR / f"session_{n:02d}.json").write_text(
-        json.dumps({"session_no": n, "slides": []}), encoding="utf-8")
+# The SAME session numbers in both courses — which under the old flat store was one file.
+for n in (1, 91, 92):
+    pptx_ingest.put_deck(DECKA, n, {"session_no": n, "deck_title": f"A{n}", "slides": []})
+for n in (1, 91):
+    pptx_ingest.put_deck(DECKB, n, {"session_no": n, "deck_title": f"B{n}", "slides": []})
+check("each course holds its own copy of a shared session number",
+      pptx_ingest.get_deck(DECKA, 91)["deck_title"] == "A91"
+      and pptx_ingest.get_deck(DECKB, 91)["deck_title"] == "B91",
+      f"{pptx_ingest.get_deck(DECKA, 91)} / {pptx_ingest.get_deck(DECKB, 91)}")
 as_user(ALICE)
 st, r = http("DELETE", f"/courses?course={q(DECKA)}")
 check("the delete succeeds", st == 200, f"got {st}: {detail(r)}")
-check("session 92's deck goes — nothing else has a session 92",
-      r.get("decks_cleared") == [92], f"got {r.get('decks_cleared')}")
-check("…and the file is really gone",
-      not (pptx_ingest.DECKS_DIR / "session_92.json").exists())
-check("session 91's deck STAYS — the other course has a session 91",
-      (pptx_ingest.DECKS_DIR / "session_91.json").exists())
+check("ALL of its decks go, including the shared numbers",
+      sorted(r.get("decks_cleared") or []) == [1, 91, 92],
+      str(r.get("decks_cleared")))
+check("…and its folder with them",
+      not pptx_ingest.course_decks_dir(DECKA).exists(),
+      str(pptx_ingest.course_decks_dir(DECKA)))
+check("the OTHER course keeps every one of its own",
+      pptx_ingest.deck_session_numbers(DECKB) == {1, 91},
+      str(sorted(pptx_ingest.deck_session_numbers(DECKB))))
+check("…with its own content, not the deleted course's",
+      pptx_ingest.get_deck(DECKB, 91)["deck_title"] == "B91",
+      str(pptx_ingest.get_deck(DECKB, 91)))
 
 print("\n== the admin's course list carries what a delete decision needs ==")
 # The admin dashboard has an All-courses tab with a Delete button per row. The decision

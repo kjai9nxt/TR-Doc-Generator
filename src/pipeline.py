@@ -55,7 +55,8 @@ def _score_key(accepted: bool, report: dict) -> tuple:
 
 
 def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bool,
-             enforce_time: bool = True, budgets: dict | None = None):
+             enforce_time: bool = True, budgets: dict | None = None,
+             course: str | None = None, profile: dict | None = None):
     """Run all graders/guardrails on a draft. Returns (accepted, report, issues).
 
     enforce_time=False keeps the recording-time estimate in the report but stops it
@@ -68,8 +69,19 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
         use_judge = True
     if time_always_enforced():
         enforce_time = True
+    # What THIS COURSE counts as a good document. Resolved once here rather than by each
+    # grader, so the guardrails and the judge cannot be holding the doc to different
+    # rules in the same run.
+    if profile is None:
+        from . import profiles as _profiles
+        profile = _profiles.for_course(course)
+    # The course's APPROVED skills. The ones carrying a check are settled here; the rest
+    # reached the writer through the rules block and are weighed by the judge.
+    from . import skills as _skills
+    course_skills = _skills.applicable(course) if course else []
     gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time,
-                          budgets=budgets)
+                          budgets=budgets, course=course, profile=profile,
+                          skills=course_skills)
     te = time_grader.estimate(doc)
     pe = page_grader.estimate(doc, budgets)
     # time_enforced travels with the report so downstream consumers (draft ranking,
@@ -100,10 +112,11 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
     judge_ok = True
     rubric_total = 100
     if use_judge:
-        jr = llm_judge.grade(doc, session, te, page_estimate=pe, enforce_time=enforce_time)
+        jr = llm_judge.grade(doc, session, te, page_estimate=pe,
+                             enforce_time=enforce_time, course=course, profile=profile)
         report["judge"] = jr
         rubric_total = jr.get("weighted_total", 0)
-        judge_ok, judge_reasons = llm_judge.passes_gates(jr)
+        judge_ok, judge_reasons = llm_judge.passes_gates(jr, profile)
         issues += judge_reasons
 
     accepted = gr.passed and time_ok and page_ok and judge_ok
@@ -120,6 +133,7 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
 
 
 def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: bool = True,
+        course: str | None = None,
         enforce_time: bool = True, on_event=None, user: str | None = None,
         run_id: str | None = None) -> dict:
     """OFFLINE EVAL ONLY — draft a whole doc in one call, then grade/revise it.
@@ -158,14 +172,16 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
             except Exception as e:
                 log(f"⚠ Sheet sync skipped: {e}")
 
-    sessions = course_loader.load_sessions(course_file)
+    sessions = course_loader.load_sessions(course_file, course=course)
     prev, cur, nxt = course_loader.neighbours(session_no, sessions)
     is_first, is_last = prev is None, nxt is None
     log(f"Session {cur.number}: {cur.name}  ({cur.key_takeaways_count} key takeaways)")
 
     # Limit ON -> hard 40-min instruction; OFF -> DEPTH MODE (rich generation, no
     # time constraint anywhere in the prompt).
-    user_prompt = (context_builder.build_user_prompt(prev, cur, nxt)
+    from . import profiles as _profiles
+    _profile = _profiles.for_course(course)
+    user_prompt = (context_builder.build_user_prompt(course, prev, cur, nxt, _profile)
                    + context_builder.time_mode_block(enforce_time))
 
     from src import llm
@@ -187,7 +203,8 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     for rnd in range(max_rounds + 1):
         log(f"Grading draft {rnd + 1} …" + (" (judging quality, ~40s)" if use_judge else ""))
         accepted, report, issues, should_revise = evaluate(
-            doc, cur, is_first, is_last, use_judge=use_judge, enforce_time=enforce_time)
+            doc, cur, is_first, is_last, use_judge=use_judge,
+            enforce_time=enforce_time, course=course, profile=_profile)
         report["round"] = rnd
         history.append(report)
         te, pe = report["time"], report["pages"]
@@ -434,7 +451,8 @@ def _too_long(doc: dict, report: dict) -> list[str]:
 def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
              enforce_time: bool = True, on_event=None, run_id: str | None = None,
              budgets: dict | None = None,
-             standing_notes: list | None = None) -> dict:
+             standing_notes: list | None = None,
+             course: str | None = None) -> dict:
     """Grade an assembled guided doc and render the .docx + .md + grade report.
 
     This is THE way a TR doc is produced: the chunks were generated one per key
@@ -472,13 +490,21 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         use_judge = True
     if time_always_enforced():
         enforce_time = True
-    sessions = course_loader.load_sessions(None)
+    # THE COURSE THIS DOCUMENT BELONGS TO. Passing None here read the instance-wide
+    # active course, so a doc could be graded against a different curriculum than it was
+    # written from — and the deck-backed checks below against a different course's decks.
+    sessions = course_loader.load_sessions(None, course=course)
     prev, cur, nxt = course_loader.neighbours(session_no, sessions)
+    # What this course counts as a good document — resolved ONCE for the whole finalize,
+    # so the graders, the repair prompt and the acceptance bar all read the same rules.
+    from . import profiles as _profiles
+    profile = _profiles.for_course(course)
     is_first, is_last = prev is None, nxt is None
 
     def grade(d: dict, rnd: int):
         acc, rep, iss, _ = evaluate(d, cur, is_first, is_last, use_judge=use_judge,
-                                    enforce_time=enforce_time, budgets=budgets)
+                                    enforce_time=enforce_time, budgets=budgets,
+                                    course=course, profile=profile)
         rep["round"] = rnd
         log(f"accepted={acc} | est={rep['time']['estimated_minutes']}min"
             f"{'' if enforce_time else ' (40-min limit OFF — not graded on time)'} "
@@ -508,10 +534,14 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
             f"~1-2 min). Coverage is preserved; ritual and off-agenda material are cut."
             + (f" Your {len(standing_notes)} standing instruction(s) apply to this pass "
                f"too." if standing_notes else ""))
-        base = (context_builder.build_user_prompt(prev, cur, nxt)
+        base = (context_builder.build_user_prompt(course, prev, cur, nxt, profile)
                 + context_builder.time_mode_block(enforce_time, budgets=budgets)
                 # The reviewer's rules travel with the repair, so what it rewrites is
                 # rewritten under them. See context_builder.standing_notes_block.
+                # The rules THIS COURSE is written under travel with the repair,
+                # so what it rewrites is rewritten under them. See
+                # context_builder.course_skills_block.
+                + context_builder.course_skills_block(course)
                 + context_builder.standing_notes_block(standing_notes))
         doc_json = json.dumps(doc, ensure_ascii=False)
         # PATCH FIRST. A repair names a handful of defects; asking for the corrected

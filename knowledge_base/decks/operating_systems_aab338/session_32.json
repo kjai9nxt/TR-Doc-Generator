@@ -1,0 +1,736 @@
+{
+  "session_no": 32,
+  "source_file": "Disk Scheduling Algorithms",
+  "deck_title": "Disk Scheduling Algorithms",
+  "n_slides": 56,
+  "summary": "\n    - Slide 2: Session 32 : Disk Scheduling Algorithms\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Agenda for Today's Session\n    - Slide 6: Need for Disk Scheduling\n    - Slide 7: Heading: Why Disk Scheduling\n    - Slide 8: Heading: Why Disk Scheduling\n    - Slide 9: Heading: Why Disk Scheduling\n    - Slide 10: Heading: Why Disk Scheduling\n    - Slide 11: Heading: Scheduling Goals Metrics\n    - Slide 12: Heading: Scheduling Goals Metrics\n    - Slide 13: FCFS & SSTF\n    - Slide 14: Heading: Scheduling Policy Landscape\n    - Slide 15: Heading: Scheduling Policy Landscape\n    - Slide 16: Heading: FCFS Disk Scheduling\n    - Slide 17: Heading: FCFS Disk Scheduling\n    - Slide 18: Heading: FCFS Disk Scheduling\n    - Slide 19: Heading: FCFS Worked Trace\n    - Slide 20: Heading: FCFS Worked Trace\n    - Slide 21: Subheading: Head Movement Total\n    - Slide 22: Heading: FCFS Worked Trace\n    - Slide 23: Heading: SSTF Disk Scheduling\n    - Slide 24: Heading: SSTF Disk Scheduling\n    - Slide 25: Heading: SSTF Worked Trace\n    - Slide 26: Heading: SSTF Worked Trace\n    - Slide 27: Heading: FCFS Vs SSTF\n    - Slide 28: SCAN Family\n    - Slide 29: Heading: SCAN Family Overview\n    - Slide 30: Heading: SCAN Algorithm\n    - Slide 31: Heading: SCAN Algorithm\n    - Slide 32: Heading: SCAN Algorithm\n    - Slide 33: Heading: SCAN Drawbacks\n    - Slide 34: Heading: C-SCAN Algorithm\n    - Slide 35: Heading: C-SCAN Algorithm\n    - Slide 36: Heading: C-SCAN Algorithm\n    - Slide 37: Heading: C-SCAN Trade-Off\n    - Slide 38: Heading: SCAN Vs C-SCAN\n    - Slide 39: LOOK Family\n    - Slide 40: Heading: LOOK Family Overview\n    - Slide 41: Heading: LOOK Algorithm\n    - Slide 42: Heading: LOOK Algorithm\n    - Slide 43: Heading: LOOK Algorithm\n    - Slide 44: Heading: C-LOOK Algorithm\n    - Slide 45: Heading: C-LOOK Algorithm\n    - Slide 46: Heading: C-LOOK Algorithm\n    - Slide 47: Heading: LOOK Family Comparison\n    - Slide 48: Comparison & Practice\n    - Slide 49: Heading: Algorithm Comparison\n    - Slide 50: Heading: Why Trade-offs Exist\n    - Slide 51: Heading: Movement Setup\n    - Slide 54: RAID & Storage Management",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Session 32 : Disk Scheduling Algorithms",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda for Today's Session",
+      "body": "Agenda for Today's Session\n1. Need for Disk Scheduling: Why disk scheduling matters\n2. FCFS & SSTF: FCFS disk scheduling; Shortest seek time first (SSTF)\n3. SCAN Family: SCAN (elevator); C-SCAN\n4. LOOK Family: LOOK & C-LOOK\n5. Comparison & Practice: Comparison & performance analysis; Numerical problems: total head movement",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Need for Disk Scheduling",
+      "body": "Need for Disk Scheduling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Heading: Why Disk Scheduling",
+      "body": "Subheading: Motivation And Need\nContent:\nDisk drives are shared across many processes, so several I/O requests are often pending at once for different cylinders. Because seek time dominates access time, the order in which these requests are serviced changes total delay sharply — so the OS uses a disk scheduler to choose that order rather than serving requests as they arrive.\nMultiprogramming keeps many requests pending in the kernel I/O queue at once\nSeek cost scales with cylinder distance, not with request count\nServicing nearby cylinders together cuts total head travel\nJudged on total head movement, fairness, throughput and response time\nWhy Disk Scheduling\nMotivation And Need\nDisk drives are shared across many processes, so several I/O requests are often pending at once for different cylinders. Because seek time dominates access time\n The order in which these requests are serviced changes total delay sharply",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Heading: Why Disk Scheduling",
+      "body": "Subheading: Motivation And Need\nContent:\nDisk drives are shared across many processes, so several I/O requests are often pending at once for different cylinders. Because seek time dominates access time, the order in which these requests are serviced changes total delay sharply — so the OS uses a disk scheduler to choose that order rather than serving requests as they arrive.\nMultiprogramming keeps many requests pending in the kernel I/O queue at once\nSeek cost scales with cylinder distance, not with request count\nServicing nearby cylinders together cuts total head travel\nJudged on total head movement, fairness, throughput and response time\nWhy Disk Scheduling\nMotivation And Need\nso the OS uses a disk scheduler to choose that order rather than serving requests as they arrive.\nSo the OS uses a disk scheduler to choose that order rather than serving requests as they arrive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Heading: Why Disk Scheduling",
+      "body": "Subheading: Motivation And Need\nContent:\nDisk drives are shared across many processes, so several I/O requests are often pending at once for different cylinders. Because seek time dominates access time, the order in which these requests are serviced changes total delay sharply — so the OS uses a disk scheduler to choose that order rather than serving requests as they arrive.\nMultiprogramming keeps many requests pending in the kernel I/O queue at once\nSeek cost scales with cylinder distance, not with request count\nServicing nearby cylinders together cuts total head travel\nJudged on total head movement, fairness, throughput and response time\nWhy Disk Scheduling\nMotivation And Need\nso the OS uses a disk scheduler to choose that order rather than serving requests as they arrive.\nMultiprogramming keeps many requests pending in the kernel I/O queue at once\n01\nSeek cost scales with cylinder distance, not with request count\n02\nServicing nearby cylinders together cuts total head travel\n03\nJudged on total head movement, fairness, throughput and response time\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Heading: Why Disk Scheduling",
+      "body": "Subheading: Analogy\nAnalogy:\nA school van picking children from several colony stops finishes faster visiting nearby stops together than zig-zagging in call order — just as a disk scheduler reorders pending requests by cylinder position instead of arrival order to cut total head travel.\nWhy Disk Scheduling\nAnalogy",
+      "notes": "A school van picking children from several colony stops finishes faster visiting nearby stops together than zig-zagging in call order — just as a disk scheduler reorders pending requests by cylinder position instead of arrival order to cut total head travel.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Heading: Scheduling Goals Metrics",
+      "body": "Subheading: Judging Criteria\nContent:\nEvery disk scheduling policy is judged against a common set of criteria, the same ones used later to compare FCFS, SSTF, SCAN and LOOK. These balance raw speed against fairness across all pending requests.\nTotal head movement — cylinders traversed to serve all requests\nAverage and maximum response time per request\nThroughput — requests completed per unit time\nFairness — avoiding starvation of far-cylinder requests\nScheduling Goals Metrics\nJudging Criteria\nEvery disk scheduling policy is judged against a common set of criteria, the same ones used later to compare FCFS, SSTF, SCAN and LOOK. These balance raw speed against fairness across all pending requests",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Heading: Scheduling Goals Metrics",
+      "body": "Subheading: Judging Criteria\nContent:\nEvery disk scheduling policy is judged against a common set of criteria, the same ones used later to compare FCFS, SSTF, SCAN and LOOK. These balance raw speed against fairness across all pending requests.\nTotal head movement — cylinders traversed to serve all requests\nAverage and maximum response time per request\nThroughput — requests completed per unit time\nFairness — avoiding starvation of far-cylinder requests\nScheduling Goals Metrics\nJudging Criteria\nTotal head movement — cylinders traversed to serve all requests\n01\nAverage and maximum response time per request\n02\nThroughput — requests completed per unit time\n03\nFairness — avoiding starvation of far-cylinder requests\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "FCFS & SSTF",
+      "body": "FCFS & SSTF",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Heading: Scheduling Policy Landscape",
+      "body": "Subheading: Four Algorithm Families\nContent:\nThe order in which a disk services queued requests changes total head travel drastically for the same workload. Four broad policy families exist, ordered here from simplest to most seek-aware.\nFCFS: serves requests strictly in arrival order\nSSTF: always picks the nearest pending cylinder\nSCAN/C-SCAN: sweeps across the disk like an elevator\nLOOK/C-LOOK: sweeps but reverses at the last request\nScheduling Policy Landscape\nFour Algorithm Families\nThe order in which a disk services queued requests changes total head travel drastically for the same workload. Four broad policy families exist, ordered here from simplest to most seek-aware\nFCFS\n1\nSSTF\n2\nSCAN/C-SCAN\n3\nLOOK/C-LOOK\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Heading: Scheduling Policy Landscape",
+      "body": "Subheading: Four Algorithm Families\nContent:\nThe order in which a disk services queued requests changes total head travel drastically for the same workload. Four broad policy families exist, ordered here from simplest to most seek-aware.\nFCFS: serves requests strictly in arrival order\nSSTF: always picks the nearest pending cylinder\nSCAN/C-SCAN: sweeps across the disk like an elevator\nLOOK/C-LOOK: sweeps but reverses at the last request\nScheduling Policy Landscape\nFour Algorithm Families\nFCFS\n1\nRigid magnetic disks stacked on a spindle\nSSTF\n2\nAlways picks the nearest pending cylinder\nSCAN/C-SCAN\n3\nSweeps across the disk like an elevator\nLOOK/C-LOOK\n4\nSweeps but reverses at the last request",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Heading: FCFS Disk Scheduling",
+      "body": "Subheading: Arrival Order Service\nContent:\nFCFS serves pending disk requests strictly in the order they entered the queue, applying ordinary arrival-order scheduling to cylinder numbers instead of CPU burst times.\nNo reordering: request distance from head is never checked\nHead can swing across the full disk repeatedly\nTrivial to implement: a plain FIFO queue\nWide swings inflate average seek time under scattered load\nFCFS Disk Scheduling\nArrival Order Service\nFCFS serves pending disk requests strictly in the order they entered the queue, applying ordinary arrival-order scheduling to cylinder numbers instead of CPU burst times",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Heading: FCFS Disk Scheduling",
+      "body": "Subheading: Arrival Order Service\nContent:\nFCFS serves pending disk requests strictly in the order they entered the queue, applying ordinary arrival-order scheduling to cylinder numbers instead of CPU burst times.\nNo reordering: request distance from head is never checked\nHead can swing across the full disk repeatedly\nTrivial to implement: a plain FIFO queue\nWide swings inflate average seek time under scattered load\nFCFS Disk Scheduling\nArrival Order Service\nNo reordering: request distance from head is never checked\n01\nHead can swing across the full disk repeatedly\n02\nTrivial to implement: a plain FIFO queue\n03\nWide swings inflate average seek time under scattered load\n04",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Heading: FCFS Disk Scheduling",
+      "body": "Subheading: Analogy\nAnalogy:\nA toll-plaza lane serves waiting vehicles strictly by arrival, even when a nearby car joined later than one far down the highway — just as FCFS serves the next queued cylinder regardless of its distance from the head.\nFCFS Disk Scheduling\nAnalogy",
+      "notes": "A toll-plaza lane serves waiting vehicles strictly by arrival, even when a nearby car joined later than one far down the highway — just as FCFS serves the next queued cylinder regardless of its distance from the head.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Heading: FCFS Worked Trace",
+      "body": "Subheading: Head Movement Total\nContent:\nA queue of cylinder requests 98, 183, 37, 122, 14, 124, 65, 67 arrives with the head starting at cylinder 53 on a 200-cylinder disk. FCFS visits them in exactly that order.\nTotal head movement across all eight moves is 640 cylinders — the baseline every other policy is measured against on this same queue.\nFCFS Worked Trace\nHead Movement Total\nA queue of cylinder requests 98, 183, 37, 122, 14, 124, 65, 67 arrives with the head starting at cylinder 53 on a 200-cylinder disk. FCFS visits them in exactly that order",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Move",
+            "Distance (cylinders)"
+          ],
+          [
+            "53 → 98",
+            "45"
+          ],
+          [
+            "98 → 183",
+            "85"
+          ],
+          [
+            "183 → 37",
+            "146"
+          ],
+          [
+            "37 → 122",
+            "85"
+          ],
+          [
+            "122 → 14",
+            "108"
+          ],
+          [
+            "14 → 124",
+            "110"
+          ],
+          [
+            "124 → 65",
+            "59"
+          ],
+          [
+            "65 → 67",
+            "2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "Heading: FCFS Worked Trace",
+      "body": "Subheading: Head Movement Total\nContent:\nA queue of cylinder requests 98, 183, 37, 122, 14, 124, 65, 67 arrives with the head starting at cylinder 53 on a 200-cylinder disk. FCFS visits them in exactly that order.\nTotal head movement across all eight moves is 640 cylinders — the baseline every other policy is measured against on this same queue.\nFCFS Worked Trace\nHead Movement Total\nTotal head movement across all eight moves is 640 cylinders — the baseline every other policy is measured against on this same queue",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Move",
+            "Distance (cylinders)"
+          ],
+          [
+            "53 → 98",
+            "45"
+          ],
+          [
+            "98 → 183",
+            "85"
+          ],
+          [
+            "183 → 37",
+            "146"
+          ],
+          [
+            "37 → 122",
+            "85"
+          ],
+          [
+            "122 → 14",
+            "108"
+          ],
+          [
+            "14 → 124",
+            "110"
+          ],
+          [
+            "124 → 65",
+            "59"
+          ],
+          [
+            "65 → 67",
+            "2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 21,
+      "title": "Subheading: Head Movement Total",
+      "body": "Subheading: Head Movement Total\nContent:\nA queue of cylinder requests 98, 183, 37, 122, 14, 124, 65, 67 arrives with the head starting at cylinder 53 on a 200-cylinder disk. FCFS visits them in exactly that order.\nTotal head movement across all eight moves is 640 cylinders — the baseline every other policy is measured against on this same queue.\nFCFS Worked Trace\nHead Movement Total\nTotal head movement across all eight moves is 640 cylinders — the baseline every other policy is measured against on this same queue",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Move",
+            "Distance (cylinders)"
+          ],
+          [
+            "53 → 98",
+            "45"
+          ],
+          [
+            "98 → 183",
+            "85"
+          ],
+          [
+            "183 → 37",
+            "146"
+          ],
+          [
+            "37 → 122",
+            "85"
+          ],
+          [
+            "122 → 14",
+            "108"
+          ],
+          [
+            "14 → 124",
+            "110"
+          ],
+          [
+            "124 → 65",
+            "59"
+          ],
+          [
+            "65 → 67",
+            "2"
+          ]
+        ],
+        [
+          [
+            "Structure",
+            "Definition",
+            "Typical Count"
+          ],
+          [
+            "Platter",
+            "Rigid magnetic disk on spindle",
+            "2-5 per drive"
+          ],
+          [
+            "Track",
+            "Concentric ring on one surface",
+            "Thousands per surface"
+          ],
+          [
+            "Sector",
+            "Fixed-size arc of a track",
+            "512B or 4096B unit"
+          ],
+          [
+            "Cylinder",
+            "Same track across all surfaces",
+            "Equals tracks per surface"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Heading: FCFS Worked Trace",
+      "body": "Subheading: Diagram\nFCFS Worked Trace\nDiagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Heading: SSTF Disk Scheduling",
+      "body": "Subheading: Nearest Request First\nContent:\nSSTF always dispatches whichever pending request sits nearest to the current head position, trading arrival order for shorter seeks — the disk analogue of shortest-job-first scheduling.\nDistances to all pending requests recomputed after every move\nSelection needs a full scan of the queue each time\nFar requests can starve while nearby ones keep arriving\nLocally greedy per step, not globally optimal overall",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Heading: SSTF Disk Scheduling",
+      "body": "Subheading: Analogy\nAnalogy:\nA hospital nurse attends whichever patient's call bell is physically nearest, not whoever pressed it first — exactly as SSTF picks the nearest queued cylinder over the earliest queued one.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Heading: SSTF Worked Trace",
+      "body": "Subheading: Greedy Selection Steps\nContent:\nUsing the same queue (98, 183, 37, 122, 14, 124, 65, 67) and head at 53, SSTF picks the nearest remaining cylinder at each step instead of following arrival order.\nTotal head movement is 236 cylinders against 640 for FCFS on the identical queue, though request 183 — queued second — ends up served last.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Move",
+            "Distance (cylinders)"
+          ],
+          [
+            "53 → 65",
+            "12"
+          ],
+          [
+            "65 → 67",
+            "2"
+          ],
+          [
+            "67 → 37",
+            "30"
+          ],
+          [
+            "37 → 14",
+            "23"
+          ],
+          [
+            "14 → 98",
+            "84"
+          ],
+          [
+            "98 → 122",
+            "24"
+          ],
+          [
+            "122 → 124",
+            "2"
+          ],
+          [
+            "124 → 183",
+            "59"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 26,
+      "title": "Heading: SSTF Worked Trace",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Heading: FCFS Vs SSTF",
+      "body": "Subheading: Trade-offs Compared\nContent:\nBoth policies are easy to implement, but they sit at opposite ends of the fairness-versus-efficiency trade-off for disk head movement.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "FCFS",
+            "SSTF"
+          ],
+          [
+            "Fairness",
+            "Strict, no starvation",
+            "Can starve far requests"
+          ],
+          [
+            "Avg seek time",
+            "High, distance ignored",
+            "Low, seek-optimised"
+          ],
+          [
+            "Pick cost",
+            "O(1), just dequeue",
+            "O(n) scan per pick"
+          ],
+          [
+            "Predictability",
+            "Fully deterministic order",
+            "Depends on arrival mix"
+          ],
+          [
+            "Best suited for",
+            "Light, uniform-spread load",
+            "Moderate, clustered load"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 28,
+      "title": "SCAN Family",
+      "body": "SCAN Family",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Heading: SCAN Family Overview",
+      "body": "Subheading: Sweep-Based Scheduling\nContent:\nFCFS and SSTF either ignore seek distance or chase locality, both risking long waits for requests far from the current sweep. The SCAN family instead moves the head systematically across the disk in one direction, servicing every cylinder it passes.\nSCAN: sweeps to one end, reverses direction there\nC-SCAN: sweeps one way only, jumps back to restart\nBoth service cylinders in physical order, not arrival order",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Heading: SCAN Algorithm",
+      "body": "Subheading: Elevator Movement Rule\nContent:\nSCAN moves the disk arm steadily toward one end of the cylinder range, servicing every pending request it passes en route. On reaching the last cylinder or the outermost pending request, direction reverses and the sweep continues the other way.\nService order follows cylinder position, not request arrival time\nRequests behind current sweep direction wait for the return pass\nSweep restarts from the same end at every new cycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Heading: SCAN Algorithm",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Heading: SCAN Algorithm",
+      "body": "Subheading: Analogy\nAnalogy:\nA lift travelling up serves every requested floor along the way before reversing at the top — just as SCAN sweeps to one end of the disk before reversing direction to service the rest.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Heading: SCAN Drawbacks",
+      "body": "Subheading: Uneven Wait Times\nContent:\nSCAN treats every cylinder fairly in movement order, but not in waiting time. A cylinder serviced just before a reversal waits almost a full sweep before the arm returns, while cylinders near the middle get serviced far more often.\nWorst-case wait approaches nearly two sweep lengths for edge cylinders\nMiddle cylinders receive the most frequent, most even service\nArm may sweep to the disk edge even with no pending request there\nWait-time distribution is biased against the extreme cylinders",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Heading: C-SCAN Algorithm",
+      "body": "Subheading: Circular Sweep Fix\nContent:\nC-SCAN, or Circular SCAN, removes SCAN's edge bias by treating the disk as a circular list. The arm sweeps in a single direction only; on reaching the last cylinder it jumps straight back to the starting end without servicing any request on that return.\nServices requests in one direction only, for example low to high\nReturn sweep still counts as head movement despite serving nothing\nProduces near-uniform wait time across all cylinders, including the extremes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Heading: C-SCAN Algorithm",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Heading: C-SCAN Algorithm",
+      "body": "Subheading: Analogy\nAnalogy:\nA canteen conveyor belt carries trays forward past students collecting food, then loops back empty underneath to the start — just as C-SCAN serves requests moving one direction, then returns unserved to begin the next sweep.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Heading: C-SCAN Trade-Off",
+      "body": "Subheading: Fairness Versus Distance\nContent:\nTreating the last cylinder as logically adjacent to the first turns the disk into a circular queue, so every cylinder waits roughly one full sweep between services. That fairness is bought with extra arm travel, since the return crosses the full range while serving nothing.\nWrap-around return usually spans more cylinders than SCAN's in-place reversal\nTotal head movement can exceed SCAN's for an identical request set\nPredictable, near-equal wait suits latency-sensitive or real-time workloads\nSCAN remains cheaper in raw seek distance for lighter, general loads",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Heading: SCAN Vs C-SCAN",
+      "body": "Subheading: Head Movement Compared\nContent:\nBoth algorithms sweep the head systematically instead of chasing arrival order or locality, but they differ in how they treat the boundary and how evenly cylinders get serviced.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "SCAN",
+            "C-SCAN"
+          ],
+          [
+            "Direction",
+            "Reverses at each end",
+            "One direction, wraps to start"
+          ],
+          [
+            "Return trip",
+            "Services requests while reversing",
+            "No service during wrap-back"
+          ],
+          [
+            "Wait pattern",
+            "Biased toward middle cylinders",
+            "Near-uniform across all cylinders"
+          ],
+          [
+            "Total head movement",
+            "Usually lower for same requests",
+            "Usually higher due to wrap"
+          ],
+          [
+            "Best suited for",
+            "General-purpose, lighter load",
+            "Predictable, latency-sensitive load"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 39,
+      "title": "LOOK Family",
+      "body": "LOOK Family",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Heading: LOOK Family Overview",
+      "body": "Subheading: Two Bounded Variants\nContent:\nSCAN and C-SCAN, covered earlier, always travel to the disk edge even when no request lies beyond the last one on that pass. LOOK and C-LOOK remove that wasted travel by reversing as soon as requests in the current direction run out.\nLOOK: reverses like SCAN, skips the edge run\nC-LOOK: reverses like C-SCAN, skips both edge runs\nBoth check the pending-request bounds before continuing\nNamed for the head checking ahead before moving further",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Heading: LOOK Algorithm",
+      "body": "Subheading: Reversing Before Edge\nContent:\nLOOK behaves like SCAN inside the busy range of requests but stops sweeping the moment the queue ahead is empty, reversing there instead of continuing to cylinder 0 or the last cylinder.\nHead moves toward one end, servicing requests met\nReverses at farthest pending request, not disk edge\nRepeats sweep in opposite direction next pass\nReduces unnecessary travel versus plain SCAN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Heading: LOOK Algorithm",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Heading: LOOK Algorithm",
+      "body": "Subheading: Analogy\nAnalogy:\nA night security guard turns back at the last occupied room instead of walking to the empty corridor's end — just as LOOK reverses at the farthest pending request instead of sweeping to the disk edge.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Heading: C-LOOK Algorithm",
+      "body": "Subheading: Circular Without Edge\nContent:\nC-LOOK combines C-SCAN's one-directional sweep with LOOK's early reversal, so unnecessary travel to the disk edges is removed on both ends of the cycle.\nSweeps only toward increasing cylinder numbers, serving requests met\nAt highest pending request, jumps back without servicing enroute\nJump lands on lowest pending request, not cylinder 0\nUniform wait times, no long return sweep unlike C-SCAN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Heading: C-LOOK Algorithm",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Heading: C-LOOK Algorithm",
+      "body": "Subheading: Analogy\nAnalogy:\nA one-way loop train runs from the first station to the last active stop, then returns empty straight to the first station without stopping en route — exactly as C-LOOK jumps back to the lowest pending request without servicing cylinders on the way.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Heading: LOOK Family Comparison",
+      "body": "Subheading: Movement And Trade-offs\nContent:\nLOOK and C-LOOK inherit SCAN and C-SCAN's direction rules but trim the edge trips, trading a slightly more complex termination check for lower average head movement.\nExtra check: farthest/lowest pending request tracked each pass\nSavings are largest when the queue is sparse near edges\nC-LOOK gives more uniform waits than LOOK, as C-SCAN does over SCAN",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Algorithm",
+            "Direction Rule",
+            "Reverses/Jumps At",
+            "Edge Travel"
+          ],
+          [
+            "SCAN",
+            "Bidirectional sweep",
+            "Disk edge (0 or last cylinder)",
+            "Always to edge"
+          ],
+          [
+            "C-SCAN",
+            "One direction, circular jump",
+            "Disk edge, jumps to 0",
+            "Always to edge"
+          ],
+          [
+            "LOOK",
+            "Bidirectional sweep",
+            "Farthest pending request",
+            "None"
+          ],
+          [
+            "C-LOOK",
+            "One direction, circular jump",
+            "Farthest, then lowest pending request",
+            "None"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Comparison & Practice",
+      "body": "Comparison & Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Heading: Algorithm Comparison",
+      "body": "Subheading: Six Side By Side\nContent:\nThe six algorithms sit on a spectrum from raw movement efficiency to guaranteed fairness. No single algorithm wins on every criterion, which is why real systems pick based on workload.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Algorithm",
+            "Movement",
+            "Fairness",
+            "Overhead",
+            "Best For"
+          ],
+          [
+            "FCFS",
+            "High, unoptimised",
+            "Fair, no starvation",
+            "None",
+            "Light, ordered loads"
+          ],
+          [
+            "SSTF",
+            "Low, near-optimal",
+            "Starvation risk",
+            "Distance check each step",
+            "Light-moderate load"
+          ],
+          [
+            "SCAN",
+            "Moderate",
+            "Edge requests wait longer",
+            "One reversal per sweep",
+            "Heavy, uniform load"
+          ],
+          [
+            "C-SCAN",
+            "Moderate-high",
+            "Uniform wait, no edge bias",
+            "Unserved return sweep",
+            "Heavy, real-time load"
+          ],
+          [
+            "LOOK",
+            "Moderate",
+            "Better than SCAN at edges",
+            "One reversal per sweep",
+            "General purpose"
+          ],
+          [
+            "C-LOOK",
+            "Moderate-high",
+            "Most uniform wait",
+            "Unserved return jump",
+            "Heavy load, disk arrays"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 50,
+      "title": "Heading: Why Trade-offs Exist",
+      "body": "Subheading: Movement Vs Fairness\nContent:\nMinimising average movement and guaranteeing fairness pull in opposite directions. SSTF always jumps to the nearest cylinder, so a request sitting far from the busy zone keeps losing to closer arrivals.\nSSTF starvation: distant request repeatedly outranked by nearer ones\nSCAN edge bias: recently visited end waits almost a full sweep\nC-SCAN and C-LOOK fix bias with one-direction service only\nHeavy, spread-out load favours the SCAN family over SSTF",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Heading: Movement Setup",
+      "body": "Subheading: All six algorithms\nContent:\nSSTF 236: lowest movement, but starves distant requests\nLOOK 299: second-lowest movement, moderate fairness\nC-LOOK 322: extra jump, most uniform wait time\nSCAN 331: full sweep to edge in both directions\nC-SCAN 382: edge sweep plus a full return jump\nFCFS 640: highest movement, but perfectly fair order",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "RAID & Storage Management",
+      "body": "RAID & Storage Management",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1xSawrEIo9i1NUq9QkqaT9eTlX_2HRkglGNirXGPSuR4/edit?slide=id.g3f9a89fe6f6_0_1005#slide=id.g3f9a89fe6f6_0_1005"
+}

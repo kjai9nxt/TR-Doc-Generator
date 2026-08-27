@@ -1,0 +1,695 @@
+{
+  "session_no": 12,
+  "source_file": "Scheduling Concepts, Criteria & Types",
+  "deck_title": "Scheduling Concepts, Criteria & Types",
+  "n_slides": 72,
+  "summary": "\n    - Slide 2: Scheduling Concepts, Criteria & Types\n    - Slide 3: Recap\n    - Slide 4: Scheduling Concepts, Criteria & Types\n    - Slide 5: Introduction to Scheduling\n    - Slide 6: Introduction to Scheduling\n    - Slide 7: Introduction to Scheduling\n    - Slide 8: Introduction to Scheduling\n    - Slide 9: Scheduler\n    - Slide 10: CPU Scheduling\n    - Slide 11: CPU Scheduling\n    - Slide 12: CPU Scheduling\n    - Slide 13: Schedulers & \u000bProcess Queues\n    - Slide 14: Scheduler\n    - Slide 15: Scheduler\n    - Slide 16: Scheduler\n    - Slide 17: Scheduler\n    - Slide 18: Process Management\n    - Slide 19: Process Management\n    - Slide 20: Scheduler\n    - Slide 21: Process Queues\n    - Slide 22: Process Queues\n    - Slide 23: Process Queues\n    - Slide 24: Process Queues\n    - Slide 25: Scheduling Criteria\n    - Slide 26: CPU Scheduling\n    - Slide 27: Scheduling Criteria\n    - Slide 28: Scheduling\n    - Slide 29: Scheduling Criteria\n    - Slide 30: Five Key Scheduling Criteria\n    - Slide 31: Five Key Scheduling Criteria\n    - Slide 32: Five Key Scheduling Criteria\n    - Slide 33: Five Key Scheduling Criteria\n    - Slide 34: Five Key Scheduling Criteria\n    - Slide 35: Scheduling Criteria\n    - Slide 36: Quiz Time!\n    - Slide 37: CPU Scheduling\n    - Slide 38: Scheduling Criteria\n    - Slide 39: Scheduling Criteria\n    - Slide 40: When Does Preemption Occur?\n    - Slide 41: When Does Preemption Occur?\n    - Slide 42: When Does Preemption Occur?\n    - Slide 43: When Does Preemption Occur?\n    - Slide 44: Working\n    - Slide 45: Working\n    - Slide 46: Analogy\n    - Slide 47: Advantages\n    - Slide 48: Disadvantages\n    - Slide 49: Examples\n    - Slide 50: 2. Non-Preemptive Scheduling\n    - Slide 51: Working\n    - Slide 52: Working\n    - Slide 53: Analogy\n    - Slide 54: Advantages\n    - Slide 55: Disadvantages\n    - Slide 56: Examples\n    - Slide 57: Overview\n    - Slide 58: Comparison\n    - Slide 59: Aspect\n    - Slide 60: Dispatcher & \u000bGantt Basics\n    - Slide 61: Dispatcher\n    - Slide 62: Dispatcher\n    - Slide 63: Dispatcher\n    - Slide 64: Dispatcher\n    - Slide 65: Gantt Chart\n    - Slide 66: Gantt Chart\n    - Slide 67: Quiz Time!\n    - Slide 68: Scheduling Concepts, Criteria & Types\n    - Slide 70: Scheduling Algorithms | Part I",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Scheduling Concepts, Criteria & Types",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Process Control & Operations\nProcess Creation — fork(), Hierarchy & Parent-Child\nRunning a Program — exec()\nProcess Termination — exit() & wait()\nPutting It Together — fork → exec → wait → exit\nContext Switching — Mechanism & Overhead\nProcess Creation\nfork(), Hierarchy & Parent-Child\nRunning a Program \nexec()\nProcess Termination \nexit() & wait()\nPutting It Together \nfork → exec → wait → exit\nContext Switching  \nMechanism & Overhead",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Scheduling Concepts, Criteria & Types",
+      "body": "Scheduling Concepts, Criteria & Types\nTypes of Parallelism\n1. Introduction to Scheduling\n        – The CPU-I/O burst cycle\n2. Schedulers & Process Queues\n3. Scheduling Criteria\n        – CPU utilization & throughput\n        – Turnaround time, waiting time, response time\n4. CPU Scheduling\n        – Preemptive & Non - Preemptive \n5. The Dispatcher & Gantt Basics\nScheduling Concepts, Criteria & Types\nScheduling Criteria\nSchedulers & Process Queues\nThe CPU-I/O burst cycle\nCPU utilization & throughput, Turnaround time, waiting time, response time\nIntroduction to Scheduling\nThe Dispatcher \u000b& Gantt Basics\nCPU Scheduling\nPreemptive & Non-preemptive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Introduction to Scheduling",
+      "body": "Introduction to Scheduling",
+      "notes": "First of all we will learn about the Introduction to Scheduling",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Introduction to Scheduling",
+      "body": "What is Scheduling?\nWhen multiple processes want to run, the operating system must decide which one should run next\nProcesses 1\nProcesses 2\nProcesses 3\nOperating system\nThis decision-making is called scheduling",
+      "notes": "So, let's begin by understanding what scheduling means. \u000bWhenever multiple processes are ready to use the CPU, \u000bthe operating system has to decide which one gets executed next. \u000bThis process of selecting the next process is called scheduling, and it's essential for efficient CPU utilization.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Introduction to Scheduling",
+      "body": "Why Scheduling is Needed?\nCPU is a limited resource\nMany processes are in memory at the same time\nNot all can run at once",
+      "notes": "Now, let's understand why scheduling is necessary. \u000bSince the CPU is a limited resource, it can execute only one process at a time. \u000bWhen multiple processes are waiting in memory, scheduling helps the operating system decide the execution order efficiently.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Introduction to Scheduling",
+      "body": "What It Ensures?\nFair CPU time distribution\nMaximizes CPU throughput\nAvoids starvation\nMinimizes Waiting Time\nMinimizes Response Time\nScheduling ensures:",
+      "notes": "Moving on, scheduling is important because it improves overall system performance.\u000b It ensures fair CPU allocation, reduces waiting time, prevents starvation of processes, \u000bhelps the CPU complete more work in less time, and reduces response times,",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Scheduler",
+      "body": "What Is A Scheduler?\nCPU Scheduling\nA Scheduler is the OS component that selects which process should run next\nScheduler uses scheduling algorithms (FCFS, SJF, RR, etc.)",
+      "notes": "Next, let's understand what a scheduler is.\u000bIt's the operating system component responsible for selecting the next process to run on the CPU. \u000bTo make this decision, it follows different scheduling algorithms, \u000bwhich we'll explore later in this session.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "CPU Scheduling",
+      "body": "The CPU-I/O Burst Cycle\nExecution always begins with a CPU burst and ends with a CPU burst \u000b(the final one ends with an exit/termination request)\nProcess execution is not one continuous stretch of CPU work, it alternates between two phases:\nCPU Burst → the process is executing instructions on the CPU\nI/O Burst → the process is waiting for an I/O operation (disk, keyboard, network) to finish",
+      "notes": "Now, let's understand the CPU-I/O burst cycle. A process doesn't use the CPU continuously—\u000bit alternates between CPU bursts, where it executes instructions, and I/O bursts, \u000bwhere it waits for input or output operations to complete. \u000bThis cycle continues until the process finishes, and every process starts and ends with a CPU burst.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "CPU Scheduling",
+      "body": "CPU-Bound Vs I/O-Bound Processes\nCPU-bound Process\nSpends most time computing\nFew, long CPU bursts\nExample: video encoding, matrix math\nI/O-bound Process\nSpends most time waiting on I/O\nMany, short CPU bursts\nExample: text editor, file copy, web browsing",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "CPU-bound Process",
+            "I/O-bound Process"
+          ],
+          [
+            "Spends most time computing",
+            "Spends most time waiting on I/O"
+          ],
+          [
+            "Few, long CPU bursts",
+            "Many, short CPU bursts"
+          ],
+          [
+            "Example: video encoding, matrix math",
+            "Example: text editor, file copy, web browsing"
+          ]
+        ],
+        [
+          [
+            "CPU-bound Process",
+            "I/O-bound Process"
+          ],
+          [
+            "Spends most time computing",
+            "Spends most time waiting on I/O"
+          ],
+          [
+            "Few, long CPU bursts",
+            "Many, short CPU bursts"
+          ],
+          [
+            "Example: Video Encoding",
+            "Example: text editor, file copy, web browsing"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "CPU Scheduling",
+      "body": "CPU-Bound Vs I/O-Bound Processes\nMost processes have many short CPU bursts and only a few long ones.\nA good scheduler mixes CPU-bound and I/O-bound processes so that both the CPU and the I/O devices stay busy at the same time.\nThis is why scheduling matters: choosing the right process to run keeps the whole system efficient, not just the CPU",
+      "notes": "Moving on, not all processes use the CPU in the same way. \u000bMost processes spend only short periods on the CPU and frequently wait for I/O operations. \u000bThat's why a good scheduler balances CPU-bound and I/O-bound processes, \u000bkeeping both the CPU and I/O devices busy. \u000bThis improves the overall efficiency of the entire system, not just the CPU.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Schedulers & \u000bProcess Queues",
+      "body": "Schedulers & \u000bProcess Queues",
+      "notes": "Next we will learn about the Schedulers & Process Queues.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Scheduler",
+      "body": "Types of Schedulers\nTo manage processes efficiently, the OS uses three types of Schedulers:\nLong-Term Scheduler\nShort-Term Scheduler\nMedium-Term Scheduler",
+      "notes": "Next, the operating system uses three types of schedulers to manage processes at different stages.\u000b These are the Long-Term, Short-Term, and Medium-Term Schedulers, \u000beach serving a specific purpose in process management.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Scheduler",
+      "body": "Long-Term Scheduler (Job Scheduler)\nDecides which processes enter the ready queue\nControls degree of multiprogramming",
+      "notes": "Now, let's look at the Long-Term Scheduler. \u000bIt decides which new processes are admitted into the ready queue for execution. \u000bBy controlling this, it also regulates the degree of multiprogramming in the system.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Scheduler",
+      "body": "Short-Term Scheduler (CPU Scheduler)\nChooses which ready process runs on CPU next\nMost frequent decision-maker",
+      "notes": "Moving on, the Short-Term Scheduler selects the next process from the ready queue to run on the CPU. \u000bSince this decision happens very frequently, it needs to be fast and efficient.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Scheduler",
+      "body": "Medium-Term Scheduler\nHandles swapping (suspend/resume)\nImproves memory utilization",
+      "notes": "Next, the Medium-Term Scheduler manages swapping \u000bby temporarily suspending and later resuming processes. \u000bThis helps free up memory and improves overall memory utilization.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Process Management",
+      "body": "Process Queues\nCPU Scheduling is the operating system mechanism that selects one process from the ready queue and allocates the CPU to it.\nThe aim of CPU scheduling is to improve CPU utilization, increase throughput, reduce waiting time, and ensure fairness among processes.\nCPU Scheduling is the operating system mechanism that selects one process from the ready queue and allocates the CPU to it\nThe aim of CPU scheduling is to improve CPU utilization, increase throughput, reduce waiting time, and ensure fairness among processes\nProcess Queues in Operating Systems\nThe OS organizes processes using different queues based on their state\u000b\nQueues help the scheduler decide which process runs next\nThe OS organizes processes using different queues based on their state\nQueues help the scheduler decide which process runs next\nProcess Queues in Operating Systems",
+      "notes": "Now, let's connect scheduling with process management. \u000bCPU scheduling selects a process from the ready queue and assigns the CPU to it, \u000bwith the goal of improving performance and fairness. \u000bTo make these decisions efficiently, the operating system \u000bmaintains different process queues based on the current state of each process.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Process Management",
+      "body": "Process Queues\nCPU Scheduling is the operating system mechanism that selects one process from the ready queue and allocates the CPU to it.\nThe aim of CPU scheduling is to improve CPU utilization, increase throughput, reduce waiting time, and ensure fairness among processes.\nCPU Scheduling is the operating system mechanism that selects one process from the ready queue and allocates the CPU to it\nThe aim of CPU scheduling is to improve CPU utilization, increase throughput, reduce waiting time, and ensure fairness among processes\nReady Queue\nI/O Waiting Queue(s)\nEnd\nJob Queues\nI/O \nReady Queue\nI/O Waiting Queue(s)\nEnd\nJob Queues\nI/O",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Scheduler",
+      "body": "Schedulers & Process Queues\nSchedulers operate on Process Queues\nEach scheduler has a specific role in process movement\nSchedulers",
+      "notes": "Moving on, schedulers work directly with process queues to manage the movement of processes.\u000b Each scheduler performs a specific role, ensuring that processes move efficiently between different states until execution is complete.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Process Queues",
+      "body": "1 Ready Queue\nContains all processes that are ready to execute\nWaiting for CPU allocation\nManaged by the CPU scheduler\nProcesses enter this queue after creation or when they finish I/O\nP1\nP2\nP3",
+      "notes": "Now, let's begin with the Ready Queue. This queue contains all the processes that are\u000b fully prepared to execute but are still waiting for CPU allocation.\u000b It's managed by the CPU scheduler, and processes typically enter this queue either\u000b right after they're created or after completing an I/O operation.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Process Queues",
+      "body": "2 Waiting (Blocked) Queue\nThese processes cannot run until the event occurs\u000b\nAfter the event: they move back to Ready Queue\nHolds processes that are waiting for some event\nI/O completion\nResource availability\nSignal/interrupt",
+      "notes": "Moving on, a process isn't always ready to use the CPU. \u000bIf it's waiting for an I/O operation to finish, a resource to become available, or a signal or interrupt, \u000bit's moved to the Waiting Queue. During this time, it can't execute. \u000bOnce the event is completed, the process returns to the Ready Queue and waits for CPU allocation.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Process Queues",
+      "body": "3 Job Queue\nContains all processes in the system\nIncludes processes waiting to be admitted into memory\nManaged by the Long-Term Scheduler (Job Scheduler)",
+      "notes": "Next, the Job Queue contains all the processes present in the system,\n including those that are still waiting to be loaded into memory. \u000bThe Long-Term Scheduler checks this queue and decides which processes should be admitted into memory for execution.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Process Queues",
+      "body": "4 Device Queues\nWhen I/O is completed → move to Ready Queue\nEach I/O device maintains its own queue, contains processes waiting for that particular device\nDisk queue\nPrinter queue\nKeyboard queue",
+      "notes": "Moving on, each I/O device maintains its own Device Queue. \u000bSo, if a process is waiting to use a disk, printer, or keyboard, it's placed in the corresponding queue. \u000bOnce the I/O operation is completed, the process moves back to the Ready Queue for execution.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Scheduling Criteria",
+      "body": "Scheduling Criteria",
+      "notes": "Now we will be learning about the Scheduling Criteria.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "CPU Scheduling",
+      "body": "What is CPU Scheduling?\nCPU Scheduling is the method the OS uses to choose which process gets the CPU next when many are waiting\nCPU Scheduling\nProcesses 1\nProcesses 2\nProcesses 3\nOperating system",
+      "notes": "Now, when multiple processes are waiting in the Ready Queue, only one can use the CPU at a time. \u000bCPU scheduling is the mechanism the operating system uses to decide which process should get the CPU next.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Scheduling Criteria",
+      "body": "Definition\nScheduling Criteria are the performance metrics or parameters used to evaluate and compare different CPU Scheduling Algorithms\nScheduling Criteria",
+      "notes": "Next, before comparing different scheduling algorithms, we need a way to measure their performance.\n These measures are called scheduling criteria, and they help us evaluate how effectively a scheduling algorithm performs.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Scheduling",
+      "body": "Benefits\nEvaluate how efficiently CPU time is used\nCompare scheduling algorithms\nSelect the right algorithm for system goals\nMeasure system performance objectively",
+      "notes": "Moving on, these scheduling criteria help us judge how well a scheduling algorithm performs. \u000bThey allow us to evaluate CPU utilization, compare different algorithms, \u000bchoose the one that best fits our system's goals, and measure performance in a fair and objective way",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Scheduling Criteria",
+      "body": "Key Scheduling Criteria\nThere are five main criteria used to evaluate CPU scheduling algorithms\nEach criterion measures a different aspect of scheduling performance",
+      "notes": "“Tasks mean any operations a computer performs — like calculating numbers, running programs, displaying a webpage, or saving files. Basically, everything you do on a computer is a task handled by both hardware and software together.”",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Five Key Scheduling Criteria",
+      "body": "CPU Utilization\nCPU Utilization is the percentage of time the CPU is actively executing processes (not idle)\nCPU Utilization Maximize\nGoal: Maximize CPU utilization (keep CPU as busy as possible)",
+      "notes": "Now, let's look at the first scheduling criterion—CPU Utilization. \u000bIt tells us how much of the time the CPU is actually busy executing processes instead of sitting idle.\u000bThe objective is to keep the CPU as active as possible and maximize its utilization.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Five Key Scheduling Criteria",
+      "body": "Throughput\nThroughput is the number of processes completed per unit of time\nThroughput Maximize\nGoal: Maximize throughput (complete more processes in less time)",
+      "notes": "Next, we have Throughput. It refers to how many processes the system can complete in a given amount of time.\u000b A better scheduling algorithm aims to increase throughput by finishing more processes in less time.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Five Key Scheduling Criteria",
+      "body": "Turnaround Time \nTurnaround Time is the total time taken from process submission to process completion\nTurnaround Time Minimize\nGoal: Minimize turnaround time(Make processes finish faster)",
+      "notes": "Moving on, Turnaround Time is the total time a process takes from the moment it's submitted until it finishes execution. \u000bThe goal is to keep this time as low as possible so that processes complete faster.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Five Key Scheduling Criteria",
+      "body": "Waiting Time\nWaiting Time is the total amount of time a process spends waiting in the Ready Queue before getting CPU time\nWaiting Time Minimize\nGoal: Minimize waiting time(Reduce waiting as much as possible)",
+      "notes": "Next, let's look at Waiting Time. \u000bThis is the total time a process spends waiting in the Ready Queue before it gets CPU time. \u000bA good scheduling algorithm tries to minimize this waiting time so processes don't stay in the queue for too long.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Five Key Scheduling Criteria",
+      "body": "Response Time\nResponse Time is the time from when a process is submitted until it produces its first response\nResponse Time Minimize\nGoal: Reduce response time, (especially for interactive systems)",
+      "notes": "Finally, we have Response Time, which focuses on how quickly a process starts responding after it's submitted.\u000b This is especially important for interactive applications, where users expect an immediate response, \u000bso the goal is to keep this delay as low as possible.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Scheduling Criteria",
+      "body": "Importance of Scheduling Criteria",
+      "notes": "Now, let's quickly understand why these scheduling criteria matter. \u000bEfficient resource utilization ensures the CPU is used effectively. \u000bFairness gives every process a reasonable chance to execute. \u000bResponsiveness helps the system react quickly to user requests. \u000bAnd predictability ensures consistent and reliable performance",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "CPU Scheduling",
+      "body": "CPU Scheduling",
+      "notes": "Next we will learn about the CPU Scheduling",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Scheduling Criteria",
+      "body": "How Scheduling Works?\nScheduling can operate in two fundamental ways\nCPU Scheduling In OS\nNon-Preemptive Scheduling\nPreemptive Scheduling\nThese two approaches determine when and how the CPU can be taken away from a running process",
+      "notes": "Now, let's see how CPU scheduling actually works. Broadly, scheduling follows two approaches: \u000bPreemptive and Non-Preemptive. The key difference is whether the \u000boperating system can interrupt a running process and assign the CPU to another one.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Scheduling Criteria",
+      "body": "1. Preemptive Scheduling\nIn Preemptive Scheduling, the operating system can forcibly take the CPU away from a currently running process and allocate it to another process\nKey Characteristic\nThe operating system has the authority to interrupt a running process, even if the process hasn't completed execution",
+      "notes": "First, let's understand Preemptive Scheduling. \u000bIn this approach, the operating system can interrupt a running process whenever needed and\u000b assign the CPU to another process. In other words, \u000ba process doesn't have to finish its execution before the CPU can be taken away.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "When Does Preemption Occur?",
+      "body": "When Does Preemption Occur?\nPreemptive Scheduling\nPreemption Conditions: CPU can be taken away when\nHigher Priority Process Arrives\nTime Quantum Expires\nI/O Completion of a Higher-Priority Process",
+      "notes": "Now, let's see when preemption actually happens. \u000bThe CPU can be taken away if a higher-priority process arrives, \u000bwhen the assigned time quantum expires, \u000bor when an I/O-bound process becomes ready again with a higher priority.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "When Does Preemption Occur?",
+      "body": "When Does Preemption Occur?\nPreemptive Scheduling\nPreemption Conditions: CPU can be taken away when\nA more important process enters Ready Queue\nCurrent process is moved back to Ready Queue\nHigher Priority Process Arrives\nTime Quantum Expires\nI/O Completion of a Higher-Priority Process",
+      "notes": "Now, let's look at the first situation where preemption occurs.\u000b If a higher-priority process enters the Ready Queue, the operating system immediately gives preference to it. \u000bAs a result, the currently running process is interrupted and moved back to the Ready Queue,\u000b allowing the higher-priority process to use the CPU.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "When Does Preemption Occur?",
+      "body": "When Does Preemption Occur?\nPreemptive Scheduling\nPreemption Conditions: CPU can be taken away when:\nHigher Priority Process Arrives:\nA more important process enters Ready Queue\nCurrent process is moved back to Ready Queue\nTime Quantum Expires:\nProcess has used its allocated time slice\nMust give chance to other processes\nSystem Requirements:\nOS needs to respond to urgent events\nBetter resource utilization needed\nPreemption Conditions: CPU can be taken away when\nProcess has used its allocated time slice\nMust give chance to other processes\nHigher Priority Process Arrives\nTime Quantum Expires\nI/O Completion of a Higher-Priority Process",
+      "notes": "Moving on, another situation where preemption happens is when a process has used up its assigned time quantum. \u000bInstead of allowing it to continue, the operating system gives other waiting processes a chance to execute, ensuring fair CPU sharing.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "When Does Preemption Occur?",
+      "body": "When Does Preemption Occur?\nPreemptive Scheduling\nPreemption Conditions: CPU can be taken away when\nOS needs to respond to urgent events\nBetter resource utilization needed\nHigher Priority Process Arrives\nTime Quantum Expires\nI/O Completion of a Higher-Priority Process",
+      "notes": "Finally, preemption can also occur when an I/O operation finishes and \u000ba higher-priority process becomes ready. \u000bIn such cases, the operating system quickly switches to that process \u000bto respond to urgent events and make better use of system resources.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Working",
+      "body": "Working\nPreemptive Scheduling\nProcess is selected and allocated CPU\nProcess begins execution\nDuring execution, OS continuously monitors for:\nTimer interrupts (time quantum expired)\nHigher priority process arrivals\nI/O completion of a higher-priority process\nProcess Flow",
+      "notes": "Now, let's see how preemptive scheduling works. \u000bA process is first selected and given the CPU to execute.\u000b While it's running, the operating system continuously checks for events like a timer interrupt, \u000bthe arrival of a higher-priority process, or the completion of I/O for a higher-priority process.\u000b If any of these occur, the CPU may be reassigned immediately.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Working",
+      "body": "Working\nPreemptive Scheduling\nIf preemption condition occurs:\nCurrent process is interrupted\nProcess state is saved (context switching)\nProcess moves back to Ready Queue\nNext process is scheduled\nOriginal process waits for next CPU allocation",
+      "notes": "If any of these conditions are met, the running process is interrupted,\u000b and its current state is saved through context switching.\u000b The process is then moved back to the Ready Queue, another eligible process gets the CPU, \u000band the interrupted process waits for its next turn to execute.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Analogy",
+      "body": "Analogy\n1. Preemptive Scheduling\nHow Non-Preemptive Scheduling Works\nProcess Flow:\nProcess is selected from Ready Queue by scheduler\nCPU is allocated to the process\nProcess executes continuously\nProcess runs until one of these occurs:\nCompletion: Process finishes execution\nI/O Request: Process needs input/output operation\nVoluntary Wait: Process enters waiting state\nOnly then does the next process get CPU\nNow picture a doctor treating patients. She's in the middle of a routine checkup when an accident victim is rushed in. She immediately pauses the checkup, attends to the emergency, and returns to the first patient afterward. The current patient doesn't get to finish just because they started — a more urgent case (higher priority) or a strict time limit can force the doctor to switch.",
+      "notes": "For example, a doctor treating patients. he's in the middle of a routine checkup when an accident victim is rushed in. \u000bhe immediately pauses the checkup, attends to the emergency, and returns to the first patient afterward. \u000bThe current patient doesn't get to finish just because they started — \u000ba more urgent case (higher priority) or a strict time limit can force the doctor to switch",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Advantages",
+      "body": "Advantages\nPreemptive Scheduling\nBetter Responsiveness\nFair CPU Sharing\nSuitable for Real-Time Systems",
+      "notes": "let's look at the advantages of preemptive scheduling. \u000bBetter responsiveness allows the system to react quickly to important tasks, \u000bfair CPU sharing ensures every process gets a chance to execute, \u000band it's well-suited for real-time systems, where timely execution is critical.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Disadvantages",
+      "body": "Disadvantages\nPreemptive Scheduling\nCommon scheduling algorithms that use preemptive approach\nMore Overhead\nComplex to Implement\nPossible Starvation",
+      "notes": "On the other hand, preemptive scheduling also has a few drawbacks. \u000bMore overhead is caused by frequent context switching, \u000bimplementation is more complex because the OS must constantly monitor running processes, \u000band starvation can occur if lower-priority processes keep getting postponed.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Examples",
+      "body": "Examples\nPreemptive Scheduling\nCommon scheduling algorithms that use preemptive approach\nRound Robin (RR)\nShortest Remaining Time First (SRTF)\nPriority Preemptive Scheduling\n03\n02\n01",
+      "notes": "Moving on, several scheduling algorithms follow the preemptive approach.\u000b Some common examples are Round Robin, Shortest Remaining Time First, \u000band Preemptive Priority Scheduling. We'll understand how each of these algorithms works in the upcoming sections.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "2. Non-Preemptive Scheduling",
+      "body": "2. Non-Preemptive Scheduling\nScheduling Criteria\nIn Non-Preemptive Scheduling, once the CPU is allocated to a process, that process keeps the CPU until it either\nDefinition\nCompletes its execution (terminates), OR\nVoluntarily releases the CPU (e.g., for I/O operation)\nKey Characteristic: The operating system cannot forcibly take \u000bthe CPU away from a running process",
+      "notes": "Now, let's look at Non-Preemptive Scheduling. \u000bIn this approach, once a process gets the CPU, \u000bit continues executing until it either completes its execution or voluntarily gives up the CPU, \u000bsuch as while waiting for an I/O operation. Unlike preemptive scheduling, \u000bthe operating system cannot interrupt a running process.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Working",
+      "body": "Working\n2. Non-Preemptive Scheduling\nProcess is selected from Ready Queue by scheduler\nCPU is allocated to the process\nProcess executes continuously\nProcess Flow",
+      "notes": "Next, let's understand how it works. \u000bThe scheduler first selects a process from the Ready Queue and allocates the CPU to it.\u000b Once execution begins, the process continues running without interruption \u000buntil it finishes or releases the CPU on its own.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Working",
+      "body": "Working\n2. Non-Preemptive Scheduling\nProcess runs until one of these occurs:\nCompletion: Process finishes execution\nI/O Request: Process needs input/output operation\nVoluntary Wait: Process enters waiting state\nOnly then does the next process get CPU\nProcess Flow",
+      "notes": "After that, the process keeps running until it either completes its execution,\u000b requests an I/O operation, or voluntarily enters the waiting state. \u000bOnly after one of these events does the scheduler select the next process for execution.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Analogy",
+      "body": "Analogy\n2. Non-Preemptive Scheduling\nPicture people lined up at an ATM. Once someone steps up and starts their transaction, they use the machine until they're completely done — checking balance, withdrawing cash, printing receipt. Even if the person behind them is in a huge rush, they must wait. The machine is handed over only when the current user finishes and walks away on their own. Control is given up voluntarily.",
+      "notes": "Consider an ATM.Once someone steps up and starts their transaction,\u000b they use the machine until they're completely done —\u000b checking balance, withdrawing cash, printing receipt. \u000bEven if the person behind them is in a huge rush, they must wait. The machine is handed over only \u000bwhen the current user finishes and walks away on their own.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Advantages",
+      "body": "Advantages\n2. Non-Preemptive Scheduling\nSimple to Implement\nNo Overhead of Frequent Switching\nPredictable Execution",
+      "notes": "Moving on, non-preemptive scheduling offers a few key advantages. \u000bPredictable execution lets a process run without interruption,\u000b it's simpler to implement since the scheduler makes fewer decisions, \u000band it avoids frequent context switching, reducing scheduling overhead.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Disadvantages",
+      "body": "Disadvantages\n2. Non-Preemptive Scheduling\nPoor Response Time\nRisk of Long Waiting Times\nPoor Responsiveness to Urgent Processes",
+      "notes": "However, non-preemptive scheduling has some limitations. Urgent processes may have to wait, \u000bleading to poor response time, and if a long process gets the CPU first, \u000bother processes might experience long waiting times before they can execute.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Examples",
+      "body": "Examples\n2. Non-Preemptive Scheduling\nCommon scheduling algorithms that use non-preemptive approach:\nFirst-Come, First-Served (FCFS)\nShortest Job First (SJF) - Non-Preemptive Version\nPriority  Non-Preemptive  Scheduling\nCommon scheduling algorithms that use non-preemptive approach\nFirst-Come, First-Served (FCFS)\nShortest Job First (SJF) - Non-Preemptive Version\nPriority  Non-Preemptive  Scheduling\nFirst-Come, First-Served (FCFS)\nShortest Job First (SJF)-Non-Preemptive Version\n Non-Preemptive  Priority Scheduling\n03\n02\n01",
+      "notes": "Finally, some commonly used non-preemptive scheduling algorithms are First-Come, First-Served (FCFS), \u000bNon-Preemptive Shortest Job First (SJF), and Non-Preemptive Priority Scheduling. \u000bWe'll discuss each of these algorithms in detail in the upcoming slides.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Overview",
+      "body": "Overview\nProcess Scheduling \nProcess Scheduling\nNon-Preemptive\u000bScheduling Algorithms\nFirst-Come, First-Served(FCFS)\nShortest Job First\nPriority Non-Preemptive Scheduling\nPreemptive\u000bScheduling Algorithms\nRound Robin (RR) Scheduling\nShortest Remaining Time First\nPriority Preemptive Scheduling\nHighest Response Ratio Next",
+      "notes": "Preemptive Scheduling – Disadvantages\n1. More Overhead\nFrequent context switching increases CPU work.\n2. Complex to Implement\nOS needs extra logic to interrupt and manage processes.\n3. Possible Starvation\nLow-priority tasks may keep getting pushed aside.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Comparison",
+      "body": "Comparison\nNon-Preemptive vs Preemptive Scheduling\nAspect\nControl\nImplementation\nPreemptive\nOS can forcibly take the CPU from a running process\nMore complex\nContext Switching\nFrequent → higher overhead\nResponsiveness\nVery good for interactive systems\nNon-Preemptive\nProcess keeps CPU until it finishes or waits\nSimple and easy\nLess frequent → lower overhead\nPoor for interactive or short tasks",
+      "notes": "Preemptive Scheduling – Disadvantages\n1. More Overhead\nFrequent context switching increases CPU work.\n2. Complex to Implement\nOS needs extra logic to interrupt and manage processes.\n3. Possible Starvation\nLow-priority tasks may keep getting pushed aside.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Preemptive",
+            "Non-Preemptive"
+          ],
+          [
+            "Control",
+            "OS can forcibly take the CPU from a running process",
+            "Process keeps CPU until it finishes or waits"
+          ],
+          [
+            "Implementation",
+            "More complex",
+            "Simple and easy"
+          ],
+          [
+            "Context Switching",
+            "Frequent → higher overhead",
+            "Less frequent → lower overhead"
+          ],
+          [
+            "Responsiveness",
+            "Very good for interactive systems",
+            "Poor for interactive or short tasks"
+          ],
+          [
+            "CPU Utilization",
+            "Generally better",
+            "Can be inefficient if long jobs block others"
+          ],
+          [
+            "Starvation Risk",
+            "Lower (fair chance for all)",
+            "Higher (short processes wait behind long ones)"
+          ],
+          [
+            "Use Cases",
+            "Interactive systems, time-sharing OS",
+            "Batch systems, embedded systems"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Preemptive",
+            "Non-Preemptive"
+          ],
+          [
+            "Control",
+            "OS can forcibly take the CPU from a running process",
+            "Process keeps CPU until it finishes or waits"
+          ],
+          [
+            "Implementation",
+            "More complex",
+            "Simple and easy"
+          ],
+          [
+            "Context Switching",
+            "Frequent → higher overhead",
+            "Less frequent → lower overhead"
+          ],
+          [
+            "Responsiveness",
+            "Very good for interactive systems",
+            "Poor for interactive or short tasks"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 59,
+      "title": "Aspect",
+      "body": "Aspect\nCPU Utilization\nStarvation Risk\nPreemptive\nGenerally better\nLower (fair chance for all)\nUse Cases\nInteractive systems, time-sharing OS\nNon-Preemptive\nCan be inefficient if long \u000bjobs block others\nHigher (short processes wait behind long ones)\nBatch systems, embedded systems\nComparison\nNon-Preemptive vs Preemptive Scheduling",
+      "notes": "Preemptive Scheduling – Disadvantages\n1. More Overhead\nFrequent context switching increases CPU work.\n2. Complex to Implement\nOS needs extra logic to interrupt and manage processes.\n3. Possible Starvation\nLow-priority tasks may keep getting pushed aside.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Preemptive",
+            "Non-Preemptive"
+          ],
+          [
+            "Control",
+            "OS can forcibly take the CPU from a running process",
+            "Process keeps CPU until it finishes or waits"
+          ],
+          [
+            "Implementation",
+            "More complex",
+            "Simple and easy"
+          ],
+          [
+            "Context Switching",
+            "Frequent → higher overhead",
+            "Less frequent → lower overhead"
+          ],
+          [
+            "Responsiveness",
+            "Very good for interactive systems",
+            "Poor for interactive or short tasks"
+          ],
+          [
+            "CPU Utilization",
+            "Generally better",
+            "Can be inefficient if long jobs block others"
+          ],
+          [
+            "Starvation Risk",
+            "Lower (fair chance for all)",
+            "Higher (short processes wait behind long ones)"
+          ],
+          [
+            "Use Cases",
+            "Interactive systems, time-sharing OS",
+            "Batch systems, embedded systems"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Preemptive",
+            "Non-Preemptive"
+          ],
+          [
+            "Fairness",
+            "Better CPU sharing among processes",
+            "A long job can hold the CPU for a long time"
+          ],
+          [
+            "Waiting",
+            "Better for short/interactive jobs",
+            "Long jobs may delay short jobs (convoy effect)"
+          ],
+          [
+            "Use Cases",
+            "Interactive systems, time-sharing OS",
+            "Batch systems, simple/cooperative schedulers"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 60,
+      "title": "Dispatcher & \u000bGantt Basics",
+      "body": "Dispatcher & \u000bGantt Basics",
+      "notes": "Now we will learn about the Dispatcher & \nGantt Basics.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Dispatcher",
+      "body": "Introduction\nThe dispatcher is the OS module that actually hands the \u000bCPU over to the process chosen by the short-term scheduler\nThe scheduler decides; the dispatcher does",
+      "notes": "Now, let's understand the role of the Dispatcher. \nOnce the short-term scheduler decides which process should run next, \u000bthe dispatcher takes over and actually transfers the CPU to that process.\u000b In simple terms, the scheduler decides, and the dispatcher executes that decision.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Dispatcher",
+      "body": "Introduction\nContext switching\nSave the state of the old process, load the state of the new one\nSwitching to user mode\u000bMove from kernel mode back to user mode\n1\n2\nTransfer Control\nTransfers control to the correct instruction so the selected process resumes or starts execution\n3\nThe dispatcher performs 3 jobs on every switch:",
+      "notes": "Moving on, dispatcher performs three important tasks on every switch:\u000bafter the scheduler selects a process, the dispatcher makes sure it's ready to run &\u000brestores the process's previously saved state, switches the CPU from kernel mode to user mode, \u000band then transfers control to the appropriate instruction so the process \u000bcan either resume from where it stopped or start executing.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Dispatcher",
+      "body": "Introduction\nCarries out that decision (mechanism)\nSelects which process runs (policy)\nCallout box (Scheduler vs Dispatcher):",
+      "notes": "Now, it's important not to confuse the scheduler with the dispatcher. \u000bThe scheduler acts as the brain by deciding which process should run next, \u000bwhile the dispatcher acts as the hands by carrying out that decision and giving the CPU to the selected process.",
+      "tables": [
+        [
+          [
+            "Scheduler = the brain"
+          ],
+          [
+            "Dispatcher = the hands"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 64,
+      "title": "Dispatcher",
+      "body": "Dispatch Latency\nDispatch latency = the time the dispatcher takes to stop one process and start another running.\nIt includes: context switch time + mode switch time + time to jump to the program\nThe dispatcher runs during every single process switch, so it must be as fast as possible.\nLower dispatch latency → higher CPU efficiency \u000b(less time wasted between processes)",
+      "notes": "Finally, every time the CPU switches from one process to another, \u000bthe dispatcher takes a small amount of time to complete the switch. \u000bThis includes saving and restoring process information, switching to user mode, \u000band transferring control to the new process. Since this happens during every process switch,\u000blower dispatch latency means less CPU time is wasted and overall system efficiency improves.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Gantt Chart",
+      "body": "Introduction\nA Gantt chart is a horizontal bar chart that shows which process is using the CPU at each point in time.\nX-axis = time. Each bar = one process running during that time interval\nWe use it to visualize the schedule and to calculate completion time, turnaround time, and waiting time",
+      "notes": "Now, before we study the scheduling algorithms, let's understand the Gantt Chart. \u000bIt's a horizontal chart where the X-axis represents time, and each bar represents\u000b the process running during that time interval. It helps us visualize the execution sequence \u000band calculate important metrics like completion time, turnaround time, and waiting time.",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Gantt Chart",
+      "body": "Example\nA Gantt chart is a horizontal bar chart that shows which process is using the CPU at each point in time.\nX-axis = time. Each bar = one process running during that time interval\nWe use it to visualize the schedule and to calculate completion time, turnaround time, and waiting time",
+      "notes": "Now, let's see how to read a Gantt Chart using an example.\u000b Here, we have four processes with CPU burst times of 8, 4, 9, and 5 units. \u000bSince we're following FCFS scheduling, the processes execute in the order they arrive, \u000bwhich is P1, P2, P3, and P4. \u000bThe numbers below the chart represent the cumulative time at which each process finishes execution.",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Scheduling Concepts, Criteria & Types",
+      "body": "Multithreading\nThread Types, Models \nIntroduction to Threads\nThread Operations & Multicore\nProcess Vs Threads\nConcurrency & Parallelism\nTypes of Parallelism\nIntroduction to Scheduling\nThe CPU-I/O burst cycle\nSchedulers & Process Queues\nScheduling Criteria\nCPU utilization & throughput\nTurnaround time, waiting time, response time\nCPU Scheduling\nPreemptive & Non - Preemptive\nThe Dispatcher & Gantt Basics\nScheduling Criteria\nSchedulers & Process Queues\nThe CPU-I/O burst cycle\nCPU utilization & throughput, Turnaround time, waiting time, response time\nIntroduction to Scheduling\nThe Dispatcher \u000b& Gantt Basics\nCPU Scheduling\nPreemptive & Non - Preemptive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Scheduling Algorithms | Part I",
+      "body": "",
+      "notes": "In the next session we will be learning about the Scheduling Algorithms | Part I.",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/18LYW62abndAD3c9kZK1Lcdq9IBW4Yx7OrODKEg_lllg/edit"
+}

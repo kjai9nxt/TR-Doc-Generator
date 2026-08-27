@@ -1,0 +1,508 @@
+{
+  "session_no": 2,
+  "source_file": "Introduction to Operating System",
+  "deck_title": "Introduction to Operating System",
+  "n_slides": 63,
+  "summary": "\n    - Slide 2: Introduction to Operating System\n    - Slide 3: Recap\n    - Slide 4: Introduction to Operating System\n    - Slide 5: What is a Computing System?\n    - Slide 6: What is a Computing System?\n    - Slide 7: Overview of Computer Hardware\n    - Slide 8: Introduction to Computer Hardware\n    - Slide 9: Computer Hardware\n    - Slide 10: Hardware Internal Components\n    - Slide 11: Memory\n    - Slide 12: Memory\n    - Slide 13: Memory\n    - Slide 14: Hardware Internal Components\n    - Slide 15: Memory\n    - Slide 16: CPU\n    - Slide 17: CPU\n    - Slide 18: CPU\n    - Slide 19: CPU\n    - Slide 20: CPU Architecture\n    - Slide 21: Hardware Internal Components\n    - Slide 22: Hardware Internal Components\n    - Slide 23: Memory\n    - Slide 24: Hardware Internal Components\n    - Slide 25: Hardware Internal Components\n    - Slide 26: Computer Hardware\n    - Slide 27: Hardware External Components Interfaces\n    - Slide 28: Hardware External Components Interfaces\n    - Slide 29: Ports\n    - Slide 30: Ports\n    - Slide 31: Hardware & Software\n    - Slide 32: Quiz Time!\n    - Slide 33: Operating System\n    - Slide 34: Introduction to OS\n    - Slide 35: Introduction to OS\n    - Slide 36: Introduction to OS\n    - Slide 37: Introduction to OS\n    - Slide 38: Introduction to OS\n    - Slide 39: Introduction to OS\n    - Slide 40: What is an Operating System?\n    - Slide 41: Introduction to OS\n    - Slide 42: Examples of Operating System\n    - Slide 43: Examples of Operating System\n    - Slide 44: Examples of Operating System\n    - Slide 45: Examples of Operating System\n    - Slide 46: Types of Software\n    - Slide 47: Software\n    - Slide 48: Software\n    - Slide 49: Types of Software\n    - Slide 50: System Software\n    - Slide 51: Types of Software\n    - Slide 52: OS Components\n    - Slide 53: Introduction to Operating System\n    - Slide 54: Introduction to Operating System\n    - Slide 55: Introduction to Operating System\n    - Slide 56: Operating System\n    - Slide 57: From Components to Functions\n    - Slide 58: From Components to Functions\n    - Slide 59: Quiz Time!\n    - Slide 60: Introduction to Operating System\n    - Slide 61: OS Functions and Services",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to Operating System",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Understanding Binary System\nData Representation\nNumber Systems\nBinary & Decimal Numbers\nCharacter Encoding\nASCII, UTF-8",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Introduction to Operating System",
+      "body": "Introduction to Operating System\nOperating System\nInternal Components, \nExternal Components\nTypes of Software\nSystem Software, \nApplication Software\nIntroduction\nOverview of Computer Hardware\nOS Components",
+      "notes": "In today’s session, we’ll start with the basic concept of file handling in Python. \nWe’ll also explore Python File Handling Modes to interact with files .\u000bAlright, let’s dive right into it!",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "What is a Computing System?",
+      "body": "Introduction\n A computing system is a combination of hardware and software that work together to perform tasks, such as processing data, running applications, and managing resources\nHardware\nSoftware",
+      "notes": "have you ever wondered what makes a computer actually work? \u000bA computing system is a combination of hardware and software working together. \u000bWhile hardware provides the physical components, software gives them instructions\u000b to perform tasks like processing data and running applications.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "What is a Computing System?",
+      "body": "Hardware & Software \nHardware\nSoftware\nThe physical components of a computer \nPrograms and instructions that control hardware",
+      "notes": "Next, let's understand these two components. Hardware refers to the physical parts of a computer that we can see and touch, \u000bwhile software consists of the programs and instructions that tell the hardware what to do. \u000bBoth are essential for a computing system to function properly.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Overview of Computer Hardware",
+      "body": "Overview of Computer Hardware",
+      "notes": "Now we will understand about the Overview of Computer Hardware",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Introduction to Computer Hardware",
+      "body": "Computer Hardware\nExternal components\nInternal components",
+      "notes": "Computer hardware can be broadly classified into internal and external components.\u000bInternal components, like the processor and memory, are placed inside the computer and perform core operations. \u000bExternal components, such as the monitor, keyboard, and mouse, allow us to interact with the computer.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Computer Hardware",
+      "body": "Internal Components\nComponent parts that are found inside the computer\nMotherboard\nHard Disk , RAM & CPU\nGraphics Card (GPU)\nRegisters\nBIOS\nUEFI etc.",
+      "notes": "let's look at the internal components of a computer. \u000bThese are the parts located inside the system that perform essential operations.\u000bSome common examples include the motherboard, CPU, RAM, hard disk, graphics card, registers, \u000band firmware like BIOS and UEFI, each playing a specific role in the computer's functioning.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Hardware Internal Components",
+      "body": "MotherBoard\nThe motherboard is the computer's central communications backbone connectivity point through which all components and external components connect",
+      "notes": "Next, have you ever wondered what connects all the components inside a computer? \u000bThat's the role of the motherboard. It acts as the main circuit board, allowing internal and external components to communicate and work together seamlessly.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Memory",
+      "body": "Hard Drive\nNon-volatile storage\nResponsible for storing permanent and temporary data\nSSD (Solid-state drives) are much faster than regular HDDs (Hard-disk drives)",
+      "notes": "Moving on, the hard drive is the computer's non-volatile storage, \u000bwhich means it retains data even when the power is turned off. \u000bIt stores the operating system, applications, and user files. \u000bToday, SSDs(Solid-state drives) are preferred over HDDs(Hard-disk drives) because they provide much faster data access and better performance.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Memory",
+      "body": "RAM is volatile memory\nData remains in RAM if the computer is on, but it's lost when the computer is turned off\nRAM is much faster to read and write than other types of storage\nRAM\nRAM",
+      "notes": "Next, let's understand RAM, or Random Access Memory. \u000bIt is volatile memory, meaning it stores data only while the computer is powered on. \u000bSince RAM is much faster than permanent storage, \u000bit temporarily holds the data and programs that the CPU is currently using.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Memory",
+      "body": "RAM vs Hard Drive",
+      "notes": "Manufacturing of the ram is expensive. 8GB - 1TB - 4000/-",
+      "tables": [
+        [
+          [
+            "RAM",
+            "HARD Drive"
+          ],
+          [
+            "RAM is volatile memory",
+            "Hard drive is a nonvolatile memory"
+          ],
+          [
+            "Relatively Expensive",
+            "Relatively Cheaper"
+          ],
+          [
+            "Faster Data Access",
+            "Relatively Slower Data Access"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Hardware Internal Components",
+      "body": "Central Processing Unit (CPU)\nThe CPU (Central Processing Unit or processor) is responsible for processing all information from programs\nIt processes many instructions from different programs every second",
+      "notes": "Moving on, the CPU, or Central Processing Unit, is often called the brain of the computer.\u000b It executes instructions from programs, performs calculations, and processes millions of instructions every second to keep the system running smoothly.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Memory",
+      "body": "Registers\nRegisters are a type of computer memory used to quickly accept, store, and transfer data and instructions that are being used immediately by the CPU",
+      "notes": "Next, have you ever wondered where the CPU keeps the data it needs instantly?\u000b That's the role of registers. They are the fastest type of memory, \u000bused to temporarily store data and instructions that the CPU is currently processing.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "CPU",
+      "body": "CPU Instruction Set\nPrograms on computer are broken down into very small and simple instructions\nAdd two numbers\nLoad value from Memory Location\nStore Value to Memory Location",
+      "notes": "Moving on, have you ever wondered how the CPU understands a program? \u000bEvery program is broken down into small, simple instructions, \u000bsuch as adding two numbers, loading data from memory, or storing data back into memory. \u000bThe CPU executes these instructions one by one.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "CPU",
+      "body": "CPU Clock Speed\nThe clock speed measures the number of cycles CPU can execute per second\nMeasured in gigahertz (GHz)\n1 GHz = 1 Billion clock cycles per second \nA higher clock speed means a faster CPU",
+      "notes": "Next, what determines how fast a CPU works? It's the clock speed, \u000bwhich indicates how many processing cycles the CPU performs every second. \u000bIt is measured in gigahertz (GHz), where 1 GHz equals one billion clock cycles per second. \u000bGenerally, a higher clock speed means the CPU can execute instructions faster.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "CPU",
+      "body": "CPU Cores\nA core is an individual processing unit inside the CPU.\nEach core can execute instructions independently — like a small CPU inside the main CPU\nMultiple cores may work together to perform parallel operations",
+      "notes": "Moving on, let's understand what a CPU core is. \nA core is an individual processing unit inside the CPU, and each core can execute instructions independently on its own. \nWith multiple cores, the CPU can perform multiple tasks in parallel, improving overall performance and efficiency.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "CPU",
+      "body": "Running Applications\nRunning applications are loaded into RAM\nExecutes the instruction\n Data required for current computation loaded to register\nApplications\nRegisters\nRegisters",
+      "notes": "Next, let's see what happens when you run an application. It is first loaded from storage into RAM. \nThe data and instructions needed immediately are then moved to the CPU registers, \u000band finally, the CPU executes those instructions to run the application.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "CPU Architecture",
+      "body": "32-bit and 64-bit Systems\nA 32-bit processor includes a 32-bit register, which can store 232 values\nCan support upto 4 GB RAM\nA 64-bit processor includes a 64-bit register, which can store 264\nCan support up to billions of GB of RAM",
+      "notes": "Moving on, the difference between 32-bit and 64-bit systems lies in the size of their registers. \u000bA 32-bit processor can store 2³² values and supports up to 4 GB of RAM, \u000bwhereas a 64-bit processor can store 2⁶⁴ values and supports much larger amounts of RAM, \u000bmaking it ideal for modern systems.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Hardware Internal Components",
+      "body": "Graphics Processing Unit (GPU)\nSpecialized processor designed to deal with specific types of instructions efficiently\n3D Rendering\nGames\nDeep Learning",
+      "notes": "Next, let's look at the Graphics Processing Unit, or GPU. \nIt is a specialized processor designed to handle tasks that involve large-scale parallel computations efficiently, such as 3D rendering, gaming, and deep learning applications.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Hardware Internal Components",
+      "body": "CPU vs GPU",
+      "notes": "Moving on, let's compare the CPU and GPU. \u000bA CPU is designed to handle a wide variety of tasks and typically has a few powerful cores.\u000b In contrast, a GPU has thousands of smaller cores, \u000bmaking it highly efficient at performing many operations in parallel, such as graphics processing and AI workloads.",
+      "tables": [
+        [
+          [
+            "CPU",
+            "GPU"
+          ],
+          [
+            "A CPU can perform a variety of different instructions",
+            "GPU can perform a specialized set of instructions"
+          ],
+          [
+            "Has few cores (around 2 - 8)",
+            "Has 1000s of Cores, good at parallelization"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 23,
+      "title": "Memory",
+      "body": "Data Access Time\nData Access Time is the amount of time a storage device (like registers, RAM, hard disk) takes to locate and deliver the requested data to the CPU",
+      "notes": "Moving on, data access time refers to how quickly a storage device(like registers, RAM, hard disk)\u000b can retrieve the required data and make it available to the CPU.\u000bRegisters are the fastest, with an access time of less than 2 nanoseconds and transfer speeds of over 100 GB/s. \u000bRAM takes around 50–100 nanoseconds with speeds of 25–50 GB/s, \u000bwhile hard disks are much slower, taking 5–10 milliseconds and transferring data at around 100–250 MB/s.",
+      "tables": [
+        [
+          [
+            "Storage Devices",
+            "Access Times",
+            "Data Transfer Speed"
+          ],
+          [
+            "Registers",
+            "< 2 nanoseconds",
+            "Highest (100+ GB/s)"
+          ],
+          [
+            "RAM",
+            "~ 50–100 nanoseconds",
+            "25–50+ GB/s"
+          ],
+          [
+            "Hard Disk",
+            "~ 5–10 milliseconds",
+            "100–250 MB/s"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "title": "Hardware Internal Components",
+      "body": "BIOS\nBasic Input/Output System (BIOS) \nInitializes the hardware and gets our operating system up and running\nPower on\nPOST\nBeep Code\nError\nTests essential hardware \nLocates & Start OS\nApplies Hardware specific settings",
+      "notes": "Moving on, have you ever wondered what happens the moment you power on a computer? \u000bThe BIOS, or Basic Input/Output System, is the first software that runs.\u000b It checks whether the essential hardware is working through POST, reports any issues using beep codes, \u000bapplies the required hardware settings, and finally locates and starts the operating system.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Hardware Internal Components",
+      "body": "UEFI\nUEFI (Unified Extensible Firmware Interface) is similar to BIOS\nSupport for latest hardware\nSecure Boot\nFaster Boot",
+      "notes": "Next, UEFI, or Unified Extensible Firmware Interface, is the modern replacement for BIOS.\u000bIt provides better support for newer hardware, offers security features like Secure Boot, \u000band enables the system to boot faster than traditional BIOS.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Computer Hardware",
+      "body": "External Components\nExternal hardware components, or peripherals, are input/output devices\nKeyboard & Mouse\nMonitors & Speakers \nUSB Drives\nWeb Cam",
+      "notes": "Moving on, let's look at external components, also known as peripherals.\u000b These are devices connected to the computer that help us provide input or receive output. \u000bCommon examples include the keyboard, mouse, monitor, speakers, USB drives, and webcam.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Hardware External Components Interfaces",
+      "body": "Ports\nConnectors or Ports that allow us to plug in different external components to computer to enhance its capabilities",
+      "notes": "Next, how do we connect external devices to a computer? That's where ports come in. \u000bThey act as connection points, allowing peripherals such as \u000bUSB drives, keyboards, monitors, and other devices to communicate with the computer and extend its functionality.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Hardware External Components Interfaces",
+      "body": "Display and Audio Ports\nDVI Port\nVGA Port\nVideo Ports\nDisplay Port\nHDMI Port\nVideo & Audio Ports",
+      "notes": "Moving on, let's look at some common display and audio ports. \u000bDVI and VGA are primarily used to transmit video signals,\u000b while Display Port and HDMI can carry both video and audio, \u000bmaking them the preferred choice for connecting modern monitors and TVs.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Ports",
+      "body": "USB Port",
+      "notes": "Next, one of the most commonly used ports is the USB port.\u000bOver time, USB has evolved into different types, including Type-A, Type-C, Mini USB, and Micro USB, \u000beach designed for specific devices and use cases.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Ports",
+      "body": "USB Port\nUSB (Universal Serial Bus) Port\nDesigned to standardize many peripheral connections\nAudio\nVideo\nData Transfer \nPower",
+      "notes": "USB, or Universal Serial Bus, was introduced to provide a standard way of connecting peripherals. \u000bBesides transferring data, USB ports can also carry power, audio, and even video, \u000bmaking them one of the most versatile ports available today.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Hardware & Software",
+      "body": "Understanding Software \nSoftware\nIncludes Operating System (OS) (Windows, Linux) and Applications (Word, Chrome, Games)\nOperating systems\nApplications\nWindows\nLinux\nWord\nChrome\nGames",
+      "notes": "So, we've explored the hardware components of a computer. \u000bNow, let's understand software, which is broadly classified into operating systems and applications. \u000bThe operating system, such as Windows or Linux, manages the hardware,\nwhile applications like Word, Chrome, and games help users perform specific tasks.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Operating System",
+      "body": "Operating System",
+      "notes": "Moving on , next we will be learning about the Operating System .",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Introduction to OS",
+      "body": "Hardware and Software\nNow that we understand hardware and software, let’s see an example of how they work together in a real-life scenario",
+      "notes": "Since, we've understood what hardware and software are individually. \u000bLet's see how they work together in a real-world scenario to understand the role of the operating system in connecting the two.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Introduction to OS",
+      "body": "Example\nCustomers place orders with the waiter\nWaiter passes the order to the chef\nChef cooks and gives it back to the waiter\nWaiter serves the food to the customer",
+      "notes": "let's understand this with a simple restaurant example. \u000bThe customer places an order with the waiter, who communicates it to the chef.\u000b Once the food is prepared, the waiter brings it back to the customer.\u000b In the same way, we'll see how the operating system acts as an\u000b intermediary between applications and the computer's hardware.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Introduction to OS",
+      "body": "What Happens Without Coordination?\nWhat happens if the chef had to take orders from every customer directly?",
+      "notes": "Next, what do you think would happen if every customer went directly to the chef instead of placing orders through the waiter?\u000b It would create confusion, delays, and make it difficult to manage multiple orders efficiently.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Introduction to OS",
+      "body": "Waiter as a Coordinator\nSomeone is needed to coordinate orders, manage the kitchen, and serve customers efficiently\nWaiter\nSet up the dining area \nCoordinate orders\nServe customers",
+      "notes": "to avoid this confusion, we need someone to coordinate everything.\u000b In a restaurant, that's the waiter. The waiter takes orders, coordinates with the kitchen, \u000bserves customers, and ensures everything runs smoothly and efficiently.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Introduction to OS",
+      "body": "OS as a Coordinator\nSimilarly, a computer needs a manager to coordinate between users, applications, and hardware, that manager is the Operating System (OS)",
+      "notes": "Now, just as a waiter coordinates everything in a restaurant, a computer also needs a coordinator. \u000bThat's the Operating System, which acts as a bridge between the user, applications, and hardware, ensuring they work together efficiently.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Introduction to OS",
+      "body": "What is an Operating System?\nAn operating system (OS) is a software that acts as an interface between a computer's hardware and the user, managing all its resources and basic operations\nOperating System\nHardware resources\nSoftware resources\nManages",
+      "notes": "So lets define an Operating System\u000bIt is a software that acts as an interface between the user and the computer's hardware.\u000b—> It manages both hardware and software resources, \u000bensuring that programs run efficiently and the system operates smoothly.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "What is an Operating System?",
+      "body": "How the Operating System works ?\nUsers\nApplication\nOperating System\nHardware\nCPU\nI/O\nRAM",
+      "notes": "let's see how an Operating System works. Users interact with applications,\u000b and those applications communicate with the Operating System. \u000bThe OS then manages the hardware resources, such as the CPU, memory, and input/output devices, \u000band returns the results back to the application and the user.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Introduction to OS",
+      "body": "Examples of Operating System\nOperating System\nDesktop Operating Systems\nWindows\nLinux\nMac OS\nChrome OS\nMobile Operating Systems\nAndroid\nIOS",
+      "notes": "Finally, there are different operating systems designed for different devices. \u000bDesktop operating systems include Windows, Linux, macOS, and ChromeOS,\u000b while mobile operating systems include Android and iOS. Although they run on different devices,\u000b they all perform the same core role of managing hardware and software resources.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Examples of Operating System",
+      "body": "Desktop Operating Systems\nWindows\nMost widely used desktop OS globally\nKnown for extensive software compatibility\nCommon in business and personal computing",
+      "notes": "Moving on, let's start with Windows, the most widely used desktop operating system.\u000b It is known for its broad software compatibility and is commonly used in \u000bhomes, businesses, and educational institutions around the world.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Examples of Operating System",
+      "body": "Desktop Operating Systems\nmacOS\nPopular for creative and design work\nKnown for stability, security, and ease of use",
+      "notes": "Next, let's look at macOS, Apple's desktop operating system. \u000bIt is widely preferred for creative and design-related work and is well known for its \u000bstability, security, and user-friendly experience.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Examples of Operating System",
+      "body": "Desktop Operating Systems\nLinux\nOpen-source OS with multiple distributions (Ubuntu, Fedora, etc.)\nWidely used on servers and by developers\nGrowing popularity for desktop use",
+      "notes": "Moving on, Linux is an open-source operating system available in multiple distributions, \nsuch as Ubuntu and Fedora. It is widely used on servers and by developers,\u000b and its popularity as a desktop operating system continues to grow.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Examples of Operating System",
+      "body": "Mobile Operating Systems\nAndroid \nLinux-based, open-source\nDesigned for touch-based, mobile devices\niOS \nApple's mobile OS  for iPhone/iPad\nKnown for security and smooth performance",
+      "notes": "Finally, let's look at the two most popular mobile operating systems. \u000bAndroid is a Linux-based, open-source operating system designed for touchscreen devices.\u000b iOS, on the other hand, is Apple's operating system for iPhones and iPads, \u000bknown for its strong security and smooth performance.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Types of Software",
+      "body": "Types of Software",
+      "notes": "Now we will learn about the Types of Software",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Software",
+      "body": "Where Does an Operating System Belong?\nIs an operating system the only software a computer needs?",
+      "notes": "Moving on, we've learned about the operating system, but is it the only software a computer needs? \u000bNot really. Let's understand where the operating system fits among the different types of software used in a computer system.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Software",
+      "body": "Types of Software\nComputers use different types of software for different purposes\nTypes of Software\nSystem Software\nApplication Software\nControls how the computer operates\nHelps users perform specific tasks",
+      "notes": "Next, software can be broadly classified into two types: system software and application software. \u000bSystem software manages and controls the computer's operations, \u000bwhile application software helps users perform specific tasks, \u000bsuch as browsing the internet, editing documents, or playing games.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Types of Software",
+      "body": "System Software\nWhat is a System Software?\nSoftware that manages computer hardware\nProvides a platform for applications to run",
+      "notes": "Moving on, what exactly is system software?\u000b It is the software responsible for managing the computer's hardware and providing a platform on which application software can run efficiently.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "System Software",
+      "body": "Components of System Software\nOperating System\nThe main controller (Windows, Linux, MacOS)\nDevice Drivers\nEnable communication with hardware devices (printer drivers, graphics drivers)\nUtility Programs\nSystem maintenance tools (antivirus, disk cleanup, file managers)\nKey Point\nAn Operating System is the most important type of system software!",
+      "notes": "Next, system software consists of several components. \u000b1. The Operating System acts as the main controller,  \u000b2.  device drivers enable communication with hardware devices, \u000b3 and utility programs help maintain and optimize the system. \u000bAmong these, the Operating System is the most important system software.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Types of Software",
+      "body": "Application Software\nPrograms designed to help users perform specific tasks\nApplication Software",
+      "notes": "Finally, application software is designed to help users perform specific tasks.\u000bDepending on the purpose, it can include web browsers, media applications, games, and development tools. \u000bUnlike system software, these programs are used directly by users to accomplish everyday activities.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "OS Components",
+      "body": "OS Components",
+      "notes": "Next we will be learning about the OS Components",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Introduction to Operating System",
+      "body": "Components of OS\nHardware\nOperating System",
+      "notes": "Moving on, let's understand the main components of an Operating System.\u000b Applications run in the user space, while the kernel acts as the core of the OS. \u000bThe kernel manages processes, memory, files, and I/O, while acting as a bridge between applications and the hardware.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Introduction to Operating System",
+      "body": "User Space\nUser space is everything outside the kernel\nPrograms we interact with directly are part of User Space\nText Editors, Music Players, User Interfaces, etc",
+      "notes": "Next, let's understand User Space. It is the part of the system where user applications run. \nThese are the programs we interact with directly, such as text editors, music players, and the user interface, while the operating system manages their access to hardware.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Introduction to Operating System",
+      "body": "OS Kernel\nKernel is the core component of OS \nInteracts directly with hardware\nManages the hardware resources \nHardware",
+      "notes": "Next, the kernel is responsible for the core operations of the operating system.\u000b It communicates directly with the hardware and manages processes, memory, files, and input/output devices, \u000bensuring that applications can use hardware safely and efficiently.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Operating System",
+      "body": "Linux Kernel",
+      "notes": "Moving on, have you ever wondered what Linux actually is? \u000bAt its core, Linux is a free and open-source kernel developed by Linus Torvalds. \nDifferent operating systems built using the Linux kernel are called Linux distributions, or simply Linux distros.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "From Components to Functions",
+      "body": "How Components Enable OS Functions\nComponents = The parts that make up the OS\nFunctions = What these parts actually do\nKey Point\nComponents work together to perform functions",
+      "notes": "Next, we've understood the components of an operating system.\u000b But what do these components actually do?\u000b The components work together to perform different functions, allowing the operating system to manage the computer efficiently.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "From Components to Functions",
+      "body": "How Components Enable OS Functions\nKernel\nProcess Manager\nMemory Manager\nFile Systems\nI/O System\nComponents\nFunctions\nResource management\nRunning Programs\nAllocating RAM\nOrganizing Data\nDevice control\nSecurity Module\nSecurity & Protection",
+      "notes": "let's connect the components we've learned with the functions they perform. \u000bThe kernel manages system resources, the process manager runs programs, \u000bthe memory manager allocates RAM, the file system organizes data, the I/O system controls devices, \u000band the security module protects the system. Together, these components enable the operating system to function efficiently.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Introduction to Operating System",
+      "body": "Overview of Computer Hardware\nInternal Components\nExternal Components\nOperating System\nIntroduction\nTypes of Software\nSystem Software\nApplication Software\nOS Components\nOS Components",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "OS Functions and Services",
+      "body": "",
+      "notes": "In the next session , we will be learning OS Functions and Services Session.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1dnszbfjLQzr4TUYxFYNXUNLDgErKKqAfxlO6TOd4tWc/edit?usp=drive_link"
+}

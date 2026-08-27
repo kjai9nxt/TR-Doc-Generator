@@ -1,0 +1,893 @@
+{
+  "session_no": 18,
+  "source_file": "Deadlock Characterization & Prevention",
+  "deck_title": "Deadlock Characterization & Prevention",
+  "n_slides": 79,
+  "summary": "\n    - Slide 2: Deadlock Characterization & Prevention\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Resource Allocation Graph (RAG)\n    - Slide 6: Deadlock & System Model\n    - Slide 7: What Is a Deadlock?\n    - Slide 8: What Is a Deadlock?\n    - Slide 9: What Is a Deadlock?\n    - Slide 10: Deadlock?\n    - Slide 11: Deadlock?\n    - Slide 12: Deadlock?\n    - Slide 13: System Model for Deadlocks\n    - Slide 14: Processes, Resources & the Request Cycle\n    - Slide 15: System Model for Deadlocks\n    - Slide 16: Resource Lifecycle\n    - Slide 17: System Model for Deadlocks\n    - Slide 18: Preemption\n    - Slide 19: Resource Usage Cycle\n    - Slide 20: Necessary Conditions\n    - Slide 21: Four Conditions for Deadlock\n    - Slide 22: Four Conditions for Deadlock\n    - Slide 23: Four Conditions for Deadlock\n    - Slide 24: Deadlock\n    - Slide 25: Deadlock\n    - Slide 26: Deadlock\n    - Slide 27: Deadlock\n    - Slide 28: Deadlock Condition\n    - Slide 29: Three Problems Often Confused\n    - Slide 30: Three Problems Often Confused\n    - Slide 31: Three Problems Often Confused\n    - Slide 32: Three Problems Often Confused\n    - Slide 33: Three Problems Often Confused\n    - Slide 34: Quiz Time!\n    - Slide 35: Resource Allocation Graph (RAG)\n    - Slide 36: Modeling Deadlock with a Graph\n    - Slide 37: Modeling Deadlock with a Graph\n    - Slide 38: Resource Allocation Graph (RAG)\n    - Slide 39: Resource Allocation Graph (RAG)\n    - Slide 40: Resource Allocation Graph\n    - Slide 41: Resource Allocation Graph\n    - Slide 42: Finding Deadlocks\n    - Slide 43: Detecting Deadlock via Cycles\n    - Slide 44: Detecting Deadlock via Cycles\n    - Slide 45: Single Instance vs Multiple Instances\n    - Slide 46: Single Instance vs Multiple Instances\n    - Slide 47: Single Instance vs Multiple Instances\n    - Slide 48: Single Instance vs Multiple Instances\n    - Slide 49: Single Instance vs Multiple Instances\n    - Slide 50: Single Instance vs Multiple Instances\n    - Slide 51: Single Instance vs Multiple Instances\n    - Slide 52: Single Instance vs Multiple Instances\n    - Slide 53: Single Instance vs Multiple Instances\n    - Slide 54: Single Instance vs Multiple Instances\n    - Slide 55: Handling Deadlocks\n    - Slide 56: Handling Deadlocks\n    - Slide 57: Handling Deadlocks\n    - Slide 58: Handling Deadlocks\n    - Slide 59: Handling Deadlocks - Four Strategies\n    - Slide 60: Strategy Comparison & Trade-offs\n    - Slide 61: Strategy Comparison & Trade-offs\n    - Slide 62: Deadlock Prevention\n    - Slide 63: Breaking the First Two Conditions\n    - Slide 64: Deadlock Prevention\n    - Slide 65: Deadlock Prevention\n    - Slide 66: Deadlock Prevention : Eliminating Hold-and-Wait\n    - Slide 67: Deadlock Prevention\n    - Slide 68: Forced Release & Resource Ordering\n    - Slide 69: Forced Release & Resource Ordering\n    - Slide 70: Forced Release & Resource Ordering\n    - Slide 71: Prevention Comes at a Cost\n    - Slide 72: Prevention Comes at a Cost\n    - Slide 73: Prevention Comes at a Cost\n    - Slide 74: Quiz Time!\n    - Slide 75: Deadlock Characterization & Prevention\n    - Slide 76: Deadlock Characterization & Prevention\n    - Slide 77: Deadlock Avoidance: Banker's Algorithm",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Deadlock Characterization & Prevention",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Classic Synchronization Problems & IPC\nProducer–Consumer Problem\nThe bounded-buffer coordination challenge\nReaders–Writers Problem\nSafely sharing a database\nDining Philosophers Problem\nResource sharing and deadlock\nProducer–Consumer Problem\nThe bounded-buffer coordination challenge\nSleeping Barber Problem\nReaders–Writers Problem\nSafely sharing a database\nDining Philosophers Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Classic Synchronization Problems & IPC\nInter-Process Communication (IPC)\nModels and mechanisms\nPipes\nOrdinary & Named",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Resource Allocation Graph (RAG)",
+      "body": "Resource Allocation Graph (RAG)\nNecessary Conditions\nWhat a deadlock is, System model\nMutual exclusion, Hold-and-wait, No preemption, Circular wait\nDeadlock & System Model\nHandling Deadlocks\nModeling Deadlocks(Graph)\nFour Methods\nDeadlock Prevention\nAttacking each necessary condition, Trade-offs\nDeadlock Characterization & Prevention",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Deadlock & System Model",
+      "body": "Deadlock & System Model",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "What Is a Deadlock?",
+      "body": "Processes Stuck Waiting Forever\nA set of processes is in a deadlock state \nWhen every process in the set is waiting for an event that can be caused only by another process in the same set",
+      "notes": "Alright, let's understand what a deadlock is. Imagine multiple processes are waiting for resources, \u000bbut none of them can continue because each one is waiting for another process to release something. \u000bThis creates a situation where everyone keeps waiting indefinitely, and no process is able to make progress.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "What Is a Deadlock?",
+      "body": "Processes Stuck Waiting Forever\nIn an operating system, that \"event\" is almost always the release of a resource\nEach deadlocked process is holding at least one resource and is waiting to acquire a resource currently held by another process in the set\nResource 1\nResource 2",
+      "notes": "Moving on, let's see why deadlocks occur in an operating system. Here, the event each process \u000bis waiting for is usually the release of a resource. Notice that every process already holds one \u000bresource but is waiting for another resource that's currently held by another process.\u000b Since no process releases its resource, they all remain blocked, creating a deadlock situation.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "What Is a Deadlock?",
+      "body": "Processes Stuck Waiting Forever\nSince no process will give up what it holds until its own request is granted, the waiting is circular and can never resolve on its own",
+      "notes": "Now, let's understand why this situation cannot resolve automatically.\u000b Each process continues to hold its allocated resource until it gets the one it's waiting for.\u000b As a result, every process ends up waiting on another process in a circular chain.\u000b Since no one releases its resource first, the cycle continues forever, and the deadlock persists.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Deadlock?",
+      "body": "It involves a set of processes — never a single process alone\nEach process holds at least one resource and waits for another held within the set\nThe dependency is circular — the waiting forms a closed loop\nThe wait is permanent — only outside intervention (killing or preempting a process) can break it, so throughput for those processes drops to zero\nProcesses Block Each Other",
+      "notes": "Moving on, a deadlock always involves a group of processes rather than a single process.\u000b In this situation, every process is holding a resource while waiting for another one within the same group.\u000b This creates a circular dependency, so none of the processes can continue. \u000bAs a result, the deadlock remains until an external action, \u000bsuch as terminating or preempting a process, breaks the cycle.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Deadlock?",
+      "body": "Resource 1\nResource 2\nAssigned to\nWaiting for\nWaiting for\nAssigned to\nProcesses Block Each Other",
+      "notes": "This diagram shows a deadlock cycle where two processes are waiting for resources held by each other.\u000b Process 1 holds Resource 1 and waits for Resource 2, while Process 2 holds Resource 2 and \u000bwaits for Resource 1, causing both processes to remain blocked.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Deadlock?",
+      "body": "Analogy\n1\n2",
+      "notes": "Four cars reach a four-way intersection at once, each edging into the junction and then waiting for the car on its right to move first.\u000b Every driver is blocked by another driver, so none can proceed — \u000band it stays that way until someone is forced to back out.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "System Model for Deadlocks",
+      "body": "Processes & Resources\nTo reason about deadlock precisely, the OS is modelled as a collection of resource types:\nA request for a type can be satisfied by any one of its instances\n Where each type has a fixed number of identical instances\nR1\nR2\nR3",
+      "notes": "Now, before we understand how deadlocks occur, let's look at the system model. \u000bHere, the operating system is viewed as a collection of different resource types. \u000bEach resource type has a fixed number of identical instances, and whenever a process requests a resource,\u000b it can be allocated any available instance of that particular resource type.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Processes, Resources & the Request Cycle",
+      "body": "Example\nA system with three identical printers has one resource type with three instances, and a process needing \"a printer\" is happy with any of them\nPrinter 1\nPrinter 2\nPrinter 3",
+      "notes": "Moving on, let's understand this with an example. Consider a system that has three identical printers. \u000bHere, printers form a single resource type with three instances. So, when a process requests a printer,\u000b it doesn't require a specific one—it can use any available printer instance.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "System Model for Deadlocks",
+      "body": "Processes, Resources & Request Cycle\nThe important one is request: if the resource is not free, the requesting process blocks and waits until an instance becomes available\nAllocation itself is not a process step — it is the internal action the OS performs to grant an instance, i.e. the successful transition out of the request state\nRequest\nUse\nRelease\nA process uses a resource in three steps",
+      "notes": "Next, let's look at the resource usage cycle. Every process follows three steps: \u000bit first requests a resource, then uses it, and finally releases it. The request step is the most important\u000bbecause if the required resource isn't available, the process is blocked until an instance becomes free. \u000bOnce that happens, the operating system allocates the resource, allowing the process to continue.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Resource Lifecycle",
+      "body": "Three-Step Cycle\nA Type groups identical resources; any free instance satisfies a request\nRequest\nThe process asks the OS; if nothing is free, it blocks\nUse\nThe process operates on the granted resource\nRelease\nThe process returns the resource so others can use it",
+      "notes": "Moving on, let's summarize the resource lifecycle. A resource type represents a group of identical resources, \u000bso any available instance can satisfy a request. \u000bA process first requests a resource, and if none is available, it waits. \u000bOnce the resource is granted, the process uses it and finally releases it, making it available for other processes.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "System Model for Deadlocks",
+      "body": "Resource Types & Instances",
+      "notes": "Now, let's put these steps together. A process begins by requesting a resource from the operating system.\u000b If no instance is available, it waits until one is allocated. After receiving the resource, \u000bthe process performs its task using it. Once the work is complete, the process \u000breleases the resource back to the operating system so it can be assigned to another process.",
+      "tables": [
+        [
+          [
+            "Step (by the process)",
+            "What Happens?"
+          ],
+          [
+            "Request",
+            "Process asks the OS for a resource; blocks if none is free. The OS allocates a free instance to complete this step"
+          ],
+          [
+            "Use",
+            "Process uses the resource"
+          ],
+          [
+            "Release",
+            "Process returns the resource to the OS"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 18,
+      "title": "Preemption",
+      "body": "Resources are also classified by whether they can be taken back:\nPreemptable\nCan be safely taken from a process and restored later\nCPU state is saved, and memory is swapped to disk if needed, so these rarely cause deadlock\nNon-Preemptable\nCannot be taken without causing failure (printer, lock, tape drive)\nDeadlock problems center on these\nResource Classification",
+      "notes": "Moving on, resources can also be classified based on whether the operating system can take them back. \u000bSome resources are preemptable, meaning they can be safely reclaimed and restored later, \u000bso they rarely lead to deadlocks. Others are non-preemptable and cannot be taken away \u000bwithout causing a failure. Since these resources must be released by the process itself, \u000bdeadlocks mainly occur with them.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Resource Usage Cycle",
+      "body": "Analogy",
+      "notes": "Finally, think of resource management like borrowing a library book. You first request the book, \u000bthen use it, and finally return it so someone else can borrow it. Operating systems manage resources \u000bin the same way, ensuring that shared resources are requested, used, and released in an orderly manner.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Necessary Conditions",
+      "body": "Necessary Conditions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Four Conditions for Deadlock",
+      "body": "All Must Hold Together\nDeadlock is not random — it can occur only when four specific conditions all hold at the same time These are known as the Coffman conditions\nMutual Exclusion\nHold-and-Wait\nNo Preemption\nCircular Wait",
+      "notes": "Now, let's move to the conditions required for a deadlock. A deadlock doesn't happen by chance.\u000b It occurs only when four conditions exist together at the same time. \u000bThese are called the Coffman conditions: Mutual Exclusion, Hold-and-Wait, \u000bNo Preemption, and Circular Wait. In the next few slides, we'll understand each of these conditions one by one.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Four Conditions for Deadlock",
+      "body": "All Must Hold Together\nThe practical importance is this: \nif we can guarantee even one of them never holds, deadlock becomes impossible\nMutual Exclusion\nA resource is held by only one process at a time\nHold-and-Wait\nA process holds one resource while waiting for another\nNo Preemption\nA resource cannot be forcibly taken back\nCircular Wait\nA closed chain of processes each waits for the next",
+      "notes": "these four conditions together determine whether a deadlock can occur., The conditions are Mutual Exclusion,\u000b where a resource is used by only one process at a time; Hold-and-Wait, \u000bwhere a process keeps one resource while requesting another; No Preemption, \u000bwhere the operating system cannot forcibly reclaim a resource; and Circular Wait, \u000bwhere the waiting forms a closed loop among processes",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Four Conditions for Deadlock",
+      "body": "All Must Hold Together",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Deadlock",
+      "body": "Four Conditions\nThe first three conditions describe how a single process behaves with resources; \nThe fourth describes a relationship across several processes\nCircular Wait",
+      "notes": "there's an important distinction to notice here. The first three conditions—\u000bMutual Exclusion, Hold-and-Wait, and No Preemption—describe how an individual process \u000binteracts with resources. Circular Wait is different because it involves multiple processes\u000b and the dependency that forms between them.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Deadlock",
+      "body": "Mutual Exclusion\nAt least one resource must be non-sharable, usable by only one process at a time\nA printer is non-sharable; a read-only file is sharable, and sharable resources never cause deadlock\nHold-and-Wait\nA process is holding at least one resource while requesting more\nIf a process always obtained everything it needed at once, it could never sit holding one resource and waiting for another\nFour Conditions",
+      "notes": "Now, let's understand the first two conditions. Mutual Exclusion means the resource must be one that cannot be shared,\u000b so only a single process can use it at a time. That's why a printer can contribute to a deadlock,\u000b whereas a read-only file cannot. Hold-and-Wait means a process doesn't release the resource\u000b it already has while requesting another one. If it received all the required resources together, this situation would never arise.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Deadlock",
+      "body": "No Preemption\nA resource cannot be forcibly taken from a process; it is released only voluntarily when the process finishes\nA half-completed print job cannot be snatched away mid-print.\nCircular Wait\nThere is a set {P0, P1, …, Pn} where P0 waits for a resource held by P1, P1 waits for one held by P2, …, and Pn waits for one held by P0 — a closed loop of dependencies\nFour Conditions",
+      "notes": "Next, let's look at the remaining two conditions. No Preemption means once a process has a resource, \u000bthe operating system cannot take it back forcefully; the process must release it on its own after completing its work. \u000bCircular Wait occurs when multiple processes end up waiting on one another in a closed loop, \u000bwith each process depending on the next, causing none of them to proceed.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Deadlock",
+      "body": "All four must hold at the same time for deadlock to be possible — which is exactly why breaking any single one (the basis of prevention) makes deadlock impossible\nFour Conditions",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Condition",
+            "Meaning",
+            "Example"
+          ],
+          [
+            "Mutual Exclusion",
+            "Only one process can use a resource at a time",
+            "A printer, a lock"
+          ],
+          [
+            "Hold-and-Wait",
+            "Holds resources while requesting more",
+            "Holds printer, waits for scanner"
+          ],
+          [
+            "No Preemption",
+            "A resource is released only voluntarily",
+            "Print job cannot be pulled mid-print"
+          ],
+          [
+            "Circular Wait",
+            "A closed loop of waiting processes",
+            "P0 waits P1, P1 waits P2, Pn waits P0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 28,
+      "title": "Deadlock Condition",
+      "body": "Mutual Exclusion\nHold-and-Wait\nNo Preemption\nCircular Wait\nAnalogy",
+      "notes": "Mutual Exclusion — one meeting room, one team at a time.\nHold-and-Wait — holding the mixing bowl while waiting for the oven.\nNo Preemption — a car can't be pulled out mid car-wash.\nCircular Wait - a loop of people each needing what the next one is holding, so no one can start.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Three Problems Often Confused",
+      "body": "Same Symptom, Different Cause",
+      "notes": "Now, before moving ahead, let's distinguish between three terms that are often confused because they appear similar. \u000bAlthough all of them affect progress, the reason is different in each case.\u000b In Deadlock, all the involved processes are blocked permanently. In Starvation, \u000bthe system continues to run, but one process keeps waiting. In Livelock, processes \u000bremain active and keep responding to one another, yet no useful work gets completed.",
+      "tables": [
+        [
+          [
+            "Term",
+            "What Happens",
+            "Progress?"
+          ],
+          [
+            "Deadlock",
+            "Processes block forever, each waiting on another",
+            "None — fully frozen"
+          ],
+          [
+            "Starvation",
+            "A process waits indefinitely while others are repeatedly preferred",
+            "System progresses, one process does not"
+          ],
+          [
+            "Livelock",
+            "Processes keep changing state reacting to each other but do no useful work",
+            "Active, but no real progress"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 30,
+      "title": "Three Problems Often Confused",
+      "body": "Process Blocking\nCircular waiting for resources\nProcess denied resources indefinitely\nContinuous state changes, no progress\nSame Symptom, Different Cause",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Three Problems Often Confused",
+      "body": "Difference",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Deadlock",
+            "Starvation",
+            "Livelock"
+          ],
+          [
+            "Process State",
+            "Blocked (waiting)",
+            "Waiting / not scheduled",
+            "Active (constantly changing state)"
+          ],
+          [
+            "Resource Access",
+            "Each waits on a resource another holds",
+            "Continuously denied its turn",
+            "Available, but coordination keeps failing"
+          ],
+          [
+            "Main Cause",
+            "Circular dependency among processes",
+            "Unfair scheduling / priority bias",
+            "Flawed coordination logic (over-reacting)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 32,
+      "title": "Three Problems Often Confused",
+      "body": "Difference",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Deadlock",
+            "Starvation",
+            "Livelock"
+          ],
+          [
+            "Progress",
+            "None — permanently stuck",
+            "System progresses; one process never does",
+            "None useful — busy but no forward progress"
+          ],
+          [
+            "Detection",
+            "Resource Allocation Graph (cycle search)",
+            "Monitoring wait time / aging analysis",
+            "Progress monitoring over time"
+          ],
+          [
+            "Resolution",
+            "Prevention, avoidance, or detect-and-recover",
+            "Priority aging, fair scheduling",
+            "Randomized backoff, timeouts"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 33,
+      "title": "Three Problems Often Confused",
+      "body": "Deadlock\nLivelock\nStarvation\nAnalogy",
+      "notes": "Deadlock is two cars nose-to-nose with engines off. Livelock is both drivers swerving the same way again and again, \u000bstill blocking each other. Starvation is one car always waved to the back of the queue.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Resource Allocation Graph (RAG)",
+      "body": "Resource Allocation Graph (RAG)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Modeling Deadlock with a Graph",
+      "body": "Resource Allocation Graph (RAG)\nThe four conditions are easier to reason about as a picture than as words\nA Resource Allocation Graph (RAG) draws the request-allocate relationships directly, showing who wants what and who holds what",
+      "notes": "Moving on, instead of understanding deadlock only through definitions, \u000bwe can represent it visually using a Resource Allocation Graph, or RAG. \u000bThis graph captures the relationship between processes and resources by showing \u000bwhich resources are allocated and which ones are being requested, making it much easier to analyze deadlock situations.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Modeling Deadlock with a Graph",
+      "body": "Resource Allocation Graph (RAG)",
+      "notes": "Next, to read a Resource Allocation Graph correctly, we need to understand its two edge types. \u000bA request edge starts from a process and points to a resource type, \u000bshowing that the process is waiting for any available instance of that resource. \u000bAn assignment edge goes from a specific resource instance to a process, \u000bindicating that the operating system has already allocated that instance to the process.",
+      "tables": [
+        [
+          [
+            "Edge Type",
+            "Direction",
+            "Meaning"
+          ],
+          [
+            "Request",
+            "Process → Resource square (type)",
+            "Process wants any instance of this type"
+          ],
+          [
+            "Assignment",
+            "Dot (instance) → Process",
+            "A specific instance is already given to the process"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 38,
+      "title": "Resource Allocation Graph (RAG)",
+      "body": "Processes, Resources & Edges",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Resource Allocation Graph (RAG)",
+      "body": "Edge\nAssign Edge\nRequest Edge\nR\nP\nR\nP\nProcesses, Resources & Edges",
+      "notes": "There are two types of edges. A request edge goes from a process to a resource, \u000bshowing that the process is waiting for that resource. \u000bAn assignment edge goes from a resource to a process, indicating that the resource has already been allocated to that process. \u000bThese edges help us visualize resource allocation and identify possible deadlocks.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Resource Allocation Graph",
+      "body": "Request edge\nPoints from the process circle to the resource square as a whole (the outer container), because the process wants any instance of the type, not a specific one\nAssignment edge\nStarts from a specific dot inside the square and points to the process circle, showing that one particular instance has been claimed\nRequests & Assignments",
+      "notes": "Now, let's understand how these edges are drawn in a Resource Allocation Graph. \u000bA request edge connects a process to the resource type itself because the process\u000b is simply asking for any available instance. In contrast, an assignment edge begins from\u000b a particular resource instance and points to the process, indicating that this specific instance has already been allocated.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Resource Allocation Graph",
+      "body": "Analogy",
+      "notes": "Finally, think of a Resource Allocation Graph like an office where colleagues share stationery.\u000b If an arrow goes from a person to a stapler, it means, \"I want to use the stapler.\" \u000bIf the arrow goes from the stapler to the person, it means, \"I already have the stapler.\" \u000bThis simple analogy makes it easier to understand how request and assignment edges \u000brepresent resource usage in an operating system.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Finding Deadlocks",
+      "body": "Cycle Detection\nOnce the graph is drawn, deadlock detection becomes a search for cycles\nBut a cycle means different things depending on whether the resources involved have a single instance or many",
+      "notes": "once the Resource Allocation Graph is ready, detecting a deadlock comes down to checking for cycles in the graph. \u000bHowever, it's important to note that the meaning of a cycle depends on the type of resources involved.\u000b Whether the resources have a single instance or multiple instances changes how that cycle is interpreted, which we'll discuss next.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Detecting Deadlock via Cycles",
+      "body": "Deadlock or Not?\nA cycle\nIs a closed loop of arrows in the graph.\nSingle-instance resources\nA cycle always means deadlock\nMultiple-instance resources\nA cycle is necessary but not sufficient\nNo cycle\nGuarantees no deadlock",
+      "notes": "Next, let's see how to interpret the cycles we find in a Resource Allocation Graph. \u000bA cycle is simply a closed loop formed by the arrows in the graph. If every resource in that cycle \u000bhas only a single instance, then the cycle itself confirms a deadlock. However, when \u000bresources have multiple instances, a cycle alone does not guarantee a deadlock—\u000bit only indicates that one might exist. On the other hand, if the graph contains no cycle,\u000b we can conclude that there is no deadlock.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Detecting Deadlock via Cycles",
+      "body": "Resource Type",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Resource Type",
+            "Cycle Present?",
+            "Deadlock?"
+          ],
+          [
+            "Single instance each",
+            "Yes",
+            "Confirmed deadlock"
+          ],
+          [
+            "Multiple instances",
+            "Yes",
+            "Possible — needs a further check"
+          ],
+          [
+            "Any type",
+            "No",
+            "No deadlock"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 45,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "Single Instance\nR1\nP1\nP2\nP3\nR2\nP1 is holding R1\nP2 is holding R2\nP3 is Waiting for R2\nP3 is Waiting for R1\nCase 1\nNo cycle, no deadlock",
+      "notes": "Alright, this is a single-instance resource allocation graph with no cycle. \u000bHere, P1 holds R1, P2 holds R2, and P3 is waiting for both resources. \u000bSince there is no circular waiting, the system is not deadlocked, \u000band execution can continue once the required resources are released.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "Single Instance\nCase 1\nNo cycle, no deadlock \nP1 holds R1; P2 holds R2\nP3 is waiting for both R1 and R2\nBut P1 and P2 are not waiting for anything — they will finish and release R1 and R2, after which P3 gets both\nThere is no closed loop, so there is no deadlock — waiting alone is not deadlock",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "R1\nP1 is holding R1\nP2 is holding R2\nP1 is Waiting for R2\nP2 is Waiting for R1\nCase 2\nCycle, deadlock \nSingle Instance\nR2\nP2\nP1",
+      "notes": "Next, this is a single-instance resource allocation graph that contains a cycle. \u000bP1 holds R1 and waits for R2, while P2 holds R2 and waits for R1. \u000bSince each process is waiting for a resource held by the other, \u000ba deadlock occurs and neither process can proceed.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "Case 2\nCycle, deadlock\nSingle Instance\nP1 holds R1 and is waiting for R2.\nP2 holds R2 and is waiting for R1.\nThis forms the loop P1 → R2 → P2 → R1 → P1.\nEach holder is also a waiter, so neither can release — deadlock confirmed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "R1\nP1 is holding R1\nP2 is holding R2\nP1 is Waiting for R2\nP2 is Waiting for R1\nCase 3\nR2\nP2\nP1\nP3\nP3 is holding R2\nMultiple Instances\nCycle but no deadlock (diagram + matrix)",
+      "notes": "Finally, this example has multiple instances of R2. \u000bAlthough there is a cycle involving P1 and P2, another instance of R2 is held by P3, \u000bwhich can eventually be released. As a result, the cycle can be broken, \u000bso a cycle does not necessarily mean a deadlock in systems with multiple resource instances.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "Case 3\nCycle but no deadlock (diagram + matrix)\nP1 holds R1 and requests R2.\nP2 holds one instance of R2 and requests R1.\nP3 holds the other instance of R2 and requests nothing\nA cycle exists (P1 → R2 → P2 → R1 → P1), but P3 needs nothing — it finishes and releases its R2, which goes to P1; P1 then finishes and frees R1 for P2. No deadlock\nMultiple Instances",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "Multiple Instances",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Allocation",
+            "",
+            "Request",
+            ""
+          ],
+          [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "",
+            "Resource",
+            "",
+            "Resource",
+            ""
+          ],
+          [
+            "",
+            "R1",
+            "R2",
+            "R1",
+            "R2"
+          ],
+          [
+            "P1",
+            "1",
+            "0",
+            "0",
+            "1"
+          ],
+          [
+            "P2",
+            "0",
+            "1",
+            "1",
+            "0"
+          ],
+          [
+            "P3",
+            "0",
+            "1",
+            "0",
+            "0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 52,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "R1\nP1 is holding R1\nP2 is holding R2\nP1 is Waiting for R2\nP2 is Waiting for R1\nCase 4\nCycle WITH deadlock (diagram + matrix)\nR2\nP2\nP1\nP3\nP3 is holding R2\nMultiple Instances",
+      "notes": "Next, this example also has multiple resource instances, \u000bbut here the cycle actually results in a deadlock. P1 is waiting for R2, \u000bP2 is waiting for R1, and P3 is also holding an instance of R2 while waiting for R1.\u000b Since no process can release the resource another process needs, the cycle cannot be broken, and the system remains deadlocked.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "Case 4\nCycle WITH deadlock (diagram + matrix)\nMultiple Instances\nP1 holds R1 and requests R2.\nP2 holds one instance of R2 and requests R1.\nP3 holds the other instance of R2 and also requests R1.\nNow both R2 instances are held by processes (P2 and P3) that are both blocked waiting for R1, while P1 (holding R1) is blocked waiting for R2. No one can release — deadlock, despite multiple instances",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Single Instance vs Multiple Instances",
+      "body": "Multiple Instances",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Allocation",
+            "",
+            "Request",
+            ""
+          ],
+          [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          [
+            "",
+            "Resource",
+            "",
+            "Resource",
+            ""
+          ],
+          [
+            "",
+            "R1",
+            "R2",
+            "R1",
+            "R2"
+          ],
+          [
+            "P1",
+            "1",
+            "0",
+            "0",
+            "1"
+          ],
+          [
+            "P2",
+            "0",
+            "1",
+            "1",
+            "0"
+          ],
+          [
+            "P3",
+            "0",
+            "1",
+            "1",
+            "0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 55,
+      "title": "Handling Deadlocks",
+      "body": "Handling Deadlocks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Handling Deadlocks",
+      "body": "Four Strategies\nDetecting deadlock is only half the story — the OS needs a policy for dealing with it. There are four broad strategies, differing in when they act and how much they cost\nPrevention\nAvoidance\nDetection & Recovery\nIgnore (Ostrich Algorithm)",
+      "notes": "Now, identifying a deadlock is only part of the solution. The operating system also needs a strategy to handle it, \u000band these strategies mainly differ in when they take action and the cost involved. \u000bBroadly, there are four approaches: Prevention,avoidance, Detection & Recovery , Ignore(ostrich algorithm)",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Handling Deadlocks",
+      "body": "Prevention\nDesign the system so that at least one of the four necessary conditions can never hold. A structural, build-time guarantee\nAvoidance\nAt run time, use advance information about each process's maximum needs to grant a request only if the system stays in a \"safe state\" (the Banker's Algorithm)\nFour Strategies",
+      "notes": "Prevention takes a proactive approach by designing the system in such a way that \u000bat least one of the four necessary conditions for deadlock can never occur, making deadlock impossible by design. \u000bAvoidance, on the other hand, makes decisions at run time. Before granting a resource request,\u000b the operating system checks whether doing so keeps the system in a safe state using\u000b information about each process's maximum resource requirements. \u000bWe'll study the Banker's Algorithm, which follows this approach, in the next session.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Handling Deadlocks",
+      "body": "Detection & Recovery\nAllow deadlock to occur, run a detection algorithm periodically, then recover by aborting processes or preempting their resources \nIgnore (Ostrich Algorithm)\nAssume deadlock is so rare that it is cheaper to do nothing and simply restart if the system hangs\nFour Strategies",
+      "notes": "In Detection and Recovery, the operating system allows deadlocks to happen,\u000b periodically checks whether one has occurred, and then recovers by either terminating the \u000baffected processes or taking back their resources. The final approach is Ignore, also called the \u000bOstrich Algorithm, where the operating system assumes deadlocks are extremely rare and \u000bchooses not to handle them, simply restarting the system if it eventually becomes unresponsive.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Handling Deadlocks - Four Strategies",
+      "body": "Analogy",
+      "notes": "A hospital can vaccinate to prevent disease, screen for early symptoms,\u000b treat after diagnosis, or ignore a rare condition.\u000bSimilarly, an operating system can prevent deadlocks, avoid them through safety checks, \u000bdetect and recover after they occur, or ignore them if they are extremely uncommon.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Strategy Comparison & Trade-offs",
+      "body": "Overhead vs Safety vs Practicality\n Prevention is cheap on CPU but wastes resources; avoidance is the reverse.\nThe four strategies trade overhead against the strength of the guarantee — but \"overhead\" comes in two forms: \nCPU cost at run time, and \nResource waste from holding or restricting resources",
+      "notes": "Finally, each deadlock-handling strategy involves a trade-off between system safety and the overhead it introduces. \u000bHere, overhead refers to both the CPU time spent making decisions and the resource utilization \u000bcaused by holding or restricting resources. For example, Prevention requires very little \u000brun-time CPU effort but may leave resources underutilized, whereas Avoidance uses resources \u000bmore efficiently but incurs additional run-time computation to ensure the system always remains in a safe state.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Strategy Comparison & Trade-offs",
+      "body": "Overhead vs Safety vs Practicality",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Strategy",
+            "Approach",
+            "Overhead",
+            "Real-World Use"
+          ],
+          [
+            "Prevention",
+            "Blocks a necessary condition",
+            "Low CPU cost, but high resource underutilisation",
+            "Safety-critical systems"
+          ],
+          [
+            "Avoidance",
+            "Checks each request against a safe state",
+            "High CPU cost — a safety check on every request",
+            "Banker's Algorithm"
+          ],
+          [
+            "Detection & Recovery",
+            "Detect a cycle, then abort/preempt",
+            "Periodic detection + recovery cost",
+            "Database systems"
+          ],
+          [
+            "Ignore (Ostrich)",
+            "Do nothing; restart if stuck",
+            "Almost none",
+            "Linux, Windows desktops"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 62,
+      "title": "Deadlock Prevention",
+      "body": "Deadlock Prevention",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Breaking the First Two Conditions",
+      "body": "Deadlock Prevention\nPrevention works by designing the system so that one of the four conditions can never hold. We take them two at a time, with the technique and the reasoning for each",
+      "notes": "Moving on, let's now look at how deadlock prevention works in practice.\n The main idea is to design the system so that at least one of the four necessary conditions \nfor deadlock can never exist. We'll examine these conditions one by one, starting with the first two, \nand understand the technique used to break each condition along with the reasoning behind it.",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Deadlock Prevention",
+      "body": "Attacking Mutual Exclusion\nMake resources sharable \nSharable resources (e.g., read-only files) never need mutual exclusion, so they can never be part of a deadlock\nSpooling\nInstead of giving a process the printer directly, all output is written to a shared spool queue that the printer daemon drains. The printer becomes sharable\nLimitation\nMany resources are inherently non-sharable (a process truly writing to a device), and the spool space itself is finite and can fill up, so mutual exclusion usually cannot be removed entirely",
+      "notes": "Now, let's see how to break the Mutual Exclusion condition. \u000bThe idea is to make resources sharable whenever possible. For example, read-only files can be accessed \u000bby multiple processes simultaneously, so they cannot cause deadlocks. Another approach is spooling, \u000bwhere print requests are placed in a shared queue instead of giving the printer directly to a process. \u000bHowever, many resources are inherently non-sharable, and spool space is limited, so this condition cannot always be eliminated.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Deadlock Prevention",
+      "body": "Attacking Hold-and-Wait \nRequest everything up front\na process must acquire all the resources it will ever need before it starts, so it never holds some while waiting for others\nRelease-before-request\na process may request new resources only when it holds none; it must release everything first\nDrawbacks\nlow resource utilization (resources are held long before they are actually used) and possible starvation (a process needing several popular resources may wait indefinitely)",
+      "notes": "Next, another way to prevent deadlocks is by eliminating the Hold-and-Wait condition. \u000bThis can be done either by making a process collect all the resources it needs before it begins execution, \u000bor by requiring it to release its current resources before asking for new ones. While these approaches\u000b prevent a process from waiting while holding resources, they also reduce resource utilization and \u000bmay cause some processes to wait for a long time before getting everything they need",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Deadlock Prevention : Eliminating Hold-and-Wait",
+      "body": "Analogy",
+      "notes": "An exam invigilator makes every student collect all their stationery before the exam starts, not one item at a time.",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Deadlock Prevention",
+      "body": "Forced Release & Resource Ordering\nThe remaining two conditions are attacked by reclaiming resources when a process would otherwise block, and by imposing a fixed order on how resources may be requested",
+      "notes": "Moving on, the remaining two conditions are handled using different approaches. \u000bOne approach forces a process to release its resources if it would otherwise get blocked,\u000b while the other enforces a fixed order for requesting resources. Both techniques are designed to\u000b prevent the remaining deadlock conditions from occurring.",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Forced Release & Resource Ordering",
+      "body": "Attacking No Preemption\nIgnore (Ostrich Algorithm)\nIf a process holding some resources requests another that cannot be granted immediately, all of its currently-held resources are preempted (released)\nRestart\nThe process is restarted only when it can regain its old resources plus the new one it wanted\nWhere it applies?\nOnly to resources whose state can be easily saved and restored, such as CPU registers or memory — not to a printer mid-job",
+      "notes": "Now, another way to prevent deadlock is to allow resources to be taken back instead of letting a process wait indefinitely. \u000bSo, if a process can't get the next resource it needs, the operating system asks it to give up\u000b the resources it's already holding and lets it try again later. This approach is practical only\u000b for resources whose state can be saved and restored easily, such as CPU registers or memory, \u000bbut not for devices like a printer that's already in the middle of a task.",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Forced Release & Resource Ordering",
+      "body": "Attacking Circular Wait \nAssign an ordering\nGive every resource type a unique number F(R1), F(R2), …\nThe rule\nA process may request resources only in increasing order: after requesting Ri, it may request Rj only if F(Rj) > F(Ri)\nWhy it works?\nA circular wait would require some resource to be both lower and higher in the ordering than another, which is impossible, so no loop can ever form",
+      "notes": "Finally, the Circular Wait condition is prevented by introducing a fixed order for all resource types. \u000bOnce this ordering is defined, every process must follow the same sequence while requesting resources \u000band cannot go back to a lower-ordered resource after acquiring a higher one. Since every \u000bprocess follows a single direction in the ordering, a circular chain of waiting can never be formed, \u000bwhich eliminates the possibility of a deadlock.",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Forced Release & Resource Ordering",
+      "body": "Real-World Example\nTwo threads deadlock when they take two locks in opposite order\nThread A does lock(X) then lock(Y)\nwhile Thread B does lock(Y) then lock(X)\nIf A holds X and B holds Y, each waits forever\nThe fix is exactly this ordering rule: every thread acquires locks in the same global order",
+      "notes": "Now, let's connect this idea to a real-world scenario. Imagine two threads that both need two locks, \u000bbut they acquire them in different orders. One thread takes X before Y, while the other takes Y before X. \u000bIf each thread gets its first lock, both end up waiting for the other, resulting in a deadlock. \u000bThe solution is simple—every thread follows the same predefined lock order, ensuring this situation never arises.",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Prevention Comes at a Cost",
+      "body": "Safety Versus Utilization\nEvery prevention technique buys a deadlock-free guarantee at the cost of some flexibility or resource utilization",
+      "notes": "Moving on, while deadlock prevention guarantees that deadlocks cannot occur,\u000b that guarantee comes with a trade-off. By restricting how resources are requested or used, \u000bthe system loses some flexibility and may not utilize resources as efficiently.",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Prevention Comes at a Cost",
+      "body": "Safety Versus Utilization\nPrevention guarantees no deadlock, but often reduces concurrency and resource utilization",
+      "notes": "Finally, HERE WE HAVE  the trade-offs of each prevention technique. Every method successfully\u000b eliminates one of the necessary deadlock conditions, but each introduces its own limitation. |\u000bWhether it's limited sharing, reduced resource utilization, the overhead of saving and restoring state, \u000bor the need for a strict resource ordering, every guarantee comes at a cost. The key takeaway is that \u000bdeadlock prevention completely avoids deadlocks, but often sacrifices concurrency and efficient resource utilization.",
+      "tables": [
+        [
+          [
+            "Condition Attacked",
+            "Technique",
+            "Drawback"
+          ],
+          [
+            "Mutual Exclusion",
+            "Allow sharing / spooling",
+            "Not possible for all resources"
+          ],
+          [
+            "Hold-and-Wait",
+            "Request all resources upfront",
+            "Low utilization, possible starvation"
+          ],
+          [
+            "No Preemption",
+            "Force resource release",
+            "Costly state save and restore"
+          ],
+          [
+            "Circular Wait",
+            "Total ordering of resources",
+            "Rigid, hard to design the ordering"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 73,
+      "title": "Prevention Comes at a Cost",
+      "body": "Analogy",
+      "notes": "A housing society that locks every gate to stop intruders also slows down its own residents entering daily.",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Deadlock Characterization & Prevention",
+      "body": "Deadlock & System Model\nWhat a deadlock is\nSystem model\nNecessary Conditions\nMutual exclusion, Hold-and-wait\nNo preemption, Circular wait",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Deadlock Characterization & Prevention",
+      "body": "Resource Allocation Graph (RAG)\nModeling Deadlocks(Graph)\nHandling Deadlocks\nFour Methods\nDeadlock Prevention\nAttacking each necessary condition\nTrade-offs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Deadlock Avoidance: Banker's Algorithm",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "",
+      "body": "",
+      "notes": "Thank you",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1_DcxVTvNzB2kG3nCSDh84276TXovt0uQ_oomVuN6MT4/edit?slide=id.g3f27ba313c8_0_1551#slide=id.g3f27ba313c8_0_1551"
+}

@@ -136,6 +136,25 @@ const ROUTES = {
                              { id: 'r2', session_no: 29, title: 'File Systems', user_email: 'colleague@nxtwave.co.in', status: 'done', accepted: true, cost: {}, calls: [] }],
                              summary: { total_runs: 3, docs_built: 2, approved_docs: 2,
                                         gates_passed_docs: 1 } }] }] },
+  // COURSE RULES — what THIS course is written under, and what its learners already knew.
+  // A draft and an approved skill must be visibly different, or the approval step nobody
+  // can see is a step nobody takes.
+  '/skills': { course: 'Operating Systems', approved: 1, can_edit: true,
+               owner: 'dev@nxtwave.co.in', skills: [
+    { id: 1, text: 'Show the snippet before explaining it.', status: 'approved',
+      source: 'user', check: null },
+    { id: 2, text: 'Explain each snippet line by line.', status: 'draft',
+      source: 'requirements', source_quote: 'explain the code line by line',
+      check: { assert: 'field_present', field: 'walkthrough', when_block: 'code' } },
+  ] },
+  '/prereqs': { course: 'Operating Systems', can_edit: true,
+                prereqs: [{ prereq: 'Computer Networks', kind: 'course' },
+                          { prereq: 'JS Elsewhere', kind: 'external' }],
+                available: ['Computer Networks', 'Own Draft'],
+                report: { topics_indexed: 42, prereqs: ['Computer Networks'],
+                          overlaps: [{ session_no: 4, topic: 'Sockets',
+                                       prereq: 'Computer Networks',
+                                       takeaway: 'Sockets: the API' }] } },
   '/learned-rules': { rules: [{ text: 'Do not restate the paragraph in the bullets', scope: 'course', session_no: 30, source: 'judge', hits: 2, applies: true }], course: 'Operating Systems' },
   // An abandoned run for a DIFFERENT session than the one selected — the situation
   // that produces a document for a session you did not think you asked for.
@@ -265,11 +284,24 @@ function route(url, opts) {
     v.all_approved = APPROVED.length === v.chunks.length
     return v
   }
+  if (p === '/sync') return { job_id: 'syncjob' }
+  if (p === '/jobs/syncjob') return { status: 'done', logs: ['imported'], result: {
+    sessions: SESSIONS, changelog: [], errors: [], extraction_warnings: [],
+    counts: { sessions: 1, ingested: 0, cached: 0 } } }
   if (p === '/guided/g31/finalize') { FINALIZED.push(1); return { ok: true } }
   if (p === '/guided/g31') {
     const v = JSON.parse(JSON.stringify(ROUTES[p]))
     v.approved_chunks = [...APPROVED].sort((a, b) => a - b)
     v.all_approved = APPROVED.length === v.chunks.length
+    return v
+  }
+  if (p === '/bootstrap') {
+    // Echo the course that was ASKED for. The stub used to answer with the same course
+    // every time, so switching course looked like it bounced straight back — and any
+    // behaviour that depends on landing on a different course was untestable.
+    const asked = /[?&]course=([^&]*)/.exec(String(url))
+    const v = JSON.parse(JSON.stringify(ROUTES[p]))
+    if (asked) v.course = decodeURIComponent(asked[1])
     return v
   }
   if (p === '/curriculum') return { ...ROUTES[p], rows: SERVER_ROWS }
@@ -505,6 +537,17 @@ await click(indWs)
 check('back to Individual',
       $('.wsopt').find((b) => b.textContent.includes('Individual')).className.includes('on'))
 check('the Team tab disappears again', byLabel('Team') === undefined)
+// COMING BACK MUST LAND ON YOUR OWN COURSE. Only the team direction was handled, so
+// switching to Individual left the team's course selected — and it then showed in the
+// individual picker as the "currently open" entry, which is precisely the course this
+// workspace does not hold.
+const backOpts = $('.navselect option').map((o) => o.textContent.trim())
+console.log('       individual courses after coming back: ' + JSON.stringify(backOpts))
+check('no team course is left in the individual picker',
+      !backOpts.some((o) => /Operating Systems|Computer Networks/.test(o)),
+      JSON.stringify(backOpts))
+check('…and it landed on a course this user actually owns',
+      backOpts.some((o) => o.includes('Own Draft')), JSON.stringify(backOpts))
 
 console.log('\n== an open run names its own session, and flags a mismatch ==')
 await click(byLabel('Generate'))
@@ -601,6 +644,60 @@ check('…and cannot be pressed twice', finalBtn().disabled)
 check('…and it says how long this takes',
       text().includes('Assembling, grading and rendering'))
 
+console.log('\n== Course rules: what THIS course is written under ==')
+await click(byLabel('Course rules'))
+// Named against the course actually OPEN, not a literal: which course the tests above
+// leave selected is their business, and these rules belong to whichever it is.
+const openForRules = $('.navselect')[0].value
+check('the panel names the course that is open',
+      text().includes(`Course rules — ${openForRules}`),
+      `open=${openForRules}; heading=${$('h2').map((h) => h.textContent.trim())[0]}`)
+check('…and says these are the course\'s own, not the agent\'s',
+      text().includes('separate from') || text().includes('Agent rules'),
+      text().replace(/\s+/g, ' ').match(/.{0,80}Agent rules.{0,40}/)?.[0])
+check('an approved skill is listed', text().includes('Show the snippet before explaining it.'))
+check('…and a draft too', text().includes('Explain each snippet line by line.'))
+// THE PROPERTY THAT MATTERS: a draft has to look like one, or approval is invisible.
+check('a draft is visibly a draft', $('.skillrow.draft').length === 1,
+      `${$('.skillrow.draft').length} draft rows`)
+check('…and an approved skill visibly approved', $('.skillrow.approved').length === 1,
+      `${$('.skillrow.approved').length} approved rows`)
+check('only the draft is offered for approval',
+      $('button').filter((b) => b.textContent.trim() === 'Approve').length === 1,
+      `${$('button').filter((b) => b.textContent.trim() === 'Approve').length} approve buttons`)
+check('a skill with a machine check says so', text().includes('checked automatically'))
+// Path B's traceability, on screen: the reviewer can see the words it came from.
+check('a drafted skill shows the words it came from',
+      text().includes('explain the code line by line'),
+      text().replace(/\s+/g, ' ').match(/.{0,60}from your words.{0,60}/)?.[0])
+check('all three ways to add one are offered',
+      text().includes('Write one') && text().includes('From my requirements')
+      && text().includes('Import from a course'))
+check('prerequisites are listed', text().includes('Computer Networks'))
+check('…with what they cover', text().includes('42 topic'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}topic\(s\).{0,40}/)?.[0])
+check('…and the overlap is surfaced as a review signal',
+      text().includes('Sockets'), text().replace(/\s+/g, ' ').match(/.{0,80}Sockets.{0,40}/)?.[0])
+check('…and it says prerequisites may be REFERRED to, not that they are banned',
+      text().includes('refer to them freely'),
+      text().replace(/\s+/g, ' ').match(/.{0,60}freely.{0,30}/)?.[0])
+// A prerequisite need not be a course this agent holds — the common case is one taught
+// somewhere else, known only through its slides.
+check('a prerequisite taught elsewhere is listed', text().includes('JS Elsewhere'))
+check('…and marked as such, because the two differ in where the decks live',
+      $('.memberchip .mtag').length === 1,
+      `${$('.memberchip .mtag').length} tagged`)
+check('both ways to add one are offered',
+      text().includes('a course in this agent') && text().includes('One taught elsewhere'))
+await click($('button').find((b) => b.textContent.includes('One taught elsewhere')))
+check('…and the elsewhere form asks for a name and its deck links',
+      $('input').some((i) => i.placeholder?.includes('taught elsewhere'))
+      && $('textarea').some((t) => t.placeholder?.includes('presentation')),
+      'name + links')
+check('…and says whose the decks become',
+      text().includes('they\u2019go if it does') || text().includes('go if it does'),
+      text().replace(/\s+/g, ' ').match(/.{0,70}go if it does.{0,20}/)?.[0])
+
 console.log('\n== the budget lives in Settings, not in the curriculum actions ==')
 await click(byLabel('Curriculum'))
 check('no budget control among the curriculum actions',
@@ -615,7 +712,11 @@ check('…and states what is currently applied', text().includes('Currently appl
 
 console.log('\n== a course you own can be deleted, in two steps ==')
 // A course imported and no longer needed had to stay on the shelf for ever. The user
-// signed in here CREATED this one (courses[0].mine), so it is theirs to remove.
+// signed in here CREATED 'Operating Systems' and shared it with their team, so it is
+// theirs to remove — and it is reached through the TEAM workspace now, because a shared
+// course lives on the team's shelf and not also on the individual one.
+await click($('.wsopt').find((b) => b.textContent.includes('OS Curriculum Team')))
+await click(byLabel('Settings'))
 const delBtn = $('button').find((b) => b.textContent.includes('Delete “Operating Systems”'))
 check('the delete control is offered for a course you created', delBtn !== undefined)
 check('…and it warns that a team is working from it',
@@ -754,9 +855,19 @@ check('…and the actions that stayed are still there',
 console.log('\n== sharing a course with a team ==')
 check('a team that does NOT own it is offered', text().includes('Share with'))
 const shareSel = $('.sharebox select')[0]
-check('…and it is the only one listed',
-      Array.from(shareSel.options).filter((o) => o.value).map((o) => o.textContent)
-        .join() === 'Networks Team')
+// Computed against whichever course is actually open, rather than a hardcoded team name:
+// the workspace the tests above leave behind decides that, and only the teams that do NOT
+// already own the open course are offered.
+const openCourse = $('.navselect')[0].value
+const expectShare = [
+  { name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'] },
+  { name: 'Networks Team', courses: ['Computer Networks'] },
+].filter((t) => !t.courses.includes(openCourse)).map((t) => t.name).join()
+const offered = Array.from(shareSel.options).filter((o) => o.value)
+  .map((o) => o.textContent).join()
+check('…and only the teams that do not already own the open course are listed',
+      offered === expectShare,
+      `open=${openCourse} offered=${offered} expected=${expectShare}`)
 
 console.log('\n== the create-course flow is reachable ==')
 await click($('.navlink').find((b) => b.textContent.includes('Create new course')))
@@ -765,6 +876,30 @@ check('the course name is editable when creating',
       $('input').some((i) => !i.disabled && i.placeholder?.includes('Computer Networks')))
 check('the PREVIOUS course\'s curriculum is no longer on screen',
       $('.curtable').length === 0)
+
+console.log('\n== a new course lands on its own rules, before anything is generated ==')
+// Setting what a course is written under belongs at the START. The alternative is
+// generating a document under rules nobody set and correcting it a session at a time.
+const newNameBox = $('input').find((i) => i.placeholder?.includes('Computer Networks'))
+const newLinkBox = $('input').find((i) => i.placeholder?.includes('docs.google.com/spreadsheets'))
+const setInputVal = (el, v) => act(async () => {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+  setter.call(el, v)
+  el.dispatchEvent(new window.Event('input', { bubbles: true }))
+})
+await setInputVal(newNameBox, 'Brand New Course')
+await setInputVal(newLinkBox, 'https://docs.google.com/spreadsheets/d/NEW/edit')
+await click($('button').find((b) => b.textContent.includes('Create course')))
+await act(async () => { await new Promise((r) => setTimeout(r, 1300)) })
+check('creating a course opens its Course rules',
+      text().includes('Course rules —'),
+      text().replace(/\s+/g, ' ').slice(0, 140))
+check('…and says why it opened there',
+      text().includes('is created. Set what it is written under before you generate'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}is created.{0,60}/)?.[0])
+check('…while making clear nothing is locked',
+      text().includes('add, edit and retire any of it later'))
+check('…and it can be skipped', $('button').some((b) => b.textContent.includes('Skip for now')))
 
 console.log(`\n${pass} passed, ${fail} failed`)
 fs.rmSync(tmp, { force: true })

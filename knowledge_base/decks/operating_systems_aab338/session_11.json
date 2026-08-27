@@ -1,0 +1,412 @@
+{
+  "session_no": 11,
+  "source_file": "Process Control & Operations",
+  "deck_title": "Process Control & Operations",
+  "n_slides": 47,
+  "summary": "\n    - Slide 2: Process Control & Operations\n    - Slide 3: Recap\n    - Slide 4: Process Control & Operations\n    - Slide 5: Process Creation\n    - Slide 6: Every Process Is Born From Another Process\n    - Slide 7: fork() - One Call, Two Processes\n    - Slide 8: fork() - One Call, Two Processes\n    - Slide 9: fork() - One Call, Two Processes\n    - Slide 10: fork() - One Call, Two Processes\n    - Slide 11: fork() - One Call, Two Processes\n    - Slide 12: fork() - One Call, Two Processes\n    - Slide 13: What Does the Child Get From the Parent?\n    - Slide 14: What Does the Child Get From the Parent?\n    - Slide 15: Parent and Child\n    - Slide 16: Processes Form a Family Tree\n    - Slide 17: Running a Program\n    - Slide 18: exec() - Replace the Program, Keep the Process\n    - Slide 19: exec() - Replace the Program, Keep the Process\n    - Slide 20: fork() + exec() - Create, Then Run\n    - Slide 21: Quiz Time!\n    - Slide 22: Process Termination\n    - Slide 23: Process Termination\n    - Slide 24: Process Termination\n    - Slide 25: wait() - Synchronising Parent and Child\n    - Slide 26: wait() - Synchronising Parent and Child\n    - Slide 27: Two Special Cases\n    - Slide 28: Zombie\n    - Slide 29: Orphan\n    - Slide 30: Zombies\n    - Slide 31: Orphans\n    - Slide 32: Putting It Together\n    - Slide 33: What Happens While Typing ls In Terminal?\n    - Slide 34: What Happens While Typing ls In Terminal?\n    - Slide 35: Putting it All Together\n    - Slide 36: Context Switching\n    - Slide 37: Context Switching\n    - Slide 38: Context Switching\n    - Slide 39: The Mechanism - Save, Select, Restore\n    - Slide 40: Context Switching\n    - Slide 41: Switching Is Not Free\n    - Slide 42: Switching Is Not Free\n    - Slide 43: Quiz Time!\n    - Slide 44: Process Control & Operations\n    - Slide 45: Scheduling Concepts, Criteria & Types",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Process Control & Operations",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Threads, Multithreading & Concurrency\nIntroduction to Threads\nProcess vs. Threads\nMultithreading\nThread Types, Models\nThread Operations & Multicore\nConcurrency & Parallelism\nTypes of Parallelism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Process Control & Operations",
+      "body": "Process Control & Operations\nAgenda\nRunning a Program\nProcess Termination\nProcess Creation\nPutting It Together\nfork(), Hierarchy & Parent-Child\nContext Switching\nfork → exec → wait → exit\nexec()\nexit() & wait()\nMechanism & Overhead",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Process Creation",
+      "body": "Process Creation",
+      "notes": "First of all we will start with the Process Creation",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Every Process Is Born From Another Process",
+      "body": "The Parent–Child Idea\nA running process (the parent) creates a new process (the child) using the fork() system call\nIn Linux/Unix, this is the primary way new processes are made\nThe child starts as an almost-exact copy of the parent, then the two run independently",
+      "notes": "let's understand how new processes are created. \u000bEvery process is typically created by another process, known as its parent. \u000bIn Linux and Unix systems, this happens using the fork() system call. \u000bThe newly created child process initially receives a copy of the parent's state,\u000b but after creation, both parent and child execute independently and can perform different tasks.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "fork() - One Call, Two Processes",
+      "body": "Called Once But Returns Twice",
+      "notes": "Now, let's see what makes fork() unique. Although it is called only once, \u000bit creates two running processes—the original parent and the new child. \u000bAfter the fork() call, both processes continue execution from the next line of code, \u000ballowing them to run independently while starting from the same point.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "fork() - One Call, Two Processes",
+      "body": "Called Once But Returns Twice",
+      "notes": "Next, the return value of fork() helps each process identify its role. \u000bThe child process receives 0, while the parent receives the Process ID, or PID, of the child, \u000bwhich is always a positive value. If the process creation fails, fork() returns -1, \u000bindicating that no child process was created.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "fork() - One Call, Two Processes",
+      "body": "Called Once But Returns Twice\npid = fork();   if (pid == 0)\n1\nchild   else if (pid > 0)\n2\nparent   else\n3\nerror\n4",
+      "notes": "Moving on, this code shows the common way to use fork(). After calling fork(), \u000bwe check its return value. If the value is 0, the code inside the child block executes. \u000bIf it is greater than 0, the parent process executes its block. If the value is -1, \u000bit means an error occurred and the child process was not created.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "fork() - One Call, Two Processes",
+      "body": "Example\nPython\nimport os\npid = os.fork()\nif pid == 0:\n   print(\"Hello from CHILD\")\nelse:\n   print(\"Hello from PARENT\", pid)\nPossible Output 1\nHello from PARENT 283\nHello from CHILD\nPossible Output 2\nHello from CHILD\nHello from PARENT 283\nOutput",
+      "notes": "NOte : Pid ,  changes from run to run.\u000bThe operating system assigns an available PID whenever it creates a new process. \u000bSince different processes are created and terminated over time, the next available PID is usually different.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "fork() - One Call, Two Processes",
+      "body": "Output",
+      "notes": "Now, after fork() executes, both the parent and child run independently, so both print their respective messages. \u000bSince they execute concurrently, the order of the output is not fixed. \u000bSometimes the parent prints first, and other times the child does,\u000b depending on how the operating system schedules them.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "fork() - One Call, Two Processes",
+      "body": "Output",
+      "notes": "Like photocopying yourself — now there are two of you. A name tag tells you apart: \u000bthe original reads 'parent,' the copy reads 'child.' That tag is the return value: \u000bthe child sees 0, the parent sees the child's ID.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "What Does the Child Get From the Parent?",
+      "body": "Copied · Owned · Shared",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Item",
+            "In the child"
+          ],
+          [
+            "Code, data, heap, stack",
+            "Its own copy of the parent’s memory"
+          ],
+          [
+            "CPU registers & program counter",
+            "Copied - so it resumes at the same point"
+          ],
+          [
+            "PID (Process ID)",
+            "New and unique - the child is its own process"
+          ],
+          [
+            "PPID (Parent PID)",
+            "Set to the parent’s PID"
+          ],
+          [
+            "Open files",
+            "Shared - both point to the same open file"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "What Does the Child Get From the Parent?",
+      "body": "Copied · Owned · Shared",
+      "notes": "Going forward, when a child process is created, it inherits most of the parent's resources, \u000bsuch as memory, files, and process information. \u000bHowever, modern operating systems use a technique called copy-on-write, \u000bwhere memory is not copied immediately. Instead, a copy is created only if \u000beither process modifies the data, making fork() much faster and more efficient.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Parent and Child",
+      "body": "DNA\n(memory)\n(PIDs)\n(PIDs)\nAnalogy",
+      "notes": "Parent and child are like identical twins: \u000bsame starting “DNA” (memory), but separate identities (PIDs) and separate lives from birth.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Processes Form a Family Tree",
+      "body": "Every process Has Exactly One Parent\nBecause processes are created by other processes, they form a tree (hierarchy)\nEvery process has one parent but can have many children\nThe first process is init / systemd (PID 1), started at the end of booting - the ancestor of every other process\nEach process is identified by its PID and remembers its parent via its PPID\n(init)",
+      "notes": "Next, processes in an operating system are organized like a family tree.\u000b Every process has one parent, but it can create multiple child processes. \u000bAt the top of this hierarchy is the init or systemd process with PID 1, \u000bwhich is created during system startup and acts as the ancestor of all other processes. \u000bEach process is uniquely identified by its PID and also stores its Parent Process ID, or PPID.\u000bAnalogy: A family tree: one common ancestor (init), everyone has exactly one parent but can have many children.\u000b Trace anyone’s parents upward and you reach init.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Running a Program",
+      "body": "Running a Program",
+      "notes": "Next we will learn about Running a Program",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "exec() - Replace the Program, Keep the Process",
+      "body": "Same Process, Brand-New Program",
+      "notes": "Now, exec() works differently from fork(). It doesn’t create a new process; \u000binstead, it overwrites the current process with a new program. \u000bThe process ID stays the same, but everything else—code, data, and memory—is replaced. \u000bOnce exec() succeeds, the original program is gone, so it never returns back to the old code.\u000b Different variants like execl, execv, and others just change how arguments are passed \u000band whether the system searches the PATH automatically.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "exec() - Replace the Program, Keep the Process",
+      "body": "Same Process, Brand-New Program",
+      "notes": "Like switching the app on your phone: same phone (same process), \u000bbut tap a new app and the whole screen becomes something else (new program). \u000bThe device doesn't change — what it's running does.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "fork() + exec() - Create, Then Run",
+      "body": "Why Always Used Together?",
+      "notes": "Moving on, fork() and exec() are often used together in real systems. \u000bfork() creates a new child process, but at that point both parent and child are still running the same program. \u000bUsually, that’s not what we want. So the child process then calls exec() to replace itself \u000bwith a completely different program. In simple terms, fork() is used to create a new process, \u000band exec() is used to load and run a new program inside it.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Process Termination",
+      "body": "Process Termination",
+      "notes": "Next We will be learning about the Process Termination",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Process Termination",
+      "body": "Ending cleanly with exit()",
+      "notes": "a process can terminate either voluntarily by calling exit() or involuntarily due to an error or a kill signal. \u000bWhen exit() is called, the operating system releases most of the process resources \u000band returns an exit status to the parent. A status of 0 indicates success, \u000bwhile a non-zero value indicates an error. However, the process is completely\u000b removed only after the parent collects this status using wait().",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Process Termination",
+      "body": "Analogy",
+      "notes": "Like checking out of a hotel: you leave the room (release resources), \u000bbut the front desk keeps your final bill on record until it’s settled.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "wait() - Synchronising Parent and Child",
+      "body": "Parent Pauses Until Child Finishes",
+      "notes": "Next, the wait() system call is used for synchronization between parent and child processes.\u000b It makes the parent process pause execution until one of its child processes finishes. \u000bIt also collects the exit status of the child, which allows the operating system to properly \u000bclean up the child’s process entry, known as the PCB, in a process called reaping. \u000bA more controlled version, waitpid(), allows the parent to wait for a specific child process instead of any child.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "wait() - Synchronising Parent and Child",
+      "body": "Analogy",
+      "notes": "A parent waiting up for their child to get home before locking the door — \u000band, once home, asking how the day went (reading the exit status).",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Two Special Cases",
+      "body": "Zombies & Orphans",
+      "notes": "Now, let's look at two special process states that occur because of the timing between a parent and child process. \u000bA Zombie process is one that has already finished execution, but its parent hasn't yet collected its exit status using wait(), \u000bso its process entry remains temporarily. An Orphan process, on the other hand, \u000bis created when the parent terminates before the child. In that case, \u000bthe operating system reassigns the child to the init process (PID 1), \u000bwhich later waits for the child to finish and cleans up its process entry.",
+      "tables": [
+        [
+          [
+            "Case",
+            "What it means",
+            "What the OS does"
+          ],
+          [
+            "Zombie",
+            "Child has terminated, but the parent has NOT called wait() yet - its exit status is still on record",
+            "Keeps the child's process entry in the process table until the parent calls wait(), then removes it"
+          ],
+          [
+            "Orphan",
+            "The parent terminates BEFORE the child does",
+            "Reassigns the child to the init process (PID 1), which waits for it to terminate and then removes its process entry"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 28,
+      "title": "Zombie",
+      "body": "Visual\nParent\nFork\nChild\nChild created\nParent exit\nTime\nNo zombie process left here\nChild exit, This process becomes a zombie process\nNote: If parent calls Wait() then child terminates as normal process",
+      "notes": "Now, let's understand this with a timeline.\u000b The parent creates a child using fork(). If the child finishes execution before the parent calls wait(), \u000bit temporarily becomes a zombie process. Once the parent executes wait(),\u000b the operating system collects the child's exit status and removes the zombie entry.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Orphan",
+      "body": "Visual",
+      "notes": "Similarly, an orphan process is created when the parent terminates before the child.\u000b Instead of leaving the child unmanaged, the operating system reassigns it to the init process, \u000bwhich becomes its new parent. Once the child finishes execution,\u000b the init process calls wait() and cleans up the process entry.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Zombies",
+      "body": "Analogy\nA zombie",
+      "notes": "Analogy: A zombie is a finished library book not yet checked back in — done, but still on the records.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Orphans",
+      "body": "Analogy\nAn orphan\ninit\nAn orphan",
+      "notes": "A supervisor leaves the school permanently, so the school administration assigns a new supervisor to take responsibility for the students. \u000bThe new supervisor collects their final status when each student completes their activity.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Putting It Together",
+      "body": "Putting It Together",
+      "notes": "Now we will be putting it all together.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "What Happens While Typing ls In Terminal?",
+      "body": "The Full Cycle in Action\n$ ls\nBash",
+      "notes": "Now, let’s put everything together with a real example: when you type ls in a terminal. \u000b1 The shell, like Bash, first calls fork() to create a child process, which is initially a copy of the shell. \u000b2 Then the child process uses exec() to replace itself with the ls program. \u000b3 Meanwhile, the parent shell calls wait() so it pauses until ls finishes executing. \u000b4 Once ls completes, it calls exit() and returns its status. \u000b5 After that, the shell’s wait() call returns, and the prompt is shown again, ready for the next command.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "What Happens While Typing ls In Terminal?",
+      "body": "The Full Cycle in Action",
+      "notes": "Finally, let's put everything together with a real example. \u000bWhen you type ls in the terminal, the shell first creates a new process using fork(). \u000bThe child then loads the ls program using exec() and executes it. \u000bAfter finishing, it calls exit(), while the parent waits using wait(). \u000bOnce the child completes, the parent resumes execution and is ready to accept the next command.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Putting it All Together",
+      "body": "Wrap-Up",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "System Call",
+            "What it does",
+            "Key point"
+          ],
+          [
+            "fork()",
+            "Creates a new child process (a copy of the parent)",
+            "Returns 0 to child, child’s PID to parent, -1 on error"
+          ],
+          [
+            "exec()",
+            "Replaces the process’s program with a new one",
+            "Same PID; does not return on success"
+          ],
+          [
+            "wait()",
+            "Parent waits for a child to finish and collects its status",
+            "Reaps the child (prevents zombies)"
+          ],
+          [
+            "exit()",
+            "Terminates the current process",
+            "Returns an exit status; frees resources"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 36,
+      "title": "Context Switching",
+      "body": "Context Switching",
+      "notes": "Next we will understand the Context Switching",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Context Switching",
+      "body": "Switching the CPU Between Processes",
+      "notes": "Since a CPU core can execute only one process at a time,\u000b the operating system rapidly switches between processes to share CPU time. \u000bThis switching is called a context switch. The “context” refers to the current state of a process, \u000bincluding things like the program counter, CPU registers, stack pointer, and memory information. \u000bThis state is stored in the Process Control Block (PCB), so during a switch, \u000bthe OS saves the current process state into its PCB and loads another process’s state from its PCB.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Context Switching",
+      "body": "Save context\nRestore context\nSwitching the CPU Between Processes",
+      "notes": "Analogy: A chef cooking several dishes on one stove: to switch from dish A to B, they jot down exactly where they stopped on A (save context), read their earlier notes for B (restore context), and carry on.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "The Mechanism - Save, Select, Restore",
+      "body": "Step by step",
+      "notes": "Next, let’s break down how a context switch actually happens. \u000bFirst, a trigger occurs—this could be a timer interrupt, a process waiting for I/O, a system call, \u000bor a higher-priority process becoming ready. Then the operating system saves the current process state into its PCB. \u000bAfter that, the scheduler selects the next process to run. Once selected, \u000bthe OS restores that process’s saved state from its PCB. \u000bFinally, the CPU resumes execution of the new process exactly from where it had previously stopped.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Context Switching",
+      "body": "Visual",
+      "notes": "Now, let's follow the context switch step by step. Initially, P1 is executing while P2 is idle. \u000bWhen an interrupt or system call occurs, the CPU saves P1's state into its PCB and loads P2's saved state, \u000ballowing P2 to start executing. Later, another interrupt triggers the reverse process—\u000bthe CPU saves P2's state, restores P1's state, \u000band P1 resumes execution from exactly where it was interrupted.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Switching Is Not Free",
+      "body": "Overhead and Why It Matters?",
+      "notes": "Finally, remember that context switching isn't free. \u000bWhile the operating system is saving and restoring process information, \u000bno user process is actually running, so that time becomes overhead. \u000bThis overhead includes saving registers, updating the PCBs, \u000band reloading the CPU cache and TLB for the next process.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Switching Is Not Free",
+      "body": "Overhead and Why It Matters?",
+      "notes": "Moving on, if context switches happen too frequently, the CPU spends more time switching\u000b than actually executing processes, which is why choosing the right time slice is important. \u000bAlso, switching between threads of the same process is cheaper than switching between \u000bdifferent processes because the threads already share the same address space, \u000bso a full memory-map reload isn't required.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Process Control & Operations",
+      "body": "Key Takeaways",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Scheduling Concepts, Criteria & Types",
+      "body": "",
+      "notes": "In the next session we will be learning about Scheduling Concepts, Criteria & Types session",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1sIVV6L1owy4uWRN1tf0_J5arh8bUQiUned1gl2e7i2o/edit"
+}

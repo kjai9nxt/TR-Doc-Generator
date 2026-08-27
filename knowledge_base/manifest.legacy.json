@@ -1,0 +1,194 @@
+{
+  "session_01": {
+    "hash": "",
+    "source_file": "Understanding Binary System",
+    "session_no": 1,
+    "n_slides": 36
+  },
+  "session_02": {
+    "hash": "",
+    "source_file": "Introduction to Operating System",
+    "session_no": 2,
+    "n_slides": 63
+  },
+  "session_03": {
+    "hash": "",
+    "source_file": "OS Functions and Services",
+    "session_no": 3,
+    "n_slides": 77
+  },
+  "session_04": {
+    "hash": "",
+    "source_file": "OS Structures & Case Studies",
+    "session_no": 4,
+    "n_slides": 66
+  },
+  "session_05": {
+    "hash": "",
+    "source_file": "Linux Shell & Basic Commands",
+    "session_no": 5,
+    "n_slides": 33
+  },
+  "session_06": {
+    "hash": "",
+    "source_file": "Working with the File System",
+    "session_no": 6,
+    "n_slides": 46
+  },
+  "session_07": {
+    "hash": "",
+    "source_file": "Working With Files",
+    "session_no": 7,
+    "n_slides": 41
+  },
+  "session_08": {
+    "hash": "",
+    "source_file": "Miscellaneous Commands",
+    "session_no": 8,
+    "n_slides": 38
+  },
+  "session_09": {
+    "hash": "",
+    "source_file": "Process Concept, States & PCB",
+    "session_no": 9,
+    "n_slides": 80
+  },
+  "session_10": {
+    "hash": "",
+    "source_file": "Threads, Multithreading & Concurrency",
+    "session_no": 10,
+    "n_slides": 69
+  },
+  "session_11": {
+    "hash": "",
+    "source_file": "Process Control & Operations",
+    "session_no": 11,
+    "n_slides": 47
+  },
+  "session_12": {
+    "hash": "",
+    "source_file": "Scheduling Concepts, Criteria & Types",
+    "session_no": 12,
+    "n_slides": 72
+  },
+  "session_13": {
+    "hash": "",
+    "source_file": "Scheduling Algorithms I: FCFS, SJF, SRTF & Round Robin",
+    "session_no": 13,
+    "n_slides": 60
+  },
+  "session_14": {
+    "hash": "",
+    "source_file": "Scheduling Algorithms II: Priority, HRRN & Multilevel Queues",
+    "session_no": 14,
+    "n_slides": 64
+  },
+  "session_15": {
+    "hash": "",
+    "source_file": "Concurrency & The Critical-Section Problem",
+    "session_no": 15,
+    "n_slides": 80
+  },
+  "session_16": {
+    "hash": "",
+    "source_file": "Synchronization Tools: Semaphores, Mutex & Monitors",
+    "session_no": 16,
+    "n_slides": 72
+  },
+  "session_17": {
+    "hash": "",
+    "source_file": "Classic Synchronization Problems & IPC",
+    "session_no": 17,
+    "n_slides": 71
+  },
+  "session_18": {
+    "hash": "",
+    "source_file": "Deadlock Characterization & Prevention",
+    "session_no": 18,
+    "n_slides": 79
+  },
+  "session_19": {
+    "hash": "",
+    "source_file": "Deadlock Avoidance: Banker's Algorithm",
+    "session_no": 19,
+    "n_slides": 61
+  },
+  "session_20": {
+    "hash": "",
+    "source_file": "Deadlock Detection & Recovery",
+    "session_no": 20,
+    "n_slides": 55
+  },
+  "session_21": {
+    "hash": "",
+    "source_file": "Memory Management Fundamentals",
+    "session_no": 21,
+    "n_slides": 68
+  },
+  "session_22": {
+    "hash": "",
+    "source_file": "Cache Memory & Mapping",
+    "session_no": 22,
+    "n_slides": 67
+  },
+  "session_23": {
+    "hash": "",
+    "source_file": "Memory Allocation - Contiguous",
+    "session_no": 23,
+    "n_slides": 71
+  },
+  "session_24": {
+    "hash": "",
+    "source_file": "Paging & Segmentation",
+    "session_no": 24,
+    "n_slides": 72
+  },
+  "session_25": {
+    "hash": "",
+    "source_file": "Virtual Memory & Demand Paging",
+    "session_no": 25,
+    "n_slides": 62
+  },
+  "session_26": {
+    "hash": "",
+    "source_file": "Page Replacement Algorithms & Belady's Anomaly",
+    "session_no": 26,
+    "n_slides": 62
+  },
+  "session_27": {
+    "hash": "",
+    "source_file": "Thrashing, Working Set & Frame Allocation",
+    "session_no": 27,
+    "n_slides": 66
+  },
+  "session_28": {
+    "hash": "",
+    "source_file": "File System Concepts & Directories",
+    "session_no": 28,
+    "n_slides": 68
+  },
+  "session_29": {
+    "hash": "",
+    "source_file": "File System Implementation",
+    "session_no": 29,
+    "n_slides": 66
+  },
+  "session_30": {
+    "hash": "",
+    "source_file": "I/O Systems & I/O Models",
+    "session_no": 30,
+    "n_slides": 55
+  },
+  "session_31": {
+    "hash": "",
+    "source_file": "Spooling, Buffering & Disk Structure",
+    "session_no": 31,
+    "n_slides": 77
+  },
+  "session_32": {
+    "hash": "",
+    "source_file": "Disk Scheduling Algorithms",
+    "session_no": 32,
+    "n_slides": 56
+  }
+}

@@ -56,6 +56,32 @@ def _labelled(doc, label: str, value: str):
     return p
 
 
+def code_lines(block: dict) -> list[str]:
+    """A code block's lines, as rendered. One helper so the writer, the page estimate and
+    the guardrails all agree about what "a line of code" is — the page ceiling is a hard
+    gate and it is measured against this."""
+    return str(block.get("code") or "").replace("\r\n", "\n").split("\n")
+
+
+def walkthrough_text(block: dict) -> list[str]:
+    """The prose of a code block — what the learner reads about the snippet.
+
+    This, not the code, is the code slide's writing: it is what the prose/bullet mix gate
+    counts, what the banned-phrase checks read, and what the recording estimate treats as
+    spoken. `for (int i = 0; i < n; i++)` is not a sentence and must not be graded as one.
+    """
+    out = []
+    for w in block.get("walkthrough") or []:
+        if isinstance(w, dict) and str(w.get("text") or "").strip():
+            out.append(str(w["text"]).strip())
+    return out
+
+
+def _walk_label(w: dict) -> str:
+    lines = str(w.get("lines") or "").strip()
+    return f"Line {lines}" if lines and "-" not in lines else f"Lines {lines}"
+
+
 def _render_content(doc, blocks):
     for block in blocks or []:
         t = block.get("type")
@@ -64,6 +90,21 @@ def _render_content(doc, blocks):
         elif t == "bullets":
             for item in block.get("items", []):
                 _list_item(doc, item)
+        elif t == "code":
+            # Monospace, ONE PARAGRAPH PER LINE with the space-after removed, so the
+            # snippet reads as a block rather than as double-spaced prose. The walkthrough
+            # follows as a list, because it is what the learner reads about the code.
+            for line in code_lines(block):
+                para = doc.add_paragraph()
+                para.paragraph_format.space_after = Pt(0)
+                para.paragraph_format.left_indent = Pt(18)
+                run = para.add_run(line or " ")
+                run.font.name = "Consolas"
+                run.font.size = Pt(9.5)
+            for w in block.get("walkthrough") or []:
+                if not isinstance(w, dict) or not str(w.get("text") or "").strip():
+                    continue
+                _list_item(doc, f"{_walk_label(w)} — {str(w['text']).strip()}")
         elif t == "table":
             cols = block.get("columns", [])
             rows = block.get("rows", [])
@@ -150,6 +191,14 @@ def _content_blocks(content) -> list[str]:
             out.append(block.get("text", ""))
         elif bt == "bullets":
             out.append(_md_list(block.get("items", [])))
+        elif bt == "code":
+            lang = str(block.get("language") or "").strip()
+            out.append(f"```{lang}\n" + "\n".join(code_lines(block)) + "\n```")
+            walk = [f"- {_walk_label(w)} — {str(w['text']).strip()}"
+                    for w in (block.get("walkthrough") or [])
+                    if isinstance(w, dict) and str(w.get("text") or "").strip()]
+            if walk:
+                out.append("\n".join(walk))
         elif bt == "table":
             cols = block.get("columns", [])
             tbl = ["| " + " | ".join(cols) + " |",

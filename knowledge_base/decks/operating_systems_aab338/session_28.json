@@ -1,0 +1,777 @@
+{
+  "session_no": 28,
+  "source_file": "File System Concepts & Directories",
+  "deck_title": "File System Concepts & Directories",
+  "n_slides": 68,
+  "summary": "\n    - Slide 2: File System Concepts \u000b& Directories\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: File System Concepts & Directories\n    - Slide 6: File Concept\n    - Slide 7: Why Files Exist?\n    - Slide 8: Why Files Exist?\n    - Slide 9: File Definition\n    - Slide 10: File Definition\n    - Slide 11: File Definition\n    - Slide 12: File\n    - Slide 13: File Operations\n    - Slide 14: File Operations\n    - Slide 15: File Operations\n    - Slide 16: Open File Table\n    - Slide 17: Open File Table\n    - Slide 18: File Types\n    - Slide 19: File Access Methods\n    - Slide 20: Why Access Methods\n    - Slide 21: Why Access Methods\n    - Slide 22: Sequential Access\n    - Slide 23: Sequential Access\n    - Slide 24: Direct Access (Relative Access)\n    - Slide 25: Direct Access\n    - Slide 26: Indexed Access\n    - Slide 27: Indexed Sequential Method\n    - Slide 28: Indexed Sequential Method\n    - Slide 29: Indexed Sequential Method\n    - Slide 30: Quiz Time!\n    - Slide 31: Directory Structure\n    - Slide 32: Why Directories Needed\n    - Slide 33: Why Directories Needed\n    - Slide 34: Directory Operations\n    - Slide 35: Single-Level Directory\n    - Slide 36: Single-Level Directory\n    - Slide 37: Two-Level Directory\n    - Slide 38: Two-Level Directory\n    - Slide 39: Tree Directory\n    - Slide 40: Tree Directory\n    - Slide 41: Acyclic Graph Directory\n    - Slide 42: Acyclic Graph Directory\n    - Slide 43: General Graph Directory\n    - Slide 44: General Graph Directory\n    - Slide 45: Why Layers Exist\n    - Slide 46: File System Layers\n    - Slide 47: File System Architecture\n    - Slide 48: On-Disk Structures\n    - Slide 49: In-Memory Structures\n    - Slide 50: Partitions And Volumes\n    - Slide 51: Partitions And Volumes\n    - Slide 52: Virtual File System\n    - Slide 53: Virtual File System\n    - Slide 54: Mounting A Filesystem\n    - Slide 55: Mounting A Filesystem\n    - Slide 56: Types Of Access\n    - Slide 57: Protection\n    - Slide 58: Why Protection Needed\n    - Slide 59: Why Protection Needed\n    - Slide 60: Unix Permission Bits\n    - Slide 61: Special Permission Bits\n    - Slide 62: Quiz Time!\n    - Slide 63: File System Concepts & Directories\n    - Slide 64: File System Concepts & Directories\n    - Slide 66: File System Implementation",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "File System Concepts \u000b& Directories",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Thrashing, Working Set & Frame Allocation\nFrame Allocation\nEqual\nProportional & priority allocation\nReplacement Scope\nGlobal vs local replacement\nThrashing\nCauses & effects",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Thrashing, Working Set & Frame Allocation\nLocality & Working Set\nLocality model\nWorking set model\nControlling Thrashing\nPage-fault frequency (PFF) scheme\nTechniques to prevent thrashing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "File System Concepts & Directories",
+      "body": "File System Concepts & Directories\nThe Dispatcher \u000b& Gantt Basics\nDirectory Structure\nFile Access \u000bMethods\nAttributes, operations & types\nSequential, direct, indexed\nFile Concept\nProtection\nFile System Architecture\nSingle-level, two-level, tree, \u000bacyclic graph, general graph\nLayout & implementation, Mounting a file system\nFile sharing & protection,\u000bAccess control & file permissions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "File Concept",
+      "body": "File Concept",
+      "notes": "First of all we'll be learning about the File Concept",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why Files Exist?",
+      "body": "Persistent Data Storage\nProcess memory is volatile and disappears once execution ends. Operating systems provide files as a persistent, named abstraction for data on secondary storage",
+      "notes": "Now, this diagram shows what happens to data across the life of a process.\u000b When the process ends, its memory disappears, but the operating system can store the \u000bdata as files in the file system, where it remains available on secondary storage. \u000bSo, files provide the persistence that process memory cannot.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Why Files Exist?",
+      "body": "Persistent Data Storage\nProcess memory is reclaimed on exit; RAM clears on reboot\n01\n02\n03\nFiles store data permanently on disk, SSD or tape\nOS provides a uniform logical view over raw storage\n04\nFile management is a core OS function",
+      "notes": "Moving on, process memory is temporary, so it is reclaimed when a process exits, \u000band RAM is also cleared when the system reboots. Files provide long-term storage\u000b on devices such as disks, SSDs, or tapes. The OS hides the hardware-level storage details \u000band gives users a consistent logical way to manage data, making file management a core OS responsibility.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "File Definition",
+      "body": "Named Logical Unit\nA file is a named collection of related information recorded on secondary storage. \u000bIt is the smallest logical storage unit the operating system exposes",
+      "notes": "Next, think of a file as a single logical container that groups related data under a name. \u000bThe OS treats this named unit as the basic way users and applications organize and access information on secondary storage.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "File Definition",
+      "body": "Logical view: sequence of bytes, records or fields\n01\n02\n03\nPhysical storage details are hidden by the file system\nStructure and meaning are defined by the creating application\n04\nFiles persist independent of the process that created them\nNamed Logical Unit",
+      "notes": "Now, from the OS perspective, a file can be viewed simply as a sequence of bytes, records, or fields, \u000bdepending on how the data is organized. The file system hides where and how those\u000b contents are physically stored, while the application that creates the file determines\u000b its structure and meaning. Most importantly, the file continues to exist even after the creating process ends.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "File Definition",
+      "body": "Analogy",
+      "notes": "Analogy: A school report card is a single named record holding a student's marks, attendance and remarks together \u000bexactly as a file bundles related data under one name for the operating system to manage.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "File",
+      "body": "Attributes",
+      "notes": "Name - Human-readable identifier chosen by user\nIdentifier - Unique number, e.g. inode, locating file\nType - Needed for systems supporting multiple file types\nLocation - Pointer to device and disk address\u000bSize - Current file size in bytes\nProtection - Access-control information for owner, group, others\nTime & Date - Creation, last modification, last access stamps\nUser identification - Owner and, in some systems, creator ID",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "File Operations",
+      "body": "Create, Open, Read, Write\nThe operating system supports a defined set of operations on files, each implemented through a system call",
+      "notes": "Moving on, files are managed through specific operations that let a process interact with stored data.\n Actions such as creating or opening a file establish access, while reading and writing\u000b allow the process to retrieve or modify its contents.\u000b The OS provides these operations through system calls.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "File Operations",
+      "body": "Create Open Read Write",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Operation",
+            "Purpose",
+            "Typical Unix Call"
+          ],
+          [
+            "Create",
+            "Allocate space, add directory entry",
+            "creat() / open()"
+          ],
+          [
+            "Open",
+            "Load attributes into memory, return handle",
+            "open()"
+          ],
+          [
+            "Read",
+            "Transfer data from file to buffer",
+            "read()"
+          ],
+          [
+            "Write",
+            "Transfer data from buffer to file",
+            "write()"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "File Operations",
+      "body": "Create Open Read Write",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Operation",
+            "Purpose",
+            "Typical Unix Call"
+          ],
+          [
+            "Reposition (seek)",
+            "Move the current file pointer",
+            "lseek()"
+          ],
+          [
+            "Truncate",
+            "Erase content, keep attributes",
+            "truncate()"
+          ],
+          [
+            "Close",
+            "Release resources, save state",
+            "close()"
+          ],
+          [
+            "Delete",
+            "Remove directory entry, free space",
+            "unlink()"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 16,
+      "title": "Open File Table",
+      "body": "Tracking Active Files\nOpening a file creates entries in the open-file tables so the operating system can track its state and access efficiently",
+      "notes": "Next, when a process opens a file, the OS needs to remember that the file is currently\u000b in use and how it is being accessed. It keeps this information in an open-file table, \u000ballowing later operations to track the file efficiently instead of starting from scratch each time.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Open File Table",
+      "body": "Per-process table stores the file pointer and access mode\nSystem-wide table stores file metadata, disk location, and open count\nFile pointer marks the current read/write position\nMultiple processes or file descriptors can reference the same system-wide entry\nWhen the last reference is closed, the system can release the system-wide open-file entry\nTracking Active Files",
+      "notes": "Now, think of the open-file tables as the OS's way of remembering everything it needs about files currently in use. \u000bEach process keeps its own access information, such as where it is currently reading or writing,\u000b while the system-wide table keeps information shared by everyone accessing that file. \u000bThis also allows multiple processes to safely refer to the same file, \u000band once nobody is using it anymore, the OS can remove that shared entry.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "File Types",
+      "body": "Classified By Extension",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Type",
+            "Usual Extension",
+            "Function"
+          ],
+          [
+            "Executable",
+            "exe, com, bin",
+            "Ready-to-run machine code"
+          ],
+          [
+            "Source code",
+            "c, java, py",
+            "Program code in a language"
+          ],
+          [
+            "Object",
+            "obj, o",
+            "Compiled code, not yet linked"
+          ],
+          [
+            "Archive",
+            "zip, rar, tar",
+            "Compressed, related files grouped"
+          ],
+          [
+            "Text / document",
+            "txt, doc, pdf",
+            "Textual or formatted content"
+          ],
+          [
+            "Multimedia",
+            "mp3, mp4, jpg",
+            "Audio, video or image data"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 19,
+      "title": "File Access Methods",
+      "body": "File Access Methods",
+      "notes": "Next we will learn about the File Access Methods",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Why Access Methods",
+      "body": "Retrieval Pattern Choice\nDifferent applications need different patterns to retrieve file data efficiently; the operating system offers distinct access methods matching each need",
+      "notes": "Moving on, not every application needs to retrieve data in the same way. For example, \u000bsome applications process data from beginning to end, while others need to jump directly to a specific location. \u000bThat is why the OS provides different file access methods, allowing applications to choose the pattern that best fits their needs.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Why Access Methods",
+      "body": "Retrieval Pattern Choice\nLog files are read strictly in order, start to end\n01\n02\n03\nDatabases need quick access to one specific record\nAccess method determines allowed operations and performance\n04\n05\nChoice depends on storage device and usage pattern\nThree main access methods exist: Sequential, Direct, and Indexed",
+      "notes": "Next, the way data is used determines which access method makes sense. \u000bA log file is naturally processed from start to end, while a database may need to jump directly to a particular record. \u000bSo, the access method affects both what operations are possible and how efficiently they run,\u000b depending on the storage device and usage pattern. The three main methods are Sequential, Direct, and Indexed access.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Sequential Access",
+      "body": "Read In Order\nOperations: read_next() and write_next() advance pointer automatically\n01\n02\n03\nreset() operation moves pointer back to file start\nOptional skip of n records forward or backward\n04\n05\nNatural fit for magnetic tape and log files\nSimple to implement, needs minimal extra metadata >",
+      "notes": "Sequential access reads or writes file records one after another from the beginning, \u000bmatching how early storage media like tape operated\nMoving on, sequential access is like going through a file from beginning to end, one record after another. \nThe pointer automatically moves forward with each read or write, while reset() brings it back to the start.\u000b We can also skip records when needed. This makes the method simple and well suited for log files and magnetic tape,\u000b without requiring much extra metadata.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Sequential Access",
+      "body": "Read In Order\nBlock-1\nBlock-2\nBlock-3\nBlock-4\nBlock-5\nBlock-6\nEnd\nBeginning\nSequential Access Method",
+      "notes": "Now, this diagram shows the basic flow of sequential access. The file is processed from the beginning toward the end, \u000bmoving through Block-1, Block-2, Block-3, and so on in order. So, to reach Block-5, \u000bthe system passes through the earlier blocks first rather than jumping directly to it.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Direct Access (Relative Access)",
+      "body": "File is viewed as a sequence of fixed-size blocks\n01\n02\n03\nProgram supplies a relative block number to the OS\nOS translates relative block number into absolute disk address\n04\n05\nNo need to read preceding blocks first\nRequires a random-access device such as disk, not tape\n06\nEssential for database and relational record files\nJump To Block",
+      "notes": "Next, direct access is useful when the application already knows which block it needs.\u000b The file is divided into fixed-size blocks, and the program gives the OS a relative block number. \u000bThe OS maps that number to the actual disk location, allowing it to jump directly to the required block without reading everything before it. \u000bThat is why this method works well with random-access disks and is commonly used for databases and relational records.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Direct Access",
+      "body": "Jump To Block\nBlock-1\nBlock-2\nBlock-3\nBlock-4\nBlock-5\nBlock-6\nEnd\nCurrent\nDirect Access Method\nGo to N",
+      "notes": "Moving on, this diagram shows why direct access is called “jump to block.” The current position is at Block-2, \u000bbut the system can directly move to Block-5 by specifying the required relative block number. \u000bIt does not have to process Block-3 and Block-4 first, which makes random access much faster for applications that need specific records.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Indexed Access",
+      "body": "Index Locates Record\nIndex file holds pointers to actual data blocks\n01\n02\n03\nLooking up a key gives the block address instantly\nSupports fast key-based search on very large files\n04\n05\nMultiple indices possible, one per searchable key field\nA very large index may itself need its own index",
+      "notes": "Now, indexed access works like a lookup system: instead of searching the entire file, \u000bthe OS first checks an index that contains pointers to the actual data blocks. Once the required key is found, \u000bthe corresponding block can be accessed directly, making searches much faster for large files. \u000bA file can have multiple indexes for different searchable fields, and if an index becomes very large, it may need another index to locate entries within it efficiently.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Indexed Sequential Method",
+      "body": "ISAM Combines Both\nIndexed Sequential Access Method (ISAM) combines sequential and indexed access, using a small master index to jump to a block, then scanning sequentially within it",
+      "notes": "Moving on, ISAM combines the strengths of both approaches. \u000bThe master index first helps us jump close to the required block, and then the records within that block are read sequentially. \u000bSo, we get faster locating than pure sequential access while still benefiting from ordered scanning.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Indexed Sequential Method",
+      "body": "ISAM Combines Both\nMaster index holds one entry per group of records\n01\n02\n03\nIndex lookup narrows search to a small block range\nSequential scan inside that block finds the exact record\n04\n05\nReduces index size versus indexing every single record\nClassic scheme used in early database and file systems",
+      "notes": "Next, think of ISAM as a two-step search. The master index keeps one entry for each group of records, \u000bso it quickly narrows the search to a small block range. We then scan that group sequentially to find the exact record. \u000bThis avoids indexing every record individually, keeping the index smaller, and was a classic approach in early database and file systems.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Indexed Sequential Method",
+      "body": "ISAM Combines Both\nIndex Access Method",
+      "notes": "Now, this diagram shows how the index acts as a shortcut to the data. The index file points \u000bto a location in secondary storage, and from that point, the related records can be reached rather than\u000b searching through the entire file. So, ISAM first uses the index to narrow down the location and then works with the records in that area.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Directory Structure",
+      "body": "Directory Structure",
+      "notes": "Next we will learn about the Directory structure",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Why Directories Needed",
+      "body": "A directory is a special file that maps file names to their storage locations, letting the operating system organise many files logically\nOrganizing Many Files",
+      "notes": "Moving on, as the number of files grows, keeping track of each file individually becomes difficult.\u000b A directory solves this by maintaining the names and their corresponding storage information, \u000bgiving the OS a structured way to organize and locate files.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Why Directories Needed",
+      "body": "Thousands of files without grouping become impossible to locate\n01\n02\n03\nDirectory maps human-readable names to file locations on disk\nDirectories let files be organised into logical groups\n04\n05\nStructure choice balances usability against search efficiency\nFive common structures: Single-Level, Two-Level, Tree, Acyclic-Graph, General-Graph\nOrganizing Many Files",
+      "notes": "So, once a system has a large number of files, the real challenge is not storing them but\u000b finding and managing them efficiently. Directories give us that organization by grouping related files \u000band connecting their names with where the files are stored. Depending on how much organization\u000b and search efficiency we need, the OS supports five directory structures: Single-Level, Two-Level, Tree, Acyclic-Graph, and General-Graph.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Directory Operations",
+      "body": "Core Four Operations\nEvery directory implementation supports a defined set of operations for managing the entries it contains",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Operation",
+            "Purpose",
+            "Example Call/Command"
+          ],
+          [
+            "Create",
+            "Add a new file or subdirectory entry",
+            "mkdir(), creat()"
+          ],
+          [
+            "Search",
+            "Locate an entry by name for access",
+            "opendir()+readdir(), find"
+          ],
+          [
+            "Delete",
+            "Remove an entry and free its space",
+            "rmdir(), unlink()"
+          ],
+          [
+            "List",
+            "Enumerate all entries in a directory",
+            "ls, readdir()"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 35,
+      "title": "Single-Level Directory",
+      "body": "One Flat List\nIn a single-level directory, every file for every user is listed in one common directory without subdirectories at all, with every file needing a unique name",
+      "notes": "Moving on, the simplest approach is to keep every user's file in one common directory. T\u000bhe diagram shows this flat structure, where D1 through D8 each point directly to a file, with no subdirectories. \u000bThe limitation is that every file must have a unique name, which becomes difficult to manage as the number of files grows.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Single-Level Directory",
+      "body": "One Flat List\n01\nSimplest structure to implement and understand\n02\n03\nName collisions between different users are a major limitation\nImpractical once file count or user count grows",
+      "notes": "Now, the advantage of this structure is its simplicity—it is easy to create and understand.\u000b But because everyone shares the same directory, two users cannot have files with the same name.\u000b As the number of users and files increases, managing this flat list quickly becomes impractical.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Two-Level Directory",
+      "body": "Per-User Directories\nA two-level directory gives each user their own User File Directory (UFD) listed under one Master File Directory (MFD), solving name collisions",
+      "notes": "Moving on, the two-level structure separates users instead of putting everyone's files together. \u000bThe Master File Directory acts as the top level and points to a separate User File Directory for each user. \u000bIn the diagram, each user directory can contain files with the same name without conflict, which solves the major naming problem of a single-level directory.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Two-Level Directory",
+      "body": "Per-User Directories\n01\nSame file name is now allowed across different users\n02\n03\nSearching within one user's files is still unstructured\nSharing files across users remains difficult or impossible",
+      "notes": "Now, separating files by user solves the naming conflict, so different users can have files with the same name. \u000bBut inside each user's directory, there is still no deeper organization, making large collections harder to search. \u000bAlso, because each user has a separate directory, sharing files between users is not straightforward.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Tree Directory",
+      "body": "Hierarchical Subdirectories\nA tree-structured directory generalises the two-level scheme, letting users create subdirectories to any depth under a single root",
+      "notes": "Next, the tree structure takes the idea of separate user directories one step further by \u000ballowing subdirectories within them, to any depth. In the diagram, the root directory branches into user directories, \u000bwhich can contain both files and further subdirectories like Sd1 and Sd2. This hierarchical organization \u000bmakes large collections much easier to manage and locate.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Tree Directory",
+      "body": "Hierarchical Subdirectories\n01\nEvery file has one unique absolute path from root\n02\n03\nCurrent working directory enables shorter relative paths\nMost widely used structure in modern operating systems",
+      "notes": "Moving on, the tree structure gives each file a clear location within the hierarchy, so we can identify\u000b it using a unique absolute path starting from the root. For everyday navigation, the current working directory \u000blets us use shorter relative paths. This flexibility is why the tree structure is the standard approach in most modern operating systems.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Acyclic Graph Directory",
+      "body": "Shared Subdirectories Links\nAn acyclic-graph directory extends the tree by allowing a file or subdirectory to be shared between directories through links, while forbidding cycles\nD1\nD11\nD12\nD13\nRoot\nDirectory\nUser\nDirectory\nFiles and Subdirectories\nSd1\nSd2",
+      "notes": "Now, an acyclic-graph directory extends the tree by allowing the same file or subdirectory to be shared through links.\n In the diagram, multiple directories can point to the same item, so users can access shared data without creating duplicate copies.\u000b The important restriction is that these links cannot form a cycle, keeping the directory structure acyclic.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Acyclic Graph Directory",
+      "body": "Shared Subdirectories Links\n01\n02\nSharing is implemented through links or shared directory entries\nStructure must stay acyclic to keep traversal and deletion safe\n03\n04\nDeleting a shared file needs reference counting or link checks\nTrades some structural complexity for genuine file sharing",
+      "notes": "Next, this structure allows genuine sharing by letting multiple directories point to the same file or subdirectory through links. \u000bThe OS must prevent those links from forming a cycle, otherwise traversal and deletion become difficult to manage. \u000bWhen a shared file is deleted, the OS therefore needs to check whether other links still reference it,\u000b typically using reference counting. So, we gain file sharing at the cost of some additional structural complexity.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "General Graph Directory",
+      "body": "Cycles Allowed\nA general graph directory permits arbitrary links between directories, including links that loop back and form a cycle, unlike the acyclic-graph structure, which explicitly forbids this",
+      "notes": "Finally, a general-graph directory allows arbitrary links between directories, even when those links create cycles.\u000b In the diagram, the Root Directory branches to User-1, User-2, and User-3. User-1 contains File-1, while User-3 contains File-2. \u000bUser-2 connects to the Subdirectory, and the subdirectory has a link back toward User-2, creating a cycle. \u000bSo, unlike an acyclic graph, the same directory can be reached again by following links. This gives greater flexibility \u000bfor sharing and organization, but makes traversal, searching, and deletion more difficult because the OS has to handle these cycles safely.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "General Graph Directory",
+      "body": "Cycles Allowed\n01\nSimple reference counting cannot reclaim cyclic directories\n02\n03\nRequires cycle detection or garbage collection to reclaim \u000bunreachable space\nTraversal algorithms must track already-visited directories \u000bto avoid looping forever",
+      "notes": "Now, allowing cycles creates an important problem for the OS. With a cyclic structure, reference counting alone may\u000b not free a directory, because objects in the cycle can continue to reference one another even when nothing outside\u000b the cycle can reach them. So, the OS needs cycle detection or garbage collection to reclaim such unreachable space. \u000bAlso, while traversing directories, it must remember which directories it has already visited; otherwise, it could keep following the cycle forever.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Why Layers Exist",
+      "body": "Separating Storage Concerns\nEach layer handles one well-defined responsibility only\n01\n02\n03\nLower layers hide device-specific details from upper layers\nA layer can be modified or replaced with minimal impact \u000bon other layers\n04\nMatches the layered design philosophy seen in OS structure",
+      "notes": "Moving on, the idea of layering is to keep storage management from becoming one large, complicated task. \u000bEach layer takes care of a specific responsibility and hides its implementation details from the layer above it. \u000bThis separation means one layer can be changed or replaced with minimal effect on the others, \u000bfollowing the same layered design philosophy used throughout operating systems.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "File System Layers",
+      "body": "Application To Devices\nApplication Programs\nLogical File System\nFile organization module\nBasic file system\nI/O Control\nDevices",
+      "notes": "Moving on, this diagram shows how a file request travels through the system, from the application down to the actual storage device. \u000bThe Application Program starts the request, which passes through the Logical File System, File Organization Module,\u000b and Basic File System. Then I/O Control handles the device-specific communication before reaching the Devices layer. \u000bEach layer performs its own responsibility and passes the request downward, while hiding its implementation details from the layer above.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "File System Architecture",
+      "body": "File System Architecture",
+      "notes": "Now we will learn about the File system Architecture",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "On-Disk Structures",
+      "body": "Boot Block Superblock FCB\nPersistent metadata is itself stored on disk alongside file data, so the file system can rebuild its state after every reboot",
+      "notes": "Now, the file system also needs to preserve its own information on disk, so it can reconstruct its state after a reboot. \u000bThe boot block contains information needed to start the OS, while the superblock keeps volume-level details \u000bsuch as block size and free-space information. The directory structure connects file names with the volume, \u000band the File Control Block, commonly represented by an inode, stores details specific to each file,\u000b such as its size, permissions, and block locations.",
+      "tables": [
+        [
+          [
+            "Structure",
+            "Description",
+            "Example Name"
+          ],
+          [
+            "Boot control block",
+            "Info needed to boot OS from that volume",
+            "Boot block"
+          ],
+          [
+            "Volume control block",
+            "Free block count, block size, free-block pointers",
+            "Superblock"
+          ],
+          [
+            "Directory structure",
+            "Organises file names into the volume",
+            "Directory file"
+          ],
+          [
+            "File Control Block (FCB)",
+            "Per-file details — permissions, size, block locations",
+            "Inode"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 49,
+      "title": "In-Memory Structures",
+      "body": "Mount And Open Tables\nAlongside on-disk metadata, the operating system keeps in-memory structures during runtime to avoid repeated disk reads for active files",
+      "notes": "Moving on, unlike the metadata stored permanently on disk, these structures stay in memory while the system\u000b is running to make file access faster. The mount table tracks mounted file systems, while the directory cache keeps \u000brecently used directory information. For open files, the OS maintains both system-wide and per-process tables, \u000band the buffer or disk cache keeps recently accessed blocks ready in memory, reducing repeated disk access.",
+      "tables": [
+        [
+          [
+            "Structure",
+            "Description"
+          ],
+          [
+            "Mount table",
+            "Tracks each mounted file system and its mount point"
+          ],
+          [
+            "Directory-structure cache",
+            "Recently accessed directory information kept in memory"
+          ],
+          [
+            "System-wide open-file table",
+            "One entry per open file, holds a copy of its FCB"
+          ],
+          [
+            "Per-process open-file table",
+            "Pointer from process file descriptor into system-wide table"
+          ],
+          [
+            "Buffer / disk cache",
+            "Recently read or written blocks held in memory"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 50,
+      "title": "Partitions And Volumes",
+      "body": "Raw Vs Cooked\nA physical disk is divided into partitions, and one or more partitions form a volume that either holds a file system or stays raw",
+      "notes": "Now, a physical disk can be divided into separate partitions, which provide independent regions of storage. \u000bThese partitions can then be combined to form a volume. A volume may be cooked, meaning it contains \u000ba file system and can store files normally, or raw, meaning it is available directly to an application without a file system managing its contents.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Partitions And Volumes",
+      "body": "Raw Vs Cooked\nRaw partition holds no file system, used for swap space or \u000bdatabase raw storage\n01\n02\n03\nCooked partition contains a formatted file system ready \u000bfor normal files\nRoot partition holds the OS kernel and is mounted first at boot\n04\n05\nA volume can span multiple storage devices or partitions\nBoot information is often kept in its own small boot partition",
+      "notes": "Moving on, the key difference is whether the storage has a file system on it. A raw partition has no file \u000bsystem and can be used for things like swap space or specialized database storage, while a cooked partition is \u000bformatted and ready for normal files. During boot, the root partition provides the OS kernel and is mounted early, \u000bwhile boot information may be kept separately in a small boot partition. Also, a volume is not necessarily limited \u000bto one physical partition—it can span multiple storage devices or partitions.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Virtual File System",
+      "body": "Uniform Access Layer\nThe Virtual File System (VFS) is a kernel abstraction layer giving one uniform API over multiple, possibly different, underlying file system types",
+      "notes": "So, applications should not need to know which specific file system is managing their data.\u000b The VFS acts as a common interface between applications and different file-system implementations, \u000bso the same file operations can work across multiple file-system types without changing the application.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Virtual File System",
+      "body": "Uniform Access Layer\nOpen, read, write, and close work across file systems, with VFS \u000bproviding a common interface for local and remote Systems\n01\n02\n03\nNew file system types can be added without changing \u000bapplication code\nImplemented as an object-oriented interface inside the kernel",
+      "notes": "Next, think of VFS as the common layer that hides the differences between file systems. \u000bApplications can use operations like open, read, write, and close without knowing which file system is underneath, \u000bwhether it is local or remote. This also means a new file system can be added without changing application code, \u000bwhile the kernel provides this through an object-oriented interface.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Mounting A Filesystem",
+      "body": "Attaching At Mount Point\nA file system must be mounted, attached at a specific mount point in the existing directory tree, before any of its files become accessible",
+      "notes": "Now, think of mounting as attaching one file system to a location that already exists in the directory tree.\u000b In the diagram, the file system on the left is mounted onto the highlighted mount point in the existing tree. \u000bOnce attached, the files and directories inside that file system become accessible through that location; \u000bbefore mounting, they cannot be accessed through the directory tree.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Mounting A Filesystem",
+      "body": "Attaching At Mount Point\n01\n02\nThe OS verifies that the device contains a valid, recognizable\u000bfile system\nThe root file system mounts automatically at boot; other volumes mount at boot or later manually\n03\nNew entry records the device and its mount point",
+      "notes": "Moving on, before the OS attaches a storage device to the directory tree,\u000b it first makes sure the device is usable as a file system. The root file system is needed during startup, \u000bso it is mounted as part of the boot process, while additional volumes can be connected later when required. \u000bOnce the attachment is established, the OS remembers which device is connected where, so file access can be routed correctly.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Types Of Access",
+      "body": "Six Access Rights",
+      "notes": "Operating systems define specific access rights rather than one all-or-nothing permission,\u000b letting owners grant exactly the operations a user needs",
+      "tables": [
+        [
+          [
+            "Access Right",
+            "Meaning"
+          ],
+          [
+            "Read",
+            "View file contents without modifying"
+          ],
+          [
+            "Write",
+            "Modify or overwrite existing content"
+          ],
+          [
+            "Execute",
+            "Run file as a program"
+          ],
+          [
+            "Append",
+            "Add data only at file end"
+          ],
+          [
+            "Delete",
+            "Remove the file entirely"
+          ],
+          [
+            "List",
+            "View file name in directory listing"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 57,
+      "title": "Protection",
+      "body": "Protection",
+      "notes": "Next we will understand about the Protection",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Why Protection Needed",
+      "body": "Multi-User Access Risk\nUncontrolled access risks accidental or \u000bmalicious data loss\n01\n02\n03\nSensitive files need restricted read or write \u000brights\nProtection extends the sharing already enabled \u000bby directories\n04\nOperating system enforces the rules set by the \u000bfile owner",
+      "notes": "So, once files are shared through directories, the OS also needs to control who can actually use them. \u000bWithout protection, one user or process could accidentally or intentionally modify another user's data. \u000bThe file owner defines the required access rights, and the operating system enforces those rules for users and processes.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Why Protection Needed",
+      "body": "Systems either attach a detailed access-control list to each file or classify users into broad groups to keep permission storage compact\nMulti-User Access Risk",
+      "notes": "Now, the OS needs an efficient way to store these access rules. It can maintain a detailed access-control list when \u000bdifferent users need different permissions, or use broader user groups when many users share the same access requirements. \u000bThis balances fine-grained control with efficient permission storage.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Access Control List (ACL)",
+            "Grouped Classes (UGO)"
+          ],
+          [
+            "Granularity",
+            "Per-user, exact rights list",
+            "Owner, group, others only"
+          ],
+          [
+            "Storage cost",
+            "Grows with number of users",
+            "Fixed three classes always"
+          ],
+          [
+            "Flexibility",
+            "Very fine control per user",
+            "Coarser, simpler to manage"
+          ],
+          [
+            "Used in",
+            "NTFS, NFSv4, VMS",
+            "Traditional Unix and Linux"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 60,
+      "title": "Unix Permission Bits",
+      "body": "Owner, Group, Other\nTraditional Unix packs read, write and execute rights for owner, group and other into nine bits, shown as rwx triplets in a directory listing",
+      "notes": "Moving on, Unix keeps permissions compact by dividing users into three categories: owner, group, and other. \nEach category gets three possible rights—read, write, and execute—which together form the familiar nine-bit rwx permission pattern.",
+      "tables": [
+        [
+          [
+            "Symbol",
+            "Meaning",
+            "Octal Value"
+          ],
+          [
+            "r",
+            "Read permission",
+            "4"
+          ],
+          [
+            "w",
+            "Write permission",
+            "2"
+          ],
+          [
+            "x",
+            "Execute file, or search a directory",
+            "1"
+          ],
+          [
+            "rwxr-xr-x",
+            "Owner full; group and other read/execute",
+            "755"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 61,
+      "title": "Special Permission Bits",
+      "body": "Setuid, Setgid, Sticky\nBeyond the standard nine bits, Unix defines three special permission bits that change how execution and directory deletion behave",
+      "notes": "Next, Unix also has three special permission bits that go beyond the normal rwx permissions. \u000bSetuid and setgid affect the identity under which a program executes, while the sticky bit controls who can delete entries in a shared directory.",
+      "tables": [
+        [
+          [
+            "Bit",
+            "Effect",
+            "Symbol",
+            "Octal"
+          ],
+          [
+            "Setuid (SUID)",
+            "Process runs with the file owner's effective UID",
+            "s in owner execute slot",
+            "4000"
+          ],
+          [
+            "Setgid (SGID)",
+            "Process uses file's group; files inherit SGID directory's group",
+            "s in group execute slot",
+            "2000"
+          ],
+          [
+            "Sticky bit",
+            "Only file owner or root may delete/rename within directory",
+            "t in other execute slot",
+            "1000"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 62,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "File System Concepts & Directories",
+      "body": "File Concept\nAttributes, operations & types\nFile Access Methods\nSequential, direct, indexed\nDirectory Structure\nSingle-level, two-level, tree, \u000bacyclic graph, general graph",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "File System Concepts & Directories",
+      "body": "File System Architecture\nLayout & implementation \nMounting a file system\nProtection\nFile sharing & protection\nAccess control & file permissions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "File System Implementation",
+      "body": "File System Implementation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1AgZDsUpAbxaOWjEnsa6NjoHbpaICkvw4Nw3TDIhgF_M/edit?slide=id.g3f27ba313c8_0_1528#slide=id.g3f27ba313c8_0_1528"
+}

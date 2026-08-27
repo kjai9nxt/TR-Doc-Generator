@@ -1,0 +1,1128 @@
+{
+  "session_no": 26,
+  "source_file": "Page Replacement Algorithms & Belady's Anomaly",
+  "deck_title": "Page Replacement Algorithms & Belady's Anomaly",
+  "n_slides": 62,
+  "summary": "\n    - Slide 2: Page Replacement Algorithms & Belady's Anomaly\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Page Replacement Algorithms, Belady's Anomaly\n    - Slide 6: Page Replacement Basics\n    - Slide 7: Why Replacement Needed\n    - Slide 8: Trigger Condition\n    - Slide 9: Choosing Victim\n    - Slide 10: Choosing Victim\n    - Slide 11: Replacement Steps\n    - Slide 12: Replacement Steps\n    - Slide 13: Modified Bit Role\n    - Slide 14: Policy Families\n    - Slide 15: FIFO & Optimal\n    - Slide 16: FIFO Replacement\n    - Slide 17: FIFO Worked Example\n    - Slide 18: FIFO Worked Example\n    - Slide 19: FIFO Worked Example\n    - Slide 20: FIFO Key Drawback\n    - Slide 21: Optimal Replacement\n    - Slide 22: Optimal Worked Example\n    - Slide 23: Optimal Worked Example\n    - Slide 24: Optimal Worked Example\n    - Slide 25: FIFO vs Optimal\n    - Slide 26: LRU & Approximations\n    - Slide 27: Why LRU Works\n    - Slide 28: LRU Implementation\n    - Slide 29: LRU Worked Example\n    - Slide 30: LRU Worked Example\n    - Slide 31: LRU Worked Example\n    - Slide 32: LRU Implementation Cost\n    - Slide 33: Reference Bit Basics\n    - Slide 34: Second Chance Algo\n    - Slide 35: Enhanced Second Chance\n    - Slide 36: MRU Replacement\n    - Slide 37: Quiz Time!\n    - Slide 38: Counting-Based \u000b(LFU / MFU)\n    - Slide 39: Counting-Based Idea\n    - Slide 40: LFU Defined\n    - Slide 41: LFU Worked Example\n    - Slide 42: LFU Worked Example\n    - Slide 43: LFU Worked Example\n    - Slide 44: LFU Key Drawback\n    - Slide 45: MFU Defined\n    - Slide 46: Counting vs Recency\n    - Slide 47: Counting vs Recency\n    - Slide 48: Belady's Anomaly & Practice\n    - Slide 49: Belady's Anomaly Defined\n    - Slide 50: 3-Frame FIFO Trace\n    - Slide 51: 3-Frame FIFO Trace\n    - Slide 52: 3-Frame FIFO Trace\n    - Slide 53: 4-Frame FIFO Trace\n    - Slide 54: 4-Frame FIFO Trace\n    - Slide 55: Why Anomaly Occurs\n    - Slide 56: Stack Property Explained\n    - Slide 57: Quiz Time!\n    - Slide 58: Page Replacement Algorithms & Belady's Anomaly\n    - Slide 59: Page Replacement Algorithms & Belady's Anomaly\n    - Slide 60: Thrashing, Working Set & \u000bFrame Allocation",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Page Replacement Algorithms & Belady's Anomaly",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Virtual Memory & Demand Paging\nVirtual Memory\nConcept & benefits\nDemand Paging\nLazy loading; valid / invalid bit\nPure demand paging\nPage Faults\nSteps in handling a page fault\nPage fault service time",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Virtual Memory & Demand Paging\nPerformance\nPerformance of demand paging\nAdvanced Mechanisms\nCopy-on-write\nMemory-mapped files (intro)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Page Replacement Algorithms, Belady's Anomaly",
+      "body": "Page Replacement Algorithms, Belady's Anomaly\nLRU & Approximations\nFIFO & Optimal\nNeed for page replacement & basic steps\nFIFO page replacement, Optimal page replacement\nPage Replacement Basics\nBelady's Anomaly & Practice\nCounting-\u000bBased\nLeast recently used (LRU), Reference bit & second chance\nLFU / MFU\nBelady's anomaly, \u000bNumerical problems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Page Replacement Basics",
+      "body": "Page Replacement Basics",
+      "notes": "Now we will learn about the Page Replacement Basics",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why Replacement Needed",
+      "body": "Frames Are Finite\nDemand paging loads pages only when referenced\nEvery running process competes for the same limited frames\nAllocated frames eventually all hold valid pages\nA newly needed page must then displace an existing one\nPhysical memory offers only a limited number of frames, so a new \u000bpage fault cannot always find an empty frame to occupy",
+      "notes": "So, let's understand the need for Page Replacement. Since Physical Memory \u000bcontains only a limited number of Frames, there comes a point where\u000ball the available Frames are occupied. If a Page Fault occurs after that,\u000bthe operating system cannot simply load the required page. Instead, it has to replace \u000bone of the existing Pages with the newly required page, and that's exactly why Page Replacement is needed.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Trigger Condition",
+      "body": "No Free Frame\nPage fault occurs on an invalid or absent page\nOS first checks the free-frame list\nFree frame available: page loaded directly, no eviction\nFree-frame list empty: a resident page must be evicted\nReplacement is invoked only when a page fault occurs and the OS's free-frame list is empty",
+      "notes": "Now, let's see when Page Replacement actually gets triggered. \u000bIt doesn't happen for every Page Fault. Whenever a Page Fault occurs,\u000b the operating system first checks its free-frame list. If a Free Frame is available, \u000bthe required page is loaded directly. However, if the free-frame list is empty, \u000bthe OS has no choice but to evict one of the resident Pages before loading the new one.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Choosing Victim",
+      "body": "Which Page Evicted\nA page-replacement algorithm is the policy that decides which resident page becomes the victim when a frame must be reclaimed. Algorithms are judged by the page faults they cause on a reference string — the ordered sequence of page numbers a process accesses over time",
+      "notes": "Moving on, once Page Replacement is required, the next question is which Page should be removed. \u000bThis decision is made by a Page-Replacement Algorithm, which selects the victim page\u000b from the resident pages. Different algorithms follow different strategies, and their performance\u000b is mainly compared based on the number of Page Faults they generate for a given Reference String.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Choosing Victim",
+      "body": "Which Page Evicted\nDecides which frame is freed for the incoming page\nAim: minimise the future page-fault rate\nDifferent policies trade prediction accuracy for bookkeeping overhead\nCommon policies: FIFO, Optimal, LRU, LFU/MFU",
+      "notes": "Next, let's understand how the victim page is selected. A Page-Replacement Algorithm \u000bdecides which Frame should be freed so the incoming page can be loaded. The main objective \u000bis to minimise the number of future Page Faults, but different algorithms achieve this with different levels\u000b of tracking and overhead. Some of the commonly used policies are FIFO, Optimal, LRU, and LFU/MFU.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Replacement Steps",
+      "body": "Ordered Sequence\nOn a page fault, the OS runs a fixed sequence to bring in the required page, evicting a resident page only when no frame is free:",
+      "notes": "Now, let's walk through the initial Replacement Steps followed after a Page Fault. \u000bFirst, the CPU tries to access a page that is not present in memory, which triggers a Page Fault. \u000b Control is then transferred to the operating system through a trap, allowing the page-fault handler to take over.\u000b Finally, the OS locates the required page on the backing store before proceeding with the replacement process.",
+      "tables": [
+        [
+          [
+            "Step",
+            "Action"
+          ],
+          [
+            "1",
+            "Page fault occurs - the CPU references a page not currently in memory"
+          ],
+          [
+            "2",
+            "Trap to the OS - hardware interrupts, control passes to the page-fault handler"
+          ],
+          [
+            "3",
+            "Locate the desired page on the backing store (disk)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Replacement Steps",
+      "body": "Ordered Sequence\nOn a page fault, the OS runs a fixed sequence to bring in the required page, evicting a resident page only when no frame is free:",
+      "notes": "Moving on, the OS now checks for a Free Frame. If one is available, it loads the required page directly;\u000b otherwise, a Page-Replacement Algorithm is used to select a victim frame. \u000bBefore replacing it, the OS checks the dirty bit to determine whether the page needs to be written back to disk.\u000b Finally, the required page is loaded, the Page Table is updated, and the interrupted instruction is restarted.",
+      "tables": [
+        [
+          [
+            "Step",
+            "Action"
+          ],
+          [
+            "4",
+            "Find a free frame -  if one exists, use it and skip to Step 6; if none is free, apply the replacement algorithm to select a victim frame"
+          ],
+          [
+            "5",
+            "If a victim was selected, check its dirty bit - write it back to disk if modified, else discard it"
+          ],
+          [
+            "6",
+            "Load the desired page into the free frame; update the page table (and the victim's entry)"
+          ],
+          [
+            "7",
+            "Restart the instruction that caused the fault"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Modified Bit Role",
+      "body": "Reducing Write Cost\nDirty bit set the moment a page is written\nClean victim page: discard directly, no disk write\nDirty victim page: must write back before reuse\nAvoiding unnecessary write-backs cuts replacement cost\nOverall goal: minimise page-fault rate and total overhead\nThe dirty (modified) bit marks a page whose frame content differs from its backing-store copy, guiding whether a write-back is needed",
+      "notes": "Now, let's understand the Modified Bit, also known as the dirty bit. \u000bIt is a status bit that indicates whether a page has been modified after being loaded into memory.\u000b If the page hasn't changed, it is considered clean and can be discarded directly during Page Replacement. \u000bHowever, if the dirty bit is set, the updated page must be written back to the disk,\u000b meaning the modified contents are saved to the backing store before the frame is reused.\u000b This avoids losing any changes while also preventing unnecessary disk writes, \u000bhelping reduce the overall replacement cost.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Policy Families",
+      "body": "How Victims Are Chosen\nEvery page-replacement algorithm in this session falls into one of four families, differing only in the signal it uses to pick the victim page:",
+      "notes": "Moving on, let's look at the different families of Page-Replacement Algorithms. \u000bAlthough each algorithm follows its own strategy, they can be grouped into four families \u000bbased on the criterion they use to choose the victim page. FIFO-based algorithms evict pages\u000b based on their arrival order, Optimal chooses the page that will be used farthest in the future, \u000bRecency-based algorithms consider how recently a page was accessed, and Counting-based algorithms\u000b use the frequency of page references. We'll now understand each of these families and their algorithms in detail.",
+      "tables": [
+        [
+          [
+            "Family",
+            "Evicts Based On",
+            "Algorithms Covered"
+          ],
+          [
+            "FIFO-based",
+            "Arrival order (oldest first)",
+            "FIFO, Second-Chance / Clock, Enhanced Second-Chance"
+          ],
+          [
+            "Optimal",
+            "Farthest future use",
+            "Optimal (benchmark only)"
+          ],
+          [
+            "Recency-based",
+            "Time since last use",
+            "LRU (least recent), MRU (most recent)"
+          ],
+          [
+            "Counting-based",
+            "Reference frequency",
+            "LFU (lowest), MFU (highest)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "FIFO & Optimal",
+      "body": "FIFO & Optimal",
+      "notes": "Now we will be learning about the FIFO & Optimal",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "FIFO Replacement",
+      "body": "Oldest Page Evicted\nMaintains a queue of resident pages in load order\nNew page enters at the rear of the queue\nFault with no free frame evicts the front (oldest) page\nSimple to implement with a queue or circular pointer\nIgnores whether the evicted page is still actively used\nFIFO evicts the page that has resided in memory longest, treating resident frames as a simple arrival-ordered queue",
+      "notes": "Now, let's understand the FIFO (First-In, First-Out) Page Replacement algorithm. \u000bAs the name suggests, it always removes the page that has been in memory for the longest time, \u000bregardless of how frequently it is being used. To achieve this, the operating system maintains the resident pages\u000b in a queue, where every new page is added at the rear. When a Page Fault occurs and no Free Frame is available,\u000b the page at the front of the queue is selected as the victim page. Since FIFO \u000bdoesn't consider recent page usage, it may sometimes replace a page that is still actively needed.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "FIFO Worked Example",
+      "body": "Reference String Trace\n7\n7\n7\n0\n0\n1\n2\n3\n0\n4\n2\n2\n2\n0\n0\n1\n1\n2\n3\n0\n4\n2\n3\n3\n3\n0\n0\n0\n3\n0\n4\n2\n3\n1\n2\n2\nF\nF\nF\nF\nH\nF\nF\nF\nF\nF\nF\nH\nH\n7\n0\n1\n2\n0\n3\n0\n4\n2\n3\n0\n3\n2\nFIFO - 3 Frames - string 7,0,1,2,0,3,0,4,2,3,0,3,2\nTotal page faults = 10 , hits = 3 (F = fault, H = hit)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "FIFO Worked Example",
+      "body": "Reference String Trace\nApplying FIFO with three frames to reference string 7,0,1,2,0,3,0,4,2,3,0,3,2 traces every eviction in strict arrival order",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?"
+          ],
+          [
+            "7",
+            "{7}",
+            "Fault"
+          ],
+          [
+            "0",
+            "{7,0}",
+            "Fault"
+          ],
+          [
+            "1",
+            "{7,0,1}",
+            "Fault"
+          ],
+          [
+            "2",
+            "{0,1,2} (evict 7)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{0,1,2}",
+            "Hit"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 19,
+      "title": "FIFO Worked Example",
+      "body": "Reference String Trace",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?"
+          ],
+          [
+            "3",
+            "{1,2,3} (evict 0)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{2,3,0} (evict 1)",
+            "Fault"
+          ],
+          [
+            "4",
+            "{3,0,4} (evict 2)",
+            "Fault"
+          ],
+          [
+            "2",
+            "{0,4,2} (evict 3)",
+            "Fault"
+          ],
+          [
+            "3",
+            "{4,2,3} (evict 0)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{2,3,0} (evict 4)",
+            "Fault"
+          ],
+          [
+            "3",
+            "{2,3,0}",
+            "Hit"
+          ],
+          [
+            "2",
+            "{2,3,0}",
+            "Hit"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "FIFO Key Drawback",
+      "body": "Anomaly Preview\nExtra frames are expected to reduce faults, not raise them\nFIFO occasionally violates this expectation on certain reference strings\nThis counter-intuitive rise is named Belady's Anomaly\nFIFO can behave counter-intuitively: adding more frames sometimes increases the fault count instead of decreasing it",
+      "notes": "Next, let's look at a major drawback of FIFO. Normally, we expect that increasing \u000bthe number of Frames should reduce the number of Page Faults because more pages can stay in memory. \u000bHowever, FIFO doesn't always follow this expectation. For certain Reference Strings, \u000badding more Frames can actually increase the number of Page Faults. \u000bThis unexpected behaviour is known as Belady's Anomaly, which we'll understand in detail later.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Optimal Replacement",
+      "body": "Future Knowledge Ideal\nOptimal replacement evicts the page that will not be referenced again for the longest time ahead, minimising faults for a given frame count\nRequires complete knowledge of the future reference sequence\nVictim chosen: page unused for the longest span ahead, or never again\nProduces the fewest possible faults for any frame count\nNot implementable in real systems since future references are unknown\nUsed purely as a theoretical benchmark for other algorithms",
+      "notes": "Moving on, let's understand the Optimal Replacement algorithm. It selects the victim page \u000bthat will not be referenced again for the longest time in the future, or may never be used again. \u000bSince this choice is always the best possible, it produces the minimum number of Page Faults\u000b for a given number of Frames. However, implementing this algorithm in a real system is not \u000bpractical because the operating system cannot predict future Reference Strings. \u000bThat's why Optimal Replacement is mainly used as a theoretical benchmark to compare the performance of other Page-Replacement Algorithms.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Optimal Worked Example",
+      "body": "Same String Traced",
+      "notes": "Total: 7 faults, 6 hits - three fewer than FIFO on the same string",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Optimal Worked Example",
+      "body": "Same String Traced\nApplying optimal replacement to the identical reference string 7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2 with three frames, at each fault, evict the page whose next use is farthest ahead (or never):",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?",
+            "Victim - why"
+          ],
+          [
+            "7",
+            "{7}",
+            "Fault",
+            "initial load"
+          ],
+          [
+            "0",
+            "{7,0}",
+            "Fault",
+            "initial load"
+          ],
+          [
+            "1",
+            "{7,0,1}",
+            "Fault",
+            "initial load"
+          ],
+          [
+            "2",
+            "{0,1,2}",
+            "Fault",
+            "evict 7 — never used again"
+          ],
+          [
+            "0",
+            "{0,1,2}",
+            "Hit",
+            "-"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "title": "Optimal Worked Example",
+      "body": "Same String Traced",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After (counts)",
+            "Fault?",
+            "Victim - why"
+          ],
+          [
+            "3",
+            "{0,2,3}",
+            "Fault",
+            "evict 1 — never used again"
+          ],
+          [
+            "0",
+            "{0,2,3}",
+            "Hit",
+            "-"
+          ],
+          [
+            "4",
+            "{2,3,4}",
+            "Fault",
+            "evict 0 — next uses: 2 @ ref 9, 3 @ ref 10, 0 @ ref 11 → 0 is farthest"
+          ],
+          [
+            "2",
+            "{2,3,4}",
+            "Hit",
+            "-"
+          ],
+          [
+            "3",
+            "{2,3,4}",
+            "Hit",
+            "-"
+          ],
+          [
+            "0",
+            "{2,3,0}",
+            "Fault",
+            "evict 4 — never used again"
+          ],
+          [
+            "3",
+            "{2,3,0}",
+            "Hit",
+            "-"
+          ],
+          [
+            "2",
+            "{2,3,0}",
+            "Hit",
+            "-"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "FIFO vs Optimal",
+      "body": "Side By Side\nOptimal always matches or beats FIFO in fault count, but only FIFO is realistically implementable inside an operating system",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "FIFO",
+            "Optimal"
+          ],
+          [
+            "Eviction basis",
+            "Arrival order, oldest first",
+            "Farthest future use"
+          ],
+          [
+            "Knowledge needed",
+            "None, only past history",
+            "Complete future reference string"
+          ],
+          [
+            "Implementable in practice",
+            "Yes, real OS algorithm",
+            "No, purely theoretical benchmark"
+          ],
+          [
+            "Fault count (example string)",
+            "10 faults",
+            "7 faults"
+          ],
+          [
+            "Belady's Anomaly",
+            "Can occur",
+            "Never occurs"
+          ],
+          [
+            "Typical role",
+            "Simple baseline in production",
+            "Yardstick for evaluating other algorithms"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 26,
+      "title": "LRU & Approximations",
+      "body": "LRU & Approximations",
+      "notes": "Next we will be learning about the LRU & Approximations",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Why LRU Works",
+      "body": "Recency Predicts Reuse\nAssumes recently accessed pages are likely accessed again soon\nContrasts with FIFO, which ignores usage after loading\nApproaches Optimal fault count for many real workloads\nRelies on temporal locality: recently used pages tend to be used again soon\nLRU replaces the page that has gone unreferenced for the longest time, applying temporal locality to predict future access",
+      "notes": "Now, let's understand why the LRU (Least Recently Used) algorithm works so well. \u000bIt is based on the principle of temporal locality, which assumes that if a page has been accessed recently,\u000b it is likely to be accessed again in the near future. So, instead of removing the oldest page like FIFO, \u000bLRU replaces the page that has not been used for the longest time. Because of this approach, \u000bLRU often achieves a Page Fault rate that is very close to the Optimal Replacement algorithm for many real-world workloads.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "LRU Implementation",
+      "body": "Counter Or Stack\nExact LRU can be realised with a counter that timestamps every access or a stack that reorders pages on each reference",
+      "notes": "Moving on, let's see how LRU can be implemented in practice. One approach is the Counter-based method, \u000bwhere every page access is assigned a timestamp, and the page with the oldest timestamp is selected for replacement. \u000bAnother approach is the Stack-based method, where every accessed page is moved to the top of a stack, \u000bmaking the page at the bottom the Least Recently Used page. While both methods accurately implement LRU,\u000b they require frequent updates to timestamps or stack pointers, making them expensive to maintain in real systems.",
+      "tables": [
+        [
+          [
+            "Method",
+            "How It Works",
+            "Drawback"
+          ],
+          [
+            "Counter-based",
+            "Hardware clock timestamps every page on access; evict smallest timestamp",
+            "Requires searching timestamps and frequent updates"
+          ],
+          [
+            "Stack-based",
+            "Accessed page moves to top of a doubly-linked list; evict bottom",
+            "Every reference forces list pointer updates"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 29,
+      "title": "LRU Worked Example",
+      "body": "Recency Order Traced\n7\n7\n7\n2\n2\n2\n2\n3\n3\n3\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n2\n2\n2\n2\n2\n3\n3\n3\n3\n3\n4\n4\n4\n1\n1\n1\nF\nF\nF\nF\nH\nF\nH\nF\nF\nF\nF\nH\nH\n7\n0\n1\n2\n0\n3\n0\n4\n2\n3\n0\n3\n2\nLRU (evict least recently used) 3 frames , string : 7,0,1,2,0,3,0,4,2,3,0,3,2 \nTotal page faults = 9 ,  hits = 4 (F = fault, H = hit)",
+      "notes": "Between FIFO’s 10 and Optimal’s 7",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "LRU Worked Example",
+      "body": "Recency Order Traced\nApplying LRU with three frames to reference string 7,0,1,2,0,3,0,4,2,3,0,3,2 shows fewer faults than FIFO but more than Optimal",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?"
+          ],
+          [
+            "7",
+            "{7}",
+            "Fault"
+          ],
+          [
+            "0",
+            "{7,0}",
+            "Fault"
+          ],
+          [
+            "1",
+            "{7,0,1}",
+            "Fault"
+          ],
+          [
+            "2",
+            "{0,1,2} (evict 7, least recent)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{1,2,0} (refreshed)",
+            "Hit"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "LRU Worked Example",
+      "body": "Recency Order Traced",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After (counts)",
+            "Fault?"
+          ],
+          [
+            "3",
+            "{2,0,3} (evict 1, least recent)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{2,3,0} (refreshed)",
+            "Hit"
+          ],
+          [
+            "4",
+            "{3,0,4} (evict 2, least recent)",
+            "Fault"
+          ],
+          [
+            "2",
+            "{0,4,2} (evict 3, least recent)",
+            "Fault"
+          ],
+          [
+            "3",
+            "{4,2,3} (evict 0, least recent)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{2,3,0} (evict 4, least recent)",
+            "Fault"
+          ],
+          [
+            "3",
+            "{2,0,3} (refreshed)",
+            "Hit"
+          ],
+          [
+            "2",
+            "{0,3,2} (refreshed)",
+            "Hit"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 32,
+      "title": "LRU Implementation Cost",
+      "body": "Overhead Too High\nCounter method needs a clock update on every reference\nStack method needs list re-linking on every reference\nCommodity CPUs provide no full-order LRU hardware\nOperating systems use cheaper approximations instead of exact LRU\nTrue LRU needs hardware or software bookkeeping on every single memory reference, making it impractical at real memory-access speeds",
+      "notes": "Now, although LRU gives good performance, implementing true LRU comes with a high cost.\u000b Every memory reference must be tracked, either by updating a Counter or by rearranging a Stack, \u000bwhich introduces significant bookkeeping overhead. Since most commodity CPUs do not \u000bprovide hardware support for maintaining the exact LRU order, implementing it efficiently becomes difficult.\u000bTherefore, operating systems usually prefer approximations of LRU that offer similar performance with much lower overhead.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Reference Bit Basics",
+      "body": "Not Recently Used\nHardware sets reference bit to 1 on every page access\nOS clears all reference bits at fixed intervals\nBit still 0 at fault time: page unused recently\nNot-Recently-Used (NRU) evicts from the bit-0 group first\nFar cheaper than counters, but coarser than true LRU\nA single hardware reference bit, set on access and cleared periodically, cheaply approximates which pages saw recent use",
+      "notes": "Now, let's understand the Reference Bit. It is a hardware-maintained bit that helps the operating system \u000bidentify whether a page was used recently, without maintaining the complete access history like LRU. \u000bThe hardware sets the Reference Bit whenever a page is accessed, and the operating system clears\u000b it after fixed intervals to begin a new observation period. During Page Replacement,\u000b if a page's Reference Bit is still 0, it is considered Not Recently Used (NRU) and becomes \u000ba good candidate for replacement. This method is much simpler and has lower overhead than implementing true LRU.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Second Chance Algo",
+      "body": "Pages sit in a circular queue with a clock hand\nHand checks reference bit of the pointed page\nBit = 1: clear it, skip page, advance hand\nBit = 0: evict this page, insert new page here\nAlso called the Clock algorithm for its circular sweep\nClock Hand Sweep\nSecond chance augments FIFO with a reference bit: a page is evicted only if its bit is already clear when the clock hand reaches it",
+      "notes": "Next, let's understand the Second Chance Algorithm, which is an improved version of FIFO. \u000bInstead of immediately replacing the oldest page, it first checks the page's Reference Bit. \u000bIf the Reference Bit is 1, the page is given a second chance by clearing the bit and moving \u000bthe clock hand to the next page. If the Reference Bit is 0, that page is selected as the victim page \u000band replaced with the incoming page. Since the pages are arranged in a circular queue and \u000bthe pointer moves in a circular manner, this approach is also known as the Clock Algorithm.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Enhanced Second Chance",
+      "body": "Reference And Modify\nEnhanced second chance adds the modify bit, ranking pages into four classes so clean, unused pages are evicted before dirty ones",
+      "notes": "Moving on, the Enhanced Second Chance algorithm uses both the Reference Bit and the \u000bModify Bit to choose the victim page. Here, 0 means the bit is not set, while 1 means it is set.\u000b So, (0,0) represents a page that is neither recently used nor modified, making it the best choice for replacement. \u000bAs we move to (0,1), (1,0), and (1,1), the pages become less suitable because they are either modified, recently used, or both.",
+      "tables": [
+        [
+          [
+            "Class (ref,mod)",
+            "Meaning",
+            "Eviction Priority"
+          ],
+          [
+            "(0,0)",
+            "Unused, unmodified",
+            "Evicted first, cheapest"
+          ],
+          [
+            "(0,1)",
+            "Unused, modified",
+            "Evicted next, needs write-back"
+          ],
+          [
+            "(1,0)",
+            "Recently used, unmodified",
+            "Given second chance"
+          ],
+          [
+            "(1,1)",
+            "Recently used, modified",
+            "Least preferred, second chance + write-back"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 36,
+      "title": "MRU Replacement",
+      "body": "Victim: the most recently accessed resident page\nInverts LRU's assumption that recent use predicts near reuse\nWins on cyclic or large sequential scans of data bigger than the frames\nLoses badly on ordinary locality-heavy workloads\nRare in practice; mainly seen in database buffer managers\nMRU evicts the page referenced most recently, the exact inverse of LRU, and helps only when a just-used page is the least likely to be needed again soon\nEvict Most Recently Used",
+      "notes": "Next, let's understand the MRU (Most Recently Used) algorithm. Unlike LRU, \u000bMRU selects the page that was accessed most recently as the victim page.\u000b It works well in situations like large sequential or cyclic data scans, where a recently used page\u000b is less likely to be needed again soon. However, for most applications that exhibit locality, \u000bMRU performs poorly, which is why it is rarely used in general-purpose operating systems.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Counting-Based \u000b(LFU / MFU)",
+      "body": "Counting-Based \u000b(LFU / MFU)",
+      "notes": "Npw we will learn about the Counting-Based \n(LFU / MFU)",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Counting-Based Idea",
+      "body": "Frequency As Signal\nEvery resident page carries a reference-count field\nCount increments on each hit to that page\nTwo opposite policies exploit this same count\nLFU evicts the smallest count; MFU evicts the largest\nCounting-based replacement tracks how many times each resident page has been referenced, using that frequency instead of arrival order or recency to pick a victim",
+      "notes": "Now, let's understand the idea behind Counting-Based replacement. Instead of considering the order \u000bor recent usage of pages, this approach uses the reference count as the replacement criterion. \u000bThe reference count records how many times each resident page has been accessed and increases \u000bwith every access. Based on this count, LFU (Least Frequently Used) replaces the page that has been\u000b accessed the least number of times, whereas MFU (Most Frequently Used) replaces \u000bthe page that has been accessed the most number of times.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "LFU Defined",
+      "body": "Lowest Count Evicted\nMaintains a running reference count per resident frame\nFault victim: page with the minimum count in memory\nTies commonly broken using FIFO or arrival order\nAssumes past frequency predicts continuing low future use\nLFU replacement evicts the resident page with the smallest reference count, assuming an infrequently used page is least likely to be needed soon",
+      "notes": "Next, let's understand the LFU (Least Frequently Used) replacement algorithm. It selects the \u000bvictim page with the smallest reference count, that is, the page that has been accessed the fewest number of times\u000b. The operating system maintains a reference count for every resident frame and updates \u000bit whenever the page is accessed. If more than one page has the same reference count, \u000bthe tie is usually broken using FIFO or arrival order. This algorithm works on the assumption\u000b that a page with a low past usage frequency is less likely to be needed soon.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "LFU Worked Example",
+      "body": "Reference Counts Traced\n7\n7\n7\n2\n2\n2\n2\n3\n2\n2\n2\n2\n2\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n3\n3\n3\n3\n3\n4\n4\n3\n1\n1\n1\nF\nF\nF\nF\nH\nF\nH\nF\nF\nF\nH\nH\nH\n7\n0\n1\n2\n0\n3\n0\n4\n2\n3\n0\n3\n2\nLFU (evict lowest count, ties: oldest) 3 frames , string : 7,0,1,2,0,3,0,4,2,3,0,3,2\nTotal page faults = 8 , hits = 5 (F = fault, H = hit)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "LFU Worked Example",
+      "body": "Reference Counts Traced\nApplying LFU with three frames to reference string 7,0,1,2,0,3,0,4,2,3,0,3,2 shows counts driving each eviction, with ties broken by oldest arrival",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After (counts)",
+            "Fault?"
+          ],
+          [
+            "7",
+            "{7:1}",
+            "Fault"
+          ],
+          [
+            "0",
+            "{7:1,0:1}",
+            "Fault"
+          ],
+          [
+            "1",
+            "{7:1,0:1,1:1}",
+            "Fault"
+          ],
+          [
+            "2",
+            "{0:1,1:1,2:1} (evict 7, tie, oldest)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{0:2,1:1,2:1}",
+            "Hit"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 43,
+      "title": "LFU Worked Example",
+      "body": "Reference Counts Traced",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After (counts)",
+            "Fault?"
+          ],
+          [
+            "3",
+            "{0:2,2:1,3:1} (evict 1, tie, oldest)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{0:3,2:1,3:1}",
+            "Hit"
+          ],
+          [
+            "4",
+            "{0:3,3:1,4:1} (evict 2, tie, oldest)",
+            "Fault"
+          ],
+          [
+            "2",
+            "{0:3,4:1,2:1} (evict 3, tie, oldest)",
+            "Fault"
+          ],
+          [
+            "3",
+            "{0:3,2:1,3:1} (evict 4, tie, oldest)",
+            "Fault"
+          ],
+          [
+            "0",
+            "{0:4,2:1,3:1}",
+            "Hit"
+          ],
+          [
+            "3",
+            "{0:4,2:1,3:2}",
+            "Hit"
+          ],
+          [
+            "2",
+            "{0:4,2:2,3:2}",
+            "Hit"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 44,
+      "title": "LFU Key Drawback",
+      "body": "New Page Penalised\nLFU can wrongly evict a newly loaded page whose count is still small, even though its real usage burst has not yet begun\nRecently loaded pages start with a low count\nSuch pages get evicted before proving their real usage\nPages once heavily used keep a high count indefinitely\nHigh-count pages resist eviction even after their use has stopped\nImplementation needs a counter plus a scan for the minimum",
+      "notes": "Moving on, let's look at a major drawback of the LFU algorithm. Since every newly loaded page \u000bstarts with a low reference count, it may get selected as the victim page before it has a chance \u000bto show its actual usage. On the other hand, pages that were heavily used in the past continue \u000bto have a high reference count, making them difficult to evict even if they are no longer needed. \u000bAlso, implementing LFU requires maintaining a counter for each page and \u000bscanning to find the page with the minimum reference count, which adds extra overhead",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "MFU Defined",
+      "body": "Highest Count Evicted\nFault victim: page with the maximum count in memory\nAssumes a low-count page is newer and needed longer\nOpposite intuition to both LFU and LRU\nRarely used in practice; mainly a contrasting theoretical policy\nMFU replacement evicts the resident page with the largest reference count, reasoning that a heavily used page has likely finished its burst of use",
+      "notes": "Next, let's understand the MFU (Most Frequently Used) algorithm. Unlike LFU, it selects the victim page\u000b with the largest reference count, meaning the page that has been accessed the most number of times.\u000b The assumption here is that a page with a low reference count is relatively new and is likely to be needed \u000bfor a longer time, whereas a heavily used page may have already completed its burst of use. \u000bThis is the opposite approach to both LFU and LRU, \u000bwhich is why MFU is rarely used in practice and is mainly studied as a theoretical policy.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Counting vs Recency",
+      "body": "Policy Comparison Table\nCounting-based policies use total access frequency, while LRU uses only the most recent access, giving each a different trade-off between accuracy and overhead",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "LFU",
+            "MFU",
+            "LRU"
+          ],
+          [
+            "Eviction basis",
+            "Smallest count",
+            "Largest count",
+            "Least recently accessed"
+          ],
+          [
+            "Assumption",
+            "Low past freq. = low future need",
+            "High past freq. = burst is over",
+            "Recent access = likely reuse soon"
+          ],
+          [
+            "Fault count (example)",
+            "8",
+            "10",
+            "9"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 47,
+      "title": "Counting vs Recency",
+      "body": "Policy Comparison Table\nCounting-based policies use total access frequency, while LRU uses only the most recent access, giving each a different trade-off between accuracy and overhead",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "LFU",
+            "MFU",
+            "LRU"
+          ],
+          [
+            "Risk with new pages",
+            "Evicted too early",
+            "Retained too long",
+            "Handled reasonably well"
+          ],
+          [
+            "Bookkeeping cost",
+            "Counter + scan for min",
+            "Counter + scan for max",
+            "Timestamp or stack update on every memory reference (not just on faults)"
+          ],
+          [
+            "Practical adoption",
+            "Rare; some DB buffer pools",
+            "Very rare; theoretical contrast",
+            "Common, usually approximated"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 48,
+      "title": "Belady's Anomaly & Practice",
+      "body": "Belady's Anomaly & Practice",
+      "notes": "Now we will learn about the Belady's Anomaly & Practice",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Belady's Anomaly Defined",
+      "body": "More Frames Worse\nExpectation: more frames should reduce or maintain faults\nAnomaly: fault count sometimes rises with more frames\nFirst reported by László Bélády in 1969\nOccurs only in non-stack algorithms such as FIFO; stack algorithms like LRU and Optimal never exhibit it\nBelady's Anomaly is the counter-intuitive result where increasing the number of allocated frames increases the page-fault count for certain replacement algorithms",
+      "notes": "Now, let's understand Belady's Anomaly. Normally, we expect that increasing the number of Frames\u000b will either reduce or at least maintain the number of Page Faults. However, Belady's Anomaly\u000b is the unusual situation where adding more Frames actually increases the Page Fault count. \u000bThis phenomenon was first reported by László Bélády in 1969. It occurs only in non-stack algorithms \u000bsuch as FIFO, whereas stack algorithms like LRU and Optimal never exhibit Belady's Anomaly.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "3-Frame FIFO Trace",
+      "body": "Baseline Fault Count\nTracing FIFO with three frames on reference string 1,2,3,4,1,2,5,1,2,3,4,5 gives the baseline fault count used to demonstrate the anomaly",
+      "notes": "Now, let's trace FIFO with 3 Frames for the given Reference String and establish the baseline Page Fault Count. As shown in the graph, the total Page Fault Count is 9. This value serves as our reference point for understanding Belady's Anomaly.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "3-Frame FIFO Trace",
+      "body": "Baseline Fault Count\nstring : 1,2,3,4,1,2,5,1,2,3,4,5",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?"
+          ],
+          [
+            "1",
+            "{1}",
+            "Fault"
+          ],
+          [
+            "2",
+            "{1,2}",
+            "Fault"
+          ],
+          [
+            "3",
+            "{1,2,3}",
+            "Fault"
+          ],
+          [
+            "4",
+            "{2,3,4} (evict 1)",
+            "Fault"
+          ],
+          [
+            "1",
+            "{3,4,1} (evict 2)",
+            "Fault"
+          ],
+          [
+            "2",
+            "{4,1,2} (evict 3)",
+            "Fault"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 52,
+      "title": "3-Frame FIFO Trace",
+      "body": "Total: 9 faults, 3 hits with three frames\nBaseline Fault Count",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?"
+          ],
+          [
+            "5",
+            "{1,2,5} (evict 4)",
+            "Fault"
+          ],
+          [
+            "1",
+            "{1,2,5}",
+            "Hit"
+          ],
+          [
+            "2",
+            "{1,2,5}",
+            "Hit"
+          ],
+          [
+            "3",
+            "{2,5,3} (evict 1)",
+            "Fault"
+          ],
+          [
+            "4",
+            "{5,3,4} (evict 2)",
+            "Fault"
+          ],
+          [
+            "5",
+            "{5,3,4}",
+            "Hit"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 53,
+      "title": "4-Frame FIFO Trace",
+      "body": "Anomaly Confirmed\nTracing the identical reference string with four frames instead of three raises the fault count, confirming Belady's Anomaly for FIFO",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?"
+          ],
+          [
+            "1,2,3,4",
+            "{1,2,3,4} built up",
+            "Fault x4"
+          ],
+          [
+            "1",
+            "{1,2,3,4}",
+            "Hit"
+          ],
+          [
+            "2",
+            "{1,2,3,4}",
+            "Hit"
+          ],
+          [
+            "5",
+            "{2,3,4,5} (evict 1)",
+            "Fault"
+          ],
+          [
+            "1",
+            "{3,4,5,1} (evict 2)",
+            "Fault"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 54,
+      "title": "4-Frame FIFO Trace",
+      "body": "Anomaly Confirmed\nTracing the identical reference string with four frames instead of three raises the fault count, confirming Belady's Anomaly for FIFO\nTotal: 10 faults, 2 hits with four frames, exceeds the 9 faults seen with three frames",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Ref",
+            "Frames After",
+            "Fault?"
+          ],
+          [
+            "2",
+            "{4,5,1,2} (evict 3)",
+            "Fault"
+          ],
+          [
+            "3",
+            "{5,1,2,3} (evict 4)",
+            "Fault"
+          ],
+          [
+            "4",
+            "{1,2,3,4} (evict 5)",
+            "Fault"
+          ],
+          [
+            "5",
+            "{2,3,4,5} (evict 1)",
+            "Fault"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 55,
+      "title": "Why Anomaly Occurs",
+      "body": "FIFO Lacks Property\nIdeal behaviour: smaller frame set's pages are a subset of larger set's pages\nFIFO's eviction depends only on arrival time, not on this containment\nA page dropped with fewer frames may be kept with more, and vice versa\nThis broken containment is the root cause of the anomaly\nA larger frame set should ideally hold every page a smaller frame set holds, but FIFO's arrival-order queue offers no such guarantee",
+      "notes": "Finally, let's understand why Belady's Anomaly occurs. Ideally, when we increase the number of Frames,\u000b the larger Frame Set should contain all the pages present in the smaller Frame Set. However, \u000bFIFO does not guarantee this because it makes replacement decisions only based on the arrival order of pages.\u000b As a result, a page that is present in memory with fewer Frames may not be present when more Frames are allocated., \u000bbreaking this containment property. This is the root cause of Belady's Anomaly.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Stack Property Explained",
+      "body": "Immune Algorithms\nOptimal and LRU both satisfy the stack property\nFIFO does not guarantee the stack property\nLFU and MFU also do not guarantee it in general\nAny stack-property algorithm can never suffer Belady's Anomaly\nThe stack property guarantees that the set of pages held with k frames is always contained within the set held with k+1 frames, ruling out the anomaly",
+      "notes": "Moving on, let's understand the Stack Property. It states that the pages present with k Frames\u000b should always be contained within the pages present with k+1 Frames. Optimal and LRU satisfy \u000bthis Stack Property, whereas FIFO, LFU, and MFU do not guarantee it. Because of this property, \u000bany algorithm that satisfies the Stack Property can never exhibit Belady's Anomaly.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Page Replacement Algorithms & Belady's Anomaly",
+      "body": "LRU & Approximations\nFIFO & Optimal\nNeed for page replacement & basic steps\nFIFO page replacement, Optimal page replacement\nPage Replacement Basics\nBelady's Anomaly & Practice\nCounting-\u000bBased\nLeast recently used (LRU), Reference bit & second chance\nLFU / MFU\nBelady's anomaly, \u000bNumerical problems & comparisons\nPage Replacement Basics\nNeed for page replacement & basic steps\nFIFO & Optimal\nFIFO page replacement\nOptimal page replacement\nLRU & Approximations\nLeast recently used (LRU)\nReference bit & second chance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Page Replacement Algorithms & Belady's Anomaly",
+      "body": "Counting-Based\nLFU / MFU\nBelady's Anomaly & Practice\nBelady's anomaly\nNumerical problems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Thrashing, Working Set & \u000bFrame Allocation",
+      "body": "Thrashing, Working Set & \u000bFrame Allocation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1tJmeYUxJP-avLl4sRmNOEcBCbHWFXI8Y9cMdMljr7I4/edit?slide=id.g3f27ba313c8_0_2724#slide=id.g3f27ba313c8_0_2724"
+}

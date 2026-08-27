@@ -1,0 +1,416 @@
+{
+  "session_no": 7,
+  "source_file": "Working With Files",
+  "deck_title": "Working With Files",
+  "n_slides": 41,
+  "summary": "\n    - Slide 2: Working with Files\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Using Command line Text Editor\n    - Slide 6: Using Command line Text Editor\n    - Slide 7: Nano Editor\n    - Slide 8: Nano Editor\n    - Slide 9: Nano Editor\n    - Slide 10: Editing Files\n    - Slide 11: Editing Files\n    - Slide 12: Editing Files\n    - Slide 13: Editing Files\n    - Slide 14: Filtering & Output Redirection\n    - Slide 15: Editing Files\n    - Slide 16: Filtering\n    - Slide 17: Filtering\n    - Slide 18: Counting\n    - Slide 19: Piping\n    - Slide 20: Filtering\n    - Slide 21: Piping\n    - Slide 22: Output Redirection\n    - Slide 23: Quiz Time!\n    - Slide 24: Compressing & Decompressing Files\n    - Slide 25: Working with Files\n    - Slide 26: Working with Files\n    - Slide 27: Working with Files\n    - Slide 28: Compressing/Decompressing Files\n    - Slide 29: Compressing/Decompressing Files\n    - Slide 30: Compressing/Decompressing Files\n    - Slide 31: Compressing/Decompressing Files\n    - Slide 32: Compressing/Decompressing Files\n    - Slide 33: Compressing/Decompressing Files\n    - Slide 34: Compressing/Decompressing Files\n    - Slide 35: Quiz Time!\n    - Slide 36: Working with Files\n    - Slide 39: Miscellaneous Commands",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Working with Files",
+      "body": "",
+      "notes": "In this session, we’ll discuss “Working with Files”",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Working with File System",
+      "notes": "Let’s do a quick recap — we learned commands like touch, cat, echo, mv, cp, rm, and ls -a \u000bfor creating, viewing, renaming, copying, deleting, and listing files, including hidden ones.\"",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "touch",
+            "Creates an empty file"
+          ],
+          [
+            "cat",
+            "Reads contents of file and prints it"
+          ],
+          [
+            "echo",
+            "Writes text to standard output"
+          ],
+          [
+            "mv",
+            "Renames the file names"
+          ],
+          [
+            "cp",
+            "Copies content from files"
+          ],
+          [
+            "rm",
+            "Removes (delete) files"
+          ],
+          [
+            "ls -a",
+            "Shows the hidden files"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Working with File System",
+      "notes": "we practiced directory commands: mkdir to create, pwd to check location, \u000bcd to move around, with cd .., cd ~, and cd / for parent, home, and root directories.\u000bThese six commands are essential for navigating the Linux file system effectively.\u000bAlong with this we have also learned mv, cp , cp -r , rm -r.",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "mkdir",
+            "Creates a directory"
+          ],
+          [
+            "pwd",
+            "Prints name of current working directory"
+          ],
+          [
+            "cd",
+            "Changes the current working directory"
+          ],
+          [
+            "cd ..",
+            "Move to parent directory"
+          ],
+          [
+            "cd ~",
+            "Used to switch to home directory"
+          ],
+          [
+            "cd /",
+            "changes your current directory to root folder"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Using Command line Text Editor",
+      "body": "Using Command line Text Editor\nFiltering & Redirection\nNano Editor \nWorking with Files\nAgenda for Today’s Session\nhead, tail, grep, \n>, piping\nCompressing/ Uncompressing Files\ntar, zip, unzip",
+      "notes": "Alright, moving ahead, let’s take a look at the agenda for today’s session. \u000bWe’ll explore the Nano editor, learn to compress and uncompress files using tar, zip, and unzip,\u000b and practice filtering and redirection with commands like head, tail, grep, >, and piping. \u000bBy the end, you’ll be able to edit, filter, and organize files right from the command line.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Using Command line Text Editor",
+      "body": "",
+      "notes": "Now let's explore command line text editors",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Nano Editor",
+      "body": "Text Editor\nA text editor is used for editing text files.\nVarious text editors are:\nNotepad++\nSublime Text\ngEdit\nVisual Studio Code \n   etc..",
+      "notes": "Let's talk about text editors before we dive into Nano.\nText editors are specialized programs for creating and modifying text files.\nYou're probably familiar with some graphical editors like Notepad++, Sublime Text, gEdit, and Visual Studio Code.\nIn the command line, we have similar tools but with text-based interfaces.\nThese editors are essential for programming, configuring systems, and working with text files.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Nano Editor",
+      "body": "Nano\nNano is an easy to use command line text editor for Unix and Linux-based operating systems\nGNU nano 4.8                      practice \n^G Get Help  ^O Write Out   ^W Where Is  ^K Cut Text     ^J Justify    ^C Cur Pos\n^X Exit      ^R Read File   ^\\ Replace   ^U Paste Text   ^T To Spell   ^_ Go To Line\nEditor",
+      "notes": "Now let's look at Nano, a beginner-friendly command line text editor.\nNano is designed to be simple and intuitive for Unix and Linux systems.\nOn screen, we can see the Nano interface with a file called \"practice\" open.\nNotice the commands at the bottom - these are your control keys. The ^ symbol means \"Ctrl\".\nFor example, Ctrl+G gets help, Ctrl+O saves your file, and Ctrl+X exits.\nNano is perfect for beginners because it displays these commands right on screen, unlike some other text editors.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Nano Editor",
+      "body": "Open File\nTo open a file with nano,\npass the filename as an argument\n$ nano filepath\nSyntax\n$ nano practice.txt\nBash\nCommands we have learned so far:  nano.",
+      "notes": "Let's learn how to open a file with Nano.\nThe syntax is simple - just type \"nano\" followed by the filename.\nIn our example, \"nano practice.txt\" opens the file practice.txt for editing.\nIf the file doesn't exist yet, Nano will create it when you save.\nThis is your first Nano command - opening or creating a file.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Editing Files",
+      "body": "Updating File\nGNU nano 4.8                      practice \nHello World!\n^G Get Help  ^O Write Out   ^W Where Is  ^K Cut Text     ^J Justify    ^C Cur Pos\n^X Exit      ^R Read File   ^\\ Replace   ^U Paste Text   ^T To Spell   ^_ Go To Line\nAdd the text of the file in the middle of the editor\nEditor\nCommands we have learned so far:  nano.",
+      "notes": "Once Nano is open, editing is straightforward.\nSimply type your text in the middle section of the editor. Here, some text is there i.e \"Hello World!\".\nYou can use your arrow keys to navigate the file and make changes wherever needed.\nNano works much like any text editor, except it's all in the terminal.\nThe commands at the bottom remain visible to help you with common actions.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Editing Files",
+      "body": "Saving File\nTo save a file, press Ctrl+O and Enter()\nCommands we have learned so far:  nano.    \nGNU nano 4.8                      practice \nHello World!\n                           [ Wrote 1 line ]\n^G Get Help  ^O Write Out   ^W Where Is  ^K Cut Text     ^J Justify    ^C Cur Pos\n^X Exit      ^R Read File   ^\\ Replace   ^U Paste Text   ^T To Spell   ^_ Go To Line\nEditor",
+      "notes": "‘O’ save your file in Nano, press Ctrl+O (that's the letter O, not zero).\nAfter pressing Ctrl+O, Nano will ask you to confirm the filename. Just press Enter to accept.\nNotice the confirmation message \"Wrote 1 line\" indicating our file was saved successfully.\nThis is much like using \"Save\" in graphical editors, but with keyboard shortcuts.\nRemember: Ctrl+O to save (Write Out) is one of the most important Nano commands.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Editing Files",
+      "body": "Exit Nano\nTo exit from nano editor, press Ctrl+X\nCommands we have learned so far:  nano.    \nGNU nano 4.8                      practice \nHello World!\n^G Get Help  ^O Write Out   ^W Where Is  ^K Cut Text     ^J Justify    ^C Cur Pos\n^X Exit      ^R Read File   ^\\ Replace   ^U Paste Text   ^T To Spell   ^_ Go To Line\nEditor",
+      "notes": "To exit Nano, simply press Ctrl+X.\nIf you've made changes since your last save, Nano will ask if you want to save them before exiting.\n\nThe basic workflow is: open a file, make your changes, save with Ctrl+O, and exit with Ctrl+X.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Editing Files",
+      "body": "Viewing File Contents\nCommands we have learned so far:  nano.    \n$ cat practice.txt\nHello World!\nBash",
+      "notes": "After exiting Nano, let's verify our file was saved properly.\nWe can use the \"cat\" command we learned earlier to display the file contents.\nIn our example, \"cat practice.txt\" shows \"Hello World!\" - exactly what we typed in Nano.\nThis confirms our file was created and saved successfully.\nRemember that cat is great for quick viewing, while Nano is for editing.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Filtering & Output Redirection",
+      "body": "",
+      "notes": "Now we're moving to an important topic: filtering and output redirection.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Editing Files",
+      "body": "Filtering\nWe can filter the contents of a file using the following filter commands.\nhead\ntail\ngrep",
+      "notes": "Let's explore three essential filtering commands for working with file contents.\nFirst is \"head\", which shows the beginning of a file.\nSecond is \"tail\", which displays the end of a file.\nThird is \"grep\", which searches for specific patterns or text within files.\nThese commands help you quickly find what you need in large files without opening the entire file for editing.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Filtering",
+      "body": "Head\nUsed to print top N lines of a file\nBy default, it will print the first 10 lines \n$ head -2 sentences.txt\nThere was a heavy dew this morning\nDo Meditation, yoga and exercise\nBash\nCommands we have learned so far:  head.    \nhead [-N] filename\nSyntax",
+      "notes": "The \"head\" command shows the beginning of a file.\nBy default, head displays the first 10 lines, but you can specify any number with the -N option.\nIn our example, \"head -2 sentences.txt\" shows just the first two lines of the file: \"There was a heavy dew this morning\" and \"Do Meditation, yoga and exercise\".\nThis is useful when you need to quickly check what's at the beginning of a large file without loading the entire content.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Filtering",
+      "body": "Tail\nUsed to print last N lines of a file\nBy default it will print the last 10 lines \n$ tail -2 sentences.txt\nThis morning was no exception\nThe morning after came without shame or embarrassment\nBash\nCommands we have learned so far:  head. .tail.     \ntail [-N] filename\nSyntax",
+      "notes": "The \"tail\" command is essentially the opposite of head - it shows the end of a file.\nBy default, tail displays the last 10 lines, but like head, you can specify a number with -N.\nIn our example, \"tail -2 sentences.txt\" shows the last two lines of the file.\nThis is particularly useful for checking log files where the newest information is often at the end.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Counting",
+      "body": "Word Count\nwc is used to find out number of lines, word count and characters count in the files \nwc filename\nSyntax\n$ wc sentences.txt\n18   102  594 sentences.txt\nBash\nline count\nword count\ncharacter count\nCommands we have learned so far:  head. .tail..wc.",
+      "notes": "The \"wc\" command (short for \"word count\") gives you statistics about a file.\nIt displays three numbers: line count, word count, and character count.\nIn our example, \"wc sentences.txt\" shows:\n18 lines\n102 words\n594 characters\nThis is helpful for quickly analyzing text files without reading them completely.\nYou can also use options like wc -l for just line count, wc -w for word count, or wc -c for character count.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Piping",
+      "body": "Using ‘|’\nPipe is used to combine two or more commands\nOutput of one command is passed as an input to the command followed and so on.\ncommand 1 | command_2 |command N\nSyntax\n$ cat sentences.txt | head -2 \nThere was a heavy dew this morning\nDo Meditation, yoga and exercise\nBash\nCommands we have learned so far:  head. .tail...wc...|.",
+      "notes": "Now let's learn about the pipe symbol (|) - one of the most powerful features of the command line.\nPiping connects commands by sending the output of one command as input to another.\nIn our example, \"cat sentences.txt | head -2\" first reads the file with cat, then pipes that output to head -2, which shows only the first two lines.\nThis is like creating a production line where each command performs its task on the data.\nYou can chain multiple commands together for complex operations.\nThe pipe is essential for building efficient command line workflows.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Filtering",
+      "body": "Grep\nSearches a file or files for lines that have a certain pattern\n$ cat sentences.txt | grep \"morning\"\nThere was a heavy dew this morning\nThere was a heavy dew this morning\nThis morning was no exception\nThe morning after came without shame or embarrassment\n...\nBash\nCommands we have learned so far:  head. .tail...grep...wc...|.\ncat filename | grep pattern\nSyntax",
+      "notes": "The \"grep\" command is a powerful search tool that finds patterns in text.\nCombined with piping, it lets you filter for specific content in files.\nIn our example, \"cat sentences.txt | grep \"morning\"\" shows only lines containing the word \"morning\".\nNotice how it found four matching lines from our file.\nGrep is case-sensitive by default, so \"Morning\" and \"morning\" would be treated differently.\nThis is incredibly useful for finding specific information in large files.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Piping",
+      "body": "Example 1\n$ cat sentences.txt | grep \"morning\" | wc  \n12  81 462\nBash\nline count\nCommands we have learned so far:  head. .tail...grep...wc...|.\nNumber of lines that contain the word morning in the given file",
+      "notes": "Here's a great example of combining multiple commands with pipes.\nThe command \"cat sentences.txt | grep \"morning\" | wc\" does the following:\ncat reads the file\ngrep filters for lines containing \"morning\"\nwc counts the results\nWe can see there are 12 lines containing \"morning\" in our file.\nThis powerful combination lets you extract specific information and analyze it in one command.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Output Redirection",
+      "body": "Operator : \">\"\n\">\" takes the standard output of the command and redirects it to the file\ncommand > filename\nSyntax\n$ cat sentences.txt | head -2 > learnings.txt\n$ cat learnings.txt\nThere was a heavy dew this morning\nDo Meditation, yoga and exercise\nBash\nCommands we have learned so far:  head. .tail...grep...wc...|...>.",
+      "notes": "Now let's learn about the \">\" redirection operator.\nThis symbol captures the output of a command and saves it to a file instead of displaying it on screen.\nIn our example, \"cat sentences.txt | head -2 > learnings.txt\" takes the first two lines and saves them to a new file called learnings.txt.\nWhen we check with \"cat learnings.txt\", we see those two lines were saved.\nImportant: If the target file already exists, \">\" will overwrite it completely.\nThis is useful for saving command results for later use.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Compressing & Decompressing Files",
+      "body": "",
+      "notes": "Moving on , let’s understand Compressing and Decompressing Files",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Working with Files",
+      "body": "Compressing & Decompressing Files\n1\nFile compression is a reduction in the number of bits needed to store the data of a file.\n2\nFiles are stored in such a way that, it uses less disk space than all the individual files and directories combined",
+      "notes": "Now let's explore file compression, a technique that helps save storage space.\nCompression reduces the number of bits needed to store data, making files smaller.\nThere are two key benefits:\nCompressed files use less disk space\nCompressed files transfer faster between devices or over networks\nLinux provides several tools for compressing and Decompressing files.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Working with Files",
+      "body": "Compressing & Decompressing Files\nindex.html\nvideo.mp4\ncompressed.zip\n...\n...\nfolder\nCompressing\nDecompressing / Extraction\nAdvantages of compressing files are:\n1\ntaking less disk space\n2\neasier and faster transmission",
+      "notes": "Compression offers two major advantages:\nFirst, compressed files take up less disk space, which is important when storage is limited.\nSecond, smaller files transfer faster over networks or between devices.\nThe diagram shows how multiple files like index.html, video.mp4, and folders can be compressed into a single zip file.\nLater, this compressed file can be Decompressed or extracted back to its original components.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Working with Files",
+      "body": "Compressing & Decompressing Files\nindex.html\nvideo.mp4\ncompressed.zip\n...\n...\nfolder\nCompressing\nDecompressing / Extraction\nCommonly used file formats for the compressed files:\ngzip\nzip\ntar",
+      "notes": "Linux supports several compression formats, each with different commands:\nFirst is \"gzip\" - a popular compression format in Linux systems.\nSecond is \"zip\" - widely used across different operating systems, making it good for sharing files.\nThird is \"tar\" - technically an archiving tool, but it's often combined with compression.\nEach format has specific commands for compressing and extracting files.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Compressing/Decompressing Files",
+      "body": "tar\n.\n├── report.txt\n└── videos\n    └── conf-video.mp4\nCurrent Working Directory",
+      "notes": "Let's look at using tar for compression.\nHere we have our current working directory with two files: a small text file called report.txt (270 bytes) and a much larger video file called conf-video.mp4 (58 megabytes).\nThe directory structure shows report.txt at the top level and conf-video.mp4 in a videos subdirectory.\nTar is especially useful for preserving this directory structure while compressing multiple files into a single archive.",
+      "tables": [
+        [
+          [
+            "Files",
+            "Size"
+          ],
+          [
+            "reports.txt",
+            "270"
+          ],
+          [
+            "conf-video.mp4",
+            "58M"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 29,
+      "title": "Compressing/Decompressing Files",
+      "body": "tar\nWe can use tar to compress files & directories\nSyntax\ntar -czvf file-name.tar.gz path1 path2 ..\n$ tar -czvf my_collection.tar.gz videos report.txt\nvideos/\nvideos/conf-video.mp4\nreport.txt\n$ ls\nmy_collection.tar.gz  report.txt  videos\nBash",
+      "notes": "To compress files with tar, we use the command \"tar -czvf\" followed by the archive name and files to include.\nThe options mean:\nc: create a new archive\nz: compress with gzip\nv: verbose (show progress)\nf: specify the filename\nIn our example, \"tar -czvf my_collection.tar.gz videos report.txt\" compresses both the videos directory and report.txt file.\nThe output shows each file being added to the archive.\nWhen we check with ls, we see our new compressed file alongside the originals.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Compressing/Decompressing Files",
+      "body": "tar\nCommands we have learned so far:  .tar. \n.\n├── my_collection.tar.gz\n├── report.txt\n└── videos\n    └── conf-video.mp4\nCurrent Working Directory",
+      "notes": "Alright, let's look at the results of our compression.\nOur current directory now contains three items: the original report.txt file, the videos directory with conf-video.mp4, and our new compressed archive my_collection.tar.gz.\nLooking at the file sizes, we can see:\nreport.txt is 270 bytes\nconf-video.mp4 is 58M\nmy_collection.tar.gz is 57M\nNotice the compressed archive is only slightly smaller than the video file alone. This is because video files are already compressed, so tar can't reduce their size much further.\nText files compress much better than media files.",
+      "tables": [
+        [
+          [
+            "Files",
+            "Size"
+          ],
+          [
+            "reports.txt",
+            "270"
+          ],
+          [
+            "conf-video.mp4",
+            "58M"
+          ],
+          [
+            "my_collection.tar.gz",
+            "57M"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "Compressing/Decompressing Files",
+      "body": "Extract\nSyntax\ntar -xzvf  filename.tar.gz -C path\n$ mkdir collections\n$ tar -xzvf my_collection.tar.gz -C collections\nvideos/\nvideos/conf-video.mp4\nreport.txt\n$ cd collections\n$ ls\nreport.txt  videos\nCommands we have learned so far:  .tar. \nBash",
+      "notes": "Next, let's learn how to extract our tar archive.\nTo extract, we use \"tar -xzvf\" followed by the archive name, and optionally \"-C\" to specify a destination directory.\nThe options mean:\nx: extract\nz: decompress from gzip\nv: verbose (show progress)\nf: specify the filename\nIn our example, we first create a new directory called \"collections\". Then we extract my_collection.tar.gz into this directory using \"tar -xzvf my_collection.tar.gz -C collections\".\nMoving to the collections directory, we can see that all files were extracted with their original structure intact.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Compressing/Decompressing Files",
+      "body": "tar\n.\n├── collections\n│   ├── report.txt\n│   └── videos\n│       └── conf-video.mp4\n...\nCurrent Working Directory\nCommands we have learned so far:  .tar.",
+      "notes": "Moving on, let's see what our directory structure looks like after extraction.\nOur current working directory now contains a \"collections\" folder, which has the exact same structure as what we compressed:\nreport.txt at the top level\nA videos folder containing conf-video.mp4\nThis demonstrates one of tar's key features - it preserves the original directory structure when extracting.\nThis is particularly useful when sharing complex projects with multiple folders and files.",
+      "tables": [
+        [
+          [
+            "Files",
+            "Size"
+          ],
+          [
+            "reports.txt",
+            "270"
+          ],
+          [
+            "conf-video.mp4",
+            "58M"
+          ],
+          [
+            "...",
+            "..."
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 33,
+      "title": "Compressing/Decompressing Files",
+      "body": "zip\nIt is used to package all the files into one file with .zip extension\nzip -r zipfile.zip file1 folder1 file2 ...\nSyntax\n$ ls\nreport.txt        videos          \n$ zip -r collections.zip videos report.txt\n  adding: videos/ (stored 0%)\n  adding: videos/conf-video.mp4 (deflated 3%)\n  adding: report.txt (deflated 39%)\nBash\nNote: zip uses bzip2 file format by default\nCommands we have learned so far:  tar. zip.",
+      "notes": "Alright, now let's learn about the zip command, which creates archives with the familiar .zip extension.\nUnlike tar, which is mainly used in Linux, zip files are recognized across all operating systems, making them ideal for sharing files.\nThe syntax is \"zip -r zipfile.zip file1 folder1...\" where the -r option means include subdirectories recursively.\nIn our example, \"zip -r collections.zip videos report.txt\" packages both items into collections.zip.\nNotice the output shows different compression rates - the text file was reduced by 39% while the video was only reduced by 3%, again showing that text compresses much better than media.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Compressing/Decompressing Files",
+      "body": "unzip\nThe unzip command extracts all files from the specified ZIP archive \nunzip filename.zip -d path \nSyntax\n$ mkdir new-folder\n$ unzip collections.zip -d new-folder\nArchive:  collections.zip\n   creating: new-folder/videos/\n  inflating: new-folder/videos/conf-video.mp4  \n  inflating: new-folder/report.txt          \nBash\nCommands we have learned so far:  tar. .zip.  unzip.",
+      "notes": "Moving forward, let's learn how to extract zip files using the unzip command.\nThe syntax is \"unzip filename.zip -d destination\" where -d specifies where to extract the files.\nIn our example, we first create a directory called \"new-folder\". Then we extract collections.zip into this directory with \"unzip collections.zip -d new-folder\".\nThe output shows each file being \"inflated\" or extracted to its proper location.\nThis process works similarly to tar extraction but uses different commands specific to the zip format.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Working with Files",
+      "body": "Using nano file editor\nFilters\nhead\ntail\ngrep\nPiping | & Redirection > \nCompressing & Decompressing Files\ntar, zip, unzip\nKey Takeaways",
+      "notes": "Finally, let's recap what we learned in today’s session.\nWe learned to edit files with Nano using simple keyboard shortcuts.\nWe explored filtering with head, tail, and grep for finding specific content.\nWe used piping (|) to connect commands and redirection (>) to save output.\nAnd we covered file compression with tar and zip/unzip for efficient storage and sharing.\nThese tools complete your essential file management toolkit in Linux.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "",
+      "body": "",
+      "notes": "An important point you always need to remember: \n\nPRACTICE. PRACTICE. PRACTICE. \n\nThe more you practice, the better you will get at working with various question formats.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Miscellaneous Commands",
+      "body": "",
+      "notes": "In the next session, we’ll start off with “Miscellaneous Commands” session.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1vWx7vrjG56PEDIgmPWOGOeXSc3PQcwjrloKFRWYs5Us/edit"
+}

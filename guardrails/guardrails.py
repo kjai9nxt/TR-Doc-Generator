@@ -55,6 +55,87 @@ def _tables(slide: dict) -> list[dict]:
             if isinstance(b, dict) and b.get("type") == "table"]
 
 
+def _blocks_of(slide: dict, btype: str) -> list[dict]:
+    return [b for b in (slide.get("content") or [])
+            if isinstance(b, dict) and b.get("type") == btype]
+
+
+def _skill_failures(doc: dict, slides: list, skill: dict, chk: dict) -> list[str]:
+    """Evaluate ONE skill's check. Returns the failures it produces.
+
+    A CLOSED vocabulary — see src/skills.py CHECKS. An unknown assertion produces nothing
+    rather than an error: a skill stored before a check type was removed must not break
+    every grading run for that course.
+    """
+    text = str(skill.get("text") or "").strip()
+    kind = chk.get("assert")
+    out: list[str] = []
+
+    if kind == "block_present":
+        want = str(chk.get("block") or "")
+        roles = [r for r in (chk.get("on_roles") or []) if r]
+        for s in slides:
+            if roles and str(s.get("role") or "") not in roles:
+                continue
+            if not _blocks_of(s, want):
+                out.append(f"Slide {s.get('n', '?')}: this course requires a `{want}` "
+                           f"block here — \u201c{text}\u201d")
+    elif kind == "field_present":
+        field = str(chk.get("field") or "")
+        when = str(chk.get("when_block") or "")
+        for s in slides:
+            for b in (_blocks_of(s, when) if when else (s.get("content") or [])):
+                if not isinstance(b, dict):
+                    continue
+                v = b.get(field)
+                if not v or (isinstance(v, (list, dict, str)) and len(v) == 0):
+                    out.append(f"Slide {s.get('n', '?')}: a `{when or 'content'}` block "
+                               f"is missing `{field}` — \u201c{text}\u201d")
+    elif kind == "min_count":
+        want = str(chk.get("block") or "")
+        try:
+            need = int(chk.get("min") or 0)
+        except (TypeError, ValueError):
+            need = 0
+        got = sum(len(_blocks_of(s, want)) for s in slides)
+        if need and got < need:
+            out.append(f"This document has {got} `{want}` block(s); this course requires "
+                       f"at least {need} — \u201c{text}\u201d")
+    elif kind == "forbidden_phrase":
+        phrases = [str(p).strip().lower() for p in (chk.get("phrases") or [])
+                   if str(p).strip()]
+        for s in slides:
+            # The teaching text only. A phrase inside a snippet is code, not a claim the
+            # slide is making — the same line the banned-phrase checks already draw.
+            blob = " ".join(t for _f, t in _slide_visible_text(s)).lower()
+            hit = [p for p in phrases if p in blob]
+            if hit:
+                out.append(f"Slide {s.get('n', '?')}: says "
+                           f"{', '.join(repr(h) for h in hit)}, which this course does "
+                           f"not teach — \u201c{text}\u201d")
+    return out
+
+
+def _code_blocks(slide: dict) -> list[dict]:
+    return [b for b in (slide.get("content") or [])
+            if isinstance(b, dict) and b.get("type") == "code"]
+
+
+def _walkthrough(slide: dict) -> list[str]:
+    """The prose of every code block on a slide.
+
+    A code slide's writing is its WALKTHROUGH, not the snippet: that is what the learner
+    reads, so it is what the prose/bullet mix gate counts and what the banned-phrase
+    checks read. `for (int i = 0; i < n; i++)` is not a second-person address, and a
+    comment saying "you can call this twice" is a comment, not slide text.
+    """
+    from src import docx_writer
+    out = []
+    for b in _code_blocks(slide):
+        out += docx_writer.walkthrough_text(b)
+    return out
+
+
 def _slide_visible_text(slide: dict) -> list[tuple[str, str]]:
     """(field_label, text) for everything a learner READS on the slide.
 
@@ -67,6 +148,11 @@ def _slide_visible_text(slide: dict) -> list[tuple[str, str]]:
             out.append((fld, str(slide[fld])))
     for i, t in enumerate(_text_blocks(slide)):
         out.append((f"content text block {i + 1}", t))
+    # The walkthrough is read by the learner, so it is held to the same rules as any
+    # other slide text. The SNIPPET is not: it is code, and code says `for`, `you` and
+    # `next` for reasons that have nothing to do with how the slide addresses anybody.
+    for i, t in enumerate(_walkthrough(slide)):
+        out.append((f"code walkthrough {i + 1}", t))
     for li, items in enumerate(_bullet_lists(slide)):
         for bi, it in enumerate(items):
             out.append((f"content bullet {li + 1}.{bi + 1}", it))
@@ -249,13 +335,40 @@ def _phrase_hits(text: str, phrases: list[str]) -> list[str]:
 
 
 def check(doc: dict, session, is_first: bool, is_last: bool,
-          *, rich: bool = False, budgets: dict | None = None) -> GuardrailResult:
+          *, rich: bool = False, budgets: dict | None = None,
+          course: str | None = None,
+          profile: dict | None = None,
+          skills: list | None = None) -> GuardrailResult:
     """`budgets` (src.budgets.for_session) is the slide/page allowance THIS document
     is held to — a course may set its own, and a single session may override that.
-    Omitted, the harness numbers apply exactly as before."""
+    Omitted, the harness numbers apply exactly as before.
+
+    `course` scopes the prior-deck repetition check below. Without it that check read
+    EVERY deck on the instance, so a slide could be failed for repeating a title from a
+    completely different course. Omitted, the check is skipped rather than run against
+    the wrong course — a missing argument must not produce a confident wrong failure.
+
+    `profile` (src.profiles.for_course) is what THIS COURSE counts as a good document:
+    its slide-role vocabulary, its analogy rule, its prose density, its worked-example
+    policy. Omitted, the harness numbers apply exactly as before — which is what every
+    course without a profile gets, and is why adding this changed no existing verdict.
+
+    `skills` are the course's APPROVED skills (src.skills.applicable). The ones carrying a
+    check are enforced here, deterministically. A skill that is only prose in a prompt is
+    unenforceable — which is why this codebase already promotes a rule to a gate the
+    moment its enforcement becomes mechanical (self_evolution.gated_rules) and stops
+    asking the judge to re-adjudicate it from prose."""
     h = config.harness()
     con = h["constraints"]
     gates = h["gates"]
+    if profile:
+        # Section-level override. profiles.for_course has already merged each section
+        # over the harness, so what arrives here is the COMPLETE effective config for
+        # that section — never a fragment that would silently drop the keys it omits.
+        con = {**con, **{k: profile[k] for k in
+                         ("slide_roles", "analogy", "content", "worked_example",
+                          "recording") if profile.get(k)}}
+        gates = {**gates, **(profile.get("gates") or {})}
     fails: list[str] = []
     warns: list[str] = []
 
@@ -505,6 +618,62 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"{tag}: content text block {i + 1} has {_sentence_count(t)} "
                     f"sentences (max {max_cs}).")
 
+    # --- the course's own skills, where they carry a check ------------------------
+    # Prose skills go to the writer and the judge; these are the ones a machine can
+    # settle. The failure QUOTES the skill, because "guardrail failure" against a rule
+    # somebody wrote last month is no use unless it says which rule.
+    for sk in (skills or []):
+        chk = sk.get("check") if isinstance(sk, dict) else None
+        if not isinstance(chk, dict) or not chk.get("assert"):
+            continue
+        fails += _skill_failures(doc, slides, sk, chk)
+
+    # --- code blocks are well formed ---------------------------------------------
+    # A code slide that shows nothing, or explains a line the snippet does not have, is
+    # the same class of defect as a coverage entry pointing at a slide that is not there:
+    # mechanical, unambiguous, and invisible until somebody reads the rendered document.
+    for s in slides:
+        tag = f"Slide {s.get('n', '?')}"
+        for ci, blk in enumerate(_code_blocks(s), start=1):
+            where = f"{tag}: code block {ci}"
+            body = str(blk.get("code") or "")
+            if not body.strip():
+                fails.append(f"{where} is empty — a code slide that shows no code is a "
+                             f"slide with nothing on it. Put the snippet in `code`, or "
+                             f"drop the block.")
+                continue
+            if not str(blk.get("language") or "").strip():
+                fails.append(f"{where} has no `language`. It is what the snippet is "
+                             f"fenced and highlighted as — name it ('python', 'jsx', "
+                             f"'sql', …).")
+            if "```" in body:
+                fails.append(f"{where} contains a ``` fence. `code` carries the raw "
+                             f"lines; the renderer adds the fence, so a snippet that "
+                             f"fences itself renders as literal backticks.")
+            n_lines = len(body.replace("\r\n", "\n").split("\n"))
+            for w in blk.get("walkthrough") or []:
+                if not isinstance(w, dict):
+                    fails.append(f"{where}: a walkthrough entry is not an object "
+                                 f"({{\"lines\": \"2-3\", \"text\": \"…\"}}).")
+                    continue
+                ref = str(w.get("lines") or "").strip()
+                if not ref:
+                    fails.append(f"{where}: a walkthrough entry names no `lines`. Say "
+                                 f"which part of the snippet it explains.")
+                    continue
+                m = re.fullmatch(r"(\d+)(?:\s*-\s*(\d+))?", ref)
+                if not m:
+                    fails.append(f"{where}: walkthrough `lines` is {ref!r} — it must be "
+                                 f"a line number or a range, like \"4\" or \"2-6\".")
+                    continue
+                lo = int(m.group(1))
+                hi = int(m.group(2) or lo)
+                if lo < 1 or hi > n_lines or hi < lo:
+                    fails.append(
+                        f"{where}: walkthrough explains lines {ref}, but the snippet has "
+                        f"{n_lines} line(s). A reference to a line that is not there "
+                        f"points the learner at nothing.")
+
     # --- prose / bullet MIX ------------------------------------------------------
     # The reviewer's complaint: "mostly all the content is bullets only, which looks
     # odd". It did, and nothing checked it — every earlier rule pushed the same way
@@ -515,9 +684,15 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     #   2. a "list" of one or two items is a bulleted sentence — write the sentence.
     min_text_share = c_cfg.get("min_slides_with_text_share")
     if min_text_share and slides:
-        with_text = [s for s in slides if _text_blocks(s)]
+        # A CODE SLIDE'S PROSE IS ITS WALKTHROUGH. Counting only `text` blocks would fail
+        # a code-heavy document on a gate about writing style, for being about code —
+        # while still catching the case that matters, a snippet dropped on a slide with
+        # nothing said about it, which is not teaching.
+        def _has_prose(sl):
+            return bool(_text_blocks(sl)) or bool(_walkthrough(sl))
+        with_text = [s for s in slides if _has_prose(s)]
         if len(with_text) < min_text_share * len(slides):
-            bare = [s.get("n", "?") for s in slides if not _text_blocks(s)]
+            bare = [s.get("n", "?") for s in slides if not _has_prose(s)]
             fails.append(
                 f"Only {len(with_text)} of {len(slides)} slides carry a prose `text` "
                 f"block (need at least {min_text_share:.0%}) — this document is almost "
@@ -1105,10 +1280,11 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # judge, which now receives the same already-taught digest and can tell "goes
     # deeper" from "says it again".
     rep_cfg = con.get("repetition", {})
-    if rep_cfg.get("check_prior_decks", False) and getattr(session, "number", None):
+    if rep_cfg.get("check_prior_decks", False) and getattr(session, "number", None) \
+            and (course or "").strip():
         try:
             from src import pptx_ingest
-            prior = pptx_ingest.taught_titles(session.number)
+            prior = pptx_ingest.taught_titles(course, session.number)
         except Exception:
             prior = []
         if prior:

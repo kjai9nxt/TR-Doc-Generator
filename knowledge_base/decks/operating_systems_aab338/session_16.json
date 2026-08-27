@@ -1,0 +1,734 @@
+{
+  "session_no": 16,
+  "source_file": "Synchronization Tools: Semaphores, Mutex & Monitors",
+  "deck_title": "Synchronization Tools: Semaphores, Mutex & Monitors",
+  "n_slides": 72,
+  "summary": "\n    - Slide 2: Synchronization Tools\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Synchronization Tools\n    - Slide 6: Mutex Locks\n    - Slide 7: Mutex Locks - The Simplest Synchronization Tool\n    - Slide 8: Mutex Locks - The Simplest Synchronization Tool\n    - Slide 9: Mutex Locks - The Simplest Synchronization Tool\n    - Slide 10: Mutex Locks - The Simplest Synchronization Tool\n    - Slide 11: Mutex Locks - The Simplest Synchronization Tool\n    - Slide 12: Mutex Locks in Practice\n    - Slide 13: Mutex Locks in Practice\n    - Slide 14: Semaphores\n    - Slide 15: Introduction to Semaphores\n    - Slide 16: Introduction to Semaphores\n    - Slide 17: Introduction to Semaphores\n    - Slide 18: Introduction to Semaphores\n    - Slide 19: Introduction to Semaphores\n    - Slide 20: Introduction to Semaphores\n    - Slide 21: Introduction to Semaphores\n    - Slide 22: Types of Semaphores\n    - Slide 23: Binary Semaphore\n    - Slide 24: Binary Semaphore\n    - Slide 25: Types of Semaphores\n    - Slide 26: Counting Semaphore\n    - Slide 27: Counting Semaphore\n    - Slide 28: Introduction to Semaphores\n    - Slide 29: Introduction to Semaphores\n    - Slide 30: Introduction to Semaphores\n    - Slide 31: Introduction to Semaphores\n    - Slide 32: Introduction to Semaphores\n    - Slide 33: Introduction to Semaphores\n    - Slide 34: Quiz Time!\n    - Slide 35: Semaphore Implementation\n    - Slide 36: Implementation Strategies\n    - Slide 37: Implementation Strategies\n    - Slide 38: Implementation Strategies\n    - Slide 39: Implementation Strategies\n    - Slide 40: Implementation Strategies\n    - Slide 41: Implementation Strategies\n    - Slide 42: Implementation Strategies\n    - Slide 43: Busy Waiting\n    - Slide 44: Block-and-Wakeup\n    - Slide 45: Monitors & Critical Regions\n    - Slide 46: Monitors & Critical Regions\n    - Slide 47: High-Level Synchronization Mechanism\n    - Slide 48: Monitors - Synchronization Built Into the Language\n    - Slide 49: Monitors - Synchronization Built Into the Language\n    - Slide 50: Monitors - Synchronization Built Into the Language\n    - Slide 51: Waiting on a Condition - Not Just a Lock\n    - Slide 52: Waiting on a Condition - Not Just a Lock\n    - Slide 53: Condition Variables\n    - Slide 54: Waiting on a Condition - Not Just a Lock\n    - Slide 55: Semaphore & Monitor Condition Variable\n    - Slide 56: Waiting on a Condition - Not Just a Lock\n    - Slide 57: A Language Construct for Guarded Shared Access\n    - Slide 58: Conditional Critical Regions\n    - Slide 59: Conditional Critical Regions - A Precursor to Monitors\n    - Slide 60: Conditional Critical Regions - A Precursor to Monitors\n    - Slide 61: Conditional Critical Regions - A Precursor to Monitors\n    - Slide 62: Conditional Critical Regions - A Precursor to Monitors\n    - Slide 63: Comparisons\n    - Slide 64: Synchronization Tools\n    - Slide 65: Synchronization Tools\n    - Slide 66: Synchronization Tools\n    - Slide 67: Quiz Time!\n    - Slide 68: Synchronization Tools\n    - Slide 69: Synchronization Tools\n    - Slide 70: Classic Synchronization Problems & IPC",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Synchronization Tools",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Concurrency & The Critical-Section Problem\nConcurrency Principles\nConcurrent processes & principles of concurrency\nThe Race Condition\nHow race conditions arise\nThe Critical-Section Problem\nProblem definition\nRequirements: mutual exclusion, progress, bounded waiting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Concurrency & The Critical-Section Problem\nSoftware Solution\nPeterson's solution\nHardware Support (Synchronization Hardware)\nTest-and-set & compare-and-swap\nDisabling interrupts approach",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Synchronization Tools",
+      "body": "Synchronization Tools\nAgenda\n1. Concurrency Principles\n– Concurrent processes & principles of concurrency\n2. The Race Condition\n– How race conditions arise\n3. The Critical-Section Problem\n– Problem definition\n– Requirements: mutual exclusion, progress, bounded waiting\n4. Software Solution\n– Peterson's solution\n5. Hardware Support (Synchronization Hardware)\n– Test-and-set & compare-and-swap\n– Disabling interrupts approach\n1. Mutex Locks\n– Concept & usage\n2. Semaphores\n– Counting vs binary semaphores\n– Operations: wait() / signal() (P / V)\n3. Semaphore Implementation\n– Busy waiting vs block-and-wakeup\n4. Monitors & Critical Regions\n– Monitor structure & condition variables\n– Critical regions\n5. Comparison\n– Comparing synchronization tools & their trade-offs\nSemaphore Implementation\nSemaphores\nConcept & usage\nCounting vs binary semaphores, Operations: wait() / signal() (P / V)\nMutex Locks\nComparison\nMonitors & \u000bCritical Regions\nBusy waiting vs block-and-wakeup\nMonitor structure & \u000bcondition variables, Critical regions\nComparing synchronization tools & their trade-offs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Mutex Locks",
+      "body": "Mutex Locks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Mutex Locks - The Simplest Synchronization Tool",
+      "body": "Peterson's Solution and hardware instructions work, but they are low-level and error-prone for application programmers. Operating systems provide a simpler abstraction: the mutex lock (mutual exclusion lock)\nA Lock With Exactly Two States",
+      "notes": "While solutions like Peterson's algorithm and hardware instructions solve the problem, \u000bthey are difficult for application programmers to work with. \u000bTo simplify this, operating systems provide a higher-level abstraction \u000bcalled a mutex lock, also known as a mutual exclusion lock.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Mutex Locks - The Simplest Synchronization Tool",
+      "body": "A Lock With Exactly Two States\nMutex Lock: A Boolean-style synchronization tool with only two states, locked (unavailable) and unlocked (available)\nPurpose: Protect a critical section so that only one process/thread \u000bcan execute it at a time\nTwo Operations: Acquire() and release(), both must be atomic",
+      "notes": "ow, a mutex lock is a simple synchronization tool that works like a Boolean value, \u000bwith just two states—locked, meaning it's unavailable, and unlocked, meaning it's available.\u000b Its purpose is to protect the critical section, allowing only one process or thread to execute it at a time. \u000bTo achieve this, a mutex lock provides two atomic operations: acquire() to obtain the lock and release() to free it.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Mutex Locks - The Simplest Synchronization Tool",
+      "body": "acquire() {\n    while (locked) { }   // spin until free\n    locked = true        // take the lock (check + set must\n                                            be atomic)\n}\nrelease() {\n    locked = false       // release the lock\n}\nPseudocode\nExample",
+      "notes": "The acquire() function first checks whether the lock is already in use.\n If it is, the process keeps waiting in the while loop, a technique called spinning. \nOnce the lock becomes free, locked = true acquires it atomically.\n After the critical section is complete, the release() function sets locked = false, \nmaking the lock available for the next process.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Mutex Locks - The Simplest Synchronization Tool",
+      "body": "acquire(lock)        // enter: take the lock\n    // critical section\nrelease(lock)        // exit: free the lock\nPseudocode\nOwnership: the process that calls acquire() is the only one allowed to call release() on that lock, this is enforced by convention/runtime, unlike a semaphore\nUsage Pattern",
+      "notes": "Moving on, the flow of using a mutex lock is quite simple. \u000bWe begin by calling acquire() to secure the lock before executing the protected code. \u000bAfter the required operation is completed, release() is used to make the lock available again. \u000bAlso, remember that the process which acquires the lock is the one expected to release it, \u000bwhich is a key difference from a semaphore.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Mutex Locks - The Simplest Synchronization Tool",
+      "body": "Analogy",
+      "notes": "A mutex is like a single key hung outside a shared office cabin. \u000bWhoever takes the key can enter and work; everyone else waits outside. \u000bOnly the person who took the key can hang it back — \u000ba stranger cannot walk up and return a key they never took.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Mutex Locks in Practice",
+      "body": "Advantages\nExtremely simple API - just acquire() and release()\nOwnership model prevents accidental release by the wrong process\nDirectly supported by hardware instructions (Test-and-Set / Compare-and-Swap) for atomicity\n1\n2\n3",
+      "notes": "Next, let's look at why mutex locks are widely used in practice. \u000bThey provide a simple interface, as synchronization is handled using just acquire() and release(). \u000bAnother advantage is the ownership model, which ensures the lock is released only by the process that acquired it. \u000bAdditionally, mutex locks rely on hardware-supported atomic instructions, making these operations safe and reliable.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Mutex Locks in Practice",
+      "body": "The naive version above uses busy waiting — the CPU is wasted while a process spins\nCan only guard one resource at a time (binary) — cannot represent a pool of N identical resources the way a counting semaphore can\nMutexes are meant for mutual exclusion only; they are not designed for signalling between processes (\"wake someone else up when an event happens\") the way semaphores are\n1\n2\n3\nLimitations",
+      "notes": "The basic implementation relies on busy waiting, where a process keeps checking \u000bfor the lock instead of doing useful work, \u000bleading to CPU wastage. Also, a mutex can protect only one resource at a time, unlike a counting semaphore. \u000bFinally, mutexes are designed purely for mutual exclusion and not for signalling \u000bor notifying other processes when an event occurs.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Semaphores",
+      "body": "Semaphores",
+      "notes": "Next we will be learning about the Semaphores",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Introduction to Semaphores",
+      "body": "What is a Semaphore?\nA semaphore is a synchronization primitive used to control access to a shared resource by multiple processes or threads\nWhat is a Semaphore?\n It helps prevent race conditions and ensures proper coordination between processes",
+      "notes": "Now, let's move on to another important synchronization mechanism called a semaphore. \u000bUnlike a mutex, a semaphore is used to coordinate how multiple processes or threads access a shared resource. \u000bBy regulating this access, it helps avoid race conditions and ensures that \u000bprocesses work together in a synchronized manner.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Introduction to Semaphores",
+      "body": "Key Characteristics\nIt is an integer variable whose value is modified only through two atomic operations: wait() and signal()\nCan be used to allow one or multiple processes into the critical section",
+      "notes": "Next, let's look at the key characteristics of a semaphore.\u000b A semaphore is maintained as an integer variable, and its value can be changed only\u000b through the atomic operations wait() and signal(). Depending on its type, \u000bit can either allow only one process to access the critical section or multiple processes to access it simultaneously.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Introduction to Semaphores",
+      "body": "Key Characteristics\nEnsures synchronization without race conditions\nSimple but powerful mechanism widely used in OS",
+      "notes": "Continuing with the Characteristics , semaphores play an important role in keeping concurrent execution \u000bsafe by ensuring that processes are synchronized and race conditions are avoided. \u000bDespite having a simple working mechanism, they are versatile enough to handle different \u000bsynchronization scenarios, which is why they are widely used in operating systems.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Introduction to Semaphores",
+      "body": "Two Atomic Operations\nwait() (P / down / acquire)\nwait(S) {\n    while (S <= 0) { }   // busy wait: spin until a unit is free\n    S--                  // take one unit (check + decrement must be atomic)\n}\nPseudocode\nDecrements the semaphore value\u000b\nIf S ≤ 0 → process must wait\u000b\nP stands for Proberen (to test)\nIn modern OS, processes do NOT busy-wait; they are blocked and put into a waiting queue",
+      "notes": "Now let's look at the wait() operation. It first checks whether the semaphore S is available.\u000b If S ≤ 0, the process must wait. Otherwise, S-- decrements the semaphore value atomically,\u000b reserving one unit of the resource. This operation is also called P (Proberen), down, or acquire. \u000bAlthough the pseudocode shows busy waiting, modern operating systems block the process and \u000b it in a waiting queue until the resource becomes available.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Introduction to Semaphores",
+      "body": "Two Atomic Operations\nsignal() (V / up / release)\nsignal(S) {\n    S++      // release one unit (must be atomic)\n}\nSyntax\nIncrements semaphore value\u000b\nWakes up a blocked process (if any)\u000b\nV stands for Verhogen (to increment)",
+      "notes": "Now let's understand the signal() operation. It performs the opposite task of wait().\u000b The statement S++ increments the semaphore value atomically, indicating that \u000bone unit of the resource has been released. If any process is waiting, the signal() operation \u000bwakes up one blocked process. This operation is also known as V (Verhogen), up, or release.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Introduction to Semaphores",
+      "body": "Why Atomic ?\nTwo processes must never execute wait() or signal() on the same semaphore at the same time\nPrevents race conditions\nGuaranteed by hardware (atomic instructions) or OS kernel",
+      "notes": "Moving on, both wait() and signal() must execute atomically, meaning one process should \u000bcomplete the operation before another can access the same semaphore. \u000bThis prevents multiple processes from modifying the semaphore simultaneously, \u000bthereby avoiding race conditions. Such atomic execution is typically ensured by \u000bhardware-supported atomic instructions or by the operating system kernel.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Introduction to Semaphores",
+      "body": "Types of Semaphores\nCounting Semaphore\nBinary Semaphore\nSemaphores are mainly of two Types",
+      "notes": "Now, based on how they are used, semaphores are broadly classified into two types:\u000b Counting Semaphores and Binary Semaphores.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Types of Semaphores",
+      "body": "Binary Semaphore\nCritical section\nBinary semaphore\n0\n1\nOr\nA semaphore that can take only two values: 0 and 1\nControls mutual exclusion for a single resource or critical section\n1 → process can enter CS, 0 → process must wait",
+      "notes": "Next, let's begin with the Binary Semaphore. As the name suggests, it can hold only two values—0 and 1. \nBecause of this, it is used to control access to a single resource or critical section. \u000bWhen the semaphore value is 1, a process is allowed to proceed. If the value becomes 0,\u000b any other process requesting access has to wait until it becomes available again.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Binary Semaphore",
+      "body": "Operation\nExample: Single printer\nwait() → decrements value, process enters CS\nsignal() → increments value, resource released",
+      "notes": "let's see how a Binary Semaphore operates. A process calls wait() before accessing the resource, \u000bwhich decreases the semaphore value and allows it to enter the critical section. \u000bOnce the task is completed, it invokes signal() to increase the value, indicating that the resource is available again. \u000bA common example is managing access to a single printer, where only one process can use it at a time.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Binary Semaphore",
+      "body": "Example: Single printer\nsemaphore mutex = 1;  // Initially 1\nwait(mutex);\n// Critical Section\nsignal(mutex);\nUsage\nsemaphore S = 1;\n// P1\nwait(S);      // S → 0, enters\n// P2 (while P1 is inside)\nwait(S);      // S = 0, blocks\n// P1 done\nsignal(S);    // S → 1, P2 unblocks\nExample",
+      "notes": "A Binary Semaphore can have only two values, 0 or 1, making it useful for mutual exclusion. \u000bIn this example, S is initialized to 1, so P1 executes wait(S), changes it to 0, and enters the critical section. \u000bWhen P2 calls wait(S), it finds S = 0 and gets blocked. Once P1 finishes, it executes signal(S),\u000b changing S back to 1 and allowing P2 to proceed. This is why a binary semaphore is\u000b commonly used as a mutex to ensure only one process accesses the critical section at a time.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Types of Semaphores",
+      "body": "Counting Semaphore\nA semaphore whose value can range from 0 to N\nControls access to multiple instances of a resource\nSemaphore value = number of available resources\nIf value > 0 → processes can access resources\nIf value = 0 → processes must wait\nCounting Semaphore",
+      "notes": "Next, let's look at the Counting Semaphore. Unlike a binary semaphore, its value can range from 0 to N, \u000bmaking it suitable for managing multiple instances of the same resource.\u000b The semaphore value represents the number of resources currently available. \u000bAs long as the value is greater than zero, processes can continue accessing the resources. \u000bOnce it reaches zero, any additional process has to wait until a resource becomes available again.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Counting Semaphore",
+      "body": "Example\nExample: 3 printers, multiple processes can print simultaneously\nProcess 1\nProcess 2\nProcess 3",
+      "notes": "Moving on, let's understand this with a simple example. Suppose a system has three printers available. \u000bSince multiple instances of the resource exist, a counting semaphore is a suitable choice. \u000bThis allows up to three processes to use the printers at the same time, as illustrated by the processes shown here.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Counting Semaphore",
+      "body": "Example\n// 3 printers available\nsemaphore printers = 3;\nwait(printers);    // printers = 2\n// Use printer\nsignal(printers);  // printers = 3\nExample\nsemaphore S = n;  // n resources available\nwait(S);   // Acquire resource (S--)\n   // Use resource\nsignal(S); // Release resource (S++)\nExample",
+      "notes": "Here, S is initialized to n, indicating that n resources are available. \u000bEach wait(S) decrements the semaphore and allocates one resource,\u000b while signal(S) increments it when the resource is released. \u000bFor example, if there are 3 printers, wait(printers) reduces the count to 2 when one printer is in use, \u000band signal(printers) restores it to 3 after the printer is released.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Introduction to Semaphores",
+      "body": "Advantages\nSimplicity\nEasy to understand and implement\nOnly two operations: wait() and signal()\nNo Busy Waiting\nProcesses sleep when waiting instead of spinning\nImproves CPU utilization",
+      "notes": "Next, let's look at some advantages of semaphores. One of the biggest benefits is their simplicity,\u000b as synchronization is handled using just two operations—wait() and signal(). \u000bAnother advantage is that, in modern operating systems, a process waiting for a resource \u000bis put to sleep instead of continuously checking for it, which avoids busy waiting and leads to better CPU utilization.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Introduction to Semaphores",
+      "body": "Advantages\nVersatility\nCan solve mutual exclusion and synchronization ordering problems\nWorks for single or multiple resource control\nPortability\nSupported by most operating systems\nStandard synchronization primitive",
+      "notes": "semaphores are also valued for their versatility. They can be used not only to provide mutual exclusion \u000bbut also to maintain the required execution order between processes. Depending on the requirement, \u000bthey can manage either a single resource or multiple resources. Another advantage is their portability,\u000b as semaphores are supported by most operating systems and are a widely adopted synchronization mechanism.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Introduction to Semaphores",
+      "body": "Advantages\nEfficiency\nLow overhead with proper OS/hardware implementation\nFaster than purely software-based solutions",
+      "notes": "Finally, semaphores are also efficient. With support from the operating system and hardware, \u000bthey perform synchronization with low overhead, making them faster than solutions implemented purely in software.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Introduction to Semaphores",
+      "body": "Disadvantages\nProgramming Errors\nMistakes in wait()/signal() ordering can cause deadlocks\nHard to debug in complex programs\nNo Ownership\nAny process can call signal()\nUnlike mutex, this can lead to logical errors",
+      "notes": "Moving on, semaphores also have some limitations. If wait() and signal() are not placed correctly in a program, \u000bprocesses may end up waiting indefinitely, and identifying such issues can become difficult as the program grows larger.\u000b Also, unlike a mutex, a semaphore does not track which process should release it,\u000b so incorrect use can introduce unexpected synchronization problems.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Introduction to Semaphores",
+      "body": "Disadvantages\nPriority Inversion\nA low-priority process holding a semaphore can block high-priority processes\nMay cause unpredictable delays\n    Risk of Processes Blocking Forever\nIncorrect ordering of wait()/signal() can cause processes to block each other permanently, so none can continue.",
+      "notes": "Moving on , semaphores can also introduce priority inversion, where a high-priority process \u000bis forced to wait because the required semaphore is held by a lower-priority process, \u000bleading to unexpected delays. Another risk is that if wait() and signal() are not coordinated correctly, \u000bprocesses may end up waiting on one another indefinitely, preventing any of them from making further progress.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Introduction to Semaphores",
+      "body": "Disadvantages\nLimited Error Detection\nOS does not detect improper usage automatically\nProgrammer must ensure correct usage",
+      "notes": "Finally, semaphores provide very little built-in protection against incorrect usage. \u000bIf they are used improperly, the operating system typically does not identify the mistake automatically. \u000bAs a result, it is the programmer's responsibility to use semaphore operations correctly to ensure proper synchronization.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Semaphore Implementation",
+      "body": "Semaphore Implementation",
+      "notes": "Next we will learn about the Semaphore Implementation",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Implementation Strategies",
+      "body": "wait(S) {\n    while (S <= 0) {\n        // spin until free\n    }\n    S--          // take one unit (check + decrement must be atomic)\n}\nsignal(S) {\n    S++          // release one unit\n}\nPseudocode\nThe classical textbook definition, a process loops, \u000brepeatedly re-checking the semaphore value, until it becomes available\n1. Busy Waiting Implementation",
+      "notes": "Next, let's look at the busy waiting implementation of a semaphore. In this approach,\u000b a process repeatedly checks whether the semaphore has become available instead of giving up the CPU. \u000bAs shown in the pseudocode, wait(S) keeps looping until the semaphore can be acquired and\u000b then decrements its value atomically. Once the work is finished, signal(S) increments the \u000bsemaphore value, making the resource available again.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Implementation Strategies",
+      "body": "The waiting process stays in the Running state, continuously consuming CPU cycles\nSimple to implement, and there is no context-switch overhead\nWasteful and impractical if the wait is expected to be long — the CPU could be doing useful work for another process\nAcceptable only when critical sections are extremely short (used inside multiprocessor kernels for short locks)\n1. Busy Waiting Implementation",
+      "notes": "Moving on, in a busy waiting implementation, a waiting process continues to run \u000bwhile repeatedly checking the semaphore, which keeps the CPU occupied. \u000bAlthough this approach is simple and avoids the overhead of context switching,\u000b it becomes inefficient when the waiting time is long because CPU time is wasted.\u000b For this reason, it is generally suitable only for very short critical sections.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Implementation Strategies",
+      "body": "2. Block-and-Wakeup Implementation\nThe practical implementation used in real operating systems. \u000bThe semaphore is defined as a structure, not a plain integer:",
+      "notes": "Next, let's look at the block-and-wakeup implementation, which is the approach used in real operating systems. \u000bInstead of treating a semaphore as just an integer, the operating system represents it as a data structure, \u000ballowing it to manage waiting processes more effectively.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Implementation Strategies",
+      "body": "2. Block-and-Wakeup Implementation\nstructure Semaphore {\n    value            // current count\n    queue            // list of blocked processes\n}\nwait(S) {\n    S.value--\n    if (S.value < 0) {\n        add this process to S.queue\n        block()          // move this process to Waiting; CPU is freed\n    }\n}\n...\nPseudocode",
+      "notes": "This implementation avoids busy waiting.\u000b The Semaphore structure stores the current semaphore value and a queue of blocked processes. \u000bIn wait(S), the semaphore value is first decremented.\u000b If the value becomes less than 0, it means no resource is available, \u000bso the current process is added to the waiting queue and block() moves it to the Waiting state, freeing the CPU for other processes.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Implementation Strategies",
+      "body": "2. Block-and-Wakeup Implementation\nsignal(S) {\n    S.value++\n    if (S.value <= 0) {\n        P = remove a process from S.queue\n        wakeup(P)        // move P from Waiting to Ready\n    }\n}\nPseudocode",
+      "notes": "The signal(S) operation releases a resource by incrementing the semaphore value. \u000bIf the updated value is less than or equal to 0, it means there are processes waiting in the queue. \u000bOne process is removed from the queue, and wakeup(P) moves it from the \u000bWaiting state to the Ready state so it can resume execution when the CPU is available.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Implementation Strategies",
+      "body": "block() suspends the calling process, moving it from Running to the Waiting state and placing it on the semaphore's own waiting list\nwakeup(P) moves a specific process P from Waiting to Ready, so the scheduler can run it again\nNo CPU cycles wasted while a process waits, it simply is not scheduled until woken\nThis is the implementation used by real OS kernels (Linux, Windows) for general-purpose semaphores\n2. Block-and-Wakeup Implementation",
+      "notes": "in the block-and-wakeup implementation, a process that cannot proceed calls block(), \u000bwhich suspends it and places it in the semaphore's waiting list. When the resource becomes available, \u000bwakeup(P) moves the waiting process back to the Ready state so it can be scheduled again. \u000bSince waiting processes are not repeatedly checking the semaphore, no CPU time is wasted,\u000b making this the approach used by modern operating systems such as Linux and Windows.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Implementation Strategies",
+      "body": "Comparison",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Busy Waiting",
+            "Block-and-Wakeup"
+          ],
+          [
+            "CPU while waiting",
+            "Wasted - process keeps spinning",
+            "Freed - process is descheduled"
+          ],
+          [
+            "Process state while waiting",
+            "Running (spinning)",
+            "Waiting (blocked)"
+          ],
+          [
+            "Overhead",
+            "None (no context switch)",
+            "Context-switch cost on block/wakeup"
+          ],
+          [
+            "Best suited for",
+            "Very short critical sections, multiprocessor spinlocks",
+            "General-purpose, longer or unpredictable waits"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 43,
+      "title": "Busy Waiting",
+      "body": "Analogy",
+      "notes": "Busy waiting is like standing at a locked door, repeatedly rattling the handle every second until it opens — \u000byou get nothing else done.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Block-and-Wakeup",
+      "body": "Analogy",
+      "notes": "Block-and-wakeup is like leaving your name with the receptionist \nand going to sit down; you are called back only when the door actually opens.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Monitors & Critical Regions",
+      "body": "Monitors & Critical Regions",
+      "notes": "Next we will learn about the Monitors and Critical Regions",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Monitors & Critical Regions",
+      "body": "A monitor is a higher-level, language-supported construct that removes this burden from the programmer\nWhat is Monitor?\nSemaphores work, but every wait()/signal() pairing is manual, a single missed call anywhere in the program breaks the whole system.",
+      "notes": "Although semaphores are effective, they require programmers to manually coordinate \u000bevery wait() and signal() call. Missing even a single operation can lead to \u000bsynchronization problems.A monitor addresses this by providing a higher-level,\u000b language-supported mechanism that simplifies synchronization and reduces the chances of such programming mistakes.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "High-Level Synchronization Mechanism",
+      "body": "Monitor: An Abstract Data Type (ADT) that bundles together shared data, the procedures that operate on that data, and initialization code, all inside one construct\nAutomatic mutual exclusion: A monitor guarantees that only one process can execute inside it at a time. The compiler/runtime automatically handles locking, so programmers don't need explicit lock/unlock operations to enter or leave the monitor\nMonitors",
+      "notes": "Moving on, a Monitor is a high-level synchronization construct implemented as an Abstract Data Type (ADT). \u000bIt keeps the shared data, the operations performed on that data, and the required initialization together in one place, \u000bmaking synchronization easier to organize. Another important feature is automatic mutual exclusion.\u000b Instead of writing explicit lock and unlock operations, the language or runtime ensures \u000bthat only one process can execute inside the monitor at a time.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Monitors - Synchronization Built Into the Language",
+      "body": "Example\nmonitor MonitorName {\n    // shared variable declarations\n    procedure P1(...) {\n        // only one process active inside the monitor at a time\n    }\n    procedure P2(...) { ... }\n}\nPseudocode",
+      "notes": "he statement monitor MonitorName defines a monitor that contains\u000b the shared data and the procedures operating on it.\u000b Inside the monitor, P1() and P2() are procedures that access the shared variables.\u000b The important rule is that only one process or thread can execute any monitor procedure at a time, \u000bensuring safe access to the shared data automatically.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Monitors - Synchronization Built Into the Language",
+      "body": "Key Characteristics\nAny process calling one of the monitor's procedures automatically waits (outside) if another process is already executing inside the monitor\nThis guarantees mutual exclusion on the shared data without a single explicit lock call in the calling code\nMonitors are a language-level construct, supported in Java (synchronized keyword + Object.wait/notify), C#, and taught conceptually in Concurrent Pascal, the language that introduced them",
+      "notes": "Next, let's look at the key characteristics of monitors. Whenever a process invokes a monitor procedure,\u000b it can enter only if no other process is currently executing inside the monitor. \u000bThis built-in behavior ensures mutual exclusion without requiring explicit lock operations in the calling code. \u000bSince monitors are a language-level construct, they are directly supported in languages such as Java and C#, \u000band were originally introduced through Concurrent Pascal.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Monitors - Synchronization Built Into the Language",
+      "body": "Analogy",
+      "notes": "A monitor is like a principal's office that allows only one student inside at a time.\u000b If another student arrives while someone is already inside, \u000bthey automatically wait outside. The students don't lock or unlock the door themselves—\u000bthe office rules enforce one-at-a-time access.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Waiting on a Condition - Not Just a Lock",
+      "body": "Mutual exclusion alone is not enough, a process inside the monitor may need to pause until some internal condition becomes true \u000b(e.g., \"wait until the buffer is not full\"). \u000bMonitors provide condition variables for exactly this\nCondition Variables",
+      "notes": "Next, mutual exclusion by itself cannot solve every synchronization problem. Sometimes, a process\u000b is allowed to enter the monitor but still cannot continue because a required condition has not yet been satisfied\u000b—for example, waiting until a buffer has free space. To handle such situations, monitors provide condition variables, \u000ballowing a process to wait until the required condition becomes true.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Waiting on a Condition - Not Just a Lock",
+      "body": "Condition Variables\ncondition x, y;   // declared inside the monitor\n// x.wait()   — release the monitor and block the calling process on x\n// x.signal() — wake one process waiting on x (no effect if none are waiting)\nPseudocode",
+      "notes": "Condition variables are used inside a monitor to allow processes to wait for a specific condition.\u000b Here, condition x, y declares two condition variables. When a process calls x.wait(), \u000bit releases the monitor and moves to the waiting state until the condition is satisfied. \u000bLater, another process calls x.signal(), which wakes up one waiting process, if any, allowing it to continue execution.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Condition Variables",
+      "body": "x.wait(): The calling process suspends itself on condition x and steps outside the monitor's mutual-exclusion boundary, allowing another process to enter\nx.signal(): Resumes exactly one process suspended on x, if any exist. If no process is waiting on x, the signal has no effect and is simply lost \nx.wait() and x.signal()",
+      "notes": "Next, let's understand the two operations provided by condition variables. When a process calls x.wait(),\u000b it temporarily suspends its execution and leaves the monitor, allowing another process to enter and continue working. \u000bLater, when the required condition is satisfied, another process can call x.signal() to wake one waiting process. \u000bIf no process is waiting on that condition, the signal is simply ignored.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Waiting on a Condition - Not Just a Lock",
+      "body": "Hoare monitors (signal-and-wait)\nThe signalling process immediately pauses, and the newly-woken process runs immediately with a guarantee that the condition it waited for is still true.\nMesa monitors (signal-and-continue)\nThe signalling process keeps running, and the awakened process becomes Ready until it re-enters the monitor. It must recheck the condition with while, as the condition may have changed meanwhile\nTwo well-known semantics for what happens right after x.signal():\nHoare Monitors & Mesa Monitors",
+      "notes": "Next, the behavior of a monitor after x.signal() depends on the synchronization semantics it follows. \u000bIn Hoare monitors, control is handed over immediately to the waiting process, \u000bwhile the signalling process waits until that process finishes or leaves the monitor. \u000bIn Mesa monitors, the signalling process continues its execution first, and the awakened process \u000bsimply moves to the Ready state. When it later gets another chance to enter the monitor, \u000bit must recheck the condition using a while loop, because the condition it was waiting for might no longer be true.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Semaphore & Monitor Condition Variable",
+      "body": "Comparison",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Semaphore wait()/signal()",
+            "Monitor Condition Variable x.wait()/x.signal()"
+          ],
+          [
+            "Underlying value",
+            "Integer counter — always remembers a signal",
+            "No exposed counter — purely a wait/wake queue"
+          ],
+          [
+            "Effect of signal() with no waiters",
+            "Increments the counter — remembered for a future wait()",
+            "Lost — has no effect if nobody is waiting"
+          ],
+          [
+            "Mutual exclusion",
+            "Not automatic — programmer must wrap critical section",
+            "Automatic — guaranteed by the monitor itself"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 56,
+      "title": "Waiting on a Condition - Not Just a Lock",
+      "body": "Analogy\n17\n17\n18\n19",
+      "notes": "A condition variable is like a numbered token counter outside a doctor's clinic — \u000byou sit and wait for your specific token to be called (x.wait()); the receptionist calling a token (x.signal()) only \u000bhelps someone if that exact token is actually waiting — calling an empty token number does nothing and is not saved for later.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "A Language Construct for Guarded Shared Access",
+      "body": "Before monitors, C.A.R. Hoare and Per Brinch Hansen proposed the conditional critical region, a language construct that ties a shared variable directly to the code blocks allowed to touch it\nConditional Critical Regions\nShared variable declaration: a variable is explicitly declared as shared, so the compiler knows it needs protection",
+      "notes": "Next, before monitors were introduced, C.A.R. Hoare and Per Brinch Hansen proposed \u000bConditional Critical Regions as a language-level approach for synchronization. The main idea was \u000bto associate a shared variable directly with the code that is permitted to access it. \u000bBy explicitly declaring a variable as shared, the compiler recognizes that it requires \u000bcontrolled and protected access whenever multiple processes may use it concurrently.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Conditional Critical Regions",
+      "body": "Example\nvar v : shared T;        // v is a shared, protected variable\nregion v when (B) do     // enter only when condition B is true\n    S;                   // execute guarded statements S\n                         // if B is false, wait (no busy-waiting)\nPseudocode",
+      "notes": "Conditional Critical Regions provide synchronized access based on a condition. \u000bHere, v is the shared protected variable, and B is a Boolean condition that determines\u000b whether a process can enter the critical region. The statement region v when (B) do \u000ballows the process to execute the guarded statements S only if B is true. \u000bIf the condition is false, the process waits without busy waiting until it becomes true.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Conditional Critical Regions - A Precursor to Monitors",
+      "body": "Region v when B do S, a process may enter the critical region on shared variable v only when boolean condition B is true; it then executes statement block S\nIf B is false, the process waits (without busy-waiting) until some other process's action makes B true\nKey Behaviors",
+      "notes": "Moving on, Conditional Critical Regions use the construct region v when B do S to control access to shared data. \u000bHere, v represents the shared variable, B is the Boolean condition that must be satisfied, \u000band S is the statement block to be executed. A process can enter the region only when B is true. \u000bOtherwise, it waits without busy-waiting until another process changes the shared state,\u000b making the condition true.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Conditional Critical Regions - A Precursor to Monitors",
+      "body": "Key Behaviors\nWhat it does:\nThe region v when (B) construct allows execution only when condition B is true, providing mutual exclusion and conditional synchronization in a single step\nWhy it helps:\nIt provides structured, language-level synchronization by \u000brestricting shared data access to a defined region, making correct \u000buse natural and reducing errors compared to manual \u000bwait()/signal() synchronization",
+      "notes": "Next, the region v when (B) construct combines mutual exclusion and conditional synchronization\u000b into a single language statement. A process can execute the associated code only \u000bwhen the condition B is satisfied, ensuring that shared data is accessed safely. Since this synchronization\u000b is built into the language, programmers don't have to manually coordinate wait() and signal() operations,\u000b making concurrent programs easier to write and less prone to synchronization errors.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Conditional Critical Regions - A Precursor to Monitors",
+      "body": "Key Behaviors\nRelationship to monitors\nCritical regions and monitors solve the same problem (structured synchronization), but monitors also bundle shared data and its operations into a single module, which is why monitors were more widely adopted",
+      "notes": "Finally, Conditional Critical Regions and monitors are both designed to achieve structured synchronization,\u000b but they differ in how they organize shared resources. While Conditional Critical Regions focus on controlling access \u000bto a shared variable, monitors go a step further by grouping the shared data and the operations \u000bperformed on it into a single module. This integrated design makes monitors easier to use and \u000bis one of the main reasons they became the more widely adopted synchronization mechanism.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Conditional Critical Regions - A Precursor to Monitors",
+      "body": "Analogy",
+      "notes": "A critical region is like a locker that opens only when a condition light turns green. \u000bIf the light is red (the condition is false),\u000bthe process simply waits — and the locker's own mechanism checks the condition and lets the \u000bprocess in automatically the moment it turns green, with no manual checking or busy-waiting.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Comparisons",
+      "body": "Comparisons",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Synchronization Tools",
+      "body": "Comparison",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Mutex Lock",
+            "Semaphore",
+            "Monitor"
+          ],
+          [
+            "Value/State",
+            "Binary - locked / unlocked",
+            "Integer - 0 to N",
+            "No exposed counter - mutual exclusion is automatic"
+          ],
+          [
+            "Ownership",
+            "Yes - only the acquirer may release",
+            "No - any process may call signal()",
+            "N/A - enforced structurally by the construct"
+          ],
+          [
+            "Level of abstraction",
+            "Low-level OS/library primitive",
+            "Low-level OS/kernel primitive",
+            "High-level, language-supported construct"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 65,
+      "title": "Synchronization Tools",
+      "body": "Heading: Choosing the Right Tool\nSubheading: Same Goal — Mutual Exclusion & Coordination — Three Levels of Abstraction\nComparison",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Mutex Lock",
+            "Semaphore",
+            "Monitor"
+          ],
+          [
+            "Value/State",
+            "Binary — locked / unlocked",
+            "Integer — 0 to N",
+            "No exposed counter — mutual exclusion is automatic"
+          ],
+          [
+            "Ownership",
+            "Yes — only the acquirer may release",
+            "No — any process may call signal()",
+            "N/A — enforced structurally by the construct"
+          ],
+          [
+            "Level of abstraction",
+            "Low-level OS/library primitive",
+            "Low-level OS/kernel primitive",
+            "High-level, language-supported construct"
+          ],
+          [
+            "Mutual exclusion",
+            "Manual — acquire()/release() calls",
+            "Manual — wait()/signal() calls",
+            "Automatic — built into the construct"
+          ],
+          [
+            "Resource pools (N instances)",
+            "Not natively — one lock per resource",
+            "Yes — counting semaphore",
+            "Possible via condition variables, but not the primary use case"
+          ],
+          [
+            "Programmer error risk",
+            "Lower — ownership rule catches misuse",
+            "Higher — no ownership, easy to mismatch wait/signal",
+            "Lowest — compiler/runtime enforces entry discipline"
+          ],
+          [
+            "Typical real-world use",
+            "pthread_mutex, std::mutex, single-resource locking",
+            "Bounded buffers, resource-pool management, signalling between processes",
+            "Java synchronized blocks, Concurrent Pascal, high-level concurrent data structures"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Mutex Lock",
+            "Semaphore",
+            "Monitor"
+          ],
+          [
+            "Mutual exclusion",
+            "Manual - acquire()/release() calls",
+            "Manual - wait()/signal() calls",
+            "Automatic - built into the construct"
+          ],
+          [
+            "Resource pools (N instances)",
+            "Not natively - one lock per resource",
+            "Yes - counting semaphore",
+            "Possible via condition variables, but not the primary use case"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 66,
+      "title": "Synchronization Tools",
+      "body": "Heading: Choosing the Right Tool\nSubheading: Same Goal — Mutual Exclusion & Coordination — Three Levels of Abstraction\nComparison",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Mutex Lock",
+            "Semaphore",
+            "Monitor"
+          ],
+          [
+            "Value/State",
+            "Binary — locked / unlocked",
+            "Integer — 0 to N",
+            "No exposed counter — mutual exclusion is automatic"
+          ],
+          [
+            "Ownership",
+            "Yes — only the acquirer may release",
+            "No — any process may call signal()",
+            "N/A — enforced structurally by the construct"
+          ],
+          [
+            "Level of abstraction",
+            "Low-level OS/library primitive",
+            "Low-level OS/kernel primitive",
+            "High-level, language-supported construct"
+          ],
+          [
+            "Mutual exclusion",
+            "Manual — acquire()/release() calls",
+            "Manual — wait()/signal() calls",
+            "Automatic — built into the construct"
+          ],
+          [
+            "Resource pools (N instances)",
+            "Not natively — one lock per resource",
+            "Yes — counting semaphore",
+            "Possible via condition variables, but not the primary use case"
+          ],
+          [
+            "Programmer error risk",
+            "Lower — ownership rule catches misuse",
+            "Higher — no ownership, easy to mismatch wait/signal",
+            "Lowest — compiler/runtime enforces entry discipline"
+          ],
+          [
+            "Typical real-world use",
+            "pthread_mutex, std::mutex, single-resource locking",
+            "Bounded buffers, resource-pool management, signalling between processes",
+            "Java synchronized blocks, Concurrent Pascal, high-level concurrent data structures"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Mutex Lock",
+            "Semaphore",
+            "Monitor"
+          ],
+          [
+            "Programmer error risk",
+            "Lower - ownership rule catches misuse",
+            "Higher - no ownership, easy to mismatch wait/signal",
+            "Lowest - compiler/runtime enforces entry discipline"
+          ],
+          [
+            "Typical real-world use",
+            "pthread_mutex, std::mutex, single-resource locking",
+            "Bounded buffers, resource-pool management, signalling between processes",
+            "Java synchronized blocks, Concurrent Pascal, high-level concurrent data structures"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 67,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Synchronization Tools",
+      "body": "Mutex Locks\nConcept & usage\nSemaphores\nCounting vs binary semaphores\nOperations: wait() / signal() (P / V)\nSemaphore Implementation\nBusy waiting vs block-and-wakeup\n1. Mutex Locks\n– Concept & usage\n2. Semaphores\n– Counting vs binary semaphores\n– Operations: wait() / signal() (P / V)\n3. Semaphore Implementation\n– Busy waiting vs block-and-wakeup\n4. Monitors & Critical Regions\n– Monitor structure & condition variables\n– Critical regions\n5. Comparison\n– Comparing synchronization tools & their trade-offs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Synchronization Tools",
+      "body": "Monitors & Critical Regions\nMonitor structure & condition variables\nCritical regions\nComparison\nComparing synchronization tools & \u000btheir trade-offs\n1. Mutex Locks\n– Concept & usage\n2. Semaphores\n– Counting vs binary semaphores\n– Operations: wait() / signal() (P / V)\n3. Semaphore Implementation\n– Busy waiting vs block-and-wakeup\n4. Monitors & Critical Regions\n– Monitor structure & condition variables\n– Critical regions\n5. Comparison\n– Comparing synchronization tools & their trade-offs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Classic Synchronization Problems & IPC",
+      "body": "",
+      "notes": "In the next session we will be learning about the Classic Synchronization Problems & IPC",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1JPvKrsp1mh3PrmGrkwPKUulooTDfh4wabNxpAhD28wA/edit?usp=drive_link"
+}

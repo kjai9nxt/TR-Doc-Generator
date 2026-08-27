@@ -557,8 +557,15 @@ def distil_existing() -> dict:
     return {"before": len(old), "after": len(data["rules"]), "merged": merged}
 
 
-def learned_rules_block() -> str:
-    """The block injected into generation prompts. Empty string if no rules.
+def learned_rules_block(course: str | None = None) -> str:
+    """The block injected into generation prompts. Empty string if there is nothing.
+
+    Carries TWO things down one channel, deliberately labelled apart:
+      · COURSE SKILLS — authored for this course by a person and approved before taking
+        effect (src/skills.py);
+      · LEARNED RULES — inferred from corrections a reviewer made to earlier documents.
+    Same precedence over the style guidance, different provenance, and the model should
+    be able to tell which is which.
 
     Wording matters here. As a soft "LEARNED PREFERENCES" list at the tail of the
     user message, these lost every argument against the system prompt's "HARD RULES
@@ -570,11 +577,16 @@ def learned_rules_block() -> str:
     Rules the reviewer has raised more than once are marked, so the model can see
     which ones it keeps getting wrong.
     """
-    # Only the rules that apply to the ACTIVE course — a global (house-style) rule
-    # always does; a subject-matter rule only within its own course.
-    rs = applicable_rules()
+    # Only the rules that apply to THIS course — a global (house-style) rule always
+    # does; a subject-matter rule only within its own course.
+    rs = applicable_rules(course)
+    try:
+        from . import skills as _skills
+        skills_block = _skills.block(course or _active_course())
+    except Exception:
+        skills_block = ""
     if not rs:
-        return ""
+        return skills_block
     human = [r for r in rs if r.get("source") in ("regeneration", "feedback")]
     auto = [r for r in rs if r.get("source") not in ("regeneration", "feedback")]
 
@@ -596,7 +608,7 @@ def learned_rules_block() -> str:
     if auto:
         out.append("\n## From automated QA defects on earlier runs")
         out += [fmt(r) for r in auto]
-    return "\n".join(out) + "\n"
+    return skills_block + "\n".join(out) + "\n"
 
 
 if __name__ == "__main__":       # python3 -m src.learning  -> re-distil + scope the store

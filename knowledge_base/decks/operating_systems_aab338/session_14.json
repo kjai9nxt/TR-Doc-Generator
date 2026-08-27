@@ -1,0 +1,954 @@
+{
+  "session_no": 14,
+  "source_file": "Scheduling Algorithms II: Priority, HRRN & Multilevel Queues",
+  "deck_title": "Scheduling Algorithms II: Priority, HRRN & Multilevel Queues",
+  "n_slides": 64,
+  "summary": "\n    - Slide 2: Scheduling Algorithms | Part II\n    - Slide 3: Recap\n    - Slide 4: Scheduling Algorithms | Part II\n    - Slide 5: Priority Scheduling\n    - Slide 6: Scheduling Algorithms\n    - Slide 7: Priority Scheduling (Non-Preemptive)\n    - Slide 8: Priority Scheduling (Non-Preemptive)\n    - Slide 9: Priority Scheduling (Non-Preemptive)\n    - Slide 10: Priority Scheduling (Non-Preemptive)\n    - Slide 11: Priority Scheduling (Non-Preemptive)\n    - Slide 12: Priority Scheduling (Non-Preemptive)\n    - Slide 13: Scheduling Algorithms\n    - Slide 14: Priority Scheduling (Preemptive)\n    - Slide 15: Priority Scheduling (Preemptive)\n    - Slide 16: Priority Scheduling (Preemptive)\n    - Slide 17: Priority Scheduling (Preemptive)\n    - Slide 18: Priority Scheduling (Preemptive)\n    - Slide 19: Priority Scheduling (Preemptive)\n    - Slide 20: Starvation & Aging\n    - Slide 21: Starvation in Process Scheduling\n    - Slide 22: Starvation in Process Scheduling\n    - Slide 23: Starvation in Process Scheduling\n    - Slide 24: Fairness in Scheduling\n    - Slide 25: Fairness in Scheduling\n    - Slide 26: Aging\n    - Slide 27: Quiz Time!\n    - Slide 28: HRRN (Highest Response Ratio Next)\n    - Slide 29: HRRN (Highest Response Ratio Next) - Non Preemptive\n    - Slide 30: HRRN (Highest Response Ratio Next)\n    - Slide 31: HRRN (Highest Response Ratio Next)\n    - Slide 32: HRRN (Highest Response Ratio Next)\n    - Slide 33: HRRN (Highest Response Ratio Next)\n    - Slide 34: HRRN (Highest Response Ratio Next)\n    - Slide 35: HRRN (Highest Response Ratio Next)\n    - Slide 36: HRRN (Highest Response Ratio Next)\n    - Slide 37: HRRN (Highest Response Ratio Next)\n    - Slide 38: HRRN (Highest Response Ratio Next)\n    - Slide 39: Multilevel Queue Scheduling (MLQ)\n    - Slide 40: Advanced Scheduling\n    - Slide 41: Advanced Scheduling\n    - Slide 42: Advanced Scheduling\n    - Slide 43: Advanced Scheduling\n    - Slide 44: Multilevel Queue Scheduling (MLQ)\n    - Slide 45: Advanced Scheduling\n    - Slide 46: Multilevel Queue Scheduling (MLQ)\n    - Slide 47: Multilevel Queue Scheduling (MLQ)\n    - Slide 48: Multilevel Queue Scheduling (MLQ)\n    - Slide 49: Advanced Scheduling\n    - Slide 50: Multilevel Feedback Queue (MLFQ)\n    - Slide 51: Multilevel Feedback Queue (MLFQ)\n    - Slide 52: Advanced Scheduling\n    - Slide 53: Multilevel Feedback Queue (MLFQ)\n    - Slide 54: Multilevel Feedback Queue (MLFQ)\n    - Slide 55: Multilevel Feedback Queue (MLFQ)\n    - Slide 56: Comparison\n    - Slide 57: Comparison\n    - Slide 58: Comparison\n    - Slide 59: Quiz Time!\n    - Slide 60: Scheduling Algorithms | Part II\n    - Slide 61: Scheduling Algorithms | Part II\n    - Slide 62: Concurrency & Critical-Section Problem",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Scheduling Algorithms | Part II",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Scheduling Algorithms | Part I\nFirst-Come First-Served (FCFS) — working, Gantt chart & convoy effect\nShortest Job First (SJF) — non-preemptive\nShortest Remaining Time First (SRTF) — preemptive SJF\nRound Robin (RR) — time quantum & effect of quantum size\nComparison of Algorithms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Scheduling Algorithms | Part II",
+      "body": "Scheduling Algorithms | Part II\nAgenda\nFirst-Come First-Served (FCFS) — working, Gantt chart & convoy effect\nShortest Job First (SJF) — non-preemptive\nShortest Remaining Time First (SRTF) — preemptive SJF\nRound Robin (RR) — time quantum & effect of quantum size\nMetrics & comparison of algorithms\n1. Priority Scheduling\n– Preemptive & non-preemptive\n2. Starvation & Aging\n– The starvation problem & the aging solution\n3. Highest Response Ratio Next (HRRN)\n– Response-ratio computation\n4. Multilevel Queue Scheduling\n– Multilevel queue (MLQ)\n– Multilevel feedback queue (MLFQ)\n5. Comparison \nHighest Response Ratio Next (HRRN)\nStarvation & \u000bAging\nPreemptive & non-preemptive\nThe starvation problem & \u000bthe aging solution\nPriority Scheduling\nComparison\nMultilevel Queue Scheduling\nResponse-ratio computation\nMultilevel queue (MLQ), Multilevel feedback queue (MLFQ)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Priority Scheduling",
+      "body": "Priority Scheduling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Scheduling Algorithms",
+      "body": "Priority Scheduling Algorithm works on the process with the higher priority\nProcesses with same priority are executed in FCFS manner\nPriority Scheduling (Non-Preemptive)\nGantt Chart :\n0        21             24         26         32",
+      "notes": "Now, let's look at Priority Scheduling in its non-preemptive form. \u000bHere, the CPU always selects the process with the highest priority to execute next.\u000b Since it's non-preemptive, once a process starts running, it continues until it finishes. \u000bIf two processes have the same priority, they are scheduled using the First Come, First Served (FCFS) approach.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival \nTime",
+            "Burst\nTime",
+            "Priority"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "2"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "1"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "4"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "3"
+          ]
+        ],
+        [
+          [
+            "P1",
+            "P2",
+            "P4",
+            "P3"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 7,
+      "title": "Priority Scheduling (Non-Preemptive)",
+      "body": "Completion Time\nGantt Chart :\n0        21             24         26         32",
+      "notes": "Here, as we’re talking about FCFS, P2 is done ONLY when p1 is done. \nREAD THE IMAGE>>>\nWe have the arrival time, burst time, completion time. \u000b\u000bWe can calculate the other ones. Let’s look at it….\n\nNEXT. \n\n\n\n\n\nThe time when a job or process is completed.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Priority",
+            "Completion Time"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "2",
+            "21"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "1",
+            "24"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "4",
+            "32"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "3",
+            "26"
+          ]
+        ],
+        [
+          [
+            "P1",
+            "P2",
+            "P4",
+            "P3"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 8,
+      "title": "Priority Scheduling (Non-Preemptive)",
+      "body": "Turnaround Time = Completion Time – Arrival Time\nWaiting Time = Turnaround Time – Burst Time\nResponse Time = First Start Time – Arrival Time\nWT, TAT, RT",
+      "notes": "P2 had to wait for 20 units of time just to perform 3 units of execution. \n\nREAD SLIDE TABLE. \n\n\nNEXT> \n\n\n\n\n\n========================\n\nTurn Around time is the total amount of time spent by a process in the system",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time",
+            "Turn Around Time",
+            "Waiting Time",
+            "RT"
+          ],
+          [
+            "P1",
+            "0",
+            "21",
+            "21",
+            "21",
+            "0",
+            "0"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "24",
+            "23",
+            "20",
+            "20"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "32",
+            "30",
+            "24",
+            "24"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "26",
+            "23",
+            "21",
+            "21"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 9,
+      "title": "Priority Scheduling (Non-Preemptive)",
+      "body": "Average Waiting Time  = (0 + 20 + 24 + 21) / 4 = 16.25\nAverage Turnaround Time  = (21 + 23 + 30 + 23) / 4 = 24.25\nAverage Response Time  = (0 + 20 + 24 + 21) / 4 = 16.25\nWT, TAT, RT\n0        21             24         26         32",
+      "notes": "Read Avg… \n\n\nSo, this is how we can try to understand the performance of a CPU scheduling Algo. \n\nIf you’re okay with this, go ahead. If not, take another!!",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P4",
+            "P3"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "title": "Priority Scheduling (Non-Preemptive)",
+      "body": "Analogy",
+      "notes": "A teacher calls students to submit work by importance, \u000bbut once a student is at the desk, the teacher finishes with them before calling the next — \u000beven if a more important student walks up",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Priority Scheduling (Non-Preemptive)",
+      "body": "When Is It Used?",
+      "notes": "Moving on, let's see where non-preemptive Priority Scheduling is commonly used. \u000bIt's a good fit for batch systems where the priority of each job is already known. \u000bSince running processes aren't interrupted, it also helps reduce context-switch overhead. \u000bOverall, it's a simple and effective approach when tasks need to be executed based on their importance.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Priority Scheduling (Non-Preemptive)",
+      "body": "When Not To Use?",
+      "notes": "Next, let's look at when this algorithm isn't the best choice.\u000b Since it's non-preemptive, an urgent high-priority process has to wait if a lower-priority process is already running, \u000bmaking it unsuitable for real-time or interactive systems. \u000bIt can also lead to starvation, where low-priority processes keep waiting \u000bif higher-priority jobs continue to arrive.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Scheduling Algorithms",
+      "body": "0        1          5           11          18                 \nPriority Scheduling (Preemptive)\nLower priority number = higher priority (1 is highest)\nGantt Chart :",
+      "notes": "Now, let's move to Preemptive Priority Scheduling. \u000bIn this approach, the CPU always runs the process with the highest priority.\u000b If a new process arrives with an even higher priority while another process is running, \u000bthe current process is preempted, and the CPU is immediately assigned to the higher-priority process.",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P1"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Priority"
+          ],
+          [
+            "P1",
+            "0",
+            "8",
+            "3"
+          ],
+          [
+            "P2",
+            "1",
+            "4",
+            "1"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Priority Scheduling (Preemptive)",
+      "body": "0          1           5          11         18                \nGantt Chart :\nCompletion Time",
+      "notes": "Here, as we’re talking about FCFS, P2 is done ONLY when p1 is done. \nREAD THE IMAGE>>>\nWe have the arrival time, burst time, completion time. \u000b\u000bWe can calculate the other ones. Let’s look at it….\n\nNEXT. \n\n\n\n\n\nThe time when a job or process is completed.",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P1"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Priority",
+            "Completion Time"
+          ],
+          [
+            "P1",
+            "0",
+            "8",
+            "3",
+            "18"
+          ],
+          [
+            "P2",
+            "1",
+            "4",
+            "1",
+            "5"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "2",
+            "11"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Priority Scheduling (Preemptive)",
+      "body": "Turnaround Time = Completion Time – Arrival Time\nWaiting Time = Turnaround Time – Burst Time\nResponse Time = First Start Time – Arrival Time\nTurnaround Time = Completion Time – Arrival Time\nWaiting Time = Turnaround Time – Burst Time\nResponse Time = First Start Time – Arrival Time\nTAT, WT, RT",
+      "notes": "P2 had to wait for 20 units of time just to perform 3 units of execution. \n\nREAD SLIDE TABLE. \n\n\nNEXT> \n\n\n\n\n\n========================\n\nTurn Around time is the total amount of time spent by a process in the system",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival \nTime",
+            "Burst\nTime",
+            "Completion\nTime",
+            "Turn Around Time",
+            "Waiting Time"
+          ],
+          [
+            "P1",
+            "0",
+            "8",
+            "13",
+            "13",
+            "5"
+          ],
+          [
+            "P2",
+            "1",
+            "4",
+            "5",
+            "4",
+            "0"
+          ],
+          [
+            "P3",
+            "2",
+            "2",
+            "7",
+            "5",
+            "3"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time",
+            "Turn Around Time",
+            "Waiting Time",
+            "Response Time"
+          ],
+          [
+            "P1",
+            "0",
+            "8",
+            "18",
+            "18",
+            "10",
+            "0"
+          ],
+          [
+            "P2",
+            "1",
+            "4",
+            "5",
+            "4",
+            "0",
+            "0"
+          ],
+          [
+            "P3",
+            "2",
+            "6",
+            "11",
+            "9",
+            "3",
+            "3"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 16,
+      "title": "Priority Scheduling (Preemptive)",
+      "body": "TAT, WT, RT\nAverage Waiting Time  = (10 + 0 + 3 ) / 3 = 4.33\nAverage Turnaround Time  = (18 + 4 + 9) / 3 = 10.33\nAverage Response Time  = (0 + 0 + 3 ) / 3 = 1.0\n0        1          5          11          18",
+      "notes": "Read Avg… \n\n\nSo, this is how we can try to understand the performance of a CPU scheduling Algo. \n\nIf you’re okay with this, go ahead. If not, take another!!",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P3",
+            "P1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 17,
+      "title": "Priority Scheduling (Preemptive)",
+      "body": "Analogy",
+      "notes": "Vehicles are moving normally.\nAn ambulance arrives.\nThe traffic police stop other vehicles and let the ambulance pass first.\nNormal traffic resumes afterward.\n\nCPU → Road | Process → Vehicle | High-priority process → Ambulance",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Priority Scheduling (Preemptive)",
+      "body": "When To Use?",
+      "notes": "Moving on, preemptive Priority Scheduling is ideal for real-time and interactive systems,\u000b where important tasks need immediate CPU access. As soon as a higher-priority process arrives, \u000bit gets the CPU without delay, making the system much more responsive to critical events.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Priority Scheduling (Preemptive)",
+      "body": "When Not To Use?",
+      "notes": "Next, let's see where preemptive Priority Scheduling may not be suitable.\u000b Frequent preemption can increase context-switch overhead, reducing efficiency. \u000bIt can also cause starvation, where low-priority processes wait indefinitely\u000b if higher-priority processes keep arriving, unless techniques like aging are used.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Starvation & Aging",
+      "body": "Starvation & Aging",
+      "notes": "Now we will learn about the Starvation & Aging",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Starvation in Process Scheduling",
+      "body": "Starvation: The Problem\nStarvation occurs when a process keeps waiting indefinitely because other processes have higher priority\nCommon in priority-based scheduling systems\nCan lead to unfair CPU allocation and may prevent some processes from completing",
+      "notes": "Now, let's understand starvation. It happens when a process keeps waiting because \u000bhigher-priority processes continue to get the CPU first. \u000bThis is commonly seen in priority-based scheduling and can result in unfair CPU allocation, \u000bwhere some processes may never get a chance to complete.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Starvation in Process Scheduling",
+      "body": "Example\nA low-priority background process never executes because high-priority user applications keep arriving\nPriority 3\nPriority 5\nPriority 2\nPriority 1\nPriority 4\nCPU for Execution",
+      "notes": "So, let's understand starvation with a simple example.\u000b Here, the Priority 5 process is a low-priority background task.\u000b Even though it's waiting, new higher-priority processes—like Priority 4, 3, 2, and eventually\u000b 1—keep arriving and getting the CPU first. As a result, the low-priority process keeps \u000bwaiting indefinitely and may never get a chance to execute.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Starvation in Process Scheduling",
+      "body": "Analogy",
+      "notes": "At a queue, whenever it's your turn, someone with higher priority keeps arriving \u000band is served first. If this keeps happening, you may never get your turn.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Fairness in Scheduling",
+      "body": "Aging \nAging gradually increases the priority of waiting processes.\nEnsures even low-priority processes eventually get CPU time\nMaintains balance and fairness in the system",
+      "notes": "Moving on, one common solution to starvation is Aging. In this technique, \u000bthe priority of a waiting process is gradually increased over time. \u000bThis ensures that even low-priority processes eventually get CPU time,\u000b making the scheduling process more balanced and fair.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Fairness in Scheduling",
+      "body": "A low-priority maintenance process gradually moves up in priority and eventually executes\nDisk clean\nVirus scan\n Browser\nPriority 1\nWord processor\nCPU for Execution\nEmail clients\nProgramming\nProcess Queue\nAging",
+      "notes": "Now, let's see how Aging works. Here, the Virus scan starts as a low-priority process and \u000bwaits while higher-priority tasks like the Word Processor, Email Client, and Programming are executed. \u000bAs it keeps waiting, its priority is gradually increased until it eventually gets CPU time. \u000bThis ensures that low-priority processes are not left waiting indefinitely and prevents starvation.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Aging",
+      "body": "Analogy",
+      "notes": "At a busy service counter, people with VIP passes are usually served first. \u000bBut if a normal customer keeps waiting for too long, the staff slowly increases their priority. \u000bAfter a while, even if they were not VIP initially, they are moved closer to the front and eventually get served.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "HRRN (Highest Response Ratio Next)",
+      "notes": "Now we will learn about the HRRN (Highest Response Ratio Next)",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "HRRN (Highest Response Ratio Next) - Non Preemptive",
+      "body": "Introduction\nHRRN picks the process with the highest response ratio each time the CPU is free\nResponse Ratio = (Waiting Time + Burst Time) / Burst Time\nDesigned to fix SJF's starvation problem: the longer a process waits, the higher its ratio climbs, so long jobs eventually win. It balances favoring short jobs with rewarding waiting",
+      "notes": "Now, let's look at HRRN, or Highest Response Ratio Next. \u000bIt is a scheduling algorithm that selects the process with the highest response ratio, \u000bcalculated as (Waiting Time + Burst Time) / Burst Time. \u000bAs a process waits longer, its response ratio increases,\u000b helping prevent the starvation problem seen in SJF while still giving preference to shorter jobs.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "Example\n0        4         7          9         14                 \nGantt Chart :",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P4",
+            "P3"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time"
+          ],
+          [
+            "P1",
+            "0",
+            "4"
+          ],
+          [
+            "P2",
+            "1",
+            "3"
+          ],
+          [
+            "P3",
+            "2",
+            "5"
+          ],
+          [
+            "P4",
+            "3",
+            "2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "Completion Time\n0        4         7          9         14                 \nGantt Chart :",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P4",
+            "P3"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time"
+          ],
+          [
+            "P1",
+            "0",
+            "4",
+            "4"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "7"
+          ],
+          [
+            "P3",
+            "2",
+            "5",
+            "14"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "9"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 32,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "Response-Ratio Decisions\nt=0: only P1 → run P1 (0→4)\nt=4, compute RR = (Wait + Burst)/Burst:\nP2 = (3+3)/3 = 2.00 ✅ highest → run P2 (4→7)\nP3 = (2+5)/5 = 1.40 \nP4 = (1+2)/2 = 1.50",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "Response-Ratio Decisions\nt=9: only P3 left → run P3 (9→14)\nt=7, recompute:\nP4 = (4+2)/2 = 3.00 ✅ highest → run P4 (7→9)\nP3 = (5+5)/5 = 2.00",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "TAT, WT, RT",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Process",
+            "Arrival Time",
+            "Burst Time",
+            "Completion Time",
+            "Turn Around Time",
+            "Waiting Time",
+            "Response Time"
+          ],
+          [
+            "P1",
+            "0",
+            "4",
+            "4",
+            "4",
+            "0",
+            "0"
+          ],
+          [
+            "P2",
+            "1",
+            "3",
+            "7",
+            "6",
+            "3",
+            "3"
+          ],
+          [
+            "P3",
+            "2",
+            "5",
+            "14",
+            "12",
+            "7",
+            "7"
+          ],
+          [
+            "P4",
+            "3",
+            "2",
+            "9",
+            "6",
+            "4",
+            "4"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 35,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "TAT, WT, RT\nAverage Waiting Time  = (0 + 3 + 7 + 4) / 4 = 3.5\nAverage Turnaround Time  = (4 + 6 + 12 + 6) / 4 = 7.0\nAverage Response Time  = (0 + 3 + 7 + 4 ) / 4 = 3.5\n0        4         7          9         14",
+      "notes": "Read Avg… \n\n\nSo, this is how we can try to understand the performance of a CPU scheduling Algo. \n\nIf you’re okay with this, go ahead. If not, take another!!",
+      "tables": [
+        [
+          [
+            "P1",
+            "P2",
+            "P4",
+            "P3"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 36,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "Analogy",
+      "notes": "A shopkeeper balances waiting time and order time. \u000bA customer who has waited too long gets priority, \u000bwhile a customer with a small order can also be served early.\u000bCustomer → Process, Waiting time → Waiting Time.Order size → CPU Burst Time\u000bPriority score → Response Ratio",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "When To Use ?",
+      "notes": "Next, let's see where HRRN is most useful. \u000bIt's ideal for batch systems that want the efficiency of SJF while avoiding starvation. \u000bIt also works well for workloads with a mix of short and long processes, \u000bproviding a better balance between performance and fairness.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "HRRN (Highest Response Ratio Next)",
+      "body": "When Not To Use?",
+      "notes": "Moving on, HRRN isn't suitable for real-time or interactive systems because\u000b it's non-preemptive and cannot respond immediately to urgent tasks.\u000b It also requires an estimate of burst time, so it's not a good choice when burst times are unknown.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Multilevel Queue Scheduling (MLQ)",
+      "body": "Multilevel Queue Scheduling (MLQ)",
+      "notes": "Now we will be learning about the Multilevel Queue Scheduling (MLQ).",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Advanced Scheduling",
+      "body": "Multilevel Queue Scheduling (MLQ)",
+      "notes": "Now, let's look at Multilevel Queue Scheduling, or MLQ. \nUnlike the algorithms we've discussed so far, MLQ is a scheduling framework that divides \nprocesses into different queues. Each queue can use its own scheduling algorithm, \u000bso whether the overall system behaves as preemptive or non-preemptive \u000bdepends on the policies used within and between those queues.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Advanced Scheduling",
+      "body": "Multilevel Queue Scheduling (MLQ)",
+      "notes": "Next, in MLQ, each queue uses its own scheduling algorithm, such as FCFS or Round Robin. \u000bThe role of MLQ is to decide how the different queues are prioritized and when each queue gets CPU time.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Advanced Scheduling",
+      "body": "Multilevel Queue Scheduling (MLQ)\nThe ready queue is divided into multiple separate queues, each meant for a different type of process\nEach queue has its own scheduling policy (e.g., FCFS, RR)\nA queue placed at a higher priority is always served before lower queues",
+      "notes": "Moving on, in MLQ, the ready queue is split into multiple queues based on the type of process. \u000bEach queue follows its own scheduling policy, such as FCFS or Round Robin. \u000bThe scheduler always gives preference to higher-priority queues before serving the lower-priority ones.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Advanced Scheduling",
+      "body": "Multilevel Queue Scheduling (MLQ)\nInteractive processes\nSystem processes\nBatch jobs\nProcesses are assigned to a queue based on process characteristics:",
+      "notes": "Now, processes are placed into different queues based on their characteristics. \u000bFor example, system processes, interactive processes, and batch jobs are assigned to separate queues, \u000ballowing each category to be scheduled according to its specific requirements.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Multilevel Queue Scheduling (MLQ)",
+      "body": "Key Points\nGood separation of process types\nNo movement between queues (static classification)\nSimple to implement, but can cause starvation",
+      "notes": "Finally, let's summarize the key points of MLQ.\u000b Processes are permanently assigned to a queue, so they don't move between queues. \u000bThis provides a clear separation of different process types and is simple to implement. \u000bHowever, lower-priority queues may experience starvation if higher-priority queues remain busy.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Advanced Scheduling",
+      "body": "Multilevel Queue Scheduling (MLQ)\nSystem Process\nInteractive Process\nInteractive Editing Process\nBatch Process\nStudent Process\nQueue 0\nQueue 1\nQueue 2\nQueue 3\nQueue 4\nHighest Priority\nLowest Priority",
+      "notes": "Now, here's a typical MLQ structure. \u000bSystem processes are placed in the highest-priority queue, \u000bfollowed by interactive and interactive editing processes. \u000bBatch and student processes are kept in lower-priority queues. \u000bThis priority order ensures that more critical processes get CPU time before less critical ones.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Multilevel Queue Scheduling (MLQ)",
+      "body": "Analogy",
+      "notes": "Fixed lines at a bank: VIP, regular, and general. \u000bYour card decides your line, VIP is always served first, and you can never switch lines.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Multilevel Queue Scheduling (MLQ)",
+      "body": "When To Use?",
+      "notes": "Moving on, MLQ works best in systems where processes belong to fixed categories, \u000bsuch as system, interactive, or batch processes. \u000bSince processes never change their assigned queue,\u000b it's ideal when these classifications remain constant throughout execution.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Multilevel Queue Scheduling (MLQ)",
+      "body": "When Not To Use?",
+      "notes": "Next, MLQ is not suitable when a process needs to move between categories as its behavior changes.\u000b It can also lead to starvation, since processes in lower-priority queues may \u000bkeep waiting if higher-priority queues are always busy.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Advanced Scheduling",
+      "body": "Multilevel Feedback Queue (MLFQ)\nQueue 0\nQueue 2\nQueue 1\nHighest Priority\nLowest Priority",
+      "notes": "Now, let's move to Multilevel Feedback Queue, or MLFQ. \u000bLike MLQ, it uses multiple priority queues. \u000bHowever, the key difference is that processes can move between queues based on their behavior, \u000bmaking the scheduling more flexible and adaptive.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Multilevel Feedback Queue (MLFQ)",
+      "body": "Introduction\nAn extension of MLQ where processes can move between queues\nA process that uses its entire time slice (long CPU burst) is moved to a lower-priority queue\nA process that frequently waits or yields early (short burst) is moved to a higher-priority queue",
+      "notes": "Moving on, MLFQ extends MLQ by allowing processes to move between queues.\u000b If a process uses its entire time slice, it's moved to a lower-priority queue. \nOn the other hand, processes that finish early or frequently wait for I/O stay in \u000bor move to higher-priority queues, improving both responsiveness and fairness.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Multilevel Feedback Queue (MLFQ)",
+      "body": "Main Goals\nImprove responsiveness\nReduce starvation\nDynamically adjust scheduling based on process behaviour\nMLFQ Designed to",
+      "notes": "Next, the main goal of MLFQ is to make scheduling smarter. \u000bIt improves system responsiveness, reduces the chances of starvation, \u000band dynamically adjusts process priorities based on how each process behaves during execution.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Advanced Scheduling",
+      "body": "Multilevel Feedback Queue (MLFQ)\nAdapts automatically to different workloads\u000b\nFavors short, interactive tasks\u000b\nPushes long-running tasks downward for fairness\nWhy MLFQ is powerful?\nQueue 0\nQueue 2\nQueue 1",
+      "notes": "Now, let's see why MLFQ is so effective. It automatically adapts to different workloads, \u000bgives preference to short and interactive processes, and gradually moves \u000blong-running CPU-intensive processes to lower-priority queues, ensuring better overall fairness.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Multilevel Feedback Queue (MLFQ)",
+      "body": "Analogy",
+      "notes": "A video game that moves you between easy, medium, and hard levels \u000bbased on how you actually play — your level isn't fixed, it changes with your performance.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Multilevel Feedback Queue (MLFQ)",
+      "body": "When To Use ?\nIdeal for:\nGeneral-purpose OSes with mixed, changing workloads (what real systems like Windows/Linux approximate)\nFavoring interactive tasks while still serving long jobs",
+      "notes": "Moving on, MLFQ is ideal for general-purpose operating systems where workloads keep changing. \u000bIt gives quick response to interactive tasks while ensuring that long-running processes also get CPU time fairly.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Multilevel Feedback Queue (MLFQ)",
+      "body": "When Not To Use?",
+      "notes": "Finally, MLFQ isn't the best choice for systems that require simple and predictable scheduling. \u000bIt's also not suitable for hard real-time systems, where strict timing guarantees are essential,\u000b and its implementation can be more complex than other scheduling approaches.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Comparison",
+      "body": "Comparison",
+      "notes": "Next we will be seeing the comparison of the Algorithms",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Comparison",
+      "body": "CPU Scheduling Algorithms",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Algorithm",
+            "Preemptive?",
+            "Selection basis",
+            "Starvation",
+            "Best for"
+          ],
+          [
+            "FCFS",
+            "No",
+            "Arrival order",
+            "No",
+            "Batch, similar-length jobs"
+          ],
+          [
+            "SJF",
+            "No",
+            "Shortest burst",
+            "Possible",
+            "Known burst times"
+          ],
+          [
+            "SRTF",
+            "Yes",
+            "Shortest remaining",
+            "Possible",
+            "Minimizing waiting time"
+          ],
+          [
+            "Round Robin",
+            "Yes",
+            "Time quantum, cyclic",
+            "No",
+            "Time-sharing, interactive"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 58,
+      "title": "Comparison",
+      "body": "CPU Scheduling Algorithms",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Algorithm",
+            "Preemptive?",
+            "Selection basis",
+            "Starvation",
+            "Best for"
+          ],
+          [
+            "Priority",
+            "Both",
+            "Priority value",
+            "Yes → fix with aging",
+            "System-critical tasks first"
+          ],
+          [
+            "HRRN",
+            "No",
+            "Response ratio",
+            "No",
+            "Balanced batch scheduling"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 59,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Scheduling Algorithms | Part II",
+      "body": "Scheduling Algorithms | Part II\nKey Takeaways\nPriority Scheduling\nPreemptive & Non-Preemptive\nStarvation & Aging\nStarvation Problem & the Aging Solution\nHighest Response Ratio Next (HRRN)\nResponse-Ratio Computation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Scheduling Algorithms | Part II",
+      "body": "Scheduling Algorithms | Part II\nKey Takeaways\nMultilevel Queue Scheduling\nMultilevel queue (MLQ) \nMultilevel feedback queue (MLFQ)\nComparison",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Concurrency & Critical-Section Problem",
+      "body": "",
+      "notes": "Next we will be learning about the Concurrency & Critical-Section Problem",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1dl3V6gVTV7-Ol79GboMUdAesPykno-UjQMHGFVw2jUI/edit?slide=id.g3f02ba5620a_0_1576#slide=id.g3f02ba5620a_0_1576"
+}

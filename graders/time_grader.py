@@ -41,6 +41,18 @@ def _content_words(content: list[dict]) -> int:
             total += sum(_wc(i) for i in block.get("items", []))
         elif t == "table":
             total += sum(_wc(c) for row in block.get("rows", []) for c in row)
+        elif t == "code":
+            # An instructor reads a line and explains it; they do not narrate the
+            # characters. The WALKTHROUGH is ordinary spoken content, and the snippet
+            # costs a flat allowance per line. Counting `const x = compute(i)` as five
+            # spoken words inflates the estimate until a legitimate code slide cannot fit
+            # the 40-minute budget.
+            from src import docx_writer
+            per_line = float(config.harness()["constraints"]["recording"]
+                             .get("spoken_words_per_code_line", 6))
+            lines = [ln for ln in docx_writer.code_lines(block) if ln.strip()]
+            total += int(len(lines) * per_line)
+            total += sum(_wc(t2) for t2 in docx_writer.walkthrough_text(block))
     return total
 
 

@@ -1,0 +1,666 @@
+{
+  "session_no": 10,
+  "source_file": "Threads, Multithreading & Concurrency",
+  "deck_title": "Threads, Multithreading & Concurrency",
+  "n_slides": 69,
+  "summary": "\n    - Slide 2: Threads, Multithreading \u000b& Concurrency\n    - Slide 3: Recap\n    - Slide 4: Threads, Multithreading & Concurrency\n    - Slide 5: Introduction to Threads\n    - Slide 6: Process Control Block\n    - Slide 7: Introduction to Threads\n    - Slide 8: Introduction to Threads\n    - Slide 9: Multithreading\n    - Slide 10: Processes & Threads\n    - Slide 11: Processes & Threads\n    - Slide 12: Processes & Threads\n    - Slide 13: Multithreading\n    - Slide 14: Introduction to Multithreading\n    - Slide 15: Multithreading\n    - Slide 16: Multithreading\n    - Slide 17: Multithreading\n    - Slide 18: Multithreading\n    - Slide 19: Multithreading\n    - Slide 20: Single-Threaded Process\n    - Slide 21: Multithreading\n    - Slide 22: Multithreading\n    - Slide 23: Thread Types and Models\n    - Slide 24: Thread Types\n    - Slide 25: Types of Threads\n    - Slide 26: User-Level Threads (ULTs)\n    - Slide 27: User-Level Threads (ULTs)\n    - Slide 28: User-Level Threads (ULTs)\n    - Slide 29: Types of Threads\n    - Slide 30: Kernel-Level Threads (KLTs)\n    - Slide 31: Kernel-Level Threads (KLTs)\n    - Slide 32: Kernel-Level Threads (KLTs)\n    - Slide 33: Quiz Time!\n    - Slide 34: Thread Operations & Multicore\n    - Slide 35: Thread Models\n    - Slide 36: Multi-Threading Models\n    - Slide 37: Multi-Threading Models\n    - Slide 38: Multi-Threading Models\n    - Slide 39: Thread Models\n    - Slide 40: Multithreading Execution Types\n    - Slide 41: Cooperative Multithreading\n    - Slide 42: Cooperative Multithreading\n    - Slide 43: Multithreading Execution Types\n    - Slide 44: Preemptive Multithreading\n    - Slide 45: Preemptive Multithreading\n    - Slide 46: Multithreading Execution Types\n    - Slide 47: Overview\n    - Slide 48: Thread Operations\n    - Slide 49: Thread Operations\n    - Slide 50: Thread Operations\n    - Slide 51: What is Multicore Programming?\n    - Slide 52: Multicore Programming\n    - Slide 53: Multicore Programming\n    - Slide 54: Multicore Programming\n    - Slide 55: Multicore Programming\n    - Slide 56: Multicore Programming\n    - Slide 57: Concurrency & Parallelism\n    - Slide 58: Difference\n    - Slide 59: Types of Parallelism\n    - Slide 60: Types of Parallelism\n    - Slide 61: Types of Parallelism\n    - Slide 62: Types of Parallelism\n    - Slide 63: Types of Parallelism\n    - Slide 64: Types of Parallelism\n    - Slide 65: Quiz Time!\n    - Slide 66: Threads, Multithreading & Concurrency\n    - Slide 67: Process Control & Operations",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Threads, Multithreading \u000b& Concurrency",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Process Concept, States & PCB\nProcess Management\nProcess Life Cycle\nProcess Control Block\nBooting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Threads, Multithreading & Concurrency",
+      "body": "Threads, Multithreading & Concurrency\nMultithreading\nThread Types\n & Models \nIntroduction to Threads\nThread Operations & Multicore\nProcess Vs Threads\nConcurrency & Parallelism\nTypes of Parallelism\nTypes of Parallelism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Introduction to Threads",
+      "body": "Introduction to Threads",
+      "notes": "First of all We'll be learning about the Introduction To Threads.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Process Control Block",
+      "body": "Process Execution State\nProgram Counter determines the next instruction to be executed\nResults in a stream of instructions which are often referred to as a thread of execution",
+      "notes": "Now, among the information stored in the PCB, the Program Counter plays an important role. \u000bIt keeps track of the next instruction to be executed, ensuring the process resumes from the correct point. \u000bThis continuous sequence of instruction execution is referred to as a thread of execution.",
+      "tables": [
+        [
+          [
+            "Process ID"
+          ],
+          [
+            "Process State"
+          ],
+          [
+            "Process Priority"
+          ],
+          [
+            "I/O Information"
+          ],
+          [
+            "Program Counter"
+          ],
+          [
+            "CPU Registers"
+          ],
+          [
+            "..."
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 7,
+      "title": "Introduction to Threads",
+      "body": "What is a Thread?\nA thread is the smallest unit of execution within a process",
+      "notes": "Now, let's move on to the concept of threads. \u000bWhile a process represents a running program,\u000b a thread is the smallest unit that actually performs the execution within that process. \u000bA single process can have one or more threads working inside it.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Introduction to Threads",
+      "body": "What Does a Thread Contain?\nEach thread has\nA program counter\nA register set\nA stack space\nAddress Space\nExecution State\nData\nFiles\nCode\nRegisters\nStack\nThread",
+      "notes": "Next, a thread shares the process resources such as the code, data, address space, and open files. \u000bAt the same time, each thread maintains its own program counter, register set, \u000bexecution state, and stack, allowing it to execute independently within the same process.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Multithreading",
+      "body": "Advantages of Threads\nThreads are lightweight\nLess time to create and terminate\nFaster to context switch between threads\nQuicker communication between threads\nAddress Space\nExecution State\nData\nFiles\nCode\nRegisters\nStack\nThread",
+      "notes": "Moving on, threads are considered lightweight because \u000bthey share the same process resources instead of creating separate ones. \u000bAs a result, creating and terminating threads takes less time, context switching is faster, \u000band communication between threads is more efficient.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Processes & Threads",
+      "body": "Process Vs Threads\nRegisters \u000bStack\nRegisters Stack\nCode\nData/File\nRegisters\n Stack\nRegisters Stack\nCode\nData/File\nCode\nData/File\nPROCESS\nTHREAD\nTwo Threads of a single process\nTwo Different Process",
+      "notes": "Next, this comparison highlights the key difference between processes and threads.\u000b Each process maintains its own code, data, open files, registers, and stack independently. \u000bIn contrast, multiple threads within the same process share the code, data, and open files, \u000bwhile each thread has its own registers and stack to execute independently.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Processes & Threads",
+      "body": "Process Vs Threads",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Process",
+            "Thread"
+          ],
+          [
+            "Definition",
+            "Independent program in execution",
+            "Smallest execution unit inside a process"
+          ],
+          [
+            "Memory",
+            "Separate memory space",
+            "Shares memory with other threads in same process"
+          ],
+          [
+            "Creation Cost",
+            "High (needs PCB, memory setup)",
+            "Low (shares process resources)"
+          ],
+          [
+            "Context Switch",
+            "Slow",
+            "Fast"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Processes & Threads",
+      "body": "Process Vs Threads",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Process",
+            "Thread"
+          ],
+          [
+            "Failure Impact",
+            "One process crash doesn’t affect others",
+            "Thread crash can affect the whole process"
+          ],
+          [
+            "Scheduling",
+            "OS schedules processes",
+            "OS schedules threads"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Multithreading",
+      "body": "Multithreading",
+      "notes": "Next we will be learning about the Multithreading",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Introduction to Multithreading",
+      "body": "What is Multithreading?\nMultithreading is the ability of a process to create and run multiple threads at the same time, allowing different parts of the program to execute concurrently",
+      "notes": "Now, instead of relying on a single thread, \u000ba process can create multiple threads to perform different tasks concurrently. \u000bThis approach, known as multithreading, \u000bhelps improve responsiveness and makes better use of the CPU \u000bby allowing multiple parts of the same application to execute simultaneously.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Multithreading",
+      "body": "Characteristics of Multithreading\nA process can have multiple threads\nThreads share the same code, data, and files of the process\nEach thread has its own registers and stack\nThreads can run on different CPU cores - improving performance",
+      "notes": "Next, a single process can create multiple threads that work together by sharing the same code, data, and files. \u000bAt the same time, each thread maintains its own registers and stack, \u000ballowing them to execute independently. \u000bOn multi-core systems, these threads can also run on different CPU cores, improving overall performance.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Multithreading",
+      "body": "Benefits\nResponsiveness\nResource Sharing\nEconomy\nScalability",
+      "notes": "Moving on, multithreading offers several advantages that improve the performance and efficiency of an application. \u000bThe key benefits include responsiveness, resource sharing, economy, and scalability. \u000bLet's understand each of these in detail.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Multithreading",
+      "body": "Single vs Multi-Threaded Process\nSingle-Threaded Process",
+      "notes": "Next, this diagram illustrates the difference between a single-threaded and a multi-threaded process. \u000bA single-threaded process relies on one thread to perform all tasks, \u000bwhereas a multi-threaded process contains multiple threads. \u000bThese threads share the process resources, such as Code, data and files, \u000bbut each thread maintains its own registers, program counter, and stack, allowing them to execute independently.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Multithreading",
+      "body": "Single vs Multi-Threaded Process\nOnly one thread of execution\nExample: Basic command-line calculator program\nSingle-Threaded Process\nMulti-Threaded Process\nContains two or more threads running concurrently\nExample: web browser (parallel threads manage rendering & video)\nA process can run with one thread or multiple threads depending on how tasks need to be executed",
+      "notes": "Next, a process may operate with either a single thread or multiple threads, depending on the nature of the application. \u000bFor example, a basic command-line calculator uses a single thread since it performs one task at a time. \u000bIn contrast, a web browser uses multiple threads to handle activities like page rendering and \u000bvideo playback simultaneously, providing a smoother user experience.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Multithreading",
+      "body": "Key Differences",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Single-Threaded",
+            "Multi-Threaded"
+          ],
+          [
+            "Execution",
+            "One task at a time",
+            "Concurrent tasks"
+          ],
+          [
+            "Responsiveness",
+            "Lower",
+            "Higher"
+          ],
+          [
+            "Complexity",
+            "Simple",
+            "More complex"
+          ],
+          [
+            "Blocking",
+            "Entire process blocks",
+            "Other threads continue"
+          ],
+          [
+            "Resource Use",
+            "Lower CPU/memory",
+            "Higher CPU usage but efficient"
+          ],
+          [
+            "Performance",
+            "Slow for multitasking",
+            "Faster for parallel work"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "Single-Threaded Process",
+      "body": "Advantages\nAdvantages\nSimple to design and manage\nEasy to test and debug\nUses fewer system resources\nGood for small, sequential programs",
+      "notes": "Moving on, single-threaded processes are suitable for applications with straightforward execution.\u000b They are simpler to design, easier to test and debug, consume fewer system resources, \u000band work well for programs that execute tasks in a sequential manner.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Multithreading",
+      "body": "Advantages of Multi-Threaded Process\nAdvantages\nBetter performance for multitasking\nEfficient CPU utilization\nAllows parallel execution on multi-core processors\nFaster execution of independent tasks\nGood for real-time applications (e.g., chat apps, games)",
+      "notes": "Moving on, multi-threaded processes can handle multiple activities more efficiently, \u000bleading to better multitasking and improved CPU utilization. \u000bThey also support parallel execution on multi-core processors, complete independent tasks faster,\n and are well suited for real-time applications such as chat applications and games.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Multithreading",
+      "body": "When to Use What?",
+      "notes": "Finally, the choice between a single-threaded and a multi-threaded approach depends on the application's requirements.\u000b If the tasks are simple and sequential, a single thread is usually sufficient. \u000bHowever, if responsiveness, parallel execution, and efficient utilization of CPU cores are important,\u000b a multi-threaded approach is the better choice.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Thread Types and Models",
+      "body": "Thread Types and Models",
+      "notes": "Next we will be learning about the Thread Types and Models",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Thread Types",
+      "body": "Types of Threads\nKernel-Level Threads (KLTs)\nUser-Level Threads (ULTs)\nThreads can be implemented at two different levels:",
+      "notes": "Now, threads can be categorized based on where they are managed. \u000bThe two main types are User-Level Threads, which are managed in user space, and Kernel-Level Threads, \u000bwhich are managed directly by the operating system. Let's understand each of them in detail.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Types of Threads",
+      "body": "User-Level Threads (ULTs)\nThreads managed entirely in user space by a thread library\nThe operating system does not know these threads exist\nUser Level Threads",
+      "notes": "Next, let's begin with User-Level Threads. \u000bThese threads are created and managed entirely in user space using a thread library. \u000bSince the operating system is unaware of their existence, all thread management is handled without direct involvement of the kernel.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "User-Level Threads (ULTs)",
+      "body": "How ULTs Work?\nUser Level THreads\nThread library handles creation, scheduling, and switching\nKernel sees only a single process\nAll operations happen in user space",
+      "notes": "Moving on, in this approach, the thread library is responsible for creating, scheduling, and switching between threads. \u000bSince all these operations take place in user space, \u000bthe kernel treats them as a single process rather than multiple threads.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "User-Level Threads (ULTs)",
+      "body": "Advantages of User-Level Threads\nAdvantages\nFast: No kernel involvement for creation/switching\nPortable: Works on any OS\nFlexible: Custom scheduling possible",
+      "notes": "Next, because the kernel is not involved in managing these threads, \u000boperations such as thread creation and switching are much faster. \u000bThey are also portable across different operating systems, \u000band the thread library provides the flexibility to implement custom scheduling policies.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "User-Level Threads (ULTs)",
+      "body": "Disadvantages of User-Level Threads\nDisadvantages\nBlocking: One thread blocking halts the entire process\nNo true parallelism: Cannot use multiple CPU cores\nComplex: Requires careful programming",
+      "notes": "Moving on, User-Level Threads also have some limitations. \u000bIf one thread becomes blocked, the entire process is affected. \u000bSince the kernel treats all threads as a single process, they cannot execute in parallel on multiple CPU cores.\u000b In addition, managing these threads correctly requires careful programming.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Types of Threads",
+      "body": "Kernel-Level Threads (KLTs)\nThreads that are managed directly by the operating system kernel\nThe kernel is fully aware of each thread and schedules them individually",
+      "notes": "Next, unlike User-Level Threads, Kernel-Level Threads are created and \u000bmanaged directly by the operating system kernel. Since the kernel is aware of every thread, \u000bit can schedule each one independently, enabling more efficient execution.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Kernel-Level Threads (KLTs)",
+      "body": "How KLTs Work?\nKernel is aware of all threads\nKernel schedules threads, not processes\nEach thread can be scheduled on different CPU core",
+      "notes": "Moving on, in Kernel-Level Threads, the operating system manages every thread individually. \u000bThe kernel is aware of all the threads, schedules them independently, \u000band can even assign different threads to different CPU cores for better performance.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Kernel-Level Threads (KLTs)",
+      "body": "Advantages of Kernel-Level Threads\nAdvantages\nTrue Parallelism: Kernel can schedule threads on different CPU cores simultaneously\nNo Blocking Issues: If one thread blocks, kernel schedules another thread from the same process\nBetter I/O Handling: Blocking system calls don't affect other threads",
+      "notes": "Next, Kernel-Level Threads offer several advantages. \u000bThey support true parallel execution by allowing different threads to run on separate CPU cores.\u000b If one thread is waiting for an I/O operation, the kernel can continue executing other threads from the same process,\u000b resulting in better CPU utilization and improved I/O performance.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Kernel-Level Threads (KLTs)",
+      "body": "Disadvantages of Kernel-Level Threads\nDisadvantages\nSlower: Thread operations require system calls (kernel mode switching)\nOverhead: Kernel must maintain information for every thread",
+      "notes": "Finally, Kernel-Level Threads also come with some trade-offs. \u000bSince thread operations involve the kernel, actions like creating or switching threads take more time. \u000bAdditionally, the kernel has to maintain information for every thread, which increases system overhead.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Thread Operations & Multicore",
+      "body": "Thread Operations & Multicore",
+      "notes": "Next , we will be learning about the Thread Operations & Multicore.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Thread Models",
+      "body": "Multi-Threading Models\nHow User and Kernel Threads Relate?\nOperating systems can map user-level threads to kernel-level threads in different ways, this is called the multi-threading model\nMany-to-Many Model\nMany-to-One Model\nOne-to-One Model\nMulti-threading model",
+      "notes": "Now, we've seen how User-Level Threads and Kernel-Level Threads work individually. \u000bThe next question is how these two are connected. \u000bThe operating system establishes this relationship using different multithreading models, \u000bnamely Many-to-One, One-to-One, and Many-to-Many. Let's explore each model one by one.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Multi-Threading Models",
+      "body": "Many-to-Many Model\nMultiple user threads mapped to multiple kernel threads\u000b\nIndependent execution: blocking of one thread does not affect others\u000b\nHigh concurrency and efficient parallelism\nUser Threads\nKernel Threads",
+      "notes": "Next, in the Many-to-Many model, multiple user threads are mapped to multiple kernel threads. \u000bThis allows several threads to execute independently, \u000bso if one thread becomes blocked, the others can continue running.\u000b As a result, this model provides better concurrency and efficient parallel execution.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Multi-Threading Models",
+      "body": "Many-to-one Model\nMultiple user threads mapped to a single kernel thread\nBlocking in any thread halts the entire process\nLightweight but limited in multiprocessor environments\nUser Threads\nKernel Threads",
+      "notes": "Next, in the Many-to-One model, multiple user threads are associated with a single kernel thread. \u000bBecause they all depend on the same kernel thread, if one thread gets blocked,\u000b the entire process has to wait. Although this model is lightweight, \u000bit cannot take full advantage of multiple CPU cores.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Multi-Threading Models",
+      "body": "One-to-One Models\nEach user thread mapped to a separate kernel thread\nSupports true parallel execution on multiple CPU cores\nEach thread consumes more system resources\nUser Threads\nKernel Threads",
+      "notes": "Finally, in the One-to-One model, every user thread is paired with its own kernel thread. \u000bThis allows threads to execute in parallel on multiple CPU cores. \u000bHowever, since each thread requires a separate kernel thread, \u000bthis model consumes more system resources.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Thread Models",
+      "body": "Multithreading Execution Types",
+      "notes": "Now, apart from the thread mapping models, threads can also be categorized \u000bbased on how they are scheduled and how they execute tasks. \u000bBased on scheduling, we have Cooperative and Preemptive execution, \u000bwhile task execution can be Synchronous or Asynchronous. \u000bLet's understand each of these execution types in detail.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Multithreading Execution Types",
+      "body": "Cooperative Multithreading\nThe processor runs one thread at a time, and switches to another thread only at specific points decided by the program\nA thread runs completely until it reaches a “yield” or waiting point\nOnly then the CPU gives control to another thread\nThreads cooperate and must give up control voluntarily",
+      "notes": "Next, let's begin with Cooperative Multithreading. In this approach, \u000ba thread continues executing until it voluntarily gives up the CPU,\u000b either by reaching a yield point or waiting for an operation to complete. \u000bOnly then does another thread get a chance to execute, so the threads must cooperate with one another.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Cooperative Multithreading",
+      "body": "Characteristics\nIf one thread misbehaves (never yields), other threads get blocked\nLow overhead\nSimple to implement",
+      "notes": "Moving on, Cooperative Multithreading is relatively simple to implement and has low overhead, because threads voluntarily yield control of the CPU.\nHere, yield control means a running thread voluntarily gives up the CPU so another thread can execute, usually at a yield point or when waiting for an operation.\nHowever, if a thread does not yield control, it can block other threads from running, affecting application responsiveness.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Cooperative Multithreading",
+      "body": "Example\nSimple embedded systems\nOld single-core systems\nEarly operating systems",
+      "notes": "Next, Cooperative Multithreading was commonly used in early operating systems, \u000bold single-core computers, and simple embedded systems, \u000bwhere applications were relatively simple and threads could reliably cooperate by yielding control when required.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Multithreading Execution Types",
+      "body": "Preemptive Multithreading\nThe processor switches between threads automatically, based on a timer or scheduler\nCPU interrupts a running thread at fixed intervals\nScheduler picks another thread\nThreads don’t need to yield voluntarily\nEnsures fair CPU sharing",
+      "notes": "Next, in Preemptive Multithreading, \nthe operating system automatically decides when a thread should stop executing. \u000bAt regular intervals, the scheduler interrupts the currently running thread and assigns the CPU to another one. \u000bThis ensures that all threads get a fair share of CPU time without having to yield control themselves.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Preemptive Multithreading",
+      "body": "Characteristics\nSlightly higher overhead due to frequent switching\nTrue multitasking\nBetter responsiveness",
+      "notes": "Moving on, Preemptive Multithreading provides better responsiveness because \u000bthe operating system can switch between threads whenever required. \u000bThis enables true multitasking, although the frequent thread switching \u000bintroduces a small amount of additional overhead.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Preemptive Multithreading",
+      "body": "Example\nModern OS (Windows, Linux, macOS)\nMulti-core processors",
+      "notes": "Next, Preemptive Multithreading is the standard approach used in modern operating systems \u000bsuch as Windows, Linux, and macOS. It is also well suited for multi-core processors, \u000bwhere multiple threads can be scheduled efficiently across different CPU cores.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Multithreading Execution Types",
+      "body": "Synchronous & Asynchronous",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Synchronous",
+            "Asynchronous"
+          ],
+          [
+            "How it works",
+            "Thread waits for the task to finish before continuing",
+            "Thread starts the task and keeps running without waiting"
+          ],
+          [
+            "Blocking",
+            "Blocking — execution pauses",
+            "Non-blocking — execution continues"
+          ],
+          [
+            "Getting the result",
+            "Available as soon as the call returns",
+            "Delivered later via a callback / notification"
+          ],
+          [
+            "Best for",
+            "Simple, step-by-step tasks",
+            "I/O, network, or long-running tasks"
+          ],
+          [
+            "Example",
+            "A function call that returns only when done",
+            "Send a request, handle the reply later"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Synchronous",
+            "Asynchronous"
+          ],
+          [
+            "How it works",
+            "Thread waits for the task to finish before continuing",
+            "Thread starts the task and keeps running without waiting"
+          ],
+          [
+            "Blocking",
+            "Blocking — execution pauses",
+            "Non-blocking — execution continues"
+          ],
+          [
+            "Getting the result",
+            "Available as soon as the call returns",
+            "Delivered later via a callback / notification"
+          ],
+          [
+            "Best for",
+            "Simple, step-by-step tasks",
+            "I/O, network, or long-running tasks"
+          ],
+          [
+            "Example",
+            "A function call that returns only when done",
+            "Send a request, handle the reply later"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 47,
+      "title": "Overview",
+      "body": "Thread Operations\nThread Operations",
+      "notes": "Now, let's move on to the common operations performed on threads. \u000bWe'll understand how threads are created, terminated, cancelled, and synchronized, \u000balong with the role each of these operations plays in multithreaded applications.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Thread Operations",
+      "body": "Thread Creation & Termination\nThread Creation\nThread Termination\nA thread finishes execution normally after completing its task\nCan also terminate itself using explicit functions \nExample: pthread_exit())\nA new thread is created to execute a specific task\nRequires specifying the function/task the thread will run\nExample: pthread_create() in C/C++",
+      "notes": "Next, every thread goes through a lifecycle that begins with its creation and ends with its termination. \u000bDuring creation, the task or function that the thread should execute is specified, \u000busing functions such as pthread_create(). After completing its assigned work, \u000bthe thread exits automatically or can terminate itself explicitly using pthread_exit().",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Thread Operations",
+      "body": "Thread Cancellation Mechanism\nThread Cancellation\nTerminating a thread before it completes naturally\nThread Cancellation Types\nUsed for stopping long-running tasks or exiting threads waiting indefinitely\nAsynchronous\nDeferred\nImmediate termination\nTerminates at safe cancellation points",
+      "notes": "Moving on, sometimes a thread needs to be stopped before it finishes its task. \u000bThis is known as thread cancellation. It can happen asynchronously, \u000bwhere the thread is terminated immediately, or deferred, where it exits only at safe cancellation points. \u000bThis mechanism is commonly used to stop long-running tasks or threads waiting indefinitely.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Thread Operations",
+      "body": "Thread Synchronization Mechanism\nThread Synchronization\nEnsures multiple threads access shared resources safely\nThread Synchronization Mechanisms",
+      "notes": "Finally, when multiple threads work with the same data or resources, \u000bthey must be coordinated to avoid conflicts. This is achieved through thread synchronization, \u000busing mechanisms such as mutexes or locks, semaphores, \nand condition variables to ensure safe and controlled access to shared resources.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "What is Multicore Programming?",
+      "body": "Task \nDefinition\nMulticore programming is the practice of writing software that can execute tasks concurrently on multiple CPU cores to improve performance and efficiency\nSoftware\nTask Executing concurrently",
+      "notes": "Now, let's move on to Multicore Programming. \u000bInstead of executing tasks one after another, \u000bapplications are designed to run multiple tasks concurrently across different CPU cores.\u000b This improves overall performance and makes more efficient use of the available processing power.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Multicore Programming",
+      "body": "Key Points\nModern CPUs have multiple cores, allowing true parallel execution\nMulticore programming leverages threads or processes to run tasks simultaneously\nIt is essential for high-performance computing, real-time systems, and responsive applications",
+      "notes": "Next, modern computers are equipped with multiple CPU cores, \u000bmaking it possible to execute tasks in parallel. By using threads or processes, \u000bapplications can distribute work across these cores, resulting in better performance, improved responsiveness, \u000band efficient execution in areas such as high-performance computing and real-time systems.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Multicore Programming",
+      "body": "Examples\nA web server handling multiple client requests on different cores\nA video processing application dividing frames across multiple cores",
+      "notes": "Finally, multicore programming is widely used in real-world applications. \u000bFor example, a web server can handle multiple client requests simultaneously by distributing them \u000bacross different CPU cores. Similarly, a video processing application \u000bcan process different video frames in parallel, significantly reducing the overall processing time.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Multicore Programming",
+      "body": "Challenges \nBreaking a program into independent tasks that can run in parallel\nTask Decomposition\nEnsuring all cores have roughly equal work to avoid idle cores\nLoad Balancing",
+      "notes": "Next, developing applications for multicore systems comes with a few challenges. \u000bThe work must first be divided into independent tasks that can run in parallel. \u000bAt the same time, the workload should be distributed evenly across all \u000bCPU cores to ensure that no core remains idle while others are overloaded.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Multicore Programming",
+      "body": "Avoid race conditions and ensure correct results when threads share data\nSynchronization & Data Sharing\nNot all tasks benefit from additional cores, some programs have sequential bottlenecks\nScalability\nChallenges",
+      "notes": "Moving on, another challenge is ensuring that multiple threads access shared data safely \u000bwithout causing incorrect results or race conditions. In addition,\u000b applications should be able to scale efficiently as more CPU cores are added, \u000balthough some programs are limited by tasks that must still execute sequentially.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Multicore Programming",
+      "body": "Concurrent execution makes bugs non-deterministic and harder to reproduce\n Debugging & Testing\nThreads may compete for memory, cache, or I/O resources, reducing efficiency\nResource Contention\nChallenges",
+      "notes": "Another challenge in multicore programming is debugging and testing. \u000bSince multiple threads execute concurrently, bugs can become non-deterministic and difficult to reproduce. \u000bResource contention is another challenge, where threads compete for shared resources\u000b like memory, cache, or I/O devices, reducing overall system efficiency.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Concurrency & Parallelism",
+      "body": "Concurrency & Parallelism",
+      "notes": "Next we will be learning about the Concurrency & Parallelism",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Difference",
+      "body": "Multiple tasks make progress at the same time (logically)\nTasks may interleave on a single core\nExample: Multithreading on a single CPU\nConcurrency\nParallelism vs Concurrency\nMultiple tasks run literally at the same time on multiple cores\nRequires multi-core hardware\nExample: Running 4 threads on 4 CPU cores\nParallelism",
+      "notes": "Finally, although concurrency and parallelism are often used interchangeably, they are different. \u000bIn concurrency, multiple tasks make progress by taking turns, even on a single CPU core. \u000bIn parallelism, multiple tasks execute at the same time on different CPU cores.\u000b For example, multithreading on a single-core processor demonstrates concurrency,\u000b while running four threads simultaneously on four CPU cores is an example of parallelism.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Types of Parallelism",
+      "body": "Data Parallelism\n Task Parallelism\nBit-level Parallelism\nPipeline Parallelism\n Instruction-level Parallelism (ILP)\nOverview",
+      "notes": "Now, let's explore the different types of parallelism used in computer systems. \u000bDepending on what is executed in parallel, parallelism can be classified into Bit-level Parallelism, \u000bInstruction-level Parallelism, Pipeline Parallelism, Data Parallelism, and Task Parallelism. \u000bWe'll understand each of these types one by one.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Types of Parallelism",
+      "body": "Data Parallelism\nSame operation on different chunks of data\nExample: Processing different parts of an array in parallel\nOperation A",
+      "notes": "Next, Data Parallelism focuses on performing the same operation on different parts of data simultaneously.\nFor example, when processing a large array, the array can be divided into smaller chunks, and each chunk can be processed in parallel. This helps reduce the overall execution time significantly.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Types of Parallelism",
+      "body": "Task Parallelism\nDifferent tasks run in parallel\nEach task performs a different operation\nExample: One thread reads input; another processes data\nOperation A\nOperation B",
+      "notes": "Next, Task Parallelism involves executing different tasks at the same time.\u000b Instead of performing the same operation on different data, each task carries out a separate function. \u000bFor example, one thread can read the input while another thread processes the data concurrently.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Types of Parallelism",
+      "body": "Bit-level Parallelism\nIncreases processor word size to process more bits at once",
+      "notes": "Moving on, Bit-level Parallelism improves performance by increasing the processor's word size, \u000ballowing it to process more bits in a single operation. \u000bThis enables the CPU to handle larger amounts of data more efficiently.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Types of Parallelism",
+      "body": "Instruction-level Parallelism (ILP)\nCPU executes multiple instructions simultaneously\nExample: pipelining in processors",
+      "notes": "Next, Instruction-Level Parallelism (ILP) allows the CPU to execute multiple instructions simultaneously, \u000bimproving overall performance. A common example is instruction pipelining, \u000bwhere different stages of multiple instructions are processed concurrently.",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Types of Parallelism",
+      "body": "Pipeline Parallelism\nExample: Assembly line model\nTasks broken into stages\nEach stage runs in parallel on different data",
+      "notes": "Finally, Pipeline Parallelism divides a task into multiple stages, \u000bwith each stage working on different data simultaneously. \u000bThis is similar to an assembly line, where different stages operate in parallel to improve the overall throughput and efficiency.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Threads, Multithreading & Concurrency",
+      "body": "Introduction to Threads\nProcess Vs Threads\nMultithreading\nThread Types, Models\nThread Operations & Multicore\nConcurrency & Parallelism\nTypes of Parallelism\nMultithreading\nThread Types, Models \nIntroduction to Threads\nThread Operations & Multicore\nProcess Vs Threads\nConcurrency & Parallelism\nTypes of Parallelism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Process Control & Operations",
+      "body": "",
+      "notes": "In the next session we will be learning about the Process Control & Operations\\",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1-NXbzCmKH-XkjUU2HrfqC8KQmdW3UgpLTEoMoseDOq0/edit"
+}

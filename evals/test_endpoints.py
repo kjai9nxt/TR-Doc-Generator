@@ -310,11 +310,12 @@ for n in (1, 2, 3):
     db.curriculum_upsert(INS, n, session_name=f"original {n}",
                          key_takeaways=[f"takeaway {n}"],
                          ppt_link=f"https://docs.google.com/presentation/d/D{n}/edit")
-# Give session 2 an extracted deck, so we can check the deck follows its row.
-pptx_ingest.DECKS_DIR.mkdir(parents=True, exist_ok=True)
-(pptx_ingest.DECKS_DIR / "session_02.json").write_text(json.dumps(
-    {"session_no": 2, "deck_title": "Deck of the second session", "n_slides": 3,
-     "slides": [{"n": 1, "title": "T", "text": "x"}]}), encoding="utf-8")
+# Give session 2 an extracted deck, so we can check the deck follows its row. Written
+# through the store, which files it under THIS course — decks are course-scoped now, so
+# a hand-built path would put it somewhere the endpoint does not look.
+pptx_ingest.put_deck(INS, 2, {
+    "session_no": 2, "deck_title": "Deck of the second session", "n_slides": 3,
+    "slides": [{"n": 1, "title": "T", "text": "x"}]})
 
 st, r = http("POST", "/curriculum/insert", {"at_session_no": 1, "course": INS})
 check("POST /curriculum/insert -> 200", st == 200, f"got {st}: {detail(r)}")
@@ -332,14 +333,13 @@ check("…keeping its own deck link",
 check("no two rows share a number", len(rows) == 4, str(sorted(rows)))
 # The deck that was session 2's must now be session 3's — otherwise the new session 2
 # would read it as what it had already taught.
-moved = pptx_ingest.DECKS_DIR / "session_03.json"
-check("the extracted deck moved with its session", moved.exists(),
-      str(sorted(p.name for p in pptx_ingest.DECKS_DIR.glob("session_*.json"))))
-if moved.exists():
+check("the extracted deck moved with its session",
+      pptx_ingest.has_deck(INS, 3),
+      str(sorted(pptx_ingest.deck_session_numbers(INS))))
+if pptx_ingest.has_deck(INS, 3):
     check("…and says so inside the file too",
-          json.loads(moved.read_text()).get("session_no") == 3)
-    check("…and did not leave a copy behind",
-          not (pptx_ingest.DECKS_DIR / "session_02.json").exists())
+          pptx_ingest.get_deck(INS, 3).get("session_no") == 3)
+    check("…and did not leave a copy behind", not pptx_ingest.has_deck(INS, 2))
 
 # The deck move must also reach the CLOUD MIRROR. On the deployed instance the decks
 # sit on an ephemeral disk and are restored from kb_files on boot, so a rename that
@@ -347,27 +347,32 @@ if moved.exists():
 # curriculum would then be pointing at the old decks.
 _renames = []
 _real_rename = db.kb_rename_decks
-db.kb_rename_decks = lambda m: _renames.append(dict(m)) or 0
+db.kb_rename_decks = lambda c, m: _renames.append(dict(m)) or 0
 st, _ = http("POST", "/curriculum/insert", {"at_session_no": 2, "course": INS})
 db.kb_rename_decks = _real_rename
 check("renumbering moves the decks in the DB mirror too", len(_renames) == 1,
       f"kb_rename_decks called {len(_renames)} time(s)")
 
 # And the mirror move itself, against a real table — including the chain that makes
-# the naive version collide (3->4 while 4 still exists).
-for rel, body in (("decks/session_03.json", "three"), ("decks/session_04.json", "four")):
+# the naive version collide (3->4 while 4 still exists). The mirror paths are
+# course-scoped now, so they come from the store rather than being spelled out here.
+_rel = lambda n: pptx_ingest.kb_rel(INS, n)
+for n_, body in ((3, "three"), (4, "four")):
     db._exec("INSERT OR REPLACE INTO kb_files (path, content, updated_at) VALUES (?,?,?)",
-             (rel, body, "now"))
-n = db.kb_rename_decks({3: 4, 4: 5})
+             (_rel(n_), body, "now"))
+n = db.kb_rename_decks(INS, {3: 4, 4: 5})
 stored = {r["path"]: r["content"]
           for r in db._query("SELECT path, content FROM kb_files WHERE path LIKE 'decks/%'")}
 check("a chained rename moves both rows", n == 2, f"moved {n}")
 check("…without one clobbering the other",
-      stored.get("decks/session_04.json") == "three"
-      and stored.get("decks/session_05.json") == "four", str(stored))
+      stored.get(_rel(4)) == "three" and stored.get(_rel(5)) == "four", str(stored))
 check("…and leaves no temporary path behind",
       not [k for k in stored if "__moving__" in k], str(list(stored)))
-check("…and frees the number that moved", "decks/session_03.json" not in stored, str(list(stored)))
+check("…and frees the number that moved", _rel(3) not in stored, str(list(stored)))
+# The mirror path must carry the COURSE, or two courses' decks share one row.
+check("…and the mirror path is scoped to the course",
+      pptx_ingest.course_slug(INS) in _rel(4)
+      and _rel(4) != pptx_ingest.kb_rel(OTHER, 4), _rel(4))
 
 # Inserting in the MIDDLE leaves the rows above it alone. Compared against the state
 # actually observed rather than hardcoded numbers, so adding a check above cannot
@@ -395,9 +400,9 @@ for n in (1, 2, 3, 4):
                          key_takeaways=[f"takeaway {n}"],
                          ppt_link=f"https://docs.google.com/presentation/d/E{n}/edit")
 for n in (2, 3, 4):                       # every one of them has an extracted deck
-    (pptx_ingest.DECKS_DIR / f"session_{n:02d}.json").write_text(
-        json.dumps({"session_no": n, "deck_title": f"deck {n}", "n_slides": 1,
-                    "slides": [{"n": 1, "title": "T", "text": "x"}]}), encoding="utf-8")
+    pptx_ingest.put_deck(DEL, n, {
+        "session_no": n, "deck_title": f"deck {n}", "n_slides": 1,
+        "slides": [{"n": 1, "title": "T", "text": "x"}]})
 
 st, r = http("DELETE", f"/curriculum/2?course={DEL.replace(' ', '%20')}")
 check("DELETE -> 200", st == 200, f"got {st}: {detail(r)}")
@@ -410,8 +415,8 @@ check("…the row above is untouched", rows.get(1) == "original 1", str(rows.get
 # The decks must follow, and the deleted session's own deck must be gone rather than
 # left sitting on the number the next session just took.
 def deck_at(n):
-    p2 = pptx_ingest.DECKS_DIR / f"session_{n:02d}.json"
-    return json.loads(p2.read_text())["deck_title"] if p2.exists() else None
+    d = pptx_ingest.get_deck(DEL, n)
+    return d["deck_title"] if d else None
 check("session 3's deck is now session 2's", deck_at(2) == "deck 3", str(deck_at(2)))
 check("session 4's deck is now session 3's", deck_at(3) == "deck 4", str(deck_at(3)))
 check("nothing is left on the old highest number", deck_at(4) is None, str(deck_at(4)))
@@ -446,6 +451,119 @@ check("an inserted and a deleted session do not move a finished run",
       f"{before.get('session_no')} -> {after.get('session_no')}")
 check("…and it keeps the title it was generated under",
       after.get("title") == "original 4", str(after.get("title")))
+
+print("\n== a course profile round-trips over HTTP ==")
+st, r = http("GET", f"/course-profile?course={COURSE.replace(' ', '%20')}")
+check("GET /course-profile -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…it reports what applies, what was set, and what inherit means",
+      all(k in r for k in ("profile", "overrides", "defaults")), str(sorted(r)))
+check("…and an untouched course inherits everything",
+      r["overrides"] == {} and r["profile"]["source"] == "harness default",
+      str(r.get("overrides")))
+st, r = http("POST", "/course-profile", {"course": COURSE, "profile": {
+    "market_reference_platforms": ["react.dev", "MDN Web Docs"],
+    "course_type": "interview"}})
+check("POST /course-profile -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…and it applies", r["profile"]["market_reference_platforms"] == ["react.dev", "MDN Web Docs"],
+      str(r["profile"]["market_reference_platforms"]))
+st, r = http("POST", "/course-profile", {"course": COURSE, "profile": {"nonsense": 1}})
+check("an unknown key is refused -> 400", st == 400, f"got {st}")
+check("…and says which key", "nonsense" in detail(r), detail(r))
+st, r = http("POST", "/course-profile", {"course": COURSE,
+                                         "profile": {"gates": {"rubric_min_total": 10}}})
+check("lowering the pass bar is refused -> 400", st == 400, f"got {st}")
+check("…and says why", "lower" in detail(r).lower(), detail(r))
+st, r = http("GET", f"/course-profile?course={OTHER.replace(' ', '%20')}")
+check("another course is untouched by all of that",
+      r["overrides"] == {}, str(r.get("overrides")))
+
+print("\n== course skills over HTTP: draft, approve, retire ==")
+# What a course is written under is its OWNER's to decide — the same rule deletion uses,
+# and for the same reason: working on a course and setting the rules every document it
+# will ever produce is written under are different powers. This fixture's course was
+# built by calling the database directly, so it has no owner; a course created the normal
+# way is claimed by whoever creates it.
+db.claim_course(COURSE, USER["email"])
+st, r = http("GET", f"/skills?course={COURSE.replace(' ', '%20')}")
+check("GET /skills -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…a fresh course has none", r.get("skills") == [], str(r.get("skills")))
+st, r = http("POST", "/skills", {"course": COURSE,
+                                 "text": "Explain each snippet line by line."})
+check("POST /skills -> 200", st == 200, f"got {st}: {detail(r)}")
+_sid = r.get("id")
+check("…it starts as a draft",
+      r["skills"][0]["status"] == "draft", str(r["skills"][0]["status"]))
+st, b = http("GET", "/bootstrap")
+st, r = http("POST", f"/skills/{_sid}/approve?course={COURSE.replace(' ', '%20')}")
+check("approving it -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…and it now applies", r["skills"][0]["status"] == "approved",
+      str(r["skills"][0]["status"]))
+st, r = http("POST", "/skills", {"course": COURSE, "text": "x",
+                                 "check": {"assert": "run_python"}})
+check("a check outside the vocabulary is refused -> 400", st == 400, f"got {st}")
+check("…and says what is allowed", "block_present" in detail(r), detail(r))
+st, r = http("POST", f"/skills/{_sid}/edit", {"course": COURSE,
+                                              "text": "Explain each snippet, line by line."})
+check("editing -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…sends it back to draft", r["skills"][0]["status"] == "draft",
+      str(r["skills"][0]["status"]))
+st, r = http("DELETE", f"/skills/{_sid}?course={COURSE.replace(' ', '%20')}")
+check("retiring -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…and it leaves the live list", r.get("skills") == [], str(r.get("skills")))
+st, r = http("GET", f"/skills?course={COURSE.replace(' ', '%20')}&include_retired=true")
+check("…but is kept for the record", len(r.get("skills") or []) == 1,
+      str(r.get("skills")))
+st, r = http("POST", "/skills/9999/approve?course=" + COURSE.replace(" ", "%20"))
+check("a skill that is not there -> 404", st == 404, f"got {st}")
+
+print("\n== prerequisites over HTTP ==")
+st, r = http("GET", f"/prereqs?course={COURSE.replace(' ', '%20')}")
+check("GET /prereqs -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…a fresh course has none", r.get("prereqs") == [], str(r.get("prereqs")))
+check("…and it offers the courses that could be one",
+      OTHER in (r.get("available") or []), str(r.get("available")))
+st, r = http("POST", "/prereqs", {"course": COURSE, "prereq": OTHER})
+check("attaching one -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…it is listed", [p["prereq"] for p in r["prereqs"]] == [OTHER], str(r["prereqs"]))
+check("…and the coverage report comes with it",
+      "topics_indexed" in (r.get("report") or {}), str(r.get("report")))
+st, r = http("POST", "/prereqs", {"course": COURSE, "prereq": OTHER})
+check("attaching it twice -> 409", st == 409, f"got {st}")
+st, r = http("POST", "/prereqs", {"course": COURSE, "prereq": COURSE})
+check("a course as its own prerequisite -> 400", st == 400, f"got {st}")
+st, r = http("DELETE", f"/prereqs?course={COURSE.replace(' ', '%20')}"
+                       f"&prereq={OTHER.replace(' ', '%20')}")
+check("detaching -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…and it is gone", r.get("prereqs") == [], str(r.get("prereqs")))
+
+print("\n== a prerequisite taught SOMEWHERE ELSE ==")
+# The common case: the learners did a course elsewhere and all anybody has is its slides.
+st, r = http("POST", "/prereqs/external", {"course": COURSE, "name": "JS Elsewhere",
+                                           "links": []})
+check("no links -> 400", st == 400, f"got {st}")
+check("…and says why a name alone is not enough", "slides" in detail(r), detail(r))
+st, r = http("POST", "/prereqs/external", {"course": COURSE, "name": OTHER,
+                                           "links": ["https://x/1"]})
+check("a name that IS a course here -> 409", st == 409, f"got {st}")
+check("…pointing at the simpler path", "attach it as a prerequisite" in detail(r),
+      detail(r))
+st, r = http("POST", "/prereqs/external", {
+    "course": COURSE, "name": "JS Elsewhere",
+    "links": ["https://docs.google.com/presentation/d/JS1/edit"]})
+check("a real one -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…it returns a job, because fetching decks takes time",
+      bool(r.get("job_id")), str(r))
+check("…and is linked as external",
+      any(p["prereq"] == "JS Elsewhere" and p["kind"] == "external"
+          for p in r.get("prereqs") or []), str(r.get("prereqs")))
+st, r = http("POST", "/prereqs/external", {
+    "course": COURSE, "name": "JS Elsewhere", "links": ["https://x/1"]})
+check("declaring the same one twice -> 409", st == 409, f"got {st}")
+st, r = http("DELETE", f"/prereqs?course={COURSE.replace(' ', '%20')}&prereq=JS%20Elsewhere")
+check("removing it -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…and its deck store goes with it, since nothing else owns it",
+      not pptx_ingest.prereq_decks_dir(COURSE, "JS Elsewhere").is_dir(),
+      str(pptx_ingest.prereq_decks_dir(COURSE, "JS Elsewhere")))
 
 print("\n== other endpoints answer over HTTP ==")
 for method, path in (("GET", "/status"), ("GET", "/workspaces"), ("GET", "/courses"),

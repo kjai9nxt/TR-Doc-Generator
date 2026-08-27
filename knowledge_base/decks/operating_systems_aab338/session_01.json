@@ -1,0 +1,670 @@
+{
+  "session_no": 1,
+  "source_file": "Understanding Binary System",
+  "deck_title": "Understanding Binary System",
+  "n_slides": 36,
+  "summary": "\n    - Slide 2: Understanding Binary System\n    - Slide 3: Agenda for Today’s Session\n    - Slide 4: Data Representation\n    - Slide 5: Data Representation\n    - Slide 6: Data Representation\n    - Slide 7: Number Systems\n    - Slide 8: Data Representation\n    - Slide 9: Number System\n    - Slide 10: Number System\n    - Slide 11: Number System\n    - Slide 12: Binary Notation\n    - Slide 13: Number System\n    - Slide 14: Data Representation\n    - Slide 15: Data Representation\n    - Slide 16: Data Representation\n    - Slide 17: Data Representation\n    - Slide 18: Data Representation\n    - Slide 19: Data Representation\n    - Slide 20: Negative Numbers\n    - Slide 21: Images\n    - Slide 22: Representing Images\n    - Slide 23: Representing Images\n    - Slide 24: Data Representation\n    - Slide 25: Data Representation\n    - Slide 26: Character Encoding\n    - Slide 27: Character Encoding\n    - Slide 28: Character Encoding\n    - Slide 29: Unicode\n    - Slide 30: Character Encoding\n    - Slide 31: Data Representation\n    - Slide 32: Quiz Time!\n    - Slide 33: Understanding Binary\n    - Slide 34: Introduction to Operating System",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Understanding Binary System",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Agenda for Today’s Session",
+      "body": "Understanding Binary System\nNumber Systems\nCharacter Encoding\nASCII, UTF-8    \nBinary & Decimal Numbers\nData Representation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Data Representation",
+      "body": "Data Representation",
+      "notes": "Have you ever wondered what actually happens when you open an application, \u000bsave a file, or run multiple programs at once? \u000bThroughout this course, we'll uncover the answers by exploring topics like Linux, processes, \u000bCPU scheduling, memory management, file systems, and I/O management. \u000bBy the end, you'll have a clear understanding of how an Operating System manages the entire computer behind the scenes.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Data Representation",
+      "body": "How Computers See Information\nBinary - Ones (1) and Zeros (0)\nA binary number is a number expressed in Ones (1) and Zeros (0)",
+      "notes": "Moving on, have you ever wondered how computers understand information?\u000b They use the binary number system, where everything is represented using just 0s and 1s.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Data Representation",
+      "body": "Binary Representation\nMSB(Most significant bit)\nExample : Binary Representation of a number\nLSB(Least significant bit)",
+      "notes": "Next, let's understand a bit, the smallest unit of data, which can store either 0 or 1.\u000b In any binary number, the leftmost bit is called the Most Significant Bit (MSB), because it has the highest positional value.\nThe rightmost bit is called the Least Significant Bit (LSB), because it has the lowest positional value.\nNow, let’s look at the example to clearly understand how MSB and LSB are identified in a binary number.",
+      "tables": [
+        [
+          [
+            "1",
+            "0",
+            "1",
+            "0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 7,
+      "title": "Number Systems",
+      "body": "Number Systems",
+      "notes": "Now we will be learning about the Number Systems.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Data Representation",
+      "body": "Number System\nA writing system for expressing numbers\n3\n2\n6\n4\n5\n7\n8\n0",
+      "notes": "A number system is a writing system used to represent numbers using a set of symbols or digits.\nDifferent number systems use different sets of symbols.\nFor example, the decimal system uses digits from 0 to 9, which is what we normally use in daily life.\nIn computing, we use other systems like binary, which uses only 0 and 1.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Number System",
+      "body": "Decimal Notation\n4175",
+      "notes": "Next, let's start with the decimal number system, \u000bwhich we use in our daily lives. It uses the digits 0 to 9,\u000b and each digit's value depends on its position or place value.",
+      "tables": [
+        [
+          [
+            "103",
+            "102",
+            "101",
+            "100"
+          ],
+          [
+            "4",
+            "1",
+            "7",
+            "5"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "title": "Number System",
+      "body": "Radix / Base\nNumberBase\nMathematical Representation",
+      "notes": "Now, what does the base or radix of a number system mean? \u000bIt simply refers to the number of unique digits used in that system.\u000b For example, decimal has base 10, while binary has base 2.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Number System",
+      "body": "Number System\n11012",
+      "notes": "Moving on, computers work with the binary number system, which uses only 0 and 1. \u000bJust like decimal, the value of each bit depends on its position, as shown in the example.",
+      "tables": [
+        [
+          [
+            "23",
+            "22",
+            "21",
+            "20"
+          ],
+          [
+            "1",
+            "1",
+            "0",
+            "1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Binary Notation",
+      "body": "Counting Numbers in Binary\nBinary\nDecimal\nBinary\nDecimal",
+      "notes": "So, can you spot the pattern? Just like decimal counting, binary also follows a sequence, but it uses only 0s and 1s to represent every number.",
+      "tables": [
+        [
+          [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "1"
+          ],
+          [
+            "0",
+            "0",
+            "1",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "1",
+            "1"
+          ],
+          [
+            "0",
+            "1",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "1",
+            "0",
+            "1"
+          ],
+          [
+            "0",
+            "1",
+            "1",
+            "0"
+          ],
+          [
+            "0",
+            "1",
+            "1",
+            "1"
+          ]
+        ],
+        [
+          [
+            "0"
+          ],
+          [
+            "1"
+          ],
+          [
+            "2"
+          ],
+          [
+            "3"
+          ],
+          [
+            "4"
+          ],
+          [
+            "5"
+          ],
+          [
+            "6"
+          ],
+          [
+            "7"
+          ]
+        ],
+        [
+          [
+            "1",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "1",
+            "0",
+            "0",
+            "1"
+          ],
+          [
+            "1",
+            "0",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "0",
+            "1",
+            "1"
+          ],
+          [
+            "1",
+            "1",
+            "0",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "0",
+            "1"
+          ],
+          [
+            "1",
+            "1",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "1",
+            "1"
+          ]
+        ],
+        [
+          [
+            "8"
+          ],
+          [
+            "9"
+          ],
+          [
+            "10"
+          ],
+          [
+            "11"
+          ],
+          [
+            "12"
+          ],
+          [
+            "13"
+          ],
+          [
+            "14"
+          ],
+          [
+            "15"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Number System",
+      "body": "Decimal to Binary Conversion\n1310 = 11012",
+      "notes": "Moving on, how do we convert a decimal number into binary? \u000bWe repeatedly divide the number by 2 and read the remainders from bottom to top to get the binary equivalent.",
+      "tables": [
+        [
+          [
+            "Base",
+            "Num",
+            "Rem"
+          ],
+          [
+            "2",
+            "13",
+            ""
+          ],
+          [
+            "2",
+            "6",
+            "1"
+          ],
+          [
+            "2",
+            "3",
+            "0"
+          ],
+          [
+            "2",
+            "1",
+            "1"
+          ],
+          [
+            "",
+            "0",
+            "1"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Data Representation",
+      "body": "Binary Representation\nAll types of content (text, images, videos and everything) must be converted to binary so that it can be stored by the computer",
+      "notes": "Now, regardless of whether it's text, an image, audio, or a video, every type of data is ultimately converted into binary before the computer can store or process it.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Data Representation",
+      "body": "Binary Representation\nDifferent types of content occupy different amount of space in the computer because they are represented by different lengths of Binary number",
+      "notes": "Next, do all types of data occupy the same amount of storage? Not really. \u000bDifferent types of content require different amounts of space because they are represented using binary numbers of different lengths.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Data Representation",
+      "body": "Storing Integers in 4 Bits\n4 bits = 2 x 2 x 2 x 2 = 24 = 16\n16 different types of information\nA 4-bit number has 4 positions\nEach position can be 0 or 1",
+      "notes": "What can we represent using 4 bits? \u000bSince each bit can be either 0 or 1, there are 2⁴, or 16 possible combinations. \u000bThis means a 4-bit number can represent 16 different values, from 0 to 15.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Data Representation",
+      "body": "Storing Integers in 4 Bits\nBinary\nDecimal\nBinary\nDecimal\nCan represent numbers from 0 to 15",
+      "notes": "Next, let's see what those 16 combinations actually represent. \u000bWith 4 bits, we can store decimal numbers from 0 to 15, with each binary combination corresponding to one unique value.",
+      "tables": [
+        [
+          [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "0",
+            "1"
+          ],
+          [
+            "0",
+            "0",
+            "1",
+            "0"
+          ],
+          [
+            "0",
+            "0",
+            "1",
+            "1"
+          ],
+          [
+            "0",
+            "1",
+            "0",
+            "0"
+          ],
+          [
+            "0",
+            "1",
+            "0",
+            "1"
+          ],
+          [
+            "0",
+            "1",
+            "1",
+            "0"
+          ],
+          [
+            "0",
+            "1",
+            "1",
+            "1"
+          ]
+        ],
+        [
+          [
+            "0"
+          ],
+          [
+            "1"
+          ],
+          [
+            "2"
+          ],
+          [
+            "3"
+          ],
+          [
+            "4"
+          ],
+          [
+            "5"
+          ],
+          [
+            "6"
+          ],
+          [
+            "7"
+          ]
+        ],
+        [
+          [
+            "1",
+            "0",
+            "0",
+            "0"
+          ],
+          [
+            "1",
+            "0",
+            "0",
+            "1"
+          ],
+          [
+            "1",
+            "0",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "0",
+            "1",
+            "1"
+          ],
+          [
+            "1",
+            "1",
+            "0",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "0",
+            "1"
+          ],
+          [
+            "1",
+            "1",
+            "1",
+            "0"
+          ],
+          [
+            "1",
+            "1",
+            "1",
+            "1"
+          ]
+        ],
+        [
+          [
+            "8"
+          ],
+          [
+            "9"
+          ],
+          [
+            "10"
+          ],
+          [
+            "11"
+          ],
+          [
+            "12"
+          ],
+          [
+            "13"
+          ],
+          [
+            "14"
+          ],
+          [
+            "15"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 18,
+      "title": "Data Representation",
+      "body": "Binary Numbers\n2n distinct combinations are possible\nCan represent from 0  to  2n - 1\n0 to 255 (28 - 1)\nn = 8\n0 to 65535 (216 - 1)\nn = 16\nn-bit binary number\nExample",
+      "notes": "what happens when we increase the number of bits? \u000bAn n-bit binary number can represent 2ⁿ combinations, ranging from 0 to 2ⁿ − 1. \u000bFor example, 8 bits represent 0 to 255, while 16 bits represent 0 to 65,535.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Data Representation",
+      "body": "Negative Numbers\nMagnitude\nSign\n+\n0\n-\n1\nDifferent representations and conventions are developed to store different types of information",
+      "notes": "we've seen how positive numbers are stored, but what about negative numbers? \u000bFor that, one bit is used to represent the sign—typically 0 for positive and 1 for negative—\u000bwhile the remaining bits represent the magnitude or value. \u000bWe'll explore these representations in more detail next.",
+      "tables": [
+        [
+          [
+            "bn-1",
+            "bn-2",
+            "",
+            "b1",
+            "b0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "Negative Numbers",
+      "body": "Example\nNumber\nSign Bit\nMagnitude\n4-bit Representation\n+5\n0\n101\n0101\n-5\n1\n101\n1101\n+5 in 4 bits\nSign bit = 0\nMagnitude (5) = 101\nResult → 0101\n-5 in 4 bits\nSign bit = 1\nMagnitude (5) = 101\nResult → 1101",
+      "notes": "Next, let's understand this with an example. For +5, the sign bit is 0, followed by the binary value 101, giving 0101. \u000bFor -5, only the sign bit changes to 1, while the magnitude remains the same, resulting in 1101.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Images",
+      "body": "Representing Images",
+      "notes": "Moving on, have you ever wondered how a computer stores a picture like this? \u000bJust like numbers, images are also converted into binary so they can be stored, processed, and displayed by the computer.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Representing Images",
+      "body": "Pixels",
+      "notes": "What makes up a digital image?\u000b It is made of tiny dots called pixels. When viewed closely, \u000bthese individual pixels become visible, and together they form the complete image.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Representing Images",
+      "body": "Representing Colors\nEach pixel has a specific color\nCan use RGB model to represent colors",
+      "notes": "Every pixel has its own color. \u000bThese colors are commonly represented using the RGB model,\u000b where different combinations of Red, Green, and Blue produce a wide range of colors.",
+      "tables": [
+        [
+          [
+            "R",
+            "G",
+            "B"
+          ],
+          [
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "title": "Data Representation",
+      "body": "Representing Text\nEach character is encoded as an integer \u000bwhich is represented by a binary value",
+      "notes": "Now, how is text stored inside a computer? \u000bEach character is assigned a unique integer value, \u000bwhich is then converted into binary. For example, the character 'A' is represented by the value 65.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Data Representation",
+      "body": "Basic Units of Data\nBit (b)\n Smallest unit of data → can be \u000b0 or 1\nByte (B)\n1 Byte = 8 bits\nA byte can store one ASCII character\nLarger Units\nKilobyte (KB) = 1024 Bytes\nMegabyte (MB) = 1024 KB\nGigabyte (GB) = 1024 MB\nTerabyte (TB) = 1024 GB",
+      "notes": "Finally, let's understand the basic units used to measure data. \u000bA bit is the smallest unit and can store either 0 or 1. Eight bits make one byte,\u000b which is enough to store a single ASCII character. \u000bAs storage requirements grow, we use larger units such as KB, MB, GB, and TB.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Character Encoding",
+      "body": "Character Encoding",
+      "notes": "Next,  we will learn about the Character Encoding",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Character Encoding",
+      "body": "ASCII\nAmerican Standard Code for Information Interchange(ASCII)\nRepresents the English alphabet, digits, and punctuation marks\nRequires only one byte to store a character\nUses 7 bits → 128 characters",
+      "notes": "Moving on, computers use ASCII, or American Standard Code for Information Interchange, to represent characters.\u000b It assigns a unique numeric value to English letters, digits, and special symbols.\u000b ASCII uses 7 bits, allowing it to represent 128 characters, and each character requires one byte of storage. \u000bFor example, 'A' is 65, 'z' is 122, '1' is 49, and '*' is 42.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Character Encoding",
+      "body": "Unicode (Universal Character)\nA\n65",
+      "notes": "Next, what if we need to store characters from different languages or even emojis?\u000b That's where Unicode comes in. Unlike ASCII, it supports far more than 128 characters and uses more than one byte when needed, \u000bmaking it suitable for representing text from languages around the world.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Unicode",
+      "body": "UTF-8\nUTF-8 (Unicode Transformation Format - 8)\nCapable of storing 1,112,064 \u000bdifferent characters\nHas same values for ASCII characters\n\"A\" \nUnicode code point - 65\n\"z\" \nUnicode - 122\n\"1\" \nUnicode - 49\n\"*\" \nUnicode - 42",
+      "notes": "Moving on, UTF-8, or Unicode Transformation Format-8, is the most widely used Unicode encoding. \u000bIt can represent over 1.1 million characters, making it suitable for storing text from different languages, symbols, and emojis. \u000bAnother advantage is that it uses the same code values as ASCII for standard characters, \u000bso 'A' is 65, 'z' is 122, '1' is 49, and '*' is 42.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Character Encoding",
+      "body": "UTF-8\nUnicode - U+1F600\nఅ\nUnicode - U+0C05\nअ\nUnicode - U+0905",
+      "notes": "one of the biggest advantages of UTF-8 is that it can represent characters from different languages as well as emojis. \u000bEvery character is assigned a unique Unicode code point, \u000ballowing computers to identify and display it correctly, regardless of the language or symbol being used.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Data Representation",
+      "body": "Binary Representation",
+      "notes": "Binary is represented in computers using electrical signals controlled by transistors.\nThese transistors work by switching between two voltage levels: high and low.\nWe can imagine this using a simple example like a light bulb and a switch.\nWhen the light is ON, we represent it as 1, and when it is OFF, we represent it as 0.\nThis is how computers use binary to represent and process information.",
+      "tables": [
+        [
+          [
+            "1",
+            "0"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Understanding Binary",
+      "body": "Data Representation\nNumber Systems\nBinary & Decimal Numbers\nCharacter Encoding\nASCII, UTF-8",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Introduction to Operating System",
+      "body": "",
+      "notes": "In the next session we will be learning about the Introduction to operating system Session",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1qE6O5g0kfQ22MELaVFe6OPMT6zSZh4V0btgpmxYk4bs/edit"
+}

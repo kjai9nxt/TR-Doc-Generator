@@ -1,0 +1,674 @@
+{
+  "session_no": 17,
+  "source_file": "Classic Synchronization Problems & IPC",
+  "deck_title": "Classic Synchronization Problems & IPC",
+  "n_slides": 71,
+  "summary": "\n    - Slide 2: Classic Synchronization Problems & IPC\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Classic Synchronization Problems & IPC\n    - Slide 6: Problems Every Operating System Must Solve\n    - Slide 7: Problems Every Operating System Must Solve\n    - Slide 8: Problems Every Operating System Must Solve\n    - Slide 9: Problems Every Operating System Must Solve\n    - Slide 10: Producer–Consumer Problem\n    - Slide 11: Two Processes Sharing One Buffer\n    - Slide 12: Producer – Consumer Problem\n    - Slide 13: Producer – Consumer Problem\n    - Slide 14: Producer – Consumer Problem\n    - Slide 15: Three Semaphores Working Together\n    - Slide 16: Three Semaphores Working Together\n    - Slide 17: How wait() & signal() Coordinate the Buffer\n    - Slide 18: Three Semaphores Working Together\n    - Slide 19: Three Semaphores Working Together\n    - Slide 20: Three Semaphores Working Together\n    - Slide 21: A Variation of Producer - Consumer\n    - Slide 22: Sleeping Barber Problem\n    - Slide 23: A Variation of Producer - Consumer\n    - Slide 24: A Variation of Producer - Consumer\n    - Slide 25: A Variation of Producer - Consumer\n    - Slide 26: Readers–Writers Problem\n    - Slide 27: Many Readers, One Writer\n    - Slide 28: Many Readers, One Writer\n    - Slide 29: Readers–Writers Problem\n    - Slide 30: Key Variables\n    - Slide 31: The read_count Logic\n    - Slide 32: Writer Logic\n    - Slide 33: Reader Logic\n    - Slide 34: Writer Starvation\n    - Slide 35: The read_count Variable\n    - Slide 36: Quiz Time!\n    - Slide 37: Dining Philosophers Problem\n    - Slide 38: Five Philosophers, Five Chopsticks\n    - Slide 39: Shared Resource Coordination\n    - Slide 40: Five Philosophers, Five Chopsticks\n    - Slide 41: Dining Philosophers Problem\n    - Slide 42: Dining Philosophers Deadlock\n    - Slide 43: Breaking the Circular Wait\n    - Slide 44: Breaking the Circular Wait\n    - Slide 45: Breaking the Circular Wait\n    - Slide 46: Inter-Process Communication (IPC)\n    - Slide 47: Why Processes Need to Communicate\n    - Slide 48: Inter-Process Communication (IPC)\n    - Slide 49: How Processes Talk to Each Other\n    - Slide 50: How Processes Talk to Each Other\n    - Slide 51: Shared Memory IPC\n    - Slide 52: Shared Memory IPC\n    - Slide 53: Message Passing\n    - Slide 54: Shared vs Message\n    - Slide 55: Design Choices\n    - Slide 56: Shared Memory and Message Passing\n    - Slide 57: IPC Mechanisms\n    - Slide 58: IPC Mechanisms\n    - Slide 59: Message Communication\n    - Slide 60: IPC in Real Life\n    - Slide 61: Pipes\n    - Slide 62: Pipes — A Simple Channel Between Processes\n    - Slide 63: Pipes — A Simple Channel Between Processes\n    - Slide 64: Pipes — A Simple Channel Between Processes\n    - Slide 65: Ordinary Pipes and Named Pipes (FIFOs)\n    - Slide 66: Quiz Time!\n    - Slide 67: Classic Synchronization Problems & IPC\n    - Slide 68: Classic Synchronization Problems & IPC\n    - Slide 69: Deadlock Characterization & Prevention",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Classic Synchronization Problems & IPC",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Synchronization Tools (Part1/2)\nMutex Locks\nConcept & usage\nSemaphores\nCounting vs binary semaphores\nOperations: wait() / signal() (P / V)\nSemaphore Implementation\nBusy waiting vs block-and-wakeup",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Synchronization Tools (Part2/2)\nMonitors & Critical Regions\nMonitor structure & condition variables\nCritical regions\nComparison\nComparing synchronization tools & \u000btheir trade-offs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Classic Synchronization Problems & IPC",
+      "body": "Classic Synchronization Problems & IPC\nDining Philosophers Problem\nReaders–\u000bWriters Problem\nBounded-buffer coordination challenge, \nSleeping Barber Problem\nSafely sharing a database\nProducer–\u000bConsumer Problem\nInter-Process Communication (IPC)\nResource sharing & deadlock\nModels and mechanisms\nPipes\nOrdinary & Named",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Problems Every Operating System Must Solve",
+      "body": "Standard Coordination Scenarios\nWhen processes share data and run at the same time\nTheir steps can interleave unpredictably\nWithout coordination, one update can overwrite another\nA timing bug called a race condition",
+      "notes": "Let's begin by understanding one of the most fundamental challenges in operating systems. \u000bWhen multiple processes access the same data at the same time, \u000bthe order in which their instructions execute is unpredictable because their execution can interleave.\u000b Without proper coordination, one process may overwrite the changes made by another, \u000bleading to a timing-related error known as a race condition.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Problems Every Operating System Must Solve",
+      "body": "Standard Coordination Scenarios\nA few standard problems capture the main coordination challenges. Each has a known semaphore solution — so recognising the pattern means the fix is already known",
+      "notes": "Let's begin with a common situation in an operating system. \u000bImagine two processes trying to modify the same piece of data at nearly the same time. \u000bSince the operating system decides when each process gets the CPU, their instructions can execute \u000bin different orders every time. If this access isn't coordinated properly, one process can unknowingly \u000boverwrite the other's work. This kind of timing-dependent error is known as a race condition.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Problems Every Operating System Must Solve",
+      "body": "Classic Synchronization Problems\nCoordinating a limited shared buffer (print queues, streaming)\nProducer–Consumer\nA Producer–Consumer variation with a barber and a bounded waiting room\nSleeping Barber\nMany readers at once, but exclusive writes (databases, files)\nReaders–Writers\nSharing resources safely without deadlock\nDining Philosophers",
+      "notes": "Before diving into the solutions, let's look at four classic synchronization problems that appear throughout operating systems.\u000bProducer–Consumer focuses on managing a limited shared buffer, \u000bSleeping Barber extends that idea with a bounded waiting room, \u000bReaders–Writers balances concurrent reads with exclusive writes, and \u000bDining Philosophers explores how processes can share resources safely while avoiding deadlock.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Problems Every Operating System Must Solve",
+      "body": "Analogy",
+      "notes": "Think of these synchronization problems like learning recipes in cooking. Once a chef understands a few standard recipes, \u000bthe same techniques can be applied to many different dishes. Similarly, when we master these classic \u000bOperating System synchronization problems, we begin to recognize the same coordination patterns \u000bin many real-world process communication and synchronization scenarios.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Producer–Consumer Problem",
+      "body": "Producer–Consumer Problem",
+      "notes": "Now we will learn about the Producer – Consumer Problem",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Two Processes Sharing One Buffer",
+      "body": "Producer–Consumer Problem\nTwo processes share one fixed-size buffer of n slots\n n slots",
+      "notes": "Let's start with the Producer–Consumer Problem. Here, two processes interact through a single fixed-size buffer containing n slots. \u000bOne process is responsible for producing data and placing it into the buffer, \u000bwhile the other process consumes that data from the same buffer. Because both processes \u000baccess the shared buffer, their actions must be carefully coordinated to ensure the buffer is used correctly.",
+      "tables": [
+        [
+          [
+            "Buffer",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Producer – Consumer Problem",
+      "body": "Bounded-Buffer Challenge\nThe producer creates items and puts them in\nThe buffer smooths out their different speeds\nThe consumer takes items out",
+      "notes": "Now, let's understand how the shared buffer is used. The producer keeps generating new items\u000b and places them into the buffer, while the consumer removes those items for processing. \u000bSince these two processes may not work at the same speed, the buffer acts as an intermediate storage area,\u000b allowing each process to continue at its own pace without requiring both to operate at exactly the same rate.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Producer – Consumer Problem",
+      "body": "Bounded-Buffer Challenge\nBecause the buffer is limited, a correct solution must guarantee three things:\nNo overflow\nThe producer waits when the buffer is full\nNo underflow\nThe consumer waits when the buffer is empty\nMutual exclusion\nOnly one process touches the buffer at any instant\nThree separate requirements — which is why the solution needs three semaphores",
+      "notes": "Since the buffer has limited capacity, synchronization has to handle three different situations. \u000bIt should prevent overflow by stopping the producer from adding more items when the buffer is full. \u000bIt should also avoid underflow by making the consumer wait when no items are available. \u000bAlong with this, mutual exclusion ensures that both processes don't access the shared buffer at the same time. \u000bThese independent requirements are why the solution uses three semaphores.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Producer – Consumer Problem",
+      "body": "Analogy\nBelt full\nBelt empty",
+      "notes": "Imagine a conveyor belt with a fixed number of slots. The worker placing boxes is the Producer,\u000b and the worker removing them is the Consumer. \u000bIf the belt is full, the Producer must wait. If it is empty, the Consumer waits. \u000bThey also avoid accessing the same slot at the same time, just as processes use synchronization to safely share a buffer.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Three Semaphores Working Together",
+      "body": "Using wait() & signal()\nEach requirement gets its own semaphore:",
+      "notes": "To satisfy these three requirements, the solution uses three semaphores, each with a specific responsibility. \u000bmutex is a binary semaphore initialized to 1, ensuring mutual exclusion while accessing the buffer. \u000bempty is a counting semaphore initialized to n, representing the available buffer slots.\u000b Finally, full is another counting semaphore initialized to 0, keeping track of how many slots currently contain data.",
+      "tables": [
+        [
+          [
+            "Semaphore",
+            "Initial",
+            "Purpose"
+          ],
+          [
+            "mutex",
+            "1",
+            "Binary, mutual exclusion while accessing the buffer"
+          ],
+          [
+            "empty",
+            "n",
+            "Counting, number of empty slots (starts at buffer size n)"
+          ],
+          [
+            "full",
+            "0",
+            "Counting, number of filled slots (starts at 0)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 16,
+      "title": "Three Semaphores Working Together",
+      "body": "The two counters mirror each other: producing turns an empty slot into a full one\nConsuming does the reverse. When a counter reaches 0, wait() blocks the process automatically\nUsing wait() & signal()",
+      "notes": "Let's see how these semaphores work together. Every time the producer adds an item, one empty slot becomes full. \u000bSimilarly, when the consumer removes an item, a full slot becomes empty again. \u000bIf either counter reaches 0, calling wait() automatically blocks the corresponding process\u000b until the required resource becomes available",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "How wait() & signal() Coordinate the Buffer",
+      "body": "Producer (Pseudocode)\ndo {\n   // produce an item\n   wait(empty)       // free slot? if not, wait\n   wait(mutex)       // lock the buffer\n       // add the item to the buffer\n   signal(mutex)     // leave critical section\n   signal(full)      // indicate one more filled slot\n} while (true)\nPseudocode",
+      "notes": "Let's understand how the producer coordinates using wait() and signal(). \u000bFirst, the producer creates an item. It then calls wait(empty) to ensure there is a free slot in the buffer. \u000bNext, wait(mutex) locks the buffer so only one process can access it. After adding the item,\u000b signal(mutex) unlocks the buffer, and signal(full) indicates that one more buffer slot is now filled.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Three Semaphores Working Together",
+      "body": "Consumer (Pseudocode)\ndo {\n   wait(full)        // item ready? if not, wait\n   wait(mutex)       // lock the buffer\n       // remove an item from the buffer\n   signal(mutex)     // leave critical section\n   signal(empty)     // indicate one more free slot\n   // consume the item\n} while (true)\nPseudocode",
+      "notes": "Now let's see how the consumer uses the three semaphores. \u000bIt first calls wait(full) to ensure that an item is available in the buffer. \u000bThen, wait(mutex) locks the buffer before removing the item. After the item is removed, \u000bsignal(mutex) unlocks the buffer, and signal(empty) indicates that one more buffer slot has become free.\u000bFinally, the consumer processes the removed item.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Three Semaphores Working Together",
+      "body": "Correct Semaphore Sequence\nOrder matters: check the count (empty/full) before locking (mutex) \nReversing it, locking first, then finding no slot, freezes the process while it holds the lock.",
+      "notes": "Another important aspect is the order in which the semaphores are used. A process should first check \u000bthe required resource using empty or full, and only then acquire mutex. If it locks mutex first\u000b and later discovers that no slot is available, it remains blocked while still holding the lock. \u000bThis prevents other processes from making progress .",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Three Semaphores Working Together",
+      "body": "Analogy\nTotal - 10 Parking Lots. Red color are filled lots, and Green are available lots",
+      "notes": "Think of this as a parking lot with a single entrance gate. The empty semaphore tracks how many parking spaces are available, \u000bwhile the full semaphore tracks how many are occupied. Before entering, a car checks whether a free space exists.\u000b The mutex semaphore acts as the entrance gate, allowing only one car to enter or exit at a time. \u000bThis is exactly how the Producer and Consumer coordinate safe access to the shared buffer.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "A Variation of Producer - Consumer",
+      "body": "Sleeping Barber Problem\nA barber shop has:\nWhen there are no customers, the barber sleeps\nFixed Number of Chairs\nOne Barber Chair\nOne Barber",
+      "notes": "Sleeping Barber Problem is modeled around a barber shop. The setup includes one barber, \u000bone barber chair, and a fixed number of waiting chairs for customers. If no customers are present,\u000b the barber sleeps, remaining idle until a new customer arrives.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Sleeping Barber Problem",
+      "body": "Producer–Consumer in Action\nThis models producers (customers) and a consumer (the barber) sharing a limited waiting room — the same pattern as Producer–Consumer\nWhen a customer arrives:\nIf a chair is free, the customer sits and waits (and wakes the barber if he is asleep)\nIf the waiting room is full, the customer leaves",
+      "notes": "Now let's see why this is considered a Producer–Consumer variation. Whenever a customer arrives, \u000bthe first step is to check whether a waiting chair is available. If there is space, the customer waits for \u000bservice and wakes the barber if necessary. Otherwise, the customer leaves because the waiting room \u000bhas reached its capacity. Here, the customers act as the producers, the barber acts as the consumer, \u000band the waiting room behaves like a limited shared buffer.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "A Variation of Producer - Consumer",
+      "body": "Using Three Semaphores\nThree semaphores are used:",
+      "notes": "Just like the Producer–Consumer problem, the Sleeping Barber solution also relies on three semaphores, \u000bwith each serving a different purpose. customers is initialized to 0 and keeps track of waiting customers. \u000bbarber, also initialized to 0, is used to signal when the barber is ready to serve. \u000bFinally, mutex, initialized to 1, protects the shared count of free waiting chairs, ensuring it is updated safely.",
+      "tables": [
+        [
+          [
+            "Semaphore",
+            "Initial",
+            "Purpose"
+          ],
+          [
+            "customers",
+            "0",
+            "Counts waiting customers (wakes the barber)"
+          ],
+          [
+            "barber",
+            "0",
+            "Signals whether the barber is ready"
+          ],
+          [
+            "mutex",
+            "1",
+            "Protects the count of free waiting chairs"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "title": "A Variation of Producer - Consumer",
+      "body": "Barber (Pseudocode):\ndo {\n   wait(customers)      // sleep until a customer arrives\n   wait(mutex)          // lock the waiting-room count\n   waiting = waiting - 1 // one customer leaves the queue\n   signal(barber)       // barber is ready\n   signal(mutex)        // unlock\n   // ---- CUT HAIR ----\n} while (true)\nPseudocode",
+      "notes": "Let's understand the barber's workflow. The barber first calls wait(customers) and sleeps until a customer arrives.\u000b Then, wait(mutex) locks the waiting-room data so it can be updated safely. \u000bThe waiting count is decremented as one customer leaves the queue, \u000bsignal(barber) notifies the customer that the barber is ready, and \u000bsignal(mutex) unlocks the waiting-room. Finally, the barber starts cutting the customer's hair.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "A Variation of Producer - Consumer",
+      "body": "Customer (Pseudocode):\nwait(mutex)              // lock the waiting-room count\nif (waiting < chairs) {\n   waiting = waiting + 1 // take a waiting chair\n   signal(customers)    // wake the barber\n   signal(mutex)        // unlock\n   wait(barber)         // wait until the barber is ready\n   // ---- GET HAIRCUT ----\n} else {\n   signal(mutex)        // room full — leave\n}\nPseudocode",
+      "notes": "Now let's look at the customer's workflow. The customer first calls wait(mutex) to safely \u000baccess the waiting-room count. If a chair is available, the waiting count is incremented, \u000bsignal(customers) wakes the barber, and signal(mutex) unlocks the waiting room. \u000bThe customer then calls wait(barber) and waits until the barber is ready before getting a haircut. \u000bIf no chair is available, the customer simply releases the mutex and leaves the shop.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Readers–Writers Problem",
+      "body": "Readers–Writers Problem",
+      "notes": "Next we will be learning about the Readers – Writers Problem",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Many Readers, One Writer",
+      "body": "Readers–Writers Problem\nA shared resource, is used by many processes\nThe key insight: reading is safe together, but writing is not\nReaders only view the data; writers change it. The goal is maximum concurrency without inconsistency\nProcess 1\nDatabase\nProcess 1\nFile\nOr",
+      "notes": "Here, multiple processes share a common resource such as a database or a file. \u000bSince readers only observe the data, they can access it simultaneously without causing issues. However, \u000bwriters modify the shared resource, so their access must be carefully controlled. \u000bThe objective is to achieve maximum concurrency while keeping the data consistent.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Many Readers, One Writer",
+      "body": "The Rules\nReaders may read together — concurrent reading is always safe\nA writer needs exclusive access — no reader or other writer active while it writes\nReading and writing must never overlap — this protects consistency",
+      "notes": "To satisfy the Readers–Writers Problem, a few rules must always be followed. \u000b1 Multiple readers are allowed to access the shared resource at the same time because\u000b they don't change its contents. 2 A writer, however, requires exclusive access, meaning no other reader or writer \u000bcan use the resource during an update. 3 Keeping reading and \u000bwriting separate in this way ensures the shared data remains consistent.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Readers–Writers Problem",
+      "body": "Analogy",
+      "notes": "Think of a public notice board. Many people can read it at the same time without causing any issues. \u000bHowever, when someone needs to write or update the board, everyone else must wait until the update is complete.\u000b In the same way, in the Readers–Writers Problem, multiple readers can access shared data together, \u000bbut a writer requires exclusive access to maintain data consistency.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Key Variables",
+      "body": "Readers–Writers Solution\nThe solution uses one counter and two semaphores:",
+      "notes": "To enforce these rules, the solution maintains one counter and two semaphores, each with a specific role.\u000b read_count, initialized to 0, keeps track of how many readers are currently accessing the shared resource.\u000b Since multiple readers can update this counter, mutex protects it from concurrent modification.\u000b The rw_mutex semaphore provides exclusive access to a writer, ensuring that no writer can proceed while readers are active.",
+      "tables": [
+        [
+          [
+            "Variable",
+            "Type",
+            "Init",
+            "Purpose"
+          ],
+          [
+            "rw_mutex",
+            "Semaphore",
+            "1",
+            "Gives a writer exclusive access; blocks writers while readers are active"
+          ],
+          [
+            "mutex",
+            "Semaphore",
+            "1",
+            "Protects the read_count variable"
+          ],
+          [
+            "read_count",
+            "Integer",
+            "0",
+            "How many readers are currently reading"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "The read_count Logic",
+      "body": "How It Works?\nFirst reader\nlocks rw_mutex, shutting writers out\nExtra readers\njust increase read_count and read freely\nLast reader\n(count back to 0) releases rw_mutex, letting a writer in\nMutex\nprotects read_count so two readers never update it at once",
+      "notes": "The idea behind read_count is to coordinate readers without blocking each one individually. \u000b1 The first reader acquires rw_mutex, preventing any writer from entering.\u000b 2 As more readers arrive, they simply increment read_count and continue reading together. \u000b3 When the last reader finishes and read_count returns to 0, it releases rw_mutex, allowing a waiting writer to proceed.\u000b4 Throughout this process, mutex protects read_count so only one reader updates it at a time.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Writer Logic",
+      "body": "Writer (Pseudocode):\ndo {\n   wait(rw_mutex)         // request exclusive access\n       // ---- WRITING ----\n   signal(rw_mutex)       // release access\n} while (true)\nPseudocode",
+      "notes": "Let's understand the writer's workflow. The writer first calls wait(rw_mutex) to \u000brequest exclusive access to the shared resource. Once the semaphore is acquired, \u000bit performs the writing operation. After completing the update, the writer calls signal(rw_mutex)\u000b to release the resource, allowing other readers or writers to access it.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Reader Logic",
+      "body": "Reader (Pseudocode):\ndo {\n   wait(mutex)\n   read_count = read_count + 1\n   if (read_count == 1)\n       wait(rw_mutex)     // first reader blocks writers\n   signal(mutex)\n       // ---- READING ----\n   wait(mutex)\n   read_count = read_count - 1\n   if (read_count == 0)\n       signal(rw_mutex)   // last reader allows writers\n   signal(mutex)\n} while (true)\nPseudocode",
+      "notes": "Now let's understand the reader's workflow. The reader first locks mutex and increments read_count.\u000b If it is the first reader, it calls wait(rw_mutex) to block writers. After releasing mutex,\u000b it performs the reading operation. Once finished, it locks mutex again, \u000bdecrements read_count, and if it is the last reader, it calls signal(rw_mutex)\u000b to allow writers to proceed. Finally, it releases mutex.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Writer Starvation",
+      "body": "Trade-Off Of Reader Preference\nWhile readers keep arriving, read_count never hits 0, so a writer can wait a long time\nThis is writer starvation — read-heavy systems accept it; others use writer-priority variants",
+      "notes": "One limitation of the reader-preference approach is writer starvation. If new readers keep arriving,\u000b read_count may never return to 0, preventing a waiting writer from acquiring rw_mutex. \u000bAs a result, the writer can be delayed indefinitely. While this trade-off is acceptable in read-heavy systems, \u000bother implementations use writer-priority policies to reduce or eliminate starvation.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "The read_count Variable",
+      "body": "Analogy",
+      "notes": "Think of the shared data as a room that readers can enter. The first reader locks the room to prevent any writer from entering.\u000b As more readers arrive or leave, only the read_count is updated. When the last reader exits,\u000b it unlocks the room, allowing a writer to access the shared resource.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Dining Philosophers Problem",
+      "body": "Dining Philosophers Problem",
+      "notes": "Next we will be learning about the Dining Philosophers Problem",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Five Philosophers, Five Chopsticks",
+      "body": "Classic Illustration of Deadlock\nThey alternate between thinking and eating\nThere is one chopstick between each pair of neighbouring philosophers, making five chopsticks in total\nTo eat, a philosopher must pick up both neighbouring chopsticks.\nAfter eating, the philosopher puts both chopsticks down and goes back to thinking\nFive philosophers sit around a round table.",
+      "notes": "The final classic synchronization problem is the Dining Philosophers problem. \u000bImagine five philosophers sitting around a circular table,\u000b alternating between thinking and eating. There are five chopsticks, \u000bwith one placed between each neighbouring pair of philosophers. \u000bBefore a philosopher can eat, both neighbouring chopsticks must be picked up. \u000bOnce the meal is finished, both chopsticks are placed back on the table, and the philosopher returns to thinking.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Shared Resource Coordination",
+      "body": "Dining Philosophers Problem\nThis models processes that each need more than one shared resource at the same time\nBasic approach — each chopstick is a semaphore (initialised to 1). A philosopher takes the left, then the right, eats, then puts both down:",
+      "notes": "This problem represents a situation where a process needs more than one shared resource to complete its work.\u000b In the Dining Philosophers Problem, each chopstick is treated as a semaphore initialized to 1, \u000bmeaning only one philosopher can hold it at a time. Following the basic approach,\u000b a philosopher first picks up the left chopstick, then the right one, eats, and finally releases both chopsticks for others to use.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Five Philosophers, Five Chopsticks",
+      "body": "It looks correct, no two philosophers can hold the same chopstick, but it hides a serious flaw\nPhilosopher i (pseudocode):\ndo {\n   wait(chopstick[i])              // pick up left\n   wait(chopstick[(i + 1) mod 5])  // pick up right\n       // ---- EAT ----\n   signal(chopstick[i])            // put down left\n   signal(chopstick[(i + 1) mod 5])// put down right\n       // ---- THINK ----\n} while (true)\nPseudocode",
+      "notes": "Let's understand the philosopher's workflow. Each philosopher first calls wait(chopstick[i]) to pick up the left chopstick, \u000bfollowed by wait(chopstick[(i + 1) mod 5]) to pick up the right one. After acquiring both chopsticks,\u000b the philosopher eats and then releases them using the two signal() calls before thinking again. \u000bAlthough this logic ensures that no two philosophers use the same chopstick at the same time, \u000bit can still lead to a situation where all philosophers end up waiting, preventing anyone from eating.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Dining Philosophers Problem",
+      "body": "Analogy",
+      "notes": "Think of two people working at a craft table. One needs the scissors, \u000band the other needs the glue stick, but each task requires both items.\u000b If each person picks up one item and waits for the other, neither can continue.\u000b This is exactly what happens in the Dining Philosophers Problem, \u000bwhere each process holds one resource while waiting for another,",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Dining Philosophers Deadlock",
+      "body": "When Everyone Waits Forever\nThis is a deadlock\nIf all five pick up their left chopstick at the same moment, every chopstick is held and each waits forever for the right one. Nobody proceeds\nP2\nP1\nP1\nP3\nP4\nP5",
+      "notes": "Now let's see where the problem occurs. Imagine all five philosophers pick up their left chopstick at the same time.\u000b Each philosopher now holds one chopstick but is waiting for the right chopstick, \u000bwhich is already held by a neighbour. As a result, no one can continue,\u000b no one releases the chopstick they already have, and the entire system comes to a standstill.\u000bThis situation is called a deadlock.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Breaking the Circular Wait",
+      "body": "The Lesson\nLocking each resource is not enough\nThe order in which locks are taken can still trap the system",
+      "notes": "The key takeaway from this example is that simply locking every shared resource does not guarantee a correct solution. \u000bEven if each resource is protected, acquiring the locks in an inappropriate order can create a circular wait, \u000bwhere every process is waiting for another to release a resource. Avoiding this situation is essential to prevent deadlock.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Breaking the Circular Wait",
+      "body": "Three Standard Solutions\nThree standard fixes break the circle:",
+      "notes": "To prevent this circular wait, three standard approaches are commonly used. \u000bOne limits the system to at most four philosophers at a time. \u000bAnother follows the pick up both or neither rule, so a philosopher never waits while holding a single chopstick. \u000bThe third uses asymmetric ordering, where odd and even philosophers pick up \u000bthe chopsticks in different orders, preventing deadlock.",
+      "tables": [
+        [
+          [
+            "Solution",
+            "How It Prevents Deadlock"
+          ],
+          [
+            "Allow at most 4 at the table",
+            "With four competing for five chopsticks, at least one can always obtain both, so the system never fully locks up"
+          ],
+          [
+            "Pick up both or neither",
+            "A philosopher takes both chopsticks together only if both are free, so it never holds one while waiting"
+          ],
+          [
+            "Asymmetric ordering",
+            "Odd philosophers pick up the left chopstick first, even philosophers the right first, so the circular wait never forms"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 45,
+      "title": "Breaking the Circular Wait",
+      "body": "Analogy\n1\n2\n3",
+      "notes": "Imagine a table with five seats but only four people dining. Because one seat remains empty,\u000b there is always a spare chopstick available, allowing at least one person to eat and then release both chopsticks. \u000bSimilarly, by allowing at most four philosophers, the Dining Philosophers Problem avoids circular wait and prevents deadlock.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Inter-Process Communication (IPC)",
+      "body": "Inter-Process Communication (IPC)",
+      "notes": "Now we will learn about the Inter-Process Communication (IPC)",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Why Processes Need to Communicate",
+      "body": "Inter-Process Communication (IPC)\nFor safety, the OS keeps each process in its own private memory\nOne process cannot read another's memory directly. This isolation stops a faulty program from corrupting others.",
+      "notes": "So far, we've looked at processes coordinating their execution. \u000bBut sometimes, processes also need to exchange information. \u000bBy default, the operating system gives every process its own private memory, \u000bpreventing one process from directly accessing another's memory. \u000bThis isolation improves safety by ensuring that a faulty process cannot accidentally corrupt the data of other processes.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Inter-Process Communication (IPC)",
+      "body": "Safe Process Communication\nIPC is the set of OS mechanisms that let processes share data and coordinate through safe, controlled channels",
+      "notes": "To enable this interaction, operating systems provide Inter-Process Communication (IPC). \u000bRather than allowing processes to access each other's memory directly,\u000b IPC offers safe, controlled channels through which they can exchange data and coordinate their activities securely.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "How Processes Talk to Each Other",
+      "body": "Why Processes Need IPC:\nData sharing\nCooperating processes must pass information\nModularity\nA large task splits into smaller processes\nCoordination\nOne process signals another (e.g., 'data is ready')\nSpeed\nSeparate processes work in parallel and combine results",
+      "notes": "Processes communicate through IPC for several reasons.\u000b1  They use it for data sharing, allowing cooperating processes to exchange information. \u000b2 It also supports modularity by dividing a large task into smaller processes. \u000b3 Through coordination, one process can notify another when an event, such as \"data is ready,\" occurs. \u000b4 Finally, speed improves because multiple processes can execute in parallel and later combine their results.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "How Processes Talk to Each Other",
+      "body": "Analogy",
+      "notes": "Think of processes as people working in separate rooms. Since they cannot directly access each other's space, \u000bthey communicate through safe methods, such as passing notes under the door or sharing a whiteboard through a window. \u000bSimilarly, processes use IPC mechanisms like Message Passing and Shared Memory \u000bto exchange information while maintaining isolation and safety.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Shared Memory IPC",
+      "body": "Direct Memory Sharing\nShared Memory — The OS gives two processes a common memory region; they exchange data by reading and writing it directly\nVery fast, but they must add their own synchronization (e.g., a semaphore) or hit race conditions\ncommon memory region\nOS",
+      "notes": "One IPC method is Shared Memory. Here, the operating system creates a common memory region\u000b that both processes can access, allowing them to exchange data by reading and writing directly. \u000bSince this method is very fast, the processes must use synchronization, such as a semaphore, to avoid race conditions.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Shared Memory IPC",
+      "body": "A Common Memory Region\nProcess A\nShared Memory\nProcess B\nKernel\nShared Memory\n1\n2",
+      "notes": "This diagram shows how Shared Memory works. \u000bThe operating system creates a shared memory region that both Process A and Process B can access.\u000b After this region is created, the processes communicate by reading from and writing to the shared area directly, \u000bwhile the kernel stays out of the actual data exchange, making communication much faster.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Message Passing",
+      "body": "Message Passing, processes never share memory; they exchange messages using send() and receive(). Slower, since the OS handles each message, but safer, and it works across different machines\nExchanging Messages Safely\nProcess A\nProcess B\nKernel\nMessage Passing\n1\n2\nM\nM\nM",
+      "notes": "Another IPC method is Message Passing. Unlike Shared Memory, processes never share memory directly. \u000bInstead, they communicate using send() and receive(), with the kernel handling every message. \u000bAlthough this is slower, it is safer and also supports communication between processes running on different machines.\n\nThis diagram illustrates the flow of Message Passing. First, Process A sends a message to the kernel using send(). \u000bThe operating system then delivers that message to Process B, which receives it using receive(). \u000bBecause every message passes through the kernel, communication is safer, although it is slightly slower than Shared Memory.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Shared vs Message",
+      "body": "Key Differences",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Shared Memory",
+            "Message Passing"
+          ],
+          [
+            "Speed",
+            "Fast, no OS help per access",
+            "Slower, OS handles each message"
+          ],
+          [
+            "Synchronization",
+            "Programmer must add it",
+            "Built into send and receive"
+          ],
+          [
+            "Data size",
+            "Large amounts of data",
+            "Smaller, discrete messages"
+          ],
+          [
+            "Location",
+            "Same machine only",
+            "Same machine or across a network"
+          ],
+          [
+            "Ease of use",
+            "Harder, race-condition risk",
+            "Easier and safer"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 55,
+      "title": "Design Choices",
+      "body": "Message Passing\nMessage passing has three design choices",
+      "notes": "When designing a Message Passing system, the operating system makes three important design choices. \u000b1 Naming decides whether communication is direct between processes or indirect through a shared mailbox. \u000b2 Synchronization determines whether communication is blocking or non-blocking. \u000b3 Finally, buffering defines whether the communication channel has zero, bounded, or unbounded capacity.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Shared Memory and Message Passing",
+      "body": "Analogy\nShared memory\nMessage passing",
+      "notes": "Think of Shared Memory as a shared whiteboard. \u000bIt's very fast, but processes need synchronization, such as a semaphore, to avoid conflicts. \u000bMessage Passing is like sending letters—slower, but safer because processes never access the same memory directly.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "IPC Mechanisms",
+      "body": "Choosing the Right Tool\nThe two models are realised through several concrete mechanisms, each suited to a different situation",
+      "notes": "So far, we've discussed the two IPC models. In practice, these are implemented using different IPC mechanisms, \u000beach designed for specific communication needs. The right mechanism depends on \u000bfactors such as speed, safety, and the way processes need to exchange information.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "IPC Mechanisms",
+      "body": "Common Communication Tools",
+      "notes": "The operating system provides several IPC mechanisms, each suited to different situations. \u000b1 & 2 Pipes and Named Pipes (FIFO) transfer data between processes,\u000b3 Message Queues exchange messages through the OS, \u000b4 Shared Memory offers the fastest communication but requires a \u000b5 semaphore for synchronization,6 Signals send simple event notifications, \u000b7 and Sockets enable communication both within a system and across networks.",
+      "tables": [
+        [
+          [
+            "Pipe",
+            "A one-way channel between related processes, such as a parent and child"
+          ],
+          [
+            "Named Pipe (FIFO)",
+            "Like a pipe but named in the file system, so unrelated processes can use it"
+          ],
+          [
+            "Message Queue",
+            "An OS-managed list of messages; processes post and retrieve them, often by priority"
+          ],
+          [
+            "Shared Memory",
+            "A common region mapped into several processes; fastest, but needs a semaphore"
+          ],
+          [
+            "Semaphore",
+            "Synchronizes access between processes rather than carrying bulk data"
+          ],
+          [
+            "Signal",
+            "A short asynchronous notification, e.g. to tell a process an event occurred"
+          ],
+          [
+            "Socket",
+            "A two-way endpoint that works on one machine or across a network"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 59,
+      "title": "Message Communication",
+      "body": "Synchronous vs Asynchronous\nSynchronous vs asynchronous communication:\nSynchronous (blocking)\n  Asynchronous (non-blocking)\nThe sender waits until the message is received. Like a phone call\nThe sender continues immediately; the receiver reads later. Like a letter",
+      "notes": "Message communication can be either synchronous or asynchronous.\u000b In synchronous (blocking) communication, the sender waits until the message is received, \u000bmuch like a phone call. In asynchronous (non-blocking) communication, the sender continues immediately,\u000b and the receiver reads the message later, similar to sending a letter.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "IPC in Real Life",
+      "body": "Analogy",
+      "notes": "Analogy: Choosing an IPC mechanism is like choosing how to send something: a quick note to the person next to you, a shared noticeboard, a posted parcel, or a phone line to another city.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Pipes",
+      "body": "Pipes",
+      "notes": "Now we will be learning about the Pipes.",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Pipes — A Simple Channel Between Processes",
+      "body": "Introduction\nA pipe is one of the oldest and simplest IPC mechanisms: \nA channel where one process writes data at one end and another reads it from the other end, in first-in-first-out order\nThere are two kinds\nOrdinary (anonymous) pipe\nNamed pipe (FIFO)\nReads\nWrites",
+      "notes": "One of the simplest IPC mechanisms is a Pipe. It acts as a communication channel where one process \u000bwrites data and another process reads it in First-In-First-Out (FIFO) order. \u000bPipes are of two types: Ordinary (anonymous) pipes and Named pipes (FIFO), \u000beach used in different communication scenarios.",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Pipes — A Simple Channel Between Processes",
+      "body": "Ordinary (anonymous) Pipe\nCarries data one way only — one end for writing, one end for reading. (Two-way needs two pipes.)\nWorks only between related processes — typically a parent and the child it creates, because the child inherits the pipe when it is forked\nIt is temporary: the pipe exists only while the processes are running and disappears once they finish\nOrdinary Pipes",
+      "notes": "An Ordinary (anonymous) Pipe provides one-way communication, where one process writes and the other reads.\u000b If two-way communication is needed, two pipes are required. It works only between related processes, \u000bsuch as a parent and child, because the child inherits the pipe during fork(). \u000bSince it is temporary, the pipe is removed once the processes terminate.",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Pipes — A Simple Channel Between Processes",
+      "body": "Has a name in the file system, so it exists independently of any process\nBecause it has a name, unrelated processes (not just parent-child) can use it to communicate.\nIt persists until explicitly deleted and typically provides one-way communication; two-way communication requires two FIFOs\nNamed Pipes (FIFOs)\nNamed Pipe (FIFO):",
+      "notes": "Unlike an Ordinary Pipe, a Named Pipe (FIFO) is identified by a name in the file system,\u000b so the communicating processes do not have to be related. Since it remains available until it is explicitly deleted, \u000bdifferent processes can connect to it whenever needed. Like an ordinary pipe, \u000btwo FIFOs are required if communication is needed in both directions.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Ordinary Pipes and Named Pipes (FIFOs)",
+      "body": "Analogy\nOrdinary pipe\nNamed pipe",
+      "notes": "Think of an Ordinary Pipe as a private pipeline between a parent and child process.\u000b A Named Pipe (FIFO) is like a public water tap—any process that knows its name can use it, even if the processes are unrelated.",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Classic Synchronization Problems & IPC",
+      "body": "Key Takeaways Part(1/2)\nProducer–Consumer Problem\nThe bounded-buffer coordination challenge\nSleeping Barber Problem\nReaders–Writers Problem\nSafely sharing a database\nDining Philosophers Problem\nResource sharing & deadlock\nDining Philosophers Problem\nReaders–\u000bWriters Problem\nBounded-buffer coordination challenge, \nSleeping Barber Problem\nSafely sharing a database\nProducer–\u000bConsumer Problem\nInter-Process Communication (IPC)\nResource sharing & deadlock\nModels and mechanisms\nPipes\nOrdinary & Named",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Classic Synchronization Problems & IPC",
+      "body": "Key Takeaways Part(2/2)\nInter-Process Communication (IPC)\nModels and mechanisms\nPipes\nOrdinary & Named\nInter-Process Communication (IPC)\nModels and mechanisms\nPipes\nOrdinary & Named",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Deadlock Characterization & Prevention",
+      "body": "",
+      "notes": "In the next session we will be learning about the Deadlock Characterization & Prevention",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/12nqMKdQ1BrQ6t6XM2DXHLurBd-M25ByW8UYqwM_3nig/edit"
+}

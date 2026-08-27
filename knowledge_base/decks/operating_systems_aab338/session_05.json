@@ -1,0 +1,287 @@
+{
+  "session_no": 5,
+  "source_file": "Linux Shell & Basic Commands",
+  "deck_title": "Linux Shell & Basic Commands",
+  "n_slides": 33,
+  "summary": "\n    - Slide 2: Getting Started with Command Line\n    - Slide 3: OS Evolution\n    - Slide 4: Getting Started with Command Line\n    - Slide 5: User Interface\n    - Slide 6: User Interface\n    - Slide 7: Command Line Interface\n    - Slide 8: Shell\n    - Slide 9: Command Line Interface\n    - Slide 10: Command Line Interface\n    - Slide 11: Shell\n    - Slide 12: Terminal\n    - Slide 13: Quiz Time!\n    - Slide 14: Commands\n    - Slide 15: Commands\n    - Slide 16: Commands\n    - Slide 17: Commands\n    - Slide 18: Commands\n    - Slide 19: Commands\n    - Slide 20: Commands\n    - Slide 21: Commands\n    - Slide 22: Commands\n    - Slide 23: Commands\n    - Slide 24: Commands\n    - Slide 25: Commands\n    - Slide 26: Quiz Time!\n    - Slide 27: Getting Started with Command Line\n    - Slide 28: Getting Started with Command Line\n    - Slide 31: Working with File System",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Getting Started with Command Line",
+      "body": "",
+      "notes": "In this session, we’ll discuss “Getting Started With Command Line”",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "OS Evolution",
+      "body": "OS Evolution\nTimeline\nChallenges\nTypes of OS\nOS Structure\nTypes of Structure\nCase Studies\nWindows\nLinux\nMac\nOS Structures and Case Studies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Getting Started with Command Line",
+      "body": "Getting Started with Command Line\nCommands\nShell & \u000bTypes of Shell\nGUI, CLI\nBash\nCommand Line Interface",
+      "notes": "So in today’s session, let’s start with the Agenda.\u000bwe’ll understand Interfaces – GUI vs CLI – and see why CLI is important.\u000bAfter that, we’ll check what a Shell is, and explore the Types of Shells.\u000bNext, we will see some key Commands, Bash  to tie everything together.\n Finally, we’ll end with basic commands like ls, history, and whoami etc. to get comfortable.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "User Interface",
+      "body": "Graphical User Interface\nGraphical User Interface (GUI) commonly referred as the User Interface (UI)",
+      "notes": "Now, let’s move ahead and talk about User Interfaces.\u000b A common type is the Graphical User Interface, or GUI, which many people simply call the User Interface (UI).\u000b It’s the point where users interact with the system visually.\nCan you think of some everyday examples of GUI that you use?\u000bicons, menus, buttons, windows, and scrollbars used in systems like computers, mobiles, and apps.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "User Interface",
+      "body": "Command User Interface\nCommand Line Interface (CLI) \u000bfacilitates the users to perform \u000bpowerful operations on a computer with simple commands\nCommand is a text instruction to a computer program to perform a specific task",
+      "notes": "Next, let’s understand the Command Line Interface (CLI).\nUnlike GUI, the CLI allows users to perform powerful operations using simple text commands.\nA command is nothing but a text instruction that tells the computer to perform a specific task.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Command Line Interface",
+      "body": "What is Shell?\nib-developer@cloud:~$\nBash\nShell is the software that interprets and executes the various commands that we provide\nTerminal is a text input/output environment",
+      "notes": "Alright, moving ahead from the Command Line Interface, let’s talk about the Shell.\u000b The Shell is the software that interprets and executes the commands we type.\u000b It usually runs inside a Terminal, which is the text input/output environment where we interact.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Shell",
+      "body": "Different Shells\nBourne Shell (sh)\nBourne-Again Shell (bash)\nC Shell (csh)\nKorn Shell (ksh)\nZ Shell (zsh)",
+      "notes": "Now that we know what a Shell is, let’s look at the different types of shells available.\u000b Some common ones are the Bourne Shell (sh), the Bourne-Again Shell (bash), the C Shell (csh), the Korn Shell (ksh), and the Z Shell (zsh).",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Command Line Interface",
+      "body": "Opening Terminal\nOpen the Dash (Super Key) or Applications and type terminal\nShortcut:  Ctrl + Alt + T\nBash is one of the most commonly used shell in Linux distributions",
+      "notes": "Now, Moving on, with how to actually open the Terminal.\nWe know that Bash is one of the most commonly used shells in Linux distributions.\nTo open the terminal, you can go to the Dash or Applications menu and type “terminal”.\nAn easier way is the shortcut Ctrl + Alt + T.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Command Line Interface",
+      "body": "Opening Terminal\nOpen Launchpad and search for terminal.\nPress command(⌘) + space, type \"terminal\"",
+      "notes": "Alright, stepping ahead with how to open the Terminal on macOS.\u000b You can simply open Launchpad and search for “terminal”.\u000b Or, a quicker way is pressing Command (⌘) + Space, typing “terminal”, and hitting enter.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Shell",
+      "body": "Alternatively you can use Google Cloud Shell\nhttps://shell.cloud.google.com/ \nUsing Cloud\nAlternatively you can use Google Cloud Shell\nhttps://shell.cloud.google.com/",
+      "notes": "Now,going forward, there’s also an alternative to installing anything locally.\u000b You can use the Google Cloud Shell, available at shell.cloud.google.com.\u000b It gives you a ready-to-use shell environment directly in the browser.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Terminal",
+      "body": "Bash\nib-developer@cloud:~$\nCursor/shell is ready to take the commands\nusername\nBash",
+      "notes": "Alright,next, let’s take a closer look at the Bash terminal.\u000b Here, you can see the username displayed, followed by the prompt — for example, ib-developer@cloud:~$.\u000b This indicates that the shell is ready to take commands.\u000b So, whenever you see this prompt and the blinking cursor, it means the system is waiting for your input.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Commands",
+      "body": "",
+      "notes": "let’s move ahead and talk about Commands.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Commands",
+      "body": "Listing Files & Directories\n ls  is used to list files and directories\nib-developer@cloud:~$ ls\napj_codes             'matrix rotation'\ncode                   Music\nBash",
+      "notes": "Now, the ls command in Linux lists all files and directories in your current working directory.\u000bFor example, here typing ls may show items like apj_codes, matrix rotation, code, and Music.\u000bIt’s useful to confirm whether a file exists or to quickly see what’s inside a folder.\u000bThink of it as the command-line version of opening a folder in File Explorer or Finder.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Commands",
+      "body": "Get Options for Commands\n help  displays a list of options that you can use with the command\nib-developer@cloud:~$ ls --help\n-a, --all                  do not ignore entries starting with .\n-A, --almost-all           do not list implied . and ..\n    --author               with -l, print the author of each file\n...\nBash",
+      "notes": "Stepping ahead, let’s learn how to get options for commands.\u000b Every command has extra options or flags, and we can see them by adding --help.\nFor example, typing ls --help shows a list of options like -a to display hidden files or -A to list almost all files etc….\u000b This is a quick way to explore what more a command can do.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Commands",
+      "body": "Get Current User\n whoami  displays the current logged in user\nib-developer@cloud:~$ whoami  \nib-developer\nBash",
+      "notes": "Alright, moving ahead, let’s look at the whoami command.\u000b This command is used to display the current logged-in user.\nFor example, when we type whoami, the output here is ib-developer, which means that’s the username currently active in the system.\nIt’s a simple but very useful command when working on shared systems or remote servers.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Commands",
+      "body": "Previous Commands\nShell keeps track of the commands you have typed in. \u000bUse up (   ) and down (   ) arrows to access the commands",
+      "notes": "Now, let’s see how the shell helps us with previous commands.\u000b The shell automatically keeps track of everything we type.\u000b Instead of retyping, we can use the up and down arrow keys to scroll through our command history and reuse them.\nThis saves time, especially when running long or repeated commands.\nHave you tried using the arrow keys in your terminal before?",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Commands",
+      "body": "History\nib-developer@cloud:~$ history\n1 ls\n2 ls --help \n3 whoami\n…\nBash\n history  display the history of the commands you have typed in so far.  By default, It shows the last 500 recent commands",
+      "notes": "Alright, moving ahead, let’s talk about the history command.\u000b This command shows a list of all the commands you have typed in so far.\u000b By default, it usually displays the last 500 commands.\nFor example, in the output shown, you can see commands like ls, ls --help, and whoami with their line numbers.\u000b This is very useful when you want to repeat or review what you’ve done earlier without typing everything again.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Commands",
+      "body": "Clear\n clear  command clears the terminal\nib-developer@cloud:~$\nShortcut: Ctrl+L\nib-developer@cloud:~$ history\n1 ls\n2 ls --help\n3 whoami\nib-developer@cloud:~$ clear",
+      "notes": "The clear command erases everything on the terminal, giving you a clean workspace.\u000b For example, after viewing past commands with history, typing clear refreshes the screen, leaving only the prompt.\u000b You can also use the shortcut Ctrl + L for the same result.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Commands",
+      "body": "alias\nalias defines a shortcut for a longer command\nib-developer@cloud:~$ alias cls='clear'",
+      "notes": "Alright, let’s look at something really handy — aliases.\u000bAn alias is like creating a shortcut for a longer command. For example, typing clear again and again might feel repetitive. So, instead, we can set up an alias: alias cls='clear' .\nNow, every time we type cls, it works just like clear.\nQuick check for you: what other commands do you think you might want to create shortcuts for in your daily work?\"",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Commands",
+      "body": "unalias\nunalias clear custom aliases defined with the alias command\nib-developer@cloud:~$ unalias cls",
+      "notes": "Now let’s look at the unalias command.\u000b We use unalias when we want to remove or clear a custom alias that we previously defined.\nFor example, earlier we created an alias cls for clear. \u000bIf we don’t need it anymore, running unalias cls will delete that shortcut. After this, typing cls will no longer work.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Commands",
+      "body": "Exit\nib-developer@cloud:~$ exit\nBash\n exit  to close/end a shell session",
+      "notes": "Now, we wrap up the section on commands, let’s learn how to end a shell session.\u000b The command for this is simply exit.\nWhen you type exit in the terminal, it immediately closes the shell session and takes you back to the normal system interface.\u000b\nSo remember — just type exit to close the terminal session.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Commands",
+      "body": "Summary",
+      "notes": "Alright, let’s quickly recap the commands we learned:\nls to list files and directories\u000b\n--help to check options for commands\u000b\nwhoami to display the current user\u000b\nhistory to view the last 500 commands",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "ls",
+            "List files & directories"
+          ],
+          [
+            "--help",
+            "Displays list of options for a given command"
+          ],
+          [
+            "whoami",
+            "Displays current logged in user"
+          ],
+          [
+            "history",
+            "It will show you the last five hundred commands you have entered."
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "Commands",
+      "body": "Summary",
+      "notes": "Then we also have \u000b\nclear to clean the terminal screen\nAlias to define a shortcut for a longer command\nUnalias to clear custom aliases defined with the alias command\nexit to close the shell session\u000b\nThese simple commands are the building blocks of working with the command line.",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "clear",
+            "Clears the shell"
+          ],
+          [
+            "alias",
+            "Defines a shortcut for a longer command"
+          ],
+          [
+            "unalias",
+            "Clear custom aliases defined with the alias command"
+          ],
+          [
+            "exit",
+            "Ends the shell"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 26,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Getting Started with Command Line",
+      "body": "Command Line Interface\nShell",
+      "notes": "Now, to wrap up today’s session, let’s go over the key takeaways.\u000b We understood the Command Line Interface, explored what a Shell is, and its types.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Getting Started with Command Line",
+      "body": "Commands\nls\n--help  \nwhoami\nhistory\nclear\nalias\nunalias\nexit",
+      "notes": "After that , we also practiced some basic commands like ls, --help, whoami, history, clear, alias , unalias and exit.\nThese are the foundation for getting comfortable with the command line.\u000b Next time, we’ll build on these basics and explore more advanced operations.\nWhich command from today’s session felt the most useful to you?\nJust think about it.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "",
+      "body": "",
+      "notes": "An important point you always need to remember: \n\nPRACTICE. PRACTICE. PRACTICE. \n\nThe more you practice, the better you will get at working with various question formats.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Working with File System",
+      "body": "",
+      "notes": "In the next session, we’ll start off with “Working with File System” session.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1iVdqMxv2y1WklE--mqVt1MBtj4xxqn-WQSuAIkBSmZc/edit"
+}

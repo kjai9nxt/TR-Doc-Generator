@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from src import config, course_loader, pipeline, llm, pptx_ingest, regen_log, learning  # noqa: E402
+from guardrails import guardrails  # noqa: E402
 from graders import time_grader, page_grader  # noqa: E402
 
 SETS_DIR = ROOT / "evals" / "sets"
@@ -370,7 +371,41 @@ def _chk_example_realism(doc, session, sset):
                    else f"{len(viol)} issue(s): {viol[:6]}")
 
 
+def _chk_skill_adherence(doc, session, sset):
+    """Does the document obey the rules THIS COURSE is written under?
+
+    Parameterised by the course's own approved skills rather than by a fixed rule — one
+    dimension for every course, instead of a set per course. Only the skills carrying a
+    machine-checkable assertion are scored; prose-only skills reach the writer through
+    the rules block and are weighed by the judge, which is required to quote evidence.
+
+    Reuses guardrails._skill_failures, so the eval and the gate cannot disagree about
+    whether a skill was obeyed.
+    """
+    from src import skills as _skills
+    course = getattr(session, "course", None) or _active_course_name()
+    rs = [s for s in _skills.applicable(course)
+          if isinstance((s or {}).get("check"), dict)]
+    if not rs:
+        return None, "this course has no checkable skills — nothing to score"
+    slides = [sl for sec in doc.get("sections") or [] for sl in sec.get("slides") or []]
+    broken = []
+    for sk in rs:
+        broken += guardrails._skill_failures(doc, slides, sk, sk["check"])
+    score = 5 if not broken else (3 if len(broken) == 1 else 1)
+    detail = (f"{len(rs)} checkable skill(s); "
+              + ("all satisfied" if not broken
+                 else f"{len(broken)} violation(s): " + "; ".join(broken[:3])))
+    return score, detail
+
+
+def _active_course_name() -> str:
+    from src import app_settings
+    return app_settings.course_name() or ""
+
+
 DETERMINISTIC = {
+    "skill_adherence": _chk_skill_adherence,
     "recording_time_budget": _chk_recording_time,
     "document_length_pages": _chk_document_length,
     "analogy_placement": _chk_analogy_placement,

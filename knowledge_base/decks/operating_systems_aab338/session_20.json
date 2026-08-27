@@ -1,0 +1,762 @@
+{
+  "session_no": 20,
+  "source_file": "Deadlock Detection & Recovery",
+  "deck_title": "Deadlock Detection & Recovery",
+  "n_slides": 55,
+  "summary": "\n    - Slide 2: Deadlock Detection & Recovery\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Scheduling Concepts, Criteria & Types\n    - Slide 6: Detection - Single Instance\n    - Slide 7: Why Detect Deadlocks At All?\n    - Slide 8: Why Detect Deadlocks At All?\n    - Slide 9: Deadlock Detection Approach\n    - Slide 10: Wait-For Graph for Single-Instance Resources\n    - Slide 11: Wait-For Graph for Single-Instance Resources\n    - Slide 12: Wait-For Graph for Single-Instance Resources\n    - Slide 13: Single Instance\n    - Slide 14: Single Instance\n    - Slide 15: Single Instance\n    - Slide 16: Single Instance\n    - Slide 17: Single Instance\n    - Slide 18: Detecting Deadlock via Cycle Check\n    - Slide 19: Detection - Multiple Instances\n    - Slide 20: Cycle ≠ Deadlock\n    - Slide 21: Detection Algorithm\n    - Slide 22: Deadlock Detection Steps\n    - Slide 23: Deadlock Detection Steps\n    - Slide 24: Worked Example: Five Processes, Three Resources\n    - Slide 25: Worked Example: Five Processes, Three Resources\n    - Slide 26: Quiz Time!\n    - Slide 27: Detection Frequency\n    - Slide 28: Choosing Detection Frequency\n    - Slide 29: When Should Detection Actually Run?\n    - Slide 30: Triggering Detection\n    - Slide 31: Three Common Policies\n    - Slide 32: Recovery: Process Termination\n    - Slide 33: Recovering From a Confirmed Deadlock\n    - Slide 34: Recovering From a Confirmed Deadlock\n    - Slide 35: Recovering From a Confirmed Deadlock\n    - Slide 36: Recovering From a Confirmed Deadlock\n    - Slide 37: Which Process Should Be Aborted?\n    - Slide 38: Which Process Should Be Aborted?\n    - Slide 39: Recovery -  Resource Preemption\n    - Slide 40: Resource Preemption\n    - Slide 41: Resource Preemption\n    - Slide 42: Deadlock Recovery\n    - Slide 43: Resource Preemption: Take the Resource, Not the Process\n    - Slide 44: Rollback: Restoring a Safe State\n    - Slide 45: Rollback: Restoring a Safe State\n    - Slide 46: Rollback: Restoring a Safe State\n    - Slide 47: Rollback: Restoring a Safe State\n    - Slide 48: Starvation\n    - Slide 49: Starvation\n    - Slide 50: Starvation\n    - Slide 51: Quiz Time!\n    - Slide 52: Deadlock Detection & Recovery\n    - Slide 53: Memory Management Fundamentals",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Deadlock Detection & Recovery",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Deadlock Avoidance: Banker's Algorithm\nProcess Creation — fork(), Hierarchy & Parent-Child\nRunning a Program — exec()\nProcess Termination — exit() & wait()\nPutting It Together — fork → exec → wait → exit\nContext Switching — Mechanism & Overhead\nDeadlock Avoidance Concept\nSafe & Unsafe States\nSafe sequence: safe vs unsafe states\nSingle-Instance Avoidance\nResource allocation graph algorithm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Deadlock Avoidance: Banker's Algorithm\nProcess Creation — fork(), Hierarchy & Parent-Child\nRunning a Program — exec()\nProcess Termination — exit() & wait()\nPutting It Together — fork → exec → wait → exit\nContext Switching — Mechanism & Overhead\nBanker's Algorithm\nData structures: Available, Max, Allocation,\nNeed: Safety algorithm \nResource-request algorithm\nNumerical Walkthrough\nWorked Banker's example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Scheduling Concepts, Criteria & Types",
+      "body": "Scheduling Concepts, Criteria & Types\nTypes of Parallelism\n1. Introduction to Scheduling\n        – The CPU-I/O burst cycle\n2. Schedulers & Process Queues\n3. Scheduling Criteria\n        – CPU utilization & throughput\n        – Turnaround time, waiting time, response time\n4. CPU Scheduling\n        – Preemptive & Non - Preemptive \n5. The Dispatcher & Gantt Basics\nDeadlock Detection & Recovery\nThe Dispatcher \u000b& Gantt Basics\n1. Detection - Single Instance : Wait-for graph\n2. Detection - Multiple Instances: Detection algorithm\n3. Detection Frequency: When & how often to run detection\n4. Recovery- Process Termination: Aborting processes\n5. Recovery -  Resource Preemption : rollback & starvation\nDetection Frequency\nDetection - Multiple Instances\nWait-for graph\nDetection algorithm\nDetection - Single Instance\nRecovery -  Resource Preemption\nRecovery- Process Termination\nWhen & how often to run detection\nAborting processes\nRollback & starvation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Detection - Single Instance",
+      "body": "Detection - Single Instance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why Detect Deadlocks At All?",
+      "body": "OS Lets Deadlock Happen, Then Finds It\nNo prevention, no avoidance, deadlock can occur\nOS periodically checks system state for deadlock\nGoal: Detect deadlock, then recover from it\nMany OS grant requests immediately, unlike \u000bBanker's Algorithm which checks safety first",
+      "notes": "Alright, so far we've seen how deadlocks can be prevented or avoided. \u000bNow we'll look at a different approach where the operating system doesn't try to stop deadlocks\u000b from happening. Instead, it grants resource requests immediately without performing safety checks, \u000ballowing deadlocks to occur if they do. The operating system then periodically checks the system for \u000bdeadlocks, and if one is detected, it takes appropriate steps to recover from it.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Why Detect Deadlocks At All?",
+      "body": "OS Lets Deadlock Happen, Then Finds It",
+      "notes": "Next, let's compare deadlock avoidance and deadlock detection based on when the operating system takes action. \u000bIn avoidance, every resource request is checked before it is granted to ensure the system remains safe. \u000bIn detection, requests are granted immediately, and the operating system checks for deadlocks\u000b after the resources have already been allocated. This difference is what makes the\u000b two approaches fundamentally different.",
+      "tables": [
+        [
+          [
+            "Approach",
+            "When It Acts"
+          ],
+          [
+            "Avoidance",
+            "Before granting a request"
+          ],
+          [
+            "Detection",
+            "After requests are already granted"
+          ]
+        ],
+        [
+          [
+            "Approach",
+            "When It Acts"
+          ],
+          [
+            "Avoidance",
+            "Before granting a request"
+          ],
+          [
+            "Detection",
+            "After requests are already granted"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 9,
+      "title": "Deadlock Detection Approach",
+      "body": "Analogy\nAnalogy: Like a housing society with no security guard checking visitors at the gate, residents move freely; only later does the watchman do rounds and spot a locked-in mess, exactly like the OS checking for deadlock after allocation.",
+      "notes": "Analogy: Like a housing society with no security guard checking visitors at the gate, residents move freely;\u000b only later does the watchman do rounds and spot a locked-in mess, exactly like the OS checking for deadlock after allocation.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Wait-For Graph for Single-Instance Resources",
+      "body": "Collapsing the Resource-Allocation Graph\nBuilt from Resource-Allocation Graph (RAG), \u000bresource nodes removed\nNodes represent only processes, not resources\nEdge Pi to Pj means Pi waits for Pj\nDrawn only when each resource has one instance",
+      "notes": "Moving on, for systems where each resource type has only one instance, deadlock detection \u000bbecomes even simpler using a Wait-For Graph. It is derived from the Resource Allocation Graph \u000bby removing all resource nodes, leaving only processes as nodes. An edge from Pi to Pj indicates \nthat Pi is waiting for Pj to release a resource. This simplified graph makes deadlock detection \u000bmuch easier in single-instance resource systems.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Wait-For Graph for Single-Instance Resources",
+      "body": "Collapsing the Resource-Allocation Graph",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Graph Type",
+            "Node Types",
+            "Edge Meaning"
+          ],
+          [
+            "RAG",
+            "Process + Resource",
+            "Request / Assignment"
+          ],
+          [
+            "Wait-for Graph",
+            "Process only",
+            "Pi waits for Pj to release"
+          ]
+        ],
+        [
+          [
+            "Graph Type",
+            "Node Types",
+            "Edge Meaning"
+          ],
+          [
+            "RAG",
+            "Process + Resource",
+            "Request / Assignment"
+          ],
+          [
+            "Wait-for Graph",
+            "Process only",
+            "Pi waits for Pj to release"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Wait-For Graph for Single-Instance Resources",
+      "body": "Analogy\nAnalogy: In a shared-taxi group, if you need a seat held by your friend, you don't track the seat itself, you simply say you are waiting on that friend directly, just like the wait-for graph drops the resource node and links process to process.",
+      "notes": "In a shared-taxi group, if you need a seat held by your friend, you don't track the seat itself, \u000byou simply say you are waiting on that friend directly, just like the wait-for graph drops the resource node and links process to process.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Single Instance",
+      "body": "Cycle Is Necessary and Sufficient\nTheorem: deadlock exists iff a cycle exists\nRun depth-first search to find cycles\nMaintain graph, re-check on each blocked request\nDetection cost: O(n²), n = number of processes",
+      "notes": "Next, deadlock detection becomes very straightforward in a Wait-For Graph.\u000b The key theorem states that a deadlock exists if and only if a cycle exists in the graph.\u000b The operating system can use a Depth-First Search (DFS) to detect these cycles, \u000btypically checking the graph whenever a process becomes blocked.\u000b This detection process has a time complexity of O(n²), where n is the number of processes.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Single Instance",
+      "body": "Cycle Is Necessary and Sufficient",
+      "notes": "Finally, interpreting the result is straightforward. If the Wait-For Graph contains no cycle, \u000bthe system is deadlock-free because no processes are waiting in a circular chain. However, \u000bif a cycle exists, then every process involved in that cycle is deadlocked, as \u000beach one is waiting for another process in the same loop to release a resource.",
+      "tables": [
+        [
+          [
+            "Graph State",
+            "Conclusion"
+          ],
+          [
+            "No cycle",
+            "System is deadlock-free"
+          ],
+          [
+            "Cycle exists",
+            "Every process in cycle is deadlocked"
+          ]
+        ],
+        [
+          [
+            "Graph State",
+            "Conclusion"
+          ],
+          [
+            "No cycle",
+            "System is deadlock-free"
+          ],
+          [
+            "Cycle exists",
+            "Every process in cycle is deadlocked"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Single Instance",
+      "body": "Example : \nConsider a Resource Allocation Graph with 4 Processes P1, P2, P3, P4, and 4 Resources R1, R2, R3, R4.\nR1\nR2\nR4\nR3\nP1\nP2\nP3\nP4\nStep 1\nStep 2\nP1\nExample\nConsider a Resource Allocation Graph with 4 Processes P1, P2, P3, P4, and 4 Resources R1, R2, R3, R4",
+      "notes": "Alright, let's trace this example step by step. First, choose any process as the starting point for tracing the graph. \nHere, we begin with P1 and start following its outgoing edges to check whether \nthe path eventually leads back to P1, forming a cycle.\nFirst, start from P1 and follow its outgoing edge to P2.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Single Instance",
+      "body": "P1\nP2\nP3\nStep 3\nStep 4\nP2\nP1\nP1\nP2\nP3\nStep 5\nP4\nExample",
+      "notes": "Next, mark P1 as visited so we don't visit it again while tracing this path.\nNow, from P2, continue following the next edge to P3.\nNext, P2 is also marked as visited, and we continue exploring from P3.\nThen, from P3, follow the edge to P4, extending the current path.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Single Instance",
+      "body": "So here, found a cycle as the Process P4 again came back to the Process P1 which is the starting point (i.e., it's a closed-loop)\nStep 6\nP1\nP2\nP3\nP4\nExample",
+      "notes": "Finally, from P4, the edge leads back to P1, the starting process.\u000b Since we return to the starting point, a cycle is detected, indicating a\u000b deadlock in this single-instance resource allocation graph.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Detecting Deadlock via Cycle Check",
+      "body": "Analogy\nAnalogy: Picture a WhatsApp group where each person keeps forwarding a reply request to the next; if the chain finally loops back to the first person, nobody ever gets a reply, just like a cycle in the wait-for graph trapping every process in it.",
+      "notes": "Picture a WhatsApp group where each person keeps forwarding a reply request to the next; if the chain finally loops back to the first person, nobody ever gets a reply, just like a cycle in the wait-for graph trapping every process in it.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Detection - Multiple Instances",
+      "body": "Detection - Multiple Instances",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Cycle ≠ Deadlock",
+      "body": "Multiple Instances Change The Rule\nWith multiple instances of a resource type, a cycle in the graph no longer guarantees deadlock\nExample: 2 printers shared among 3 processes\nA cycle can exist, yet one instance may still free up\nCycle is necessary but not sufficient for deadlock\nWait-for graph cannot be used here",
+      "notes": "Moving on, the situation changes when resource types have multiple instances.\u000b In this case, a cycle alone does not guarantee a deadlock because another instance \u000bof the resource may still become available and allow a waiting process to continue. \u000bSo, while a cycle is necessary, it is not sufficient to conclude that a deadlock exists. \u000bThis is why the Wait-For Graph approach cannot be used for systems with multiple resource instances.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Detection Algorithm",
+      "body": "Data Structures\nThis algorithm reuses the structure of  Safety Algorithm, but checks current pending Requests, not future Max needs",
+      "notes": "Now, let's look at the Deadlock Detection Algorithm for systems with multiple resource instances.\u000b It uses a structure very similar to the Safety Algorithm, but with one important difference.\u000b| Instead of checking a process's future maximum need, it works with the current pending Request of each process. \u000bThe algorithm maintains three data structures:",
+      "tables": [
+        [
+          [
+            "Structure",
+            "Size",
+            "Meaning"
+          ],
+          [
+            "Available",
+            "1 x m",
+            "Free instances per resource type"
+          ],
+          [
+            "Allocation",
+            "n x m",
+            "Instances currently held per process"
+          ],
+          [
+            "Request",
+            "n x m",
+            "Instances each process is waiting for"
+          ]
+        ],
+        [
+          [
+            "Structure",
+            "Size",
+            "Meaning"
+          ],
+          [
+            "Available",
+            "1 x m",
+            "Free instances per resource type"
+          ],
+          [
+            "Allocation",
+            "n x m",
+            "Instances currently held per process"
+          ],
+          [
+            "Request",
+            "n x m",
+            "Instances each process is waiting for"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Deadlock Detection Steps",
+      "body": "Check Whether Processes Complete\nWork = Available; set Finish[i] = false if Allocation_i ≠ 0, else Finish[i] = true\nA process holding no resources cannot be part of a deadlock, so it starts already finished\nPick i where Finish[i]=false and Request_i ≤ Work",
+      "notes": "Next, let's see how the Deadlock Detection Algorithm begins. It first sets Work = Available \u000band initializes Finish[i] for every process. If a process has Allocation[i] = 0, it cannot be part of a deadlock,\u000b so Finish[i] is set to true. Otherwise, it starts as false. The algorithm then looks for a process with \u000bFinish[i] = false whose Request[i] ≤ Work, meaning its pending request can be satisfied.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Deadlock Detection Steps",
+      "body": "Work = Work + Allocation_i; set Finish[i] = true\nRepeat until no such i exists\nAny process with Finish[i]=false is deadlocked\nCheck Whether Processes Complete",
+      "notes": "Finally, whenever the algorithm finds such a process, it assumes the process completes, \u000badds its allocated resources back to Work using Work = Work + Allocation[i], and marks Finish[i] = true. \u000bThis process is repeated until no more processes can proceed. At the end, any process with Finish[i] = false\u000b is identified as deadlocked, since its request could never be satisfied.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Worked Example: Five Processes, Three Resources",
+      "body": "Algorithm Step by Step",
+      "notes": "Now, let's apply the Deadlock Detection Algorithm to a worked example. \nSince all resource instances are currently allocated, Available = Work = (0, 0, 0). Request[P0] = (0, 0, 0) \ncan be satisfied immediately, so Finish[P0] becomes true, and its allocated resources are released, \nupdating Work to (0, 1, 0). Even after this update, no other process has a Request ≤ Work,\n so P1, P2, P3, and P4 remain with Finish = false, indicating that they are deadlocked.",
+      "tables": [
+        [
+          [
+            "Process",
+            "Allocation (A,B,C)",
+            "Request (A,B,C)"
+          ],
+          [
+            "P0",
+            "0,1,0",
+            "0,0,0"
+          ],
+          [
+            "P1",
+            "2,0,0",
+            "2,0,2"
+          ],
+          [
+            "P2",
+            "3,0,3",
+            "0,0,1"
+          ],
+          [
+            "P3",
+            "2,1,1",
+            "1,0,0"
+          ],
+          [
+            "P4",
+            "0,0,2",
+            "0,0,2"
+          ]
+        ],
+        [
+          [
+            "Process",
+            "Allocation",
+            "Request"
+          ],
+          [
+            "P0",
+            "0, 1, 0",
+            "0, 0, 0"
+          ],
+          [
+            "P1",
+            "2, 0, 0",
+            "2, 0, 2"
+          ],
+          [
+            "P2",
+            "3, 0, 3",
+            "0, 0, 1"
+          ],
+          [
+            "P3",
+            "2, 1, 1",
+            "1, 0, 0"
+          ],
+          [
+            "P4",
+            "0, 0, 2",
+            "0, 0, 2"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "Worked Example: Five Processes, Three Resources",
+      "body": "Algorithm Step by Step\nResource types A, B, C have 7, 2 and 6 instances; all are \u000bcurrently allocated, so Available = (0, 0, 0).\nP0's Request (0,0,0) ≤ Work → Finish[P0]=true\nWork updates to (0,1,0) after adding P0's Allocation\nNo other Request fits within new Work\nP1, P2, P3, P4 remain Finish=false: deadlocked",
+      "notes": "Now, let's apply the Deadlock Detection Algorithm to a worked example. \u000bSince all resource instances are currently allocated, Available = Work = (0, 0, 0). Request[P0] = (0, 0, 0) \u000bcan be satisfied immediately, so Finish[P0] becomes true, and its allocated resources are released, \u000bupdating Work to (0, 1, 0). Even after this update, no other process has a Request ≤ Work,\u000b so P1, P2, P3, and P4 remain with Finish = false, indicating that they are deadlocked.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Detection Frequency",
+      "body": "Detection Frequency",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Choosing Detection Frequency",
+      "body": "Balance Overhead & Recovery Time\nThe detection algorithm itself costs CPU time, so it cannot run continuously. The OS must pick a sensible frequency\nDetection algorithm costs O(m n²) per run\nRunning too often wastes CPU on healthy states\nRunning too rarely lets deadlocks persist longer\nMore entangled processes make recovery costlier later",
+      "notes": "Finally, the operating system must decide how often to run the Deadlock Detection Algorithm. \u000bSince each execution costs O(m × n²), running it too frequently wastes CPU time when the system is healthy. \u000bOn the other hand, running it too infrequently allows deadlocks to persist longer,\u000b making recovery more difficult as more processes and resources become involved. \u000bThe operating system therefore chooses a detection frequency that balances \u000bdetection overhead with recovery cost.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "When Should Detection Actually Run?",
+      "body": "Analogy\nAnalogy: Like an electrician checking wiring for a short: checking every minute wastes effort, checking once a month lets the fault spread.",
+      "notes": "Analogy: Like an electrician checking wiring for a short: checking every minute wastes effort, checking once a month lets the fault spread.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Triggering Detection",
+      "body": "Three Common Policies\nPer-request detects deadlocks as soon as they occur\nInfrequent checks may reveal many overlapping cycles\nUtilisation drop is a practical real-system signal",
+      "notes": "Finally, each detection policy has its own practical advantage. Per-request detection\n identifies deadlocks almost immediately, but it comes with the highest overhead. \u000bIf the operating system checks only infrequently, it may discover multiple overlapping \u000bdeadlocks at once, making recovery more complex. In real systems, a sudden drop \u000bin CPU utilisation is often used as a practical signal that many processes are blocked,\u000b prompting the operating system to run the deadlock detection algorithm.",
+      "tables": [
+        [
+          [
+            "Policy",
+            "Trigger Condition",
+            "Trade-off"
+          ],
+          [
+            "Per-request",
+            "Run whenever a request cannot be granted",
+            "Instant detection, high overhead"
+          ],
+          [
+            "Fixed interval",
+            "Run every fixed period, e.g. hourly",
+            "Low overhead, delayed detection"
+          ],
+          [
+            "Utilisation-based",
+            "Run when CPU utilisation falls below a threshold, e.g. 40%",
+            "Runs only when system looks stuck"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "Three Common Policies",
+      "body": "Analogy",
+      "notes": "Like a factory inspecting its machines, the manager can inspect after every alarm \u000b(per-request policy), on a fixed schedule (fixed-interval policy), or only \u000bwhen production efficiency drops noticeably (utilisation-based policy). \u000bSimilarly, an operating system decides when to run deadlock detection based on one of these three triggering policies.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Recovery: Process Termination",
+      "body": "Recovery: Process Termination",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Recovering From a Confirmed Deadlock",
+      "body": "Two Broad Recovery Methods\nHeading: Recovering From a Confirmed Deadlock\nSubheading: Two Broad Recovery Methods\nContent:\nOnce detection confirms a deadlock, the OS must break the cycle. \nOnce detection confirms a deadlock, the OS must break the cycle",
+      "notes": "Alright, once the operating system confirms that a deadlock exists, simply detecting it is not enough.\u000b The deadlock must be resolved so that the affected processes can continue execution. \u000bTo achieve this, the operating system needs to break the circular wait by recovering from the deadlock.\u000b In the next few slides, we'll explore the two main recovery methods used to accomplish this.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Recovering From a Confirmed Deadlock",
+      "body": "Two Broad Recovery Methods\nDeadlock Recovery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Recovering From a Confirmed Deadlock",
+      "body": "Two Broad Recovery Methods\nTermination kills one or more deadlocked processes\nPreemption snatches resources instead, covered next\nTermination is simpler but destroys process work",
+      "notes": "Next, there are two main ways to recover from a deadlock. The first is process termination, \u000bwhere the operating system kills one or more deadlocked processes to break the circular wait. \u000bThe second is resource preemption, where resources are taken away from selected processes\u000b without terminating them, which we'll discuss next. While termination is the simpler approach,\u000b it comes at the cost of losing the work already performed by the terminated processes.",
+      "tables": [
+        [
+          [
+            "Strategy",
+            "Action",
+            "Trade-off"
+          ],
+          [
+            "Abort all deadlocked processes",
+            "Kill every process in the cycle at once",
+            "Guarantees recovery, wastes all their work"
+          ],
+          [
+            "Abort one at a time",
+            "Kill one process, re-run detection",
+            "Cheaper per step, needs repeated checks"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 36,
+      "title": "Recovering From a Confirmed Deadlock",
+      "body": "Analogy",
+      "notes": "Like a group project stuck because members wait on each other: the teacher can disband the whole group, or remove one member at a time until work resumes.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Which Process Should Be Aborted?",
+      "body": "Selection Criteria & Side Effects\nHeading: Which Process Should Be Aborted?\nSubheading: Selection Criteria & Side Effects\nContent:\nWhen aborting one process at a time, the OS picks a victim using cost-minimising criteria, similar to choosing a scheduling priority.\nProcess priority: lower-priority process chosen first\nCPU time already consumed: less loss if aborted early\nResources held: prefer process holding fewer resources\nRemaining work needed to finish: prefer far-from-done process\nProcess type: batch preferred over interactive process\nRepeated selection of same process risks starvation\nProcess priority\nLower-priority process chosen first\nCPU time already consumed\nLess loss if aborted early\nResources held\nPrefer process holding fewer resources\nRemaining work needed to finish\nPrefer far-from-done process\nWhen aborting one process at a time, the OS picks a victim using cost-minimising criteria, similar to choosing a scheduling priority",
+      "notes": "Next, if the operating system terminates one process at a time, it selects the victim based on the lowest recovery cost.\u000b Factors such as process priority, CPU time already used, resources held, \u000bremaining work, and process type are considered. Batch processes are usually preferred over interactive ones, \u000band the operating system must avoid repeatedly aborting the same process to prevent starvation.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Which Process Should Be Aborted?",
+      "body": "Selection Criteria & Side Effects\nHeading: Which Process Should Be Aborted?\nSubheading: Selection Criteria & Side Effects\nContent:\nWhen aborting one process at a time, the OS picks a victim using cost-minimising criteria, similar to choosing a scheduling priority.\nProcess priority: lower-priority process chosen first\nCPU time already consumed: less loss if aborted early\nResources held: prefer process holding fewer resources\nRemaining work needed to finish: prefer far-from-done process\nProcess type: batch preferred over interactive process\nRepeated selection of same process risks starvation\nProcess type\nBatch preferred over interactive process\nSelection\nRepeated selection of same process risks starvation\nWhen aborting one process at a time, the OS picks a victim using cost-minimising criteria, similar to choosing a scheduling priority\nProcess type",
+      "notes": "Finally, the process type also influences the decision. The operating system generally prefers \u000bterminating batch processes rather than interactive processes, since interactive applications \u000bdirectly affect the user experience. At the same time, it must avoid repeatedly selecting the\u000b same process for termination, as that could result in starvation.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Recovery -  Resource Preemption",
+      "body": "Recovery -  Resource Preemption",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Resource Preemption",
+      "body": "Take Resource, Not Process\nSelected process loses one held resource temporarily\nFreed resource is handed to a blocked process\nInstead of aborting a process, the OS may reclaim a safely preemptable resource from one process and allocate it to another process in the cycle\n1\n2",
+      "notes": "Next, instead of terminating a process, the operating system can use resource preemption\u000b to recover from a deadlock. In this approach, it temporarily takes a safely preemptable resource\u000b from one process and reallocates it to another blocked process in the deadlock cycle. \u000bThis helps break the circular wait while allowing the affected processes to continue execution later.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Resource Preemption",
+      "body": "Cycle breaks without destroying the process itself\nThree problems must be solved: victim, rollback, starvation\nInstead of aborting a process, the OS may reclaim a safely preemptable resource from one process and allocate it to another process in the cycle.\n3\n4\nTake Resource, Not Process\nInstead of aborting a process, the OS may reclaim a safely preemptable resource from one process and allocate it to another process in the cycle",
+      "notes": "Finally, resource preemption breaks the deadlock without terminating any process by \u000breclaiming a safely preemptable resource and assigning it to a blocked process. However, \u000bthis approach introduces three important challenges: selecting the victim process, rolling back \u000bthe affected process to a safe state, and preventing starvation if the same process is repeatedly chosen for preemption.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Deadlock Recovery",
+      "body": "Termination & Preemption",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Termination",
+            "Preemption"
+          ],
+          [
+            "What is removed",
+            "The process",
+            "A resource instance"
+          ],
+          [
+            "Process survives?",
+            "No",
+            "Yes, but paused"
+          ],
+          [
+            "Work lost",
+            "All of it",
+            "Only unsaved progress"
+          ]
+        ],
+        [
+          [
+            "Aspect",
+            "Termination",
+            "Preemption"
+          ],
+          [
+            "What is removed",
+            "The process",
+            "A resource instance"
+          ],
+          [
+            "Process survives?",
+            "No",
+            "Yes (may be rolled back)"
+          ],
+          [
+            "Work lost",
+            "All of it",
+            "Only unsaved progress"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 43,
+      "title": "Resource Preemption: Take the Resource, Not the Process",
+      "body": "Analogy\nAnalogy: Like a library recalling a book from a reader before the due date to give it to a waitlisted student, the reader keeps their membership but temporarily loses the book.",
+      "notes": "Like a library recalling a book from one reader to give it to a waitlisted student, \nthe reader keeps their library membership but temporarily loses the book\n. Similarly, in resource preemption, the operating system takes back a resource\n from one process and gives it to another, without terminating the process itself.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Rollback: Restoring a Safe State",
+      "body": "Total Rollback vs Partial Rollback\nA process cannot simply resume after losing a resource mid-way; its computation may now be inconsistent\nProcess\nStep 1\nStep 2\nStep 3 \u000b(Using resource)\nResource lost mid-way\nComputation\u000bNow inconsistent\nSo, it must roll back to a safe point",
+      "notes": "Moving on, when a process loses a resource through preemption, it cannot always continue\u000b from the same point because its computation may become inconsistent. Instead, \u000bthe operating system performs a rollback, restoring the process to a previously saved safe\u000b state from which it can restart execution correctly. This rollback can be either total or partial, \u000bdepending on how much of the process needs to be undone.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Rollback: Restoring a Safe State",
+      "body": "Total Rollback vs Partial Rollback",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Rollback Type",
+            "How It Works",
+            "Cost"
+          ],
+          [
+            "Total rollback",
+            "Abort process, restart from the very beginning",
+            "Simple, but wastes all progress"
+          ],
+          [
+            "Partial rollback",
+            "Roll back only to the last checkpoint before this resource was acquired",
+            "Cheaper, but needs saved checkpoints"
+          ]
+        ],
+        [
+          [
+            "Rollback Type",
+            "How It Works",
+            "Cost"
+          ],
+          [
+            "Total rollback",
+            "Abort process, restart from the very beginning",
+            "Simple, but wastes all progress"
+          ],
+          [
+            "Partial rollback",
+            "Roll back to the most recent safe checkpoint.",
+            "Cheaper, but needs saved checkpoints"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 46,
+      "title": "Rollback: Restoring a Safe State",
+      "body": "OS periodically saves process checkpoints for this purpose\nPartial rollback needs the checkpoint just before resource use\nWithout checkpoints, only total rollback is possible\nRollback is easier if resource usage order was known in advance\nTotal Rollback vs Partial Rollback\n1\nOS periodically saves process checkpoints for this purpose\n2\nPartial rollback restores the process to the most recent safe checkpoint\n3\nWithout checkpoints, only total rollback is possible\n4\nRollback is easier if resource usage order was known in advance",
+      "notes": "Next, to support rollback, the operating system periodically saves checkpoints of a process. \u000bIf a recent checkpoint is available, the process can perform a partial rollback and resume from the \u000blast safe state before using the resource. Without checkpoints, only a total rollback is possible, \u000brestarting the process from the beginning. Rollback is also easier when the resource usage order is known in advance.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Rollback: Restoring a Safe State",
+      "body": "Analogy\nAnalogy: Like a cook who loses a borrowed ingredient midway through a recipe: with notes on each step, she redoes just the last step; without notes, she must restart the whole dish.",
+      "notes": "Like a cook who loses a borrowed ingredient midway through a recipe,\u000b she can redo only the last few steps if she has recipe notes (checkpoints). \u000bWithout those notes, she must start the entire dish again. Similarly,\u000b rollback uses checkpoints for partial recovery; otherwise, a total rollback is required.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Starvation",
+      "body": "Same Process Keeps Losing Out\nHeading: Starvation Under Repeated Preemption\nSubheading: Making Sure One Process Doesn't Always Pay\nContent:\nA pure cost-minimising victim selection may repeatedly pick the same cheap process, so it never finishes its work.\nSame low-cost process selected again on every cycle\nThat process keeps rolling back, never progressing\nThis is starvation, seen earlier with scheduling priorities\nFix: include preemption count in the cost function\nGuarantee: a process can be preempted only a finite number of times\nSame low-cost process selected again on every cycle\nThat process keeps rolling back, never progressing\nThis is starvation, seen earlier with scheduling priorities\nFix: include preemption count in the cost function\nGuarantee: a process can be preempted only a finite number of times\nA pure cost-minimising victim selection may repeatedly pick the same cheap process, so it never finishes its work.\nA pure cost-minimising victim selection may repeatedly pick the same cheap process, so it never finishes its work",
+      "notes": "Finally, resource preemption can also lead to starvation if the operating system repeatedly \u000bselects the same low-cost process as the victim. That process keeps rolling back and may \u000bnever finish its execution. To prevent this, the operating system includes the preemption count in its \u000bvictim selection strategy, ensuring that no process is preempted an unlimited number of times.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Starvation",
+      "body": "Same Process Keeps Losing Out",
+      "notes": "Next, the main cause of starvation is that the cost function ignores previous preemptions,\u000b so the same low-cost process keeps getting selected as the victim. A simple solution is to\u000b include the number of times a process has already been preempted in the cost calculation \u000bor reduce its chances of being selected after several preemptions.\u000b This ensures that every process eventually gets a fair opportunity to complete.",
+      "tables": [
+        [
+          [
+            "Cause",
+            "Fix"
+          ],
+          [
+            "Cost function ignores history",
+            "Add 'times preempted' as a cost factor"
+          ],
+          [
+            "Cheapest victim always reselected",
+            "Cap or de-prioritise victims after N preemptions"
+          ]
+        ],
+        [
+          [
+            "Cause",
+            "Fix"
+          ],
+          [
+            "Cost function ignores history",
+            "Add 'times preempted' as a cost factor"
+          ],
+          [
+            "Cheapest victim always reselected",
+            "Cap or de-prioritise victims after N preemptions"
+          ]
+        ],
+        [
+          [
+            "Cause",
+            "Fix"
+          ],
+          [
+            "Cost function ignores history",
+            "Add 'times preempted' as a cost factor"
+          ],
+          [
+            "Cheapest victim always reselected",
+            "Cap or de-prioritise victims after N preemptions"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 50,
+      "title": "Starvation",
+      "body": "Analogy\nAnalogy: Like a cricket team's selectors always dropping the same player because he is easiest to replace, he never gets an innings to prove himself unless selectors factor in how often he was already dropped.",
+      "notes": "Like a cricket team that keeps dropping the same player because he is the easiest to replace,\u000b he never gets a chance to prove himself. Similarly, if the operating system always preempts\u000b the same low-cost process, it suffers starvation. To avoid this, the system considers how \u000bmany times a process has already been preempted when selecting the next victim.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Deadlock Detection & Recovery",
+      "body": "Multithreading\nThread Types, Models \nIntroduction to Threads\nThread Operations & Multicore\nProcess Vs Threads\nConcurrency & Parallelism\nTypes of Parallelism\nDetection - Single Instance\nWait-for graph\nDetection - Multiple Instances\nDetection algorithm\nDetection Frequency \nWhen & how often to run detection\nRecovery- Process Termination\nAborting processes\nRecovery -  Resource Preemption\nRollback & starvation\nScheduling Criteria\nSchedulers & Process Queues\nThe CPU-I/O burst cycle\nCPU utilization & throughput, Turnaround time, waiting time, response time\nIntroduction to Scheduling\nThe Dispatcher \u000b& Gantt Basics\nCPU Scheduling\nPreemptive & Non - Preemptive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Memory Management Fundamentals",
+      "body": "Memory Management Fundamentals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1Hr2irIe5y6DCMH54EU5a4RYuy2IUlpMAjwLmmt8LHlA/edit?slide=id.g3f2e300f852_0_2509#slide=id.g3f2e300f852_0_2509"
+}

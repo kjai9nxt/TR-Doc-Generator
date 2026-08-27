@@ -1,0 +1,633 @@
+{
+  "session_no": 29,
+  "source_file": "File System Implementation",
+  "deck_title": "File System Implementation",
+  "n_slides": 66,
+  "summary": "\n    - Slide 2: File System Implementation\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: File System Implementation\n    - Slide 6: File Allocation Methods\n    - Slide 7: Why Allocation Matters\n    - Slide 8: Why Allocation Matters\n    - Slide 9: Contiguous Allocation\n    - Slide 10: Contiguous Allocation\n    - Slide 11: Contiguous Allocation\n    - Slide 12: Linked Allocation\n    - Slide 13: Linked Allocation\n    - Slide 14: Linked Allocation\n    - Slide 15: Linked Allocation\n    - Slide 16: Linked Allocation\n    - Slide 17: Indexed Allocation\n    - Slide 18: Indexed Allocation\n    - Slide 19: Indexed Allocation\n    - Slide 20: FAT & Inode Structure\n    - Slide 21: Two Tracking Approaches\n    - Slide 22: FAT Table Mechanism\n    - Slide 23: FAT Table Mechanism\n    - Slide 24: FAT Table Mechanism\n    - Slide 25: FAT Chain Example\n    - Slide 26: Inode Structure Basics\n    - Slide 27: Inode Structure Basics\n    - Slide 28: Direct Indirect Pointers\n    - Slide 29: Direct Indirect Pointers\n    - Slide 30: Quiz Time!\n    - Slide 31: Free Space Management\n    - Slide 32: Free Space Tracking\n    - Slide 33: Free Space Tracking\n    - Slide 34: Bitmap Method\n    - Slide 35: Bitmap Method\n    - Slide 36: Free List Method\n    - Slide 37: Free List Method\n    - Slide 38: Grouping Method\n    - Slide 39: Grouping Method\n    - Slide 40: Counting Method\n    - Slide 41: Counting Method\n    - Slide 42: File System Types\n    - Slide 43: Why FS Types Differ\n    - Slide 44: Why FS Types Differ\n    - Slide 45: FAT16 vs FAT32\n    - Slide 46: FAT16 vs FAT32\n    - Slide 47: NTFS Overview\n    - Slide 48: NTFS Overview\n    - Slide 49: NTFS Overview\n    - Slide 50: ext2 Filesystem\n    - Slide 51: Journaling Concept\n    - Slide 52: Journaling Modes\n    - Slide 53: Journaling Modes\n    - Slide 54: ext3 Filesystem (third extended file system)\n    - Slide 55: ext4 Filesystem (fourth extended file system)\n    - Slide 56: ext4 Filesystem\n    - Slide 57: HFS+ Overview (Hierarchical File System Plus)\n    - Slide 58: HFS+ Overview\n    - Slide 59: Fragmentation in file systems \n    - Slide 60: Fragmentation By Method\n    - Slide 61: Quiz Time!\n    - Slide 62: File System Implementation\n    - Slide 63: File System Implementation\n    - Slide 64: I/O Systems & I/O Models",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "File System Implementation",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "File System Concepts & Directories\nFile Concept\nAttributes, operations & types\nFile Access Methods\nSequential, direct, indexed\nDirectory Structure\nSingle-level, two-level, tree, \u000bacyclic graph, general graph",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "File System Concepts & Directories\nFile System Architecture\nLayout & implementation \nMounting a file system\nProtection\nFile sharing & protection\nAccess control & file permissions\nFile System Architecture\nLayout & implementation \nMounting a file system\nProtection\nFile sharing & protection\nAccess control & file permissions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "File System Implementation",
+      "body": "File System Implementation\nThe Dispatcher \u000b& Gantt Basics\nFree Space Management\nFAT & Inode Structure\nContiguous, linked & indexed\nFile Allocation Table (FAT), Inode structure & direct / indirect blocks\nFrame Allocation\nFragmentation in file systems\nFile System Types\nBit vector (bitmap), Linked list, grouping & counting\nFAT16 / FAT32, NTFS, ext2 / ext3 / ext4, Journaling file systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "File Allocation Methods",
+      "body": "File Allocation Methods",
+      "notes": "First of all we will start with the File Allocation Methods",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why Allocation Matters",
+      "body": "Mapping Files To Blocks\nA file occupies one or more disk blocks, and the operating system must record exactly which blocks belong to it\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\nFile A\nFile allocation (Recorded by OS)\nFile name\nDisk Blocks Allocated\nFile A\n10, 11, 17\nDisk Blocks",
+      "notes": "Now, think of a file as something that is physically distributed across the storage device rather\u000b than necessarily stored in one continuous location. The operating system keeps track of these \u000blocations so that it knows where the complete file is stored , in this diagram, File A is allocated \u000bto disk blocks 10, 11, and 17. The OS records this mapping, which allows it to locate and access the file’s data when required.”",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Why Allocation Matters",
+      "body": "Mapping Files To Blocks\nDirectory entry holds a pointer to this block record\n01\n02\n03\nAllocation method defines how that record is organised\nChoice affects access speed, fragmentation and file growth\n04\nThree classic methods: contiguous, linked, indexed",
+      "notes": "So, when a file is stored on disk, the OS must maintain a record of where its blocks are located.\u000b The directory entry points to this record, while the allocation method determines how those block locations are organised.\u000b This organisation impacts access speed, fragmentation, and how easily the file can grow. \u000bWe’ll look at three classic approaches: contiguous, linked, and indexed allocation.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Contiguous Allocation",
+      "body": "One Continuous Block\nContiguous allocation stores a file as one unbroken run of disk blocks, described by a start block and a length\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\nFile A\nFile allocation (Recorded by OS)\nFile name\nStart Block\nFile A\n9\nDisk Blocks\nLength\n3",
+      "notes": "Next, let’s look at contiguous allocation, where a file is placed in consecutive disk blocks. \u000bIn the diagram, File A begins at block 9 and occupies 3 blocks, so the OS only needs to record the start block and the length. \u000bThis makes locating the file straightforward because its blocks follow one continuous sequence.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Contiguous Allocation",
+      "body": "One Continuous Block\nDirectory stores only start block and block count\n01\n02\n03\nFast sequential access — blocks read in physical order\nFast direct access — block i = start + i\n04\n05\nExternal fragmentation grows as files are created and deleted\nFile growth needs adjoining free space, often unavailable\nOne Continuous Block",
+      "notes": "The main advantage of contiguous allocation is that all file blocks are next to each other. \u000bThis makes both sequential and direct access fast. For direct access, the OS can calculate the required block using start + block number. \u000bHowever, there is a problem when files are created and deleted: small free spaces can appear between files, causing external fragmentation.\u000bAlso, if a file needs to grow, there may not be enough free blocks immediately after it, so the file may need to be moved.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Contiguous Allocation",
+      "body": "One Continuous Block\n11\nFile allocation (Recorded by OS)\nFile name\nStart Block\nFile A\n3\nDisk Blocks\nLength\n3\n12\n13\n14\n15\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n36\n37\n40\n3\n4\n5\nFile B\n11\n5\nFile C\n22\n8\nFile D\n36\n2\nFile E\n31\n4",
+      "notes": "Now, this diagram shows how multiple files can be placed using contiguous allocation. \u000bEach file occupies a continuous sequence of blocks, and the OS records just two values: \u000bthe start block and the length. For example, File C starts at block 22 with a length of 8, \u000bso it occupies blocks 22 through 29. Similarly, File A uses blocks 3 to 5, while File E uses 31 to 34. \u000bThis shows how the OS can identify every block of a file from just its starting position and size.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Linked Allocation",
+      "body": "Chained Block Pointers\nLinked allocation scatters a file's blocks anywhere on disk, chaining them with a pointer to the next block stored inside each block.\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\nFile A\nDisk Blocks",
+      "notes": "Next, let’s look at linked allocation, where the file does not need consecutive disk blocks.\u000b Instead, each allocated block contains a pointer to the next block, creating a chain. \u000bIn this diagram, File A starts at block 5, which points to 9; block 9 points to 16,\u000b and 16 points to the next block in the file. So, even though the blocks are scattered \u000bacross the disk, the pointers allow the OS to follow the complete file.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Linked Allocation",
+      "body": "Chained Block Pointers\nDirectory stores only a pointer to the first block\n01\n02\n03\nNo external fragmentation — any free block is usable\nFile grows dynamically, one block at a time",
+      "notes": "In linked allocation, the directory needs to remember only the first block of the file. \nFrom that block, the OS follows the pointers to find the remaining blocks. \nBecause the file can use free blocks from different locations, \u000bthe blocks do not need to be next to each other, so external fragmentation is avoided. \nIf the file grows, the OS can simply find another free block and link it to the end of the chain.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Linked Allocation",
+      "body": "Chained Block Pointers\nOnly sequential access — chain must be walked in order\n04\n05\n06\nPointer storage inside each block wastes usable space\nA single broken pointer corrupts the rest of the file",
+      "notes": "Linked allocation is useful for flexible file storage, but accessing a specific block can be slower. \nFor example, to reach the 5th block, the OS may need to follow the chain from the first block through the earlier blocks. \nEach block also uses some space to store its pointer. If a pointer is damaged, \u000bthe OS may lose the link to the following blocks, making that part of the file inaccessible.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Linked Allocation",
+      "body": "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\nFile A\nDisk Blocks\nFile allocation (Recorded by OS)\nFile name\nStart \nFile A\n5\nEnd\n11\nChained Block Pointers",
+      "notes": "Now, this diagram shows how the blocks of File A are connected in linked allocation.\u000b The file begins at block 5, and instead of occupying consecutive blocks,\u000b the pointer chain takes us from 5 to 9, 9 to 16, and 16 to 11. The OS records 5\u000b as the Start and 11 as the End of the chain. The important point is that the \u000bphysical positions of the blocks do not matter; the pointers determine the order in which the file is accessed.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Linked Allocation",
+      "body": "Analogy",
+      "notes": "A treasure hunt where each clue reveals the location of the next clue — \u000bjust as each block reveals the address of the next block in linked allocation.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Indexed Allocation",
+      "body": "Index Block Pointers\nIndexed allocation gathers every block pointer of a file into one dedicated index block, giving direct access without scattering pointers inside data blocks\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\nFile A\nDisk Blocks\n5\n13\n16\nFile allocation (Recorded by OS)\nFile name\nIndex Block\nFile A\n10",
+      "notes": "Moving on, indexed allocation uses a separate index block to keep track\u000b of all the data blocks belonging to a file. Here, block 10 acts as the index block and \u000bstores pointers to blocks 5, 13, and 16. So, instead of storing pointers inside every data block, \u000bthe OS can refer to this single index block to locate the file’s data. \u000bThis also allows direct access, because the required block can be found through its entry in the index.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Indexed Allocation",
+      "body": "Index Block Pointers\nDirectory entry stores a pointer to the index block\n01\n02\n03\nIndex block lists the address of every data block\nDirect access: block i found at index-block entry i",
+      "notes": "The directory entry first points to the index block. The index block then contains the addresses of all the file’s data blocks.\n For example, if the OS needs the third block of the file, it checks the third entry in the index block and gets the address of that data block. \nThis lets the OS access individual blocks directly without following a chain from the beginning.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Indexed Allocation",
+      "body": "Index Block Pointers\nNo external fragmentation, unlike contiguous allocation\n04\n05\n06\nLarge files need multilevel or combined index schemes\nIndex block itself consumes extra disk space",
+      "notes": "Indexed allocation can place a file’s data blocks in different free locations, so it avoids external fragmentation. \nThe limitation is the size of the index block.\n If a file has more data blocks than the index block can hold addresses for, \u000bthe OS needs additional levels or combined index structures to store more addresses. \nAlso, the index block uses disk space even though it does not store the file’s actual data.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "FAT & Inode Structure",
+      "body": "FAT & Inode Structure",
+      "notes": "Next we will be learning about the FAT & Inode Structure",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Two Tracking Approaches",
+      "body": "FAT And Inode\nThese two common structures used by file systems to track the disk blocks belonging to files\nFile Allocation Table\ninode",
+      "notes": "After looking at the three allocation methods, let’s see how file systems actually keep track of file blocks.\n Two common approaches are FAT and inodes.\nThey both help the file system locate a file’s data on disk, \nbut they store and organize the block information differently. We’ll look at each approach and see how it works.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "FAT Table Mechanism",
+      "body": "Cluster Chain Links\nThe File Allocation Table sits near the start of the disk with one entry per cluster, chaining a file's clusters together\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\nFile allocation Table\nCluster a\nDisk Blocks\nCluster b\nCluster c",
+      "notes": "Now, let’s understand how the File Allocation Table, or FAT, tracks file storage. \u000bFAT is maintained near the start of the disk, and it contains one entry for each cluster. \u000bThese entries are used to connect the clusters belonging to a file, forming a chain. \nIn the diagram, the FAT contains entries for Cluster A, Cluster B, and Cluster C, \u000bwhile the disk blocks are shown separately as the actual storage locations. \u000bThe FAT acts like a map that tells the OS which cluster belongs to the file and which cluster\u000b should be accessed next. So, instead of searching the entire disk, the OS can follow these links to locate the file’s data",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "FAT Table Mechanism",
+      "body": "Cluster Chain Links\nDirectory entry stores only the file's starting cluster number\n01\n02\n03\nEach FAT entry holds the number of the next cluster\nA special end-of-file marker closes the chain",
+      "notes": "Let’s see how the FAT chain is followed. The directory first gives the OS the starting cluster of the file. \u000bThe OS checks that cluster’s FAT entry to find the next cluster, then repeats this process for each cluster. \u000bFor example, if the chain is 5 → 9 → 16, the FAT entries tell the OS to move from cluster 5 to 9, \u000band then from 9 to 16. When the OS reaches the end-of-file marker, it knows that the file has no more clusters.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "FAT Table Mechanism",
+      "body": "Cluster Chain Links\nEntry value 0 marks a cluster as free\n04\n05\n06\nA bad-cluster marker flags a damaged cluster\nTwo FAT copies are kept on disk for redundancy",
+      "notes": "FAT entries can also show whether a cluster is available or unusable. A zero value indicates \u000ba free cluster that can be allocated to a file, while a bad-cluster marker identifies a cluster that should not be used. \u000bFAT-based file systems also keep two copies of the FAT to provide redundancy if one copy is damaged or corrupted.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "FAT Chain Example",
+      "body": "Tracing Cluster Links\nFile F starts at cluster 9, following the FAT entries reveals its full cluster chain and where it ends",
+      "notes": "Now, let’s trace a complete FAT chain using this example. File F starts at cluster 9, \u000bso we first check the FAT entry for cluster 9, which points to cluster 16. From 16, \u000bthe entry points to 2, and cluster 2 then points to 22. Finally, the entry for cluster 22 contains EOF, \u000bmeaning the chain has ended. So, the complete cluster chain for File F is 9 → 16 → 2 → 22 → EOF.\u000b This shows how FAT entries allow the OS to trace the file’s clusters one by one",
+      "tables": [
+        [
+          [
+            "Cluster",
+            "FAT Entry Value"
+          ],
+          [
+            "9",
+            "16"
+          ],
+          [
+            "16",
+            "2"
+          ],
+          [
+            "2",
+            "22"
+          ],
+          [
+            "22",
+            "EOF"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 26,
+      "title": "Inode Structure Basics",
+      "body": "Metadata Plus Pointers\nAn inode is a fixed-size on-disk record holding a file's metadata and the pointers to its data clusters, identified by an inode number\nInode Record\n1\n2\n3\nFile's metadata\nPointers\nInode Number",
+      "notes": "Now, let’s look at the inode, which provides a different way of tracking a file. \u000bAn inode is a fixed-size on-disk record associated with a file and identified by an inode number.\u000b It stores the file’s metadata, such as information about the file, along with pointers that help \u000blocate its data clusters. In the diagram, the inode record contains entries such as 1, 2, and 3, \u000bwith each inode number identifying a particular record. The selected inode then connects\u000b to the file’s metadata and its pointers, allowing the OS to obtain both information \u000babout the file and the locations of its data.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Inode Structure Basics",
+      "body": "Metadata Plus Pointers\nStores file type, permissions, owner and group IDs\n01\n02\n03\nStores size, timestamps and a link count\nStores pointers to data clusters, not the file name\n04\n05\nDirectory entry maps a file name to an inode number\nMultiple directory entries can point to one inode",
+      "notes": "An inode stores the important information the file system needs to manage a file. \nThis includes the file type, permissions, owner and group IDs, file size, timestamps, and link count. \nIt also contains pointers to the file’s data blocks, but not the file name. The directory keeps the file name and maps it to the inode number. \nBecause of this separation, multiple directory entries can point to the same inode and give the same file multiple names.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Direct Indirect Pointers",
+      "body": "Scaling File Size\nA fixed-size inode cannot list pointers for a huge file directly, so it layers direct and indirect pointers to reach far more data blocks",
+      "notes": "Next, the challenge is that an inode has limited space, \u000bso storing the address of every data block would not work for very large files. \u000bTo solve this, the inode uses a combination of direct and indirect pointers. \u000bDirect pointers can reach data blocks immediately, while indirect pointers lead to additional blocks \u000bthat contain more addresses. This layered approach lets the same fixed-size\u000b inode handle files that are much larger than it could point to directly",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Direct Indirect Pointers",
+      "body": "Scaling File Size\nDirect pointers point straight to a data block\n01\n02\n03\nSingle-indirect pointer leads to a block full of pointers\nDouble-indirect pointer leads to a block of single-indirect clusters\n04\n05\nTriple-indirect pointer adds one more level of indirection\nEach added level multiplies addressable file size sharply",
+      "notes": "Next, these pointers provide different levels of reach from the inode. \u000bA direct pointer gives the OS the address of a data block immediately. When more storage is needed, \u000ba single-indirect pointer takes us to another block that contains multiple data-block addresses. \u000bA double-indirect pointer adds another layer, pointing to blocks that themselves contain these address blocks.\u000b Triple-indirect pointer adds one more level. So, with every additional level, \u000bthe number of data blocks that can be reached grows dramatically, allowing the inode to support very large files",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Free Space Management",
+      "body": "Free Space Management",
+      "notes": "Next we will be learning about the Free Space Management",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Free Space Tracking",
+      "body": "Why It Matters?\nBefore allocating a new block, the operating system must quickly know which disk blocks are free, free space management maintains this record\nFree Space Management In OS\nBitmap\nLinked List\n Counting\nGrouping",
+      "notes": "Before the OS can give a new block to a file, it needs a quick way to find available space. \nThis is called free space management. Different methods organize this information in different ways.\n A bitmap uses bits to represent block status, while a linked list connects free blocks. \nCounting records a starting block and how many consecutive blocks are free.\n Grouping keeps several free-block addresses together and uses one entry to point to another group.",
+      "tables": [
+        [
+          [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ],
+        [
+          [
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 33,
+      "title": "Free Space Tracking",
+      "body": "Why It Matters?\nEvery deleted or new file changes free block status\n01\n02\nSlow free-block lookup delays every file creation",
+      "notes": "Free space changes whenever files are created or deleted. When a file is deleted,\u000b its blocks become available for reuse. When a new file is created, the OS must find suitable free blocks for it. \u000bIf finding those blocks takes too long, file creation and other file operations can become slower.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Bitmap Method",
+      "body": "One Bit Per Block\nA bit vector reserves one bit per disk block, set to 1 for free and 0 for allocated, giving a compact free-space map\nDisk Blocks\n1\nBlock 1\n0\nBlock 2\n0\nBlock 3\n0\nBlock 4\n1\nBlock 5\n1\nBlock 6\n1\nBlock 7\n1\nBlock 8\n0\nBlock 9",
+      "notes": "The bitmap gives the OS a simple way to check block availability. Each disk block has one corresponding bit. \nFor example, Block 1 has value 1, so the OS knows it is free, while Block 2 has value 0, so it is already in use.\n The OS can scan these bits to find free blocks and allocate them when needed. \nBecause only one bit is used per block, the bitmap provides a compact way to track free space.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Bitmap Method",
+      "body": "One Bit Per Block\nBitmap size equals total blocks divided by 8 bytes\n01\n02\n03\nScanning finds first free block via first set bit\nWord-at-a-time scanning skips fully allocated regions fast\n04\nEasy to implement and to spot contiguous free runs",
+      "notes": "The bitmap uses one bit for each disk block. So, if there are N blocks, the bitmap needs N bits, or N/8 bytes, \u000bbecause 8 bits make one byte. To find free space, the OS can scan the bitmap for a set bit, which represents a free block. \u000bIt can also check multiple bits at once to skip fully allocated regions and find free blocks more quickly. \u000bThis makes the bitmap simple and useful for finding consecutive free blocks.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Free List Method",
+      "body": "Chained Free Blocks\nThe linked list method chains every free block together, with a pointer to the next free block stored inside each free block itself\nDisk Blocks\n1\nBlock 1\n0\nBlock 2\n0\nBlock 3\n0\nBlock 4\n1\nBlock 5\n1\nBlock 6\n1\nBlock 7\n1\nBlock 8\n0\nBlock 9",
+      "notes": "Next, the Free List Method manages available disk space by connecting\u000b all the free blocks into a chain. Each free block contains a pointer to the next free block,\u000b so the OS can move through the list whenever it needs to find available space.\u000b In the diagram, the blocks marked 1 are free, while those marked 0 are allocated. \u000bThe arrows show how the free blocks are linked together—for example,\u000b the OS can follow the pointers from one free block to the next instead of scanning the entire disk.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Free List Method",
+      "body": "Chained Free Blocks\nOperating system keeps only a pointer to the first free block\n01\n02\n03\nAllocating a block unlinks it and updates the head pointer\nFreeing a block relinks it back into the chain\n04\n05\nNo extra bitmap space needed, unlike the bit vector\nFinding a specific free block still needs sequential traversal",
+      "notes": "Now, think of the available disk blocks as a chain that the OS can maintain without keeping \u000ba separate record of every free block. The OS starts with the first free block, and from there each block\u000b tells it where to find the next one. When a block is needed for a new file, the OS removes it from this chain \u000band moves the head pointer to the next available block. When a previously used block becomes free, it can\u000b be connected back into the chain. Since the information is maintained through the blocks themselves, \u000bthis avoids the additional storage required by a bit vector. The limitation is that if the OS needs \u000bto locate a particular free block deeper in the list, it has to follow the chain sequentially.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Grouping Method",
+      "body": "Batching Free Addresses\nGrouping stores the addresses of several free blocks inside the first free block, instead of chaining one pointer at a time\nDisk Blocks\n1\nBlock 1\n0\nBlock 2\n0\nBlock 3\n0\nBlock 4\n1\nBlock 5\n1\nBlock 6\n1\nBlock 7\n1\nBlock 8\n0\nBlock 9\nAddresses of Free Blocks\nA1\nA5\nA6\nA8",
+      "notes": "Next, the Grouping Method improves on the basic free-list approach by keeping several\u000b free-block addresses together instead of maintaining a separate link for every block. \u000bIn the diagram, Block 1 is free, and it stores the addresses A1, A5, A6, and A8, \u000bwhich identify other available blocks. When the OS needs free space, it can obtain several available addresses \u000bfrom this group at once. This reduces the amount of sequential traversal needed \u000bcompared with a simple linked list, especially when many free blocks need to be managed.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Grouping Method",
+      "body": "Batching Free Addresses\nFirst free block holds addresses of the next n-1 free blocks\n01\n02\n03\nLast stored address points onward to another such group\nRetrieves many free blocks in a single disk read\n04\nCuts the number of pointer-following steps versus a plain linked list",
+      "notes": "Grouping manages free blocks in batches. The first free block stores the addresses of several other free blocks, \u000band the last address can lead to the next group. For example, instead of following a separate link for every free block,\u000b the OS can obtain several free-block addresses from one group. This reduces the number of pointer-following steps \u000band makes managing large amounts of free space more efficient than a simple linked list.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Counting Method",
+      "body": "Free Block Run\nCounting exploits the fact that several consecutive blocks are often free together, storing a start address plus a count of contiguous free blocks",
+      "notes": "The Counting Method is useful when free blocks appear in consecutive runs. For example, \u000bif blocks 20 through 24 are free, the OS can record just the starting block 20 and a count of 5, \u000binstead of recording each block separately. This makes the free-space information more compact \u000band helps the OS quickly identify a continuous region of free blocks.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Counting Method",
+      "body": "Free Block Run\nEach free-list entry holds a first block address and a run length\n01\n02\n03\nOne entry can represent many contiguous free blocks\nFar fewer entries needed when free space is not scattered\n04\nLess efficient when free blocks are mostly isolated singles",
+      "notes": "So, the Counting Method represents free space in terms of\u000b continuous runs rather than individual blocks. Each entry records where the run begins and its run length,\u000b allowing one entry to describe several contiguous free blocks. \u000bThis keeps the free-space record small when available blocks occur together.\u000b However, when free space becomes highly scattered and consists mostly of isolated blocks, \u000bthe method needs many separate entries and becomes less efficient.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "File System Types",
+      "body": "File System Types",
+      "notes": "Now , we will be learning about the File System Types",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Why FS Types Differ",
+      "body": "Allocation Meets Reality\nA file system implements allocation, FAT/inode structures and free-space management into one deployable package, tuned to a device and OS",
+      "notes": "A real file system combines several mechanisms to manage files. It uses an allocation method to organize file data, a structure such as a FAT or inode to track that data and its metadata, and a free-space method to find available blocks. These mechanisms work together, and the exact design depends on the file system and the operating system or device where it is used.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Why FS Types Differ",
+      "body": "Allocation Meets Reality\nFAT16, FAT32 target simple flash/removable media\n01\n02\n03\nNTFS targets Windows desktop and server volumes\next2, ext3, ext4 target Linux systems\n04\n05\nHFS+ / APFS target macOS and Apple devices\nJournaling capability separates crash-safe from unsafe designs",
+      "notes": "Different file systems are designed for different operating systems, devices, and requirements. FAT16 and FAT32 are \u000bsimple designs commonly associated with removable storage. NTFS provides features for Windows desktop \u000band server systems, while ext2, ext3, and ext4 are widely used in Linux. HFS+ and APFS are associated \u000bwith Apple systems, with APFS being the newer design. Some file systems also support journaling,\u000b which helps reduce the risk of file-system inconsistency after a crash by recording changes before they are fully applied.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "FAT16 vs FAT32",
+      "body": "Cluster And Size Limits\nFAT32 extends FAT16 by widening cluster addressing, removing FAT16's small-volume ceiling and raising maximum file and volume size.",
+      "notes": "FAT32 was introduced to overcome several size limitations of FAT16. \nIt uses 32-bit cluster numbers, with 28 bits actually used for cluster addressing, allowing many more clusters to be addressed. \nFAT16 has a fixed-size root directory, while FAT32 stores the root directory in the data area so it can grow. \nBoth support large removable-storage volumes compared with older FAT variants, but FAT32 still has a maximum file size of 4 GB minus 1 byte. \nNeither FAT16 nor FAT32 provides journaling, so they do not record file-system changes in a journal for crash recovery.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "FAT16",
+            "FAT32"
+          ],
+          [
+            "Cluster address width",
+            "16-bit",
+            "32-bit (28 usable)"
+          ],
+          [
+            "Max volume size",
+            "~2 GB (4 GB with 64 KB cluster)",
+            "~2 TB theoretical, 32 GB typical OS format"
+          ],
+          [
+            "Max file size",
+            "2 GB",
+            "4 GB minus 1 byte"
+          ],
+          [
+            "Root directory",
+            "Fixed size, limited entries",
+            "Dynamic, stored as a regular file"
+          ],
+          [
+            "Journaling",
+            "No",
+            "No"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 46,
+      "title": "FAT16 vs FAT32",
+      "body": "FAT16 mostly obsolete, used only in legacy embedded devices\nFAT32 still common on USB drives and SD cards\nCluster And Size Limits\nFAT",
+      "notes": "FAT evolved from FAT12 to FAT16 and then FAT32 as storage requirements increased. \u000bFAT16 is now mostly found in older or legacy systems, while FAT32 remains common on removable storage\u000b such as USB drives and SD cards. FAT32 can support much larger volumes than FAT16 because \u000bit uses a wider cluster address space. The 2 TB figure should be presented as a commonly supported\u000b maximum rather than a universal theoretical limit, because actual limits depend on implementation and formatting choices.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "NTFS Overview",
+      "body": "Windows Native File System\nNTFS (New Technology File System) is Microsoft's modern file system, adding \n Large-volume support absent in FAT\nJournaling\nSecurity\nLarge-volume support",
+      "notes": "NTFS is the modern file system commonly used by Windows. It provides journaling, which helps\u000b maintain file-system consistency after an unexpected shutdown. It also provides security features, \u000bsuch as permissions that control who can access files and folders. NTFS supports much larger storage volumes\u000b and files than the older FAT file systems, making it better suited for modern Windows computers and servers.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "NTFS Overview",
+      "body": "Windows Native File System\nJournaling logs metadata changes for crash recovery\n01\n02\n03\nPer-file, per-folder access control lists (ACLs)\nSupports file/folder compression and transparent encryption\n04\n05\nMaster File Table (MFT) replaces a simple FAT-style table\nSupports volumes and files far larger than FAT32",
+      "notes": "NTFS combines several features to make file management more reliable and secure. \u000bJournaling helps the file system recover metadata consistently after a crash. ACLs control which users \u000bor groups can access individual files and folders. NTFS also supports compression and transparent encryption. \u000bInstead of a simple FAT-style table, it uses the Master File Table (MFT) to maintain records about files and folders. \u000bThese features allow NTFS to support much larger storage than FAT32.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "NTFS Overview",
+      "body": "Windows Native File System\nNTFS",
+      "notes": "NTFS was introduced by Microsoft in 1993 and provides several features beyond basic file storage.\u000b Journaling helps the file system recover more reliably after failures, while file compression can reduce \u000bthe amount of storage needed. Transactions help maintain consistency when multiple related changes are made, \u000band security features control access to files and folders. Together, these features make NTFS suitable for managing data on Windows systems.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "ext2 Filesystem",
+      "body": "No Journaling Design\nUses inode structure with direct/indirect block pointers\n01\n02\n03\nOrganises disk into block groups for locality\nNo journal — crash requires full fsck scan\n04\n05\nStill used on flash media needing low write overhead\nSuperseded by ext3/ext4 for most modern Linux use",
+      "notes": "ext2 uses inodes and direct/indirect pointers to locate file data. It also divides the disk into block groups, \u000bkeeping related data and metadata closer together for better locality. Unlike ext3 and ext4, ext2 has no journal, \u000bso after an unexpected shutdown, the file system may need a full fsck check to find and repair inconsistencies. \u000bThe lack of journaling reduces write overhead, which can make ext2 useful in some environments, \u000balthough it is largely replaced by ext3 and ext4 on modern Linux systems.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Journaling Concept",
+      "body": "Write Ahead Logging\nJournaling writes an intended change to a dedicated log before modifying the real file system, so an interrupted operation can be completed or undone safely\nAvoids full-disk consistency scan after unexpected shutdown",
+      "notes": "journaling keeps a record of important file-system changes before those changes are fully applied.\u000b If the system crashes during an update, the file system can use the journal during recovery to determine \u000bwhat changes need to be completed or restored to a consistent state. This greatly reduces the need for a\u000b lengthy full-file-system consistency check after an unexpected shutdown.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Journaling Modes",
+      "body": "Metadata Versus Full Data\nFile systems offer journaling modes trading recovery safety for speed, from journaling only metadata to journaling both metadata and file data",
+      "notes": "Moving on, journaling modes differ in how much information the file system records before making a change. \u000bA metadata-only approach protects the file system’s structure and bookkeeping \u000bwhile keeping write overhead lower. A full-data approach also records the actual file data,\u000b providing stronger protection if a crash happens during a write, but it requires more disk activity. \u000bSo, the choice is essentially a trade-off between recovery safety and speed",
+      "tables": [
+        [
+          [
+            "Mode",
+            "What Is Logged",
+            "Safety vs Speed"
+          ],
+          [
+            "Journal (data mode)",
+            "Metadata and file data",
+            "Safest, slowest"
+          ],
+          [
+            "Ordered (default)",
+            "Metadata only, data flushed first",
+            "Balanced, common default"
+          ],
+          [
+            "Writeback",
+            "Metadata only, no data ordering guarantee",
+            "Fastest, least safe"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 53,
+      "title": "Journaling Modes",
+      "body": "Crash mid-write: journal shows update was logged, not confirmed\n01\n02\n03\nRemount replays the logged step, discarding the incomplete step\nFilesystem returns to last consistent state within seconds\nMetadata Versus Full Data",
+      "notes": "When a crash happens during a write, the journal helps the file system determine what was in progress.\u000b The journal shows that an update was recorded but not fully completed. During remount, the file system \u000breplays the logged operation or discards the incomplete operation as needed. This allows the file \u000bsystem to quickly return to a consistent state without checking the entire disk.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "ext3 Filesystem (third extended file system)",
+      "body": "Journaling Added\nBackward compatible with existing ext2 volumes\n01\n02\n03\nJournal records pending changes before they are applied\nRecovery replays journal instead of scanning entire disk\n04\n05\nSupports three journaling modes with different safety and speed\nStill uses ext2's original block/inode layout otherwise",
+      "notes": "Moving on, ext3 builds on the existing ext2 design by introducing journaling, \u000bso the core block and inode structure remains familiar. Before making important file-system changes,\u000b the journal records what needs to be done. If a crash occurs, the system can use that\u000b record during recovery instead of checking the entire disk from scratch.\u000b ext3 also provides three journaling modes, allowing the system to balance recovery safety \u000bagainst performance. Because it remains backward compatible with ext2,\u000b the transition could be made without redesigning the entire file-system structure.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "ext4 Filesystem (fourth extended file system)",
+      "body": "Extents Replace Pointers\nExtents map a contiguous block range in one entry\n01\n02\n03\nFewer metadata entries needed versus per-block pointers\nSupports far larger file and volume sizes than ext3\n04\n05\nFaster fsck, delayed allocation, and checksummed journal\nCurrent default file system on most Linux distributions",
+      "notes": "Next, ext4 improves the way large files are represented by using extents \u000binstead of maintaining separate pointers for individual blocks. An extent can describe an entire contiguous\u000b range with a single entry, which reduces the amount of metadata the system has to manage. \u000bThis allows ext4 to scale to much larger file and volume sizes than ext3. It also improves \u000boverall file-system operation through features such as faster fsck, delayed allocation, \u000band a checksummed journal, making ext4 a more scalable and reliable choice for modern Linux systems.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "ext4 Filesystem",
+      "body": "Extents Replace Pointers",
+      "notes": "Now, this diagram shows how the ext family evolved over time.\u000b The ext file system originated for Linux around 1992, and its major variants include ext2, ext3, and ext4. \u000bAs the file system evolved, newer versions added capabilities to improve reliability and performance.\u000b In ext4, the focus is on handling large amounts of data more efficiently through extents, \u000balong with features such as fast file system checks and online defragmentation.\u000b So, the diagram gives us the progression from the original ext design to the more capable ext4 file system",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "HFS+ Overview (Hierarchical File System Plus)",
+      "body": "macOS Native Filesystem\nUses a B-tree \"catalog file\" to index all files and folders for fast lookup\n01\nJournaling enabled by default for crash recovery, like NTFS and ext3/ext4\n02\nSupports Unicode file names, hard/symbolic links, and large volumes\n03",
+      "notes": "Moving on, HFS+ was designed as a native file system for macOS, \u000bwith a focus on efficiently organizing and locating files. Its B-tree catalog file works like an index,\u000b allowing the system to quickly search through the large collection of files and folders instead\u000b of checking them one by one. Journaling helps preserve file-system consistency after a crash,\u000b while support for Unicode file names, hard and symbolic links, \u000band large volumes provides flexibility for everyday macOS storage needs.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "HFS+ Overview",
+      "body": "macOS Native Filesystem\nAPFS (2017) superseded it, adding copy-on-write, snapshots and SSD/flash optimization\n04\nStill seen on older Macs and mechanical/Time Machine drives\n05",
+      "notes": "Next, HFS+ was eventually replaced by APFS in 2017, \u000bas storage technology and macOS requirements evolved. APFS introduced features such as \u000bcopy-on-write and snapshots, along with optimizations designed for SSD/flash storage. \u000bHFS+ hasn’t disappeared completely, though; it can still be encountered on older Macs \u000band some mechanical or Time Machine drives. So, HFS+ is mainly important today\u000b for understanding older macOS storage systems",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Fragmentation in file systems ",
+      "body": "Fragmentation in file systems",
+      "notes": "Now we will be learning about the Fragmentation in file systems",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Fragmentation By Method",
+      "body": "Susceptibility Compared",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Method / Filesystem",
+            "Internal Fragmentation",
+            "External Fragmentation"
+          ],
+          [
+            "Contiguous allocation",
+            "Low, one wasted block at end",
+            "High, grows steadily over time"
+          ],
+          [
+            "Linked allocation",
+            "Low, pointer overhead only",
+            "None, any free block usable"
+          ],
+          [
+            "Indexed / inode allocation",
+            "Moderate, block-size rounding",
+            "None, blocks placed anywhere"
+          ],
+          [
+            "FAT16 / FAT32",
+            "Moderate, larger with big clusters",
+            "Low, but grows without defragmentation"
+          ],
+          [
+            "NTFS",
+            "Present, eased by compression",
+            "Reduced via periodic defragmentation tools"
+          ],
+          [
+            "ext4",
+            "Present, reduced by extents",
+            "Reduced by delayed allocation and extents"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 61,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "File System Implementation",
+      "body": "File Allocation Methods\nContiguous\nlinked & indexed \nFAT & Inode Structure\nFile Allocation Table (FAT)\nInode structure & direct / indirect blocks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "File System Implementation",
+      "body": "Free Space Management\nBit vector (bitmap)\nLinked list\ngrouping & counting\nFile System Types\nFAT16 / FAT32, NTFS, ext2 / ext3 / ext4\nJournaling file systems\nFragmentation in file systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "I/O Systems & I/O Models",
+      "body": "I/O Systems & I/O Models",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1pv-eXvsPw9zggGmNHU8wDfA-CWrfSLczl5cPFSHXtzQ/edit?slide=id.g3f27ba313c8_0_1528#slide=id.g3f27ba313c8_0_1528"
+}

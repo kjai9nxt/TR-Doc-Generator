@@ -1,0 +1,444 @@
+{
+  "session_no": 6,
+  "source_file": "Working with the File System",
+  "deck_title": "Working with the File System",
+  "n_slides": 46,
+  "summary": "\n    - Slide 2: Working with File System\n    - Slide 3: Getting Started with Command Line\n    - Slide 4: Getting Started with Command Line\n    - Slide 5: Creating & Renaming\n    - Slide 6: Working with Files\n    - Slide 7: Working with Files\n    - Slide 8: Working With Files\n    - Slide 9: Working With Files\n    - Slide 10: Working With Files\n    - Slide 11: Working With Files\n    - Slide 12: Working With Files\n    - Slide 13: Working With Files\n    - Slide 14: Working With Files\n    - Slide 15: Working With Files\n    - Slide 16: Working With Files\n    - Slide 17: Working With Files\n    - Slide 18: Quiz Time!\n    - Slide 19: Working with Directories\n    - Slide 20: Working with Directories\n    - Slide 21: Working with Directories\n    - Slide 22: Working with Directories\n    - Slide 23: Working with Directories\n    - Slide 24: Working with Directories\n    - Slide 25: Working with Directories\n    - Slide 26: Working with Directories\n    - Slide 27: Working with Directories\n    - Slide 28: Working with Directories\n    - Slide 29: Working with Directories\n    - Slide 30: Working with Directories\n    - Slide 31: Working with Directories\n    - Slide 32: Working with Directories\n    - Slide 33: Working with Directories\n    - Slide 34: Working with Directories\n    - Slide 35: Working with Directories\n    - Slide 36: Copying Directory\n    - Slide 37: Working with Directories\n    - Slide 38: Working with Directories\n    - Slide 39: Quiz Time!\n    - Slide 40: Working with File System\n    - Slide 41: Working with File System\n    - Slide 44: Working with Files",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Working with File System",
+      "body": "",
+      "notes": "In this session, we’ll discuss “Working with File System”",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Getting Started with Command Line",
+      "body": "Getting Started with Command Line",
+      "notes": "Let’s quickly recap the commands we practiced earlier. We learned how to use ls to list files and directories, --help to see the options for a command, whoami to check the current logged-in user, history to view previously typed commands.",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "ls",
+            "List files & directories"
+          ],
+          [
+            "--help",
+            "Displays list of options for a given command"
+          ],
+          [
+            "whoami",
+            "Displays current logged in user"
+          ],
+          [
+            "history",
+            "It will show you the last five hundred commands you have entered."
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 4,
+      "title": "Getting Started with Command Line",
+      "body": "Getting Started with Command Line",
+      "notes": "Next we learned, clear to clean the screen, alias to defines a shortcut for a longer command, unalias to clear custom aliases defined with the alias command\nand exit to end a shell session.\nThese are the basic but very useful commands that form the foundation for working with the command line.",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "clear",
+            "Clears the shell"
+          ],
+          [
+            "alias",
+            "defines a shortcut for a longer command"
+          ],
+          [
+            "unalias",
+            "clear custom aliases defined with the alias command"
+          ],
+          [
+            "exit",
+            "Ends the shell"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Creating & Renaming",
+      "body": "Creating & Renaming\nWorking with File System\nWorking with Files\nWorking with Directories\nFile/Folder Paths, Creating & Renaming",
+      "notes": "Alright, moving ahead, let’s take a look at the agenda for today’s session. \u000b We’ll cover creating and renaming, working with files, directories, and understanding file and folder paths.\u000b By the end, you’ll know how to manage files easily from the command line.\"",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Working with Files",
+      "body": "Files and File Systems\nA file is a collection of related information \u000bthat is stored\nFiles may have an extension which are used denote type of the file\nPrograms open and operate files based on the file extension\nvideo.mp4\nImage & Video: \n.jpeg, .png, .tiff, .mp4, .mov\nindex.html\nDocs:\n.html, .js, .py, .docx, .txt",
+      "notes": "Let’s begin with the basics — files and file systems.\u000bA file is simply a collection of related information that’s stored on your computer.\u000bEach file usually has an extension, which tells us what type of file it is and how programs should handle it.\nFor example, an index.html file is an HTML document, while video.mp4 is a video file.\u000bExtensions like .jpeg, .png, and .tiff represent image files, .mp4 and .mov represent video files, and .html, .js, .py, .docx, or .txt represent documents or code.\nSo, the file extension plays an important role in helping both users and programs identify the nature of the file.\nNXT",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Working with Files",
+      "body": "Files and Folders\n/home/teja/Pictures/Hello.png\nC:\\Users\\teja\\Pictures\\Hello.png\nUsually, we organize files in folders and these folders are stored in other folders and this continues until we arrive at\n C:\\  drive or some other drive in Windows\nRoot directory ( / )in Linux-based systems and MacOS",
+      "notes": "Now, files are not just stored randomly — we usually keep them organized inside folders. \u000bThese folders can themselves contain more folders, and this nesting continues until we reach the root of the file system.\nOn Windows, the root is typically a drive like C:\\. \u000bFor example, the path C:\\Users\\teja\\Pictures\\Hello.png shows a file stored inside multiple folders under the C drive.\nIn Linux and MacOS, the root is represented by /. \u000bSo, the same file path there would look like /home/teja/Pictures/Hello.png.\nThis way, the folder structure helps us locate and manage files in an organized manner.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Working With Files",
+      "body": "Creating a File\n touch  creates an empty file\n$ touch practice.txt\n$ ls\nimage.png             video.mp4           output.json\nmessage.txt            Music                practice.txt\nBash\n$ touch filename\nSyntax\nCommands we have learned so far:  touch.",
+      "notes": "To create a new empty file, we use the touch command. The syntax is simple: touch filename.\nFor example, touch practice.txt will create a new file named practice.txt.\nWhen we run ls afterward, we can see that the new file is added to the list of existing files and folders.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Working With Files",
+      "body": "Viewing File Content\n cat  reads contents of file and prints it\n$ cat practice.txt\n$ \nBash\nCommands we have learned so far:  touch   cat.  \n$ cat filename\nSyntax",
+      "notes": "To view the contents of a file, we use the cat command. The syntax is cat filename.\nFor example, if we run cat practice.txt, it will display whatever content is inside the file.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Working With Files",
+      "body": "Echo\n echo  output/prints a string in the terminal\n$ echo \"Hello world!\"\nHello World!\nBash\nSyntax\n$ echo \"content\"\nCommands we have learned so far:  touch   cat.  echo.",
+      "notes": "echo is used to print text or output to the terminal. The syntax is echo \"content\".\nFor example, echo \"Hello world!\" will simply display Hello World! on the screen.\n\nSo now, along with touch,cat  we’ve also learned echo.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Working With Files",
+      "body": "Writing to Files Using echo Command\nUsing  >  operator we can redirect the output of echo command to a file\n$ echo \"Hello world!\" > practice.txt\n$ cat practice.txt\nHello World!\nBash\nCommands we have learned so far:  touch   cat.  echo.  \nSyntax\n$ echo \"content\" > filename",
+      "notes": "echo can also be used to write content into a file using the > operator.\u000b The syntax is echo \"content\" > filename.\nFor example, echo \"Hello world!\" > practice.txt will create the file practice.txt with that content.\u000b When we check it with cat practice.txt, it shows Hello World!\nSo now, we’ve learned how to create files, view them, and also write into them.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Working With Files",
+      "body": "Renaming a File\n$ mv practice.txt exam.txt\n$ cat exam.txt\nHello World!\n$ cat practice.txt\ncat: practice.txt: No such file or directory\nBash\n mv  renames the file names\ndestination can be a new or existing file\nCommands we have learned so far:  touch   cat   echo   mv.  \nSyntax\n$ mv source destination",
+      "notes": "We’re looking at how to rename files using the mv command. \u000bIt’s simple: you type mv, then the original file name, and then the new name. \u000bLike, mv practice.txt  exam.txt changes practice.txt to exam.txt.\u000b If you check with cat exam.txt, you’ll see the file’s content, but cat practice.txt gives an error since it’s gone. \u000bCool, right? Why might you want to rename a file in a project?\n\u000bGoing forward, we’ve covered touch, cat, echo, and now mv. Next, we’ll explore more commands!",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Working With Files",
+      "body": "Copying Files\n cp  copies src_file to dest_file\nIf dest_file already exist then \u000bcp overrides the contents of dest_file\n$ cat exam.txt\nHello World!\n$ cp exam.txt fun_text.txt\n$ cat fun_text.txt\nHello World!\nBash\nCommands we have learned so far:  touch   cat   echo   mv   cp.  \nSyntax\n$ cp src_file dest_file",
+      "notes": "Moving ahead, let’s talk about copying files.\u000b The command for this is cp, short for copy.\nHere’s the idea: when you run cp exam.txt fun_text.txt, it creates a duplicate of exam.txt with the name fun_text.txt. Both files will now have the same content.\nBut here’s something important — if the destination file already exists, cp will overwrite it without warning.\n\nSo here’s a question for you: can you think of a scenario where overwriting an existing file accidentally could cause problems?",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Working With Files",
+      "body": "Deleting a File\n$ ls\nimage.png             video.mp4           fun_text.txt\nmessage.txt            Music                exam.txt\n$ rm exam.txt\n$ ls\nimage.png             video.mp4          fun_text.txt\nmessage.txt            Music                      \nBash\n rm   removes (delete) files\nCommands we have learned so far:  touch   cat   echo   mv   cp   rm.   \nSyntax\n$ rm filename",
+      "notes": "Alright, let's learn the \"rm\" command for deleting files.\nThe syntax is simple: rm filename\nIn our example, we first check our files with \"ls\", then remove exam.txt with \"rm exam.txt\". When we check again, the file is gone.\nRemember: The rm command permanently deletes files with no recycling bin.\nSo far we've learned six key commands: touch, cat, echo, mv, cp, and rm.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Working With Files",
+      "body": "Hidden Files\nLinux, by default, hides many of the sensitive system files, in order to avoid accidental changes\nHidden files starts with \".\"",
+      "notes": "Next up, let's talk about hidden files in Linux.\nLinux hides many sensitive system files by default. This is a safety feature to prevent accidental changes that might damage your system.\nHow can you identify hidden files? Simple - they always start with a dot \".\" character.\nLet's move on to see how we can work with these hidden files.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Working With Files",
+      "body": "Hidden Files\n$ ls \nimage.png             video.mp4           fun_text.txt\nmessage.txt            Music                exam.txt\n$ ls -a\n.\t\t\t\t   ..\t\t             image.png        video.mp4           message.txt            Music               exam.txt\t     fun_text.txt\n.bashrc               .profile \nBash\n$ ls -a\nSyntax\n ls -a   shows the hidden files\nCommands we have learned so far:  touch   cat   echo   mv   cp   rm   ls -a.",
+      "notes": "Moving on, to view hidden files we use \"ls -a\" command where \"-a\" means \"all\".\nIn our example, regular \"ls\" shows normal files, but \"ls -a\" reveals hidden files starting with dots like .bashrc and .profile. \u000bIt also shows \".\" (current directory) and \"..\" (parent directory).\nThese hidden files typically contain important configurations, so handle with care.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Working With Files",
+      "body": "Summary",
+      "notes": "Let's take a moment to summarize what we've learned about working with files.\nWe've covered seven essential commands:\nFirst, \"touch\" creates empty files. \"Cat\" displays file contents on screen. \u000b\"Echo\" writes text to standard output. \u000b\"Mv\" renames or moves files. \"Cp\" copies files or their contents. \"Rm\" permanently deletes files. And finally, \"ls -a\" reveals hidden files.\nThese commands form the foundation of file management in Linux. Which of these commands do you think you'll use most often?",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "touch",
+            "Creates an empty file"
+          ],
+          [
+            "cat",
+            "Reads contents of file and prints it"
+          ],
+          [
+            "echo",
+            "Writes text to standard output"
+          ],
+          [
+            "mv",
+            "Renames the file names"
+          ],
+          [
+            "cp",
+            "Copies content from files"
+          ],
+          [
+            "rm",
+            "Removes (delete) files"
+          ],
+          [
+            "ls -a",
+            "Shows the hidden files"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 18,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Working with Directories",
+      "body": "",
+      "notes": "Now let's move forward to our next topic that is working with directories.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Working with Directories",
+      "body": "Creating A Directory\n mkdir  creates a directory\n$ mkdir tutorial\n$ ls\nimage.png             video.mp4           exam.txt\nmessage.txt            Music                tutorial\n$ mkdir directory_name\nSyntax\nCommands we have learned so far:  mkdir",
+      "notes": "To create a new directory, we use the \"mkdir\" command, which stands for \"make directory.\" \u000bThe syntax is simple: mkdir followed by the name you want to give your directory.\nIn our example, we use \"mkdir tutorial\" to create a directory named \"tutorial.\"\u000b When we run the \"ls\" command to list our files, we can see our new directory appears alongside our existing files.\nDirectories are essential for organizing your files in a structured way, just like folders on your computer.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Working with Directories",
+      "body": "$ pwd\n/home/ib-developer\nCurrent Working Directory\n$ pwd \nSyntax\n pwd  prints name of current working directory\nCurrent Working Directory Path\nCommands we have learned so far:  mkdir   pwd",
+      "notes": "Next, let's see how to check our location in the file system.\nThe \"pwd\" command stands for \"present working directory\" and shows your current location.\nIn our example, typing \"pwd\" shows we're in \"/home/ib-developer\" - this is our current path.\nThis command is essential for knowing where you are before running other commands.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Working with Directories",
+      "body": "Changing the Current Working Directory\n$ pwd\n/home/ib-developer \n$ cd ./tutorial\n$ pwd\n/home/ib-developer/tutorial\nBash\n cd  changes the current working directory\n$ cd directory_path\nSyntax\nCommands we have learned so far:  mkdir   pwd   cd.",
+      "notes": "Now let's learn how to move between directories.\nThe \"cd\" command stands for \"change directory\" and lets you navigate to different locations.\nIn our example, we first check our location with \"pwd\", showing we're in \"/home/ib-developer\".\nThen we use \"cd ./tutorial\" to move into the tutorial directory. The \"./\" means \"in the current directory\".\nWhen we check again with \"pwd\", we see we're now in \"/home/ib-developer/tutorial\".\nWe've now learned three key directory commands: mkdir, pwd, and cd.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Working with Directories",
+      "body": "Creating a Directory in Directory\n mkdir  creates a directory\n$ mkdir directory_name\nSyntax\n$ mkdir notes\n$ ls\nnotes\n$ cd notes\n$ pwd\n/home/ib-developer/tutorial/notes\nCommands we have learned so far:  mkdir   pwd   cd.\nBash",
+      "notes": "Next, let's create directories inside other directories.\nUsing \"mkdir notes\", we create a subdirectory. We confirm it exists with \"ls\".\nWe then navigate into it with \"cd notes\" and confirm our new location with \"pwd\".\nThis is how we build nested directory structures for better organization.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Working with Directories",
+      "body": "Switching to Parent Directory\n$ cd ..\n$ pwd\n/home/ib-developer/tutorial\nBash\n cd ..  move to parent directory\nCommands we have learned so far:  mkdir   pwd   cd.  cd...  \n.. is relative path to parent directory",
+      "notes": "Now let's learn how to move back up a directory.\nThe shorthand \"..\" represents the parent directory, and \"cd ..\" takes you one level up.\nIn our example, after using \"cd ..\", \"pwd\" shows we've moved from the notes folder back up to \"/home/ib-developer/tutorial\".\nThis navigation technique is essential for moving efficiently between directories.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Working with Directories",
+      "body": "File Paths\nThere are two notations for file paths\nAbsolute Path: Representing the complete path of a file or folder from the root\nRelative Path: Representing the path of a file or folder wrt. current working directory",
+      "notes": "Now, let's talk about two important path types:\nAbsolute paths start from the root directory and show the complete location.\nRelative paths show location based on your current directory.\nBoth are essential for effective navigation. Think of absolute as a full address and relative as directions from your current spot.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Working with Directories",
+      "body": "File Paths\nDNo: 10-13/2,\nMVP Colony,\nVivekananda Street,\nGachibowli,\nHyderabad\nFrom here go straight for 30m \nand your destination is \n4th house on your right\nAbsolute Path\nRelative Path",
+      "notes": "Here's a simple analogy for file paths:\nAn absolute path is like a complete address - \"DNo: 10-13/2, MVP Colony, Vivekananda Street, Gachibowli, Hyderabad.\" \u000bIt works from anywhere because it contains all location details.\nA relative path is like directions from your current spot - \"Go straight for 30m and your destination is 4th house on your right.\" \u000bIt only works if you know your starting point.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Working with Directories",
+      "body": "Absolute and Relative File Paths\nIn relative path conventions:\n.  refers to the current working directory.  \n..  refers to the parent directory.\n/home/parent/child\n.\n..\nCWD:   /home/parent/child\n../..",
+      "notes": "Let's look at path conventions with a practical example.\nOur current working directory (CWD) is \"/home/parent/child\".\nIn relative paths:\nThe single dot \".\" represents your current directory (/home/parent/child)\nDouble dots \"..\" represent the parent directory (/home/parent)\nIf we use \"../..\" we'd go up two levels to \"/home\".\nThese shortcuts help us navigate efficiently without typing full paths.\nRemember these symbols as they're used frequently in Linux navigation.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Working with Directories",
+      "body": "File Paths\nCurrent Working Directory:   /home/ib-developer\nAbsolute Path\n/home/ib-developer/tutorial\nRelative Path\n/flower.png\n/home/hello.png\n../../flower.png\n../hello.png\n./tutorial",
+      "notes": "Here are examples comparing relative and absolute paths from \"/home/ib-developer\":\n\"./tutorial\" is equivalent to \"/home/ib-developer/tutorial\" \"../hello.png\" is equivalent to \"/home/hello.png\" \"../../flower.png\" is equivalent to \"/flower.png\"\nRelative paths navigate based on your current location using dots, while absolute paths give complete locations from root.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Working with Directories",
+      "body": "Using Absolute Path\n$ pwd\n/home/ib-developer/tutorial\n$ cd /home/ib-developer\n$ pwd\n/home/ib-developer\nBash\nChange working directory using absolute path\nCommands we have learned so far:  mkdir   pwd   cd.  cd...",
+      "notes": "Now let's see how to use absolute paths with the cd command.\nIn our example, we start in \"/home/ib-developer/tutorial\" as shown by pwd.\nThen we use \"cd /home/ib-developer\" - this absolute path takes us directly to that location regardless of where we started from.\nWhen we check with pwd again, we confirm we've moved to \"/home/ib-developer\".\nAbsolute paths are useful when you need to jump to a specific location from anywhere in the system.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Working with Directories",
+      "body": "Home Directory\n cd ~.   command can be used to switch to home directory\nCommands we have learned so far:  mkdir   pwd   cd.  cd...  cd ~.   \n$ cd ~\n$ pwd\n/home/ib-developer\nBash",
+      "notes": "Here's another quick way to get home.\nSimply typing \"cd\" with a space and no target will also take you to your home directory.\nThis works exactly like \"cd ~\" that we just saw, bringing you to \"/home/ib-developer\" in our example.\nThis is probably the fastest shortcut to return home when navigating.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Working with Directories",
+      "body": "Changing the Current Working Directory\n cd /  changes your current directory to root folder\n$ cd /\n$ pwd\n/\nBash\nCommands we have learned so far:  mkdir   pwd   cd.  cd...  cd ~.  cd /.",
+      "notes": "Now let's learn how to navigate to the root directory.\nThe command \"cd /\" takes you to the root directory, which is the top-level directory in your system.\nIn our example, after using \"cd /\", we confirm with pwd that we're now at \"/\" - the root of the entire file system.\nThe root directory contains all other directories and files in your system.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Working with Directories",
+      "body": "Renaming a Directory\n$ cd ..\n$ ls\nmessage.txt   python_files   tutorial  welcome.txt  notes\n$ mv tutorial commands\n$ ls\nmessage.txt        python_files      commands   welcome.txt\n mv  renames the directory name\nCommands we have learned so far:  mkdir   pwd   cd.  cd... cd ~   cd /. .mv.   \nBash\n$ mv source destination\nSyntax",
+      "notes": "For renaming directories, we use the same \"mv\" command we learned for files.\nIn our example, \"mv tutorial commands\" renames the tutorial directory to commands.\nWe confirm the change with \"ls\" and see tutorial is now called commands.\nThe \"mv\" command works identically for both files and directories.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Working with Directories",
+      "body": "Moving a Directory\n$ cd ..\n$ ls\nmessage.txt   python_files   tutorial  welcome.txt  notes\n$ mv welcome.txt commands\n$ cd commands\n$ ls commands\nwelcome.txt\n mv  moves files or directories \u000bfrom source to destination  paths\nCommands we have learned so far:  mkdir   pwd   cd.  cd... cd ~   cd /. .mv.   \nBash\n$ mv source destination\nSyntax",
+      "notes": "Now let's see how to move files between directories.\nThe \"mv\" command also moves files or directories from one location to another.\nIn our example, we first go up a directory and list contents.\nThen we move \"welcome.txt\" into the \"commands\" directory using \"mv welcome.txt commands\".\nWhen we navigate into the commands directory and check, we see welcome.txt is now there.\nThis is how you can organize your files by moving them between directories.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Working with Directories",
+      "body": "Copying Files to Another Directory\n cp  can be used to copy files between directories\n$ cd commands\n$ ls\ncountries.txt\n$ cd ..\n$ cp welcome.txt commands\n$ cd commands\n$ ls\ncountries.txt      welcome.txt\nCommands we have learned so far:  mkdir   pwd   cd.  cd.... cd ~.  cd /. .mv. .cp. \nBash\n$ cp file_path directory_name\nSyntax",
+      "notes": "The \"cp\" command lets us copy files between directories.\nThe syntax is \"cp file_path directory_name\" to copy a file to another location.\nIn our example, we first check what's in the commands directory - just countries.txt.\nThen we navigate up, copy welcome.txt to commands with \"cp welcome.txt commands\".\nWhen we go back to commands and check, we now have both countries.txt and welcome.txt.\nUnlike \"mv\" which moves files, \"cp\" keeps the original and creates a copy at the destination.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Working with Directories",
+      "body": "Copying Directory\n cp -r  can be used to \u000bcopy a directory\n$ cd ..\n$ mkdir linux\n$ cp -r commands linux\n$ cd linux\n$ ls\ncountries.txt      welcome.txt\nCommands we have learned so far:  mkdir   pwd   cd.  cd ..  cd ~.  cd /. .mv.  .cp. .cp -r. \nBash\n$ cp -r source_path destination_path\nSyntax",
+      "notes": "For copying entire directories, we need to add the \"-r\" flag to the cp command.\nThe \"r\" stands for recursive, meaning it copies the directory and everything inside it.\nIn our example, we go up a directory, create a new \"linux\" directory, then copy our entire \"commands\" directory into it with \"cp -r commands linux\".\nWhen we check inside linux, we see all the files from commands were copied over.\nThis is useful for backing up folders or creating directory structures.\nRemember: Without the -r flag, cp won't work on directories.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Copying Directory",
+      "body": "Common Mistake\nRaises an error if destination path have any non existing directories in between\n$ cp -r home/ib-developer/commands/notes  home/ib-developer/some-random/new-dir\ncp: cannot create directory 'home/ib-developer/some-random/new-dir': No such file or directory\nCommands we have learned so far:  mkdir   pwd   cd.  cd ..  cd ~.  cd /. .mv.  .cp. .cp -r. \nBash",
+      "notes": "Here's a common error when copying directories.\nWhen copying to a path with non-existent intermediate directories, cp -r fails.\nIn our example, the copy fails because \"some-random\" directory doesn't exist.\nThe error message clearly shows the problem.\nRemember to create any missing directories before copying.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Working with Directories",
+      "body": "Deleting a Directory\n$ ls\nmessage.txt                  python_files   \tcommands   welcome.txt\n$ rm -r commands\n$ ls\nmessage.txt                python_files    welcome.txt  \n$ rm -r directory_name\nSyntax\n rm -r   removes(deletes) directories \nCommands we have learned so far:   mkdir   pwd   cd.  cd ...  cd ~.  cd /. .mv. .cp. .cp -r.  .rm -r.\nBash",
+      "notes": "To delete directories, we use \"rm -r\" where the \"-r\" flag means recursive deletion.\nIn our example, we first list our files with \"ls\" and see the commands directory.\nThen we delete it with \"rm -r commands\" and verify with \"ls\" that it's gone.\nBe very careful with this command - it permanently deletes everything in the directory!\nWe've now learned \"rm -r\" for removing directories.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Working with Directories",
+      "body": "Summary",
+      "notes": "Let's summarize what we've learned about directory commands:\nFirst, \"mkdir\" creates new directories.\n\"Pwd\" shows your current location in the file system.\n\"Cd\" followed by a path changes your directory.\n\"Cd ..\" moves up to the parent directory.\n\"Cd ~\" takes you to your home directory.\nAnd \"cd /\" navigates to the root directory.\nThese six commands are essential for navigating the Linux file system effectively.\u000bAlong with this we have also learned mv, cp , cp -r , rm -r.",
+      "tables": [
+        [
+          [
+            "Command",
+            "Description"
+          ],
+          [
+            "mkdir",
+            "Creates a directory"
+          ],
+          [
+            "pwd",
+            "Prints name of current working directory"
+          ],
+          [
+            "cd",
+            "Changes the current working directory"
+          ],
+          [
+            "cd ..",
+            "Move to parent directory"
+          ],
+          [
+            "cd ~",
+            "Used to switch to home directory"
+          ],
+          [
+            "cd /",
+            "changes your current directory to root folder"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 39,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Working with File System",
+      "body": "Working with Files\nCreating a File\nViewing File Contents\nRenaming a File\nCopying Files\nDeleting Files\nHidden Files\nKey Takeaways (PART 1/2)",
+      "notes": "Alright, let's recap what we've learned in todays session \u000bSo first we learned about working with files:\nWe covered creating files with touch, viewing contents with cat, renaming with mv, copying with cp, deleting with rm, and viewing hidden files with ls -a.\nThese basic file operations are the foundation of Linux file management.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Working with File System",
+      "body": "Working with Directory\nRelative and Absolute Paths\nCreating a Directory\nChanging Current Working Directory\nMoving Files to Another directory\nDeleting a Directory\nKey Takeaways (PART 2/2)",
+      "notes": "Next, let's summarize what we learned about working with directories:\nWe explored relative paths using dots and absolute paths from the root.\nWe created directories with mkdir to organize our files.\nWe navigated between directories using cd and its variations like cd .., cd ~, and cd /.\nWe learned to move files between directories with mv.\nAnd we used rm -r to delete directories and their contents.\nThese directory skills help you maintain an organized file system.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "",
+      "body": "",
+      "notes": "An important point you always need to remember: \n\nPRACTICE. PRACTICE. PRACTICE. \n\nThe more you practice, the better you will get at working with various question formats.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Working with Files",
+      "body": "",
+      "notes": "In the next session, we’ll start off with “Miscellaneous Commands” session.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1UOhiflmIStx-lt1eHA9FFxgk630kMiWBto_3NZLPxW4/edit?slide=id.g37a182ee794_6_97#slide=id.g37a182ee794_6_97"
+}

@@ -1,0 +1,570 @@
+{
+  "session_no": 15,
+  "source_file": "Concurrency & The Critical-Section Problem",
+  "deck_title": "Concurrency & The Critical-Section Problem",
+  "n_slides": 80,
+  "summary": "\n    - Slide 2: Concurrency & The  Critical-Section Problem\n    - Slide 3: Recap\n    - Slide 4: Concurrency & The Critical-Section Problem\n    - Slide 5: Principles Of Concurrency\n    - Slide 6: Concurrency\n    - Slide 7: Concurrency\n    - Slide 8: Concurrent Processes\n    - Slide 9: Single Processor\n    - Slide 10: Single Processor\n    - Slide 11: Multiple Processors\n    - Slide 12: Multiple Processors\n    - Slide 13: Concurrent Processes\n    - Slide 14: Concurrent Processes\n    - Slide 15: Concurrent Processes\n    - Slide 16: Concurrent Processes\n    - Slide 17: Concurrent Processes\n    - Slide 18: Concurrent Processes\n    - Slide 19: Concurrent Processes\n    - Slide 20: Concurrent Processes\n    - Slide 21: Concurrency\n    - Slide 22: Concurrency\n    - Slide 23: Concurrency\n    - Slide 24: Concurrency\n    - Slide 25: Principles of Concurrency\n    - Slide 26: Concurrency\n    - Slide 27: Concurrency\n    - Slide 28: Concurrency\n    - Slide 29: Concurrency\n    - Slide 30: Concurrency\n    - Slide 31: Concurrency\n    - Slide 32: Starvation\n    - Slide 33: Concurrency\n    - Slide 34: Concurrency\n    - Slide 35: The Critical-Section Problem\n    - Slide 36: Critical-Section Problem\n    - Slide 37: Critical-Section Problem\n    - Slide 38: Critical-Section Problem\n    - Slide 39: Critical Section\n    - Slide 40: Critical Section\n    - Slide 41: Critical Section Structure\n    - Slide 42: Critical Section Solution Requirements\n    - Slide 43: Critical Section Solution Requirements\n    - Slide 44: Critical Section Solution Requirements\n    - Slide 45: Quiz Time!\n    - Slide 46: Race Condition\n    - Slide 47: Race Condition Example\n    - Slide 48: Race Condition Example\n    - Slide 49: Race Condition\n    - Slide 50: Real-World Impacts\n    - Slide 51: Real-World Impacts\n    - Slide 52: Software Solution\n    - Slide 53: Peterson’s Algorithm\n    - Slide 54: Peterson's Solution - Pseudocode\n    - Slide 55: Peterson's Solution - Pseudocode\n    - Slide 56: Peterson's Solution\n    - Slide 57: Peterson's Solution\n    - Slide 58: Peterson's Algorithm\n    - Slide 59: Peterson's Algorithm\n    - Slide 60: Real-World Impacts\n    - Slide 61: Real-World Impacts\n    - Slide 62: Real-World Impacts\n    - Slide 63: Synchronization Hardware \n    - Slide 64: Synchronization Hardware\n    - Slide 65: Synchronization Hardware\n    - Slide 66: Synchronization Hardware\n    - Slide 67: Synchronization Hardware\n    - Slide 68: Synchronization Hardware\n    - Slide 69: Hardware Support - Test-and-Set\n    - Slide 70: Hardware Support\n    - Slide 71: Hardware Support\n    - Slide 72: Hardware Support\n    - Slide 73: Hardware Support\n    - Slide 74: Disabling Interrupts\n    - Slide 75: Quiz Time!\n    - Slide 76: Concurrency & The Critical-Section Problem\n    - Slide 77: Concurrency & The Critical-Section Problem\n    - Slide 78: Synchronization Tools",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Concurrency & The  Critical-Section Problem",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Scheduling Algorithms | Part II\n1. Priority Scheduling\n– Preemptive & non-preemptive\n2. Starvation & Aging\n– The starvation problem & the aging solution\n3. Highest Response Ratio Next (HRRN)\n– Response-ratio computation\n4. Multilevel Queue Scheduling\n– Multilevel queue (MLQ)\n– Multilevel feedback queue (MLFQ)\n5. Comparison \nPriority Scheduling\nPreemptive & non-preemptive\nStarvation & Aging\nThe starvation problem & the aging solution\nHighest Response Ratio Next (HRRN)\nResponse-ratio computation\nMultilevel Queue Scheduling\nMultilevel queue (MLQ)\nMultilevel feedback queue (MLFQ)\nComparison",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Concurrency & The Critical-Section Problem",
+      "body": "Concurrency & The Critical-Section Problem\nAgenda\n1. Concurrency Principles\n– Concurrent processes & principles of concurrency\n2. The Race Condition\n– How race conditions arise\n3. The Critical-Section Problem\n– Problem definition\n– Requirements: mutual exclusion, progress, bounded waiting\n4. Software Solution\n– Peterson's solution\n5. Hardware Support (Synchronization Hardware)\n– Test-and-set & compare-and-swap\n– Disabling interrupts approach\nThe Critical-Section Problem\nThe Race Condition\nConcurrency Principles\nSoftware Solution\nConcurrent processes & principles of concurrency\nSynchronization Hardware\nPeterson's solution\nProblem definition, Requirements: mutual exclusion, progress, bounded waiting\nHow race conditions arise\nTest-and-set & compare-and-swap, Disabling interrupts approach\nThe Race Condition\nHow race conditions arise\nThe Critical-Section Problem\nProblem definition, Requirements: mutual exclusion, progress, bounded waiting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Principles Of Concurrency",
+      "body": "Principles Of Concurrency",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Concurrency",
+      "body": "Definition\nIntroduction to Concurrent Processes\nWhat is Concurrency?\nConcurrency in operating systems refers to the capability of an OS to handle more than one task or process at the same time, thereby enhancing efficiency and responsiveness",
+      "notes": "Now, let's begin with Concurrency. \u000bConcurrency is the ability of an operating system to handle multiple tasks at the same time. \u000bBy managing several processes efficiently, it improves both the \u000bperformance and responsiveness of the system.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Concurrency",
+      "body": "Concurrent Processes\nConcurrent processes are two or more processes that are in progress at the same time in a system For example Multiple applications running on smartphone simultaneously\nBrowser\nMusic Player\nMessaging app",
+      "notes": "Next, let's understand concurrent processes. \u000bThese are multiple processes that make progress during the same period of time. \u000bA common example is a smartphone running a browser, music player, and messaging app simultaneously,\u000b allowing you to use all of them without waiting for one to finish first.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Concurrent Processes",
+      "body": "Analogy",
+      "notes": "Kitchen analogy: Cooking multiple dishes at the same time, sharing the same tools and ingredients",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Single Processor",
+      "body": "How Process Execute Together?\nSingle Processor (One CPU): Processes take turns executing very quickly, appears as if they run simultaneously (time-sharing)\nProcess 1\nProcess 2\nProcess 1\nProcess 2",
+      "notes": "Now, let's see how concurrency works on a single processor. Since there's only one CPU,\u000b it can execute only one process at a time. The operating system quickly switches between \u000bprocesses using time-sharing, creating the illusion that they're running simultaneously.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Single Processor",
+      "body": "Analogy",
+      "notes": "Analogy: A single chef cooking multiple dishes by switching between pots",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Multiple Processors",
+      "body": "How Do Process Execute Together?\nMultiple Processors (Multiple CPUs): Processes can run truly simultaneously, each CPU handles a different process",
+      "notes": "Moving on, in a multiple processor system,\u000b each CPU can execute a different process at the same time.\u000b This means processes run truly in parallel, improving performance \u000band allowing multiple tasks to progress simultaneously.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Multiple Processors",
+      "body": "Analogy",
+      "notes": "Analogy: Multiple chefs cooking different dishes at the same time",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Concurrent Processes",
+      "body": "Capabilities\nExample: Two programs printing documents using the same printer\nSharing Resources:\nProcesses may use the same CPU, system resources, or I/O devices\nprogram 1\nprogram 2",
+      "notes": "Next, concurrent processes often need to share system resources, such as the CPU, memory, or I/O devices.\u000b For example, if two programs send documents to the same printer, \u000bthe operating system coordinates access so both can use the shared resource correctly.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Concurrent Processes",
+      "body": "Communication:\nProcesses can exchange data or messages\nExample: Copying data from one application to another\nApplication 1\nApplication 2\nCapabilities",
+      "notes": "Moving on, concurrent processes don't just run independently\u000b—they often need to interact with each other. \u000bThey can exchange information whenever required, \u000ballowing one application to work with data produced by another.\u000b This kind of communication is common in many everyday applications.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Concurrent Processes",
+      "body": "Process 1\nProcess 2\nProcess 3\nProcess 1\nProcess 2\nCoordination:\nSome processes operate independently, while others need to coordinate with each other to complete tasks correctly\nCapabilities",
+      "notes": "Next, concurrent processes may also need to coordinate their actions. \u000bWhile some processes can run independently, \u000bothers must work in a specific order or synchronize with each other to \u000bensure the overall task is completed correctly.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Concurrent Processes",
+      "body": "Types\nProcesses that work alone without affecting others\nCharacteristics:\nDo their own work\nDon't share data with others\nOne process doesn't affect another\nNo need for coordination\nExecution doesn’t depend on other processes\nIndependent Processes",
+      "notes": "Now, let's first look at independent processes. \u000bThese processes execute on their own without relying on or interacting with other processes. \u000bSince they don't share data or resources, one process has no impact on \u000bthe execution of another, so no coordination is required.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Concurrent Processes",
+      "body": "Processes that work together and share things\nCharacteristics:\nShare data or resources\nOne process can affect another\nNeed to coordinate to avoid problems\nMay give different results based on timing\nNeed rules to work properly together\nCooperating Processes\nTypes",
+      "notes": "Moving on, cooperating processes work together to accomplish a task. \u000bThey often share data or resources, so the actions of one process can influence another. \u000bBecause of this, they need proper coordination and synchronization to ensure \u000beverything works correctly and consistently.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Concurrent Processes",
+      "body": "Examples\nBanking\nPrinting\nFile Sharing\nTwo people withdrawing from same account\nMultiple documents sent to one printer\nMultiple users editing same document",
+      "notes": "Next, let's look at some real-world examples. In banking, multiple users may access the same account. \u000bIn printing, several documents can be sent to a single printer. \u000bSimilarly, in file sharing, multiple users may work on the same document. These situations require proper coordination to avoid conflicts.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Concurrent Processes",
+      "body": "Why Does This Matter?\nImportance",
+      "notes": "Now why the both types of Concurrent process matters ?",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Concurrent Processes",
+      "body": "Independent Processes\nCooperating Processes\nNo shared data/resources — no synchronization needed.\nNeed synchronization (rules) to avoid chaos! & Share data/resources\nImportance",
+      "notes": "SO, the key difference is that independent processes don't require \u000bany synchronization because they don't share resources. \u000bIn contrast, cooperating processes do share data or resources, \u000bso they need proper synchronization to prevent conflicts and ensure correct execution.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Concurrency",
+      "body": "Principles of Concurrency\nWhen multiple processes execute concurrently, proper rules are required to ensure correct and efficient execution, the main principles are\nMutual Exclusion \nProgress (No Deadlock)\nFairness (Bounded Waiting)\nSynchronization",
+      "notes": "Now, when multiple processes run concurrently, \u000bthey must follow certain principles to avoid conflicts and ensure correct execution. \u000bThe four key principles we'll discuss are mutual exclusion, progress, fairness, and synchronization,\u000b each addressing a different aspect of coordinating concurrent processes.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Concurrency",
+      "body": "Mutual Exclusion\nProgress\nOnly one process can access a shared resource at a time\nThe system should always move forward, A process should not wait unnecessarily when the shared resource is available\nPrinciples of Concurrency",
+      "notes": "Moving on, the first principle is Mutual Exclusion, \u000bwhich ensures that only one process can access a shared resource at any given time. \u000bThe second is Progress, which means if the resource is free,\u000b a process shouldn't be kept waiting unnecessarily, allowing the system to continue executing efficiently.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Concurrency",
+      "body": "Fairness\nSynchronization\nEvery process gets a chance to access shared resources, no process waits forever\nProcesses are coordinated so they don’t interfere with each other\nPrinciples of Concurrency",
+      "notes": "Next, Fairness ensures that every process eventually gets its turn to use a shared resource, \u000bpreventing indefinite waiting. Finally, Synchronization coordinates multiple processes \u000bso they can safely share resources without interfering with each other's execution.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Concurrency",
+      "body": "Why it matters?\nPrinciples of Concurrency",
+      "notes": "Why these principles of concurrency matter ?",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Principles of Concurrency",
+      "body": "Why It Matters?\nEnsures data consistency when processes share resources\nGuarantees fair access to processes\nPrevents conflicts and mistakes caused by simultaneous access",
+      "notes": "these principles are essential because they help\u000b maintain correct and consistent data when resources are shared. \u000bThey also ensure fair access for all processes and prevent errors that can occur \u000bwhen multiple processes try to access the same resource simultaneously.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Concurrency",
+      "body": "Advantages \nBetter Resource Utilization\nResources unused by one application can be used by others\nMaximizes hardware efficiency\nReduces idle time for CPU and I/O devices\nRunning Multiple Applications\nExecute several applications simultaneously\nEnhanced user experience and productivity",
+      "notes": "Now, one major advantage of concurrency is that it lets users run multiple applications at the same time, \u000bmaking the system more responsive and productive.\u000b It also improves resource utilization by allowing the CPU and\u000b I/O devices to work on different tasks instead of remaining idle.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Concurrency",
+      "body": "Better Performance\nOne application uses processor while another uses disk\nParallel execution reduces total completion time\nThroughput increases significantly\nImproved Response Time\nSystem remains responsive during long operations\nUsers don't wait for sequential completion\nInteractive applications perform better\nAdvantages",
+      "notes": "Moving on, concurrency improves response time by keeping the system responsive during long operations, \u000bso users don't have to wait for tasks to finish sequentially. \u000bThis also helps interactive applications perform more smoothly. \u000bIt also improves overall performance by allowing the CPU and other resources, \u000blike the disk, to work on different tasks simultaneously, reducing execution time and increasing throughput.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Concurrency",
+      "body": "Fairness\nMultiple users/processes get fair access to resources\nPrevents monopolization of system resources\nAdvantages",
+      "notes": "Next, concurrency also promotes fairness by giving multiple processes \u000ba fair chance to access shared resources.\u000b This prevents any single process from holding a resource for too long, \u000bensuring balanced and efficient resource utilization.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Concurrency",
+      "body": "Challenges\n Race Conditions\nOutcome depends on which process executes first\nCan lead to incorrect or inconsistent data\nExample: Two people updating the same bank account at the same time",
+      "notes": "Now, one common challenge in concurrency is a race condition.\u000b It occurs when multiple processes access or modify the same data at the same time,\u000b and the final result depends on the order in which they execute. \u000bFor example, two people updating the same bank account simultaneously \u000bcan lead to incorrect data if access isn't properly controlled.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Concurrency",
+      "body": "Deadlock\nTwo or more processes wait forever for resources held by each other\nSystem becomes unresponsive\nExample: Two printers and two print jobs waiting for each other’s printer\nChallenges",
+      "notes": "Next, another challenge is deadlock. It occurs when two or more processes keep waiting for resources held by each other, \u000bso none of them can proceed. As a result, the system becomes unresponsive. \u000bA common example is two print jobs, each waiting for a printer that the other process is holding.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Concurrency",
+      "body": "Starvation\nLow-priority processes may never get CPU time if higher-priority processes keep arriving\nChallenges",
+      "notes": "Finally, starvation occurs when a process keeps waiting because\u000b higher-priority processes continuously get CPU time.\u000b If this continues indefinitely, the waiting process may never get a chance to execute.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Starvation",
+      "body": "Example\nBackground maintenance tasks always delayed because user applications keep running\nBackground maintenance tasks\nUser applications\n2\n1",
+      "notes": "Now, let's understand starvation with this example. Here, user applications have higher priority, \u000bso they keep getting CPU time. As a result, background maintenance tasks are repeatedly\u000b postponed and may never execute, which is exactly what starvation means.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Concurrency",
+      "body": "Non-Atomic / Blocking\nSome actions must finish fully before another process can use the resource\nPartial execution or waiting can cause errors or delays\nExample: Saving a file while another program edits it simultaneously\nChallenges",
+      "notes": "Next, some operations must be completed without interruption. \u000bIf another process accesses the same resource before the operation finishes,\u000b it can lead to incorrect results or delays. \u000bFor example, editing a file while it's still being saved may cause inconsistent data.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Concurrency",
+      "body": "Performance Overhead\nSwitching between processes and coordinating them takes extra time\nRunning too many processes at once can slow the system down\nExample: Running many applications simultaneously causing frequent context switching and slowing down the system\nChallenges",
+      "notes": "Finally, concurrency also introduces performance overhead. \u000bManaging multiple processes and switching between them consumes CPU time. \u000bIf too many processes run simultaneously, \u000bfrequent context switching can reduce overall system performance instead of improving it.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "The Critical-Section Problem",
+      "body": "The Critical-Section Problem",
+      "notes": "Next we will learn about the The Critical-Section Problem",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Critical-Section Problem",
+      "body": "Introduction\nA critical section is a part of the program where a process accesses shared resources or modifies shared variables\nAccesses shared resources\nProcess\nModifies shared variables",
+      "notes": "Now, let's introduce the Critical Section. It is the part of a program where a\u000b process accesses shared resources or modifies shared data. \u000bSince multiple processes may try to access the same resource, \u000bthis section must be carefully controlled to avoid conflicts.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Critical-Section Problem",
+      "body": "Why Only One Process At A Time?\nOnly one process should execute in the critical section at a time\nIf multiple processes enter concurrently, data inconsistency or errors can occur\nCritical section\nCritical section\nProcess 1\nProcess 1\nProcess 2\nProcess 3\nProcess 4",
+      "notes": "Next, only one process should be allowed inside the critical section at a time. \u000bIf multiple processes enter it simultaneously,\u000b they may modify the same shared data, leading to incorrect or inconsistent results. \u000bThis is why controlling access to the critical section is so important.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Critical-Section Problem",
+      "body": "Analogy",
+      "notes": "Multiple people sharing a printer: \nOnly one person can print at a time\nIf two print together → documents get mixed",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Critical Section",
+      "body": "Structure of a Process\nEntry section\nExit section\nCritical section\nRemainder section\ndo\nWhile (TRUE)\nRequest access to critical section\nAccess shared resources safely\nRelease control, allow others to enter\nCode not involving shared resources",
+      "notes": "Now, let's understand the structure of a process around a critical section. \u000bA process first enters the entry section to request access, then executes the critical section where\u000b it safely uses shared resources. After finishing, it leaves through the exit section,\u000b allowing other processes to enter, and finally continues with the remainder section, \u000bwhich doesn't involve shared resources.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Critical Section",
+      "body": "Structure of a Process\nEntry Section: Request permission, acquire necessary locks\nCritical Section: Access and modify shared resources atomically\nExit Section: Release locks and signal other processes\nRemainder Section: Non-critical code, can run concurrently",
+      "notes": "Moving on, each part has a specific role. \u000bThe entry section requests access to the shared resource, the critical section performs the shared operation safely,\u000b the exit section releases access for other processes,\u000b and the remainder section contains normal code that can run without any synchronization.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Critical Section Structure",
+      "body": "Analogy\nEntry:standing in line to use printer\nCritical: printing document\nExit: leaving printer for next person\nRemainder: doing other tasks not using printer",
+      "notes": "Next, think of using a shared printer. First, you wait in line to get access—that's the entry section.\u000b Then you print your document, which is the critical section. \u000bOnce you're done, you leave the printer so others can use it, \u000band finally continue with your other work, which is the remainder section.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Critical Section Solution Requirements",
+      "body": "1. Mutual Exclusion\nOnly one process can be in the critical section at a time\nPrevents race conditions and data corruption",
+      "notes": "Now, the first requirement is Mutual Exclusion. \u000bIt ensures that only one process is allowed to access the shared resource at any given time. \u000bThis avoids simultaneous access, helping maintain correct data and preventing conflicts between processes.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Critical Section Solution Requirements",
+      "body": "2. Progress\nIf no process is in the critical section, a waiting process must be allowed to enter\nNo unnecessary waiting, system moves forward",
+      "notes": "Next, the second requirement is Progress. If the critical section is free,\u000b a waiting process should be allowed to enter without unnecessary delay.\u000b This ensures the system keeps moving forward efficiently.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Critical Section Solution Requirements",
+      "body": "3. Bounded Waiting (Fairness)\nEach process has a maximum waiting time before entering the critical section\nPrevents starvation and ensures fair resource access",
+      "notes": "Finally, the third requirement is Bounded Waiting, which ensures \u000bthat every process gets an opportunity to enter the critical section within a reasonable time.\u000b This prevents any process from being left waiting indefinitely and promotes \u000bequitable access to shared resources.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Race Condition",
+      "body": "Race Condition",
+      "notes": "Next we will learn about the Race Condition",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Race Condition Example",
+      "body": "Race Condition – Bank Account Example\nScenario: Two simultaneous withdrawals from same account\nInitial Balance: $100\nProcess P1\nRead balance: $100   \nCalculate: 100+10=110     \nWrite balance: $110     \n  Process P2\nRead balance: $100\nCalculate: 100-10=90\nWrite balance: $90",
+      "notes": "Now, let's see a race condition through a bank account example. \u000bBoth processes read the same initial balance of $100 at nearly the same time.\u000b Since each updates the balance independently, one update overwrites the other, producing an incorrect final balance. \u000bThis happens because both processes accessed the shared data simultaneously without proper synchronization.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Race Condition Example",
+      "body": "Problem\nCorrect final balance should account for serialization\nBoth processes read $100 before either writes!\nFinal balance could be $110 or $90 (incorrect!)",
+      "notes": "Next, the issue is that both processes read the old balance before either updates it. \u000bAs a result, one update gets overwritten, leading to an incorrect final balance. \u000bTo prevent this, the transactions must be serialized, allowing only one process to update the account at a time.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Race Condition",
+      "body": "Causes\nInterleaving of operations\nCPU switches between processes while they are executing\nNon-atomic operations\nRead-Modify-Write sequence is not executed as a single step\nShared data access\nMultiple processes access the same variable/resource\nNo synchronization\nProcesses don’t coordinate access to shared resources",
+      "notes": "Now, let's understand what causes a race condition. \u000bIt can happen when processes are interleaved due to CPU switching,\u000b when read-modify-write operations aren't atomic, when multiple processes share the same data, \u000band when there's no synchronization to coordinate access to that shared resource.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Real-World Impacts",
+      "body": "Why It Matters ?\nBanking Systems\nIncorrect balances, transaction errors\nAirline Reservations\nDouble booking of seats\nInventory Systems\nWrong stock count\nDatabases\nData corruption due to simultaneous updates",
+      "notes": "Finally, race conditions can have serious real-world consequences.\u000b In banking, they can cause incorrect account balances. \u000bIn airline reservation systems, they may result in double booking.\u000b Inventory systems can show incorrect stock levels,\u000b and in databases, simultaneous updates can lead to data corruption.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Real-World Impacts",
+      "body": "How to Prevent Race Conditions\nDekker’s Algorithm\nPeterson’s Algorithm\n Works for 2 processes, ensures mutual exclusion\nSimpler, demonstrates mutual exclusion, progress, and fairness\nSoftware-Based Solutions",
+      "notes": "Next, race conditions can be prevented using software-based solutions.\u000b Two well-known approaches are Dekker's Algorithm and Peterson's Algorithm. \u000bBoth are designed for two processes, with Peterson's algorithm being simpler \u000band ensuring mutual exclusion, progress, and fairness.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Software Solution",
+      "body": "Software Solution",
+      "notes": "Now we will learn about the Software Solution",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Peterson’s Algorithm",
+      "body": "Introduction\nClassic software solution to the critical section problem for 2 processes, using:\nNo hardware\nEnsuring mutual exclusion\nRace-free access\nSafe coordination\nTwo processes, P0 and P1, share two variables:\nflag[i] : Process i wants to enter\nCallout: flag[] shows intent; turn breaks the tie when both want in at once\nturn : Says whose turn it is to enter the critical section",
+      "notes": "Now, let's introduce Peterson's Algorithm, a classic software solution for the \u000bcritical section problem involving two processes. It doesn't require any hardware support \u000band ensures mutual exclusion with safe coordination. It uses two shared variables: flag[], \u000bwhich indicates a process wants to enter the critical section, and turn, \u000bwhich decides which process gets priority if both request access at the same time.",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Peterson's Solution - Pseudocode",
+      "body": "For process Pi:\ndo {\n   flag[i] = true;               // Pi wants to enter\n  turn = j;                      // Give turn to Pj\n  while (flag[j] && turn == j);  // Wait if Pj also wants to enter\n  // Critical Section\n  flag[i] = false;              // Pi leaves critical section\n  // Remainder Section\n} while (true);\nPseudocode",
+      "notes": "Now, flag[i] = true indicates that Pi wants to enter the critical section.\u000b Next, turn = j gives priority to Pj if both request access together. \u000bThe while condition checks whether Pj also wants to enter and waits if it's Pj's turn. \u000bOnce the condition becomes false, Pi enters the critical section,\u000b sets flag[i] = false after finishing, and then continues with the remainder section before repeating the process.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Peterson's Solution - Pseudocode",
+      "body": "do {\n   flag[j] = true;       \n   turn = i;             \n  while (flag[i] && turn == i);\n  // Critical Section\n  flag[j] = false;      \n  // Remainder Section\n} while (true);\nPseudocode\nFor process Pj:",
+      "notes": "Similarly, the code for Process Pj works in exactly the same way. \u000bIt sets flag[j] = true to request access, gives priority to Pi using turn = i, \u000bwaits if needed, executes the critical section, resets flag[j] = false on exit\u000b, and then continues with the remainder of the program.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Peterson's Solution",
+      "body": "Why It Works?\nMutual Exclusion\nProgress\nPi enters only when flag[j] == false or turn == i. Since turn can't be both 0 and 1, both processes can never be inside at once\nif the other process doesn't want in (flag[j] == false), Pi enters immediately",
+      "notes": "For Mutual Exclusion, flag[j] and turn work together to ensure that if both \u000bprocesses request the critical section simultaneously, only Pi or Pj is allowed to enter.\u000bFor Progress, whenever flag[j] is false, indicating the other process isn't interested, \u000bPi can enter the critical section immediately without unnecessary waiting.",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Peterson's Solution",
+      "body": "Why It Works?\nBounded waiting\nThe turn variable forces alternation, so a process waits at most one turn",
+      "notes": "Finally, Peterson's Algorithm also provides bounded waiting. \u000bThe turn variable ensures that processes take turns fairly, \u000bso no process has to wait indefinitely before entering the critical section.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Peterson's Algorithm",
+      "body": "Both Want to Enter at Once\nP0 sets flag[0]=true, turn=1; P1 sets flag[1]=true, turn=0\nThe last write to turn wins - say P1 wrote last → turn = 0\nP0 enters (its condition turn==1 is now false)\nP1 waits (both parts of its condition are true)\nExactly one enters → mutual exclusion holds",
+      "notes": "Now, let's consider the case where both P0 and P1 request the critical section at the same time. \u000bBoth set their respective flag values to true and update the turn variable.\u000b The last write to turn determines which process gets priority. In this example, since turn = 0, \u000bP0 enters the critical section, while P1 waits. \u000bThis guarantees that only one process enters at a time, satisfying Mutual Exclusion.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Peterson's Algorithm",
+      "body": "Limitations\nWorks for only two processes (doesn't scale directly to many)\nRelies on atomic reads/writes and assumes instructions aren't reordered\nModern CPUs may reorder memory operations, so real systems use hardware primitives or OS tools instead\nMainly of conceptual and academic value - it clearly demonstrates the three requirements",
+      "notes": "Finally, Peterson's Algorithm has a few limitations.1  It works only for two processes and \u000b2 assumes atomic operations with no instruction reordering. \u000b3 Since modern processors may reorder memory operations, real operating systems rely \u000bon hardware synchronization mechanisms instead. \u000b4 Today, Peterson's Algorithm is mainly used to understand the core principles of synchronization.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Real-World Impacts",
+      "body": "How to Prevent Race Conditions\nAtomic instructions: Test-and-Set (TAS), Compare-and-Swap (CAS)\nDisabling interrupts (only for uniprocessor systems)\nHardware-Based Solutions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Real-World Impacts",
+      "body": "How to Prevent Race Conditions\nOS-Level Solutions\nSemaphores (binary/counting)\nMonitors\nMutex locks\nCondition variables",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Real-World Impacts",
+      "body": "How to Prevent Race Conditions\nSynchronized methods (Java), \nAtomic variables, \nConcurrent data structures\nLanguage-Level Solutions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Synchronization Hardware ",
+      "body": "Synchronization Hardware",
+      "notes": "Now we will learn about the Synchronization Hardware",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Synchronization Hardware",
+      "body": "Introduction\nSpecial CPU instructions that help solve the critical section problem efficiently\nProvides atomic operations that cannot be interrupted",
+      "notes": "Now, let's move from software solutions to hardware-based synchronization. \u000bModern processors provide special CPU instructions that perform operations atomically, \u000bmeaning they cannot be interrupted. This makes solving the critical section problem much more efficient and reliable.",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Synchronization Hardware",
+      "body": "Software-only solutions are often complex and slow\nHardware ensures fast, simple, and reliable mutual exclusion\nIntroduction",
+      "notes": "Next, compared to software-only approaches, \u000bhardware-based synchronization is much simpler and faster.\u000b By providing built-in atomic instructions, it offers a more reliable way to achieve mutual exclusion in modern systems.",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Synchronization Hardware",
+      "body": "Execute completely or not at all (cannot be interrupted)\nForms the foundation of hardware-based synchronization primitives\nIntroduction",
+      "notes": "Moving on, these hardware instructions are atomic, \u000bmeaning they either execute completely or not at all—they cannot be interrupted midway. \u000bThis property forms the foundation of hardware-based synchronization used in modern operating systems.",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Synchronization Hardware",
+      "body": "Example\nExample: Reading and writing a variable together as a single step\nVariable\nReading\nWriting",
+      "notes": "Now, consider reading and writing a variable. If these two operations are performed as a single atomic step, \u000bno other process can interrupt them in between. This prevents inconsistent data and avoids race conditions.",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Synchronization Hardware",
+      "body": "Three Main Hardware Methods\nTest-and-Set\nTest a lock and set it to busy in a single atomic step\nCompare-and-Swap\nUpdate a value only if it matches the expected value\nBlock context switches so the critical section runs uninterrupted\nInterrupt Disabling",
+      "notes": "Next, there are three common hardware methods for synchronization.\u000b Test-and-Set checks and locks a resource in one atomic operation. \u000bCompare-and-Swap updates a value only if it matches the expected value.\u000b Interrupt Disabling temporarily prevents context switches, \u000ballowing the critical section to execute without interruption.",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Hardware Support - Test-and-Set",
+      "body": "Pseudocode\nA special CPU instruction that reads a variable and sets it to true in one uninterruptible step:\ndef test_and_set(lock):\n   old_value = lock       # save old value\n   lock = True            # set lock busy\n   return old_value       # return old value\n# Usage as a lock:\nwhile test_and_set(lock) == True:\n   pass                   # wait if busy\n# --- CRITICAL SECTION ---\nlock = False               # release lock\nPseudocode",
+      "notes": "Now, let's look at Test-and-Set. It's a special CPU instruction that \u000bchecks the value of a lock and sets it to busy in one atomic operation. \u000bSince this happens without interruption, only one process can acquire the lock at a time, ensuring mutual exclusion.\u000b\nCODE\u000bNow, old_value = lock stores the current lock value. \u000bThen, lock = True marks the lock as busy in a single atomic step.\u000b The instruction returns old_value so the process knows whether the lock was free.\u000b The while loop keeps waiting if the returned value is True, \u000band after the critical section, lock = False releases the lock for the next process.",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Hardware Support",
+      "body": "Everyone else gets true back and keeps spinning until the lock is released\nUsing it as a Lock",
+      "notes": "Now, let's see how Test-and-Set works as a lock. If the lock is false, it means the resource is free.\u000b The test_and_set instruction returns false, immediately sets the lock to true,\u000b and the process enters the critical section.\u000b Any other process now receives true, indicating the lock is busy, so it keeps spinning until the lock is released.",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Hardware Support",
+      "body": "Compare-and-Swap\nAn atomic instruction that updates a variable only if it still holds the expected value:\ndef compare_and_swap(cell, expected, new_value):\n   original = cell            # save old value\n   if cell == expected:       # if unchanged\n       cell = new_value       # take the lock\n   return original            # return old value\n# Usage as a lock:\nwhile compare_and_swap(lock, 0, 1) != 0:\n   pass                       # wait if busy\n# --- CRITICAL SECTION ---\nlock = 0                       # release lock\nPseudocode",
+      "notes": "Moving on, Compare-and-Swap is another atomic hardware instruction.\u000b It updates the lock only if its current value matches the expected value. \u000bIf the lock is free, the process acquires it and enters the critical section. \u000bOtherwise, it keeps waiting until the lock becomes available.\n\n\u000bCODE\u000bNow, original = cell stores the current value of the lock. \u000bNext, if cell == expected checks whether the lock is still free.\u000b If the condition is true, cell = new_value updates the lock atomically and acquires it. \u000bThe instruction then returns original so the process knows whether it obtained the lock. \u000bFinally, the while loop keeps checking until the lock becomes available, \u000band after the critical section, lock = 0 releases the lock for other processes.",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Hardware Support",
+      "body": "Compare-and-Swap\nOnly the process that sees lock == 0 swaps it to 1 and enters; the rest keep checking",
+      "notes": "Next, with Compare-and-Swap, only the process that finds the lock value as 0 can \u000bchange it to 1 and enter the critical section. \u000bAll other processes keep checking until the lock is released, \u000bensuring that only one process enters at a time.",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Hardware Support",
+      "body": "Disabling Interrupts\nNo other process can be scheduled until it turns them back on\nA context switch only happens because of an interrupt (like the CPU timer). So a process can just turn interrupts off before its critical section\nHow the Kernel Uses It:\ndisable_interrupts() # Stop CPU timer / hardware interrupts\n  # ---- CRITICAL SECTION ----\nenable_interrupts() # Allow interrupts again\nPseudocode",
+      "notes": "Finally, another approach is disabling interrupts. \u000bBefore entering the critical section, a process temporarily turns off interrupts, \u000bpreventing the operating system from performing a context switch. \u000bThis allows the process to finish its critical section without interruption, \u000bafter which interrupts are enabled again.\n\n\nNow, let's understand this approach. \u000bThe kernel first calls disable_interrupts() to prevent context switches before entering the critical section. \u000bAfter completing the critical operation, it calls enable_interrupts() so \u000bthe system can resume normal interrupt handling and scheduling.",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Disabling Interrupts",
+      "body": "Limitations\nOnly works on single-processor systems - on a multicore CPU, other cores keep running\nUnsafe for user programs - a process could disable interrupts and never re-enable them, freezing the system\nImportant interrupts can be missed while they're off",
+      "notes": "However, disabling interrupts has several limitations.\u000b1 It works only on single-processor systems, \u000bsince other CPU cores continue running in multicore systems. \u000b2 It's also unsafe for user programs, as failing to re-enable interrupts could freeze the system. \u000b3 Additionally, important hardware interrupts may be delayed or missed while interrupts are disabled.",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Concurrency & The Critical-Section Problem",
+      "body": "Concurrency Principles\nConcurrent processes & principles of concurrency\nThe Critical-Section Problem\nProblem definition\nRequirements: mutual exclusion, progress, bounded waiting\nThe Race Condition\nHow race conditions arise",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Concurrency & The Critical-Section Problem",
+      "body": "Software Solution\nPeterson's solution\nSynchronization Hardware\nTest-and-set & compare-and-swap\nDisabling interrupts approach",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "Synchronization Tools",
+      "body": "",
+      "notes": "In the next Session we will be learning about the Synchronization Tools",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "",
+      "body": "",
+      "notes": "Thank You",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "",
+      "body": "",
+      "notes": "All The Best",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1BVmwJ6AGnx4QYwR3XjPHpruPntG7Px-9ZyeNHNa_UiQ/edit?usp=drive_link"
+}
