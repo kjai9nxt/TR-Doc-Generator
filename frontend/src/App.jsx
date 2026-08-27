@@ -192,7 +192,10 @@ export default function App() {
   // only turns to 'assembling' when the next poll lands, and assembling a doc takes long
   // enough that a button which merely greys out reads as a click that did nothing.
   const [finalizing, setFinalizing] = useState(false)
-  const [approved, setApproved] = useState({})
+  // WHICH CHUNKS ARE TICKED comes from the server now — it is derived, not held here.
+  // It used to be local state, which meant a reload wiped the review and the two copies
+  // could disagree about whether the final doc could be created.
+  const approvedSet = new Set(guided?.approved_chunks || [])
   const guidedPollRef = useRef(null)
 
   // Eval-sets (System B) run on the finished doc
@@ -628,7 +631,7 @@ export default function App() {
     clearInterval(guidedPollRef.current)
     setGenErr(e.message)
     if (e.kind === 'guided_gone') {
-      setGuidedId(null); setGuided(null); setApproved({}); setRegenFor(null); setRegenReason('')
+      setGuidedId(null); setGuided(null); setRegenFor(null); setRegenReason('')
       rememberGuided(null)      // nothing left to resume
     }
   }
@@ -660,7 +663,7 @@ export default function App() {
   }
 
   function startGuided() {
-    setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null); setShowCost(true)
+    setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setEvalReport(null); setEvalErr(null); setShowCost(true)
     setRegenAll(false); setSplitFor(null); setSplitSlide(''); setSplitErr(null); setFinalizing(false)
     api.guidedStart(sel, true, policy.time_always_enforced,
                     workspace.kind === 'team' ? workspace.team_id : null,
@@ -707,12 +710,19 @@ export default function App() {
         skipSelResetRef.current = true   // our own change; do not tear the run down
         setSel(st.session_no)
       }
-      setGuidedId(gid); setGuided(st); setApproved({}); setShowCost(true)
+      setGuidedId(gid); setGuided(st); setShowCost(true)
       if (st.status !== 'reviewing') pollGuided(gid)
     }).catch((e) => { setBusyAction(false); handleGuidedError(e) })
   }
 
-  function approveChunk(i) { setApproved((a) => ({ ...a, [i]: true })) }
+  function approveChunk(i, approved = true) {
+    if (!guidedId) return
+    setBusyAction(true)
+    // The reply is the whole view, so the tick and "can the doc be created yet" arrive
+    // from the same place and cannot drift apart.
+    api.guidedApproveChunk(guidedId, i, approved)
+      .then(setGuided).catch(handleGuidedError).finally(() => setBusyAction(false))
+  }
 
   // busyAction disables EVERY button in the review panel (approve, regenerate,
   // create-final), so it must never be left stuck on: a request that neither
@@ -726,13 +736,9 @@ export default function App() {
     setBusyAction(true)
     api.guidedRegenerate(guidedId, index, reason, all).then(() => {
       setRegenFor(null); setRegenReason(''); setRegenAll(false)
-      // Applying the note forward rewrites every later chunk, so their approvals go too
-      // — an approval is of the text that was on screen, and that text has changed.
-      setApproved((a) => {
-        const c = { ...a }
-        Object.keys(c).forEach((k) => { if (all ? Number(k) >= index : Number(k) === index) delete c[k] })
-        return c
-      })
+      // The approvals of the rewritten chunks are dropped BY THE SERVER as each one is
+      // replaced (see _unapprove) — an approval is of the text that was on screen, and
+      // that text has changed. Polling brings the new list back.
       pollGuided(guidedId)   // resume polling to watch regenerating -> reviewing
     }).catch(handleGuidedError).finally(() => setBusyAction(false))
   }
@@ -745,9 +751,8 @@ export default function App() {
     api.guidedSplitSlide(guidedId, index, Number(slideN)).then((st) => {
       setGuided(st)
       setSplitFor(null); setSplitSlide('')
-      // Only THIS chunk needs looking at again. The later chunks were renumbered, not
-      // rewritten, so re-asking for approval of text nobody changed would be noise.
-      setApproved((a) => { const c = { ...a }; delete c[index]; return c })
+      // The split chunk's approval is dropped server-side; the later chunks were
+      // renumbered, not rewritten, so theirs stand.
     }).catch((e) => setSplitErr(e.message)).finally(() => setBusyAction(false))
   }
 
@@ -782,7 +787,7 @@ export default function App() {
   useEffect(() => {
     if (skipSelResetRef.current) { skipSelResetRef.current = false; return }
     guidedPollRef.current && clearInterval(guidedPollRef.current)
-    setGuidedId(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({})
+    setGuidedId(null); setGuided(null); setRegenFor(null); setRegenReason('')
   }, [sel])
 
   useEffect(() => () => {
@@ -814,7 +819,9 @@ export default function App() {
   const guidedReviewing = gStatus === 'reviewing' || gStatus === 'regenerating'
   const guidedAssembling = gStatus === 'assembling'
   const guidedActive = guided && gStatus !== 'done' && gStatus !== 'error'
-  const allApproved = guided?.chunks?.length > 0 && guided.chunks.every((_, i) => approved[i])
+  // The SERVER decides this: it is the condition for creating the document at all, and
+  // finalize refuses without it, so the button must be reading the same answer.
+  const allApproved = !!guided?.all_approved
 
   // --- Auth gate: block the whole app until a valid @nxtwave.co.in login ---
   if (!authCfg) return <div className="app"><p className="sub">Loading…</p></div>
@@ -1272,7 +1279,7 @@ export default function App() {
                   {guidedReviewing && (
                     <div className="gprogress">
                       Review each chunk — <b>Approve</b> or <b>Regenerate</b>.
-                      <span className="gcount"> · {guided.chunks.filter((_, i) => approved[i]).length}/{guided.chunks.length} approved</span>
+                      <span className="gcount"> · {approvedSet.size}/{guided.chunks.length} approved</span>
                     </div>
                   )}
                   {/* A step that failed but left the run intact. Shown here, inside the
@@ -1290,7 +1297,7 @@ export default function App() {
                   )}
                   {guided.chunks.map((c, i) => {
                     const regenning = gStatus === 'regenerating' && guided.regen_index === i
-                    const isOk = !!approved[i]
+                    const isOk = approvedSet.has(i)
                     return (
                       <details key={i} className={`review-chunk ${isOk ? 'ok' : ''}`} open={gStatus !== 'done'}>
                         <summary>{isOk ? '✅' : `${i + 1}.`} {c.label}</summary>
@@ -1315,7 +1322,12 @@ export default function App() {
                           <div className="chunk-actions">
                             <div className="gactions">
                               {isOk
-                                ? <span className="approved-badge">✓ Approved</span>
+                                ? <>
+                                    <span className="approved-badge">✓ Approved</span>
+                                    <button className="ghostbtn" disabled={busyAction}
+                                            title="Un-approve this chunk"
+                                            onClick={() => approveChunk(i, false)}>↩ Undo</button>
+                                  </>
                                 : <button className="primary" disabled={busyAction} onClick={() => approveChunk(i)}>✅ Approve</button>}
                               {regenFor !== i && (
                                 <button className="ghostbtn" disabled={busyAction || gStatus === 'regenerating'}
@@ -1738,15 +1750,30 @@ function TeamPanel({ entry, courses, course, onPick, onAddMember, onRemoveMember
   const known = new Set(courses.map((c) => c.name))
   const missing = owned.filter((c) => !known.has(c))
   const s = entry.summary || {}
+  // MEMBERS AND CONTRIBUTORS ARE NOT THE SAME COUNT, and the panel used to show both
+  // with no hint of it — 2 members beside 3 contributors reads as a bug. A member is
+  // someone ON the team; a contributor is anyone who has generated a doc for one of the
+  // team's COURSES, which is how the team's history is gathered (see db.team_runs). That
+  // legitimately includes people who were never on the team, or who have since left.
+  const members = t.members || []
+  const outsiders = (entry.contributors || []).filter((c) => !members.includes(c))
   return (
     <section className="card">
       <h2><span className="num">👥</span> {t.name}</h2>
       <div className="metrics">
-        <Metric label="Members" value={t.members?.length ?? 0} />
+        <Metric label="Members" value={members.length} />
         <Metric label="Courses" value={owned.length} />
-        <Metric label="Docs built" value={s.runs ?? 0} />
+        {/* `s.runs` — a key the server has never sent. It read undefined, fell through
+            to 0, and reported "Docs built 0" against work the same payload was counting
+            contributors from. `docs_built` counts the runs that produced a document;
+            attempts that failed or were abandoned are shown beside it, not as docs. */}
+        <Metric label="Docs built" value={s.docs_built ?? 0}
+                sub={s.total_runs > (s.docs_built ?? 0)
+                      ? `${s.total_runs} attempt${s.total_runs === 1 ? '' : 's'}` : null} />
         {entry.contributors?.length > 0 && (
-          <Metric label="Contributors" value={entry.contributors.length} />
+          <Metric label="Contributors" value={entry.contributors.length}
+                  sub={outsiders.length
+                        ? `${outsiders.length} not on the team` : null} />
         )}
       </div>
 
@@ -1812,6 +1839,14 @@ function TeamPanel({ entry, courses, course, onPick, onAddMember, onRemoveMember
             every doc built before they arrived. Only an admin can change the team's
             course or hand ownership to somebody else.
           </span>
+          {outsiders.length > 0 && (
+            <span className="hint">
+              <b>{outsiders.join(', ')}</b> {outsiders.length === 1 ? 'has' : 'have'} built
+              docs for this team's courses without being on the team — the history is
+              gathered by COURSE, so their work shows here either way. Add them if they
+              should see the rest of it.
+            </span>
+          )}
         </>
       ) : (
         <span className="hint">

@@ -370,6 +370,65 @@ check("…and the team still has exactly its two members",
       == sorted([ALICE["email"], BOB["email"]]),
       str(db.teams_for_user(ALICE["email"])[0]["members"]))
 
+print("\n== an admin can rename a team, and nothing else moves ==")
+# The name is how a person PICKS a workspace, so a name typed wrong is worth being able to
+# correct. It is safe to change precisely because it is not a key: membership, the courses
+# the team owns, its course owner and its whole history key off the team's id or its
+# courses. That is what the second half of this asserts.
+before_members = sorted(db.teams_for_user(ALICE["email"])[0]["members"])
+before_courses = db.team_course_list(tid)
+before_owner = db.team_owner(tid)
+as_user(ALICE)
+st, r = http("POST", f"/admin/teams/{tid}/name", {"name": "Renamed By Alice"})
+check("a non-admin cannot rename -> 403", st == 403, f"got {st}")
+as_user(ADMIN)
+st, r = http("POST", f"/admin/teams/{tid}/name", {"name": "  OS   Curriculum Squad  "})
+check("the admin can", st == 200, f"got {st}: {detail(r)}")
+check("…and stray whitespace is collapsed", r.get("name") == "OS Curriculum Squad",
+      repr(r.get("name")))
+_t = next((t for t in db.teams() if t["id"] == tid), {})
+check("the new name is stored", _t.get("name") == "OS Curriculum Squad",
+      repr(_t.get("name")))
+check("the members are untouched",
+      sorted(_t.get("members") or []) == before_members,
+      f"{before_members} -> {sorted(_t.get('members') or [])}")
+check("…the courses too", db.team_course_list(tid) == before_courses,
+      f"{before_courses} -> {db.team_course_list(tid)}")
+check("…and the course owner", db.team_owner(tid) == before_owner,
+      f"{before_owner} -> {db.team_owner(tid)}")
+as_user(ALICE)
+st, w = http("GET", "/workspaces")
+check("the members see the new name in their workspace switcher",
+      next((t["name"] for t in w.get("teams", []) if t["id"] == tid), None)
+      == "OS Curriculum Squad",
+      str([t["name"] for t in w.get("teams", [])]))
+st, h = http("GET", "/my/teams")
+check("…and the team's history is still theirs",
+      next((len(t["courses"]) for t in h.get("teams", []) if t["team"]["id"] == tid), 0) >= 0,
+      str(h.get("teams") and [t["team"]["name"] for t in h["teams"]]))
+
+print("\n== a name that cannot be used is refused ==")
+as_user(ADMIN)
+for bad, code in (("", 400), ("   ", 400), ("x" * 81, 400)):
+    st, r = http("POST", f"/admin/teams/{tid}/name", {"name": bad})
+    check(f"{bad[:12]!r} -> {code}", st == code, f"got {st}: {detail(r)}")
+st, r = http("POST", f"/admin/teams/{tid}/name", {"name": "os curriculum SQUAD"})
+check("a team may keep its own name in different case", st == 200, f"got {st}: {detail(r)}")
+http("POST", f"/admin/teams/{tid}/name", {"name": "OS Curriculum Squad"})
+st, r = http("POST", "/admin/teams",
+             {"name": "Second Team", "course": None, "owner": BOB["email"]})
+tid2 = next((t["id"] for t in db.teams() if t["name"] == "Second Team"), None)
+check("a second team is created", st == 200 and tid2, f"got {st}: {detail(r)}")
+st, r = http("POST", f"/admin/teams/{tid2}/name", {"name": "os curriculum squad"})
+check("…but it cannot take a name already in use -> 409", st == 409, f"got {st}")
+check("…and is told which team has it", "OS Curriculum Squad" in detail(r), detail(r))
+st, r = http("POST", "/admin/teams",
+             {"name": "OS Curriculum Squad", "course": None, "owner": BOB["email"]})
+check("nor can a NEW team be created with a taken name -> 409", st == 409, f"got {st}")
+st, r = http("POST", f"/admin/teams/999999/name", {"name": "Ghost"})
+check("renaming a team that does not exist -> 404", st == 404, f"got {st}")
+http("DELETE", f"/admin/teams/{tid2}")
+
 print("\n== only an admin hands ownership to somebody else ==")
 as_user(ALICE)
 st, r = http("POST", f"/admin/teams/{tid}/owner", {"email": BOB["email"]})
@@ -537,6 +596,65 @@ check("…and it is still in his history",
 st, r = http("GET", "/preview/1?run_id=keeprun")
 check("…and still resolvable, not forbidden", st != 403, f"got {st}")
 
+print("\n== deleting a course costs a BOUNDED number of database round-trips ==")
+# WHY THIS IS A TEST. The delete answered 503 on the deployed instance. Nothing was wrong
+# with the logic: it made SIXTY round-trips — 32 of them dropping deck mirrors one at a
+# time, plus teams() four times over — and on the cloud database every one of those is a
+# fresh connection and a network hop, so the platform timed the request out and returned a
+# 503 with no message in it. The count is the thing that has to stay small, so the count is
+# what is asserted; a local SQLite file would never show the problem by timing.
+BUDGET = "Round Trip Course"
+make_course(ALICE, BUDGET)
+for n in range(2, 30):          # a course the size of a real one
+    db.curriculum_upsert(BUDGET, n, topic="T", session_name=f"s{n}", key_takeaways=["k"])
+from src import pptx_ingest as _pi                            # noqa: E402
+_pi.DECKS_DIR.mkdir(parents=True, exist_ok=True)
+for n in range(1, 30):
+    (_pi.DECKS_DIR / f"session_{n:02d}.json").write_text(
+        json.dumps({"session_no": n, "slides": []}), encoding="utf-8")
+    db.kb_put(f"decks/session_{n:02d}.json")
+
+before_disk = _pi.deck_session_numbers()
+CALLS = []
+_real_exec, _real_query = db._exec, db._query
+db._exec = lambda sql, args=(): (CALLS.append(sql) or _real_exec(sql, args))
+db._query = lambda sql, args=(): (CALLS.append(sql) or _real_query(sql, args))
+as_user(ALICE)
+st, r = http("DELETE", f"/courses?course={q(BUDGET)}&detach_teams=true")
+db._exec, db._query = _real_exec, _real_query
+check("the delete succeeds", st == 200, f"got {st}: {detail(r)}")
+# Not "all 29": decks are filed by session NUMBER, so any number another course still
+# has keeps its deck. Computed rather than hard-coded, so the assertion says the rule
+# instead of a number that depends on what the tests above happened to leave behind.
+still_claimed = {row["session_no"] for row in
+                 db._query("SELECT DISTINCT session_no FROM curriculum")
+                 if row.get("session_no") is not None}
+check("every deck no remaining course claims is cleared",
+      _pi.deck_session_numbers() == {n for n in before_disk if n in still_claimed},
+      f"left={sorted(_pi.deck_session_numbers())} "
+      f"expected={sorted({n for n in before_disk if n in still_claimed})}")
+check("…and the reply counts exactly those",
+      len(r.get("decks_cleared") or [])
+      == len({n for n in before_disk if n not in still_claimed}),
+      f"{len(r.get('decks_cleared') or [])} vs "
+      f"{len({n for n in before_disk if n not in still_claimed})}")
+# The mirror is dropped in ONE statement, not one per session. This is the 32-vs-1 that
+# made the difference between a request that answers and one the platform kills.
+mirror = [c for c in CALLS if c.strip().upper().startswith("DELETE FROM KB_FILES")]
+check("the deck mirror is cleared in a single statement", len(mirror) == 1,
+      f"{len(mirror)} statements")
+check("…and it really is cleared",
+      db._query("SELECT COUNT(*) AS n FROM kb_files WHERE path LIKE 'decks/%'")[0]["n"] == 0,
+      str(db._query("SELECT COUNT(*) AS n FROM kb_files WHERE path LIKE 'decks/%'")))
+# A flat ceiling rather than an exact number: the point is that it does not grow with the
+# size of the course, which is what turned a 34-session delete into a timeout.
+check(f"the whole request stays under 30 round-trips (was 60)", len(CALLS) < 30,
+      f"{len(CALLS)} round-trips: "
+      + ", ".join(sorted({c.split()[0] + ' ' + (c.split()[1] if len(c.split()) > 1 else '')
+                          for c in CALLS})))
+check("…and does not scale with the number of sessions",
+      len(CALLS) < 29, f"{len(CALLS)} for 29 sessions")
+
 print("\n== a shared course takes two steps, not one click ==")
 # It is the curriculum a whole team works from. One request answers 409 and names them;
 # only an explicit second one goes ahead.
@@ -545,12 +663,15 @@ make_course(ALICE, SHARED)
 as_user(ALICE)
 st, r = http("POST", f"/teams/{tid}/courses", {"course": SHARED})
 check("alice shares it with her team", st == 200, f"got {st}: {detail(r)}")
+# Read rather than hard-coded: an admin can RENAME a team, so a literal here would be
+# asserting the name the test file happened to leave behind rather than the behaviour.
+team_name = next((t["name"] for t in db.teams() if t["id"] == tid), "?")
 st, r = http("DELETE", f"/courses?course={q(SHARED)}")
 check("deleting it unconfirmed -> 409", st == 409, f"got {st}")
 check("…and the refusal names the team",
-      "Shared Team" in detail(r), f"got {detail(r)}")
+      team_name in detail(r), f"got {detail(r)}")
 check("…and hands the caller the list to confirm against",
-      [t["name"] for t in (r.get("detail", {}).get("teams") or [])] == ["Shared Team"],
+      [t["name"] for t in (r.get("detail", {}).get("teams") or [])] == [team_name],
       str(r.get("detail", {}).get("teams")))
 check("…and nothing was deleted", len(db.curriculum(SHARED)) == 1)
 st, r = http("DELETE", f"/courses?course={q(SHARED)}&detach_teams=true")
@@ -558,7 +679,7 @@ check("confirmed, it goes", st == 200, f"got {st}: {detail(r)}")
 check("…and is off the team's shelf too", SHARED not in db.team_course_list(tid),
       str(db.team_course_list(tid)))
 check("…which the reply reports",
-      [t["name"] for t in (r.get("teams_detached") or [])] == ["Shared Team"],
+      [t["name"] for t in (r.get("teams_detached") or [])] == [team_name],
       str(r.get("teams_detached")))
 
 print("\n== a team's course can be un-shared WITHOUT deleting it ==")
@@ -609,6 +730,92 @@ check("…and the file is really gone",
       not (pptx_ingest.DECKS_DIR / "session_92.json").exists())
 check("session 91's deck STAYS — the other course has a session 91",
       (pptx_ingest.DECKS_DIR / "session_91.json").exists())
+
+print("\n== the admin's course list carries what a delete decision needs ==")
+# The admin dashboard has an All-courses tab with a Delete button per row. The decision
+# needs facts /api/courses does not carry: how many sessions would go, who created it,
+# which teams work from it, and how many documents already exist — because those are KEPT,
+# and a button that looks like it destroys finished work will not be pressed.
+as_user(ALICE)
+st, r = http("GET", "/admin/courses")
+check("a non-admin cannot list them -> 403", st == 403, f"got {st}")
+as_user(ADMIN)
+st, r = http("GET", "/admin/courses")
+check("GET /admin/courses -> 200", st == 200, f"got {st}: {detail(r)}")
+_cs = {c["name"]: c for c in r.get("courses", [])}
+check("every course the instance holds is listed",
+      set(db.curriculum_session_counts()) <= set(_cs),
+      f"missing {sorted(set(db.curriculum_session_counts()) - set(_cs))}")
+_a = _cs.get(A_COURSE, {})
+check("…with its session count", _a.get("sessions") == len(db.curriculum(A_COURSE)),
+      f"{_a.get('sessions')} vs {len(db.curriculum(A_COURSE))}")
+check("…and who created it", _a.get("created_by") == ALICE["email"],
+      str(_a.get("created_by")))
+# Shared here rather than assumed: an earlier section un-shares T_COURSE, so relying on
+# that would be asserting the order of this file instead of the behaviour.
+db.team_add_course(tid, T_COURSE)
+st, r = http("GET", "/admin/courses")
+_cs = {c["name"]: c for c in r["courses"]}
+_t = _cs.get(T_COURSE, {})
+check("a shared course names the teams working from it",
+      [x["name"] for x in (_t.get("teams") or [])]
+      == [next(t["name"] for t in db.teams() if t["id"] == tid)],
+      str(_t.get("teams")))
+check("…and who is on them",
+      _t.get("members") == sorted(next(t["members"] for t in db.teams() if t["id"] == tid)),
+      str(_t.get("members")))
+# The number that stops the button looking destructive.
+KEPTC = "Admin List Course"
+make_course(BOB, KEPTC)
+db.create_run("alrun", user_email=BOB["email"], course=KEPTC, team_id=None,
+              session_no=1, title="a doc", enforce_time=True)
+db.finish_run("alrun", status="done", accepted=True)
+db.create_run("alrun2", user_email=BOB["email"], course=KEPTC, team_id=None,
+              session_no=1, title="failed", enforce_time=True)
+db.finish_run("alrun2", status="error")
+as_user(ADMIN)
+st, r = http("GET", "/admin/courses")
+_k = {c["name"]: c for c in r["courses"]}[KEPTC]
+check("docs built counts the documents, not the attempts",
+      _k["docs_built"] == 1 and _k["total_runs"] == 2,
+      f"docs_built={_k['docs_built']} total_runs={_k['total_runs']}")
+check("…and it reports who has worked on it",
+      _k["contributors"] == [BOB["email"]], str(_k["contributors"]))
+
+print("\n== …including the ones created by accident ==")
+# A name claimed by a request that never meant to create anything: no sessions, no runs.
+# These are the ones an admin actually wants to clear out, so they have to be visible and
+# recognisable rather than merely absent.
+db.claim_course("Ghost Course", ADMIN["email"])
+st, r = http("GET", "/admin/courses")
+_g = {c["name"]: c for c in r["courses"]}.get("Ghost Course")
+check("a course with no curriculum still appears", _g is not None,
+      str(sorted(c["name"] for c in r["courses"])))
+check("…and shows as empty", _g and _g["sessions"] == 0 and _g["total_runs"] == 0,
+      str(_g))
+st, r = http("DELETE", f"/courses?course={q('Ghost Course')}")
+check("the admin can delete it", st == 200, f"got {st}: {detail(r)}")
+st, r = http("GET", "/admin/courses")
+check("…and it leaves the list",
+      "Ghost Course" not in {c["name"] for c in r["courses"]},
+      str(sorted(c["name"] for c in r["courses"])))
+
+print("\n== the admin can delete ANY course, its history surviving ==")
+as_user(ADMIN)
+st, r = http("DELETE", f"/courses?course={q(KEPTC)}")
+check("deleting somebody else's course -> 200", st == 200, f"got {st}: {detail(r)}")
+check("…and it says the history is kept", r.get("history_kept") is True, str(r))
+check("the run rows are still there",
+      len([x for x in db.runs() if x["id"] in ("alrun", "alrun2")]) == 2,
+      str([x["id"] for x in db.runs() if x["id"].startswith("alrun")]))
+check("…still naming the course they were generated for",
+      next(x["course"] for x in db.runs() if x["id"] == "alrun") == KEPTC,
+      str(next(x["course"] for x in db.runs() if x["id"] == "alrun")))
+st, r = http("GET", "/admin/courses")
+_still = {c["name"]: c for c in r["courses"]}.get(KEPTC)
+check("the deleted course still shows in the admin list, because its docs exist",
+      _still is not None and _still["sessions"] == 0 and _still["docs_built"] == 1,
+      str(_still))
 
 print("\n== an unclaimed course is the admin's to delete, not anyone's ==")
 ORPHANED = "Nobody's Course"

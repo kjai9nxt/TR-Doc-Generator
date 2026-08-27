@@ -220,6 +220,11 @@ class GuidedStartBody(BaseModel):
     course: str | None = None
 
 
+class ApproveChunkBody(BaseModel):
+    index: int
+    approved: bool = True     # false un-ticks it, for a reviewer who changes their mind
+
+
 class SplitSlideBody(BaseModel):
     index: int               # which chunk
     slide_n: int             # which slide in it, by the number shown to the reviewer
@@ -253,6 +258,10 @@ class MemberBody(BaseModel):
 
 class CourseBody(BaseModel):
     course: str
+
+
+class TeamNameBody(BaseModel):
+    name: str
 
 
 class FeedbackBody(BaseModel):
@@ -784,7 +793,12 @@ def delete_course(course: str, detach_teams: bool = False,
     the documents — it would only make the instance lie about having produced them.
     """
     course = _require_course_owner(user, course)
-    holders = [t for t in db.teams() if course in (t.get("courses") or [])]
+    # ONE teams() for the whole request. It is three queries, and this endpoint asked four
+    # separate times — see the round-trip note on db.kb_forget_many: against the cloud
+    # database this request was making sixty network hops, each on its own connection, and
+    # the platform was timing it out with a 503 that carried no message at all.
+    all_teams = db.teams()
+    holders = [t for t in all_teams if course in (t.get("courses") or [])]
     if holders and not detach_teams:
         raise HTTPException(status_code=409, detail={
             "message": f"'{course}' is shared with "
@@ -794,7 +808,7 @@ def delete_course(course: str, detach_teams: bool = False,
             "kind": "course_shared",
             "teams": [{"id": t["id"], "name": t["name"]} for t in holders]})
 
-    out = db.delete_course(course, detach_teams=True)
+    out = db.delete_course(course, detach_teams=True, all_teams=all_teams)
 
     # The extracted decks: only the session numbers no remaining course claims. They are
     # filed by number alone, so this is the one thing that cannot be scoped by course.
@@ -808,18 +822,23 @@ def delete_course(course: str, detach_teams: bool = False,
             continue
         try:
             pptx_ingest.drop_deck(no)
-            db.kb_forget(f"decks/session_{int(no):02d}.json")
             cleared.append(no)
         except Exception as e:
             print(f"[courses] could not drop the deck for session {no}: {e!r}")
+    # The disk unlinks above are local and cheap. The cloud MIRROR is dropped in ONE
+    # statement rather than one per session, which is where this request was spending
+    # nearly all of its time.
+    if cleared:
+        db.kb_forget_many([f"decks/session_{int(n):02d}.json" for n in cleared])
 
     # Never leave the instance-wide active course naming something that is gone: it is
     # what an unnamed request falls back to, and course_name() otherwise drops to a
     # hard-coded legacy default nobody chose.
+    # Read ONCE and used for both the repointing below and the reply — it was computed
+    # twice, and it is five queries each time.
+    rest = db.courses_for_user(user.get("email"), is_admin=user.get("is_admin", False))
     moved_to = None
     if (app_settings.course_name() or "").strip() == course:
-        rest = db.courses_for_user(user.get("email"),
-                                   is_admin=user.get("is_admin", False))
         moved_to = next((c["name"] for c in rest if c.get("mine")),
                         next((c["name"] for c in rest), None))
         if moved_to:
@@ -840,9 +859,7 @@ def delete_course(course: str, detach_teams: bool = False,
 
     return {"ok": True, "deleted": course, "sessions_removed": out["sessions"],
             "teams_detached": out["teams_detached"], "decks_cleared": cleared,
-            "history_kept": True, "course": moved_to,
-            "courses": db.courses_for_user(user.get("email"),
-                                           is_admin=user.get("is_admin", False))}
+            "history_kept": True, "course": moved_to, "courses": rest}
 
 
 def _curriculum_rows(course: str, rows: list[dict] | None = None) -> list[dict]:
@@ -1236,6 +1253,11 @@ _GUIDED_PERSIST_KEYS = (
     "status", "session_no", "base_context", "total", "index", "labels", "chunks",
     "regen_index", "use_judge", "enforce_time", "logs", "result", "error",
     "last_error", "user_email", "budgets",
+    # WHICH CHUNKS THE REVIEWER HAS TICKED. These lived only in React state, so a reload
+    # — or the free host spinning the instance down mid-review, which is exactly the window
+    # this checkpoint exists for — threw away every tick and the reviewer had to read and
+    # approve all of them again. They are the review itself; they belong on the server.
+    "approved_chunks",
     # Standing reviewer notes ("apply this to every chunk after this one"). They govern
     # every later redraft in the run, so a restart mid-review must not lose them — the
     # reviewer would have no way to know the instruction had stopped applying.
@@ -1743,6 +1765,17 @@ def _patch_one(gid: str, index: int, reason: str) -> tuple[dict, dict]:
     return {"kind": kind, "fragment": fragment, "markdown": markdown}, summary
 
 
+def _unapprove(state: dict, indices) -> None:
+    """Drop the reviewer's tick from chunks whose content has just changed.
+
+    An approval is of the text that was on screen. Once a chunk is regenerated that text
+    is gone, so the tick cannot stand — and now that the server holds the ticks, the
+    server is what has to drop them rather than trusting the client to.
+    """
+    drop = set(indices)
+    state["approved_chunks"] = sorted(set(state.get("approved_chunks") or []) - drop)
+
+
 def _standing_notes(state: dict, index: int) -> list[str]:
     """Reviewer notes that were marked "apply to every chunk after this one", and whose
     range covers `index`.
@@ -1838,6 +1871,7 @@ def _apply_to_following(gid: str, from_index: int, reason: str) -> None:
             if gid not in GUIDED:
                 return
             GUIDED[gid]["chunks"][j] = chunk
+            _unapprove(GUIDED[gid], [j])
             # Same reason as in _guided_regenerate: a patch can change the slide count,
             # and the reviewer is reading those numbers while this runs.
             renumbered = _renumber_slides(GUIDED[gid])
@@ -1943,6 +1977,8 @@ def _guided_regenerate(gid: str, index: int, reason: str,
             pass
         with _lock:
             GUIDED[gid]["chunks"][index] = chunk
+            # The text the reviewer ticked is gone, so the tick goes with it.
+            _unapprove(GUIDED[gid], [index])
             # A patch may ADD or REMOVE a slide, and a full re-draft comes back at
             # whatever length it likes — so the numbering has to be redone here, exactly
             # as it is after a split. It used to be left to assembly, which meant the
@@ -2213,6 +2249,13 @@ def _guided_view(state: dict) -> dict:
         "labels": labels,
         "chunks": chunks,
         "regen_index": state.get("regen_index"),
+        # The chunks the reviewer has ticked, and whether that is all of them. The client
+        # used to be the only holder of this, so it was also the only judge of whether the
+        # final doc could be created.
+        "approved_chunks": sorted(state.get("approved_chunks") or []),
+        "all_approved": bool(state.get("chunks")) and len(
+            set(state.get("approved_chunks") or [])
+            & set(range(len(state["chunks"])))) == len(state["chunks"]),
         # Notes the reviewer marked "apply to every chunk after this one". Shown back so
         # a standing instruction is visible rather than invisible state that quietly
         # governs every later redraft.
@@ -2388,6 +2431,45 @@ def guided_regenerate(gid: str, body: RegenerateBody,
     return {"ok": True, "apply_to_following": bool(body.apply_to_following)}
 
 
+@app.post("/api/guided/{gid}/approve")
+def guided_approve_chunk(gid: str, body: ApproveChunkBody,
+                         user: dict = Depends(current_user)):
+    """Tick (or un-tick) one chunk as reviewed.
+
+    These ticks ARE the review, and they used to exist only in the reviewer's browser: a
+    reload, a second machine, or the instance spinning down mid-review threw all of them
+    away and the whole document had to be read and approved again. Worse, the client was
+    the only judge of whether every chunk had been ticked — the one condition that lets a
+    document be created at all.
+
+    When the last one goes in, the moment is stamped on the run (db.mark_review_done). It
+    is a distinct step from pressing Create final TR Doc, and the gap between the two is
+    where a reviewer finished reading and then stopped.
+    """
+    state = _guided_require_mine(gid, user)
+    with _lock:
+        total = len(state.get("chunks") or [])
+        if not (0 <= body.index < total):
+            raise HTTPException(status_code=400,
+                                detail={"message": "Chunk index out of range."})
+        ticked = set(state.get("approved_chunks") or [])
+        if body.approved:
+            ticked.add(body.index)
+        else:
+            ticked.discard(body.index)
+        state["approved_chunks"] = sorted(ticked)
+        complete = len(ticked & set(range(total))) == total
+        view = _guided_view(state)
+    if complete:
+        try:
+            db.mark_review_done(gid)
+        except Exception as e:
+            print(f"[guided] could not record that {gid} was fully reviewed: {e!r}")
+        _guided_log(gid, "Every chunk approved — the document can be created.")
+    _guided_save(gid)
+    return view
+
+
 @app.post("/api/guided/{gid}/split")
 def guided_split_slide(gid: str, body: SplitSlideBody,
                        user: dict = Depends(current_user)):
@@ -2432,6 +2514,10 @@ def guided_split_slide(gid: str, body: SplitSlideBody,
         allowance = _chunk_allowance(state, body.index) if body.index else 0
         chunk["fragment"] = fragment
         chunk["markdown"] = docx_writer.chunk_to_markdown(chunk["kind"], fragment)
+        # This chunk now has a slide it did not have; the reviewer has not seen it. The
+        # later chunks were only RENUMBERED, so their approvals stand — re-asking for
+        # sign-off on text nobody changed would be noise.
+        _unapprove(state, [body.index])
         moved = _renumber_slides(state)
         view = _guided_view(state)
     _guided_log(gid, f"Split slide {body.slide_n} of chunk {body.index + 1} into two — "
@@ -2485,6 +2571,15 @@ def guided_finalize(gid: str, user: dict = Depends(current_user)):
         if not state.get("chunks"):
             raise HTTPException(status_code=409,
                                 detail="This run has no generated chunks to assemble.")
+        # Checked HERE, not only by the disabled button. Reaching this endpoint IS the
+        # human approval of the document, and it may only be claimed for a document that
+        # was actually reviewed chunk by chunk — which the server now knows.
+        _ticked = set(state.get("approved_chunks") or []) & set(range(len(state["chunks"])))
+        if len(_ticked) != len(state["chunks"]):
+            missing = [i + 1 for i in range(len(state["chunks"])) if i not in _ticked]
+            raise HTTPException(status_code=409, detail={"message":
+                f"Chunk(s) {', '.join(str(m) for m in missing)} have not been approved. "
+                f"Every chunk has to be reviewed before the document is created."})
         state["status"] = "assembling"
         state["last_error"] = None
     _guided_save(gid)
@@ -2611,11 +2706,20 @@ def delete_learned_rule(index: int, user: dict = Depends(current_user)):
 
 
 def _rollup(runs: list) -> dict:
-    # "Approved" means a PERSON signed it off, which is what the label says and what
-    # the reviewer expects to see go up when they press Create final TR Doc. The
-    # graders' verdict is reported alongside it rather than instead of it.
+    # FOUR different counts, and they are genuinely different numbers:
+    #   total_runs   every attempt, including ones that failed, were abandoned, or are
+    #                still running;
+    #   docs_built   the attempts that actually produced a document (status 'done').
+    #                This is what a card labelled "Docs built" means — an abandoned run
+    #                is not a document — and the team panel had no such number to read,
+    #                so it read one that does not exist and showed 0 against real work;
+    #   approved_docs a PERSON signed it off, which is what the label says and what the
+    #                reviewer expects to go up when they press Create final TR Doc;
+    #   gates_passed_docs the GRADERS' verdict, reported alongside rather than instead.
     return {
         "total_runs": len(runs),
+        "docs_built": len([r for r in runs
+                           if r.get("outcome") in ("completed", "approved")]),
         "approved_docs": len([r for r in runs if r.get("approved")]),
         "gates_passed_docs": len([r for r in runs if r.get("gates_passed")]),
         "total_cost": round(sum((r.get("cost") or {}).get("cost", 0) or 0 for r in runs), 6),
@@ -2732,6 +2836,59 @@ def _connectors() -> list:
     ]
 
 
+@app.get("/api/admin/courses")
+def admin_list_courses(user: dict = Depends(require_admin)):
+    """Every course on the instance, with what an admin needs before deleting one.
+
+    Deliberately more than /api/courses carries. Deleting a course removes the curriculum
+    a team may be working from, so the decision needs the facts that make it reversible or
+    not: how many sessions would go, WHO created it, which teams work from it, and how many
+    documents have already been built (those are KEPT — see db.delete_course — and saying
+    so is what stops the button looking like it destroys finished work).
+
+    `sessions` of 0 with `docs_built` of 0 is what a course created by accident looks
+    like — a name that got claimed by a request that never meant to create anything.
+
+    Six queries flat, whatever the number of courses: teams, curriculum counts, owners and
+    the run log are each read once and grouped here.
+    """
+    all_teams = db.teams()
+    counts = db.curriculum_session_counts()
+    owners = db.course_owners()
+    runs = db.runs(limit=100000)
+
+    by_course: dict = {}
+    for r in runs:
+        by_course.setdefault(r.get("course") or "", []).append(r)
+
+    names = set(counts) | set(owners)
+    for t in all_teams:
+        names.update(t.get("courses") or [])
+    # A course with no rows and no owner but a run history still existed once, and an
+    # admin cleaning up needs to see it rather than have it hidden.
+    names.update(c for c in by_course if c)
+
+    out = []
+    for name in sorted(names):
+        rs = by_course.get(name, [])
+        owning = [t for t in all_teams if name in (t.get("courses") or [])]
+        out.append({
+            "name": name,
+            "sessions": counts.get(name, 0),
+            "created_by": owners.get(name),
+            "unclaimed": name not in owners and not owning,
+            "teams": [{"id": t["id"], "name": t["name"]} for t in owning],
+            "members": sorted({m for t in owning for m in (t.get("members") or [])}),
+            "total_runs": len(rs),
+            "docs_built": len([r for r in rs
+                               if r.get("outcome") in ("completed", "approved")]),
+            "contributors": sorted({r.get("user_email") for r in rs if r.get("user_email")}),
+            "last_activity": max((r.get("ts") or "" for r in rs), default=None),
+            "total_cost": round(sum((r.get("cost") or {}).get("cost", 0) or 0 for r in rs), 6),
+        })
+    return {"courses": out}
+
+
 # ---- team management -------------------------------------------------------------
 #
 # Creating, renaming, re-coursing and deleting a team is the ADMIN's. MEMBERSHIP is not:
@@ -2793,6 +2950,50 @@ def _no_orphaning_the_owner(team: dict, email: str) -> None:
             f"Ask an admin to assign a different owner first."})
 
 
+def _team_name(raw: str | None, *, all_teams: list[dict] | None = None,
+               allow_id: int | None = None) -> str:
+    """A team name that is usable, and not already taken.
+
+    The name is how a person PICKS a workspace — the switcher lists names, not ids — so
+    two teams called the same thing leaves them choosing blind. Rejected on both the
+    create and the rename path, because a guard one of them can walk around is no guard.
+    `allow_id` is the team being renamed, which is allowed to keep its own name (so
+    correcting only the capitalisation still works).
+    """
+    name = " ".join((raw or "").split())          # collapse stray whitespace
+    if not name:
+        raise HTTPException(status_code=400, detail={"message": "Give the team a name."})
+    if len(name) > 80:
+        raise HTTPException(status_code=400, detail={
+            "message": "That name is too long — 80 characters at most."})
+    for t in (db.teams() if all_teams is None else all_teams):
+        if t.get("id") == allow_id:
+            continue
+        if (t.get("name") or "").strip().lower() == name.lower():
+            raise HTTPException(status_code=409, detail={
+                "message": f"A team called '{t['name']}' already exists. Names are how "
+                           f"people pick a workspace, so two of them cannot share one."})
+    return name
+
+
+@app.post("/api/admin/teams/{team_id}/name")
+def admin_rename_team(team_id: int, body: TeamNameBody,
+                      user: dict = Depends(require_admin)):
+    """Rename a team.
+
+    Only the label changes. Membership, the courses it owns, its course owner and every
+    document in its history all key off the team's id or its courses, never its name — so
+    there is nothing to cascade, and a name that was typed wrong or has since changed can
+    simply be corrected.
+    """
+    all_teams = db.teams()
+    if not any(t.get("id") == int(team_id) for t in all_teams):
+        raise HTTPException(status_code=404, detail={"message": "No such team."})
+    name = _team_name(body.name, all_teams=all_teams, allow_id=int(team_id))
+    ok = db.rename_team(int(team_id), name)
+    return {"ok": ok, "id": int(team_id), "name": name}
+
+
 @app.get("/api/admin/teams")
 def admin_list_teams(user: dict = Depends(require_admin)):
     return {"teams": db.teams(), "users": [u["email"] for u in db.users()]}
@@ -2814,9 +3015,10 @@ def admin_create_team(body: TeamCreateBody, user: dict = Depends(require_admin))
     silent.
     """
     owner = _team_email(body.owner)
+    name = _team_name(body.name)
     course = (body.course or "").strip() or None
     previous = db.course_owner(course) if course else None
-    tid = db.create_team(body.name, course, user.get("email"), owner_email=owner)
+    tid = db.create_team(name, course, user.get("email"), owner_email=owner)
     if course:
         db.set_course_owner(course, owner)
     return {"id": tid, "owner": owner, "course": course,

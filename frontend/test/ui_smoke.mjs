@@ -100,7 +100,7 @@ const ROUTES = {
       { id: 'r3', session_no: 32, title: 'Disk Scheduling', user_email: 'dev@nxtwave.co.in',
         status: 'done', accepted: false, approved: true, gates_passed: false,
         rubric: 86, cost: {}, calls: [], ts: '2026-08-17T10:00:00Z' }],
-      summary: { runs: 2, total_runs: 2, approved_docs: 2, gates_passed_docs: 1 } }],
+      summary: { total_runs: 2, docs_built: 2, approved_docs: 2, gates_passed_docs: 1 } }],
       summary: { total_runs: 2, approved_docs: 2, gates_passed_docs: 1,
                  total_cost: 1.2, total_tokens: 400000 } },
   // can_manage / owner_email are decided by the SERVER — the team page offers the
@@ -112,12 +112,21 @@ const ROUTES = {
                                   owner_email: 'dev@nxtwave.co.in', can_manage: true,
                                   members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'] },
                            members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'],
-                           contributors: ['dev@nxtwave.co.in'],
-                           summary: { runs: 2 },
+                           // Three contributors against two members — legitimate, and
+                           // the exact reading that looked like a bug on screen.
+                           contributors: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in',
+                                          'former.member@nxtwave.co.in'],
+                           // EXACTLY the keys server._rollup emits — no more. The old
+                           // stub invented `runs`, which is what let the panel read a
+                           // field the server has never sent and show 0 for ever.
+                           summary: { total_runs: 3, docs_built: 2, approved_docs: 2,
+                                      gates_passed_docs: 1, total_cost: 1.2,
+                                      total_tokens: 400000 },
                            courses: [{ course: 'Operating Systems', runs: [
                              { id: 'r1', session_no: 30, title: 'I/O Systems', user_email: 'dev@nxtwave.co.in', status: 'done', accepted: true, cost: {}, calls: [] },
                              { id: 'r2', session_no: 29, title: 'File Systems', user_email: 'colleague@nxtwave.co.in', status: 'done', accepted: true, cost: {}, calls: [] }],
-                             summary: { runs: 2 } }] }] },
+                             summary: { total_runs: 3, docs_built: 2, approved_docs: 2,
+                                        gates_passed_docs: 1 } }] }] },
   '/learned-rules': { rules: [{ text: 'Do not restate the paragraph in the bullets', scope: 'course', session_no: 30, source: 'judge', hits: 2, applies: true }], course: 'Operating Systems' },
   // An abandoned run for a DIFFERENT session than the one selected — the situation
   // that produces a document for a session you did not think you asked for.
@@ -137,6 +146,10 @@ const ROUTES = {
                    session_title: 'Spooling, Buffering & Disk Structure',
                    total: 3, index: 3,
                    labels: ['Opening', 'Takeaway 1', 'Takeaway 2'],
+                   // The ticks live on the SERVER now, so the stub holds them (see
+                   // APPROVED below) — they used to be React state, which is why a reload
+                   // wiped the review.
+                   approved_chunks: [], all_approved: false,
                    standing_notes: [], logs: [],
                    chunks: [
                      { label: 'Opening (recap + agenda)', markdown: '## RECAP', repetition: [], slides: [] },
@@ -163,6 +176,7 @@ const DELETED = []    // courses the fake server was asked to delete, in order
 const REGENS = []     // {index, reason, apply_to_following} the review panel posted
 const SPLITS = []     // {index, slide_n} the review panel posted
 const FINALIZED = []  // one entry per create-final-doc request
+let APPROVED = []     // chunks the fake server has been told are reviewed
 function route(url, opts) {
   const p = String(url).replace(/^\/api/, '').split('?')[0]
   calls.push(p)
@@ -232,7 +246,23 @@ function route(url, opts) {
     v.chunks[2].markdown = '### Slide 4: Spooling\n\nText.'
     return v
   }
+  if (p === '/guided/g31/approve') {
+    const b = JSON.parse(opts?.body || '{}')
+    APPROVED = b.approved === false
+      ? APPROVED.filter((i) => i !== b.index)
+      : [...new Set([...APPROVED, b.index])]
+    const v = JSON.parse(JSON.stringify(ROUTES['/guided/g31']))
+    v.approved_chunks = [...APPROVED].sort((a, b2) => a - b2)
+    v.all_approved = APPROVED.length === v.chunks.length
+    return v
+  }
   if (p === '/guided/g31/finalize') { FINALIZED.push(1); return { ok: true } }
+  if (p === '/guided/g31') {
+    const v = JSON.parse(JSON.stringify(ROUTES[p]))
+    v.approved_chunks = [...APPROVED].sort((a, b) => a - b)
+    v.all_approved = APPROVED.length === v.chunks.length
+    return v
+  }
   if (p === '/curriculum') return { ...ROUTES[p], rows: SERVER_ROWS }
   if (p in ROUTES) return ROUTES[p]
   return {}
@@ -404,6 +434,26 @@ check('…and every course it owns', text().includes('Computer Networks'))
 // Membership used to be admin-only in both directions, so the panel could only point
 // at /admin. The team's COURSE OWNER can do it themselves now, and this user is one.
 check('the course owner is marked on the member list', $('.mtag').length === 1)
+// THE REGRESSION THIS GUARDS: the panel read `summary.runs`, a key the server does not
+// send, so it showed "Docs built 0" beside a contributor count derived from those very
+// runs. Asserted on the number, not on the label.
+const metricValue = (label) => {
+  const m = $('.metric').find((el) => el.querySelector('.ml')?.textContent.startsWith(label))
+  return m?.querySelector('.mv')?.textContent
+}
+check('Docs built shows the docs actually built', metricValue('Docs built') === '2',
+      `got ${metricValue('Docs built')}`)
+check('…with the failed/abandoned attempts named beside it, not counted as docs',
+      text().includes('3 attempts'), text().replace(/\s+/g, ' ').match(/.{0,30}attempt.{0,20}/)?.[0])
+// Members and contributors are different counts, and 3 beside 2 read as a bug until the
+// panel said why.
+check('Contributors counts everyone who built for the team\'s courses',
+      metricValue('Contributors') === '3', `got ${metricValue('Contributors')}`)
+check('…and says how many of them are not on the team',
+      text().includes('1 not on the team'),
+      text().replace(/\s+/g, ' ').match(/.{0,30}not on the team.{0,10}/)?.[0])
+check('…and names them where the members are listed',
+      text().includes('former.member@nxtwave.co.in'))
 check('…and is told they can manage the team',
       text().includes("this team's course owner"))
 check('an add-member control is offered', $('input').some(
@@ -508,7 +558,13 @@ check('the reply\'s renumbering reaches the screen — a LATER chunk moved',
 console.log('\n== Create final TR Doc says it is working ==')
 // The status stays 'reviewing' until the next poll lands, and assembling takes a minute
 // or two — a button that merely greys out reads as a click that did nothing.
+// Ticks go to the SERVER now, so this also proves the round-trip: each click posts, the
+// reply carries the updated list, and the panel reads its state back from it.
 for (const b of $('button').filter((x) => x.textContent.includes('Approve'))) await click(b)
+check('every tick reached the server', APPROVED.length === 3, JSON.stringify(APPROVED))
+check('…and the panel shows them from the server\'s answer',
+      text().includes('3/3 approved'),
+      text().replace(/\s+/g, ' ').match(/.{0,20}approved.{0,10}/)?.[0])
 const finalBtn = () => $('button.bigfinal')[0]
 check('the final-doc button is enabled once every chunk is approved',
       finalBtn() && !finalBtn().disabled,

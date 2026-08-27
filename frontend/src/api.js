@@ -43,10 +43,20 @@ async function req(path, opts = {}) {
     const detail = data.detail || data
     // Name the request. "Request failed (HTTP 500)" told nobody which call broke, so
     // a server error could only be guessed at from a screenshot.
+    // A status with no `detail.message` did not come from the app — it came from the
+    // platform in front of it, and "is the backend running?" is the wrong thing to tell
+    // someone whose page the backend just served. 502/503/504 mean the request never got
+    // an answer: the instance is waking up, or the request took longer than the proxy
+    // allows. Say that instead of sending them to check a server that is plainly up.
+    const gateway = res.status === 502 || res.status === 503 || res.status === 504
     const msg = typeof detail === 'string'
       ? detail
       : detail.message
-        || `Request failed (HTTP ${res.status}) on ${path}. Is the backend (server.py) running?`
+        || (gateway
+          ? `The server did not answer in time (HTTP ${res.status}) on ${path}. It may be `
+            + `waking up, or that request took too long. Nothing was necessarily left `
+            + `half-done — reload and check before trying again.`
+          : `Request failed (HTTP ${res.status}) on ${path}. Is the backend (server.py) running?`)
     if (res.status === 401) onUnauthorized()
     const err = new Error(msg)
     err.kind = detail.kind
@@ -183,6 +193,12 @@ export const api = {
   // Split one slide in two. Deterministic, no model call: the content is divided, not
   // rewritten, and every slide after it — in this chunk and the later ones — is
   // renumbered. Returns the fresh guided view.
+  // Ticking a chunk as reviewed. The ticks used to live only in this browser, so a
+  // reload lost the whole review — and the client was the only judge of whether every
+  // chunk had been approved, which is the one condition for creating the document.
+  guidedApproveChunk: (id, index, approved = true) =>
+    req(`/guided/${id}/approve`, { method: 'POST',
+        body: JSON.stringify({ index, approved }) }),
   guidedSplitSlide: (id, index, slide_n) =>
     req(`/guided/${id}/split`, { method: 'POST',
         body: JSON.stringify({ index, slide_n }) }),

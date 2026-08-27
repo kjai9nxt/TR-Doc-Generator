@@ -178,6 +178,13 @@ check("a fresh run is not approved yet", _row.get("approved") is False,
 server.GUIDED[gid]["status"] = "reviewing"
 server.GUIDED[gid]["chunks"] = [{"kind": "opening", "fragment": {}, "markdown": "x"}]
 server._guided_finalize = lambda g: None          # don't assemble/grade/render here
+# Reviewing the chunk first, because that is what a reviewer does and what the server now
+# requires: finalize refuses a document whose chunks were never ticked, rather than
+# trusting a disabled button in the client to have stopped it.
+st, r = http("POST", f"/guided/{gid}/finalize")
+check("finalize refuses an unreviewed document", st == 409, f"got {st}: {detail(r)}")
+st, _ = http("POST", f"/guided/{gid}/approve", {"index": 0})
+check("approving the chunk -> 200", st == 200, f"got {st}")
 st, r = http("POST", f"/guided/{gid}/finalize")
 check("POST finalize -> 200", st == 200, f"got {st}: {detail(r)}")
 _row = next((x for x in db.runs() if x["id"] == gid), {})
@@ -203,6 +210,95 @@ check("the history roll-up counts it",
       str(hist.get("summary")))
 check("…and reports gates separately",
       "gates_passed_docs" in (hist.get("summary") or {}), str(hist.get("summary")))
+
+print("\n== the roll-up counts docs, attempts and sign-offs as DIFFERENT numbers ==")
+# The team panel showed "Docs built 0" against real work: it read `summary.runs`, a key
+# _rollup has never emitted, which read undefined and fell through to 0. The UI harness
+# could not catch it because its stub had invented the same key. So the CONTRACT is pinned
+# here, on the server side, where the numbers are actually produced.
+ROLL = "Rollup Course"
+db.curriculum_upsert(ROLL, 1, session_name="rollup 1", key_takeaways=["k"])
+for rid, status, approve in (("roll_done_ok", "done", True),
+                             ("roll_done_flagged", "done", True),
+                             ("roll_done_unapproved", "done", False),
+                             ("roll_failed", "error", False),
+                             ("roll_running", "running", False)):
+    db.create_run(rid, user_email=USER["email"], course=ROLL, team_id=None,
+                  session_no=1, title="t", enforce_time=True)
+    if status != "running":
+        db.finish_run(rid, status=status, accepted=(rid == "roll_done_ok"))
+    if approve:
+        db.mark_approved(rid, USER["email"])
+_runs = [r for r in db.runs(course=ROLL)]
+_roll = server._rollup(_runs)
+check("every attempt is counted as an attempt", _roll["total_runs"] == 5,
+      str(_roll["total_runs"]))
+check("only the ones that produced a document count as docs built",
+      _roll["docs_built"] == 3, str(_roll["docs_built"]))
+check("…so a failed or still-running attempt is not a doc",
+      _roll["docs_built"] < _roll["total_runs"], str(_roll))
+check("human sign-offs are their own number", _roll["approved_docs"] == 2,
+      str(_roll["approved_docs"]))
+check("…and the graders' verdict another", _roll["gates_passed_docs"] == 1,
+      str(_roll["gates_passed_docs"]))
+# The keys the UI actually reads. A rename here silently zeroes a card on screen, which
+# is exactly what happened, so the names are part of the contract.
+for key in ("total_runs", "docs_built", "approved_docs", "gates_passed_docs",
+            "total_cost", "total_tokens"):
+    check(f"the roll-up carries '{key}'", key in _roll, str(sorted(_roll)))
+check("…and does NOT carry a bare 'runs' the UI might reach for",
+      "runs" not in _roll, str(sorted(_roll)))
+st, _hist = http("GET", "/my/history")
+check("/my/history reports it over the wire too",
+      "docs_built" in (_hist.get("summary") or {}), str(sorted(_hist.get("summary") or {})))
+st, _teams = http("GET", "/my/teams")
+check("GET /my/teams -> 200", st == 200, f"got {st}")
+
+print("\n== the ADMIN dashboard tells the two verdicts apart as well ==")
+# The same conflation, in a third place. db.summary(), db.per_user() and db.timeseries()
+# all counted `accepted` — the GRADERS' verdict — under the name `approved`, which the
+# admin page prints as "Approved". So Completed and Approved differed on screen for a
+# reason nobody could see, while the runs table right below them labelled the very same
+# rows from `outcome`, which uses the human sign-off.
+#
+# Expectations are computed from the run rows rather than written as numbers: these are
+# instance-wide aggregates, so a literal would only be asserting what the tests above
+# happened to leave behind.
+_all = db.runs(limit=100000)
+_done = [r for r in _all if r["status"] == "done"]
+_exp_approved = len([r for r in _done if r["approved"]])       # a person signed it off
+_exp_gates = len([r for r in _done if r["accepted"]])          # the graders passed it
+check("the two verdicts really are different here — otherwise this proves nothing",
+      _exp_approved != _exp_gates, f"{_exp_approved} vs {_exp_gates}")
+_sum = db.summary()
+check("summary's 'approved' is the HUMAN sign-off", _sum["approved"] == _exp_approved,
+      f"got {_sum['approved']}, expected {_exp_approved}")
+check("…and NOT the graders' count, which is what it used to be",
+      _sum["approved"] != _exp_gates, f"got {_sum['approved']}, graders={_exp_gates}")
+check("the graders' verdict is reported too, under its own name",
+      _sum["gates_passed"] == _exp_gates, f"got {_sum.get('gates_passed')}")
+check("'completed' counts every finished run", _sum["done"] == len(_done), str(_sum["done"]))
+check("…so completed >= approved, which is why they differ on screen",
+      _sum["done"] >= _sum["approved"], str((_sum["done"], _sum["approved"])))
+check("both rates are offered, named for what they measure",
+      "approval_rate" in _sum and "acceptance_rate" in _sum, str(sorted(_sum)))
+_me = {u["user"]: u for u in db.per_user()}.get(USER["email"], {})
+_mine_done = [r for r in _done if r["user_email"] == USER["email"]]
+check("per-user splits them too",
+      _me.get("approved") == len([r for r in _mine_done if r["approved"]])
+      and _me.get("gates_passed") == len([r for r in _mine_done if r["accepted"]]),
+      f"approved={_me.get('approved')} gates={_me.get('gates_passed')}")
+_ts = db.timeseries("day")
+check("…and so does the time series",
+      sum(b["approved"] for b in _ts) == len([r for r in _all if r["approved"]])
+      and sum(b["gates_passed"] for b in _ts) == len([r for r in _all if r["accepted"]]),
+      str([(b["approved"], b["gates_passed"]) for b in _ts]))
+# And the per-run label the runs table prints must agree with the cards above it — that
+# disagreement was the visible symptom.
+check("the runs table's own labels agree with the roll-up",
+      len([r for r in db.runs(course=ROLL) if r["outcome"] == "approved"])
+      == server._rollup(db.runs(course=ROLL))["approved_docs"],
+      str([r["outcome"] for r in db.runs(course=ROLL)]))
 
 print("\n== inserting a session renumbers the ones after it ==")
 # Reported: inserting a row at the TOP of a 34-session course numbered it 35. A

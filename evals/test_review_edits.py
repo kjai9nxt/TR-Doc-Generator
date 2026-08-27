@@ -356,6 +356,74 @@ st, view = http("GET", f"/guided/{gid}")
 check("the run rehydrates", st == 200, f"got {st}: {detail(view)}")
 check("…with the split and the numbering intact", numbers(view) == after, str(numbers(view)))
 
+print("\n== the reviewer's ticks live on the SERVER, not in one browser ==")
+# They used to be React state. A reload — or the free host spinning the instance down
+# mid-review, which is exactly the window the checkpoint exists for — threw away every
+# tick and the whole document had to be read and approved again. Worse, the client was the
+# only judge of whether every chunk had been approved, which is the one condition for
+# creating the document at all.
+_a = start_run()
+st, v = http("GET", f"/guided/{_a}")
+check("a fresh run has nothing ticked", v.get("approved_chunks") == [],
+      str(v.get("approved_chunks")))
+check("…and cannot be finalised yet", v.get("all_approved") is False,
+      str(v.get("all_approved")))
+st, v = http("POST", f"/guided/{_a}/approve", {"index": 1})
+check("POST /approve -> 200", st == 200, f"got {st}: {detail(v)}")
+check("…and the reply carries the tick", v.get("approved_chunks") == [1],
+      str(v.get("approved_chunks")))
+st, v = http("POST", f"/guided/{_a}/approve", {"index": 1, "approved": False})
+check("a reviewer can change their mind", v.get("approved_chunks") == [],
+      str(v.get("approved_chunks")))
+st, v = http("POST", f"/guided/{_a}/approve", {"index": 9})
+check("a chunk that is not there -> 400", st == 400, f"got {st}")
+
+print("\n== …so they survive the restart that used to lose them ==")
+for i in range(4):
+    http("POST", f"/guided/{_a}/approve", {"index": i})
+st, v = http("GET", f"/guided/{_a}")
+check("all four are ticked", v.get("approved_chunks") == [0, 1, 2, 3],
+      str(v.get("approved_chunks")))
+check("…and the run says it can be created", v.get("all_approved") is True,
+      str(v.get("all_approved")))
+_row = next((r for r in db.runs() if r["id"] == _a), {})
+check("the moment the review finished is recorded on the run",
+      _row.get("review_done") is True, str(_row.get("review_done")))
+check("…and that is NOT the same as approved — nothing was pressed yet",
+      _row.get("approved") is False, str(_row.get("approved")))
+with server._lock:
+    server.GUIDED.pop(_a, None)                 # the restart
+st, v = http("GET", f"/guided/{_a}")
+check("the rehydrated run still has every tick",
+      v.get("approved_chunks") == [0, 1, 2, 3], str(v.get("approved_chunks")))
+
+print("\n== a chunk that CHANGES loses its tick, decided server-side ==")
+PATCHED.clear()
+st, _ = http("POST", f"/guided/{_a}/regenerate", {"index": 2, "reason": "Change it."})
+v = wait_reviewing(_a)
+check("the regenerated chunk is no longer approved",
+      v.get("approved_chunks") == [0, 1, 3], str(v.get("approved_chunks")))
+check("…so the document can no longer be created", v.get("all_approved") is False,
+      str(v.get("all_approved")))
+http("POST", f"/guided/{_a}/approve", {"index": 2})
+st, v = http("POST", f"/guided/{_a}/split", {"index": 1, "slide_n": 1})
+check("splitting a slide un-approves that chunk too",
+      2 not in (v.get("approved_chunks") or []) or 1 not in (v.get("approved_chunks") or []),
+      str(v.get("approved_chunks")))
+check("…but leaves the chunks it only RENUMBERED approved",
+      3 in (v.get("approved_chunks") or []), str(v.get("approved_chunks")))
+
+print("\n== finalize refuses a document that was not fully reviewed ==")
+# The disabled button was the only thing enforcing this, and the button is in the client.
+_b = start_run()
+http("POST", f"/guided/{_b}/approve", {"index": 0})
+st, r = http("POST", f"/guided/{_b}/finalize")
+check("-> 409", st == 409, f"got {st}: {detail(r)}")
+check("…naming the chunks still to review", "2, 3, 4" in detail(r), detail(r))
+_row = next((x for x in db.runs() if x["id"] == _b), {})
+check("…and it was NOT recorded as approved", _row.get("approved") is False,
+      str(_row.get("approved")))
+
 print("\n== a regeneration that changes the slide count renumbers too ==")
 # The consequence of showing the reviewer real slide numbers during review. A patch may
 # ADD or REMOVE a slide, and a full re-draft comes back at whatever length it likes.
@@ -549,6 +617,10 @@ gid_f = start_run()
 http("POST", f"/guided/{gid_f}/regenerate",
      {"index": 1, "reason": "No analogies anywhere.", "apply_to_following": True})
 wait_reviewing(gid_f)
+# Every chunk has to be ticked before finalize will take it — the server checks that now
+# rather than trusting the client's disabled button.
+for _i in range(4):
+    http("POST", f"/guided/{gid_f}/approve", {"index": _i})
 st, r = http("POST", f"/guided/{gid_f}/finalize")
 check("POST /finalize -> 200", st == 200, f"got {st}: {detail(r)}")
 for _ in range(200):

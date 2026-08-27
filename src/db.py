@@ -233,6 +233,12 @@ _RUNS_ADDED_COLUMNS = [
     # the reviewer's browser.
     ("approved_by", "TEXT"),
     ("approved_at", "TEXT"),
+    # WHEN THE REVIEW ITSELF FINISHED — every chunk generated and ticked — which is a
+    # different moment from `approved_at` (the reviewer pressing Create final TR Doc) and
+    # from status='done' (the document assembled, graded and rendered). All three were
+    # being collapsed into two, so the dashboard could not show the step where people
+    # actually stop: review finished, final doc never created.
+    ("review_done_at", "TEXT"),
 ]
 
 
@@ -281,6 +287,13 @@ def _add_missing_columns(conn) -> list[str]:
             try:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
                 added.append(f"{table}.{name}")
+                if table == "runs" and name == "review_done_at":
+                    # Every finished run necessarily had its review finished: Create
+                    # final TR Doc is the only path to a document and the button is
+                    # disabled until every chunk is ticked. The fact simply had nowhere
+                    # to be written down before.
+                    conn.execute("UPDATE runs SET review_done_at=COALESCE(approved_at, "
+                                 "updated) WHERE status='done' AND review_done_at IS NULL")
                 if table == "runs" and name == "approved_at":
                     # BACKFILL, once, at the moment the column appears. Every finished
                     # run got there through Create final TR Doc, which the UI enables
@@ -365,6 +378,24 @@ def create_team(name: str, course: str | None, created_by: str,
     if owner and tid:
         add_member(int(tid), owner)
     return tid
+
+
+def rename_team(team_id: int, name: str) -> bool:
+    """Change a team's display name. Nothing else moves.
+
+    Safe precisely because the name is NOT a key: every lookup in this module goes by
+    `teams.id` (membership, courses, ownership) or by course name (history), so a rename
+    cannot orphan a member, a curriculum, or a run. The one thing that reads it is the
+    screen — which is the whole reason to be able to fix it.
+    """
+    name = (name or "").strip()
+    if not name:
+        return False
+    try:
+        _exec("UPDATE teams SET name=? WHERE id=?", (name, int(team_id)))
+        return True
+    except Exception:
+        return False
 
 
 def set_team_course(team_id: int, course: str) -> None:
@@ -921,6 +952,10 @@ def _shape_run(d: dict) -> dict:
     d["accepted"] = None if d.get("accepted") is None else bool(d["accepted"])
     d["gates_passed"] = d["accepted"]
     d["approved"] = bool(d.get("approved_at"))
+    # The review finished — every chunk generated and ticked. Strictly earlier than
+    # `approved`, and the two differ exactly where somebody reviewed a whole document and
+    # then never pressed the button.
+    d["review_done"] = bool(d.get("review_done_at"))
     d["enforce_time"] = None if d.get("enforce_time") is None else bool(d["enforce_time"])
     d["cost"] = json.loads(d.pop("cost_json", None) or "{}")
     d["calls"] = json.loads(d.pop("calls_json", None) or "[]")
@@ -934,6 +969,20 @@ def _shape_run(d: dict) -> dict:
     else:
         d["outcome"] = "abandoned" if d["abandoned"] else "running"
     return d
+
+
+def mark_review_done(run_id: str) -> None:
+    """Stamp the moment every chunk of this run had been generated and approved.
+
+    First one wins: a reviewer who un-ticks a chunk, changes it and ticks it again has
+    finished reviewing once, not twice, and the interesting fact is when the document was
+    first fully reviewed.
+    """
+    try:
+        _exec("UPDATE runs SET review_done_at=?, updated=? "
+              "WHERE id=? AND review_done_at IS NULL", (_now(), _now(), run_id))
+    except Exception:
+        pass
 
 
 def mark_approved(run_id: str, user_email: str | None) -> None:
@@ -1019,10 +1068,16 @@ def timeseries(unit: str = "day") -> list[dict]:
     out: dict = {}
     for r in runs(limit=100000):
         b = _bucket(r["ts"], unit)
-        e = out.setdefault(b, {"bucket": b, "runs": 0, "approved": 0, "cost": 0.0, "tokens": 0})
+        e = out.setdefault(b, {"bucket": b, "runs": 0, "approved": 0, "gates_passed": 0,
+                               "cost": 0.0, "tokens": 0})
         e["runs"] += 1
-        if r["accepted"]:
+        # `approved` is the PERSON's sign-off; `accepted`/`gates_passed` is the GRADERS'.
+        # This counted the graders under the name of the human, which is the same
+        # conflation _shape_run exists to warn about.
+        if r["approved"]:
             e["approved"] += 1
+        if r["accepted"]:
+            e["gates_passed"] += 1
         e["cost"] += (r["cost"] or {}).get("cost", 0) or 0
         e["tokens"] += (r["cost"] or {}).get("total_tokens", 0) or 0
     return [{**v, "cost": round(v["cost"], 6)} for v in sorted(out.values(), key=lambda x: x["bucket"])]
@@ -1031,7 +1086,16 @@ def timeseries(unit: str = "day") -> list[dict]:
 def summary() -> dict:
     rs = runs(limit=100000)
     done = [r for r in rs if r["status"] == "done"]
-    approved = [r for r in done if r["accepted"]]
+    # TWO DIFFERENT VERDICTS, and the admin dashboard was reporting one under the other's
+    # name — the very confusion _shape_run's docstring exists to warn about:
+    #   approved      a PERSON reviewed every chunk and pressed Create final TR Doc;
+    #   gates_passed  the GRADERS passed everything (`accepted`) — strict by design, and
+    #                 most real documents finish with something still flagged.
+    # So "Completed" and "Approved" differed on screen for a reason nobody could see: the
+    # Approved card was counting grader passes, while the runs table right below it
+    # labelled the same rows from `outcome`, which uses the human sign-off.
+    approved = [r for r in done if r["approved"]]
+    gates_passed = [r for r in done if r["accepted"]]
     abandoned = [r for r in rs if r["abandoned"]]
     in_progress = [r for r in rs if r["status"] == "running" and not r["abandoned"]]
     durations = [r["duration_min"] for r in done if r["duration_min"] is not None]
@@ -1054,9 +1118,19 @@ def summary() -> dict:
         "in_progress": len(in_progress),
         "abandoned": len(abandoned),                 # started, never completed
         "errors": len([r for r in rs if r["status"] == "error"]),
-        "approved": len(approved),
+        # Every chunk generated and ticked. Counted over ALL runs, not just finished
+        # ones: the number worth seeing is the one that includes reviews that were
+        # completed and then never turned into a document.
+        "review_done": len([r for r in rs if r.get("review_done")]),
+        "reviewed_not_created": len([r for r in rs if r.get("review_done")
+                                     and not r.get("approved")]),
+        "approved": len(approved),                   # a person signed it off
+        "gates_passed": len(gates_passed),           # every grader passed it
         "completion_rate": round(100 * len(done) / len(rs), 1) if rs else 0,
-        "acceptance_rate": round(100 * len(approved) / len(done), 1) if done else 0,
+        "approval_rate": round(100 * len(approved) / len(done), 1) if done else 0,
+        # Kept under its old name so nothing reading it breaks, but it is the GRADERS'
+        # rate and the dashboard must not label it "Approval rate".
+        "acceptance_rate": round(100 * len(gates_passed) / len(done), 1) if done else 0,
         "avg_rubric": round(sum((r["rubric"] or 0) for r in done) / len(done), 1) if done else 0,
         "avg_duration_min": round(sum(durations) / len(durations), 1) if durations else 0,
         # Document length. `over_page_limit` is the number that matters: the reviewer's
@@ -1087,6 +1161,7 @@ def per_user() -> list[dict]:
     for r in runs(limit=100000):
         who = r["user_email"] or "unknown"
         e = out.setdefault(who, {"user": who, "runs": 0, "completed": 0, "approved": 0,
+                                 "gates_passed": 0,
                                  "abandoned": 0, "failed": 0, "cost": 0.0, "tokens": 0,
                                  "courses": set(), "_durations": [], "last": r["ts"]})
         e["runs"] += 1
@@ -1094,8 +1169,10 @@ def per_user() -> list[dict]:
             e["completed"] += 1
             if r["duration_min"] is not None:
                 e["_durations"].append(r["duration_min"])
-        if r["accepted"]:
+        if r["approved"]:              # the person's sign-off, not the graders' verdict
             e["approved"] += 1
+        if r["accepted"]:
+            e["gates_passed"] += 1
         if r["abandoned"]:
             e["abandoned"] += 1        # left mid-way, never completed
         if r["status"] == "error":
@@ -1331,7 +1408,8 @@ def curriculum_delete(course: str, session_no: int) -> bool:
         return False
 
 
-def delete_course(course: str, *, detach_teams: bool = True) -> dict:
+def delete_course(course: str, *, detach_teams: bool = True,
+                  all_teams: list[dict] | None = None) -> dict:
     """Remove a course the owner no longer needs, and report exactly what went.
 
     WHAT GOES: the curriculum rows (which ARE the course), its length budgets, its
@@ -1357,7 +1435,9 @@ def delete_course(course: str, *, detach_teams: bool = True) -> dict:
 
     detached = []
     if detach_teams:
-        for t in teams():
+        # teams() is three queries; the caller has already asked (it has to, to decide
+        # whether this course is shared at all), so it passes the answer in.
+        for t in (teams() if all_teams is None else all_teams):
             if course in (t.get("courses") or []):
                 # Repoints the team's legacy primary course column too — see
                 # team_remove_course, which is where that has to happen for every caller.
@@ -1679,6 +1759,26 @@ def kb_forget(rel_path: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def kb_forget_many(rel_paths) -> int:
+    """Drop MANY KB files from the mirror in ONE statement. Returns how many were named.
+
+    kb_forget one path at a time is fine on a local file and ruinous on the cloud
+    database: every _exec opens its own connection and makes its own network round-trip,
+    so deleting a 34-session course fired 32 of them back to back inside a single HTTP
+    request — enough, with everything else that request does, for the platform to time it
+    out and answer 503.
+    """
+    paths = sorted({(p or "").lstrip("/") for p in (rel_paths or []) if (p or "").strip()})
+    if not paths:
+        return 0
+    try:
+        _exec("DELETE FROM kb_files WHERE path IN (" + ",".join("?" for _ in paths) + ")",
+              tuple(paths))
+        return len(paths)
+    except Exception:
+        return 0
 
 
 def kb_rename_decks(mapping: dict) -> int:

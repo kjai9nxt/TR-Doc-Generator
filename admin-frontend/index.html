@@ -106,6 +106,9 @@ function renderLogin() {
 }
 
 let PAGE_LIMIT = 16
+// The course rows last rendered, so the delete confirmation can state what goes and what
+// stays without a second request for facts already on screen.
+let COURSES_CACHE = []
 function signOut(){ TOKEN=''; localStorage.removeItem('tr_auth_token'); ME=null; if(window.google?.accounts?.id) google.accounts.id.disableAutoSelect(); boot() }
 
 // run_id + the exact filename pin the output. Resolving by session number alone made
@@ -135,7 +138,7 @@ function header() {
   return `<div class="top"><h1>🛡️ TR Doc Generator — Admin</h1>
     <div class="who">${esc(ME.email)}${ME.is_admin?' · admin':''} <button class="btn sm" onclick="signOut()">Sign out</button></div></div>
     <div class="tabs">
-      ${['overview','live','runs','users','teams'].map(t=>`<div class="tab ${TAB===t?'active':''}" onclick="go('${t}')">${t[0].toUpperCase()+t.slice(1)}</div>`).join('')}
+      ${['overview','live','runs','users','teams','courses'].map(t=>`<div class="tab ${TAB===t?'active':''}" onclick="go('${t}')">${t[0].toUpperCase()+t.slice(1)}</div>`).join('')}
     </div><div id="view"><div class="muted" style="padding:20px">Loading…</div></div>`
 }
 function go(t){ TAB=t; document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active', el.textContent.toLowerCase()===t)); loadView() }
@@ -153,6 +156,7 @@ async function loadView(){
       return v.innerHTML = viewRuns(d) }
     if (TAB==='users')    return v.innerHTML = viewUsers(await api('/admin/users'))
     if (TAB==='teams')    return v.innerHTML = await viewTeams()
+    if (TAB==='courses')  return v.innerHTML = viewCourses(await api('/admin/courses'))
   } catch(e){ v.innerHTML = `<div class="err">${esc(e.message)}</div>` }
 }
 
@@ -181,17 +185,31 @@ function viewOverview(d){
   const bars = ts.slice(-30).map(x=>{
     const hRuns = Math.round(100*x.runs/max)
     const appPct = x.runs ? Math.round(100*x.approved/x.runs) : 0
-    return `<div class="bar" style="height:${Math.max(hRuns,2)}%" title="${x.bucket} — ${x.runs} created, ${x.approved} approved, ${money(x.cost)}">
+    return `<div class="bar" style="height:${Math.max(hRuns,2)}%" title="${x.bucket} — ${x.runs} created, ${x.approved} approved by a person, ${x.gates_passed??0} passed every gate, ${money(x.cost)}">
       <div class="bar-app" style="height:${appPct}%"></div><span>${esc(x.bucket.slice(5))}</span></div>`
   }).join('')
   return `
    <div class="card"><h2 style="margin-top:0">At a glance</h2>
      <div class="metrics">
-       ${metric(s.total_runs,'Generations started')}${metric(s.done,'Completed')}${metric(s.approved,'Approved')}
+       ${metric(s.total_runs,'Generations started')}${metric(s.review_done??0,'Review finished')}${metric(s.approved,'Approved by a person')}
+       ${metric(s.done,'Document produced')}${metric(s.gates_passed??0,'Passed every gate')}
        ${metric(s.errors,'Failed')}${metric(s.abandoned,'Abandoned midway')}${metric(s.in_progress,'Running now')}
      </div>
+     <div class="muted" style="margin-top:8px;font-size:12px">
+       Four different moments, in the order they happen — they are meant to differ:<br/>
+       <b>Review finished</b> = every chunk generated and ticked. <b>Approved by a
+       person</b> = the reviewer then pressed Create final TR Doc. <b>Document produced</b>
+       = it assembled, graded and rendered. <b>Passed every gate</b> = the graders found
+       nothing, which is strict by design, so most documents a reviewer signs off still
+       have something flagged.
+       ${(s.reviewed_not_created||0)>0
+         ? `<br/><b class="chip warn">${s.reviewed_not_created}</b> run(s) were fully
+            reviewed and then never turned into a document — somebody read a whole doc
+            and stopped at the last click.`
+         : ''}
+     </div>
      <div class="metrics" style="margin-top:10px">
-       ${metric(s.completion_rate+'%','Completion rate')}${metric(s.acceptance_rate+'%','Approval rate')}
+       ${metric(s.completion_rate+'%','Completion rate')}${metric((s.approval_rate??s.acceptance_rate)+'%','Approval rate')}${metric(s.acceptance_rate+'%','Gate pass rate')}
        ${metric(dur(s.avg_duration_min),'Avg generation time')}${metric(s.avg_rubric,'Avg rubric /100')}
        ${metric(money(s.total_cost),'Cost — all runs')}${metric(money(s.done?s.total_cost/s.done:0),'Avg per doc')}${metric(num(s.total_tokens),'Total tokens')}
      </div>
@@ -205,8 +223,10 @@ function viewOverview(d){
    <div class="card"><h2 style="margin-top:0">Completion funnel</h2>
      <div class="funnel">
        ${fstep(s.total_runs,'Started', null)}
-       ${fstep(s.done,'Completed', s.completion_rate+'% of started')}
-       ${fstep(s.approved,'Approved', s.acceptance_rate+'% of completed')}
+       ${fstep(s.review_done??0,'Review finished', 'every chunk ticked')}
+       ${fstep(s.approved,'Approved by a person', 'pressed Create final TR Doc')}
+       ${fstep(s.done,'Document produced', s.completion_rate+'% of started')}
+       ${fstep(s.gates_passed??0,'Passed every gate', s.acceptance_rate+'% of produced')}
        ${fstep(s.errors,'Failed', null,'bad')}
        ${fstep(s.abandoned,'Abandoned', null,'warn')}
      </div>
@@ -227,8 +247,8 @@ function viewOverview(d){
 }
 
 function userTable(rows){
-  return `<table><thead><tr><th>User</th><th class="r">Started</th><th class="r">Completed</th><th class="r">Approved</th><th class="r">Abandoned</th><th class="r">Avg time</th><th class="r">Cost</th><th>Courses</th></tr></thead><tbody>
-   ${rows.map(u=>`<tr><td>${esc(u.user)}</td><td class="r">${u.runs}</td><td class="r">${u.completed??0}</td><td class="r">${u.approved}</td>
+  return `<table><thead><tr><th>User</th><th class="r">Started</th><th class="r">Completed</th><th class="r" title="a reviewer ticked every chunk and pressed Create final TR Doc">Approved</th><th class="r" title="the graders found nothing — strict by design">Gates</th><th class="r">Abandoned</th><th class="r">Avg time</th><th class="r">Cost</th><th>Courses</th></tr></thead><tbody>
+   ${rows.map(u=>`<tr><td>${esc(u.user)}</td><td class="r">${u.runs}</td><td class="r">${u.completed??0}</td><td class="r">${u.approved}</td><td class="r">${u.gates_passed??0}</td>
      <td class="r">${(u.abandoned||0)>0?`<span class="chip warn">${u.abandoned}</span>`:'0'}</td>
      <td class="r">${dur(u.avg_duration_min)}</td><td class="r">${money(u.cost)}</td><td class="muted">${esc((u.courses||[]).join(', '))}</td></tr>`).join('')||'<tr><td class="muted">none</td></tr>'}
   </tbody></table>`
@@ -263,6 +283,75 @@ function viewUsers(d){ return `<div class="card"><h2>Users (${d.users.length})</
    </tbody></table></div>
    <div class="card"><h2>Activity per user</h2>${userTable(d.per_user)}</div>` }
 
+// EVERY COURSE ON THE INSTANCE, and the facts that decide whether deleting one is safe.
+// A course with 0 sessions and 0 docs is what one created by accident looks like — a name
+// claimed by a request that never meant to create anything — and those are the ones an
+// admin actually wants to clear out.
+function viewCourses(d){
+  const cs = d.courses || []
+  COURSES_CACHE = cs
+  const shared = cs.filter(c=>c.teams.length).length
+  const empty = cs.filter(c=>!c.sessions && !c.total_runs).length
+  return `<div class="card"><h2 style="margin-top:0">All courses (${cs.length})</h2>
+    <div class="metrics">
+      ${metric(cs.length,'Courses')}${metric(shared,'Shared with a team')}
+      ${metric(cs.filter(c=>c.unclaimed).length,'No recorded owner')}
+      ${metric(empty,'No sessions, no docs')}
+    </div>
+    <div class="muted" style="margin-top:8px;font-size:12px">
+      Deleting a course removes its <b>curriculum rows and length settings</b>.
+      <b>Documents already generated are KEPT</b> — they stay downloadable and their costs
+      stay in the reports, because deleting the record would not un-generate them. A course
+      a team works from takes a second confirmation, which names the teams.
+    </div>
+  </div>
+  <div class="card"><table><thead><tr>
+      <th>Course</th><th class="r">Sessions</th><th class="r">Docs built</th>
+      <th class="r">Runs</th><th>Created by</th><th>Teams</th><th>Last activity</th>
+      <th class="r">Cost</th><th></th>
+    </tr></thead><tbody>
+   ${cs.map(c=>`<tr>
+      <td><b>${esc(c.name)}</b>${!c.sessions&&!c.total_runs?' <span class="chip warn">empty</span>':''}</td>
+      <td class="r">${c.sessions}</td>
+      <td class="r">${c.docs_built}</td>
+      <td class="r">${c.total_runs}</td>
+      <td class="muted">${c.created_by?esc(c.created_by):'<span class="chip warn">nobody</span>'}</td>
+      <td class="muted">${c.teams.length?esc(c.teams.map(t=>t.name).join(', ')):'—'}</td>
+      <td class="muted">${esc((c.last_activity||'').replace('T',' ').slice(0,16))||'—'}</td>
+      <td class="r">${money(c.total_cost||0)}</td>
+      <td class="r"><button class="btn sm" onclick="delCourse('${esc(c.name).replace(/'/g,"\\'")}')">Delete</button></td>
+    </tr>`).join('')||'<tr><td class="muted">No courses yet.</td></tr>'}
+  </tbody></table></div>`
+}
+
+async function delCourse(name){
+  const c = ((COURSES_CACHE||[]).find(x=>x.name===name))||{}
+  if(!confirm(`Delete "${name}"?\n\n`
+      + `· its ${c.sessions??'?'} curriculum row(s) and length settings are removed\n`
+      + `· the ${c.docs_built??0} document(s) already built are KEPT — they stay in `
+      + `History and stay downloadable\n\nThis cannot be undone.`)) return
+  // First WITHOUT detach_teams. The SERVER decides whether the course is shared and names
+  // the teams; the client is not the judge of that, and a stale table must not be able to
+  // skip the second confirmation.
+  try {
+    const r = await api(`/courses?course=${encodeURIComponent(name)}`,{method:'DELETE'})
+    alert(`Deleted "${name}" — ${r.sessions_removed} session(s) removed. `
+          + `Documents already generated are kept.`)
+    return loadView()
+  } catch(e){
+    if(!/shared with/i.test(e.message||'')) return alert(e.message)
+    if(!confirm(`${e.message}\n\nDelete it anyway?`)) return
+  }
+  try {
+    const r = await api(`/courses?course=${encodeURIComponent(name)}&detach_teams=true`,
+                        {method:'DELETE'})
+    alert(`Deleted "${name}" — ${r.sessions_removed} session(s) removed, taken off `
+          + `${(r.teams_detached||[]).map(t=>t.name).join(', ')||'no teams'}. `
+          + `Documents already generated are kept.`)
+    loadView()
+  } catch(e){ alert(e.message) }
+}
+
 async function viewTeams(){
   const d = await api('/admin/teams')
   const opts = d.users.map(e=>`<option value="${esc(e)}">${esc(e)}</option>`).join('')
@@ -292,10 +381,14 @@ async function viewTeams(){
       remove this team's members without going through an admin. They are added as a
       member automatically. Only you can (re)assign them.</div></div>
    ${d.teams.map(t=>`<div class="card">
-      <div class="row"><b>${esc(t.name)}</b> <span class="muted">— course:</span>
+      <div class="row"><b>${esc(t.name)}</b>
+        <input id="n_${t.id}" value="${esc(t.name)}" placeholder="team name" style="width:180px" />
+        <button class="btn sm" onclick="renameTeam(${t.id})">Rename</button>
+        <button class="btn sm" style="margin-left:auto" onclick="delTeam(${t.id})">Delete team</button>
+      </div>
+      <div class="row" style="margin-top:6px"><span class="muted">course:</span>
         <input id="c_${t.id}" list="knowncourses" value="${esc(t.course||'')}" style="width:180px" />
         <button class="btn sm" onclick="setCourse(${t.id})">Set course</button>
-        <button class="btn sm" style="margin-left:auto" onclick="delTeam(${t.id})">Delete team</button>
       </div>
       <div class="row" style="margin-top:6px"><span class="muted">course owner:</span>
         ${t.owner_email ? `<b>${esc(t.owner_email)}</b>` : '<b style="color:#f0b429">none — only an admin can change this team\'s members</b>'}
@@ -323,6 +416,16 @@ async function createTeam(){
   if(r && r.replaced_owner) alert(`Note: ${r.course} was owned by ${r.replaced_owner}. It is now owned by ${r.owner}.`)
   loadView()
 }
+async function renameTeam(id){
+  const el = document.getElementById('n_'+id)
+  const name = el.value.trim()
+  if(!name) return alert('Give the team a name.')
+  // Only the label changes: membership, courses, the course owner and every doc in the
+  // team's history key off the team's id, never its name.
+  try { await api(`/admin/teams/${id}/name`,{method:'POST',body:JSON.stringify({name})}) }
+  catch(e){ return alert(e.message) }
+  loadView()
+}
 async function setOwner(id){
   const e=document.getElementById('o_'+id).value.trim()
   if(!e) return alert('Name the new course owner.')
@@ -336,7 +439,7 @@ async function delTeam(id){ if(!confirm('Delete this team?'))return; await api(`
 
 window.go=go; window.signOut=signOut; window.loadView=loadView; window.createTeam=createTeam
 window.setCourse=setCourse; window.addMember=addMember; window.addMemberTyped=addMemberTyped; window.rmMember=rmMember; window.delTeam=delTeam
-window.setOwner=setOwner
+window.setOwner=setOwner; window.renameTeam=renameTeam; window.delCourse=delCourse
 window.UNIT=UNIT
 setTimeout(boot, 400)  // give the GIS script a moment to load
 </script>
