@@ -47,8 +47,14 @@ jobs:
       # everything", and nothing recorded who had created a course. Boots the API and
       # drives four real users against it — what each is offered, and what each is
       # allowed to open, edit, generate against and download. Free, no API key.
-      - name: Run course-scoping regression (individual vs team visibility + access)
+      - name: Run course-scoping regression (visibility, access, team ownership, deletion)
         run: python -m evals.test_course_scoping
+      # The edits a reviewer makes DURING guided review: splitting a slide in two (and the
+      # document-wide renumbering and coverage remap that has to follow it), and a note
+      # marked "apply to every chunk after this one". The split's correctness is checked
+      # against the REAL guardrails on the assembled document, not just field by field.
+      - name: Run review-edit regression (slide split + renumbering + standing notes)
+        run: python -m evals.test_review_edits
 
   frontend-build:
     name: Frontend build + committed-bundle check (Vite/React)

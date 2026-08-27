@@ -35,6 +35,20 @@ def course_name() -> str:
     return (load().get("course_name") or "Computer Networks").strip()
 
 
+def clear_course_name() -> dict:
+    """Forget the active course.
+
+    Needed when that course is DELETED: `course_name()` falls back to a hard-coded
+    legacy default, and `save(course_name=...)` ignores an empty string, so without this
+    the instance-wide setting would go on naming a course that no longer exists.
+    """
+    data = load()
+    data.pop("course_name", None)
+    STORE.parent.mkdir(parents=True, exist_ok=True)
+    STORE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data
+
+
 def save(*, course_type: str | None = None,
          course_name: str | None = None) -> dict:
     data = load()

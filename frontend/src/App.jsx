@@ -34,7 +34,6 @@ export default function App() {
   const [curSaving, setCurSaving] = useState(false)
   const [curIngesting, setCurIngesting] = useState(false)
   const [curLogs, setCurLogs] = useState([])
-  const [importedFrom, setImportedFrom] = useState(null)
   // The course's length budget (and what it falls back to). Held here because both
   // the dashboard control and the per-row placeholders need it.
   const [budget, setBudget] = useState(null)
@@ -94,13 +93,9 @@ export default function App() {
     // …and clear the course currently on screen. Only the NAME was being cleared, so
     // the previous course's curriculum stayed on display underneath the create form —
     // as if the new course already had 34 sessions in it.
-    setCurRows([]); setCurPending(0); setCurLogs([]); setImportedFrom(null)
+    setCurRows([]); setCurPending(0); setCurLogs([])
   }
-  function startReimport() {
-    setTab('curriculum')
-    setNewCourse(false); setShowImport(true)
-    setCourseLink(importedFrom || courseLink); setSyncErr(null)
-  }
+  // startReimport() went with the toolbar button that was its only caller.
   const curDirty = curRows.some((r) => r._dirty)
   // Courses this person may work on. A course is a shared, team-owned thing now, so it
   // is picked from a list rather than typed — two people spelling the same course
@@ -134,7 +129,6 @@ export default function App() {
       if (d.course) setCourseName((c) => c || d.course)
       setCurRows(d.rows || [])
       setCurPending(d.pending || 0)
-      setImportedFrom(d.imported_from || null)
       // Only ask for a sheet when there is nothing to show; otherwise the dashboard is
       // the course and the import form is a deliberate choice.
       setShowImport(!(d.rows || []).length)
@@ -184,7 +178,20 @@ export default function App() {
   const [guided, setGuided] = useState(null)
   const [regenReason, setRegenReason] = useState('')
   const [regenFor, setRegenFor] = useState(null)
+  // Carry this note into every chunk after the one being regenerated. Almost every
+  // reviewer note is about the document rather than the one chunk in front of them, and
+  // retyping it into six chunks in turn — waiting for each — is the same instruction six
+  // times over.
+  const [regenAll, setRegenAll] = useState(false)
   const [busyAction, setBusyAction] = useState(false)
+  // Splitting a slide: which chunk's picker is open, and which slide it names.
+  const [splitFor, setSplitFor] = useState(null)
+  const [splitSlide, setSplitSlide] = useState('')
+  const [splitErr, setSplitErr] = useState(null)
+  // Create-final-TR-doc has to say it is working the moment it is pressed. The status
+  // only turns to 'assembling' when the next poll lands, and assembling a doc takes long
+  // enough that a button which merely greys out reads as a click that did nothing.
+  const [finalizing, setFinalizing] = useState(false)
   const [approved, setApproved] = useState({})
   const guidedPollRef = useRef(null)
 
@@ -342,6 +349,67 @@ export default function App() {
       .finally(() => setSharing(false))
   }
 
+  // MEMBERSHIP, when the signed-in user is this team's course owner (or an admin).
+  // Adding a colleague is routine and low-stakes; routing every one through the single
+  // admin account meant, in practice, that people did not get added at all. The server
+  // decides whether it is allowed — `can_manage` on the team only decides whether to
+  // OFFER it, and a refusal comes back as a message shown here.
+  const [memberBusy, setMemberBusy] = useState(false)
+  const [memberMsg, setMemberMsg] = useState(null)
+  function changeMembers(fn, note) {
+    setMemberBusy(true); setMemberMsg(null)
+    fn()
+      .then(() => { setMemberMsg({ ok: true, text: note }); refreshMine(); loadCourses() })
+      .catch((e) => setMemberMsg({ ok: false, text: e.message }))
+      .finally(() => setMemberBusy(false))
+  }
+  function addTeamMember(teamId, email) {
+    const e = (email || '').trim()
+    if (!e) return
+    changeMembers(() => api.teamAddMember(teamId, e),
+                  `${e} is on the team. They can open its courses and see everything built for them.`)
+  }
+  function removeTeamMember(teamId, email) {
+    changeMembers(() => api.teamRemoveMember(teamId, email),
+                  `${email} was removed. Their finished docs stay in the team's history.`)
+  }
+
+  // DELETING A COURSE you own. Two-step when it is shared: the first request comes back
+  // 409 naming the teams, and that list is what the confirmation puts in front of the
+  // user — a course on a team's shelf is the curriculum they work from, so it must not
+  // disappear because somebody clicked once.
+  const [deleting, setDeleting] = useState(false)
+  const [deleteAsk, setDeleteAsk] = useState(null)   // {course, teams:[], message}
+  function askDeleteCourse(name) {
+    setDeleteAsk({ course: name, teams: [], message: null })
+  }
+  function doDeleteCourse(name, detach) {
+    setDeleting(true)
+    api.deleteCourse(name, detach)
+      .then((r) => {
+        setDeleteAsk(null)
+        setCurLogs([`“${name}” was deleted — ${r.sessions_removed} session(s) removed.`
+          + (r.teams_detached?.length
+              ? ` It is no longer on ${r.teams_detached.map((t) => t.name).join(', ')}.` : '')
+          + ` Documents already generated for it are kept, and stay downloadable from History.`])
+        setCourses(r.courses || [])
+        // Land on whatever the server moved the active course to, so the page is never
+        // left showing a curriculum that no longer exists.
+        setCourseName(r.course || '')
+        setTab('curriculum')
+        bootstrap(r.course || undefined)
+        refreshMine()
+      })
+      .catch((e) => {
+        if (e.status === 409 && e.kind === 'course_shared') {
+          setDeleteAsk({ course: name, teams: e.detail?.teams || [], message: e.message })
+        } else {
+          setDeleteAsk({ course: name, teams: [], message: null, error: e.message })
+        }
+      })
+      .finally(() => setDeleting(false))
+  }
+
   function ingestDecks(force) {
     setCurIngesting(true); setCurLogs([])
     api.ingestDecks(force, null, courseName || undefined).then(({ job_id }) => {
@@ -408,7 +476,6 @@ export default function App() {
       setMyTeams(b.workspaces?.teams || [])
       setCurRows(b.curriculum?.rows || [])
       setCurPending(b.curriculum?.pending || 0)
-      setImportedFrom(b.curriculum?.imported_from || null)
       setShowImport(!(b.curriculum?.rows || []).length && !(b.courses || []).length)
       setBudget(b.budget || null)
       setServerResumable(b.resumable || [])
@@ -572,7 +639,16 @@ export default function App() {
       try {
         const st = await api.guidedState(gid)
         setGuided(st)
-        if (st.status === 'reviewing') { clearInterval(guidedPollRef.current) }
+        // The final-doc button stays in its loading state from the click until the run
+        // has actually finished assembling — the status is still 'reviewing' for the
+        // first poll or two, which is exactly the window the spinner is for.
+        if (st.status !== 'assembling' && st.status !== 'reviewing') setFinalizing(false)
+        if (st.status === 'reviewing') {
+          clearInterval(guidedPollRef.current)
+          // Back in review while we thought we were assembling means finalize failed and
+          // left the run usable (see _guided_step_failed) — release the button.
+          if (st.last_error) setFinalizing(false)
+        }
         else if (st.status === 'done') {
           clearInterval(guidedPollRef.current); setResult(st.result); rememberGuided(null)
         }
@@ -585,6 +661,7 @@ export default function App() {
 
   function startGuided() {
     setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setApproved({}); setEvalReport(null); setEvalErr(null); setShowCost(true)
+    setRegenAll(false); setSplitFor(null); setSplitSlide(''); setSplitErr(null); setFinalizing(false)
     api.guidedStart(sel, true, policy.time_always_enforced,
                     workspace.kind === 'team' ? workspace.team_id : null,
                     courseName || undefined).then(({ guided_id }) => {
@@ -644,21 +721,44 @@ export default function App() {
   function regenerateChunk(index) {
     const reason = regenReason.trim()
     if (!reason || !guidedId) return
+    const all = regenAll
     setGenErr(null)          // don't leave a previous attempt's error on screen
     setBusyAction(true)
-    api.guidedRegenerate(guidedId, index, reason).then(() => {
-      setRegenFor(null); setRegenReason('')
-      setApproved((a) => { const c = { ...a }; delete c[index]; return c })
+    api.guidedRegenerate(guidedId, index, reason, all).then(() => {
+      setRegenFor(null); setRegenReason(''); setRegenAll(false)
+      // Applying the note forward rewrites every later chunk, so their approvals go too
+      // — an approval is of the text that was on screen, and that text has changed.
+      setApproved((a) => {
+        const c = { ...a }
+        Object.keys(c).forEach((k) => { if (all ? Number(k) >= index : Number(k) === index) delete c[k] })
+        return c
+      })
       pollGuided(guidedId)   // resume polling to watch regenerating -> reviewing
     }).catch(handleGuidedError).finally(() => setBusyAction(false))
+  }
+
+  // Splitting is deterministic and synchronous on the server — no model call, no polling.
+  // It returns the whole updated view, because renumbering touches the later chunks too.
+  function splitSlideIn(index, slideN) {
+    if (!guidedId || !slideN) return
+    setSplitErr(null); setBusyAction(true)
+    api.guidedSplitSlide(guidedId, index, Number(slideN)).then((st) => {
+      setGuided(st)
+      setSplitFor(null); setSplitSlide('')
+      // Only THIS chunk needs looking at again. The later chunks were renumbered, not
+      // rewritten, so re-asking for approval of text nobody changed would be noise.
+      setApproved((a) => { const c = { ...a }; delete c[index]; return c })
+    }).catch((e) => setSplitErr(e.message)).finally(() => setBusyAction(false))
   }
 
   function finalizeGuided() {
     if (!guidedId) return
     setGenErr(null)
+    setFinalizing(true)
     setBusyAction(true)
     api.guidedFinalize(guidedId).then(() => pollGuided(guidedId))  // watch assembling -> done
-      .catch(handleGuidedError).finally(() => setBusyAction(false))
+      .catch((e) => { setFinalizing(false); handleGuidedError(e) })
+      .finally(() => setBusyAction(false))
   }
 
   function runEvalSets() {
@@ -877,11 +977,9 @@ export default function App() {
           onSave={saveCurriculum} onDelete={deleteCurriculumRow} onIngest={ingestDecks}
           onInsert={insertCurriculumRow}
           saving={curSaving} ingesting={curIngesting} dirty={curDirty}
-          pending={curPending} importedFrom={importedFrom} logs={curLogs}
-          onReimport={startReimport}
+          pending={curPending} logs={curLogs}
           budget={budget} onBudget={saveBudget}
           teams={myTeams} sharing={sharing} onShare={shareCourseWithTeam}
-          ownedBy={(courses.find((c) => c.name === courseName)?.teams) || []}
         />
       )}
 
@@ -900,9 +998,10 @@ export default function App() {
           {newCourse ? 'Create a new course' : `Re-import ${courseName || 'this course'} from its sheet`}</h2>
         <p className="hint">
           {newCourse
-            ? 'Name the course and point it at its curriculum sheet. It is imported once; '
-              + 'after that it appears in the course picker for everyone on your team and '
-              + 'is edited here in the agent — no sheet needed again.'
+            ? 'Name the course and point it at its curriculum sheet. It is imported once, '
+              + 'then edited here in the agent — no sheet needed again. A course you create '
+              + 'is YOURS: it appears in your course picker and nobody else\'s until you '
+              + 'share it with a team.'
             : 'Refreshes names, takeaways and links from the sheet. Rows you added in the '
               + 'agent are kept, and no already-extracted deck is downloaded again.'}
         </p>
@@ -914,7 +1013,8 @@ export default function App() {
                    placeholder="e.g. Computer Networks" />
             <span className="hint">
               {newCourse
-                ? 'What your team will see in the course picker. Pick the real course name — it is shared.'
+                ? 'Pick the real course name. It is what you will see in the picker, and what '
+                  + 'a team sees if you share it — a near-miss spelling makes a second, separate course.'
                 : 'Locked: re-importing writes into the course you have open. Use “Create a new course” for a different one.'}
             </span>
           </div>
@@ -1158,6 +1258,17 @@ export default function App() {
                   LLM call) instead of hiding them behind a bare red box. */}
               {guided?.chunks?.length > 0 && (guidedReviewing || guidedAssembling || gStatus === 'done' || gStatus === 'error') && (
                 <div className="guided">
+                  {/* A standing instruction governs every later redraft, so it is shown
+                      rather than left as invisible state. */}
+                  {guided.standing_notes?.length > 0 && (
+                    <div className="alert warn">
+                      <b>Standing review instructions</b> — applied to every chunk after
+                      the one they were given on, including any regenerated later:
+                      <ul>{guided.standing_notes.map((n, k) => (
+                        <li key={k}>from chunk {Number(n.from_index) + 1} onward: {n.reason}</li>
+                      ))}</ul>
+                    </div>
+                  )}
                   {guidedReviewing && (
                     <div className="gprogress">
                       Review each chunk — <b>Approve</b> or <b>Regenerate</b>.
@@ -1208,14 +1319,72 @@ export default function App() {
                                 : <button className="primary" disabled={busyAction} onClick={() => approveChunk(i)}>✅ Approve</button>}
                               {regenFor !== i && (
                                 <button className="ghostbtn" disabled={busyAction || gStatus === 'regenerating'}
-                                        onClick={() => { setRegenFor(i); setRegenReason('') }}>🔄 Regenerate…</button>
+                                        onClick={() => { setRegenFor(i); setRegenReason(''); setRegenAll(false) }}>🔄 Regenerate…</button>
+                              )}
+                              {/* Splitting is a STRUCTURAL edit, not a rewrite: the
+                                  slide's content is divided between two slides with no
+                                  model call, so nothing the reviewer already accepted can
+                                  drift. Offered only where there are slides to split. */}
+                              {splitFor !== i && c.slides?.length > 0 && (
+                                <button className="ghostbtn" disabled={busyAction || gStatus === 'regenerating'}
+                                        onClick={() => { setSplitFor(i); setSplitSlide(''); setSplitErr(null) }}>
+                                  ✂ Split a slide…
+                                </button>
                               )}
                             </div>
+                            {splitFor === i && (
+                              <div className="regen">
+                                <label>Which slide is carrying too much?
+                                  <span className="req"> (it becomes two — content divided, not rewritten)</span>
+                                </label>
+                                <select value={splitSlide} disabled={busyAction}
+                                        onChange={(e) => setSplitSlide(e.target.value)}>
+                                  <option value="">choose a slide…</option>
+                                  {c.slides.map((sl) => (
+                                    <option key={sl.n} value={sl.n}>Slide {sl.n} — {sl.title}</option>
+                                  ))}
+                                </select>
+                                <span className="hint">
+                                  Every slide after it is renumbered automatically, in this
+                                  chunk and in all the later ones. The second slide keeps
+                                  the first one's heading, visual guidance and speaker
+                                  notes — regenerate it afterwards if that wording does not
+                                  fit.
+                                </span>
+                                {splitErr && <div className="alert error">{splitErr}</div>}
+                                <div className="gactions">
+                                  <button className="primary" disabled={busyAction || !splitSlide}
+                                          onClick={() => splitSlideIn(i, splitSlide)}>
+                                    {busyAction ? 'Splitting…' : 'Split into 2 slides'}
+                                  </button>
+                                  <button className="ghostbtn" disabled={busyAction}
+                                          onClick={() => { setSplitFor(null); setSplitSlide(''); setSplitErr(null) }}>Cancel</button>
+                                </div>
+                              </div>
+                            )}
                             {regenFor === i && (
                               <div className="regen">
                                 <label>Why regenerate? <span className="req">(required — instructs the model & is remembered)</span></label>
                                 <textarea rows={3} value={regenReason} onChange={(e) => setRegenReason(e.target.value)}
                                           placeholder="e.g. Make the analogy concrete, and shorten this to ~9 minutes." />
+                                {/* Most reviewer notes are about the DOCUMENT, not this
+                                    one chunk. Ticking this rewrites every chunk after
+                                    this one with the same note, and keeps it as a
+                                    standing instruction so a later redraft of any of
+                                    them still obeys it. */}
+                                {i < guided.chunks.length - 1 && (
+                                  <label className="checkline">
+                                    <input type="checkbox" checked={regenAll}
+                                           disabled={busyAction}
+                                           onChange={(e) => setRegenAll(e.target.checked)} />
+                                    <span>Apply this to every chunk after this one too
+                                      <span className="hint"> — rewrites the remaining
+                                        {' '}{guided.chunks.length - 1 - i} chunk(s) with the
+                                        same note, and keeps applying it if any of them is
+                                        regenerated later. Their approvals are cleared.</span>
+                                    </span>
+                                  </label>
+                                )}
                                 <div className="gactions">
                                   {/* Also blocked while ANOTHER chunk is regenerating —
                                       the server only runs one step at a time and would
@@ -1234,10 +1403,19 @@ export default function App() {
                   })}
                   {guidedReviewing && (
                     <>
-                      <button className="primary bigfinal" disabled={busyAction || gStatus === 'regenerating' || !allApproved} onClick={finalizeGuided}>
-                        📝 Create final TR Doc
+                      {/* It says it is working from the moment it is pressed. The status
+                          is still 'reviewing' until the next poll lands, and assembling
+                          takes long enough that a button which merely greys out reads as
+                          a click that did nothing. */}
+                      <button className="primary bigfinal"
+                              disabled={busyAction || finalizing || gStatus === 'regenerating' || !allApproved}
+                              onClick={finalizeGuided}>
+                        {finalizing
+                          ? <><span className="spinner" aria-hidden="true" /> Creating the final doc…</>
+                          : '📝 Create final TR Doc'}
                       </button>
-                      {!allApproved && <div className="hint">Approve every chunk to enable creating the final doc.</div>}
+                      {finalizing && <div className="hint">Assembling, grading and rendering — this takes a minute or two.</div>}
+                      {!allApproved && !finalizing && <div className="hint">Approve every chunk to enable creating the final doc.</div>}
                     </>
                   )}
                   {guidedAssembling && <Busy label="Assembling & grading the full doc…" />}
@@ -1387,11 +1565,19 @@ export default function App() {
       {tab === 'team' && (activeTeam || activeTeamInfo) && (
         <TeamPanel
           entry={activeTeam || { team: activeTeamInfo, summary: {}, contributors: [] }}
-          courses={courses} course={courseName} onPick={switchCourse} />
+          courses={courses} course={courseName} onPick={switchCourse}
+          onAddMember={addTeamMember} onRemoveMember={removeTeamMember}
+          memberBusy={memberBusy} memberMsg={memberMsg} />
       )}
 
       {tab === 'settings' && (
         <CourseSettings course={courseName} budget={budget} onChange={saveBudget}
+          canDelete={!!courseName && (user?.is_admin
+                     || courses.find((c) => c.name === courseName)?.mine)}
+          sharedWith={(courses.find((c) => c.name === courseName)?.teams) || []}
+          onAskDelete={askDeleteCourse} onDelete={doDeleteCourse}
+          deleteAsk={deleteAsk} onCancelDelete={() => setDeleteAsk(null)}
+          deleting={deleting}
                         rows={curRows} onSession={saveSessionBudget}
                         courseType={courseType}
                         onCourseType={(v) => { setCourseType(v); api.selectCourse(courseName, v).catch(() => {}) }} />
@@ -1414,7 +1600,9 @@ export default function App() {
 // Set once per course and then left alone, which is why it lives here rather than in
 // the curriculum's action bar — where it crowded out the buttons you press every visit.
 function CourseSettings({ course, budget, onChange, courseType, onCourseType,
-                         rows = [], onSession }) {
+                         rows = [], onSession,
+                         canDelete, sharedWith = [], onAskDelete, onDelete,
+                         deleteAsk, onCancelDelete, deleting }) {
   const d = budget?.defaults || {}
   const eff = budget?.effective || {}
   const set = budget?.settings || {}
@@ -1483,6 +1671,58 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
           ))}
         </select>
       </div>
+
+      {/* DELETING THE COURSE. Offered to whoever created it (and to admins), because a
+          course you imported and no longer need has, until now, had to stay on your shelf
+          for ever. Two steps, never one click: the confirmation states exactly what goes
+          and what stays, and if a team is working from this curriculum it names them. */}
+      {canDelete && (
+        <div className="dangerzone">
+          <label>Delete this course</label>
+          {!deleteAsk || deleteAsk.course !== course ? (
+            <>
+              <button className="ghostbtn danger" onClick={() => onAskDelete?.(course)}>
+                🗑 Delete “{course}”
+              </button>
+              <span className="hint">
+                Removes its curriculum and its length settings.
+                {sharedWith.length > 0 && <> It is shared with <b>{sharedWith.join(', ')}</b>,
+                  who work from this curriculum — you will be asked to confirm that.</>}
+              </span>
+            </>
+          ) : (
+            <div className={`alert ${deleteAsk.error ? 'error' : 'warn'}`}>
+              {deleteAsk.error ? <b>Could not delete it: {deleteAsk.error}</b> : (
+                <>
+                  <b>Delete “{course}” for good?</b>
+                  {deleteAsk.teams?.length > 0 && (
+                    <p>It is on the shelf of <b>{deleteAsk.teams.map((t) => t.name).join(', ')}</b>.
+                       Deleting it removes the curriculum they work from.</p>
+                  )}
+                  <ul>
+                    <li>Its {rows.length} curriculum row{rows.length === 1 ? '' : 's'} and its
+                        page/slide settings are removed.</li>
+                    <li><b>Documents already generated are kept</b> — they stay in History and
+                        stay downloadable, along with their costs.</li>
+                  </ul>
+                </>
+              )}
+              <div className="curactions">
+                <button className="ghostbtn danger" disabled={deleting}
+                        onClick={() => onDelete?.(course, deleteAsk.teams?.length > 0)}>
+                  {deleting ? 'Deleting…'
+                    : (deleteAsk.teams?.length > 0
+                        ? 'Yes — take it off those teams and delete it'
+                        : 'Yes, delete it')}
+                </button>
+                <button className="ghostbtn" disabled={deleting} onClick={onCancelDelete}>
+                  Keep it
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }
@@ -1490,8 +1730,10 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
 // The team you are working inside: who is on it, which courses it owns, and what it
 // has produced. Separate from History on purpose — this answers "who am I working
 // with", History answers "what has been made".
-function TeamPanel({ entry, courses, course, onPick }) {
+function TeamPanel({ entry, courses, course, onPick, onAddMember, onRemoveMember,
+                    memberBusy, memberMsg }) {
   const t = entry.team
+  const [newMember, setNewMember] = useState('')
   const owned = t.courses || (t.course ? [t.course] : [])
   const known = new Set(courses.map((c) => c.name))
   const missing = owned.filter((c) => !known.has(c))
@@ -1534,16 +1776,55 @@ function TeamPanel({ entry, courses, course, onPick }) {
       <label>Members</label>
       <div className="memberlist">
         {(t.members || []).map((m) => (
-          <span key={m} className="memberchip">
-            {m}{entry.contributors?.includes(m) && <span className="mdot" title="has built docs for this team">●</span>}
+          <span key={m} className={`memberchip ${m === t.owner_email ? 'owner' : ''}`}>
+            {m}
+            {m === t.owner_email && <span className="mtag" title="course owner — can add and remove members">owner</span>}
+            {entry.contributors?.includes(m) && <span className="mdot" title="has built docs for this team">●</span>}
+            {/* The owner is deliberately not removable here: a team whose owner is not
+                on it can still manage members but cannot open the workspace it is
+                responsible for. Re-assigning the owner is the admin's call. */}
+            {t.can_manage && m !== t.owner_email && (
+              <button className="mx" disabled={memberBusy} title={`Remove ${m} from ${t.name}`}
+                      onClick={() => onRemoveMember?.(t.id, m)}>×</button>
+            )}
           </span>
         ))}
       </div>
-      <span className="hint">
-        Everything generated in this workspace belongs to the team, so anyone added later
-        opens the same curriculum and sees every doc built before they arrived. Members
-        are managed by an admin in <b>/admin → Teams</b>.
-      </span>
+
+      {/* Offered only to the team's course owner and to admins — `can_manage` is decided
+          by the server, not here. Everyone else gets the pointer to /admin. */}
+      {t.can_manage ? (
+        <>
+          <div className="curactions">
+            <input value={newMember} onChange={(e) => setNewMember(e.target.value)}
+                   placeholder="colleague@nxtwave.co.in"
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter') { onAddMember?.(t.id, newMember); setNewMember('') }
+                   }} />
+            <button className="primary" disabled={memberBusy || !newMember.trim()}
+                    onClick={() => { onAddMember?.(t.id, newMember); setNewMember('') }}>
+              {memberBusy ? 'Working…' : '＋ Add member'}
+            </button>
+          </div>
+          <span className="hint">
+            You are this team's <b>course owner</b>, so you can add and remove its members
+            yourself — no admin needed. Anyone you add opens the same curriculum and sees
+            every doc built before they arrived. Only an admin can change the team's
+            course or hand ownership to somebody else.
+          </span>
+        </>
+      ) : (
+        <span className="hint">
+          Everything generated in this workspace belongs to the team, so anyone added later
+          opens the same curriculum and sees every doc built before they arrived. Members
+          are managed by {t.owner_email
+            ? <>this team's course owner, <b>{t.owner_email}</b>, or an admin</>
+            : <>an admin in <b>/admin → Teams</b> (this team has no course owner yet)</>}.
+        </span>
+      )}
+      {memberMsg && (
+        <div className={`alert ${memberMsg.ok ? 'ok' : 'error'}`}>{memberMsg.text}</div>
+      )}
     </section>
   )
 }
@@ -1739,9 +2020,9 @@ function TemplateSidePanel({ markdown, onClose }) {
 // sending the whole ~4.7 MB file), so only a new or changed link is marked pending, and
 // "Fetch new decks" collects exactly those.
 function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert, onIngest,
-                               saving, ingesting, dirty, pending, importedFrom,
-                               onReimport, logs, teams = [], sharing, onShare,
-                               ownedBy = [], budget, onBudget }) {
+                               saving, ingesting, dirty, pending,
+                               logs, teams = [], sharing, onShare,
+                               budget, onBudget }) {
   function edit(i, field, value) {
     setRows((rs) => rs.map((r, k) => (k === i ? { ...r, [field]: value, _dirty: true } : r)))
   }
@@ -1798,10 +2079,9 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
                 title="Downloads only decks that are new or whose link changed">
           {ingesting ? 'Fetching…' : `⬇ Fetch new decks${pending ? ` (${pending})` : ''}`}
         </button>
-        <button className="ghostbtn" disabled={ingesting} onClick={() => onIngest(true)}
-                title="Re-downloads every deck. Only needed if you edited the slides behind a link that did not change.">
-          ↻ Re-check all decks
-        </button>
+        {/* "Re-check all decks" (onIngest(true) — a forced re-download of EVERY deck)
+            was removed from this row. The endpoint still takes `force`; nothing in the
+            UI asks for it. "Fetch new decks" covers the case that actually comes up. */}
         {/* The course's length budget moved OUT of here into its own Settings section:
             it is set once per course, not something you touch while editing sessions,
             and as a labelled number box wedged between the action buttons it dominated
@@ -1822,15 +2102,10 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
             </select>
           </span>
         )}
-        {ownedBy.length > 0 && (
-          <span className="hint sharedby" title="Everyone on this team can open this curriculum and see its history">
-            👥 shared with {ownedBy.join(', ')}
-          </span>
-        )}
-        <button className="link" onClick={onReimport}
-                title="Refresh this course's rows from its sheet. Rows added in the agent are kept and no extracted deck is re-downloaded.">
-          {importedFrom ? '↺ Re-import this course from its sheet' : '📥 Import rows from a sheet'}
-        </button>
+        {/* Re-import-from-sheet was removed from this row too. The sheet is an import
+            FORMAT, not a live dependency: it seeds a course once and the curriculum is
+            edited here afterwards, so re-reading it belongs on the create path, not on
+            the toolbar of the table you are editing. */}
       </div>
 
       {logs?.length > 0 && <pre className="logs">{logs.join('\n')}</pre>}

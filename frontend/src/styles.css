@@ -91,6 +91,26 @@ body::before {
 .memberchip { background: var(--bg2); border: 1px solid var(--line); border-radius: 999px;
               padding: 4px 11px; font-size: 12px; color: var(--muted); }
 .mdot { color: var(--ok); margin-left: 6px; font-size: 9px; vertical-align: middle; }
+/* The team's course owner, and the remove control their chips deliberately lack. */
+.memberchip.owner { border-color: var(--accent); color: var(--text); }
+.mtag { margin-left: 6px; font-size: 10px; letter-spacing: .04em; text-transform: uppercase;
+        color: var(--accent); }
+.mx { margin-left: 7px; background: none; border: 0; padding: 0 1px; cursor: pointer;
+      color: var(--muted); font-size: 14px; line-height: 1; }
+.mx:hover:not(:disabled) { color: var(--err); }
+.mx:disabled { opacity: .4; cursor: default; }
+
+/* Deleting a course: set apart from the settings above it, because it is the one
+   control on that page that cannot be undone. */
+/* "Apply this note to every chunk after this one" — a checkbox with its own
+   explanation, so the consequence is on screen next to the choice. */
+.checkline { display: flex; align-items: flex-start; gap: 9px; margin: 10px 0 2px;
+             font-size: 13px; color: var(--text); cursor: pointer; }
+.checkline input { margin-top: 2px; flex: none; }
+.checkline .hint { display: block; margin-top: 3px; }
+.dangerzone { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
+.ghostbtn.danger { border-color: rgba(239,99,99,.42); color: #f2b3b3; }
+.ghostbtn.danger:hover:not(:disabled) { border-color: var(--err); background: rgba(239,99,99,.1); }
 
 @media (max-width: 900px) {
   /* The rail becomes a strip above the content rather than a column squeezed to

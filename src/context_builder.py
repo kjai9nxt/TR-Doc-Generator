@@ -388,6 +388,32 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool,
         f"them: spend the room on the sub-concepts an exam tests, never on ritual.\n")
 
 
+def standing_notes_block(notes) -> str:
+    """The reviewer's STANDING instructions, for a prompt that rewrites approved content.
+
+    A reviewer who marked a note "apply to every chunk after this one" has said something
+    about the whole document, not about one chunk. The repair pass at finalize then edits
+    slides the reviewer already signed off — for length, a hard guardrail failure or a
+    wrong fact — and without this it edits them knowing nothing about those instructions,
+    so a trim can put back the very thing the reviewer had removed everywhere. Whatever
+    the repair changes, it changes under the same rules the reviewer set.
+
+    Empty string when there are none, so callers can concatenate unconditionally.
+    """
+    lines = [str(n).strip() for n in (notes or []) if str(n or "").strip()]
+    if not lines:
+        return ""
+    seen, uniq = set(), []
+    for line in lines:                      # a note the reviewer repeated is still one rule
+        if line not in seen:
+            seen.add(line)
+            uniq.append(line)
+    return ("\n\nTHE REVIEWER'S STANDING INSTRUCTIONS. These were given during review and "
+            "apply to the WHOLE document. Every change you make must obey them, and you "
+            "must not undo them anywhere they have already been applied:\n"
+            + "\n".join(f"- {line}" for line in uniq) + "\n")
+
+
 def time_mode_block(enforce_time: bool, *, guided: bool = False,
                     budgets: dict | None = None) -> str:
     """The generation tail carrying the LENGTH budget the doc is graded against.

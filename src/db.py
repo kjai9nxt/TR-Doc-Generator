@@ -244,11 +244,29 @@ _CURRICULUM_ADDED_COLUMNS = [
 ]
 
 
+# THE TEAM'S COURSE OWNER — one named person, set by an admin when the team is created.
+#
+# Membership used to be admin-only in both directions: every add and every remove went
+# through whoever holds the admin account. That does not scale past a handful of teams —
+# it makes one person the bottleneck for a routine, low-stakes act, and the practical
+# result is that people simply do not get added.
+#
+# So each team names an owner. They own the team's course (`course_owners`, set at the
+# same moment) and they can add and remove that team's members, exactly as an admin can.
+# Nothing else: they cannot rename the team, change its course, or delete it. Assigning
+# and re-assigning the owner stays with the admin, which is what keeps this a delegation
+# rather than a free-for-all.
+_TEAMS_ADDED_COLUMNS = [
+    ("owner_email", "TEXT"),
+]
+
+
 def _add_missing_columns(conn) -> list[str]:
     """Bring existing tables up to date. Idempotent."""
     added = []
     for table, cols in (("runs", _RUNS_ADDED_COLUMNS),
-                        ("curriculum", _CURRICULUM_ADDED_COLUMNS)):
+                        ("curriculum", _CURRICULUM_ADDED_COLUMNS),
+                        ("teams", _TEAMS_ADDED_COLUMNS)):
         try:
             cur = conn.cursor()
             cur.execute(f"PRAGMA table_info({table})")
@@ -290,7 +308,7 @@ def init() -> None:
     finally:
         _close(conn)
     if added:
-        print(f"[db] migrated runs table: added column(s) {', '.join(added)}")
+        print(f"[db] migrated schema: added column(s) {', '.join(added)}")
     _migrate_json_log()
     # Attribute courses that predate ownership being recorded — once, here, so the
     # first request after a deploy already draws a correctly scoped shelf instead of
@@ -333,9 +351,20 @@ def users() -> list[dict]:
 # --------------------------------------------------------------------------- #
 # teams (admin-managed)
 # --------------------------------------------------------------------------- #
-def create_team(name: str, course: str | None, created_by: str) -> int:
-    return _exec("INSERT INTO teams (name, course, created_by, created_at) VALUES (?,?,?,?)",
-                 (name, course, created_by, _now()))
+def create_team(name: str, course: str | None, created_by: str,
+                owner_email: str | None = None) -> int:
+    """Create a team. `owner_email` is its course owner — see _TEAMS_ADDED_COLUMNS.
+
+    `created_by` is the admin who set the team up and is only a record of that; the
+    OWNER is who can then run it. They are usually different people, which is the whole
+    point of naming one.
+    """
+    owner = (owner_email or "").strip().lower() or None
+    tid = _exec("INSERT INTO teams (name, course, created_by, created_at, owner_email) "
+                "VALUES (?,?,?,?,?)", (name, course, created_by, _now(), owner))
+    if owner and tid:
+        add_member(int(tid), owner)
+    return tid
 
 
 def set_team_course(team_id: int, course: str) -> None:
@@ -349,6 +378,48 @@ def add_member(team_id: int, user_email: str) -> None:
 
 def remove_member(team_id: int, user_email: str) -> None:
     _exec("DELETE FROM team_members WHERE team_id=? AND user_email=?", (team_id, user_email))
+
+
+def set_team_owner(team_id: int, email: str | None) -> str | None:
+    """Name (or re-name) the team's course owner. Admin-only at the endpoint.
+
+    The owner is added as a MEMBER at the same time: they are the person responsible for
+    the team's course, so a team whose owner cannot open its own workspace is not a
+    configuration anyone wants. Returns the email recorded, or None if it was cleared.
+    """
+    email = (email or "").strip().lower() or None
+    _exec("UPDATE teams SET owner_email=? WHERE id=?", (email, int(team_id)))
+    if email:
+        add_member(int(team_id), email)
+    return email
+
+
+def team_owner(team_id: int) -> str | None:
+    try:
+        rows = _query("SELECT owner_email FROM teams WHERE id=?", (int(team_id),))
+    except Exception:
+        return None
+    if not rows:
+        return None
+    return (rows[0].get("owner_email") or "").lower() or None
+
+
+def can_manage_team(email: str, team_id: int, *, is_admin: bool = False,
+                    all_teams: list[dict] | None = None) -> bool:
+    """May this person add and remove members of this team?
+
+    An admin, or the team's own course owner — and nobody else. An ordinary member
+    cannot: being able to see a team's work is not the same as deciding who else can.
+    """
+    if is_admin:
+        return True
+    email = (email or "").lower()
+    if not email:
+        return False
+    if all_teams is not None:
+        t = next((x for x in all_teams if x.get("id") == int(team_id)), None)
+        return bool(t) and (t.get("owner_email") or "").lower() == email
+    return team_owner(team_id) == email
 
 
 def delete_team(team_id: int) -> None:
@@ -375,9 +446,22 @@ def team_add_course(team_id: int, course: str) -> bool:
 
 
 def team_remove_course(team_id: int, course: str) -> bool:
+    """Take a course off a team.
+
+    BOTH places have to be updated. `teams.course` is the team's primary course and is
+    what team_course_list() and the admin page still read, so deleting only the
+    team_courses row left the course apparently still attached — removed from the join
+    table and reported right back by the legacy column. It is repointed at another course
+    the team holds, or cleared.
+    """
     try:
         _exec("DELETE FROM team_courses WHERE team_id=? AND course=?",
               (int(team_id), course))
+        row = _query("SELECT course FROM teams WHERE id=?", (int(team_id),))
+        if row and (row[0].get("course") or "").strip() == (course or "").strip():
+            rest = [c for c in team_course_list(int(team_id)) if c != course]
+            _exec("UPDATE teams SET course=? WHERE id=?",
+                  (rest[0] if rest else None, int(team_id)))
         return True
     except Exception:
         return False
@@ -426,6 +510,8 @@ def teams() -> list[dict]:
     except Exception:
         courses = {}
     for t in rows:
+        # Normalised once, here, because every permission check compares against it.
+        t["owner_email"] = (t.get("owner_email") or "").lower() or None
         t["members"] = members.get(t["id"], [])
         got = list(courses.get(t["id"], []))
         primary = (t.get("course") or "").strip()
@@ -506,6 +592,36 @@ def claim_course(course: str, email: str | None) -> str | None:
     except Exception:
         return None
     return course_owner(course)
+
+
+def set_course_owner(course: str, email: str | None) -> str | None:
+    """Set a course's owner OUTRIGHT, replacing whoever was recorded.
+
+    Deliberately not claim_course(), which is first-claim-wins and must stay that way:
+    an automatic claim on a save must never quietly move a course to whoever edited it
+    last. This is the admin's override — the path that ASSIGNS ownership, used when a
+    team is created and when its owner is re-assigned.
+    """
+    course = (course or "").strip()
+    email = (email or "").strip().lower() or None
+    if not course:
+        return None
+    if not email:
+        try:
+            _exec("DELETE FROM course_owners WHERE course=?", (course,))
+        except Exception:
+            pass
+        return None
+    try:
+        # No UPSERT: libSQL and older SQLite disagree on ON CONFLICT support in enough
+        # places that a delete-then-insert is the portable form, and this runs once per
+        # assignment rather than on any hot path.
+        _exec("DELETE FROM course_owners WHERE course=?", (course,))
+        _exec("INSERT INTO course_owners (course, created_by, created_at) VALUES (?,?,?)",
+              (course, email, _now()))
+    except Exception:
+        return None
+    return email
 
 
 def course_owners() -> dict:
@@ -1213,6 +1329,61 @@ def curriculum_delete(course: str, session_no: int) -> bool:
         return True
     except Exception:
         return False
+
+
+def delete_course(course: str, *, detach_teams: bool = True) -> dict:
+    """Remove a course the owner no longer needs, and report exactly what went.
+
+    WHAT GOES: the curriculum rows (which ARE the course), its length budgets, its
+    ownership record, and its attachment to any team.
+
+    WHAT STAYS, deliberately: the RUN HISTORY. A finished document records what was
+    generated, for which course, under which session number, at what cost — and deleting
+    that record would not remove the document, it would only make the instance lie about
+    having produced it. Every other renumbering path in this file keeps history for the
+    same reason. The docs remain downloadable and the cost roll-ups stay correct.
+
+    `orphan_sessions` is the part the CALLER has to finish: the extracted decks live on
+    disk keyed by session NUMBER alone, not by course, so they are shared ground. Only
+    the numbers that no remaining course claims are safe to clear, and those are the ones
+    reported back — deleting "this course's decks" without that check would take session
+    7's deck away from every other course that has a session 7.
+    """
+    course = (course or "").strip()
+    if not course:
+        return {"course": course, "sessions": 0, "teams_detached": [],
+                "orphan_sessions": []}
+    mine = {r["session_no"] for r in curriculum(course)}
+
+    detached = []
+    if detach_teams:
+        for t in teams():
+            if course in (t.get("courses") or []):
+                # Repoints the team's legacy primary course column too — see
+                # team_remove_course, which is where that has to happen for every caller.
+                team_remove_course(t["id"], course)
+                detached.append({"id": t["id"], "name": t["name"]})
+
+    for sql in ("DELETE FROM curriculum WHERE course=?",
+                "DELETE FROM course_settings WHERE course=?",
+                "DELETE FROM course_owners WHERE course=?"):
+        try:
+            _exec(sql, (course,))
+        except Exception as e:
+            print(f"[db] delete_course({course!r}): {sql.split()[2]} — {e!r}")
+
+    # Which session numbers nothing else covers any more. Read AFTER the delete, so the
+    # course being removed cannot count itself as a claimant.
+    still: set = set()
+    try:
+        still = {r["session_no"] for r in
+                 _query("SELECT DISTINCT session_no FROM curriculum")
+                 if r.get("session_no") is not None}
+    except Exception:
+        still = mine          # could not tell -> assume everything is still claimed
+    return {"course": course, "sessions": len(mine),
+            "teams_detached": detached,
+            "orphan_sessions": sorted(mine - still)}
 
 
 def curriculum_mark_deck(course: str, session_no: int, deck_hash: str,

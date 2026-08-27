@@ -220,9 +220,19 @@ class GuidedStartBody(BaseModel):
     course: str | None = None
 
 
+class SplitSlideBody(BaseModel):
+    index: int               # which chunk
+    slide_n: int             # which slide in it, by the number shown to the reviewer
+
+
 class RegenerateBody(BaseModel):
     index: int
     reason: str | None = None
+    # Carry this note into every chunk AFTER this one as well. A reviewer note is very
+    # often about the whole document — "stop restating the takeaway at the top", "use
+    # plainer language" — and having to retype it into six chunks in turn, waiting for
+    # each, is the same instruction six times.
+    apply_to_following: bool = False
 
 
 class LoginBody(BaseModel):
@@ -232,6 +242,9 @@ class LoginBody(BaseModel):
 class TeamCreateBody(BaseModel):
     name: str
     course: str | None = None
+    # WHO RUNS THE TEAM. Required: a team with no owner is a team whose membership only
+    # an admin can ever change, which is the bottleneck this field exists to remove.
+    owner: str | None = None
 
 
 class MemberBody(BaseModel):
@@ -440,7 +453,15 @@ def _default_course(user: dict) -> str:
     is_admin = user.get("is_admin", False)
     active = (app_settings.course_name() or "").strip()
     if active and db.can_use_course(email, active, is_admin=is_admin):
-        return active
+        # …and only if it is a course that EXISTS. course_name() falls back to a
+        # hard-coded legacy default, so after the active course is deleted this would
+        # otherwise answer with a course name nobody on the instance has ever had. The
+        # second half of the test keeps a course the caller has just created — claimed,
+        # but with no curriculum rows yet — from being taken off them on a reload.
+        owners = db.course_owners()
+        if active in set(db.curriculum_session_counts()) \
+           or owners.get(active) == (email or "").lower():
+            return active
     theirs = db.courses_for_user(email, is_admin=is_admin)
     for pick in (lambda c: c.get("mine"), lambda c: c.get("shared"), lambda c: True):
         for c in theirs:
@@ -544,6 +565,13 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
             "teams": [{"id": tm["id"], "name": tm["name"],
                        "courses": tm.get("courses") or [],
                        "members": tm.get("members") or [],
+                       # WHO RUNS THIS TEAM, and whether that is the person asking. The
+                       # UI offers the add/remove-member controls off `can_manage`, so
+                       # the answer has to come from the server — the client cannot be
+                       # the one deciding what it is allowed to do.
+                       "owner_email": tm.get("owner_email"),
+                       "can_manage": bool(user.get("is_admin")) or
+                                     (tm.get("owner_email") or "") == (email or "").lower(),
                        "unknown_courses": [c for c in (tm.get("courses") or [])
                                            if c not in known]}
                       for tm in mine],
@@ -584,6 +612,9 @@ def workspaces(user: dict = Depends(current_user)):
         out.append({
             "id": t["id"], "name": t["name"], "courses": courses,
             "members": t.get("members") or [],
+            "owner_email": t.get("owner_email"),
+            "can_manage": bool(user.get("is_admin"))
+                          or (t.get("owner_email") or "") == email,
             "unknown_courses": [c for c in courses if c not in known],
         })
     # THE INDIVIDUAL SHELF IS THIS PERSON'S OWN COURSES — the ones they created. It
@@ -645,6 +676,27 @@ def team_add_course(team_id: int, body: TeamCourseBody,
     return {"ok": ok, "courses": db.team_course_list(team_id)}
 
 
+@app.delete("/api/teams/{team_id}/courses")
+def team_remove_course(team_id: int, course: str,
+                       user: dict = Depends(current_user)):
+    """Take a course off a team's shelf. Admin or the team's course owner.
+
+    The counterpart of attaching one, and deliberately a NARROWER permission: any member
+    may add a course (a course created inside a team workspace has to become the team's
+    at once, or its maker is the only one who can see it), but removing one takes it off
+    everybody's shelf, and that is a decision for whoever runs the team.
+
+    The course itself is untouched — its curriculum, its history and its owner all stay.
+    This only ends the sharing.
+    """
+    _require_team_manager(user, team_id)
+    course = (course or "").strip()
+    if not course:
+        raise HTTPException(status_code=400, detail={"message": "Name the course."})
+    ok = db.team_remove_course(team_id, course)
+    return {"ok": ok, "courses": db.team_course_list(team_id)}
+
+
 @app.get("/api/courses")
 def list_courses(user: dict = Depends(current_user)):
     """Courses this person may work on — the team's shelf, not a text box.
@@ -687,6 +739,110 @@ def select_course(body: SelectCourseBody, user: dict = Depends(current_user)):
     app_settings.save(course_name=course, course_type=body.course_type)
     return {"course": course, **_curriculum_reply(course),
             "imported_from": sync.last_link()}
+
+
+def _require_course_owner(user: dict, course: str) -> str:
+    """Resolve a course the caller is entitled to DELETE.
+
+    Stricter than _require_course on purpose. Being able to open a course is not the
+    same as being able to destroy it: a team-mate can work on a shared curriculum all
+    day and must not be able to remove it, and an UNCLAIMED course (one imported before
+    ownership was recorded) has no owner to authorise the deletion at all, so it is the
+    admin's to remove.
+    """
+    course = (course or "").strip()
+    if not course:
+        raise HTTPException(status_code=400, detail={"message": "Name the course."})
+    if user.get("is_admin"):
+        return course
+    owner = db.course_owner(course)
+    if owner and owner == (user.get("email") or "").lower():
+        return course
+    if not owner:
+        raise HTTPException(status_code=403, detail={"message":
+            f"'{course}' has no recorded owner — it predates the agent keeping track of "
+            f"who created a course — so only an admin can delete it."})
+    raise HTTPException(status_code=403, detail={"message":
+        f"'{course}' was created by {owner}. Only they or an admin can delete it; being "
+        f"able to open it is not the same as being able to remove it."})
+
+
+@app.delete("/api/courses")
+def delete_course(course: str, detach_teams: bool = False,
+                  user: dict = Depends(current_user)):
+    """Delete a course the owner no longer needs.
+
+    Two-step ON PURPOSE when the course is shared. A course attached to a team is not
+    just its creator's any more — its curriculum is what the team opens and its history
+    is what the team's shelf is gathered by — so deleting it out from under them takes a
+    second, explicit request (`detach_teams=true`) rather than happening because somebody
+    clicked once. The first call answers 409 and names the teams, which is what the UI
+    puts in front of the user.
+
+    RUN HISTORY SURVIVES. See db.delete_course: the finished documents stay downloadable
+    and the cost roll-ups stay correct, because deleting the record would not un-generate
+    the documents — it would only make the instance lie about having produced them.
+    """
+    course = _require_course_owner(user, course)
+    holders = [t for t in db.teams() if course in (t.get("courses") or [])]
+    if holders and not detach_teams:
+        raise HTTPException(status_code=409, detail={
+            "message": f"'{course}' is shared with "
+                       f"{', '.join(t['name'] for t in holders)}. Deleting it removes "
+                       f"the curriculum everyone there works from. Confirm to go ahead, "
+                       f"or take it off the team instead and keep the course.",
+            "kind": "course_shared",
+            "teams": [{"id": t["id"], "name": t["name"]} for t in holders]})
+
+    out = db.delete_course(course, detach_teams=True)
+
+    # The extracted decks: only the session numbers no remaining course claims. They are
+    # filed by number alone, so this is the one thing that cannot be scoped by course.
+    # Only the numbers that HAD a deck, so the count reported back is the number of
+    # decks removed rather than the number of sessions we looked at — a 34-session
+    # course with 32 decks was answering "34 cleared".
+    have = pptx_ingest.deck_session_numbers()
+    cleared = []
+    for no in out.get("orphan_sessions") or []:
+        if no not in have:
+            continue
+        try:
+            pptx_ingest.drop_deck(no)
+            db.kb_forget(f"decks/session_{int(no):02d}.json")
+            cleared.append(no)
+        except Exception as e:
+            print(f"[courses] could not drop the deck for session {no}: {e!r}")
+
+    # Never leave the instance-wide active course naming something that is gone: it is
+    # what an unnamed request falls back to, and course_name() otherwise drops to a
+    # hard-coded legacy default nobody chose.
+    moved_to = None
+    if (app_settings.course_name() or "").strip() == course:
+        rest = db.courses_for_user(user.get("email"),
+                                   is_admin=user.get("is_admin", False))
+        moved_to = next((c["name"] for c in rest if c.get("mine")),
+                        next((c["name"] for c in rest), None))
+        if moved_to:
+            app_settings.save(course_name=moved_to)
+        else:
+            app_settings.clear_course_name()
+    # …and the on-disk projection of the curriculum, which the offline session loader
+    # falls back to when the database holds none. It carries no course name, so it cannot
+    # be checked against the one being deleted — it is simply rewritten from a course that
+    # still exists, or emptied.
+    try:
+        if moved_to:
+            sync.write_course_cache(moved_to)
+        elif not db.curriculum_courses():
+            sync.clear_course_cache()
+    except Exception as e:
+        print(f"[courses] could not refresh the curriculum projection: {e!r}")
+
+    return {"ok": True, "deleted": course, "sessions_removed": out["sessions"],
+            "teams_detached": out["teams_detached"], "decks_cleared": cleared,
+            "history_kept": True, "course": moved_to,
+            "courses": db.courses_for_user(user.get("email"),
+                                           is_admin=user.get("is_admin", False))}
 
 
 def _curriculum_rows(course: str, rows: list[dict] | None = None) -> list[dict]:
@@ -1080,6 +1236,10 @@ _GUIDED_PERSIST_KEYS = (
     "status", "session_no", "base_context", "total", "index", "labels", "chunks",
     "regen_index", "use_judge", "enforce_time", "logs", "result", "error",
     "last_error", "user_email", "budgets",
+    # Standing reviewer notes ("apply this to every chunk after this one"). They govern
+    # every later redraft in the run, so a restart mid-review must not lose them — the
+    # reviewer would have no way to know the instruction had stopped applying.
+    "standing_notes",
     # Persisted so an unfinished run can NAME itself in the resume list without the
     # server loading its whole state or re-deriving the title from a course that may
     # have been re-synced since (see db.unfinished_guided).
@@ -1217,6 +1377,64 @@ def _fragment_slides(fragment: dict) -> int:
     """Slide count of one guided chunk (0 for the opening)."""
     sec = (fragment or {}).get("section", fragment) or {}
     return len(sec.get("slides") or [])
+
+
+def _chunk_section(chunk: dict) -> dict:
+    """The section dict of a chunk's fragment. Guided fragments come as
+    {"section": {...}} but a bare section dict has been seen too, so accept both — the
+    same way patcher and pipeline do."""
+    frag = (chunk or {}).get("fragment") or {}
+    sec = frag.get("section", frag)
+    return sec if isinstance(sec, dict) else {}
+
+
+def _renumber_slides(state: dict) -> list[int]:
+    """Number every slide in the run 1..N in document order, and carry each chunk's
+    coverage references with them. Returns the chunk indices whose numbering moved.
+
+    WHY IT LIVES HERE. Each chunk numbers its own slides against the chunks that existed
+    when it was written, and pipeline.assemble_doc renumbers the whole document at the
+    end — which is fine when nothing structural changes during review. Splitting a slide
+    IS structural: every slide after it moves, in this chunk and in all the ones after
+    it, and the reviewer is reading those numbers on screen while they work. Leaving the
+    fix to assembly would show them numbering that disagrees with the document they are
+    about to produce.
+
+    Coverage references are remapped alongside, because a coverage entry pointing at a
+    slide number that no longer means the same slide is a hard guardrail failure at
+    finalize, not a cosmetic nit.
+    """
+    moved = []
+    next_n = 1
+    for i, c in enumerate(state.get("chunks") or []):
+        slides = [x for x in (_chunk_section(c).get("slides") or []) if isinstance(x, dict)]
+        if not slides:
+            continue                    # the opening has no slides
+        before = [x.get("n") for x in slides]
+        assigned = list(range(next_n, next_n + len(slides)))
+        next_n += len(slides)
+        # The old->new map is built BEFORE anything is written: old and new numbers share
+        # one namespace, so renumbering in place would remap through values just assigned.
+        old_new = {}
+        for old, new in zip(before, assigned):
+            if old is not None and old not in old_new:
+                old_new[old] = new
+        for x, n in zip(slides, assigned):
+            x["n"] = n
+        frag = c.get("fragment") or {}
+        for sub in ((frag.get("coverage") or {}).get("sub_concepts") or []):
+            if not isinstance(sub, dict) or sub.get("slide") in (None, ""):
+                continue
+            try:
+                old = int(sub["slide"])
+            except (TypeError, ValueError):
+                old = sub["slide"]
+            if old in old_new:
+                sub["slide"] = old_new[old]
+        if before != assigned:
+            moved.append(i)
+            c["markdown"] = docx_writer.chunk_to_markdown(c["kind"], frag)
+    return moved
 
 
 def _slide_budget_state(state: dict, index: int) -> tuple[int, int]:
@@ -1525,8 +1743,124 @@ def _patch_one(gid: str, index: int, reason: str) -> tuple[dict, dict]:
     return {"kind": kind, "fragment": fragment, "markdown": markdown}, summary
 
 
-def _guided_regenerate(gid: str, index: int, reason: str):
-    """Regenerate a single chunk in place (given the chunks before it) during review."""
+def _standing_notes(state: dict, index: int) -> list[str]:
+    """Reviewer notes that were marked "apply to every chunk after this one", and whose
+    range covers `index`.
+
+    They are re-asserted on every later regeneration of a covered chunk, not applied once
+    and forgotten: they are instructions about how the document is to be written, so a
+    chunk redrafted afterwards for some other reason must still obey them. Duplicates are
+    dropped so a note repeated by the reviewer is not sent twice.
+    """
+    out = []
+    for note in state.get("standing_notes") or []:
+        if not isinstance(note, dict):
+            continue
+        text = str(note.get("reason") or "").strip()
+        if text and index > int(note.get("from_index", 0)) and text not in out:
+            out.append(text)
+    return out
+
+
+def _with_standing(state: dict, index: int, reason: str | None) -> str | None:
+    """`reason` plus any standing notes that cover this chunk, as one instruction.
+
+    The note being applied right now is itself a standing note covering the chunks after
+    it, so it is dropped from the standing block — it is already the primary instruction,
+    and stating the same rule twice in one prompt is noise that grows with every note the
+    reviewer adds.
+    """
+    primary = (reason or "").strip()
+    standing = [t for t in _standing_notes(state, index) if t != primary]
+    if not standing:
+        return reason
+    block = ("Apply these standing review instructions, which the reviewer gave for "
+             "this document as a whole:\n"
+             + "\n".join(f"- {t}" for t in standing))
+    return f"{reason.strip()}\n\n{block}" if (reason or "").strip() else block
+
+
+def _apply_to_following(gid: str, from_index: int, reason: str) -> None:
+    """Carry one reviewer note into every chunk after `from_index`.
+
+    Sequential on purpose. Each chunk is patched against the note on its own, so a
+    failure on one does not cost the others, and `regen_index` moves as it goes so the
+    reviewer can see which chunk is in flight rather than watching a single spinner for a
+    minute. PATCH first, exactly as a single regeneration does — a standing note is
+    usually narrow ("drop the analogies", "shorter headings") and re-drafting six chunks
+    from it would throw away every slide the reviewer had already accepted.
+    """
+    with _lock:
+        state = GUIDED.get(gid)
+        total = len(state["chunks"]) if state else 0
+    rcfg = config.harness().get("regeneration", {}) or {}
+    for j in range(from_index + 1, total):
+        with _lock:
+            state = GUIDED.get(gid)
+            if not state:
+                return
+            state["regen_index"] = j
+            label = state["labels"][j]
+            before_md = state["chunks"][j]["markdown"]
+            session_no = state["session_no"]
+            prior = [c["fragment"] for c in state["chunks"][:j]]
+            allowance = _chunk_allowance(state, j) if j else 0
+            # Earlier standing notes still apply to this chunk, so they travel with the
+            # new one rather than being undone by the redraft that answers it.
+            effective = _with_standing(state, j, reason)
+        _guided_log(gid, f"Applying that note to chunk {j + 1} as well: {label} …")
+        chunk = scope = None
+        try:
+            if rcfg.get("mode", "patch") == "patch":
+                try:
+                    chunk, scope = _patch_one(gid, j, effective)
+                except Exception as e:
+                    if not rcfg.get("fallback_to_full", True):
+                        raise
+                    _guided_log(gid, f"⚠ Chunk {j + 1}: could not patch it ({e}) — "
+                                     f"re-drafting the whole chunk.")
+                    chunk = scope = None
+            if chunk is None:
+                chunk = _gen_one(gid, j, prior, effective)
+                scope = {"mode": "full", "note": "whole chunk re-drafted"}
+        except Exception as e:
+            # One chunk failing must not abandon the rest, and the chunk that was there
+            # is still in place — so this is a note in the log, not a dead run.
+            _guided_log(gid, f"⚠ Chunk {j + 1} could not be updated ({e}) — it is "
+                             f"unchanged. Regenerate it on its own if you still need it.")
+            continue
+        try:
+            from src import regen_log
+            regen_log.record(session_no, reason, before_md, chunk["markdown"], scope=scope)
+        except Exception:
+            pass
+        with _lock:
+            if gid not in GUIDED:
+                return
+            GUIDED[gid]["chunks"][j] = chunk
+            # Same reason as in _guided_regenerate: a patch can change the slide count,
+            # and the reviewer is reading those numbers while this runs.
+            renumbered = _renumber_slides(GUIDED[gid])
+        if [i for i in renumbered if i != j]:
+            _guided_log(gid, f"Chunk {j + 1} changed length — the slides after it were "
+                             f"renumbered.")
+        _guided_record_cost(gid)
+        _guided_slide_budget_note(gid, j, allowance)
+        with _lock:
+            _frag = GUIDED.get(gid, {}).get("chunks", [{}])[j].get("fragment") \
+                if gid in GUIDED and j < len(GUIDED[gid]["chunks"]) else None
+        _guided_repetition_note(gid, j, _frag)
+        _guided_save(gid)
+
+
+def _guided_regenerate(gid: str, index: int, reason: str,
+                       apply_to_following: bool = False):
+    """Regenerate a single chunk in place (given the chunks before it) during review.
+
+    With `apply_to_following`, the same note is then carried into every chunk after this
+    one, and remembered as a STANDING instruction so a later re-draft of any of them
+    still obeys it. See _apply_to_following and _standing_notes.
+    """
     llm.use_meter(gid)      # a regeneration is part of THIS run's cost, in a new thread
     try:
         with _lock:
@@ -1541,8 +1875,21 @@ def _guided_regenerate(gid: str, index: int, reason: str):
         except Exception:
             pass
         _guided_log(gid, f"Regenerating chunk {index + 1}: {GUIDED[gid]['labels'][index]} …")
+        # The reviewer's own words, kept separate from the instruction actually sent.
+        # _with_standing composes the two per chunk, so passing the COMPOSED text on to
+        # the fan-out would have it compose again and repeat every earlier standing note.
+        note = reason
         with _lock:
-            allowance = _chunk_allowance(GUIDED[gid], index) if index else 0
+            state = GUIDED[gid]
+            allowance = _chunk_allowance(state, index) if index else 0
+            if apply_to_following:
+                # Recorded BEFORE this chunk is regenerated. _standing_notes covers only
+                # chunks strictly after `from_index`, so registering it first cannot make
+                # this chunk receive the same instruction twice.
+                state.setdefault("standing_notes", []).append(
+                    {"from_index": index, "reason": note})
+            # Any standing note set earlier still governs this chunk.
+            reason = _with_standing(state, index, note) or note
 
         # PATCH FIRST. A reviewer note is almost always narrow, and re-drafting the whole
         # chunk from it threw away the slides they were happy with. A patch touches only
@@ -1596,10 +1943,26 @@ def _guided_regenerate(gid: str, index: int, reason: str):
             pass
         with _lock:
             GUIDED[gid]["chunks"][index] = chunk
-            GUIDED[gid]["status"] = "reviewing"
-            GUIDED[gid]["regen_index"] = None
+            # A patch may ADD or REMOVE a slide, and a full re-draft comes back at
+            # whatever length it likes — so the numbering has to be redone here, exactly
+            # as it is after a split. It used to be left to assembly, which meant the
+            # review pane showed "Slide None" for an added slide and stale numbers in
+            # every later chunk until the document was finished. Now that the reviewer
+            # can act on those numbers, they have to be true while they are reading them.
+            renumbered = _renumber_slides(GUIDED[gid])
+            # Stay in "regenerating" while the note is carried forward, or the UI would
+            # see "reviewing", stop polling, and show stale chunks while the rest are
+            # still being rewritten underneath it.
+            if not apply_to_following:
+                GUIDED[gid]["status"] = "reviewing"
+                GUIDED[gid]["regen_index"] = None
         _guided_record_cost(gid)      # a regeneration is real spend on this run
         _guided_log(gid, "Chunk updated.")
+        _after = [i + 1 for i in renumbered if i != index]
+        if _after:
+            _guided_log(gid, f"That changed the slide count, so chunk(s) "
+                             f"{', '.join(str(x) for x in _after)} were renumbered to "
+                             f"follow it.")
         # A patch may ADD slides, and a full re-draft is a fresh roll of the dice on the
         # count, so re-check this chunk against the ceiling exactly as generation does.
         _guided_slide_budget_note(gid, index, allowance)
@@ -1608,6 +1971,21 @@ def _guided_regenerate(gid: str, index: int, reason: str):
                 if index < len(GUIDED.get(gid, {}).get("chunks") or []) else None
         _guided_repetition_note(gid, index, _frag)
         _guided_save(gid)
+        if apply_to_following:
+            with _lock:
+                following = len(GUIDED.get(gid, {}).get("chunks") or []) - index - 1
+            if following > 0:
+                _guided_log(gid, f"Carrying that note into the {following} chunk(s) "
+                                 f"after this one.")
+                _apply_to_following(gid, index, note)
+            with _lock:
+                if gid in GUIDED:
+                    GUIDED[gid]["status"] = "reviewing"
+                    GUIDED[gid]["regen_index"] = None
+            _guided_log(gid, "Every following chunk has been updated with that note."
+                             if following > 0 else
+                             "There are no chunks after this one to apply it to.")
+            _guided_save(gid)
     except Exception as e:
         # The chunk that was there before is still in place, so this is recoverable:
         # back to review with a message, NOT a terminal error that strands the run.
@@ -1625,6 +2003,11 @@ def _guided_finalize(gid: str):
             use_judge = state["use_judge"]
             enforce_time = state.get("enforce_time", True)
             state_budgets = state.get("budgets") or {}
+            # The reviewer's standing instructions go with the document. finalize's
+            # repair pass edits slides they already approved, so it must not be the one
+            # part of the run that has never heard of them.
+            standing = [n.get("reason") for n in (state.get("standing_notes") or [])
+                        if isinstance(n, dict) and str(n.get("reason") or "").strip()]
         opening = chunks[0]["fragment"]
         sections = [c["fragment"].get("section", c["fragment"]) for c in chunks[1:]]
         # Each takeaway chunk also reports the sub-concepts it covers and the slide
@@ -1634,7 +2017,7 @@ def _guided_finalize(gid: str):
         doc = pipeline.assemble_doc(cur, nxt, opening, sections, coverage)
         result = pipeline.finalize(session_no, doc, use_judge=use_judge,
                                    enforce_time=enforce_time, run_id=gid,
-                                   budgets=state_budgets,
+                                   budgets=state_budgets, standing_notes=standing,
                                    on_event=lambda m: _guided_log(gid, m))
         final = result.get("final") or result["history"][-1]
         # Persist the rendered outputs BEFORE surfacing the result. A guided run has
@@ -1810,7 +2193,12 @@ def _guided_view(state: dict) -> dict:
     """JSON-safe snapshot (Session objects and base_context are kept server-side)."""
     labels = state["labels"]
     chunks = [{"label": labels[i], "markdown": c["markdown"],
-               "repetition": _chunk_repetition(c.get("fragment"))}
+               "repetition": _chunk_repetition(c.get("fragment")),
+               # The slides this chunk holds, so the reviewer can name one to SPLIT
+               # without the UI having to parse them back out of the markdown.
+               "slides": [{"n": x.get("n"), "title": x.get("title") or ""}
+                          for x in (_chunk_section(c).get("slides") or [])
+                          if isinstance(x, dict)]}
               for i, c in enumerate(state["chunks"])]
     return {
         "status": state["status"],
@@ -1825,6 +2213,11 @@ def _guided_view(state: dict) -> dict:
         "labels": labels,
         "chunks": chunks,
         "regen_index": state.get("regen_index"),
+        # Notes the reviewer marked "apply to every chunk after this one". Shown back so
+        # a standing instruction is visible rather than invisible state that quietly
+        # governs every later redraft.
+        "standing_notes": [n for n in (state.get("standing_notes") or [])
+                           if isinstance(n, dict)],
         "result": state.get("result"),
         "error": state.get("error"),
         # A step that failed but left the run usable (see _guided_step_failed). The
@@ -1989,9 +2382,88 @@ def guided_regenerate(gid: str, body: RegenerateBody,
         state["regen_index"] = body.index
         state["last_error"] = None      # this attempt supersedes the previous failure
     _guided_save(gid)
-    threading.Thread(target=_guided_regenerate, args=(gid, body.index, reason),
+    threading.Thread(target=_guided_regenerate,
+                     args=(gid, body.index, reason, bool(body.apply_to_following)),
                      daemon=True).start()
-    return {"ok": True}
+    return {"ok": True, "apply_to_following": bool(body.apply_to_following)}
+
+
+@app.post("/api/guided/{gid}/split")
+def guided_split_slide(gid: str, body: SplitSlideBody,
+                       user: dict = Depends(current_user)):
+    """Split one slide of one chunk into two, and renumber the whole run.
+
+    Deterministic and synchronous — NO model call. The reviewer has already accepted this
+    content; a slide that carries too much for one slide needs its content divided, not
+    rewritten, and a re-draft would be free to change the slides either side of it. The
+    second half inherits the fields every slide must carry and can be polished with an
+    ordinary Regenerate afterwards.
+
+    Every slide after the split moves — in this chunk AND in all the later ones — so the
+    run is renumbered here rather than at assembly, because the reviewer is reading those
+    numbers on screen while they work.
+    """
+    from src import patcher            # imported per-call, like every other user of it
+    state = _guided_require_mine(gid, user)
+    con = config.harness()["constraints"]
+    with _lock:
+        if state["status"] != "reviewing":
+            raise HTTPException(
+                status_code=409,
+                detail={"message": f"Another step ({state['status']}) is still running — "
+                                   f"wait for it to finish, then split the slide."})
+        if not (0 <= body.index < len(state["chunks"])):
+            raise HTTPException(status_code=400,
+                                detail={"message": "Chunk index out of range."})
+        chunk = state["chunks"][body.index]
+        if chunk.get("kind") != "section":
+            raise HTTPException(status_code=400, detail={"message":
+                "The opening chunk has no slides — its recap and agenda come from the "
+                "curriculum."})
+        try:
+            fragment, summary = patcher.split_slide(
+                chunk["fragment"], body.slide_n,
+                title_max_words=(con.get("headings", {}) or {}).get("title_max_words", 8),
+                min_bullet_items=(con.get("content", {}) or {}).get("min_bullet_items", 3),
+                intro_role="concept_intro",
+                continuation_role="mechanism")
+        except patcher.PatchError as e:
+            raise HTTPException(status_code=400, detail={"message": str(e)})
+        allowance = _chunk_allowance(state, body.index) if body.index else 0
+        chunk["fragment"] = fragment
+        chunk["markdown"] = docx_writer.chunk_to_markdown(chunk["kind"], fragment)
+        moved = _renumber_slides(state)
+        view = _guided_view(state)
+    _guided_log(gid, f"Split slide {body.slide_n} of chunk {body.index + 1} into two — "
+                     f"its content was divided, not rewritten."
+                     + (f" The second slide inherited its "
+                        f"{', '.join(summary['inherited_fields'])} from the first; "
+                        f"regenerate it if that wording does not fit."
+                        if summary.get("inherited_fields") else ""))
+    if summary.get("coverage_refs_added"):
+        _guided_log(gid, f"The coverage map now points at both halves — a slide nothing "
+                         f"in it references fails the 'teaches nothing the agenda "
+                         f"promised' gate.")
+    if not summary.get("prose_on_both_halves"):
+        _guided_log(gid, "⚠ Only one of the two slides carries a prose paragraph: this "
+                         "slide's prose could not be divided. The document is graded on "
+                         "the share of slides that have one, so regenerate the pair with "
+                         "'give each of these two slides its own framing sentence' if the "
+                         "mix gate complains at finalize.")
+    if summary.get("role_changed"):
+        _guided_log(gid, f"The second slide was given the role "
+                         f"'{summary['role_changed']}' and no analogy: an analogy is "
+                         f"required only on a first introduction and banned everywhere "
+                         f"else, and the same one may not appear on two slides.")
+    later = [i + 1 for i in moved if i != body.index]
+    if later:
+        _guided_log(gid, f"Renumbered the slides in chunk(s) "
+                         f"{', '.join(str(x) for x in later)} to follow it.")
+    _guided_slide_budget_note(gid, body.index, allowance)
+    _guided_save(gid)
+    with _lock:
+        return {**_guided_view(GUIDED[gid]), "split": summary,
+                "renumbered_chunks": moved}
 
 
 @app.post("/api/guided/{gid}/finalize")
@@ -2189,12 +2661,17 @@ def my_teams(user: dict = Depends(current_user)):
     Each run carries who made it, so the list reads as a team feed rather than an
     anonymous pile.
     """
-    email = user.get("email")
+    email = (user.get("email") or "").lower()
     out = []
     for t in db.teams_for_user(email):
         members = t.get("members", [])
         # The courses are already on `t` — passing them avoids re-querying them per team.
         runs = db.team_runs(t["id"], t.get("courses"))
+        # Whether THIS person may change who is on the team, decided server-side: the
+        # team page offers the add/remove controls off this flag, and a client must never
+        # be the one deciding what it is allowed to do.
+        t = {**t, "can_manage": bool(user.get("is_admin"))
+                                or (t.get("owner_email") or "") == email}
         out.append({"team": t, "courses": _group_by_course(runs),
                     "summary": _rollup(runs), "members": members,
                     "contributors": sorted({r.get("user_email") for r in runs
@@ -2255,7 +2732,67 @@ def _connectors() -> list:
     ]
 
 
-# ---- team management (admin-managed) ----
+# ---- team management -------------------------------------------------------------
+#
+# Creating, renaming, re-coursing and deleting a team is the ADMIN's. MEMBERSHIP is not:
+# it is delegated to the team's course owner, who the admin names when the team is
+# created. Adding a colleague to a team is a routine, low-stakes act, and routing every
+# one of them through a single admin account meant, in practice, that people did not get
+# added at all.
+def _team_email(raw: str | None) -> str:
+    """A member/owner email, normalised and checked against the allowed domain.
+
+    The domain check is the point: `add_member` writes whatever it is given and
+    membership is matched by exact string, so 'alice' or 'alice@gmail.com' silently
+    creates a member row that can never match a signed-in user. The team then looks
+    populated and the person it was for sees nothing.
+    """
+    email = (raw or "").strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail={
+            "message": "Give a full email address."})
+    domain = (config.auth().get("allowed_domain") or "").lower()
+    if domain and not email.endswith("@" + domain):
+        raise HTTPException(status_code=400, detail={
+            "message": f"Only @{domain} addresses can be on a team — '{email}' would "
+                       f"never match a signed-in user."})
+    return email
+
+
+def _require_team_manager(user: dict, team_id: int) -> dict:
+    """The team, if this person may change who is on it: an admin, or its course owner.
+
+    An ordinary member may not. Seeing a team's work and deciding who else sees it are
+    different powers, and only one of them is delegated.
+    """
+    all_teams = db.teams()
+    team = next((t for t in all_teams if t.get("id") == int(team_id)), None)
+    if team is None:
+        raise HTTPException(status_code=404, detail={"message": "No such team."})
+    if db.can_manage_team(user.get("email"), int(team_id),
+                          is_admin=user.get("is_admin", False), all_teams=all_teams):
+        return team
+    owner = team.get("owner_email")
+    raise HTTPException(status_code=403, detail={"message":
+        f"Only an admin or {team['name']}'s course owner can change who is on it."
+        if owner else
+        f"{team['name']} has no course owner yet, so only an admin can change who is "
+        f"on it. Ask an admin to assign one."})
+
+
+def _no_orphaning_the_owner(team: dict, email: str) -> None:
+    """Refuse to remove the person the team is owned BY.
+
+    Otherwise the team is left with an owner who is not on it — still able to manage
+    members, but unable to open the workspace they are responsible for. Re-assigning
+    the owner is the way to change this, and that is the admin's call.
+    """
+    if (team.get("owner_email") or "") == email:
+        raise HTTPException(status_code=409, detail={"message":
+            f"{email} is this team's course owner, so they cannot be removed from it. "
+            f"Ask an admin to assign a different owner first."})
+
+
 @app.get("/api/admin/teams")
 def admin_list_teams(user: dict = Depends(require_admin)):
     return {"teams": db.teams(), "users": [u["email"] for u in db.users()]}
@@ -2263,25 +2800,105 @@ def admin_list_teams(user: dict = Depends(require_admin)):
 
 @app.post("/api/admin/teams")
 def admin_create_team(body: TeamCreateBody, user: dict = Depends(require_admin)):
-    tid = db.create_team(body.name, body.course, user.get("email"))
-    return {"id": tid}
+    """Create a team, naming its COURSE OWNER — which is required, not optional.
+
+    The owner is recorded three ways, all at once, because they are three consequences
+    of the same decision:
+      · on the team, as who may add and remove its members;
+      · as a member, so they can actually open the workspace they run;
+      · as the owner of the team's course, so it is on their individual shelf and they
+        can open its curriculum whether or not the team survives.
+
+    That last write REPLACES any owner the course already had. It is an explicit admin
+    assignment, and the reply says whose it was, so a mistake is visible rather than
+    silent.
+    """
+    owner = _team_email(body.owner)
+    course = (body.course or "").strip() or None
+    previous = db.course_owner(course) if course else None
+    tid = db.create_team(body.name, course, user.get("email"), owner_email=owner)
+    if course:
+        db.set_course_owner(course, owner)
+    return {"id": tid, "owner": owner, "course": course,
+            "replaced_owner": previous if previous and previous != owner else None}
+
+
+@app.post("/api/admin/teams/{team_id}/owner")
+def admin_set_team_owner(team_id: int, body: MemberBody,
+                         user: dict = Depends(require_admin)):
+    """(Re)assign a team's course owner. Admin only — this is what makes the delegation
+    below a delegation rather than something anyone can grant themselves."""
+    owner = _team_email(body.email)
+    team = next((t for t in db.teams() if t.get("id") == int(team_id)), None)
+    if team is None:
+        raise HTTPException(status_code=404, detail={"message": "No such team."})
+    db.set_team_owner(int(team_id), owner)
+    # …and of every course the team holds, so the new owner can open them individually
+    # too. Same override as at creation, for the same reason.
+    for c in (team.get("courses") or []):
+        db.set_course_owner(c, owner)
+    return {"ok": True, "owner": owner, "courses": team.get("courses") or []}
 
 
 @app.post("/api/admin/teams/{team_id}/members")
 def admin_add_member(team_id: int, body: MemberBody, user: dict = Depends(require_admin)):
-    db.add_member(team_id, body.email.strip().lower())
+    db.add_member(team_id, _team_email(body.email))
     return {"ok": True}
 
 
 @app.delete("/api/admin/teams/{team_id}/members/{email}")
 def admin_remove_member(team_id: int, email: str, user: dict = Depends(require_admin)):
+    team = next((t for t in db.teams() if t.get("id") == int(team_id)), None)
+    if team:
+        _no_orphaning_the_owner(team, email.strip().lower())
     db.remove_member(team_id, email.strip().lower())
     return {"ok": True}
+
+
+# ---- membership, delegated to the team's course owner ------------------------------
+@app.post("/api/teams/{team_id}/members")
+def team_add_member(team_id: int, body: MemberBody, user: dict = Depends(current_user)):
+    """Add someone to a team. Admin or the team's course owner.
+
+    Anyone added sees the team's courses and its whole shared history, including work
+    done before they arrived — that is what the team workspace is for.
+    """
+    _require_team_manager(user, team_id)
+    email = _team_email(body.email)
+    db.add_member(int(team_id), email)
+    try:
+        db.upsert_user(email)      # so they show up in the admin user list before first sign-in
+    except Exception:
+        pass
+    return {"ok": True, "members": sorted(
+        next((t.get("members") or [] for t in db.teams() if t["id"] == int(team_id)), []))}
+
+
+@app.delete("/api/teams/{team_id}/members/{email}")
+def team_remove_member(team_id: int, email: str, user: dict = Depends(current_user)):
+    """Remove someone from a team. Admin or the team's course owner.
+
+    They lose the team's courses from their shelf; anything they generated stays in the
+    team's history, because it is the team's work and deleting the record would falsify
+    it.
+    """
+    team = _require_team_manager(user, team_id)
+    target = email.strip().lower()
+    _no_orphaning_the_owner(team, target)
+    db.remove_member(int(team_id), target)
+    return {"ok": True, "members": sorted(
+        next((t.get("members") or [] for t in db.teams() if t["id"] == int(team_id)), []))}
 
 
 @app.post("/api/admin/teams/{team_id}/course")
 def admin_set_course(team_id: int, body: CourseBody, user: dict = Depends(require_admin)):
     db.set_team_course(team_id, body.course)
+    # The team's owner owns its course. Claimed rather than overridden here: setting a
+    # team's course is a correction (usually a spelling), and it must not quietly take a
+    # course away from whoever created it.
+    owner = db.team_owner(int(team_id))
+    if owner and (body.course or "").strip():
+        db.claim_course(body.course.strip(), owner)
     return {"ok": True}
 
 

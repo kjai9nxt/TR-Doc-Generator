@@ -62,8 +62,10 @@ const ROUTES = {
     courses: COURSES,
     workspaces: { individual: { courses: ['Operating Systems'] }, teams: [
       { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
+        owner_email: 'dev@nxtwave.co.in', can_manage: true,
         members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'], unknown_courses: [] },
       { id: 5, name: 'Networks Team', courses: ['Computer Networks'],
+        owner_email: 'someone.else@nxtwave.co.in', can_manage: false,
         members: ['dev@nxtwave.co.in'], unknown_courses: [] },
     ] },
     curriculum: { rows: ROWS, imported_from: 'https://docs.google.com/spreadsheets/d/X/edit', pending: 0 },
@@ -79,6 +81,7 @@ const ROUTES = {
   '/workspaces': { individual: { courses: ['Operating Systems'] },
                    teams: [
                      { id: 4, name: 'OS Curriculum Team', courses: ['Operating Systems', 'Computer Networks'],
+                       owner_email: 'dev@nxtwave.co.in', can_manage: true,
                        members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'], unknown_courses: [] },
                      // A second team that does NOT own the open course — that is what
                      // makes the "share this course with a team" control applicable.
@@ -100,8 +103,13 @@ const ROUTES = {
       summary: { runs: 2, total_runs: 2, approved_docs: 2, gates_passed_docs: 1 } }],
       summary: { total_runs: 2, approved_docs: 2, gates_passed_docs: 1,
                  total_cost: 1.2, total_tokens: 400000 } },
+  // can_manage / owner_email are decided by the SERVER — the team page offers the
+  // add-and-remove-member controls off can_manage, and a client must never be the one
+  // deciding what it is allowed to do. Here the signed-in user IS the owner, which is
+  // the case those controls exist for.
   '/my/teams': { teams: [{ team: { id: 4, name: 'OS Curriculum Team', course: 'Operating Systems',
                                   courses: ['Operating Systems', 'Computer Networks'],
+                                  owner_email: 'dev@nxtwave.co.in', can_manage: true,
                                   members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'] },
                            members: ['dev@nxtwave.co.in', 'colleague@nxtwave.co.in'],
                            contributors: ['dev@nxtwave.co.in'],
@@ -121,9 +129,25 @@ const ROUTES = {
                                   title: 'Spooling, Buffering & Disk Structure',
                                   status: 'reviewing', chunks_done: 2, total: 6,
                                   updated: '2026-08-17T09:00:00Z' }] },
+  // A run in REVIEW, with real chunks — the three controls the reviewer drives from here
+  // (split a slide, make a note stick to the following chunks, create the final doc) are
+  // otherwise unreachable from this harness. `slides` is what the server sends so the
+  // split picker can name a slide without parsing it back out of the markdown.
   '/guided/g31': { status: 'reviewing', session_no: 31,
                    session_title: 'Spooling, Buffering & Disk Structure',
-                   total: 6, index: 2, labels: ['Opening'], chunks: [], logs: [] },
+                   total: 3, index: 3,
+                   labels: ['Opening', 'Takeaway 1', 'Takeaway 2'],
+                   standing_notes: [], logs: [],
+                   chunks: [
+                     { label: 'Opening (recap + agenda)', markdown: '## RECAP', repetition: [], slides: [] },
+                     { label: 'Key takeaway 1: Buffering', repetition: [],
+                       markdown: '### Slide 1: Buffering Basics\n\nText.',
+                       slides: [{ n: 1, title: 'Buffering Basics' },
+                                { n: 2, title: 'Double Buffering' }] },
+                     { label: 'Key takeaway 2: Spooling', repetition: [],
+                       markdown: '### Slide 3: Spooling\n\nText.',
+                       slides: [{ n: 3, title: 'Spooling' }] },
+                   ] },
   '/dashboard': { courses: [], summary: {} },
   '/template-guide': { markdown: '# Sheet template\n\nColumns…' },
 }
@@ -135,6 +159,10 @@ const calls = []
 // insert — would be untestable from the UI.
 let SERVER_ROWS = ROWS.map((r) => ({ ...r }))
 const SAVED = []      // rows the fake server was asked to persist
+const DELETED = []    // courses the fake server was asked to delete, in order
+const REGENS = []     // {index, reason, apply_to_following} the review panel posted
+const SPLITS = []     // {index, slide_n} the review panel posted
+const FINALIZED = []  // one entry per create-final-doc request
 function route(url, opts) {
   const p = String(url).replace(/^\/api/, '').split('?')[0]
   calls.push(p)
@@ -170,6 +198,41 @@ function route(url, opts) {
     SERVER_ROWS.sort((a, b) => a.session_no - b.session_no)
     return { ok: true, removed: no, shifted, rows: SERVER_ROWS }
   }
+  // DELETING A COURSE, answered the way the real server does: the first request refuses
+  // with a 409 that NAMES the teams sharing the course, and only an explicit second one
+  // (detach_teams=true) goes ahead. That two-step is the whole behaviour under test — a
+  // static stub could not tell the two calls apart.
+  if (p === '/courses' && opts?.method === 'DELETE') {
+    if (!/detach_teams=true/.test(String(url))) {
+      return { __status: 409, __body: { detail: {
+        message: "'Operating Systems' is shared with OS Curriculum Team.",
+        kind: 'course_shared', teams: [{ id: 4, name: 'OS Curriculum Team' }] } } }
+    }
+    DELETED.push('Operating Systems')
+    return { ok: true, deleted: 'Operating Systems', sessions_removed: 34,
+             teams_detached: [{ id: 4, name: 'OS Curriculum Team' }],
+             decks_cleared: [], history_kept: true, course: null, courses: [] }
+  }
+  // The guided review actions. Each records what it was asked for — which is the whole
+  // question here: does the panel send the reviewer's choice, or quietly drop it?
+  if (p === '/guided/g31/regenerate') {
+    REGENS.push(JSON.parse(opts?.body || '{}'))
+    return { ok: true, apply_to_following: !!JSON.parse(opts?.body || '{}').apply_to_following }
+  }
+  if (p === '/guided/g31/split') {
+    const b = JSON.parse(opts?.body || '{}')
+    SPLITS.push(b)
+    // The real endpoint answers with the whole updated view, because renumbering touches
+    // the later chunks too — so the stub does the same, one slide longer.
+    const v = JSON.parse(JSON.stringify(ROUTES['/guided/g31']))
+    v.chunks[1].slides = [{ n: 1, title: 'Buffering Basics' },
+                          { n: 2, title: 'Buffering Basics (continued)' },
+                          { n: 3, title: 'Double Buffering' }]
+    v.chunks[2].slides = [{ n: 4, title: 'Spooling' }]
+    v.chunks[2].markdown = '### Slide 4: Spooling\n\nText.'
+    return v
+  }
+  if (p === '/guided/g31/finalize') { FINALIZED.push(1); return { ok: true } }
   if (p === '/curriculum') return { ...ROUTES[p], rows: SERVER_ROWS }
   if (p in ROUTES) return ROUTES[p]
   return {}
@@ -192,10 +255,18 @@ global.requestAnimationFrame = (cb) => setTimeout(cb, 0)
 global.cancelAnimationFrame = clearTimeout
 global.localStorage = window.localStorage
 global.IS_REACT_ACT_ENVIRONMENT = true
-global.fetch = async (url, opts) => ({
-  ok: true, status: 200, headers: { get: () => '' },
-  json: async () => route(url, opts), blob: async () => ({}),
-})
+global.fetch = async (url, opts) => {
+  const r = route(url, opts)
+  // A route may answer with a FAILURE. Every response used to be 200/ok, which made any
+  // error branch in the app — the shared-course confirmation, for one — unreachable from
+  // this harness however carefully it was written.
+  if (r && r.__status) {
+    return { ok: false, status: r.__status, headers: { get: () => '' },
+             json: async () => r.__body, blob: async () => ({}) }
+  }
+  return { ok: true, status: 200, headers: { get: () => '' },
+           json: async () => r, blob: async () => ({}) }
+}
 
 // ---- bundle the real App ---------------------------------------------------
 const out = await esbuild.build({
@@ -330,10 +401,34 @@ await click(byLabel('Team'))
 check('Team shows the team name', text().includes('OS Curriculum Team'))
 check('…its members', text().includes('colleague@nxtwave.co.in'))
 check('…and every course it owns', text().includes('Computer Networks'))
+// Membership used to be admin-only in both directions, so the panel could only point
+// at /admin. The team's COURSE OWNER can do it themselves now, and this user is one.
+check('the course owner is marked on the member list', $('.mtag').length === 1)
+check('…and is told they can manage the team',
+      text().includes("this team's course owner"))
+check('an add-member control is offered', $('input').some(
+      (i) => i.placeholder?.includes('colleague@nxtwave.co.in')))
+check('a remove control is offered for the other member',
+      $('.mx').length === 1)
+check('…but not for the owner themselves — reassigning is the admin\'s call',
+      $('.memberchip.owner .mx').length === 0)
 
 await click(byLabel('History'))
 check('team history shows a COLLEAGUE\'s doc, not just mine',
       text().includes('File Systems') && text().includes('colleague@nxtwave.co.in'))
+
+console.log('\n== a team you do NOT own offers no member controls ==')
+// Networks Team is absent from /my/teams, so this ALSO exercises the lighter
+// `activeTeamInfo` fallback the panel renders from while the heavier call is in flight —
+// which is where can_manage would be easiest to lose.
+await click($('.wsopt').find((b) => b.textContent.includes('Networks Team')))
+await click(byLabel('Team'))
+check('the panel still renders from the workspace record', text().includes('Networks Team'))
+check('no add-member control', !$('input').some(
+      (i) => i.placeholder?.includes('colleague@nxtwave.co.in')))
+check('no remove controls', $('.mx').length === 0)
+check('…and it names who to ask instead',
+      text().includes('someone.else@nxtwave.co.in'))
 
 const indWs = $('.wsopt').find((b) => b.textContent.includes('Individual'))
 await click(indWs)
@@ -351,6 +446,85 @@ check('the panel names the session the RUN is for',
 check('…and the doc it will produce is stated when it differs from the picker',
       $('.runhead.mismatch').length === 0 || text().includes('will produce that document'))
 
+console.log('\n== a reviewer note can be made to stick to the following chunks ==')
+// Most notes are about the DOCUMENT, not the one chunk in front of you. Applying one used
+// to mean retyping it into every remaining chunk in turn, waiting for each.
+const chunkPanels = () => $('.review-chunk')
+check('the chunks are listed for review', chunkPanels().length === 3,
+      `got ${chunkPanels().length}`)
+await click($('button').filter((b) => b.textContent.includes('Regenerate…'))[1])
+check('the reason box opens', text().includes('Why regenerate?'))
+const stickBox = $('.checkline input')[0]
+check('…offering to apply the note to every chunk after this one', stickBox !== undefined)
+check('…and saying how many that is', text().includes('remaining 1 chunk(s)'),
+      text().replace(/\s+/g, ' ').match(/.{0,60}remaining.{0,40}/)?.[0])
+const reasonBox = $('textarea').find((t) => t.placeholder?.includes('analogy concrete'))
+await act(async () => {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
+  setter.call(reasonBox, 'Drop every analogy.')
+  reasonBox.dispatchEvent(new window.Event('input', { bubbles: true }))
+})
+await click(stickBox)
+await click($('button').find((b) => b.textContent.trim() === 'Regenerate'))
+check('the note is sent', REGENS.length === 1, JSON.stringify(REGENS))
+check('…with the reviewer\'s words', REGENS[0]?.reason === 'Drop every analogy.',
+      JSON.stringify(REGENS[0]))
+check('…and with the choice to apply it forward', REGENS[0]?.apply_to_following === true,
+      JSON.stringify(REGENS[0]))
+
+console.log('\n== the last chunk is not offered the choice — there is nothing after it ==')
+await click($('button').filter((b) => b.textContent.includes('Regenerate…')).slice(-1)[0])
+check('no apply-forward tick on the final chunk', $('.checkline input').length === 0,
+      `got ${$('.checkline input').length}`)
+await click($('button').find((b) => b.textContent.trim() === 'Cancel'))
+
+console.log('\n== a slide that carries too much can be split in two ==')
+const splitBtn = $('button').filter((b) => b.textContent.includes('Split a slide'))
+check('splitting is offered on a chunk that has slides', splitBtn.length === 2,
+      `got ${splitBtn.length}`)
+check('…and NOT on the opening, which has none',
+      chunkPanels()[0].textContent.includes('Split a slide') === false)
+await click(splitBtn[0])
+const slideSel = $('select').find((sl) => Array.from(sl.options)
+  .some((o) => o.textContent.includes('Buffering Basics')))
+check('the slides of that chunk are offered by name', slideSel !== undefined)
+check('…all of them', Array.from(slideSel.options).filter((o) => o.value).length === 2,
+      JSON.stringify(Array.from(slideSel.options).map((o) => o.textContent)))
+check('…and it says the later slides are renumbered too',
+      text().includes('renumbered automatically'))
+await act(async () => {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set
+  setter.call(slideSel, '2')
+  slideSel.dispatchEvent(new window.Event('change', { bubbles: true }))
+})
+await click($('button').find((b) => b.textContent.includes('Split into 2 slides')))
+check('the split is sent', SPLITS.length === 1, JSON.stringify(SPLITS))
+check('…naming the chunk and the slide', SPLITS[0]?.index === 1 && SPLITS[0]?.slide_n === 2,
+      JSON.stringify(SPLITS[0]))
+check('the reply\'s renumbering reaches the screen — a LATER chunk moved',
+      text().includes('Slide 4: Spooling'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}Spooling.{0,20}/)?.[0])
+
+console.log('\n== Create final TR Doc says it is working ==')
+// The status stays 'reviewing' until the next poll lands, and assembling takes a minute
+// or two — a button that merely greys out reads as a click that did nothing.
+for (const b of $('button').filter((x) => x.textContent.includes('Approve'))) await click(b)
+const finalBtn = () => $('button.bigfinal')[0]
+check('the final-doc button is enabled once every chunk is approved',
+      finalBtn() && !finalBtn().disabled,
+      `disabled=${finalBtn()?.disabled}`)
+check('…and reads plainly before it is pressed',
+      finalBtn().textContent.includes('Create final TR Doc'))
+await click(finalBtn())
+check('the request went', FINALIZED.length === 1, JSON.stringify(FINALIZED))
+check('…and the button now says it is working',
+      finalBtn().textContent.includes('Creating the final doc'),
+      finalBtn().textContent)
+check('…with a spinner on it', finalBtn().querySelector('.spinner') !== null)
+check('…and cannot be pressed twice', finalBtn().disabled)
+check('…and it says how long this takes',
+      text().includes('Assembling, grading and rendering'))
+
 console.log('\n== the budget lives in Settings, not in the curriculum actions ==')
 await click(byLabel('Curriculum'))
 check('no budget control among the curriculum actions',
@@ -362,6 +536,33 @@ check('Settings shows the course length budget',
 check('…and is where a single session gets its own budget',
       text().includes('Sessions that need something different'))
 check('…and states what is currently applied', text().includes('Currently applied'))
+
+console.log('\n== a course you own can be deleted, in two steps ==')
+// A course imported and no longer needed had to stay on the shelf for ever. The user
+// signed in here CREATED this one (courses[0].mine), so it is theirs to remove.
+const delBtn = $('button').find((b) => b.textContent.includes('Delete “Operating Systems”'))
+check('the delete control is offered for a course you created', delBtn !== undefined)
+check('…and it warns that a team is working from it',
+      text().includes('OS Curriculum Team'))
+await click(delBtn)
+check('one click only ASKS', text().includes('Delete “Operating Systems” for good?'))
+check('…and says the finished documents are kept',
+      text().includes('Documents already generated are kept'))
+check('…and nothing has been deleted yet', DELETED.length === 0, JSON.stringify(DELETED))
+const keepBtn = $('button').find((b) => b.textContent.includes('Keep it'))
+check('…and backing out is offered', keepBtn !== undefined)
+await click(keepBtn)
+check('backing out closes it', !text().includes('for good?'))
+check('…and still nothing was deleted', DELETED.length === 0, JSON.stringify(DELETED))
+// Round two: confirm. The first request 409s with the team list, the confirmation names
+// them, and the second request carries detach_teams.
+await click($('button').find((b) => b.textContent.includes('Delete “Operating Systems”')))
+await click($('button').find((b) => /Yes/.test(b.textContent)))
+check('the confirmation names the team the course is shared with',
+      text().includes('OS Curriculum Team'), text().replace(/\s+/g, ' ').slice(0, 200))
+await click($('button').find((b) => /Yes/.test(b.textContent)))
+check('confirming deletes it', DELETED.length === 1, JSON.stringify(DELETED))
+
 await click(byLabel('Curriculum'))
 check('the table is back to its seven columns',
       $('.curhead span').length === 7, `got ${$('.curhead span').length}`)
@@ -463,9 +664,18 @@ check('the clash is reported', text().includes('share session number'))
 const saveBtn = $('button').find((b) => b.textContent.includes('Save changes'))
 check('…and Save is blocked until it is resolved', saveBtn.disabled)
 
+console.log('\n== three controls are gone from the curriculum toolbar ==')
+// Removed on request. Asserted rather than assumed: each was a live control, and
+// "I removed it" is exactly the kind of claim a build cannot check.
+check('no "Re-check all decks"', !text().includes('Re-check all decks'))
+check('no "shared with <team>" chip', !text().includes('shared with OS Curriculum Team'))
+check('no re-import-from-sheet button',
+      !text().includes('Re-import this course from its sheet')
+      && !text().includes('Import rows from a sheet'))
+check('…and the actions that stayed are still there',
+      text().includes('Save changes') && text().includes('Fetch new decks'))
+
 console.log('\n== sharing a course with a team ==')
-check('the team that already owns it is shown, not offered again',
-      text().includes('shared with OS Curriculum Team'))
 check('a team that does NOT own it is offered', text().includes('Share with'))
 const shareSel = $('.sharebox select')[0]
 check('…and it is the only one listed',

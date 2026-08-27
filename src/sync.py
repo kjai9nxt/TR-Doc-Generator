@@ -255,6 +255,19 @@ def write_course_cache(course: str | None = None, rows: list | None = None) -> i
     return len(out)
 
 
+def clear_course_cache() -> None:
+    """Empty the on-disk projection.
+
+    Needed when the LAST course is deleted. This file is keyed by session number alone
+    and records no course name, so nothing downstream can tell whose projection it is —
+    and the offline session loader falls back to it whenever the database holds no
+    curriculum at all. Left behind, the deleted course's 34 sessions went on being
+    offered in the generate dropdown of an instance that no longer had a course.
+    """
+    KB.mkdir(parents=True, exist_ok=True)
+    COURSE_CACHE.write_text("{}", encoding="utf-8")
+
+
 # --------------------------------------------------------------------------- #
 # 3. INGEST — fetch ONLY the decks that are new, changed, or explicitly forced.
 # --------------------------------------------------------------------------- #

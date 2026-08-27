@@ -51,6 +51,10 @@ async function req(path, opts = {}) {
     const err = new Error(msg)
     err.kind = detail.kind
     err.status = res.status
+    // The whole detail object, not just its message: a refusal can carry the facts the
+    // caller needs to act on it — the teams a shared course is on, for instance — and
+    // those were being thrown away with the response.
+    err.detail = detail
     throw err
   }
   return data
@@ -87,6 +91,24 @@ export const api = {
   // team's from the moment it exists rather than the creator's alone.
   teamAddCourse: (team_id, course) =>
     req(`/teams/${team_id}/courses`, { method: 'POST', body: JSON.stringify({ course }) }),
+  // MEMBERSHIP, delegated to the team's course owner. Every add and remove used to go
+  // through the admin account, which made one person the bottleneck for a routine act.
+  // The server allows these for an admin or the team's owner and nobody else.
+  teamAddMember: (team_id, email) =>
+    req(`/teams/${team_id}/members`, { method: 'POST', body: JSON.stringify({ email }) }),
+  teamRemoveMember: (team_id, email) =>
+    req(`/teams/${team_id}/members/${encodeURIComponent(email)}`, { method: 'DELETE' }),
+  // Stop sharing a course with a team, WITHOUT deleting it. Admin or the team's owner.
+  teamRemoveCourse: (team_id, course) =>
+    req(`/teams/${team_id}/courses${qs({ course })}`, { method: 'DELETE' }),
+
+  // Delete a course you own. The first call answers 409 with the teams it is shared
+  // with, so the confirmation the user sees names them; detach_teams: true goes ahead.
+  // Finished documents and their costs are KEPT either way — deleting the record would
+  // not un-generate the docs, only make the history lie.
+  deleteCourse: (course, detach_teams = false) =>
+    req(`/courses${qs({ course, detach_teams: detach_teams ? 'true' : undefined })}`,
+        { method: 'DELETE' }),
   selectCourse: (course, course_type) =>
     req('/courses/select', { method: 'POST', body: JSON.stringify({ course, course_type }) }),
 
@@ -153,8 +175,17 @@ export const api = {
   // Unfinished runs for the signed-in USER, from the server's checkpoints — so the
   // resume offer survives a different browser, cleared site data or a new machine.
   guidedResumable: () => req('/guided/resumable'),
-  guidedRegenerate: (id, index, reason) =>
-    req(`/guided/${id}/regenerate`, { method: 'POST', body: JSON.stringify({ index, reason }) }),
+  // apply_to_following carries the note into every chunk AFTER this one as well, and
+  // keeps it as a STANDING instruction so a later redraft of any of them still obeys it.
+  guidedRegenerate: (id, index, reason, apply_to_following = false) =>
+    req(`/guided/${id}/regenerate`, { method: 'POST',
+        body: JSON.stringify({ index, reason, apply_to_following }) }),
+  // Split one slide in two. Deterministic, no model call: the content is divided, not
+  // rewritten, and every slide after it — in this chunk and the later ones — is
+  // renumbered. Returns the fresh guided view.
+  guidedSplitSlide: (id, index, slide_n) =>
+    req(`/guided/${id}/split`, { method: 'POST',
+        body: JSON.stringify({ index, slide_n }) }),
   guidedFinalize: (id) => req(`/guided/${id}/finalize`, { method: 'POST' }),
   // Discarding is a decision about the RUN, recorded on the server — forgetting it only
   // in this browser meant the next page load fetched it straight back.

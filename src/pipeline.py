@@ -433,7 +433,8 @@ def _too_long(doc: dict, report: dict) -> list[str]:
 
 def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
              enforce_time: bool = True, on_event=None, run_id: str | None = None,
-             budgets: dict | None = None) -> dict:
+             budgets: dict | None = None,
+             standing_notes: list | None = None) -> dict:
     """Grade an assembled guided doc and render the .docx + .md + grade report.
 
     This is THE way a TR doc is produced: the chunks were generated one per key
@@ -453,7 +454,12 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
 
     enforce_time: when the 40-minute limit is OFF, the recording-time dimension is
     dropped from the rubric and the budget does not gate acceptance (the estimate is
-    still reported)."""
+    still reported).
+
+    standing_notes: instructions the reviewer marked "apply to every chunk after this
+    one" during review. The repair below EDITS SLIDES THE REVIEWER APPROVED, so it has to
+    know them — otherwise a trim pass can reinstate exactly what they had removed
+    everywhere, and the only sign of it is in the finished document."""
     def log(msg: str):
         _log(msg)
         if on_event:
@@ -499,9 +505,14 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         rnd += 1
         log(f"Repairing {', '.join(over)} — these are properties of the assembled "
             f"document that no single chunk review could see (repair {rnd}/{max_repair}, "
-            f"~1-2 min). Coverage is preserved; ritual and off-agenda material are cut.")
+            f"~1-2 min). Coverage is preserved; ritual and off-agenda material are cut."
+            + (f" Your {len(standing_notes)} standing instruction(s) apply to this pass "
+               f"too." if standing_notes else ""))
         base = (context_builder.build_user_prompt(prev, cur, nxt)
-                + context_builder.time_mode_block(enforce_time, budgets=budgets))
+                + context_builder.time_mode_block(enforce_time, budgets=budgets)
+                # The reviewer's rules travel with the repair, so what it rewrites is
+                # rewritten under them. See context_builder.standing_notes_block.
+                + context_builder.standing_notes_block(standing_notes))
         doc_json = json.dumps(doc, ensure_ascii=False)
         # PATCH FIRST. A repair names a handful of defects; asking for the corrected
         # DOCUMENT back costs an output token per word of a document a human already

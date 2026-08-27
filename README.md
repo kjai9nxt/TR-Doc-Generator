@@ -139,8 +139,16 @@ A browser front end covering the whole flow:
 1. **Connect your sheet** — paste the curriculum Google Sheet link; the template is
    validated (mismatches are shown and rejected) and the decks are synced.
 2. **Generate all chunks** — pick a session; one chunk is generated per key takeaway.
-3. **Review each chunk** — approve it, or regenerate with a reason (the reason is also
-   distilled into a durable rule for future sessions).
+3. **Review each chunk** — approve it, or change it:
+   - **Regenerate with a reason** (the reason is also distilled into a durable rule for
+     future sessions). Tick **"apply this to every chunk after this one too"** and the
+     note is carried into the remaining chunks AND kept as a *standing instruction*: a
+     chunk redrafted later for some other reason still obeys it, and so does the repair
+     pass at finalize. Most review notes are about the document rather than one chunk.
+   - **Split a slide in two** when one is carrying too much. Deterministic — the slide's
+     content is divided, not rewritten, so nothing already approved can drift, and no
+     model call is made. Every slide after it is renumbered, in that chunk and in all the
+     later ones, along with the coverage-map references.
 4. **Create the final TR doc** — see the recording-time estimate, rubric score, and
    **download the Word `.docx`** (with an in-page preview).
 

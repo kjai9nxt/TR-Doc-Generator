@@ -180,6 +180,228 @@ def apply_opening_patch(prev_fragment: dict, patch: dict) -> tuple[dict, dict]:
     }
 
 
+# --------------------------------------------------------------------------- #
+# SPLITTING ONE SLIDE IN TWO — a reviewer's structural edit, not the model's
+# --------------------------------------------------------------------------- #
+# A slide carrying too much for one slide is the commonest structural note a reviewer
+# has, and until now the only way to act on it was to regenerate the chunk with "split
+# this" and hope. That is the wrong tool twice over: it costs a model call to move
+# content that already exists, and a re-draft is free to rewrite the slides the reviewer
+# had already accepted.
+#
+# So the split is DETERMINISTIC and local. The content the reviewer approved is moved,
+# not rewritten — no model call, nothing to drift. The second slide inherits the fields
+# every slide is required to carry (heading, subheading, visual guidance, speaker notes)
+# so the result still satisfies the per-slide gates, and the reviewer can polish it with
+# an ordinary Regenerate afterwards if the inherited wording does not fit.
+#
+# Two gates decide the details, and both are honoured here rather than discovered at
+# finalize:
+#   · analogy is required iff role == concept_intro and BANNED on every other role, and
+#     the same analogy may not appear on two slides — so the analogy stays on the first
+#     half and the second half is given a non-intro role;
+#   · a title is capped at constraints.headings.title_max_words, so " (continued)" is
+#     appended only after trimming the title to fit.
+_CONTINUED = "(continued)"
+
+
+def _sentences(text: str) -> list[str]:
+    """Split prose into sentences, keeping their terminators."""
+    import re
+    parts = re.findall(r"[^.!?]+[.!?]+|\S[^.!?]*$", str(text or "").strip())
+    return [p.strip() for p in parts if p.strip()]
+
+
+def _split_content(content: list, *, min_bullet_items: int = 3) -> tuple[list, list]:
+    """Divide one slide's ordered content blocks into (first half, second half).
+
+    Raises PatchError with a SPECIFIC reason when it cannot be divided — splitting a
+    slide into a full half and an empty one is not a split, and neither is one that
+    leaves a two-item bullet list the deck gate will reject at finalize. Saying which is
+    the difference between a reviewer who knows what to do next and one who does not.
+
+    Where the slide has several blocks, the PROSE is divided too rather than handed
+    wholesale to one half: the document is gated on the share of slides carrying a text
+    block (constraints.content.min_slides_with_text_share), so a continuation made
+    entirely of bullets drags that share down for a structural edit that was meant to be
+    neutral.
+    """
+    blocks = [b for b in (content or []) if isinstance(b, dict)]
+    if not blocks:
+        raise PatchError("this slide has no content to divide.")
+
+    if len(blocks) == 1:
+        b = blocks[0]
+        kind = b.get("type")
+        if kind == "bullets":
+            items = [i for i in (b.get("items") or []) if str(i).strip()]
+            need = 2 * max(1, int(min_bullet_items or 1))
+            if len(items) < need:
+                raise PatchError(
+                    f"this slide is a single list of {len(items)} item(s), and every list "
+                    f"must keep at least {min_bullet_items} — so splitting one needs "
+                    f"{need}. Regenerate the chunk with a note asking for this point to be "
+                    f"taught across two slides instead.")
+            half = (len(items) + 1) // 2
+            return [{**b, "items": items[:half]}], [{**b, "items": items[half:]}]
+        if kind == "table":
+            rows = list(b.get("rows") or [])
+            if len(rows) < 2:
+                raise PatchError(
+                    "this slide is a single table with one row — there is nothing to "
+                    "divide. Regenerate the chunk with a note asking for the point to be "
+                    "taught across two slides instead.")
+            half = (len(rows) + 1) // 2
+            # Both halves keep the header columns — a table without them is unreadable.
+            return [{**b, "rows": rows[:half]}], [{**b, "rows": rows[half:]}]
+        if kind == "text":
+            sents = _sentences(b.get("text"))
+            if len(sents) < 2:
+                raise PatchError(
+                    "this slide is a single sentence of prose — there is nothing to "
+                    "divide. Regenerate the chunk with a note asking for the point to be "
+                    "taught across two slides instead.")
+            half = (len(sents) + 1) // 2
+            return ([{**b, "text": " ".join(sents[:half])}],
+                    [{**b, "text": " ".join(sents[half:])}])
+        raise PatchError(
+            f"this slide's content is a single '{kind}' block, which cannot be divided. "
+            f"Regenerate the chunk with a note asking for the point to be taught across "
+            f"two slides instead.")
+
+    # SEVERAL BLOCKS. Divide them, and divide the prose across both halves when it can be
+    # divided, so neither slide ends up without any.
+    text_i = next((i for i, b in enumerate(blocks)
+                   if b.get("type") == "text" and len(_sentences(b.get("text"))) >= 2),
+                  None)
+    others = [i for i in range(len(blocks)) if i != text_i]
+    to_second = set(others[(len(others) + 1) // 2:])
+    first, second = [], []
+    for i, b in enumerate(blocks):
+        if i == text_i:
+            sents = _sentences(b.get("text"))
+            half = (len(sents) + 1) // 2
+            first.append({**b, "text": " ".join(sents[:half])})
+            second.append({**b, "text": " ".join(sents[half:])})
+        elif i in to_second:
+            second.append(b)
+        else:
+            first.append(b)
+    if not first or not second:
+        # Only reachable when there is no divisible prose AND every other block landed on
+        # one side — two blocks with an indivisible text block, say.
+        half = (len(blocks) + 1) // 2
+        first, second = blocks[:half], blocks[half:]
+    return first, second
+
+
+def _continued_title(title: str, max_words: int) -> str:
+    """`title` + " (continued)", trimmed to the title word cap.
+
+    The cap is a hard gate, so appending a word to an already-full title would fail the
+    run at finalize for a structural edit the reviewer made by hand.
+    """
+    words = [w for w in str(title or "").split() if w]
+    room = max(1, int(max_words) - 1)          # one word for "(continued)"
+    return " ".join(words[:room] + [_CONTINUED]) if words else _CONTINUED
+
+
+def _next_free_n(slides: list) -> int:
+    """A slide number not currently used in this section.
+
+    The continuation needs one straight away, not None: the coverage map has to be able
+    to point AT it (a slide nothing points at fails the "teaches nothing the agenda
+    promised" gate), and the caller's document-wide renumber maps old numbers to new ones
+    positionally — so two slides sharing a number, or one carrying None, would collapse
+    two coverage references into one.
+    """
+    used = []
+    for s in slides:
+        try:
+            used.append(int(s.get("n")))
+        except (TypeError, ValueError):
+            continue
+    return (max(used) + 1) if used else 1
+
+
+def split_slide(prev_fragment: dict, slide_n, *, title_max_words: int = 8,
+                min_bullet_items: int = 3, intro_role: str = "concept_intro",
+                continuation_role: str = "mechanism") -> tuple[dict, dict]:
+    """Split the slide numbered `slide_n` into two. Returns (new_fragment, summary).
+
+    Raises PatchError, with a reason worth reading, when the slide is not in this chunk
+    or carries too little content to divide.
+
+    FINAL numbering is left to the caller: only it can see every chunk at once, and the
+    whole point of this edit is that the slides after it — in the later chunks too — are
+    renumbered. What happens here is provisional but well-formed: the continuation gets a
+    number of its own so the coverage map can reference it.
+    """
+    fragment = copy.deepcopy(prev_fragment)
+    section = _section_of(fragment)
+    slides = section.get("slides")
+    if not isinstance(slides, list) or not slides:
+        raise PatchError("this chunk has no slides to split")
+    pos = next((i for i, s in enumerate(slides)
+                if isinstance(s, dict) and str(s.get("n")) == str(slide_n)), None)
+    if pos is None:
+        raise PatchError(
+            f"slide {slide_n!r} is not in this chunk (it has "
+            f"{', '.join(str(s.get('n')) for s in slides)})")
+
+    original = slides[pos]
+    first_content, second_content = _split_content(
+        original.get("content"), min_bullet_items=min_bullet_items)
+    new_n = _next_free_n(slides)
+
+    first = copy.deepcopy(original)
+    first["content"] = first_content
+
+    second = copy.deepcopy(original)
+    second["content"] = second_content
+    second["n"] = new_n
+    second["title"] = _continued_title(original.get("title"), title_max_words)
+    # The analogy stays on the first half: it is required only on a first-introduction
+    # slide, banned on every other role, and the same analogy on two slides is its own
+    # gate failure. The continuation is therefore given a non-intro role and no analogy.
+    second.pop("analogy", None)
+    if str(original.get("role") or "").strip() == intro_role:
+        second["role"] = continuation_role
+
+    slides[pos:pos + 1] = [first, second]
+
+    # THE COVERAGE MAP has to point at the new slide too. A slide nothing in the map
+    # references fails the "teaches nothing the coverage map points at, so nothing on the
+    # agenda promised it" gate — which is what a bare insertion produces. It is the same
+    # sub-concept, now taught across two slides, so it keeps its name.
+    cov_added = 0
+    cov = fragment.get("coverage")
+    if isinstance(cov, dict) and isinstance(cov.get("sub_concepts"), list):
+        rebuilt = []
+        for sub in cov["sub_concepts"]:
+            rebuilt.append(sub)
+            if isinstance(sub, dict) and str(sub.get("slide")) == str(slide_n):
+                rebuilt.append({**sub, "slide": new_n})
+                cov_added += 1
+        cov["sub_concepts"] = rebuilt
+
+    inherited = [f for f in ("heading", "subheading", "visual_guidance", "speaker_notes")
+                 if str(second.get(f) or "").strip()]
+    prose_on_both = all(any(b.get("type") == "text" for b in half)
+                        for half in (first_content, second_content))
+    return fragment, {
+        "mode": "split",
+        "split_slide": slide_n,
+        "slides_total": len(slides),
+        "role_changed": second.get("role") if second.get("role") != original.get("role") else None,
+        "analogy_kept_on_first": bool(str(original.get("analogy") or "").strip()),
+        "inherited_fields": inherited,
+        "coverage_refs_added": cov_added,
+        "prose_on_both_halves": prose_on_both,
+        "note": f"slide {slide_n} split into two; its content was divided, not rewritten",
+    }
+
+
 def apply(kind: str, prev_fragment: dict, patch: dict) -> tuple[dict, dict]:
     """Dispatch on chunk kind ("opening" | "section")."""
     if kind == "opening":

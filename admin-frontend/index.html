@@ -272,23 +272,38 @@ async function viewTeams(){
   let known = []
   try { known = ((await api('/courses')).courses || []).map(c => c.name) } catch (e) {}
   const clist = `<datalist id="knowncourses">${known.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>`
+  // Every team names a COURSE OWNER. That person owns the team's course and — this is
+  // the point — can add and remove the team's members themselves. Membership used to be
+  // admin-only in both directions, which made one account the bottleneck for a routine
+  // act; with dozens of teams the practical result is that people never get added.
+  // Assigning the owner stays here, with the admin.
   return `${clist}<div class="card"><h2>Create team</h2>
     <div class="row">
       <input id="tname" placeholder="Team name" />
       <input id="tcourse" list="knowncourses" placeholder="Course (pick one the agent holds)" />
+      <input id="towner" list="knownusers" placeholder="Course owner (required)" style="width:230px" />
       <button class="btn primary" onclick="createTeam()">Create</button>
     </div>
+    <datalist id="knownusers">${opts}</datalist>
     <div class="muted" style="margin-top:6px">Members of a team see that team's course in
-      the agent — its curriculum and everything the team has generated for it. The name
-      must match the course exactly, so choose from the list where you can.</div></div>
+      the agent — its curriculum and everything the team has generated for it. The course
+      name must match exactly, so choose from the list where you can.
+      <br/><b>The course owner is required.</b> They own that course, and they can add and
+      remove this team's members without going through an admin. They are added as a
+      member automatically. Only you can (re)assign them.</div></div>
    ${d.teams.map(t=>`<div class="card">
       <div class="row"><b>${esc(t.name)}</b> <span class="muted">— course:</span>
         <input id="c_${t.id}" list="knowncourses" value="${esc(t.course||'')}" style="width:180px" />
         <button class="btn sm" onclick="setCourse(${t.id})">Set course</button>
         <button class="btn sm" style="margin-left:auto" onclick="delTeam(${t.id})">Delete team</button>
       </div>
+      <div class="row" style="margin-top:6px"><span class="muted">course owner:</span>
+        ${t.owner_email ? `<b>${esc(t.owner_email)}</b>` : '<b style="color:#f0b429">none — only an admin can change this team\'s members</b>'}
+        <input id="o_${t.id}" list="knownusers" placeholder="reassign to…" style="width:230px" />
+        <button class="btn sm" onclick="setOwner(${t.id})">Set owner</button>
+      </div>
       <table style="margin-top:8px"><thead><tr><th>Members</th><th></th></tr></thead><tbody>
-       ${(t.members||[]).map(m=>`<tr><td>${esc(m)}</td><td class="r"><button class="btn sm" onclick="rmMember(${t.id},'${esc(m)}')">remove</button></td></tr>`).join('')||'<tr><td class="muted">no members</td></tr>'}
+       ${(t.members||[]).map(m=>`<tr><td>${esc(m)}${m===t.owner_email?' <span class="muted">(owner)</span>':''}</td><td class="r">${m===t.owner_email?'<span class="muted">reassign to remove</span>':`<button class="btn sm" onclick="rmMember(${t.id},'${esc(m)}')">remove</button>`}</td></tr>`).join('')||'<tr><td class="muted">no members</td></tr>'}
       </tbody></table>
       <div class="row" style="margin-top:8px"><select id="m_${t.id}">${opts}</select>
         <button class="btn sm" onclick="addMember(${t.id})">Add member</button>
@@ -297,7 +312,22 @@ async function viewTeams(){
       </div>
    </div>`).join('')||'<div class="card muted">No teams yet.</div>'}`
 }
-async function createTeam(){ const name=document.getElementById('tname').value.trim(); if(!name)return; await api('/admin/teams',{method:'POST',body:JSON.stringify({name,course:document.getElementById('tcourse').value.trim()})}); loadView() }
+async function createTeam(){
+  const name=document.getElementById('tname').value.trim()
+  const owner=document.getElementById('towner').value.trim()
+  if(!name) return alert('Name the team.')
+  // Checked here as well as on the server: the server refuses an ownerless team, and
+  // an alert beats a red box for something the form can say up front.
+  if(!owner) return alert('A team needs a course owner — they are who can add and remove its members without an admin.')
+  const r = await api('/admin/teams',{method:'POST',body:JSON.stringify({name,course:document.getElementById('tcourse').value.trim(),owner})})
+  if(r && r.replaced_owner) alert(`Note: ${r.course} was owned by ${r.replaced_owner}. It is now owned by ${r.owner}.`)
+  loadView()
+}
+async function setOwner(id){
+  const e=document.getElementById('o_'+id).value.trim()
+  if(!e) return alert('Name the new course owner.')
+  await api(`/admin/teams/${id}/owner`,{method:'POST',body:JSON.stringify({email:e})}); loadView()
+}
 async function setCourse(id){ await api(`/admin/teams/${id}/course`,{method:'POST',body:JSON.stringify({course:document.getElementById('c_'+id).value.trim()})}); loadView() }
 async function addMember(id){ await api(`/admin/teams/${id}/members`,{method:'POST',body:JSON.stringify({email:document.getElementById('m_'+id).value})}); loadView() }
 async function addMemberTyped(id){ const e=document.getElementById('me_'+id).value.trim(); if(!e)return; await api(`/admin/teams/${id}/members`,{method:'POST',body:JSON.stringify({email:e})}); loadView() }
@@ -306,6 +336,7 @@ async function delTeam(id){ if(!confirm('Delete this team?'))return; await api(`
 
 window.go=go; window.signOut=signOut; window.loadView=loadView; window.createTeam=createTeam
 window.setCourse=setCourse; window.addMember=addMember; window.addMemberTyped=addMemberTyped; window.rmMember=rmMember; window.delTeam=delTeam
+window.setOwner=setOwner
 window.UNIT=UNIT
 setTimeout(boot, 400)  // give the GIS script a moment to load
 </script>
