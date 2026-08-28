@@ -213,7 +213,11 @@ check("house style carries to a course that did not exist when it was learned",
       "repeat a paragraph's point" in fresh)
 check("…while the subject-matter rule does not", "breakpoint" not in fresh, fresh)
 check("…and it is injected with precedence over the style guide",
-      "THE REVIEWER RULE WINS" in fresh)
+      "THE LEARNED RULE WINS" in fresh)
+# …but NOT over the course's own authored brief. A rule generalised from one course was
+# cancelling another course's explicit instructions — see evals/test_course_isolation.py.
+check("…while still deferring to the course's own brief",
+      "THE COURSE BRIEF ABOVE OUTRANKS EVERYTHING HERE" in fresh)
 
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

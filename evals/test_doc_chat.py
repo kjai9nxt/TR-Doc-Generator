@@ -349,6 +349,37 @@ try:
 except HTTPException as e:
     check("an empty question is refused", e.status_code == 400)
 
+print("\n== the answer reports what it consulted, and what it read on the web ==")
+# Two different kinds of claim, kept apart on purpose. What was CONSULTED is assembled
+# by the same code that builds the pack, so every row is checkable. What was READ ON THE
+# WEB is parsed from the model's own citations — it is the model's claim about where a
+# fact came from, and it is listed so the reviewer can click it rather than take it.
+stages = []
+doc_chat.llm.complete = lambda **kw: (
+    "Three methods are standard, see [colostate](https://cs.colostate.edu/x) "
+    "and [ucsd](https://cseweb.ucsd.edu/y) and [colostate](https://cs.colostate.edu/x).")
+out = doc_chat.ask(STATE, 1, "was contiguous allocation covered before?",
+                   use_web=True, on_stage=lambda n, d: stages.append(n))
+check("the stages reported are the real transitions, in order",
+      stages == ["reading", "gathered", "asking", "done"], str(stages))
+kinds = [c["kind"] for c in out["consulted"]]
+check("the section it was asked about is listed", "section" in kinds, str(kinds))
+check("the curriculum line is listed", "curriculum" in kinds, str(kinds))
+check("the matching deck slides are listed by session and slide",
+      any(c["kind"] == "deck" and "S1 · Slide 1" in c["label"] for c in out["consulted"]),
+      str([c["label"] for c in out["consulted"]]))
+check("the course's brief is listed as in force", "brief" in kinds, str(kinds))
+check("the learned rules too", "rules" in kinds, str(kinds))
+check("web sources are pulled out of the answer", len(out["sources"]) == 2,
+      str(out["sources"]))
+check("…de-duplicated, so one page cited twice is listed once",
+      [x["url"] for x in out["sources"]]
+      == ["https://cs.colostate.edu/x", "https://cseweb.ucsd.edu/y"], str(out["sources"]))
+doc_chat.llm.complete = lambda **kw: "No web needed here."
+off = doc_chat.ask(STATE, 1, "why?", use_web=False)
+check("an answer citing nothing lists no sources", off["sources"] == [])
+check("…but still says what it looked at", len(off["consulted"]) > 0)
+
 print("\n== the endpoint accepts a whole-document question too ==")
 doc_chat.llm.complete = lambda **kw: "Because takeaway 2 owns the FAT."
 v = server.guided_ask(GID, server.AskBody(index=-1, question="why is FAT separate?",

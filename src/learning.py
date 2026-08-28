@@ -689,18 +689,45 @@ def rules_block(course: str | None = None) -> str:
     human = [r for r in rs if r.get("source") in ("regeneration", "feedback")]
     auto = [r for r in rs if r.get("source") not in ("regeneration", "feedback")]
 
+    # WHERE A RULE CAME FROM, when that is not here. A house-style rule learned on
+    # another course may be a genuine cross-course lesson or an over-generalised note
+    # about that course's subject matter — the classifier cannot always tell, and the
+    # store has examples of both. Naming the origin lets the model weigh it instead of
+    # applying a stranger's correction as though this course's reviewer had made it.
+    here = (course if course is not None else _active_course()) or ""
+
     def fmt(r):
         again = f"  [RAISED {r['hits']}× — you keep getting this wrong]" if r.get("hits", 1) > 1 else ""
-        return f"- {r['text']}{again}"
+        origin = ""
+        src_course = (r.get("course") or "").strip()
+        if src_course and here and src_course != here:
+            origin = (f"  [learned on '{src_course}', not this course — apply it only if "
+                      f"it genuinely holds here]")
+        return f"- {r['text']}{again}{origin}"
 
-    out = ["# REVIEWER-ENFORCED RULES (highest priority)",
-           "These come from corrections a human reviewer made to earlier documents in this "
-           "same course. They are REQUIREMENTS, not suggestions.",
-           "PRECEDENCE: if one of these conflicts with the style guidance or field guidance "
-           "(length caps, phrasing preferences, what to include), THE REVIEWER RULE WINS — "
-           "follow it and ignore the default. Only the numbered HARD RULES about document "
-           "STRUCTURE (cover every key takeaway, agenda count, valid JSON schema) outrank "
-           "them. Never silently drop one of these because a default said otherwise."]
+    out = ["# RULES LEARNED FROM EARLIER CORRECTIONS",
+           "These were INFERRED from corrections a human reviewer made to earlier "
+           "documents. They are requirements, not suggestions.",
+           "PRECEDENCE: if one of these conflicts with the style guidance or field "
+           "guidance (length caps, phrasing preferences, what to include), THE LEARNED "
+           "RULE WINS — follow it and ignore the default. The numbered HARD RULES about "
+           "document STRUCTURE (cover every key takeaway, agenda count, valid JSON "
+           "schema) outrank them.",
+           # THE CONFLICT THIS SETTLES, and it is not hypothetical. A note on an
+           # Operating Systems session — "working examples are not needed for this topic"
+           # — was generalised to "Remove working code examples; rely on pseudocode" and
+           # classified as house style, so it was injected into a Responsive Web Design
+           # course whose author had written a brief asking for code snippets and syntax
+           # throughout. Both blocks claimed precedence, this one claimed "highest
+           # priority", and the course's own instructions lost to a generalisation drawn
+           # from a different subject. The author's brief is EXPLICIT, APPROVED and
+           # written FOR THIS COURSE; a learned rule is inferred, automatic, and often
+           # generalised from somewhere else. Explicit and specific must win.
+           "THE COURSE BRIEF ABOVE OUTRANKS EVERYTHING HERE. Where a rule below "
+           "contradicts something the course's own brief requires, FOLLOW THE BRIEF and "
+           "ignore the rule — it was learned from a different document, possibly from a "
+           "different course, and the brief is what this course's author actually asked "
+           "for. Do not try to satisfy both by half-doing each."]
     if human:
         out.append("\n## From the reviewer's own feedback")
         out += [fmt(r) for r in human]

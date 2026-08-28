@@ -163,11 +163,16 @@ print("\n== the interrupted read is picked up from where the instance died ==")
 fetched.clear()
 server.JOBS[job_id] = {"status": "running", "logs": [], "result": None, "error": None,
                        "error_kind": None, "progress": {}}
-# Drop 17..29 to recreate the crash state exactly.
+# Recreate the crash state exactly: links 17..29 were NEVER read, so they are absent
+# from BOTH the disk and the cloud mirror. Removing them from the disk alone would not
+# be that state — the mirror would still have them, and load_deck would rightly find
+# them there (which is the whole point of the cold-disk case below).
 for n in range(17, 30):
     pth = pptx_ingest.deck_path(COURSE, n, prereq=PREREQ)
     if pth.exists():
         pth.unlink()
+    db._exec("DELETE FROM kb_files WHERE path = ?",
+             (pptx_ingest._kb_rel_path(pptx_ingest.deck_path(COURSE, n, prereq=PREREQ)),))
 server._run_prereq_ingest(job_id, COURSE, PREREQ, LINKS)
 check("every link ends up read", server.JOBS[job_id]["result"]["decks"] == 29,
       str(server.JOBS[job_id]["result"]["decks"]))
@@ -175,6 +180,30 @@ check("…but only the 13 missing ones were fetched", len(fetched) == 13,
       f"fetched {len(fetched)}")
 check("…and not one of the 16 already stored was downloaded again",
       not (set(fetched) & set(LINKS[:16])), str(sorted(set(fetched) & set(LINKS[:16]))))
+
+print("\n== the resume survives a COLD DISK, which is the state after every restart ==")
+# The failure this closes, observed live. The instance is wiped on restart and refilled
+# by kb_restore on a background thread — the port answers first, deliberately. A request
+# arriving in that window sees an empty disk, so a resume that asks the disk concludes
+# nothing was ever read and downloads all of it again: the slow part, and the part that
+# exhausted the instance to begin with. Simulated here by wiping the disk and NOT
+# restoring, which is exactly what an early request sees.
+shutil.rmtree(config.KB_DIR / "decks")
+check("the disk is cold, as it is on a fresh container",
+      not pptx_ingest.get_deck(COURSE, 1, prereq=PREREQ))
+check("…but the deck is still in the cloud mirror",
+      pptx_ingest.load_deck(COURSE, 1, prereq=PREREQ) is not None)
+check("…and reading it puts it back on disk for the next reader",
+      pptx_ingest.get_deck(COURSE, 1, prereq=PREREQ) is not None)
+shutil.rmtree(config.KB_DIR / "decks")          # cold again, for the real test
+fetched.clear()
+server.JOBS[job_id] = {"status": "running", "logs": [], "result": None, "error": None,
+                       "error_kind": None, "progress": {}}
+server._run_prereq_ingest(job_id, COURSE, PREREQ, LINKS)
+check("the read completes", server.JOBS[job_id]["result"]["decks"] == 29,
+      str(server.JOBS[job_id]["result"]))
+check("…WITHOUT refetching anything the mirror already had",
+      not fetched, f"refetched {len(fetched)} link(s) it already had")
 
 print("\n== a link whose deck was read from a DIFFERENT source is re-read ==")
 moved = list(LINKS)

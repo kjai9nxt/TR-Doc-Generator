@@ -107,7 +107,7 @@ check("the block carries the skill", "Show the snippet before explaining it." in
 check("…under its own heading, named for this course",
       f"HOW '{REACT}' IS WRITTEN" in blk, blk[:300])
 check("…and it is still separable from the learned rules it travels with",
-      "REVIEWER-ENFORCED RULES" not in blk.split("HOW '")[1][:400]
+      "RULES LEARNED FROM EARLIER CORRECTIONS" not in blk.split("HOW '")[1][:400]
       if "HOW '" in blk else False, blk[:400])
 check("…and says it was authored, not inferred",
       "authored" in blk.lower() or "written for this course" in blk.lower(), blk[:400])

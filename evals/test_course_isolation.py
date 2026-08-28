@@ -121,12 +121,12 @@ check("a course with a brief and no learned rules of its own still gets its brie
 # The two halves must not be introduced by one heading. The brief comes FIRST, under its
 # own; the reviewer heading introduces only what follows it — which is the house-style
 # rule, and nothing of this course's author's.
-check("…and the reviewer-rules heading comes AFTER it, introducing only the rules",
+check("…and the learned-rules heading comes AFTER it, introducing only the rules",
       brief_only.index("Keep every example runnable")
-      < brief_only.index("REVIEWER-ENFORCED"), brief_only)
+      < brief_only.index("RULES LEARNED"), brief_only)
 check("…so nothing the author wrote sits under a heading calling it inferred",
       "Keep every example runnable"
-      not in brief_only[brief_only.index("REVIEWER-ENFORCED"):], brief_only)
+      not in brief_only[brief_only.index("RULES LEARNED"):], brief_only)
 
 print("\n== a stored rule with no instruction in it is dropped ==")
 learning.add_rule("SCOPE: course", source="regeneration", scope=learning.COURSE,
@@ -139,6 +139,29 @@ check("…and it is gone", not any(r["text"] == "SCOPE: course" for r in learnin
 check("…while the real rules stay",
       len([r for r in learning.rules() if "breakpoint" in r["text"]]) == 1)
 check("running the sweep again does nothing", learning.drop_contentless() == 0)
+
+print("\n== the course's OWN brief outranks a rule learned somewhere else ==")
+# The conflict this settles, observed live. A note on an Operating Systems session
+# ("working examples are not needed for this topic") was generalised to "Remove working
+# code examples; rely on pseudocode" and classified as house style — so it was injected
+# into a Responsive Web Design course whose author had written a brief asking for code
+# snippets and syntax throughout. Both blocks claimed precedence, the learned one called
+# itself "highest priority", and the course's own instructions lost to a generalisation
+# drawn from a different subject. That is the reported symptom: "the skills I added are
+# not reflected in the generated doc".
+blk = learning.learned_rules_block(WEB)
+check("the brief comes first", blk.index("HOW '") < blk.index("RULES LEARNED"), "")
+check("…and the rules block defers to it explicitly",
+      "THE COURSE BRIEF ABOVE OUTRANKS EVERYTHING HERE" in blk, blk[:0])
+check("…telling the writer to follow the brief, not split the difference",
+      "Do not try to satisfy both by half-doing each" in blk)
+check("the learned block no longer calls itself the highest priority",
+      "highest priority" not in blk, blk[:0])
+check("a rule learned on ANOTHER course says so",
+      "learned on 'Operating Systems', not this course" in blk, blk[:0])
+check("…while this course's own rule carries no such caveat",
+      "Name every breakpoint in pixels.  [" not in blk
+      or "breakpoint in pixels.  [learned on" not in blk, blk[:0])
 
 print("\n== a misclassified rule can be MOVED, not only destroyed ==")
 # The house/course call is made by a model and it misjudges — the live store has a note

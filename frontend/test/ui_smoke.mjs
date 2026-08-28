@@ -207,6 +207,12 @@ const ROUTES = {
 }
 
 const calls = []
+const ASKED = []      // questions the panel sent
+const CHAT = []       // the conversation the fake server has accumulated
+let PENDING_FOR = 0   // polls remaining before the answer is ready
+let PENDING_INDEX = 0
+let PENDING_WEB = false
+let FAIL_POLLS = 0    // transient poll failures the stub should inject
 // Rows the fake server holds, so an insert can be answered the way the real one does:
 // shift everything at or after the position, then put the new row in. Without this the
 // stub would return the same list forever and the numbering — the whole point of the
@@ -313,7 +319,52 @@ function route(url, opts) {
   if (p === '/jobs/syncjob') return { status: 'done', logs: ['imported'], result: {
     sessions: SESSIONS, changelog: [], errors: [], extraction_warnings: [],
     counts: { sessions: 1, ingested: 0, cached: 0 } } }
+  // Asking a question. The real endpoint records the reviewer's message immediately and
+  // answers on a thread; the stub returns both at once, which is all the panel needs.
+  if (p === '/guided/g31/ask') {
+    const b = JSON.parse(opts.body)
+    ASKED.push(b)
+    // The reviewer's message lands at once; the answer is written on a thread and
+    // arrives on a later poll. PENDING_FOR counts those polls down, so the test can see
+    // the panel as it really is while it waits.
+    CHAT.push({ id: `u${CHAT.length}`, index: b.index, role: 'user', text: b.question })
+    PENDING_FOR = 2
+    PENDING_INDEX = b.index
+    PENDING_WEB = !!b.use_web
+    const v = JSON.parse(JSON.stringify(ROUTES['/guided/g31']))
+    v.chat = CHAT.slice(); v.chat_pending = true
+    v.chat_stage = { name: 'reading', detail: 'reading what this section was written from',
+                     index: b.index }
+    v.approved_chunks = APPROVED.slice()
+    return v
+  }
   if (p === '/guided/g31/finalize') { FINALIZED.push(1); return { ok: true } }
+  if (p === '/guided/g31' && !opts.method && FAIL_POLLS > 0) {
+    FAIL_POLLS -= 1
+    const err = new Error('The server is rate-limiting this page (HTTP 429)')
+    err.status = 429
+    throw err
+  }
+  if (p === '/guided/g31' && !opts.method) {
+    const v = JSON.parse(JSON.stringify(ROUTES['/guided/g31']))
+    if (PENDING_FOR > 0) {
+      PENDING_FOR -= 1
+      v.chat_stage = { name: PENDING_FOR ? 'gathered' : 'asking',
+                       detail: 'found 2 matching deck slide(s)', index: PENDING_INDEX }
+      if (PENDING_FOR === 0) {
+        CHAT.push({ id: `a${CHAT.length}`, index: PENDING_INDEX, role: 'agent',
+                    text: 'Because [S1 · Slide 2] says so. See [gfg](https://g.org/x).',
+                    web: PENDING_WEB,
+                    consulted: [{ kind: 'deck', label: 'S1 · Slide 2 — Buffering' }],
+                    sources: PENDING_WEB ? [{ title: 'gfg', url: 'https://g.org/x' }] : [] })
+        v.chat_stage = null
+      }
+    }
+    v.chat = CHAT.slice()
+    v.chat_pending = PENDING_FOR > 0
+    v.approved_chunks = APPROVED.slice()
+    return v
+  }
   if (p === '/guided/g31') {
     const v = JSON.parse(JSON.stringify(ROUTES[p]))
     v.approved_chunks = [...APPROVED].sort((a, b) => a - b)
@@ -615,6 +666,109 @@ await click($('button').filter((b) => b.textContent.includes('Regenerate…')).s
 check('no apply-forward tick on the final chunk', $('.checkline input').length === 0,
       `got ${$('.checkline input').length}`)
 await click($('button').find((b) => b.textContent.trim() === 'Cancel'))
+
+console.log('\n== the chat about a section opens, answers, and CLOSES ==')
+// The close button did nothing. The collapsed branch was gated on `!has && !open`, so
+// once a section had one exchange the expanded panel was the only thing that could
+// render: Close set the flag, the flag was ignored, and the control was dead. A button
+// that does nothing is worse than no button — you go looking for what you broke.
+const setTextareaVal = (el, v) => act(async () => {
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLTextAreaElement.prototype, 'value').set
+  setter.call(el, v)
+  el.dispatchEvent(new window.Event('input', { bubbles: true }))
+})
+const askOpener = () => $('button').find((b) => b.textContent.includes('Ask about this section'))
+check('every section offers a question before you have asked one',
+      $('button').filter((b) => b.textContent.includes('Ask about this section')).length >= 1)
+await click(askOpener())
+const askBox = () => $('textarea').find((t) => t.placeholder?.includes('Ask anything about this section'))
+check('the box opens', askBox() !== undefined)
+check('…saying plainly that it cannot change anything',
+      text().includes('Asking never edits, regenerates or approves anything'))
+await setTextareaVal(askBox(), 'why is slide 2 here?')
+await click($('button').find((b) => b.textContent.trim() === 'Ask'))
+await act(async () => { await new Promise((r) => setTimeout(r, 100)) })
+check('the question is sent', ASKED.length === 1, JSON.stringify(ASKED))
+// WHILE THE ANSWER IS BEING WRITTEN. Asking is read-only, so the review controls must
+// stay live: the reviewer can carry on approving other sections while it works.
+check('the question is on screen at once, not swallowed until the answer lands',
+      text().includes('why is slide 2 here?'))
+check('…and it says what it is doing', text().includes('Reading what this section'),
+      text().replace(/\s+/g, ' ').match(/.{0,80}Reading what.{0,40}/)?.[0])
+const pendingApprove = $('button').filter((b) => b.textContent.includes('Approve'))
+check('APPROVE IS STILL LIVE WHILE THE ANSWER IS PENDING',
+      pendingApprove.length > 0 && pendingApprove.every((b) => !b.disabled),
+      pendingApprove.map((b) => `${b.textContent}:${b.disabled}`).join(' | ') || 'no Approve button at all')
+await act(async () => { await new Promise((r) => setTimeout(r, 4000)) })
+check('…for a real section, not the document', ASKED[0]?.index >= 0, JSON.stringify(ASKED[0]))
+check('the answer is shown', text().includes('Because [S1 · Slide 2] says so.'))
+check('…marked as web-checked, since that box is ticked by default',
+      text().includes('web-checked'))
+const closeBtn = () => $('button').find((b) => b.textContent.trim() === 'Close')
+check('a Close button is offered', closeBtn() !== undefined)
+await click(closeBtn())
+check('CLOSING ACTUALLY COLLAPSES IT', !text().includes('Because [S1 · Slide 2] says so.'),
+      text().replace(/\s+/g, ' ').match(/.{0,80}Because.{0,40}/)?.[0])
+check('…and says how much is behind the button', text().includes('1 message') ||
+      text().includes('2 messages'), text().replace(/\s+/g, ' ').match(/.{0,50}messages?.{0,30}/)?.[0])
+check('…and that nothing was lost by closing', text().includes('Kept — nothing is lost'))
+await click($('button').find((b) => b.textContent.includes('reopen')))
+check('reopening brings the conversation back',
+      text().includes('Because [S1 · Slide 2] says so.'))
+check('…and asking again is still possible', askBox() !== undefined)
+
+console.log('\n== a transient failed poll does not freeze the review panel ==')
+// The bug this covers froze everything after it. handleGuidedError cleared the poll
+// interval on ANY error, and every poll routed its failure there — so one 429 while the
+// host throttled, or one 502 while it woke, stopped the panel polling for good. A
+// regeneration never appeared to finish; a chat answer written seconds later never
+// arrived; the panel sat on a state the server had moved past. The run was fine.
+FAIL_POLLS = 2
+await act(async () => { await new Promise((r) => setTimeout(r, 5000)) })
+check('the panel is still showing the run after failed polls',
+      text().includes('Key takeaway 1'), text().replace(/\s+/g, ' ').slice(0, 120))
+check('…and no dead-end error was raised for a hiccup',
+      !text().includes('Is the backend'), text().replace(/\s+/g, ' ').match(/.{0,80}backend.{0,40}/)?.[0])
+const afterBlip = $('button').filter((b) => b.textContent.includes('Approve'))
+check('…and Approve is still live', afterBlip.length > 0 && afterBlip.every((b) => !b.disabled),
+      afterBlip.map((b) => `${b.textContent}:${b.disabled}`).join(' | ') || 'none')
+
+console.log('\n== asking a question does not disable the review controls ==')
+// Asking is read-only, so it must not take the section hostage. The reviewer should be
+// able to read the answer and then approve — or regenerate — without the panel having
+// gone inert underneath them.
+const approveBtns = () => $('button').filter((b) => b.textContent.includes('Approve'))
+check('Approve is still offered after an answer arrives', approveBtns().length > 0,
+      $('button').map((b) => b.textContent).join(' | ').slice(0, 200))
+check('…and is NOT disabled', approveBtns().every((b) => !b.disabled),
+      approveBtns().map((b) => `${b.textContent}:${b.disabled}`).join(' | '))
+const approvedBefore = APPROVED.length
+await click(approveBtns()[0])
+await act(async () => { await new Promise((r) => setTimeout(r, 200)) })
+check('…and clicking it actually ticks the section', APPROVED.length > approvedBefore,
+      JSON.stringify(APPROVED))
+check('Regenerate is still offered too',
+      $('button').some((b) => b.textContent.includes('Regenerate…')))
+
+console.log('\n== the whole document has its own conversation, kept apart ==')
+const docOpener = $('button').find((b) => b.textContent.includes('Ask about the whole document'))
+check('a document-level question is offered', docOpener !== undefined)
+await click(docOpener)
+const docBox = $('textarea').find((t) => t.placeholder?.includes('document as a whole'))
+check('it has its own box', docBox !== undefined)
+await setTextareaVal(docBox, 'why is spooling last?')
+// SCOPED to the document panel. Taking the last "Ask" on the page picked a section's
+// button — the document panel is rendered ABOVE the sections, not below them — which
+// sent the question against the wrong scope and left the typed draft where it was.
+const docAsk = Array.from(docBox.closest('.chunkchat').querySelectorAll('button'))
+  .find((b) => b.textContent.trim() === 'Ask')
+check('the document panel has its own Ask button', docAsk !== undefined)
+await click(docAsk)
+await act(async () => { await new Promise((r) => setTimeout(r, 200)) })
+check('it is sent as a document question', ASKED[1]?.index === -1, JSON.stringify(ASKED[1]))
+check('…and the section chat did not swallow the draft',
+      ASKED[1]?.question === 'why is spooling last?', JSON.stringify(ASKED[1]))
 
 console.log('\n== a slide that carries too much can be split in two ==')
 const splitBtn = $('button').filter((b) => b.textContent.includes('Split a slide'))

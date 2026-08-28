@@ -228,8 +228,15 @@ export default function App() {
   // Asking the agent about a chunk. Separate from busyAction on purpose: a question is
   // read-only, so it must not grey out Approve and Regenerate while it is in flight —
   // the reviewer can carry on working while an answer is being written.
-  const [askFor, setAskFor] = useState(null)
-  const [askText, setAskText] = useState('')
+  // PER SECTION, not one at a time. `askFor` was a single index, so opening one
+  // section's chat closed another's — and the draft you were typing went with it. Both
+  // are maps keyed by section index (-1 is the whole-document panel).
+  //
+  // Open state is the USER'S CHOICE where they have made one, and defaults to open once
+  // a section has a conversation: nobody wants to reopen the answer they just asked for,
+  // and nobody wants a wall of empty boxes on the sections they never asked about.
+  const [chatOpen, setChatOpen] = useState({})
+  const [askText, setAskText] = useState({})
   const [askWeb, setAskWeb] = useState(true)
   const [asking, setAsking] = useState(false)
   // Which chat suggestions have already been filed as draft skills, so the button can
@@ -327,7 +334,7 @@ export default function App() {
     // interval is slower now (a job measured in minutes does not need sub-second
     // resolution) and each consecutive failure waits longer than the last.
     let skip = 0
-    const t = setInterval(async () => {
+    const tick = async () => {
       if (skip > 0) { skip -= 1; return }
       try {
         const job = await api.job(id)
@@ -384,7 +391,12 @@ export default function App() {
           + 'paste the same links again to finish: decks already read are skipped.' })
         done?.()
       }
-    }, POLL_MS)
+    }
+    const t = setInterval(tick, POLL_MS)
+    // ASK ONCE IMMEDIATELY. With a 2.5s interval and no leading call, the bar sat
+    // motionless for the first two and a half seconds of every import — which is exactly
+    // the moment the reviewer is looking at it to find out whether their click worked.
+    tick()
   }
 
   // Resolves TRUE only if the action actually succeeded, so a caller can decide whether
@@ -842,8 +854,19 @@ export default function App() {
   // 'guided_gone' error means the run is truly unrecoverable. Clear the dead run
   // instead of leaving a stuck screen with a red box, so 'Generate all chunks'
   // comes back and the user can start over.
-  function handleGuidedError(e) {
-    clearInterval(guidedPollRef.current)
+  // A FAILED REQUEST IS NOT A FAILED RUN, and this used to treat them as the same thing:
+  // it cleared the poll interval on ANY error, and every poll routed its failure here.
+  // So one transient answer from the host — a 429 while it throttles, a 502 while it
+  // wakes — stopped the review panel polling for good. Everything after that silently
+  // froze: a regeneration never appeared to finish, a chat answer written seconds later
+  // never arrived, and the panel sat showing a state the server had long since moved on
+  // from. The run itself was fine the whole time.
+  //
+  // Only an error that means the RUN is gone stops the loop now. `fatal` is passed by
+  // callers that are not the poll — a click, whose failure is its own and should not
+  // take the loop with it either, but which has nothing left to wait for.
+  function handleGuidedError(e, { stopPolling = false } = {}) {
+    if (stopPolling || e.kind === 'guided_gone') clearInterval(guidedPollRef.current)
     setGenErr(e.message)
     if (e.kind === 'guided_gone') {
       setGuidedId(null); setGuided(null); setRegenFor(null); setRegenReason('')
@@ -853,6 +876,7 @@ export default function App() {
 
   function pollGuided(gid) {
     clearInterval(guidedPollRef.current)
+    let pollMisses = 0
     const tick = async () => {
       try {
         const st = await api.guidedState(gid)
@@ -878,7 +902,16 @@ export default function App() {
           clearInterval(guidedPollRef.current); setResult(st.result); rememberGuided(null)
         }
         else if (st.status === 'error') { clearInterval(guidedPollRef.current); setGenErr(st.error) }
-      } catch (e) { handleGuidedError(e) }
+        pollMisses = 0
+      } catch (e) {
+        // Ride out a run of bad answers rather than giving up on the first — and stay
+        // quiet about it until it looks like more than a hiccup, so a single 429 does
+        // not put a red box over a review that is going perfectly well.
+        pollMisses += 1
+        if (e.kind === 'guided_gone' || pollMisses >= 10) {
+          handleGuidedError(e, { stopPolling: true })
+        }
+      }
     }
     guidedPollRef.current = setInterval(tick, 1500)
     tick()   // fetch immediately so the UI reacts without a 1.5s lag
@@ -970,13 +1003,25 @@ export default function App() {
   // The reply is the whole view, with their question already on it, so what they typed
   // appears the instant they send it rather than after the model has answered.
   function askAboutChunk(index) {
-    const q = askText.trim()
+    const q = (askText[index] || '').trim()
     if (!q || !guidedId) return
-    setAsking(true); setAskText('')
+    setAsking(true)
+    setAskText((m) => ({ ...m, [index]: '' }))
+    // Asking pins this section open, so the answer cannot land behind a collapsed panel.
+    setChatOpen((m) => ({ ...m, [index]: true }))
     api.guidedAsk(guidedId, index, q, askWeb)
       .then((st) => { setGuided(st); pollGuided(guidedId) })
-      .catch((e) => { setAskText(q); handleGuidedError(e) })
+      // The question goes back in the box on failure — it is theirs, and retyping it is
+      // the one cost a failed request must never impose.
+      .catch((e) => { setAskText((m) => ({ ...m, [index]: q })); handleGuidedError(e) })
       .finally(() => setAsking(false))
+  }
+  // Whether one section's chat is expanded: what the reader last chose, or — if they
+  // have not chosen — open when there is something to read.
+  function chatIsOpen(index) {
+    const chosen = chatOpen[index]
+    if (chosen !== undefined) return chosen
+    return (guided?.chat || []).some((m) => m.index === index)
   }
 
   // Promote a standing preference the conversation settled into a DRAFT course skill.
@@ -1558,13 +1603,13 @@ export default function App() {
                     scope="document"
                     messages={(guided.chat || []).filter((m) => m.index === -1)}
                     pending={guided.chat_pending}
-                    open={askFor === -1}
-                    text={askFor === -1 ? askText : ''}
+                    open={chatIsOpen(-1)}
+                    text={askText[-1] || ''}
                     web={askWeb}
                     asking={asking}
-                    onOpen={() => { setAskFor(-1); setAskText('') }}
-                    onClose={() => { setAskFor(null); setAskText('') }}
-                    onText={setAskText}
+                    onOpen={() => setChatOpen((m) => ({ ...m, [-1]: true }))}
+                    onClose={() => setChatOpen((m) => ({ ...m, [-1]: false }))}
+                    onText={(v) => setAskText((m) => ({ ...m, [-1]: v }))}
                     onWeb={setAskWeb}
                     onSend={() => askAboutChunk(-1)}
                     /* A document-level conclusion has no single section to regenerate,
@@ -1573,7 +1618,8 @@ export default function App() {
                     canRegen={false}
                     onUseAsFeedback={() => {}}
                     rulePosted={rulePosted}
-                    onMakeSkill={makeSkillFromChat} />
+                    onMakeSkill={makeSkillFromChat}
+                    stage={guided.chat_stage?.index === -1 ? guided.chat_stage : null} />
                   {/* A step that failed but left the run intact. Shown here, inside the
                       panel, so it reads as "that click didn't work, try again" rather
                       than tearing the review screen down. */}
@@ -1607,13 +1653,13 @@ export default function App() {
                           <ChunkChat
                             messages={(guided.chat || []).filter((m) => m.index === i)}
                             pending={guided.chat_pending}
-                            open={askFor === i}
-                            text={askFor === i ? askText : ''}
+                            open={chatIsOpen(i)}
+                            text={askText[i] || ''}
                             web={askWeb}
                             asking={asking}
-                            onOpen={() => { setAskFor(i); setAskText('') }}
-                            onClose={() => { setAskFor(null); setAskText('') }}
-                            onText={setAskText}
+                            onOpen={() => setChatOpen((m) => ({ ...m, [i]: true }))}
+                            onClose={() => setChatOpen((m) => ({ ...m, [i]: false }))}
+                            onText={(v) => setAskText((m) => ({ ...m, [i]: v }))}
                             onWeb={setAskWeb}
                             onSend={() => askAboutChunk(i)}
                             /* The one bridge to the existing lever: if the agent
@@ -1628,7 +1674,8 @@ export default function App() {
                               setAskFor(null)
                             }}
                             rulePosted={rulePosted}
-                            onMakeSkill={makeSkillFromChat} />
+                            onMakeSkill={makeSkillFromChat}
+                            stage={guided.chat_stage?.index === i ? guided.chat_stage : null} />
                         )}
                         {/* Shown BEFORE the Approve button, because this is the cheap
                             moment to fix it: regenerating one section costs a fraction
@@ -3258,29 +3305,44 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
 // re-roll — and a disagreement that was never a disagreement costs a full regeneration.
 function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose,
                      onText, onWeb, onSend, canRegen, onUseAsFeedback,
-                     onMakeSkill, rulePosted = {}, scope = 'section' }) {
+                     onMakeSkill, rulePosted = {}, scope = 'section', stage = null }) {
   const whole = scope === 'document'
   const has = messages.length > 0
   // The answer being written is always for the LAST question, so the spinner belongs
   // under it — not floating at the bottom of a panel that may be scrolled away.
   const awaiting = pending && messages.length > 0
     && messages[messages.length - 1].role === 'user'
-  if (!has && !open) {
+  // COLLAPSED whenever `open` is false — including when there is a conversation to
+  // collapse. The condition here used to be `!has && !open`, so as soon as a section had
+  // one exchange the expanded panel was the only thing that could render: Close set the
+  // flag, the flag was ignored, and the button did nothing at all. A control that does
+  // nothing is worse than no control, because you go looking for what you broke.
+  if (!open) {
+    const n = messages.length
     return (
       <div className={`chunkchat-cta${whole ? ' doclevel' : ''}`}>
         <button className="ghostbtn tiny" onClick={onOpen}>
-          💬 {whole ? 'Ask about the whole document' : 'Ask about this section'}
+          💬 {has
+            ? `${n} message${n === 1 ? '' : 's'} about ${whole ? 'this document' : 'this section'} — reopen`
+            : whole ? 'Ask about the whole document' : 'Ask about this section'}
         </button>
-        <span className="hint">
-          {whole
-            ? `Why a topic sits in one section and not another, whether the document `
-              + `hangs together, what it covers as a whole. The division follows the `
-              + `curriculum's own key takeaways, so this is usually a question about `
-              + `which line owns what.`
-            : `Why it says what it says, where something came from, whether it matches `
-              + `how the topic is normally taught. It answers from the material this `
-              + `section was written from — it cannot change anything.`}
-        </span>
+        {/* The pitch is for someone who has not asked yet. Once they have, the button
+            says what is behind it and the sales copy would just be noise. */}
+        {!has && (
+          <span className="hint">
+            {whole
+              ? `Why a topic sits in one section and not another, whether the document `
+                + `hangs together, what it covers as a whole. The division follows the `
+                + `curriculum's own key takeaways, so this is usually a question about `
+                + `which line owns what.`
+              : `Why it says what it says, where something came from, whether it matches `
+                + `how the topic is normally taught. It answers from the material this `
+                + `section was written from — it cannot change anything.`}
+          </span>
+        )}
+        {/* Collapsing must never look like deleting. The conversation is checkpointed
+            with the run and comes back exactly as it was. */}
+        {has && <span className="hint">Kept — nothing is lost by closing it.</span>}
       </div>
     )
   }
@@ -3300,6 +3362,38 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
                     reviewer is entitled to tell them apart. */}
                 {m.role === 'agent' && m.web && !m.failed && (
                   <span className="chip" title="This answer used a live web search alongside the section's own source material.">web-checked</span>
+                )}
+                {/* THE PAGES IT READ. Parsed from the answer's own citations, so this is
+                    the model's claim about where a fact came from — checkable by
+                    clicking, which is the point of listing them rather than leaving them
+                    buried in the prose. */}
+                {m.sources?.length > 0 && (
+                  <div className="chatsources">
+                    <b>Read on the web</b>
+                    <ul>
+                      {m.sources.map((sc, k) => (
+                        <li key={k}>
+                          <a href={sc.url} target="_blank" rel="noreferrer noopener">
+                            {sc.title || sc.url}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {/* WHAT IT LOOKED AT. Assembled by the code that built the question's
+                    context — not the model's account of its own reasoning, which is the
+                    last thing to trust here. Every row is checkable: a deck slide is
+                    named by session and number, the brief either was in force or wasn't. */}
+                {m.consulted?.length > 0 && (
+                  <details className="chatconsulted">
+                    <summary>What it looked at ({m.consulted.length})</summary>
+                    <ul>
+                      {m.consulted.map((c, k) => (
+                        <li key={k}><span className="tag">{c.kind}</span> {c.label}</li>
+                      ))}
+                    </ul>
+                  </details>
                 )}
                 {m.suggested_feedback && (
                   <div className="chatsuggest">
@@ -3355,7 +3449,7 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
               </div>
             </div>
           ))}
-          {awaiting && <Busy label="Reading back what this section was written from…" />}
+          {awaiting && <ChatProgress stage={stage} web={web} />}
         </div>
       )}
       <div className="chatbox">
@@ -3384,6 +3478,38 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
           doesn't convince you, regenerate with a reason exactly as before.
         </span>
       </div>
+    </div>
+  )
+}
+
+// What the answer in flight is doing, from the stages the server actually reports.
+//
+// The sequence is fixed and known, so the steps before the current one are genuinely
+// done and the ones after genuinely have not started — which is why they can be drawn as
+// a list rather than as a spinner. Nothing here is on a timer: an invented
+// "reading geeksforgeeks.org…" would be theatre, and a panel whose whole value is that
+// it does not overclaim cannot afford to start there.
+const CHAT_STEPS = [
+  { name: 'reading',  label: 'Reading what this section was written from' },
+  { name: 'gathered', label: 'Gathering the evidence' },
+  { name: 'asking',   label: 'Working out the answer' },
+]
+function ChatProgress({ stage, web }) {
+  const at = CHAT_STEPS.findIndex((s) => s.name === (stage?.name || 'reading'))
+  const cur = at < 0 ? 0 : at
+  return (
+    <div className="chatprogress">
+      {CHAT_STEPS.map((s, i) => (
+        <div key={s.name} className={`cpstep ${i < cur ? 'done' : i === cur ? 'now' : 'todo'}`}>
+          <span className="cpmark">{i < cur ? '✓' : i === cur ? '•' : '·'}</span>
+          <span className="cplabel">
+            {/* The web half only exists when the box is ticked, so say so rather than
+                implying a search that is not happening. */}
+            {s.name === 'asking' && web ? 'Searching the web and weighing it against the document' : s.label}
+          </span>
+          {i === cur && stage?.detail && <span className="cpdetail">{stage.detail}</span>}
+        </div>
+      ))}
     </div>
   )
 }

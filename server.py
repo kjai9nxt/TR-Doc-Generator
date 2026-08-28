@@ -1127,7 +1127,9 @@ def _run_prereq_ingest(job_id: str, course: str, name: str, links: list[str]):
         # interrupted read picks up where it stopped instead of spending minutes
         # re-downloading what is already there. Thirty links against a free instance that
         # sleeps is otherwise a race nobody can reliably win.
-        have = pptx_ingest.get_deck(course, i, prereq=name)
+        # DISK OR MIRROR. Asking the disk alone loses this race after every restart —
+        # see pptx_ingest.load_deck.
+        have = pptx_ingest.load_deck(course, i, prereq=name)
         if have and (have.get("source_link") or "") == link:
             ok += 1
             slides += int(have.get("n_slides") or 0)
@@ -2806,6 +2808,8 @@ def _guided_view(state: dict) -> dict:
         # than swallowing what the reviewer typed until the model comes back.
         "chat": [m for m in (state.get("chat") or []) if isinstance(m, dict)],
         "chat_pending": bool(state.get("chat_pending")),
+        # What the answer in flight is doing right now — a real transition, not a timer.
+        "chat_stage": state.get("chat_stage") or None,
         "result": state.get("result"),
         "error": state.get("error"),
         # A step that failed but left the run usable (see _guided_step_failed). The
@@ -2999,13 +3003,28 @@ def _run_doc_chat(gid: str, index: int, question: str, use_web: bool) -> None:
             # to describe the document as it was when the question was asked, not as it
             # may be a regeneration later.
             snapshot = dict(state)
-        answer = doc_chat.ask(snapshot, index, question, use_web=use_web)
+        # LIVE STAGES, from the work actually happening. The panel polls the guided view
+        # anyway, so the stage rides along on it — no new endpoint, no new polling.
+        def on_stage(name, detail):
+            with _lock:
+                st = GUIDED.get(gid)
+                if st is not None:
+                    st["chat_stage"] = {"name": name, "detail": detail,
+                                        "index": index, "at": db._now()}
+
+        answer = doc_chat.ask(snapshot, index, question, use_web=use_web,
+                              on_stage=on_stage)
         msg = {"id": uuid.uuid4().hex[:8], "index": index, "role": "agent",
                "text": answer["text"], "web": answer.get("web", False),
                "suggested_feedback": answer.get("suggested_feedback") or "",
                # A standing preference the conversation settled, kept apart from the
                # one-off fix above. Offered as a DRAFT course skill, never applied.
                "suggested_rule": answer.get("suggested_rule") or "",
+               # What was consulted (assembled by code, checkable) and what it cited on
+               # the web (parsed from its own answer). Different kinds of claim, kept
+               # apart on purpose.
+               "consulted": answer.get("consulted") or [],
+               "sources": answer.get("sources") or [],
                "at": db._now()}
     except Exception as e:
         print(f"[chat] {gid} chunk {index}: {e!r}", flush=True)
@@ -3023,6 +3042,7 @@ def _run_doc_chat(gid: str, index: int, question: str, use_web: bool) -> None:
             if len(chat) > doc_chat.MAX_TURNS_KEPT:
                 del chat[:len(chat) - doc_chat.MAX_TURNS_KEPT]
             state["chat_pending"] = False
+            state["chat_stage"] = None
     _guided_save(gid)
 
 
@@ -3064,6 +3084,8 @@ def guided_ask(gid: str, body: AskBody, user: dict = Depends(current_user)):
         chat.append({"id": uuid.uuid4().hex[:8], "index": body.index, "role": "user",
                      "text": question, "at": db._now()})
         state["chat_pending"] = True
+        state["chat_stage"] = {"name": "queued", "detail": "starting", "index": body.index,
+                               "at": db._now()}
         view = _guided_view(state)
     _guided_save(gid)
     threading.Thread(target=_run_doc_chat,

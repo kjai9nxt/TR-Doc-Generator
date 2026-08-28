@@ -2311,6 +2311,27 @@ def kb_backup() -> int:
     return n
 
 
+def kb_get(rel: str) -> str | None:
+    """One KB file's mirrored content, straight from the DB. None if it is not there.
+
+    THE DISK IS NOT THE SOURCE OF TRUTH on an ephemeral host, and code that assumes it
+    is will be wrong in exactly the window that matters. kb_restore() brings the mirror
+    back at start-up, but it runs on a BACKGROUND thread — the port answers first, on
+    purpose, so a free instance waking up is not also slow — so a request arriving early
+    sees a disk that is still empty. A deck that exists in the DB and not yet on disk
+    then reads as a deck that does not exist, and the caller re-does work it had already
+    paid for. This lets a caller ask the question the right way round.
+    """
+    rel = (rel or "").lstrip("/")
+    if not rel or not _use_turso():
+        return None
+    try:
+        rows = _query("SELECT content FROM kb_files WHERE path = ?", (rel,))
+    except Exception:
+        return None
+    return rows[0]["content"] if rows else None
+
+
 def kb_restore() -> int:
     """Write any KB files stored in the DB back to disk (only when missing, so a
     fresh local sync is never clobbered). No-op unless a cloud DB is in use.

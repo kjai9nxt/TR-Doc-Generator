@@ -264,6 +264,47 @@ def get_deck(course: str, session_no: int, prereq: str | None = None) -> dict | 
         return None
 
 
+def load_deck(course: str, session_no: int, prereq: str | None = None) -> dict | None:
+    """This deck from wherever it actually is — disk first, then the cloud mirror.
+
+    get_deck() asks the DISK, and on an ephemeral host the disk is the least reliable
+    place a deck lives. It is wiped on every restart and refilled by db.kb_restore() on
+    a BACKGROUND thread, because the port has to answer before that work is done — so
+    there is a window after every wake-up in which a deck that exists is invisible.
+
+    That window cost a real import. A 29-link prerequisite read died at link 16; the
+    sixteen decks were safely in the cloud DB; the reviewer pasted the same links to
+    finish the job, and the resume check asked the disk, got nothing, and downloaded all
+    sixteen again — the slow part, and the part that had exhausted the instance in the
+    first place. Asking the mirror when the disk comes up empty makes the resume depend
+    on what has actually been STORED rather than on which thread won a race.
+
+    A deck found in the mirror is written back to disk on the way past, so the next
+    reader gets it locally and the restore has one less file to do.
+    """
+    deck = get_deck(course, session_no, prereq)
+    if deck is not None:
+        return deck
+    try:
+        from . import db
+        raw = db.kb_get(_kb_rel_path(deck_path(course, session_no, prereq)))
+    except Exception:
+        return None
+    if not raw:
+        return None
+    try:
+        deck = json.loads(raw)
+    except Exception:
+        return None
+    try:                                   # best effort — the deck is usable either way
+        path = deck_path(course, session_no, prereq)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(raw, encoding="utf-8")
+    except Exception:
+        pass
+    return deck
+
+
 def has_deck(course: str, session_no: int, prereq: str | None = None) -> bool:
     return deck_path(course, session_no, prereq).exists()
 

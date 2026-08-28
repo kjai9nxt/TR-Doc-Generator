@@ -126,7 +126,7 @@ def main() -> int:
         block = learning.learned_rules_block()
         check("the rule appears in the injected block", text[:40] in block)
         check("the block asserts precedence over the style guide",
-              "REVIEWER-ENFORCED RULES" in block and "PRECEDENCE" in block)
+              "RULES LEARNED FROM EARLIER CORRECTIONS" in block and "PRECEDENCE" in block)
         check("generator._learned() carries it into every call", text[:40] in generator._learned())
 
         print("\n== 3. DEDUPE ==")

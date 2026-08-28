@@ -167,6 +167,83 @@ def _fragment_text(state: dict, index: int) -> str:
 WHOLE_DOC = -1
 
 
+def evidence_manifest(state: dict, index: int, question: str) -> list[dict]:
+    """WHAT WAS ACTUALLY CONSULTED, as a list the panel can show.
+
+    Not the model's account of what it looked at — the model is the last thing that
+    should be trusted on that. This is assembled by the same code that builds the pack,
+    from the same lookups, so every row is a fact about the request rather than a claim
+    inside the answer. A reviewer can check each one: the deck slides are named by
+    session and slide, the brief and the rules either were in force or were not.
+    """
+    course = state.get("course") or ""
+    cur = state.get("cur")
+    session_no = int(state.get("session_no") or 0)
+    whole = index == WHOLE_DOC
+    takeaway = "" if whole else _chunk_takeaway(state, index)
+    out: list[dict] = []
+    if whole:
+        out.append({"kind": "document",
+                    "label": f"all {len(state.get('chunks') or [])} sections of this document"})
+    else:
+        out.append({"kind": "section", "label": f"section {index + 1} as written"})
+    if takeaway:
+        out.append({"kind": "curriculum", "label": f"the curriculum line: \"{takeaway}\""})
+    try:
+        from . import pptx_ingest
+        hits = pptx_ingest.retrieve(course, question, session_no, top_k=6)
+        for h in hits:
+            out.append({"kind": "deck",
+                        "label": f"S{h['session_no']} · Slide {h['slide']} — {h['title']}"})
+        if not hits:
+            out.append({"kind": "deck-none",
+                        "label": "no earlier deck slide in this course matches the question"})
+    except Exception:
+        pass
+    try:
+        from . import prereqs as _prereqs
+        if _prereqs.detail_block(course, f"{question} {takeaway}".strip()).strip():
+            out.append({"kind": "prereq",
+                        "label": "what the prerequisites already taught on this"})
+    except Exception:
+        pass
+    try:
+        from . import skills as _skills
+        if course and _skills.block(course).strip():
+            out.append({"kind": "brief", "label": "this course's authored brief"})
+    except Exception:
+        pass
+    try:
+        from . import learning
+        if course and learning.rules_block(course).strip():
+            out.append({"kind": "rules",
+                        "label": "rules learned from your earlier corrections"})
+    except Exception:
+        pass
+    if [n for n in (state.get("standing_notes") or []) if isinstance(n, dict)]:
+        out.append({"kind": "standing", "label": "your standing review instructions"})
+    if state.get("budgets"):
+        out.append({"kind": "budget", "label": "the page and slide budget it was written to"})
+    return out
+
+
+# Markdown links the model put in its answer. With web search on, these ARE the sources
+# it read — it is asked to name them inline — so the panel can list them as such instead
+# of leaving the reviewer to scrape them out of the prose.
+_MD_LINK = re.compile(r"\[([^\]]{1,120})\]\((https?://[^\s)]+)\)")
+
+
+def sources_in(text: str) -> list[dict]:
+    """[{title, url}] for every distinct web source cited, in the order they appear."""
+    out, seen = [], set()
+    for title, url in _MD_LINK.findall(text or ""):
+        if url in seen:
+            continue
+        seen.add(url)
+        out.append({"title": " ".join(title.split()), "url": url})
+    return out
+
+
 def evidence_pack(state: dict, index: int, question: str) -> str:
     """The inputs a section — or the whole document — was generated from, for THIS
     question.
@@ -366,12 +443,28 @@ def _history_block(chat: list, index: int) -> str:
             + "\n\n".join(lines))
 
 
-def ask(state: dict, index: int, question: str, *, use_web: bool = True) -> dict:
-    """Answer one question about one chunk. Returns {text, suggested_feedback, web}.
+def ask(state: dict, index: int, question: str, *, use_web: bool = True,
+        on_stage=None) -> dict:
+    """Answer one question. Returns {text, suggested_feedback, suggested_rule, web,
+    consulted, sources}.
+
+    `on_stage(name, detail)` is called at each REAL transition, so the panel can say what
+    is happening instead of showing an unexplained spinner. Only genuine transitions are
+    reported: the pack being assembled, the retrieval landing, the model call starting
+    (and whether it has web search), the answer arriving. Nothing here invents a stage it
+    cannot observe — a fabricated "reading geeksforgeeks.org…" would be theatre, and the
+    one thing this feature cannot afford is to look like it knows more than it does.
 
     Raises whatever llm.complete raises — the caller records it as a failed turn rather
     than losing the reviewer's question.
     """
+    def stage(name, detail=""):
+        if on_stage:
+            try:
+                on_stage(name, detail)
+            except Exception:
+                pass
+
     question = " ".join((question or "").split())
     if not question:
         raise ValueError("Ask something.")
@@ -402,7 +495,18 @@ def ask(state: dict, index: int, question: str, *, use_web: bool = True) -> dict
                     "be settled by checking a current external fact, say so rather "
                     "than answering from memory.")
 
+    stage("reading", "reading what this section was written from")
     pack = evidence_pack(state, index, question)
+    consulted = evidence_manifest(state, index, question)
+    n_deck = len([c for c in consulted if c["kind"] == "deck"])
+    stage("gathered",
+          (f"found {n_deck} matching deck slide(s)" if n_deck
+           else "no deck slide matches this question")
+          + f" · {len(consulted)} source(s) of evidence")
+    stage("asking",
+          "searching the web and weighing it against the document"
+          if (use_web and web_note and "NO web access" not in web_note)
+          else "reasoning over the document's own inputs")
     history = _history_block(state.get("chat") or [], index)
     user = "\n\n".join(p for p in (
         "EVIDENCE PACK\n=============\n" + pack,
@@ -431,5 +535,11 @@ def ask(state: dict, index: int, question: str, *, use_web: bool = True) -> dict
         text = _SUGGEST_RULE.sub("", text).strip()
     if not text:
         raise RuntimeError("The model returned an empty answer.")
+    srcs = sources_in(text)
+    stage("done", f"cited {len(srcs)} web source(s)" if srcs else "answered from the document")
     return {"text": text, "suggested_feedback": suggested,
-            "suggested_rule": suggested_rule, "web": bool(web_note and use_web)}
+            "suggested_rule": suggested_rule, "web": bool(web_note and use_web),
+            # WHAT IT LOOKED AT (assembled by code) and WHAT IT READ ON THE WEB (parsed
+            # out of its own citations). Kept apart: the first is verifiable, the second
+            # is the model's claim about where a fact came from.
+            "consulted": consulted, "sources": srcs}

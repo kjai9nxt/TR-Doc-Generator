@@ -216,7 +216,7 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
         block = learning.rules_block(course)
         if block:
             rules_note = (
-                "\n\nREVIEWER-ENFORCED RULES — these were learned from corrections a human "
+                "\n\nRULES LEARNED FROM EARLIER CORRECTIONS — these were inferred from corrections a human "
                 "made to EARLIER docs in this course, and the writer was required to follow "
                 "them here. Check EACH one against the doc. For every rule that was NOT "
                 "followed, add a specific entry to `blocking_issues` naming the rule and "
