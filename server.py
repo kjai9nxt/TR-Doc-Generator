@@ -1141,9 +1141,23 @@ def _run_prereq_ingest(job_id: str, course: str, name: str, links: list[str]):
             data = None
             pptx_ingest.put_deck(course, i, deck, prereq=name)
             ok += 1
-            slides += int(deck.get("n_slides") or 0)
-            emit(f"  session {i}: {deck.get('n_slides', '?')} slide(s) extracted.",
+            n_slides = int(deck.get("n_slides") or 0)
+            slides += n_slides
+            emit(f"  session {i}: {n_slides or '?'} slide(s) extracted.",
                  done=ok, slides=slides)
+            # RELEASE IT BEFORE FETCHING THE NEXT. Each link is a ~5 MB download that is
+            # copied to strip its media and then parsed, and an 81-slide deck's extracted
+            # text is not small either — on a 512 MB instance, holding the last one while
+            # downloading the next is enough to matter. A 29-link read died at link 16
+            # with the container restarting, which is what that looks like from outside.
+            # Rebinding on the next iteration would free it eventually; this frees it
+            # now, and collects every few decks rather than every one (the collector is
+            # not free either). Best effort — it reduces the peak, it cannot promise the
+            # host will not reclaim the instance anyway.
+            del deck
+            if i % 4 == 0:
+                import gc
+                gc.collect()
         except Exception as e:
             errors.append(f"session {i}: {e}")
             emit(f"  ⚠ session {i} could not be read: {e}", failed=len(errors))

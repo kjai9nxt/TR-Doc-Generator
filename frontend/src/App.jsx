@@ -289,7 +289,13 @@ export default function App() {
   }
   function refreshPrereqs() {
     if (!courseName) return
-    api.prereqs(courseName).then(setPrereqState).catch(() => setPrereqState(null))
+    // A FAILED REFRESH IS NOT AN EMPTY ANSWER. Blanking the state on any error made the
+    // panel say "None." — so a rate-limited status check, arriving right after a deck
+    // import was interrupted, read as "your prerequisite and the 16 decks behind it are
+    // gone". They were not: the row and every stored deck were exactly where they had
+    // been. Keeping the last known state is both truer and calmer; the next successful
+    // refresh replaces it.
+    api.prereqs(courseName).then(setPrereqState).catch(() => {})
   }
   function refreshCourseRules() { refreshSkills(); refreshPrereqs() }
   // Also on a course switch: these are per COURSE, and showing the previous course's
@@ -309,11 +315,20 @@ export default function App() {
   // the first such answer, so one blip at deck 9 of 29 ended the progress bar, the form,
   // and any refresh of the panel — for a job that went on reading. Transient answers are
   // now ridden out for a while, and only a run of them gives up.
-  const POLL_GRACE = 12            // ~15s of unanswered polls before we stop believing
+  const POLL_GRACE = 12            // unanswered polls ridden out before we stop believing
+  const POLL_MS = 2500             // see below — 1.2s got this page rate-limited
   function pollJob(id, done) {
     setPrereqJob({ done: 0, total: 0, slides: 0, failed: 0, stage: 'starting' })
     let misses = 0
+    // BACK OFF ON FAILURE, rather than asking the same question 12 more times at full
+    // speed. A deck import runs for minutes, and polling it every 1.2 seconds was enough
+    // to earn an HTTP 429 from the host part-way through — at which point the page was
+    // hammering hardest precisely when the server least wanted to hear from it. The base
+    // interval is slower now (a job measured in minutes does not need sub-second
+    // resolution) and each consecutive failure waits longer than the last.
+    let skip = 0
     const t = setInterval(async () => {
+      if (skip > 0) { skip -= 1; return }
       try {
         const job = await api.job(id)
         misses = 0
@@ -351,8 +366,15 @@ export default function App() {
         }
         misses += 1
         if (misses < POLL_GRACE) {
-          // Keep the bar up and say why it is not moving, instead of tearing it down.
-          setPrereqJob((j) => ({ ...(j || {}), stage: 'waiting for the server' }))
+          // Keep the bar up and say why it is not moving, instead of tearing it down —
+          // and wait longer before each retry, so a server that is busy or throttling
+          // gets quieter rather than louder.
+          skip = Math.min(misses, 8)
+          setPrereqJob((j) => ({
+            ...(j || {}),
+            stage: e.status === 429 ? 'server busy — asking less often'
+                                    : 'waiting for the server',
+          }))
           return
         }
         clearInterval(t); setPrereqJob(null)
@@ -362,7 +384,7 @@ export default function App() {
           + 'paste the same links again to finish: decks already read are skipped.' })
         done?.()
       }
-    }, 1200)
+    }, POLL_MS)
   }
 
   // Resolves TRUE only if the action actually succeeded, so a caller can decide whether

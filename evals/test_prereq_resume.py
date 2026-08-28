@@ -155,6 +155,27 @@ check("the coverage report agrees",
       prereqs.coverage_report(COURSE)["sessions_indexed"] == 29,
       str(prereqs.coverage_report(COURSE)["sessions_indexed"]))
 
+print("\n== the interrupted read is picked up from where the instance died ==")
+# The real one: 29 links, the container restarted at link 16, decks 1-16 already in the
+# cloud DB with their source_link. Re-pasting the same list must cost only the 13 that
+# are missing — refetching sixteen ~5 MB decks is both the slow part and the part that
+# got the instance killed in the first place.
+fetched.clear()
+server.JOBS[job_id] = {"status": "running", "logs": [], "result": None, "error": None,
+                       "error_kind": None, "progress": {}}
+# Drop 17..29 to recreate the crash state exactly.
+for n in range(17, 30):
+    pth = pptx_ingest.deck_path(COURSE, n, prereq=PREREQ)
+    if pth.exists():
+        pth.unlink()
+server._run_prereq_ingest(job_id, COURSE, PREREQ, LINKS)
+check("every link ends up read", server.JOBS[job_id]["result"]["decks"] == 29,
+      str(server.JOBS[job_id]["result"]["decks"]))
+check("…but only the 13 missing ones were fetched", len(fetched) == 13,
+      f"fetched {len(fetched)}")
+check("…and not one of the 16 already stored was downloaded again",
+      not (set(fetched) & set(LINKS[:16])), str(sorted(set(fetched) & set(LINKS[:16]))))
+
 print("\n== a link whose deck was read from a DIFFERENT source is re-read ==")
 moved = list(LINKS)
 moved[4] = "https://docs.google.com/presentation/d/REPLACED/edit"

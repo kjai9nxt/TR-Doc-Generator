@@ -92,10 +92,22 @@ async function req(path, opts = {}) {
     // an answer: the instance is waking up, or the request took longer than the proxy
     // allows. Say that instead of sending them to check a server that is plainly up.
     const gateway = res.status === 502 || res.status === 503 || res.status === 504
+    // 429 is the HOST rate-limiting this browser, not a fault in the app and certainly
+    // not the backend being down — it is plainly up, it just declined to answer this
+    // one. Sending someone to check whether server.py is running (which is what the
+    // generic message did) is the most misleading thing we could say: it arrives during
+    // a long job, while the work behind it is still going, and it reads as "everything
+    // is broken" when the correct reading is "ask again in a moment".
+    const throttled = res.status === 429
     const msg = typeof detail === 'string'
       ? detail
       : detail.message
-        || (gateway
+        || (throttled
+          ? `The server is rate-limiting this page (HTTP 429) on ${path} — too many `
+            + `requests in a short window. It is running, and anything already in `
+            + `progress is unaffected; it just stopped answering status checks for a `
+            + `moment. Wait a few seconds and try again.`
+          : gateway
           ? `The server did not answer in time (HTTP ${res.status}) on ${path}. It may be `
             + `waking up, or that request took too long. Nothing was necessarily left `
             + `half-done — reload and check before trying again.`
