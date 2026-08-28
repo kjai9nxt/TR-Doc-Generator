@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { api, setAuthToken, setOnUnauthorized } from './api'
+import { api, setAuthToken, setOnUnauthorized, setRenewCredential } from './api'
 
 export default function App() {
   // --- Auth (Google Sign-In, @nxtwave.co.in only) ---
   const [authCfg, setAuthCfg] = useState(null)   // {client_id, allowed_domain, configured, auth_disabled}
+  // Read by the silent-renewal callback, which is registered once and must not be torn
+  // down and rebuilt every time the config object changes identity.
+  const authCfgRef = useRef(null)
   const [user, setUser] = useState(null)         // {email, name, picture, is_admin}
   const [authErr, setAuthErr] = useState(null)
 
@@ -62,6 +65,8 @@ export default function App() {
   const [skillState, setSkillState] = useState(null)
   const [prereqState, setPrereqState] = useState(null)
   const [skillBusy, setSkillBusy] = useState(false)
+  // Live progress of an external prerequisite's deck extraction — see pollJob.
+  const [prereqJob, setPrereqJob] = useState(null)
   const [skillMsg, setSkillMsg] = useState(null)
   const approvedSkills = skillState?.approved || 0
   // Names the course whose creation just finished, so its rules page can say why it
@@ -268,11 +273,15 @@ export default function App() {
     if (user && (tab === 'history' || tab === 'team')) refreshMine()
   }, [tab, user, result])
 
-  function refreshCourseRules() {
+  function refreshSkills() {
     if (!courseName) return
     api.skills(courseName).then(setSkillState).catch(() => setSkillState(null))
+  }
+  function refreshPrereqs() {
+    if (!courseName) return
     api.prereqs(courseName).then(setPrereqState).catch(() => setPrereqState(null))
   }
+  function refreshCourseRules() { refreshSkills(); refreshPrereqs() }
   // Also on a course switch: these are per COURSE, and showing the previous course's
   // rules under a new one is worse than showing none.
   useEffect(() => {
@@ -281,37 +290,56 @@ export default function App() {
 
   // Follow a background job to completion, then refresh. Used by the external
   // prerequisite import, which fetches decks and so takes about as long as a sync.
+  // Reading a course's decks takes seconds per link. The POST returns immediately, so
+  // without live progress the page went silent while a dozen Google Slides decks were
+  // pulled, and there was no way to tell that from nothing happening at all.
   function pollJob(id, done) {
+    setPrereqJob({ done: 0, total: 0, slides: 0, failed: 0, stage: 'starting' })
     const t = setInterval(async () => {
       try {
         const job = await api.job(id)
+        if (job.progress) setPrereqJob(job.progress)
         if (job.status === 'done') {
-          clearInterval(t)
+          clearInterval(t); setPrereqJob(null)
           const n = job.result?.decks ?? 0
           setSkillMsg({ ok: true, text:
-            `Read ${n} deck(s). ${job.result?.topics ?? 0} topic(s) are now assumed `
-            + `knowledge for this course.`
+            `Read ${n} deck(s)`
+            + (job.result?.slides ? `, ${job.result.slides} slide(s)` : '')
+            + `. ${job.result?.topics ?? 0} topic(s) are now assumed knowledge for this `
+            + `course, and their slide content is searched when it writes.`
             + (job.result?.errors?.length
                 ? ` ${job.result.errors.length} link(s) could not be read: `
                   + job.result.errors.join('; ') : '') })
           done?.()
         } else if (job.status === 'error') {
-          clearInterval(t); setSkillMsg({ ok: false, text: job.error }); done?.()
+          clearInterval(t); setPrereqJob(null)
+          setSkillMsg({ ok: false, text: job.error }); done?.()
         }
-      } catch (e) { clearInterval(t); setSkillMsg({ ok: false, text: e.message }) }
+      } catch (e) {
+        clearInterval(t); setPrereqJob(null)
+        setSkillMsg({ ok: false, text: e.message })
+      }
     }, 1200)
   }
 
   // Resolves TRUE only if the action actually succeeded, so a caller can decide whether
   // to clear its input. Clearing on click threw away what the author typed the moment
   // anything went wrong — and what they typed is the one thing they cannot get back.
-  function runSkillAction(fn, note) {
+  // `refetch` is what the action CHANGED that its own response does not already carry.
+  // It used to refetch everything unconditionally, so approving one skill cost three
+  // requests and sixteen DB round-trips — and /prereqs is the expensive one, because it
+  // recomputes the coverage report over every prerequisite deck. Against a remote DB
+  // where each round-trip is its own connection, that is the whole of the delay: the
+  // approve response already contains the updated skills.
+  function runSkillAction(fn, note, refetch = 'none') {
     setSkillBusy(true); setSkillMsg(null)
     return fn().then((r) => {
       if (r?.skills) setSkillState((st) => ({ ...(st || {}), ...r }))
-      if (r?.prereqs) setPrereqState((st) => ({ ...(st || {}), ...r }))
+      if (r?.prereqs || r?.report) setPrereqState((st) => ({ ...(st || {}), ...r }))
       setSkillMsg({ ok: true, text: note })
-      refreshCourseRules()
+      if (refetch === 'all') refreshCourseRules()
+      else if (refetch === 'prereqs') refreshPrereqs()
+      else if (refetch === 'skills') refreshSkills()
       return true
     }).catch((e) => { setSkillMsg({ ok: false, text: e.message }); return false })
       .finally(() => setSkillBusy(false))
@@ -525,7 +553,33 @@ export default function App() {
   // Auth bootstrap: figure out whether login is required, and restore a session.
   useEffect(() => {
     setOnUnauthorized(() => { setAuthToken(''); setUser(null) })
+    // Hand the API layer a way to get a FRESH credential without any interaction, so a
+    // token that lapses while the page is open renews instead of logging you out. GIS
+    // answers from the existing Google session; if it cannot, we fall through to the
+    // login screen exactly as before.
+    setRenewCredential(() => new Promise((resolve) => {
+      const gid = window.google?.accounts?.id
+      if (!gid) return resolve(null)
+      let settled = false
+      const done = (t) => { if (!settled) { settled = true; resolve(t || null) } }
+      try {
+        // A one-shot callback for this renewal only; the sign-in callback is restored
+        // by the initialise effect on the login screen.
+        gid.initialize({
+          client_id: authCfgRef.current?.client_id,
+          callback: (resp) => done(resp?.credential),
+          auto_select: true,
+        })
+        gid.prompt((n) => {
+          // Not displayed / skipped / dismissed all mean "no silent credential".
+          if (n?.isNotDisplayed?.() || n?.isSkippedMoment?.() || n?.isDismissedMoment?.())
+            done(null)
+        })
+      } catch { done(null) }
+      setTimeout(() => done(null), 8000)   // never hang a request on this
+    }))
     api.authConfig().then((cfg) => {
+      authCfgRef.current = cfg
       setAuthCfg(cfg)
       if (cfg.auth_disabled) {
         setUser({ email: 'dev@local', name: 'Dev (auth off)', is_admin: true })
@@ -908,7 +962,7 @@ export default function App() {
   // not what "moved it to the team" means. An admin sees the lot.
   const visibleCourses = workspace.kind === 'team' && activeTeamInfo
     ? courses.filter((c) => (activeTeamInfo.courses || []).includes(c.name))
-    : courses.filter((c) => user?.is_admin || c.shelf === 'individual')
+    : courses.filter((c) => c.shelf === 'individual')
 
   const guidedGenAll = gStatus === 'generating_all'
   const guidedReviewing = gStatus === 'reviewing' || gStatus === 'regenerating'
@@ -1691,7 +1745,8 @@ export default function App() {
 
       {tab === 'skills' && (
         <CourseRules course={courseName} skills={skillState} prereqs={prereqState}
-          busy={skillBusy} msg={skillMsg} onClearMsg={() => setSkillMsg(null)}
+          busy={skillBusy} job={prereqJob} msg={skillMsg}
+          onClearMsg={() => setSkillMsg(null)}
           courses={courses} justCreated={justCreated}
           onDismissNew={() => setJustCreated(null)}
           onAdd={(text) => runSkillAction(
@@ -1704,7 +1759,8 @@ export default function App() {
             () => api.importSkills(courseName, from),
             `Imported from ${from} as drafts. They apply once approved here.`)}
           onApprove={(id) => runSkillAction(
-            () => api.approveSkill(courseName, id), 'Approved — it applies from the next generation.')}
+            () => api.approveSkill(courseName, id),
+            'Approved — it applies from the next generation.')}
           onEdit={(id, text) => runSkillAction(
             () => api.editSkill(courseName, id, text),
             'Edited. It is back to draft — an approval is of the words that were approved.')}
@@ -1713,12 +1769,12 @@ export default function App() {
             'Retired. It is kept on the record, so an old doc can still be explained.')}
           onAddPrereq={(name) => runSkillAction(
             () => api.addPrereq(courseName, name),
-            `${name} is now assumed knowledge — its topics will not be re-taught.`)}
+            `${name} is now assumed knowledge — its decks are read in full, and nothing it taught will be re-taught.`)}
           onAddExternalPrereq={(name, links) => runSkillAction(
             () => api.addExternalPrereq(courseName, name, links).then((r) => {
               // Fetching the decks runs in the background, like a sync. Follow the job so
               // the count of indexed topics is real rather than optimistic.
-              if (r?.job_id) pollJob(r.job_id, refreshCourseRules)
+              if (r?.job_id) pollJob(r.job_id, refreshPrereqs)
               return r
             }),
             `${name} added. Reading its decks now — its topics become assumed knowledge as they land.`)}
@@ -1765,7 +1821,8 @@ export default function App() {
 function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses = [],
                       justCreated, onDismissNew,
                       onAdd, onFromRequirements, onImport, onApprove, onEdit, onRetire,
-                      onAddPrereq, onAddExternalPrereq, onRemovePrereq }) {
+                      onAddPrereq, onAddExternalPrereq, onRemovePrereq, job }) {
+  const jobRan = useRef(false)
   const [extName, setExtName] = useState('')
   const [extLinks, setExtLinks] = useState('')
   const [extOpen, setExtOpen] = useState(false)
@@ -1774,6 +1831,12 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
   const [mode, setMode] = useState('write')
   const [editing, setEditing] = useState(null)
   const [editText, setEditText] = useState('')
+  // Close the link form once the decks are ACTUALLY read — and only when it worked, so a
+  // failed read leaves the links on screen to be corrected instead of retyped.
+  useEffect(() => {
+    if (job) { jobRan.current = true; return }
+    if (jobRan.current) { jobRan.current = false; if (msg?.ok) setExtOpen(false) }
+  }, [job, msg])
   const list = skills?.skills || []
   const canEdit = skills?.can_edit
   const report = prereqs?.report || {}
@@ -1829,9 +1892,16 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
                 <span className={`chip ${s.status === 'approved' ? 'good' : 'mid'}`}>{s.status}</span>
                 {s.check && <span className="chip" title={JSON.stringify(s.check)}>checked automatically</span>}
                 {s.source?.startsWith('imported:') && <span className="chip">from {s.source.slice(9)}</span>}
-                {s.source === 'requirements' && s.source_quote &&
+                {/* EVERY phrase it was drawn from, not just the first. The author says
+                    the same thing twice in different words; those merge into one skill,
+                    and the approval only means something if you can see all of what it
+                    was built from. */}
+                {s.source === 'requirements'
+                  && ((s.source_quotes || []).length || s.source_quote) && (
                   <span className="hint" title="the words this was drawn from">
-                    — from your words: “{s.source_quote}”</span>}
+                    — from your words: {(s.source_quotes?.length
+                      ? s.source_quotes : [s.source_quote])
+                      .map((qt) => `“${qt}”`).join(', ')}</span>)}
               </span>
             </div>
             {canEdit && (
@@ -1919,9 +1989,12 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
 
       <label>Prerequisites — what the learner already knows</label>
       <span className="hint">
-        Courses taught before this one. Their topics are <b>assumed</b>: the writer will
-        not re-teach them, and may refer to them freely. That is the opposite of the rule
-        for earlier sessions of THIS course, where repeating a topic is a failure.
+        Courses taught before this one. Their <b>whole decks are read</b> — not just the
+        topic names but the slide content, so the writer knows how far each topic was
+        actually taken and pitches this course above that level. Those topics are
+        <b> assumed</b>: they are not re-taught, and may be referred to freely. That is
+        the opposite of the rule for earlier sessions of THIS course, where repeating a
+        topic is a failure.
       </span>
       <div className="memberlist">
         {attached.length === 0 && <span className="hint">None.</span>}
@@ -1945,7 +2018,7 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
           )}
           <button className={`ghostbtn ${extOpen ? 'on' : ''}`} disabled={busy}
                   onClick={() => setExtOpen((v) => !v)}>
-            ＋ One taught elsewhere
+            ＋ A course not in this agent
           </button>
         </div>
       )}
@@ -1963,22 +2036,51 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
                     placeholder={'https://docs.google.com/presentation/d/…/edit\nhttps://docs.google.com/presentation/d/…/edit'} />
           <div className="gactions">
             <button className="primary"
-                    disabled={busy || !extName.trim() || !extLinks.trim()}
+                    disabled={busy || !!job || !extName.trim() || !extLinks.trim()}
                     onClick={() => {
-                      onAddExternalPrereq(extName.trim(),
-                        extLinks.split('\n').map((l) => l.trim()).filter(Boolean))
-                      setExtName(''); setExtLinks(''); setExtOpen(false)
+                      // The form used to close on click, which unmounted the only thing
+                      // that could report progress — so pasting twelve links looked
+                      // identical to the button doing nothing. It closes when the decks
+                      // are actually read, not when the request is sent.
+                      const n = extName.trim()
+                      Promise.resolve(onAddExternalPrereq(n,
+                        extLinks.split('\n').map((l) => l.trim()).filter(Boolean)))
+                        .then((ok) => { if (ok === false) return
+                                        setExtName(''); setExtLinks('') })
                     }}>
-              {busy ? 'Reading its decks…' : 'Add and read its decks'}
+              {busy || job ? 'Reading its decks…' : 'Add and read its decks'}
             </button>
-            <button className="ghostbtn" disabled={busy}
-                    onClick={() => setExtOpen(false)}>Cancel</button>
+            <button className="ghostbtn" disabled={busy || !!job}
+                    onClick={() => setExtOpen(false)}>
+              {job ? 'Reading…' : 'Cancel'}
+            </button>
           </div>
+          {job && (
+            <div className="joblive">
+              <div className="jobbar">
+                <span style={{ width: `${job.total ? Math.round(100 * (job.done + job.failed) / job.total) : 8}%` }} />
+              </div>
+              <span className="hint">
+                {job.stage === 'done'
+                  ? 'Finishing…'
+                  : `${job.stage || 'working'} — ${job.done} of ${job.total || '?'} deck(s) read`}
+                {job.slides ? `, ${job.slides} slide(s) so far` : ''}
+                {job.failed ? `, ${job.failed} could not be read` : ''}.
+                {' '}Each deck is fetched from Google Slides, so this takes a few seconds
+                per link. You can leave this open.
+              </span>
+            </div>
+          )}
         </div>
       )}
       {attached.length > 0 && (
         <span className="hint">
-          {report.topics_indexed || 0} topic(s) indexed from {attached.length} course(s).
+          Read from {attached.length} course(s): {report.sessions_indexed || 0} session(s),{' '}
+          {(report.slides_indexed || 0).toLocaleString()} slides,{' '}
+          {report.topics_indexed || 0} distinct topics
+          {report.content_chars
+            ? ` and ${Math.round(report.content_chars / 1000)}k characters of slide content`
+            : ''}.
           {report.overlaps?.length > 0 && (
             <> <b>{report.overlaps.length} of this course's takeaways name something a
               prerequisite already taught</b> — often right, if the session deepens it,

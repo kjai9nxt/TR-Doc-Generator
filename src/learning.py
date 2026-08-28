@@ -69,6 +69,22 @@ _STOP = {
     "this", "that", "these", "those", "it", "its", "you", "your", "we", "i", "as",
     "with", "from", "at", "by", "each", "every", "any", "all", "also", "while",
     "when", "where", "which", "here", "there", "add", "added", "make", "keep",
+    # Generic INSTRUCTION verbs and hedges. Every rule and every reviewer note is an
+    # imperative, so these are shared by rules with nothing whatever in common — and
+    # _merge_plausible only asks for ONE shared word before it will allow a merge. One
+    # of these getting through folded "use proper hex base addresses" into "use
+    # 'cluster' instead of 'block'" on the single word "use", and the reviewer's actual
+    # instruction was silently dropped. Both users of this set get stricter, which is
+    # the safe direction: a refused merge costs a near-duplicate rule, an accepted one
+    # loses the feedback.
+    "use", "used", "using", "uses", "show", "shown", "shows", "include", "included",
+    "including", "ensure", "ensures", "avoid", "avoids", "remove", "removed", "fix",
+    "fixed", "put", "give", "given", "gives", "need", "needs", "needed", "provide",
+    "provides", "write", "written", "writes", "set", "get", "gets", "one", "two",
+    "proper", "properly", "instead", "throughout", "rather", "than", "them", "they",
+    "into", "only", "more", "less", "such", "same", "other", "own", "both", "well",
+    "can", "will", "would", "may", "might", "does", "did", "has", "have", "had",
+    "but", "how", "why", "what", "who", "whom", "whose", "if", "then", "else",
 }
 
 
@@ -91,6 +107,22 @@ def _similar(a: str, b: str, threshold: float = 0.6) -> bool:
     if not ka or not kb:
         return _norm(a) == _norm(b)
     return len(ka & kb) / len(ka | kb) >= threshold
+
+
+_SCOPE_LINE = re.compile(r"^SCOPE:\s*\w+\s*$", re.I)
+
+
+def rule_line(out: str) -> str:
+    """The rule text out of a distil reply, ignoring the SCOPE classification line.
+
+    The SCOPE line is a CLASSIFICATION, never the rule. Taking the first line blindly
+    stored the literal string "SCOPE: course" as a durable rule when the model happened
+    to emit it first — and that rule then went into every subsequent generation carrying
+    reviewer-level precedence and saying nothing at all. One is in the live store now.
+    """
+    lines = [l.strip() for l in (out or "").strip().splitlines() if l.strip()]
+    body = [l for l in lines if not _SCOPE_LINE.match(l)]
+    return (body[0] if body else "").lstrip("-•*").strip().strip('"')
 
 
 def _merge_plausible(note: str, rule: str) -> bool:
@@ -410,8 +442,7 @@ def distill_feedback(reason: str, existing: list[str] | None = None
             user=f"EXISTING RULES:\n{listing}\n\nNOTE:\n{reason}\n\nOutput:",
             model=m.get("judge", m["generator"]), max_tokens=160, temperature=0.0,
             label="distill_feedback")
-        lines = [l.strip() for l in (out or "").strip().splitlines() if l.strip()]
-        line = (lines[0] if lines else "").lstrip("-•*").strip().strip('"')
+        line = rule_line(out)
         scope = COURSE if re.search(r"SCOPE:\s*course", out or "", re.I) else GLOBAL
         mm = re.match(r"^SAME:\s*(\d+)\s*$", line, flags=re.I)
         if mm:

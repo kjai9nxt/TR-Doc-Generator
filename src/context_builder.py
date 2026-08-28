@@ -120,9 +120,17 @@ def past_ppts_context(course: str, cur: Session) -> str:
         from . import prereqs as _prereqs
         pre = _prereqs.block(course)
     except Exception:
-        pre = ""
+        _prereqs, pre = None, ""
     if pre:
         parts.append(pre)
+    # …and the DETAIL layer for those prerequisites, exactly as the block above this one
+    # does for the course's own prior sessions. The topic list says which topics the
+    # learner met; this says how far they were taken, which is what sets the level.
+    if pre and _prereqs is not None:
+        detail = _prereqs.detail_block(
+            course, cur.name + " " + " ".join(cur.key_takeaways))
+        if detail:
+            parts.append(detail)
 
     docs = past_docs_summary(cur.number)
     if docs.strip():
@@ -160,6 +168,24 @@ def prior_coverage_block(course: str, cur: Session, takeaway: str, *,
             f"do NOT already cover. If a sub-concept here is genuinely part of this "
             f"takeaway, treat it as one line of assumed background and go deeper, never "
             f"as a slide re-introducing it.\n")
+
+
+def prereq_level_block(course: str, cur: Session, takeaway: str, *,
+                       top_k: int | None = None) -> str:
+    """How far the PREREQUISITES went on this one takeaway — its chunk's own instruction.
+
+    The sibling of prior_coverage_block, and for the same reason: the session-level
+    prerequisite retrieval is frozen into the cached base context, so the chunk writing
+    takeaway 4 sees material chosen for the session as a whole. Level is decided per
+    takeaway, not per session.
+    """
+    if top_k is None:
+        top_k = config.harness()["context"].get("prereq_rag_top_k_per_takeaway", 4)
+    try:
+        from . import prereqs as _prereqs
+        return _prereqs.detail_block(course, f"{cur.name} {takeaway}", top_k=top_k)
+    except Exception:
+        return ""
 
 
 def course_type_block(profile: dict | None = None) -> str:
@@ -792,7 +818,8 @@ def takeaway_instruction(course: str, cur: Session, idx: int, *, slides_used: in
         f"once) and map each of them to that slide in \"coverage\". Cut ritual first: an "
         f"analogy is only allowed on a concept_intro slide, and a worked example only "
         f"where the learner must EXECUTE something.\n")
-    return budget_block + prior_coverage_block(course, cur, takeaway) + f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
+    return (budget_block + prior_coverage_block(course, cur, takeaway)
+            + prereq_level_block(course, cur, takeaway)) + f"""GUIDED MODE — produce ONLY the SECTION covering key takeaway #{idx + 1}, as JSON:
 {{
   "section": {{
     "name": "<section title>",

@@ -145,14 +145,27 @@ const ROUTES = {
       source: 'user', check: null },
     { id: 2, text: 'Explain each snippet line by line.', status: 'draft',
       source: 'requirements', source_quote: 'explain the code line by line',
+      source_quotes: ['explain the code line by line'],
       check: { assert: 'field_present', field: 'walkthrough', when_block: 'code' } },
+    // One requirement the author stated three times in different words. It is ONE skill,
+    // and the approval only means something if every phrase behind it is on screen.
+    { id: 3, text: 'Keep code snippets concise and minimal, including only the syntax '
+        + 'needed to demonstrate the concept.', status: 'draft', source: 'requirements',
+      source_quote: 'code snippets should be small',
+      source_quotes: ['code snippets should be small', 'Small code snippets to be used',
+                      'No extra code that is wunwanted that shoulds nto be provided'],
+      check: null },
   ] },
   '/prereqs': { course: 'Operating Systems', can_edit: true,
                 prereqs: [{ prereq: 'Computer Networks', kind: 'course' },
                           { prereq: 'JS Elsewhere', kind: 'external' }],
                 available: ['Computer Networks', 'Own Draft'],
                 report: { topics_indexed: 42, prereqs: ['Computer Networks'],
-                          overlaps: [{ session_no: 4, topic: 'Sockets',
+                          sessions_indexed: 12, slides_indexed: 803,
+                          content_chars: 128400,
+                          overlaps: [{ session_no: 4, topics: ['Sockets'],
+                                       topic: 'Sockets',
+                                       prereqs: ['Computer Networks'],
                                        prereq: 'Computer Networks',
                                        takeaway: 'Sockets: the API' }] } },
   '/learned-rules': { rules: [{ text: 'Do not restate the paragraph in the bullets', scope: 'course', session_no: 30, source: 'judge', hits: 2, applies: true }], course: 'Operating Systems' },
@@ -205,6 +218,7 @@ const REGENS = []     // {index, reason, apply_to_following} the review panel po
 const SPLITS = []     // {index, slide_n} the review panel posted
 const FINALIZED = []  // one entry per create-final-doc request
 let APPROVED = []     // chunks the fake server has been told are reviewed
+let PREREQ_POLLS = 0  // how many times the prerequisite-ingest job has been polled
 function route(url, opts) {
   const p = String(url).replace(/^\/api/, '').split('?')[0]
   calls.push(p)
@@ -285,6 +299,17 @@ function route(url, opts) {
     return v
   }
   if (p === '/sync') return { job_id: 'syncjob' }
+  if (p === '/prereqs/external') return { ok: true, job_id: 'prereqjob', prereqs: [] }
+  if (p === '/jobs/prereqjob') {
+    PREREQ_POLLS += 1
+    return PREREQ_POLLS < 2
+      ? { status: 'running', logs: [],
+          progress: { done: 1, total: 3, slides: 44, failed: 0,
+                      stage: 'reading session 2 of 3' } }
+      : { status: 'done', logs: [],
+          progress: { done: 3, total: 3, slides: 130, failed: 0, stage: 'done' },
+          result: { prereq: 'Elsewhere', decks: 3, slides: 130, topics: 91, errors: [] } }
+  }
   if (p === '/jobs/syncjob') return { status: 'done', logs: ['imported'], result: {
     sessions: SESSIONS, changelog: [], errors: [], extraction_warnings: [],
     counts: { sessions: 1, ingested: 0, cached: 0 } } }
@@ -658,28 +683,60 @@ check('…and says these are the course\'s own, not the agent\'s',
 check('an approved skill is listed', text().includes('Show the snippet before explaining it.'))
 check('…and a draft too', text().includes('Explain each snippet line by line.'))
 // THE PROPERTY THAT MATTERS: a draft has to look like one, or approval is invisible.
-check('a draft is visibly a draft', $('.skillrow.draft').length === 1,
-      `${$('.skillrow.draft').length} draft rows`)
-check('…and an approved skill visibly approved', $('.skillrow.approved').length === 1,
-      `${$('.skillrow.approved').length} approved rows`)
-check('only the draft is offered for approval',
-      $('button').filter((b) => b.textContent.trim() === 'Approve').length === 1,
-      `${$('button').filter((b) => b.textContent.trim() === 'Approve').length} approve buttons`)
+const DRAFTS = ROUTES['/skills'].skills.filter((k) => k.status === 'draft').length
+const APPROVED_SKILLS = ROUTES['/skills'].skills.filter((k) => k.status === 'approved').length
+check('a draft is visibly a draft', $('.skillrow.draft').length === DRAFTS,
+      `${$('.skillrow.draft').length} draft rows, expected ${DRAFTS}`)
+check('…and an approved skill visibly approved',
+      $('.skillrow.approved').length === APPROVED_SKILLS,
+      `${$('.skillrow.approved').length} approved rows, expected ${APPROVED_SKILLS}`)
+check('only drafts are offered for approval',
+      $('button').filter((b) => b.textContent.trim() === 'Approve').length === DRAFTS,
+      `${$('button').filter((b) => b.textContent.trim() === 'Approve').length} approve `
+      + `buttons, expected ${DRAFTS}`)
 check('a skill with a machine check says so', text().includes('checked automatically'))
 // Path B's traceability, on screen: the reviewer can see the words it came from.
 check('a drafted skill shows the words it came from',
       text().includes('explain the code line by line'),
       text().replace(/\s+/g, ' ').match(/.{0,60}from your words.{0,60}/)?.[0])
+// A merged skill must show EVERY phrase it came from — the author said the same thing
+// three times, it became one rule, and hiding two of the three makes the approval a
+// guess about what was folded in.
+check('a merged skill names every phrase it was drawn from',
+      text().includes('code snippets should be small')
+      && text().includes('Small code snippets to be used')
+      && text().includes('wunwanted'),
+      text().replace(/\s+/g, ' ').match(/.{0,30}from your words.{0,190}/)?.[0])
+check('…and it is ONE row, not one per phrase',
+      $('.skillrow').filter((r) => r.textContent.includes('concise and minimal')).length === 1,
+      `${$('.skillrow').filter((r) => r.textContent.includes('concise and minimal')).length} rows`)
+check('…quoted exactly as typed, typos included',
+      text().includes('shoulds nto be provided'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}shoulds nto.{0,20}/)?.[0])
+
 check('all three ways to add one are offered',
       text().includes('Write one') && text().includes('From my requirements')
       && text().includes('Import from a course'))
 check('prerequisites are listed', text().includes('Computer Networks'))
-check('…with what they cover', text().includes('42 topic'),
-      text().replace(/\s+/g, ' ').match(/.{0,40}topic\(s\).{0,40}/)?.[0])
+check('…with what they cover', text().includes('42 distinct topics'),
+      text().replace(/\s+/g, ' ').match(/.{0,60}distinct topics.{0,40}/)?.[0])
+// The panel must show that the DECKS are read, not only that topics are listed. It said
+// "N topic(s) indexed" for as long as titles were genuinely all that were ever used;
+// now the slide bodies are searched too, and someone attaching a prerequisite has no
+// other way to see that its content is actually in play.
+check('…and that the decks themselves are read, not just their topic names',
+      text().includes('803 slides') && text().includes('12 session'),
+      text().replace(/\s+/g, ' ').match(/.{0,20}Read from.{0,110}/)?.[0])
+check('…including how much slide content that is',
+      text().includes('128k characters'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}characters.{0,20}/)?.[0])
+check('…and the description says the content sets the LEVEL, not just the ban list',
+      text().includes('whole decks are read') && text().includes('above that level'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}whole decks are read.{0,120}/)?.[0])
 check('…and the overlap is surfaced as a review signal',
       text().includes('Sockets'), text().replace(/\s+/g, ' ').match(/.{0,80}Sockets.{0,40}/)?.[0])
 check('…and it says prerequisites may be REFERRED to, not that they are banned',
-      text().includes('refer to them freely'),
+      text().includes('referred to freely'),
       text().replace(/\s+/g, ' ').match(/.{0,60}freely.{0,30}/)?.[0])
 // A prerequisite need not be a course this agent holds — the common case is one taught
 // somewhere else, known only through its slides.
@@ -688,8 +745,15 @@ check('…and marked as such, because the two differ in where the decks live',
       $('.memberchip .mtag').length === 1,
       `${$('.memberchip .mtag').length} tagged`)
 check('both ways to add one are offered',
-      text().includes('a course in this agent') && text().includes('One taught elsewhere'))
-await click($('button').find((b) => b.textContent.includes('One taught elsewhere')))
+      text().includes('a course in this agent')
+      && text().includes('A course not in this agent'))
+// The label used to read "One taught elsewhere" — a fragment naming the CATEGORY rather
+// than the action, and no help to someone deciding which of the two controls they want.
+// It is now the plain counterpart of the picker beside it.
+check('…and the second one reads as the counterpart of the first',
+      !text().includes('One taught elsewhere'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}taught elsewhere.{0,20}/)?.[0])
+await click($('button').find((b) => b.textContent.includes('A course not in this agent')))
 check('…and the elsewhere form asks for a name and its deck links',
       $('input').some((i) => i.placeholder?.includes('taught elsewhere'))
       && $('textarea').some((t) => t.placeholder?.includes('presentation')),
@@ -697,6 +761,52 @@ check('…and the elsewhere form asks for a name and its deck links',
 check('…and says whose the decks become',
       text().includes('they\u2019go if it does') || text().includes('go if it does'),
       text().replace(/\s+/g, ' ').match(/.{0,70}go if it does.{0,20}/)?.[0])
+
+// READING THE DECKS IS SLOW AND MUST LOOK IT. Each link is fetched from Google Slides,
+// which is seconds apiece. The form used to close on click — unmounting the only thing
+// that could report anything — so pasting a dozen links was indistinguishable from the
+// button doing nothing at all.
+async function typeInto(el, value) {
+  const proto = el.tagName === 'TEXTAREA'
+    ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value)
+    el.dispatchEvent(new window.Event('input', { bubbles: true }))
+  })
+}
+const settle = async (ms) => act(async () => { await new Promise((r) => setTimeout(r, ms)) })
+
+await typeInto($('input').find((i) => i.placeholder?.includes('taught elsewhere')),
+               'JS Basics')
+await typeInto($('textarea').find((t) => t.placeholder?.includes('presentation')),
+               'https://docs.google.com/presentation/d/aaa/edit')
+await click($('button').find((b) => b.textContent.includes('Add and read its decks')))
+await settle(1500)
+check('the form stays open while the decks are being read',
+      $('textarea').some((t) => t.placeholder?.includes('presentation')),
+      'the link form unmounted before the work finished')
+check('…and reports which deck it is on', text().includes('reading session 2 of 3'),
+      text().replace(/\s+/g, ' ').match(/.{0,50}deck\(s\) read.{0,40}/)?.[0])
+check('…how many are done', text().includes('1 of 3 deck(s) read'),
+      text().replace(/\s+/g, ' ').match(/.{0,60}of 3 deck.{0,30}/)?.[0])
+check('…and how much has come back so far', text().includes('44 slide(s) so far'),
+      text().replace(/\s+/g, ' ').match(/.{0,40}slide\(s\) so far.{0,20}/)?.[0])
+check('…with a bar that has actually moved', $('.jobbar > span').length === 1
+      && /width:\s*33%/.test($('.jobbar > span')[0].getAttribute('style') || ''),
+      $('.jobbar > span')[0]?.getAttribute('style'))
+check('…and the button says what it is doing',
+      $('button').some((b) => b.textContent.includes('Reading its decks…')),
+      $('button').map((b) => b.textContent).join(' | ').slice(0, 160))
+await settle(1500)
+check('when it finishes it says what was read',
+      text().includes('Read 3 deck(s)') && text().includes('130 slide(s)'),
+      text().replace(/\s+/g, ' ').match(/.{0,30}Read 3 deck.{0,90}/)?.[0])
+check('…and that the CONTENT is searched, not only the topic names',
+      text().includes('slide content is searched'),
+      text().replace(/\s+/g, ' ').match(/.{0,60}searched.{0,30}/)?.[0])
+check('…and the form closes once the work is actually done',
+      !$('textarea').some((t) => t.placeholder?.includes('presentation')),
+      'the link form was still open after the job finished')
 
 console.log('\n== the budget lives in Settings, not in the curriculum actions ==')
 await click(byLabel('Curriculum'))

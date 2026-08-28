@@ -768,26 +768,54 @@ def _tok_list(text: str) -> list[str]:
     return [t for t in _WORD.findall(text.lower()) if t not in _STOP]
 
 
-def retrieve(course: str, query: str, session_no: int, top_k: int = 6) -> list[dict]:
-    """Return the most query-relevant prior slides (across decks < session_no).
+def slide_detail(slide: dict) -> str:
+    """The part of a slide's body that ISN'T just its own title echoed back.
 
-    BM25 ranking (Okapi, k1=1.5, b=0.75): rewards rare/distinctive query terms
-    (IDF), saturates repeated matches, and normalises by slide length — far
-    stronger relevance than raw token overlap. Deterministic, offline, no deps.
-    Complements (does not replace) the always-injected per-deck summaries.
+    Section dividers and heading slides extract as a body that repeats the title once or
+    twice and says nothing else. They rank fine on a title-word query and then arrive
+    carrying no content — which is worse than absent when the block they land in claims
+    to show how far a topic was actually taken.
+    """
+    body = (slide.get("body") or slide.get("notes") or "")
+    title = " ".join((slide.get("title") or "").split()).lower()
+    if not title:
+        return body.strip()
+    keep = [ln for ln in body.splitlines()
+            if " ".join(ln.split()).lower().strip(":") not in (title, title.strip(":"))]
+    return "\n".join(keep).strip()
+
+
+def rank_slides(decks: list[dict], query: str, top_k: int = 6,
+                source: str | None = None, min_detail: int = 0) -> list[dict]:
+    """BM25-rank the slides of `decks` against `query`. The ranker, over ANY deck set.
+
+    Split out of retrieve() so the same body-level search can run over a PREREQUISITE's
+    decks. It could not before: retrieve() built its corpus from decks_before(course, n)
+    and had no way to be pointed anywhere else, so a prerequisite's slide bodies — every
+    character of them — were stored and never read. Only their titles ever reached the
+    model.
+
+    `source` labels each hit with the course it came from, which matters once hits can
+    arrive from more than one place.
     """
     q_terms = [t for t in _tok_list(query)]
     if not q_terms:
         return []
 
-    # Build the corpus of candidate prior slides.
     docs = []  # (session_no, slide, tokens)
-    for deck in decks_before(course, session_no):
-        for s in deck["slides"]:
-            blob = " ".join([s.get("title", ""), s.get("body", ""), s.get("notes", "")])
+    for deck in decks or []:
+        for s in deck.get("slides") or []:
+            if min_detail:
+                # Ask for real content, not a heading that happens to match the query.
+                if _BOILERPLATE.match(" ".join((s.get("title") or "").split())):
+                    continue
+                if len(slide_detail(s)) < min_detail:
+                    continue
+            blob = " ".join([s.get("title") or "", s.get("body") or "",
+                             s.get("notes") or ""])
             toks = _tok_list(blob)
             if toks:
-                docs.append((deck["session_no"], s, toks))
+                docs.append((deck.get("session_no"), s, toks))
     if not docs:
         return []
 
@@ -818,6 +846,22 @@ def retrieve(course: str, query: str, session_no: int, top_k: int = 6) -> list[d
     scored.sort(key=lambda x: x[0], reverse=True)
     out = []
     for score, sn, s in scored[:top_k]:
-        out.append({"session_no": sn, "slide": s["n"], "title": s["title"],
-                    "excerpt": (s["body"] or s["notes"])[:400], "score": round(score, 3)})
+        excerpt = (slide_detail(s) if min_detail
+                   else ((s.get("body") or s.get("notes")) or ""))
+        hit = {"session_no": sn, "slide": s.get("n"), "title": s.get("title") or "",
+               "excerpt": excerpt[:400], "score": round(score, 3)}
+        if source:
+            hit["source"] = source
+        out.append(hit)
     return out
+
+
+def retrieve(course: str, query: str, session_no: int, top_k: int = 6) -> list[dict]:
+    """The most query-relevant slides from THIS course's decks before `session_no`.
+
+    BM25 ranking (Okapi, k1=1.5, b=0.75): rewards rare/distinctive query terms
+    (IDF), saturates repeated matches, and normalises by slide length — far
+    stronger relevance than raw token overlap. Deterministic, offline, no deps.
+    Complements (does not replace) the always-injected per-deck summaries.
+    """
+    return rank_slides(decks_before(course, session_no), query, top_k=top_k)

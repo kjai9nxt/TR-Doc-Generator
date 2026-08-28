@@ -43,10 +43,59 @@ def check(name, cond, extra=""):
         print(f"  FAIL {name} {extra}")
 
 
+def offline_guards() -> None:
+    """The two ways a reviewer's instruction gets silently destroyed. No API key needed.
+
+    Both were live defects, and both are invisible: the feedback is accepted, the UI says
+    it was recorded, and what is actually stored is either somebody else's rule or a
+    fragment of the classification protocol.
+    """
+    print("\n== 0. THE FEEDBACK SURVIVES AT ALL ==")
+
+    # (a) A wrong merge DROPS the note. _merge_plausible vetoes a claimed duplicate that
+    # shares no subject matter — but it only asks for ONE shared word, and every rule is
+    # an imperative, so a generic instruction verb satisfied it. "the base addresses in
+    # this exmaple are unrealistic use proper hex ones" was folded into 'Fix terminology:
+    # use "cluster" instead of "block"' on the single shared word "use".
+    note = "the base addresses in this exmaple are unrealistic use proper hex ones"
+    check("a merge on a generic verb alone is vetoed",
+          not learning._merge_plausible(note,
+              'Fix terminology: use "cluster" instead of "block" throughout.'),
+          str(sorted(learning._keywords(note) & learning._keywords(
+              'Fix terminology: use "cluster" instead of "block" throughout.'))))
+    check("…and so is one sharing only a hedge",
+          not learning._merge_plausible(
+              "show one worked example and keep to it",
+              "Ensure every section can be used to show the same point"))
+    check("a genuine restatement still merges",
+          learning._merge_plausible(
+              note, "Use realistic hex base addresses in examples, never toy numbers."))
+    check("two rules about the same subject still merge",
+          learning._merge_plausible("expand the deadlock section",
+                                    "Give the deadlock discussion more depth."))
+
+    # (b) The SCOPE line is a CLASSIFICATION, not the rule. Taking lines[0] blindly stored
+    # the literal string "SCOPE: course" as a durable rule, which was then injected into
+    # every generation with reviewer-level precedence, saying nothing.
+    RULE = "Expand the Rollback and Starvation section."
+    check("a SCOPE line emitted FIRST is not stored as the rule",
+          learning.rule_line(f"SCOPE: course\n{RULE}") == RULE,
+          repr(learning.rule_line(f"SCOPE: course\n{RULE}")))
+    check("…and the normal order still works",
+          learning.rule_line(f"{RULE}\nSCOPE: course") == RULE)
+    check("a reply that is ONLY a scope line yields no rule text",
+          learning.rule_line("SCOPE: course") == "",
+          repr(learning.rule_line("SCOPE: course")))
+    check("a rule that merely MENTIONS scope is not mistaken for the marker",
+          learning.rule_line("State the scope of each section up front.")
+          == "State the scope of each section up front.")
+
+
 def main() -> int:
+    offline_guards()
     if config.api_key() is None:
         print("  skip: no API key configured — distillation needs one")
-        return 0
+        return 1 if FAIL else 0
 
     backup = learning.STORE.with_suffix(".json.testbak")
     had_store = learning.STORE.exists()

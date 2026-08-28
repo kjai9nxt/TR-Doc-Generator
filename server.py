@@ -716,17 +716,19 @@ def workspaces(user: dict = Depends(current_user)):
     # thing). So a new signee opened the app and found colleagues' courses in their
     # private workspace, switchable and editable.
     #
-    # The rule now comes from db.courses_for_user's `shelf`, so this and the course
-    # picker cannot disagree about where a course lives. An admin still sees everything,
-    # because their reach is instance-wide by design — a deliberate branch, not a
-    # conditional that forgot to branch.
+    # The rule comes from db.courses_for_user's `shelf`, so this and the course picker
+    # cannot disagree about where a course lives.
+    #
+    # There used to be an admin branch here that listed EVERY course as individual. The
+    # reasoning was that an admin's reach is instance-wide — but the individual workspace
+    # is a PERSONAL SHELF, not a view of the instance, and the effect was that an admin
+    # opened their own workspace and found every team's courses sitting in it. Being able
+    # to reach every course is what the admin dashboard's All courses tab is for. An
+    # admin's personal shelf is what an admin personally made, like everybody else's.
     shelved = db.courses_for_user(email, is_admin=user.get("is_admin", False),
                                   all_teams=all_teams, counts=counts, owners=owners)
-    if user.get("is_admin"):
-        individual = sorted(known)
-    else:
-        individual = sorted(c["name"] for c in shelved
-                            if c["shelf"] == "individual" and c["name"] in known)
+    individual = sorted(c["name"] for c in shelved
+                        if c["shelf"] == "individual" and c["name"] in known)
     return {
         "individual": {"courses": individual},
         "teams": out,
@@ -1070,24 +1072,44 @@ def _run_prereq_ingest(job_id: str, course: str, name: str, links: list[str]):
     prerequisite substore, which is what keeps them out of "what this course has already
     taught".
     """
-    def emit(msg: str):
+    def emit(msg: str, **progress):
         with _lock:
             if job_id in JOBS:
                 JOBS[job_id]["logs"].append(msg)
+                if progress:
+                    JOBS[job_id]["progress"].update(progress)
 
-    ok, errors = 0, []
-    emit(f"Fetching {len(links)} deck(s) for the prerequisite '{name}' …")
+    # STRUCTURED progress, not just log lines. Fetching a deck from Google Slides takes
+    # seconds per link, and until this landed the client had nothing to show for it: the
+    # POST returned immediately, the form closed, and the reader saw a silent page while
+    # a dozen decks were pulled. The client must not have to parse log prose to find out
+    # how far along it is.
+    with _lock:
+        JOBS[job_id]["progress"] = {"done": 0, "total": len(links), "slides": 0,
+                                    "failed": 0, "stage": "starting"}
+
+    ok, errors, slides = 0, [], 0
+    emit(f"Fetching {len(links)} deck(s) for the prerequisite '{name}' …",
+         stage="fetching")
+    print(f"[prereq] {course!r}: reading {len(links)} deck(s) for {name!r}", flush=True)
     for i, link in enumerate(links, start=1):
+        emit(f"  session {i}: fetching …", stage=f"reading session {i} of {len(links)}")
         try:
             _chash, data = gslides.content_hash(link)
             deck = gslides.extract_from_bytes(data, i, f"{name} — session {i}", link)
             data = None
             pptx_ingest.put_deck(course, i, deck, prereq=name)
             ok += 1
-            emit(f"  session {i}: {deck.get('n_slides', '?')} slide(s) extracted.")
+            slides += int(deck.get("n_slides") or 0)
+            emit(f"  session {i}: {deck.get('n_slides', '?')} slide(s) extracted.",
+                 done=ok, slides=slides)
         except Exception as e:
             errors.append(f"session {i}: {e}")
-            emit(f"  ⚠ session {i} could not be read: {e}")
+            emit(f"  ⚠ session {i} could not be read: {e}", failed=len(errors))
+            # Named in the server log too. A read that fails on the deployed instance is
+            # otherwise only ever seen as one line in a browser the operator is not
+            # looking at.
+            print(f"[prereq] {course!r}: session {i} failed: {e!r}", flush=True)
     # Whatever came back is kept: a prerequisite half-indexed still tells the writer more
     # than none, and the failures are named rather than swallowed.
     if ok:
@@ -1095,13 +1117,20 @@ def _run_prereq_ingest(job_id: str, course: str, name: str, links: list[str]):
             db.kb_backup()
         except Exception:
             pass
+    try:
+        topics = len(prereqs_mod.assumed_topics(course))
+    except Exception as e:
+        print(f"[prereq] {course!r}: topic count failed: {e!r}", flush=True)
+        topics = 0
     with _lock:
         JOBS[job_id].update(
             status="done" if ok else "error",
             error=None if ok else "None of the links could be read: " + "; ".join(errors),
             error_kind=None if ok else "read",
-            result={"prereq": name, "decks": ok, "errors": errors,
-                    "topics": len(prereqs_mod.assumed_topics(course))})
+            progress={"done": ok, "total": len(links), "slides": slides,
+                      "failed": len(errors), "stage": "done"},
+            result={"prereq": name, "decks": ok, "errors": errors, "slides": slides,
+                    "topics": topics})
 
 
 @app.post("/api/prereqs/external")
@@ -1135,9 +1164,25 @@ def add_external_prereq(body: ExternalPrereqBody, user: dict = Depends(current_u
     job_id = uuid.uuid4().hex[:12]
     with _lock:
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,
-                        "error": None, "error_kind": None}
-    threading.Thread(target=_run_prereq_ingest,
-                     args=(job_id, course, name, links), daemon=True).start()
+                        "error": None, "error_kind": None,
+                        "progress": {"done": 0, "total": len(links), "slides": 0,
+                                     "failed": 0, "stage": "queued"}}
+    def _guarded():
+        try:
+            _run_prereq_ingest(job_id, course, name, links)
+        except Exception as e:
+            # A job left "running" spins the progress bar for ever and tells the reader
+            # nothing. Whatever happened, the job ends and names itself.
+            print(f"[prereq] {course!r}: ingest crashed: {e!r}", flush=True)
+            with _lock:
+                if job_id in JOBS:
+                    JOBS[job_id].update(
+                        status="error", error_kind="crash",
+                        error=f"Reading the decks stopped unexpectedly: {e}",
+                        progress={**(JOBS[job_id].get("progress") or {}),
+                                  "stage": "failed"})
+
+    threading.Thread(target=_guarded, daemon=True).start()
     return {"ok": True, "job_id": job_id, "prereqs": db.prereqs(course)}
 
 

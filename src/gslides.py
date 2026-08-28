@@ -66,11 +66,39 @@ def content_hash(link: str, timeout=(10, 40)) -> tuple[str, bytes]:
     deck's CURRENT content, so any edit to the slides changes the hash and
     triggers re-ingestion on the next sync. timeout=(connect, read) so an
     unshared/unreachable deck fails fast instead of hanging the whole sync."""
-    resp = requests.get(export_pptx_url(link), timeout=timeout)
-    if resp.status_code != 200 or resp.content[:2] != b"PK":
+    try:
+        resp = requests.get(export_pptx_url(link), timeout=timeout)
+    except requests.exceptions.Timeout as e:
         raise ValueError(
-            f"Could not export the Google Slides deck (HTTP {resp.status_code}). "
-            "Make sure it is shared as 'Anyone with the link -> Viewer'.")
+            "Google did not answer in time while exporting this deck. A very large deck "
+            "can take longer than the limit; try it on its own, or split it.") from e
+    except requests.exceptions.RequestException as e:
+        raise ValueError(f"Could not reach Google to export this deck: {e}") from e
+    # SAY WHICH FAILURE IT WAS. One message for every status told the person to check
+    # sharing even when sharing was fine and the link was simply wrong, or the deck had
+    # been deleted — and there is nothing to act on in "it did not work".
+    if resp.status_code in (401, 403):
+        raise ValueError(
+            "This deck is not readable by the agent (HTTP %d). Open it in Google Slides "
+            "and set Share -> General access to 'Anyone with the link', role Viewer."
+            % resp.status_code)
+    if resp.status_code == 404:
+        raise ValueError(
+            "No Google Slides deck exists at that link (HTTP 404). Check the id — a "
+            "Google DOC or SHEET link will also land here, and only Slides can be "
+            "exported.")
+    if resp.status_code == 429:
+        raise ValueError(
+            "Google is rate-limiting the export (HTTP 429). Wait a minute and add the "
+            "remaining links again — the decks already read are kept.")
+    if resp.status_code != 200:
+        raise ValueError(f"Google refused to export this deck (HTTP {resp.status_code}).")
+    if resp.content[:2] != b"PK":
+        # 200 with an HTML body: Google served a sign-in or interstitial page instead of
+        # the file, which is what a restricted deck looks like when it does not 403.
+        raise ValueError(
+            "Google returned a web page instead of the deck, which means it is not "
+            "publicly readable. Set Share -> 'Anyone with the link' -> Viewer.")
     data = resp.content
     return hashlib.md5(data).hexdigest(), data
 

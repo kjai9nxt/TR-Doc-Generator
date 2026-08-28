@@ -636,3 +636,19 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .rubricblock.judgefix ul { margin: .4rem 0 0; padding-left: 1.1rem; }
 .rubricblock.judgefix li { margin-bottom: .35rem; }
 .judgeclaim { opacity: .75; font-style: italic; margin: .15rem 0 .1rem; }
+
+
+/* Live progress of a background deck extraction. Reading an external prerequisite's
+   slides is seconds per link; the reader needs to see it moving, not a still page. */
+.joblive { margin-top: 12px; }
+.jobbar {
+  height: 6px; border-radius: 999px; overflow: hidden;
+  background: rgba(127, 127, 127, 0.22); margin-bottom: 8px;
+}
+.jobbar > span {
+  display: block; height: 100%; border-radius: 999px;
+  background: var(--accent, #6c8cff);
+  transition: width 400ms ease;
+  min-width: 6%;
+}
+.joblive .hint { display: block; }

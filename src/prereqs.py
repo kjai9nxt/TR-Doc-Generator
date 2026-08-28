@@ -72,7 +72,7 @@ def courses(course: str) -> list[str]:
         return []
 
 
-def _index(course: str) -> list[dict]:
+def _index(course: str, decks: list | None = None) -> list[dict]:
     """[{prereq, kind, sessions:[{session_no, deck_title, topics}]}] per prerequisite.
 
     The only difference between the two kinds is WHERE THE DECKS ARE. An internal
@@ -174,12 +174,20 @@ def coverage_report(course: str) -> dict:
     matches. It does not judge, and it does not write rules.
     """
     from . import db
-    known = assumed_topics(course)
+    # ONE read of the decks, shared by both halves of this report. assumed_topics() and
+    # the size figures below each used to load every prerequisite deck for themselves,
+    # so a panel refresh read the whole store twice.
+    loaded = _decks(course)
+    index = _index(course)
+    known, seen = [], set()
     by_topic = {}
-    for entry in _index(course):
+    for entry in index:
         for s in entry["sessions"]:
             for t in s.get("topics") or []:
                 by_topic.setdefault(t.lower(), entry["prereq"])
+                if t.lower() not in seen:
+                    seen.add(t.lower())
+                    known.append(t)
 
     probes = [(t, re.compile(r"\b" + re.escape(t.lower()) + r"\b"))
               for t in known if _is_evidence(t)]
@@ -199,13 +207,122 @@ def coverage_report(course: str) -> dict:
                              "prereq": by_topic.get(hits[0].lower()),
                              "prereqs": sorted({by_topic.get(h.lower()) for h in hits}
                                                - {None})})
+    # What is actually READ, not just what is listed. The panel used to report a topic
+    # count alone, which was an honest description of the old behaviour: titles were all
+    # that were ever used. Now the bodies are searched too, and the person attaching a
+    # prerequisite should be able to see that its decks are genuinely in play.
+    sessions = slides = chars = 0
+    for _name, decks in loaded:
+        sessions += len(decks)
+        for d in decks:
+            sl = d.get("slides") or []
+            slides += len(sl)
+            chars += sum(len(str(x.get("body") or "")) for x in sl)
+
     return {
         "course": course,
         "prereqs": courses(course),
         "topics_indexed": len(known),
         "topics_compared": len(probes),
+        "sessions_indexed": sessions,
+        "slides_indexed": slides,
+        "content_chars": chars,
         "overlaps": overlaps,
         "note": ("An overlap is a takeaway naming something a prerequisite already "
                  "taught. Often right — a session that deepens it — but worth seeing, "
                  "because the alternative is spending a page re-teaching it."),
     }
+
+
+# --------------------------------------------------------------------------- #
+# BODY-LEVEL RETRIEVAL over prerequisite decks.
+#
+# The titles say WHICH topics the learner met. They cannot say HOW FAR the prerequisite
+# went, and that is the difference between two completely different learners. One deck
+# slide titled "FCFS Worked Trace" carries a full numeric trace — a queue of eight
+# cylinder requests, a starting head position, a computed total of 640 cylinders. Another
+# titled "SSTF Disk Scheduling" carries one sentence of definition. From the titles alone
+# both read as "knows disk scheduling", so the writer cannot pitch at either.
+#
+# Those bodies were extracted, written to disk and then never opened: retrieve() built
+# its corpus from decks_before(course, n) and had no way to be pointed at a prerequisite.
+# This is that path.
+# --------------------------------------------------------------------------- #
+# How much text beyond its own title a slide must carry to count as evidence of depth.
+# ~One real sentence. Below that it is a heading, not content.
+_MIN_DETAIL = 60
+
+
+def _decks(course: str) -> list[tuple[str, list[dict]]]:
+    """[(prerequisite name, its decks)] — internal and external alike.
+
+    An internal prerequisite is a course in this agent, so its decks are its own. An
+    external one was taught elsewhere and its decks live in the substore of the course
+    that declared it.
+    """
+    from . import db, pptx_ingest
+    out = []
+    for row in db.prereqs(course):
+        name, kind = row.get("prereq"), row.get("kind") or "course"
+        if not name:
+            continue
+        try:
+            decks = (pptx_ingest.load_all_decks(course, prereq=name) if kind == "external"
+                     else pptx_ingest.load_all_decks(name))
+        except Exception:
+            decks = []
+        if decks:
+            out.append((name, decks))
+    return out
+
+
+def retrieve(course: str, query: str, top_k: int = 5) -> list[dict]:
+    """The prerequisite slides whose ACTUAL CONTENT is closest to `query`.
+
+    Ranked across every prerequisite together and then cut to top_k, rather than top_k
+    from each: with three prerequisites attached the writer wants the closest material,
+    not a fixed quota per course.
+    """
+    from . import pptx_ingest
+    hits = []
+    for name, decks in _decks(course):
+        # min_detail: a divider slide whose body echoes its own title ranks fine on a
+        # title-word query and then arrives with nothing on it. In a block that claims to
+        # show how far a topic was taken, that is worse than returning one hit fewer.
+        hits += pptx_ingest.rank_slides(decks, query, top_k=top_k, source=name,
+                                        min_detail=_MIN_DETAIL)
+    hits.sort(key=lambda h: h.get("score", 0), reverse=True)
+    return hits[:top_k]
+
+
+def detail_block(course: str, query: str, top_k: int | None = None) -> str:
+    """The retrieved prerequisite content, rendered for the prompt. Empty when none.
+
+    Deliberately worded as LEVEL, not prohibition. The topic list above already carries
+    the do-not-re-teach rule; what this adds is how far the learner was actually taken,
+    so the document can start above that line instead of guessing where the line is.
+    """
+    from . import config
+    if top_k is None:
+        try:
+            top_k = int(config.harness()["context"].get("prereq_rag_top_k", 5))
+        except Exception:
+            top_k = 5
+    try:
+        hits = retrieve(course, query, top_k=top_k)
+    except Exception:
+        return ""
+    if not hits:
+        return ""
+    lines = "\n".join(
+        f"  [{h.get('source') or 'prerequisite'} · Session {h['session_no']} · "
+        f"Slide {h['slide']}] {h['title']}: {h['excerpt']}" for h in hits)
+    return ("HOW FAR THE PREREQUISITES ACTUALLY WENT ON THIS TOPIC — their real slide "
+            "content, not a topic list. This is the LEVEL the learner was left at:\n"
+            + lines + "\n"
+            "Write ABOVE this line. Everything shown here is known in this much detail, "
+            "so do not restate it, and do not pitch below it. Where a slide here worked "
+            "something through with concrete values, the learner can already do that — "
+            "build on the result rather than re-deriving it. Where a slide here only "
+            "defined a term, they know the term and not its mechanism; that is where "
+            "this session has room to go deeper.\n")

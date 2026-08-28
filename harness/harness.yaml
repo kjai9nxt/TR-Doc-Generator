@@ -2288,6 +2288,12 @@ context:
   # dropped, silently, in deck order. Mirrors max_per_deck for this course's own prior
   # sessions (taught_digest), because it is the same job on somebody else's decks.
   prereq_topics_per_session: 40
+  # …and the BODY of those decks, retrieved the way this course's own prior slides are.
+  # The topic list says WHICH topics the learner met; only the body says how far the
+  # prerequisite took them, which is what decides the level to write at. Every character
+  # of it used to be extracted, stored and never read.
+  prereq_rag_top_k: 5                          # against the session, in the cached base context
+  prereq_rag_top_k_per_takeaway: 4             # again per takeaway, where the level actually bites
   sync_poll_seconds: 60                        # --watch mode poll interval
   sync_max_workers: 1                          # decks parsed ONE at a time — image-heavy python-pptx
                                                # decks each spike RAM, and >1 in memory OOM-kills a 512 MB

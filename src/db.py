@@ -323,6 +323,15 @@ _PREREQS_ADDED_COLUMNS = [
     ("kind", "TEXT"),
 ]
 
+# A drafted skill can come from SEVERAL phrases at once. A person writing rough
+# requirements says the same thing twice in different words — "code snippets should be
+# small" and "small code snippets to be used" — and those are ONE requirement, not two
+# rules to approve separately. `source_quote` keeps the first for anything reading a
+# single string; `source_quotes` holds them all, as JSON.
+_SKILLS_ADDED_COLUMNS = [
+    ("source_quotes", "TEXT"),
+]
+
 
 def _add_missing_columns(conn) -> list[str]:
     """Bring existing tables up to date. Idempotent."""
@@ -330,7 +339,8 @@ def _add_missing_columns(conn) -> list[str]:
     for table, cols in (("runs", _RUNS_ADDED_COLUMNS),
                         ("curriculum", _CURRICULUM_ADDED_COLUMNS),
                         ("teams", _TEAMS_ADDED_COLUMNS),
-                        ("course_prereqs", _PREREQS_ADDED_COLUMNS)):
+                        ("course_prereqs", _PREREQS_ADDED_COLUMNS),
+                        ("course_skills", _SKILLS_ADDED_COLUMNS)):
         try:
             cur = conn.cursor()
             cur.execute(f"PRAGMA table_info({table})")
@@ -927,11 +937,20 @@ def courses_for_user(email: str, *, is_admin: bool = False,
             # was on both shelves at once, which is not what "moved it to the team" means
             # and left the same course appearing twice.
             #
-            # Note the rule is "a team YOU ARE ON", not "any team". A course you created
-            # that an admin attached to a team you are not a member of would otherwise
-            # vanish from every shelf while can_use_course still (correctly) lets you open
-            # it — your own course, reachable by URL and by nothing else.
-            "shelf": "team" if name in my_team_courses else "individual",
+            # Two ways onto the team shelf, and the second one matters for ADMINS. The
+            # first is "a team you are on owns it". The second is "a team owns it and you
+            # did not create it" — without which an admin, who can see every course, had
+            # every OTHER team's courses filed onto their personal shelf, because no team
+            # THEY are on owned any of them. A team's course is the team's, whoever asks.
+            #
+            # What both clauses protect is the one case that must NOT move: a course YOU
+            # created that an admin attached to a team you are not a member of. That stays
+            # individual, because otherwise it vanishes from every shelf while
+            # can_use_course still (correctly) lets you open it — your own course,
+            # reachable by URL and by nothing else.
+            "shelf": ("team" if (name in my_team_courses
+                                 or (name in team_owned and name not in my_own))
+                      else "individual"),
         })
     return out
 
@@ -1423,6 +1442,15 @@ def _shape_skill(r: dict) -> dict:
         r["check"] = json.loads(r.pop("check_json", None) or "null")
     except Exception:
         r["check"] = None
+    # Always a LIST, whatever the row holds. Rows written before source_quotes existed
+    # have only the single column, and a caller should not have to know which.
+    try:
+        quotes = json.loads(r.get("source_quotes") or "null")
+    except Exception:
+        quotes = None
+    if not isinstance(quotes, list) or not quotes:
+        quotes = [r["source_quote"]] if r.get("source_quote") else []
+    r["source_quotes"] = [q for q in quotes if q]
     return r
 
 
@@ -1455,18 +1483,28 @@ def approved_skills(course: str) -> list[dict]:
 
 def add_skill(course: str, text: str, *, kind: str = "style", source: str = "user",
               created_by: str | None = None, check: dict | None = None,
-              source_quote: str | None = None) -> int | None:
-    """Add a skill as a DRAFT. Returns its id, or None."""
+              source_quote: str | None = None,
+              source_quotes: list | None = None) -> int | None:
+    """Add a skill as a DRAFT. Returns its id, or None.
+
+    `source_quotes` is every phrase the requirement was drawn from — a person says the
+    same thing twice in different words and it is still one rule. `source_quote` stays
+    the first of them, so callers that want one string keep working.
+    """
     course, text = (course or "").strip(), " ".join((text or "").split())
     if not course or not text:
         return None
+    quotes = [" ".join(str(q).split()) for q in (source_quotes or []) if str(q).strip()]
+    if source_quote and source_quote not in quotes:
+        quotes.insert(0, source_quote)
     now = _now()
     try:
         return _exec(
             "INSERT INTO course_skills (course, text, kind, source, source_quote, "
-            "status, check_json, version, created_by, created_at, updated_at) "
-            "VALUES (?,?,?,?,?,'draft',?,1,?,?,?)",
-            (course, text, kind, source, source_quote,
+            "source_quotes, status, check_json, version, created_by, created_at, "
+            "updated_at) VALUES (?,?,?,?,?,?,'draft',?,1,?,?,?)",
+            (course, text, kind, source, (quotes[0] if quotes else None),
+             json.dumps(quotes) if quotes else None,
              json.dumps(check) if check else None,
              (created_by or "").lower() or None, now, now))
     except Exception as e:

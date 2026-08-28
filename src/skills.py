@@ -67,8 +67,24 @@ def applicable(course: str) -> list[dict]:
         return []
 
 
+# What each kind of skill governs, in the order a writer needs them: what the document
+# is made of, then how it is shaped, then how it is written.
+_KIND_HEADINGS = (
+    ("content",   "WHAT THIS COURSE MUST CONTAIN"),
+    ("structure", "HOW IT MUST BE STRUCTURED"),
+    ("style",     "HOW IT MUST BE WRITTEN"),
+)
+
+
 def block(course: str) -> str:
-    """The skills, rendered for the prompt. Empty when the course has none.
+    """The skills, composed as ONE BRIEF for the prompt. Empty when the course has none.
+
+    Composed, not listed. This used to emit a flat run of bullets, and four terse
+    fragments — "Show code snippets. / Explain the code line by line." — read to the
+    model as a checklist to tick rather than a description of how this course teaches.
+    Grouping them under what each kind governs makes it a brief, and puts requirements
+    about CONTENT in front of requirements about WORDING, which is the order a writer
+    needs them in.
 
     Labelled apart from the learned rules they travel with: a skill was WRITTEN for this
     course by a person, a learned rule was inferred from a correction. Same channel,
@@ -77,14 +93,30 @@ def block(course: str) -> str:
     rs = applicable(course)
     if not rs:
         return ""
-    out = ["# COURSE SKILLS (authored for this course, highest priority)",
-           "These were written for THIS COURSE by the person who owns it and approved "
-           "before they took effect. They are REQUIREMENTS, not preferences, and they "
-           "describe what this course needs that others do not.",
-           "PRECEDENCE: where one conflicts with the default style guidance, THE SKILL "
-           "WINS. Only the numbered HARD RULES about document STRUCTURE outrank them."]
+    out = [f"# HOW '{course}' IS WRITTEN — the course brief",
+           "Authored by the person who owns this course and approved before it took "
+           "effect. This is what THIS course needs that others do not: it is the "
+           "standing brief for every document produced for it, not a checklist to "
+           "satisfy once.",
+           "PRECEDENCE: where any of it conflicts with the default style guidance, THE "
+           "BRIEF WINS. Only the numbered HARD RULES about document STRUCTURE outrank "
+           "it."]
+    by_kind: dict[str, list[dict]] = {}
     for r in rs:
-        out.append(f"- {r['text']}")
+        by_kind.setdefault((r.get("kind") or "style").lower(), []).append(r)
+    for kind, heading in _KIND_HEADINGS:
+        group = by_kind.pop(kind, [])
+        if not group:
+            continue
+        out.append("")
+        out.append(f"## {heading}")
+        for r in group:
+            out.append(f"- {r['text']}")
+    for kind, group in by_kind.items():          # any kind added later, still shown
+        out.append("")
+        out.append(f"## {kind.upper()}")
+        for r in group:
+            out.append(f"- {r['text']}")
     return "\n".join(out) + "\n"
 
 
@@ -109,11 +141,11 @@ def _default_model(prompt: str) -> dict:
     from . import llm, config
     m = config.harness()["model"]
     raw = llm.complete(
-        system=("You formalise a course author's rough requirements into atomic, "
-                "checkable skills. You add NOTHING they did not ask for. Reply with "
-                "JSON only."),
+        system=("You turn a course author's rough notes into the brief their course is "
+                "written under. You merge what they said twice, you articulate what they "
+                "meant, and you add NOTHING they did not ask for. Reply with JSON only."),
         user=prompt,
-        model=m.get("judge", m["generator"]), max_tokens=1500, temperature=0.0,
+        model=m.get("judge", m["generator"]), max_tokens=2000, temperature=0.0,
         label="skills")
     return llm.extract_json(raw)
 
@@ -138,18 +170,38 @@ def from_requirements(raw: str, model=None) -> list[dict]:
     if model is None:
         model = _default_model
     prompt = (
-        "Split the following course requirements into ATOMIC skills — one instruction "
-        "each, in the author's own intent, no additions.\n\n"
+        "A course author has written what their course needs, in a hurry. Turn it into "
+        "the SKILLS that course is written under.\n\n"
         "Return JSON: {\"skills\": [{\"text\": \"...\", \"kind\": \"style|content|"
-        "structure\", \"source_quote\": \"<the exact words from the input this came "
-        "from>\", \"check\": {...}|null}]}\n\n"
-        "RULES:\n"
-        "- Invent NOTHING. Every skill must restate something the input actually asks "
-        "for, and `source_quote` must be a literal substring of the input.\n"
-        "- Split compound requirements; merge nothing.\n"
+        "structure\", \"source_quotes\": [\"<exact words from the input>\", ...], "
+        "\"check\": {...}|null}]}\n\n"
+        "TWO JOBS, and the draft is no use unless you do both.\n\n"
+        "1. MERGE RESTATEMENTS — AND ONLY RESTATEMENTS. The author repeats themselves: "
+        "the same requirement said twice in different words is ONE skill. 'code snippets "
+        "should be small' and 'small code snippets to be used' are the same rule — emit "
+        "it once with BOTH phrases in source_quotes.\n"
+        "   Two notes are the same rule only when they constrain THE SAME THING IN THE "
+        "SAME WAY. Being about the same subject is NOT enough: 'keep snippets small' and "
+        "'show the syntax' are both about code and are DIFFERENT requirements — one "
+        "limits length, the other demands something be present. Obeying one does not "
+        "obey the other. When in doubt, keep them separate: a duplicate is a nuisance, a "
+        "swallowed requirement is a rule the author asked for and never got.\n\n"
+        "2. ARTICULATE. Do not echo the author's phrasing back at them. They wrote rough "
+        "notes with typos; you are writing the instruction a professional writer will "
+        "work from. State what must happen, and where, and what it looks like when done "
+        "— one or two full sentences, imperative, no hedging, standing alone without the "
+        "author's note beside it. 'Show code snippets' is a restatement and is USELESS. "
+        "'Introduce every concept that has a code form with the snippet itself before "
+        "any prose about it; the code is the primary teaching object, not an "
+        "illustration of the paragraph above it.' is a skill.\n\n"
+        "THE ONE THING YOU MUST NOT DO IS INVENT. Articulating means making the author's "
+        "intent explicit and actionable. It does NOT mean adding requirements they did "
+        "not express. Every skill must trace to something in the input, and every string "
+        "in `source_quotes` must be a LITERAL substring of it — copy the author's words "
+        "exactly, typos and all. A skill you cannot quote for is dropped.\n\n"
         f"- `check` is optional and must be one of: {', '.join(sorted(CHECKS))}. Add one "
         "only where the requirement is mechanically checkable; otherwise null.\n\n"
-        f"REQUIREMENTS:\n{raw}")
+        f"AUTHOR'S NOTES:\n{raw}")
     try:
         data = model(prompt)
         parsed = json.loads(data) if isinstance(data, str) else data
@@ -158,22 +210,32 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         raise ModelUnavailable(str(e) or e.__class__.__name__) from e
 
     out = []
-    low = raw.lower()
+    low = " ".join(raw.split()).lower()
     for p in proposed:
         if not isinstance(p, dict):
             continue
         text = " ".join(str(p.get("text") or "").split())
-        quote = " ".join(str(p.get("source_quote") or "").split())
-        # THE TRACEABILITY RULE. A skill whose quote is not in the input is one the model
-        # wrote itself, and it must not be put in front of a reviewer as something they
-        # asked for.
-        if not text or not quote or quote.lower() not in low:
+        # THE TRACEABILITY RULE. A skill must quote the author. Articulating their intent
+        # is the job; adding requirements they never expressed is not, and without a
+        # verifiable quote the approval step is a rubber stamp — the reviewer has no way
+        # to tell a rule they asked for from one the model thought of.
+        raw_quotes = p.get("source_quotes")
+        if not isinstance(raw_quotes, list):
+            raw_quotes = [p.get("source_quote")]
+        quotes, seen = [], set()
+        for q in raw_quotes:
+            q = " ".join(str(q or "").split())
+            if q and q.lower() in low and q.lower() not in seen:
+                seen.add(q.lower())
+                quotes.append(q)
+        if not text or not quotes:
             continue
         kind = str(p.get("kind") or "style").lower()
         chk = p.get("check")
         ok, _why = validate_check(chk)
         out.append({"text": text, "kind": kind if kind in KINDS else "style",
-                    "source_quote": quote, "check": chk if (ok and chk) else None})
+                    "source_quote": quotes[0], "source_quotes": quotes,
+                    "check": chk if (ok and chk) else None})
     return out
 
 
@@ -184,6 +246,7 @@ def store_drafts(course: str, drafts: list[dict], *, created_by: str | None = No
     for d in drafts or []:
         if db.add_skill(course, d.get("text", ""), kind=d.get("kind") or "style",
                         source="requirements", created_by=created_by,
-                        check=d.get("check"), source_quote=d.get("source_quote")):
+                        check=d.get("check"), source_quote=d.get("source_quote"),
+                        source_quotes=d.get("source_quotes")):
             n += 1
     return n

@@ -12,6 +12,48 @@ export function setAuthToken(t) {
 let onUnauthorized = () => {}
 export function setOnUnauthorized(fn) { onUnauthorized = fn || (() => {}) }
 
+// RENEWING THE SIGN-IN BEFORE IT LAPSES.
+//
+// A Google ID token is valid for one hour and nothing here ever refreshed it. After an
+// hour the next request — whichever it happened to be — came back 401, the handler above
+// wiped the session, and the login screen replaced the page along with anything typed
+// into it. It bit the drafting button hardest because that is the longest request in the
+// app, so it was the one most likely to be the first across the line.
+//
+// The fix is to renew BEFORE the token expires rather than react after it has. The
+// callback is supplied by App (Google Identity Services can hand back a fresh credential
+// without any user interaction when the session is still good).
+let renew = null
+export function setRenewCredential(fn) { renew = fn || null }
+
+function tokenExpiry(jwt) {
+  try {
+    const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return Number(payload.exp) * 1000 || 0
+  } catch { return 0 }
+}
+
+// Renew when under two minutes remain. Long enough to cover a slow request that starts
+// just before the boundary, short enough that we are not asking Google constantly.
+const RENEW_MARGIN_MS = 120000
+let renewing = null
+
+async function freshToken() {
+  if (!authToken || !renew) return authToken
+  const exp = tokenExpiry(authToken)
+  if (!exp || exp - Date.now() > RENEW_MARGIN_MS) return authToken
+  // One renewal at a time — several requests firing at once must not each start one.
+  if (!renewing) {
+    renewing = Promise.resolve()
+      .then(() => renew())
+      .then((t) => { if (t) setAuthToken(t); return t })
+      .catch(() => null)
+      .finally(() => { renewing = null })
+  }
+  await renewing
+  return authToken
+}
+
 // Build a query string from the defined values only, so `?run_id=undefined` never
 // reaches the server (it would be treated as a real run id and resolve nothing).
 function qs(params) {
@@ -23,6 +65,7 @@ function qs(params) {
 
 async function req(path, opts = {}) {
   let res
+  await freshToken()
   try {
     res = await fetch(`/api${path}`, {
       headers: {
@@ -57,7 +100,16 @@ async function req(path, opts = {}) {
             + `waking up, or that request took too long. Nothing was necessarily left `
             + `half-done — reload and check before trying again.`
           : `Request failed (HTTP ${res.status}) on ${path}. Is the backend (server.py) running?`)
-    if (res.status === 401) onUnauthorized()
+    // A 401 means this credential is finished. Try ONE silent renewal and replay the
+    // request before throwing the session away — the token may simply have lapsed while
+    // the page sat open, and the person is still signed in to Google.
+    if (res.status === 401) {
+      if (renew && !opts._retried) {
+        const t = await Promise.resolve(renew()).catch(() => null)
+        if (t) { setAuthToken(t); return req(path, { ...opts, _retried: true }) }
+      }
+      onUnauthorized()
+    }
     const err = new Error(msg)
     err.kind = detail.kind
     err.status = res.status
@@ -187,7 +239,16 @@ export const api = {
       headers: { ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
     })
     if (!res.ok) {
-      if (res.status === 401) onUnauthorized()
+      // A 401 means this credential is finished. Try ONE silent renewal and replay the
+    // request before throwing the session away — the token may simply have lapsed while
+    // the page sat open, and the person is still signed in to Google.
+    if (res.status === 401) {
+      if (renew && !opts._retried) {
+        const t = await Promise.resolve(renew()).catch(() => null)
+        if (t) { setAuthToken(t); return req(path, { ...opts, _retried: true }) }
+      }
+      onUnauthorized()
+    }
       const d = await res.json().catch(() => ({}))
       throw new Error((d.detail && (d.detail.message || d.detail)) || `Download failed (HTTP ${res.status})`)
     }

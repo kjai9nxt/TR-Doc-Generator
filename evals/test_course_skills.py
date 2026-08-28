@@ -101,7 +101,14 @@ print("\n== it reaches the writer, labelled as AUTHORED ==")
 blk = learning.learned_rules_block(REACT)
 check("the block carries the skill", "Show the snippet before explaining it." in blk,
       blk[:200])
-check("…under its own heading", "COURSE SKILL" in blk.upper(), blk[:300])
+# It heads its own section, and that section is the COURSE's brief — distinct from the
+# learned rules travelling beside it, which the agent inferred from corrections rather
+# than being told up front.
+check("…under its own heading, named for this course",
+      f"HOW '{REACT}' IS WRITTEN" in blk, blk[:300])
+check("…and it is still separable from the learned rules it travels with",
+      "REVIEWER-ENFORCED RULES" not in blk.split("HOW '")[1][:400]
+      if "HOW '" in blk else False, blk[:400])
 check("…and says it was authored, not inferred",
       "authored" in blk.lower() or "written for this course" in blk.lower(), blk[:400])
 check("another course's block does not carry it",
@@ -229,6 +236,87 @@ finally:
     llm.complete = _real_complete
 check("a model that cannot be reached raises rather than reporting an empty result",
       isinstance(raised, skills.ModelUnavailable), repr(raised))
+
+print("\n== rough notes become a BRIEF, not an echo of the notes ==")
+# What shipped: four rough phrases came back as four near-verbatim rules, two of which
+# were the same requirement said twice ("code snippets should be small" / "Small code
+# snippets to be used"). The prompt said "Split compound requirements; merge nothing"
+# and "restate", so that is exactly what it did. A restatement is not a skill — the
+# writer gains nothing from being handed the author's own shorthand back.
+NOTES = ("code snippets should be small, Syntax should be shown, Small code snippets to "
+         "be used, No extra code that is wunwanted that shoulds nto be provided")
+merged = skills.from_requirements(NOTES, model=lambda p: json.dumps({"skills": [
+    {"text": ("Keep code snippets concise and minimal, including only the syntax needed "
+              "to demonstrate the concept; do not include extraneous code."),
+     "kind": "content",
+     "source_quotes": ["code snippets should be small", "Small code snippets to be used",
+                       "No extra code that is wunwanted that shoulds nto be provided"]},
+    {"text": ("Display the syntax explicitly in every code snippet so the reader can see "
+              "the language structure being taught."),
+     "kind": "content", "source_quotes": ["Syntax should be shown"]},
+]}))
+check("the same requirement said twice becomes ONE skill", len(merged) == 2,
+      str([d["text"][:40] for d in merged]))
+check("…carrying every phrase it was drawn from",
+      len(merged[0]["source_quotes"]) == 3, str(merged[0]["source_quotes"]))
+check("…including the one with the author's typos, quoted exactly",
+      "wunwanted" in " ".join(merged[0]["source_quotes"]),
+      str(merged[0]["source_quotes"]))
+check("…and source_quote stays the first, for anything wanting one string",
+      merged[0]["source_quote"] == merged[0]["source_quotes"][0],
+      str(merged[0]["source_quote"]))
+check("a genuinely different requirement is NOT merged away",
+      any("syntax" in d["text"].lower() and "explicit" in d["text"].lower()
+          for d in merged), str([d["text"][:50] for d in merged]))
+check("…and the drafts are articulated, not the notes echoed back",
+      all(len(d["text"]) > 60 for d in merged), str([len(d["text"]) for d in merged]))
+
+# The traceability rule still bites, and now on every quote.
+invented = skills.from_requirements("code snippets should be small",
+    model=lambda p: json.dumps({"skills": [
+        {"text": "Use four-space indentation everywhere.", "kind": "style",
+         "source_quotes": ["indentation should be four spaces"]}]}))
+check("a quote that is not in the input is still dropped", invented == [],
+      str(invented))
+partial = skills.from_requirements("code snippets should be small",
+    model=lambda p: json.dumps({"skills": [
+        {"text": "Keep snippets short enough to read at a glance.", "kind": "style",
+         "source_quotes": ["code snippets should be small", "never said this"]}]}))
+check("…and a skill with one real quote keeps only the real one",
+      len(partial) == 1 and partial[0]["source_quotes"] == ["code snippets should be small"],
+      str(partial))
+
+stored_id = None
+for d in merged:
+    stored_id = db.add_skill(REACT, d["text"], kind=d["kind"], source="requirements",
+                             created_by=ALICE, source_quotes=d["source_quotes"])
+row = next(x for x in db.skills(REACT) if x["id"] == stored_id)
+check("the quotes survive the round trip to the store",
+      row["source_quotes"] == ["Syntax should be shown"], str(row["source_quotes"]))
+# A row written before source_quotes existed has only the single column; a caller must
+# not have to know which kind of row it is holding.
+_legacy = db.add_skill(REACT, "Written the old way.", created_by=ALICE,
+                       source_quote="the old single quote")
+_lrow = next(x for x in db.skills(REACT) if x["id"] == _legacy)
+check("…and a skill carrying only the old single quote still reads as a list",
+      _lrow["source_quotes"] == ["the old single quote"], str(_lrow["source_quotes"]))
+check("…while one with no quote at all reads as an empty list",
+      db.skills(REACT)[0]["source_quotes"] == [],
+      str(db.skills(REACT)[0]["source_quotes"]))
+
+print("\n== the approved skills compose into a BRIEF, not a bullet dump ==")
+for x in db.skills(REACT):
+    db.approve_skill(x["id"], ALICE)
+brief = skills.block(REACT)
+check("it is presented as this course's brief", "the course brief" in brief, brief[:120])
+check("…grouped by what each kind governs",
+      "WHAT THIS COURSE MUST CONTAIN" in brief, brief)
+check("…with content before wording, the order a writer needs",
+      brief.index("MUST CONTAIN") < brief.index("MUST BE WRITTEN")
+      if "MUST BE WRITTEN" in brief else True, brief)
+check("…and it still declares precedence", "THE BRIEF WINS" in brief, brief)
+check("a course with no approved skills composes nothing",
+      skills.block("Course With No Skills At All") == "")
 
 print("\n== the checks a skill carries are a CLOSED vocabulary ==")
 ok, why = skills.validate_check({"assert": "block_present", "block": "code",

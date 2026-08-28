@@ -251,6 +251,83 @@ check("…so the count is a count of takeaways",
                                     for o in rep2["overlaps"]}), str(rep2["overlaps"]))
 db.delete_course(VICTIM); db.delete_course(NOISE)
 
+print("\n== the prerequisite decks' BODIES are actually read ==")
+# They were extracted, written to disk, and never opened. retrieve() built its corpus
+# from decks_before(course, n) and had no way to be pointed at a prerequisite, so the
+# only thing a prerequisite ever contributed was a list of slide TITLES. A title says
+# WHICH topics the learner met; it cannot say how far they were taken, and that is the
+# difference between "has heard of FCFS" and "can trace FCFS to a total head movement".
+DEEP = "Deep Course"
+pptx_ingest.put_deck(DEEP, 1, {"session_no": 1, "deck_title": "Disk Scheduling",
+    "n_slides": 3, "slides": [
+        # A section divider: its body is just its own title echoed. Ranks fine on a
+        # title-word query and arrives carrying nothing.
+        {"n": 1, "title": "Disk Scheduling Algorithms",
+         "body": "Disk Scheduling Algorithms\nDisk Scheduling Algorithms"},
+        # Real depth — a worked trace with concrete values.
+        {"n": 2, "title": "FCFS Worked Trace",
+         "body": ("A queue of cylinder requests 98, 183, 37, 122, 14, 124, 65, 67 "
+                  "arrives with the head starting at cylinder 53 on a 200-cylinder "
+                  "disk. Total head movement is 640 cylinders.")},
+        # Boilerplate, however well it matches.
+        {"n": 3, "title": "Agenda",
+         "body": "Disk scheduling: FCFS, SSTF, SCAN and total head movement compared."},
+    ]})
+db.curriculum_upsert(DEEP, 1, topic="D", session_name="Disk Scheduling",
+                     key_takeaways=["k"])
+LATER = "Later Course"
+db.curriculum_upsert(LATER, 1, topic="L", session_name="Simulators", key_takeaways=["k"])
+db.add_prereq(LATER, DEEP, added_by=ALICE)
+
+hits = prereqs.retrieve(LATER, "disk scheduling total head movement", top_k=5)
+check("a prerequisite's slide BODIES are retrieved at all", len(hits) > 0, str(hits))
+check("…carrying the actual content, not just the title",
+      any("640 cylinders" in h["excerpt"] for h in hits),
+      str([h["excerpt"][:60] for h in hits]))
+check("…labelled with which prerequisite it came from",
+      all(h.get("source") == DEEP for h in hits), str([h.get("source") for h in hits]))
+check("a divider slide whose body echoes its title is not offered as depth",
+      not any(h["slide"] == 1 for h in hits), str(hits))
+check("…nor is boilerplate, however well it matches",
+      not any(h["slide"] == 3 for h in hits), str(hits))
+
+blk = prereqs.detail_block(LATER, "disk scheduling total head movement")
+check("the block says it is showing the LEVEL, not a prohibition",
+      "LEVEL the learner was left at" in blk, blk[:200])
+check("…and carries the real numbers", "640 cylinders" in blk, blk)
+check("…and tells the writer to start above it", "Write ABOVE this line" in blk, blk)
+check("no prerequisites means no block", prereqs.detail_block(DEEP, "anything") == "")
+
+print("\n== an EXTERNAL prerequisite's bodies are read the same way ==")
+EXT = "Course Taught Elsewhere"
+HOST = "Host Course"
+pptx_ingest.put_deck(HOST, 1, {"session_no": 1, "deck_title": "Elsewhere", "n_slides": 1,
+    "slides": [{"n": 1, "title": "Closures",
+                "body": ("A closure captures the variables of the scope it was defined "
+                         "in and keeps them alive after that scope returns.")}]},
+    prereq=EXT)
+db.add_prereq(HOST, EXT, kind="external", added_by=ALICE)
+db.curriculum_upsert(HOST, 1, topic="H", session_name="One", key_takeaways=["k"])
+ext_hits = prereqs.retrieve(HOST, "closures capturing scope", top_k=3)
+check("an external prerequisite's bodies are retrieved from its substore",
+      any("captures the variables" in h["excerpt"] for h in ext_hits), str(ext_hits))
+check("…and are attributed to it", any(h.get("source") == EXT for h in ext_hits),
+      str([h.get("source") for h in ext_hits]))
+
+print("\n== and it reaches the PROMPT, not just the API ==")
+# The whole point. A retrieval nothing injects is the same as no retrieval.
+from src import context_builder
+from src.course_loader import Session as _S
+_cur = _S(number=1, name="Simulators", topic="L", key_takeaways=["build a disk scheduler"],
+          module=None) if "module" in _S.__dataclass_fields__ else _S(
+          number=1, name="Simulators", topic="L", key_takeaways=["build a disk scheduler"])
+ctx = context_builder.past_ppts_context(LATER, _cur)
+check("the session-level context carries the prerequisite's real content",
+      "640 cylinders" in ctx, ctx[-800:])
+chunk = context_builder.prereq_level_block(LATER, _cur, "total head movement")
+check("…and so does the per-takeaway instruction", "640 cylinders" in chunk, chunk)
+db.delete_course(LATER); db.delete_course(DEEP); db.delete_course(HOST)
+
 print("\n== removing a prerequisite, and deleting a course ==")
 check("a prerequisite can be removed", db.remove_prereq(REACT, CSS))
 check("…and its topics stop being assumed",

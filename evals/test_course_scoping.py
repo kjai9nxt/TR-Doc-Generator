@@ -342,6 +342,40 @@ check("bootstrap agrees with /workspaces about the shelf",
       MOVED not in (b.get("workspaces", {}).get("individual", {}).get("courses") or []),
       str(b.get("workspaces", {}).get("individual")))
 
+print("\n== an ADMIN's personal shelf is what the ADMIN made, not the instance ==")
+# Reported from the running app: a course belonging to a team was still listed under
+# Individual. The cause was an admin branch — /workspaces returned EVERY course as the
+# admin's individual shelf, and the picker had the matching `user.is_admin ||`. An
+# admin's reach is instance-wide, but the individual workspace is a PERSONAL shelf, not
+# a view of the instance; seeing everything is what the admin dashboard is for.
+as_user(ADMIN)
+ADMIN_OWN = "A Course The Admin Made"
+make_course(ADMIN, ADMIN_OWN)
+st, r = http("GET", "/workspaces")
+ind = r.get("individual", {}).get("courses") or []
+check("the admin's own course is on the admin's individual shelf", ADMIN_OWN in ind,
+      str(ind))
+check("…and a course owned by a team the admin is not on is NOT",
+      MOVED not in ind, f"{MOVED} in {ind}")
+check("…nor is anybody else's team course, however many teams there are",
+      not any(c in ind for t in db.teams() for c in (t.get("courses") or [])
+              if c != ADMIN_OWN),
+      str(ind))
+st, r = http("GET", "/courses")
+_ac = {c["name"]: c for c in r["courses"]}
+check("the admin can still SEE every course — that is not what changed",
+      MOVED in _ac, str(sorted(_ac)))
+check("…it is just filed on the team's shelf", _ac[MOVED]["shelf"] == "team",
+      str(_ac[MOVED]["shelf"]))
+check("…and the admin can still open it", 
+      http("GET", f"/curriculum?course={q(MOVED)}")[0] == 200)
+check("bootstrap says the same thing to the admin",
+      MOVED not in ((http("GET", "/bootstrap")[1].get("workspaces", {})
+                     .get("individual", {}).get("courses")) or []),
+      str(http("GET", "/bootstrap")[1].get("workspaces", {}).get("individual")))
+db.delete_course(ADMIN_OWN)
+as_user(ALICE)
+
 print("\n== …but a course of yours on a team you are NOT on stays reachable ==")
 # The trap in the rule above. An admin can attach a course to any team; if the shelf rule
 # were "any team owns it", the creator's own course would vanish from every shelf while
