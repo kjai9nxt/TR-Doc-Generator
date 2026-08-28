@@ -2032,13 +2032,41 @@ def kb_put(name: str) -> bool:
         return False                      # persistent disk: the file already survives
     if name not in _KB_TOP_FILES:
         return False
+    return _kb_mirror(name)
+
+
+def kb_put_rel(rel: str) -> bool:
+    """Persist ONE KB file BY PATH, immediately — decks and their manifests included.
+
+    kb_put() is allow-listed to the top-level files; a deck is not one of them, and its
+    only route to the cloud DB was kb_backup(), which runs once AFTER a whole ingest
+    finishes. On an ephemeral host that made a long read all-or-nothing: an external
+    prerequisite of 29 links that lost its instance at link 9 — a free-plan spin-down, a
+    redeploy, an OOM, anything that shows up in the browser as a 502 — had written nine
+    decks to a disk that was about to be wiped, and none of them to the DB. The
+    prerequisite row itself commits immediately, so what came back up was a prerequisite
+    attached with zero decks behind it: "1 course(s): 0 session(s), 0 slides".
+
+    A deck is ~50 KB, so mirroring each one as it lands costs a single small write per
+    link, against kb_backup()'s re-upload of the entire 1.5 MB store. Best effort —
+    never raises, because a storage hiccup must not fail a read that succeeded.
+    """
+    rel = (rel or "").lstrip("/")
+    if not _use_turso():
+        return False
+    if rel not in _KB_TOP_FILES and not rel.startswith("decks/"):
+        return False
+    return _kb_mirror(rel)
+
+
+def _kb_mirror(rel: str) -> bool:
     try:
-        content = (config.KB_DIR / name).read_text(encoding="utf-8")
+        content = (config.KB_DIR / rel).read_text(encoding="utf-8")
     except Exception:
         return False
     try:
         _exec("INSERT OR REPLACE INTO kb_files (path, content, updated_at) VALUES (?,?,?)",
-              (name, content, _now()))
+              (rel, content, _now()))
         return True
     except Exception:
         return False

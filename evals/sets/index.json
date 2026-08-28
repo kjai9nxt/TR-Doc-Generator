@@ -1,228 +1,228 @@
 {
-  "description": "Eval sets for the TR Doc Generator. Each file defines ONE evaluation dimension derived from the TR Doc Eval Guidelines (19 rules), with a rubric and good/bad (polarity) test cases. A future eval-runner grades generated output against each dimension's rubric; the good/bad cases both calibrate the grader and act as regression checks.",
-  "case_schema": {
-    "id": "unique case id",
-    "polarity": "good | bad",
-    "expected": "pass | fail",
-    "input": "the snippet/scenario under test",
-    "rationale": "why this case should pass/fail"
+ "description": "Eval sets for the TR Doc Generator. Each file defines ONE evaluation dimension derived from the TR Doc Eval Guidelines (19 rules), with a rubric and good/bad (polarity) test cases. A future eval-runner grades generated output against each dimension's rubric; the good/bad cases both calibrate the grader and act as regression checks.",
+ "case_schema": {
+  "id": "unique case id",
+  "polarity": "good | bad",
+  "expected": "pass | fail",
+  "input": "the snippet/scenario under test",
+  "rationale": "why this case should pass/fail"
+ },
+ "capability_status_legend": {
+  "implemented": "the agent does this today; eval is live.",
+  "dormant": "capability exists in code but is not currently exposed (e.g. reasoned regeneration after Guided mode was removed).",
+  "not_implemented": "capability does not exist yet; this set is a SPEC and will fail until built."
+ },
+ "sets": [
+  {
+   "file": "01_curriculum_takeaway_extraction.json",
+   "guidelines": [
+    1
+   ],
+   "status": "implemented",
+   "grader": "deterministic"
   },
-  "capability_status_legend": {
-    "implemented": "the agent does this today; eval is live.",
-    "dormant": "capability exists in code but is not currently exposed (e.g. reasoned regeneration after Guided mode was removed).",
-    "not_implemented": "capability does not exist yet; this set is a SPEC and will fail until built."
+  {
+   "file": "02_ppt_extraction_completeness.json",
+   "guidelines": [
+    2,
+    3
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
   },
-  "sets": [
-    {
-      "file": "01_curriculum_takeaway_extraction.json",
-      "guidelines": [
-        1
-      ],
-      "status": "implemented",
-      "grader": "deterministic"
-    },
-    {
-      "file": "02_ppt_extraction_completeness.json",
-      "guidelines": [
-        2,
-        3
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "03_takeaway_coverage.json",
-      "guidelines": [
-        1,
-        4
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "04_chunk_count.json",
-      "guidelines": [
-        5
-      ],
-      "status": "implemented",
-      "grader": "deterministic"
-    },
-    {
-      "file": "05_content_relevance.json",
-      "guidelines": [
-        6
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "06_groundedness_faithfulness.json",
-      "guidelines": [
-        7
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "07_feedback_regeneration_adherence.json",
-      "guidelines": [
-        8
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "08_self_evolution_loop.json",
-      "guidelines": [
-        9
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "09_recording_time_budget.json",
-      "guidelines": [
-        10
-      ],
-      "status": "implemented",
-      "grader": "deterministic"
-    },
-    {
-      "file": "10_language_simplicity.json",
-      "guidelines": [
-        11
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "11_broad_to_specific_ordering.json",
-      "guidelines": [
-        12
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "12_slide_phrasing_no_meta_narration.json",
-      "guidelines": [
-        13
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "13_analogy_quality.json",
-      "guidelines": [
-        14,
-        15
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "14_conciseness.json",
-      "guidelines": [
-        16
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "15_pedagogical_flow_continuity.json",
-      "guidelines": [
-        17
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "16_no_repeat_no_future_leakage.json",
-      "guidelines": [
-        18
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "17_market_coverage_completeness.json",
-      "guidelines": [
-        19
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "18_content_recency.json",
-      "guidelines": [
-        20
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "19_document_structure_layout.json",
-      "guidelines": [
-        21
-      ],
-      "status": "implemented",
-      "grader": "deterministic"
-    },
-    {
-      "file": "20_document_length_pages.json",
-      "guidelines": [
-        22
-      ],
-      "status": "implemented",
-      "grader": "deterministic"
-    },
-    {
-      "file": "21_analogy_placement.json",
-      "guidelines": [
-        23
-      ],
-      "status": "implemented",
-      "grader": "deterministic"
-    },
-    {
-      "file": "22_worked_example_appropriateness.json",
-      "guidelines": [
-        24
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "23_example_figure_realism.json",
-      "guidelines": [
-        24
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "24_regeneration_scope_discipline.json",
-      "guidelines": [
-        25
-      ],
-      "status": "implemented",
-      "grader": "llm_judge"
-    },
-    {
-      "file": "25_prose_bullet_mix.json",
-      "guidelines": [
-        16
-      ],
-      "status": "implemented",
-      "grader": "hybrid"
-    },
-    {
-      "file": "26_skill_adherence.json",
-      "guidelines": [],
-      "status": "implemented",
-      "grader": "deterministic",
-      "note": "Parameterised by the COURSE's own approved skills rather than by a fixed rule. One dimension covers every course; a set per course would mean re-authoring the suite each time one is created."
-    }
-  ],
-  "guideline_coverage": "All 25 guidelines are covered across 24 sets. Guidelines 20 (content recency) and 21 (document structure & layout) were added by the user on 2026-07-13. Guidelines 22-25 were added on 2026-08-10 from reviewer feedback that the docs were too long and were spending that length on ritual rather than coverage: 22 = 16-page ceiling, 23 = an analogy only where a concept is first introduced, 24 = a worked example only where one earns its slide and always with realistic figures, 25 = regenerating one chunk must change only what the reviewer complained about."
+  {
+   "file": "03_takeaway_coverage.json",
+   "guidelines": [
+    1,
+    4
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
+  },
+  {
+   "file": "04_chunk_count.json",
+   "guidelines": [
+    5
+   ],
+   "status": "implemented",
+   "grader": "deterministic"
+  },
+  {
+   "file": "05_content_relevance.json",
+   "guidelines": [
+    6
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "06_groundedness_faithfulness.json",
+   "guidelines": [
+    7
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "07_feedback_regeneration_adherence.json",
+   "guidelines": [
+    8
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "08_self_evolution_loop.json",
+   "guidelines": [
+    9
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
+  },
+  {
+   "file": "09_recording_time_budget.json",
+   "guidelines": [
+    10
+   ],
+   "status": "implemented",
+   "grader": "deterministic"
+  },
+  {
+   "file": "10_language_simplicity.json",
+   "guidelines": [
+    11
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "11_broad_to_specific_ordering.json",
+   "guidelines": [
+    12
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "12_slide_phrasing_no_meta_narration.json",
+   "guidelines": [
+    13
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
+  },
+  {
+   "file": "13_analogy_quality.json",
+   "guidelines": [
+    14,
+    15
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "14_conciseness.json",
+   "guidelines": [
+    16
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
+  },
+  {
+   "file": "15_pedagogical_flow_continuity.json",
+   "guidelines": [
+    17
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "16_no_repeat_no_future_leakage.json",
+   "guidelines": [
+    18
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "17_market_coverage_completeness.json",
+   "guidelines": [
+    19
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "18_content_recency.json",
+   "guidelines": [
+    20
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "19_document_structure_layout.json",
+   "guidelines": [
+    21
+   ],
+   "status": "implemented",
+   "grader": "deterministic"
+  },
+  {
+   "file": "20_document_length_pages.json",
+   "guidelines": [
+    22
+   ],
+   "status": "implemented",
+   "grader": "deterministic"
+  },
+  {
+   "file": "21_analogy_placement.json",
+   "guidelines": [
+    23
+   ],
+   "status": "implemented",
+   "grader": "deterministic"
+  },
+  {
+   "file": "22_worked_example_appropriateness.json",
+   "guidelines": [
+    24
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
+  },
+  {
+   "file": "23_example_figure_realism.json",
+   "guidelines": [
+    24
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
+  },
+  {
+   "file": "24_regeneration_scope_discipline.json",
+   "guidelines": [
+    25
+   ],
+   "status": "implemented",
+   "grader": "llm_judge"
+  },
+  {
+   "file": "25_prose_bullet_mix.json",
+   "guidelines": [
+    16
+   ],
+   "status": "implemented",
+   "grader": "hybrid"
+  },
+  {
+   "file": "26_skill_adherence.json",
+   "guidelines": [],
+   "status": "implemented",
+   "grader": "hybrid",
+   "note": "Parameterised by the COURSE's own approved skills rather than by a fixed rule. One dimension covers every course; a set per course would mean re-authoring the suite each time one is created."
+  }
+ ],
+ "guideline_coverage": "All 25 guidelines are covered across 24 sets. Guidelines 20 (content recency) and 21 (document structure & layout) were added by the user on 2026-07-13. Guidelines 22-25 were added on 2026-08-10 from reviewer feedback that the docs were too long and were spending that length on ritual rather than coverage: 22 = 16-page ceiling, 23 = an analogy only where a concept is first introduced, 24 = a worked example only where one earns its slide and always with realistic figures, 25 = regenerating one chunk must change only what the reviewer complained about."
 }

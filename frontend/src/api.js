@@ -274,6 +274,13 @@ export const api = {
   // Unfinished runs for the signed-in USER, from the server's checkpoints — so the
   // resume offer survives a different browser, cleared site data or a new machine.
   guidedResumable: () => req('/guided/resumable'),
+  // Ask the agent about one section — READ-ONLY. It answers from the inputs that
+  // section was generated from and (optionally) the web; it cannot change anything.
+  // Regeneration is still the only way the document moves, which is what keeps a
+  // question free: asking one can never cost work already accepted.
+  guidedAsk: (id, index, question, use_web = true) =>
+    req(`/guided/${id}/ask`, { method: 'POST',
+        body: JSON.stringify({ index, question, use_web }) }),
   // apply_to_following carries the note into every chunk AFTER this one as well, and
   // keeps it as a STANDING instruction so a later redraft of any of them still obeys it.
   guidedRegenerate: (id, index, reason, apply_to_following = false) =>
@@ -298,10 +305,21 @@ export const api = {
 
   // Teach the agent from a FINISHED doc — a correction spotted after assembly, which
   // a per-chunk regeneration reason can no longer capture.
-  submitFeedback: (session_no, reason) =>
-    req('/feedback', { method: 'POST', body: JSON.stringify({ session_no, reason }) }),
+  // `course` is what the correction is ABOUT. Without it the server files the rule
+  // against the instance-wide active course — whoever selected one last — so a
+  // correction could govern a course the reviewer has never worked on and never reach
+  // the one they were correcting.
+  submitFeedback: (session_no, reason, course) =>
+    req('/feedback', { method: 'POST',
+        body: JSON.stringify({ session_no, reason, course }) }),
   learnedRules: () => req('/learned-rules'),
   deleteLearnedRule: (index) => req(`/learned-rules/${index}`, { method: 'DELETE' }),
+  // House style vs subject matter is classified by a model and it gets it wrong. Moving
+  // a rule is not the same as deleting it: demoting a wrongly-global rule used to mean
+  // destroying it for the course that did ask for it.
+  setLearnedRuleScope: (index, scope, course) =>
+    req(`/learned-rules/${index}/scope`,
+        { method: 'POST', body: JSON.stringify({ scope, course }) }),
   migrateLearnedRules: () => req('/learned-rules/migrate', { method: 'POST' }),
 
   dashboard: () => req('/dashboard'),

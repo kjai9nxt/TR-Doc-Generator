@@ -153,7 +153,20 @@ def main() -> int:
 
         print("\n== 4. VERIFY ==")
         src = inspect.getsource(llm_judge.grade)
-        check("the judge is given the learned rules", "learned_rules_block" in src)
+        check("the judge is given the learned rules", "rules_block(course)" in src)
+        # BY COURSE. Bare, it fell back to the instance-wide active course and verified a
+        # document against whichever course somebody selected last. See
+        # evals/test_course_isolation.py.
+        check("…for the course being graded, not the instance-wide active one",
+              "learning.rules_block(course)" in src, src[:0])
+        check("…and the course's authored brief, labelled apart from them",
+              "_skills_mod.block(course)" in src and "THE COURSE'S OWN BRIEF" in src)
+        # The brief is not only shown to the judge, it is SCORED — see
+        # evals/test_skill_scoring.py. Without a scored dimension the only lever was a
+        # binary blocking issue, so a document could follow its course's brief loosely
+        # and still total 100/100.
+        check("…and is a scored rubric dimension, not only a blocking issue",
+              "course_brief_adherence" in src)
         check("a violation goes into blocking_issues (failing the gate)",
               "blocking_issues" in src)
         check("every store write is mirrored to the DB for an ephemeral host",

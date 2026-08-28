@@ -246,6 +246,49 @@ def retire_gated() -> int:
     return n
 
 
+# --------------------------------------------------------------------------- #
+# RULES THAT SAY NOTHING.
+#
+# A distil reply is two things: a SCOPE classification line and the rule. Taking the
+# first line blindly stored the literal string "SCOPE: course" as a durable rule
+# whenever the model happened to emit it first. rule_line() stops that happening again,
+# but it cannot undo one already in the store — and there IS one in the live store,
+# learned from a reviewer's note about Partitions & Volumes and VFS. It is the worst
+# possible kind of rule: it carries reviewer-level precedence into every generation for
+# that course, it says nothing the writer can act on, the judge is asked to verify
+# compliance with it, and the instruction it replaced was lost.
+#
+# So the store is swept on start-up, the same way gated rules are. A rule with no
+# content is DROPPED rather than repaired: what the reviewer actually asked for is not
+# recoverable from "SCOPE: course", and keeping the husk would only go on injecting it.
+# The raw note is printed when there is one, so the sweep says what was lost.
+# --------------------------------------------------------------------------- #
+def _is_contentless(text: str) -> bool:
+    t = (text or "").strip().lstrip("-•*").strip().strip('"')
+    if not t:
+        return True
+    if _SCOPE_LINE.match(t):
+        return True
+    # "SCOPE: course — <nothing else>" and similar stubs.
+    return bool(re.fullmatch(r"scope\s*[:\-–]\s*(global|course)\s*[.:;–-]*", t, re.I))
+
+
+def drop_contentless() -> int:
+    """Remove stored rules that carry no instruction. Idempotent; returns how many went."""
+    data = _load()
+    rs = data.get("rules", [])
+    keep = [r for r in rs if not _is_contentless(r.get("text"))]
+    dropped = [r for r in rs if _is_contentless(r.get("text"))]
+    for r in dropped:
+        raw = (r.get("raw") or "").strip()
+        print(f"[learning] dropped a rule with no instruction in it: {r.get('text')!r}"
+              + (f" — the reviewer's note was: {raw[:160]!r}" if raw else ""))
+    if dropped:
+        data["rules"] = keep
+        _save(data)
+    return len(dropped)
+
+
 def applicable_rules(course: str | None = None) -> list[dict]:
     """The rules that apply to `course`: every global rule + that course's own, minus
     any that a deterministic gate now enforces (see the note above).
@@ -253,7 +296,7 @@ def applicable_rules(course: str | None = None) -> list[dict]:
     Honours self_evolution.scope_rules — set it false in the harness to go back to
     injecting every rule everywhere.
     """
-    rs = [r for r in rules() if not gate_for(r)]
+    rs = [r for r in rules() if not gate_for(r) and not _is_contentless(r.get("text"))]
     if not _self_evo_cfg().get("scope_rules", True):
         return rs
     course = _active_course() if course is None else course
@@ -319,7 +362,8 @@ def add_rule(text: str, *, source: str, session_no=None, raw: str | None = None,
     return True
 
 
-def record_feedback(session_no, reason: str, *, source: str = "feedback") -> bool:
+def record_feedback(session_no, reason: str, *, source: str = "feedback",
+                    course: str | None = None) -> bool:
     """A human reason for rejecting/regenerating content -> a durable preference.
 
     The raw reason is NOT usable as a cross-session rule: it is typed in a hurry
@@ -336,11 +380,19 @@ def record_feedback(session_no, reason: str, *, source: str = "feedback") -> boo
     if not cfg.get("enabled", True):
         return False
     if not cfg.get("distill", True):
-        return add_rule(reason, source=source, session_no=session_no)
+        return add_rule(reason, source=source, session_no=session_no, course=course)
     # Compare only against rules that CO-APPLY with this one (global + this course),
     # but keep the mapping back to positions in the full store so `reinforce` targets
     # the right rule.
-    course = _active_course()
+    #
+    # THE COURSE MUST COME FROM THE RUN. Falling back to app_settings.course_name() —
+    # one instance-wide setting, whoever selected a course last — files the reviewer's
+    # correction against a course they were not working on. This is the WRITE side of
+    # the same leak that was fixed in the generator and the judge, and it is the worse
+    # half: a rule read from the wrong course is one bad document, a rule WRITTEN to the
+    # wrong course is permanent. It also poisons the dedup below, which compares against
+    # that other course's rules and can reinforce one of them instead.
+    course = _active_course() if course is None else course
     visible = [(i, r.get("text", "")) for i, r in enumerate(rules())
                if _scope_of(r) == GLOBAL or (r.get("course") or "") == course]
     text, dup_index, scope = distill_feedback(reason, [t for _, t in visible])
@@ -353,11 +405,12 @@ def record_feedback(session_no, reason: str, *, source: str = "feedback") -> boo
                     scope=scope, course=course)
 
 
-def record_issues(session_no, issues: list[str], *, source: str = "judge") -> int:
+def record_issues(session_no, issues: list[str], *, source: str = "judge",
+                  course: str | None = None) -> int:
     """Persist hard defects (judge blocking issues) as rules VERBATIM (no distil)."""
     n = 0
     for i in issues or []:
-        if add_rule(str(i), source=source, session_no=session_no):
+        if add_rule(str(i), source=source, session_no=session_no, course=course):
             n += 1
     return n
 
@@ -487,7 +540,8 @@ def _is_grader_noise(issue: str) -> bool:
     return any(marker in low for marker in _GRADER_NOISE)
 
 
-def learn_from_issues(session_no, issues: list[str], *, source: str = "judge") -> int:
+def learn_from_issues(session_no, issues: list[str], *, source: str = "judge",
+                      course: str | None = None) -> int:
     """Self-evolution entry point: distil the defects that SURVIVED the revision loop
     into durable, cross-session rules. Honors harness `self_evolution` config
     (enabled / learn_from_judge / distill). Returns the number of NEW rules added.
@@ -503,7 +557,7 @@ def learn_from_issues(session_no, issues: list[str], *, source: str = "judge") -
         if _is_grader_noise(str(raw)):
             continue
         text = distill_rule(str(raw)) if do_distill else str(raw)
-        if add_rule(text, source=source, session_no=session_no):
+        if add_rule(text, source=source, session_no=session_no, course=course):
             n += 1
     return n
 
@@ -610,14 +664,28 @@ def learned_rules_block(course: str | None = None) -> str:
     """
     # Only the rules that apply to THIS course — a global (house-style) rule always
     # does; a subject-matter rule only within its own course.
-    rs = applicable_rules(course)
     try:
         from . import skills as _skills
         skills_block = _skills.block(course or _active_course())
     except Exception:
         skills_block = ""
+    return skills_block + rules_block(course)
+
+
+def rules_block(course: str | None = None) -> str:
+    """The LEARNED RULES alone — no course brief.
+
+    Split out because the two halves have different provenance and want different
+    instructions to whoever reads them. The judge was handed the combined block under a
+    heading that said "learned from corrections a human made to EARLIER docs in this
+    course", which is true of a learned rule and false of a skill: a skill is what the
+    course owner WROTE, up front, before any document existed. On a course with skills
+    and no learned rules — the ordinary case for a new course — the judge was told the
+    author's whole brief had been inferred from mistakes nobody had made yet.
+    """
+    rs = applicable_rules(course)
     if not rs:
-        return skills_block
+        return ""
     human = [r for r in rs if r.get("source") in ("regeneration", "feedback")]
     auto = [r for r in rs if r.get("source") not in ("regeneration", "feedback")]
 
@@ -639,7 +707,7 @@ def learned_rules_block(course: str | None = None) -> str:
     if auto:
         out.append("\n## From automated QA defects on earlier runs")
         out += [fmt(r) for r in auto]
-    return skills_block + "\n".join(out) + "\n"
+    return "\n".join(out) + "\n"
 
 
 if __name__ == "__main__":       # python3 -m src.learning  -> re-distil + scope the store

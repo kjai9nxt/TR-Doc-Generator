@@ -30,6 +30,19 @@ from src import config, course_loader, pipeline, llm, pptx_ingest, regen_log, le
 from guardrails import guardrails  # noqa: E402
 from graders import time_grader, page_grader  # noqa: E402
 
+# TWO DIFFERENT "no score", and collapsing them is how the brief went unmeasured.
+#
+#   NOT_APPLICABLE — the set does not apply to this document at all (a course with no
+#                    skills has no brief to follow). It is skipped, and skipping is the
+#                    honest answer: scoring it would be inventing a verdict.
+#   None           — the DETERMINISTIC half has nothing it can assert, but there is
+#                    still something to judge. The judge half then stands alone. This is
+#                    the ordinary case for skills, which are prose: no machine can settle
+#                    "explain the code line by line", and a reader settles it easily.
+#
+# Returning None for both meant every real course's brief was skipped rather than read.
+NOT_APPLICABLE = "n/a"
+
 SETS_DIR = ROOT / "evals" / "sets"
 CASES_DIR = ROOT / "evals" / "cases"
 _WORD = re.compile(r"[a-z0-9']+", re.I)
@@ -384,10 +397,24 @@ def _chk_skill_adherence(doc, session, sset):
     """
     from src import skills as _skills
     course = getattr(session, "course", None) or _active_course_name()
-    rs = [s for s in _skills.applicable(course)
-          if isinstance((s or {}).get("check"), dict)]
+    approved = _skills.applicable(course)
+    rs = [s for s in approved if isinstance((s or {}).get("check"), dict)]
+    if not rs and approved:  # prose-only brief -> the judge half scores it alone
+        # THE COMMON CASE, and it used to score nothing. Every skill in the live store is
+        # PROSE — "explain the code line by line" is not a machine-checkable assertion —
+        # so this set skipped for every real course, and the one dimension that measures
+        # what makes a course different from every other course reported nothing at all.
+        # Prose is the LLM half's job (see HYBRID below): the deterministic half has
+        # nothing to assert, which is not the same as the document being fine.
+        return None, (f"{len(approved)} approved skill(s), none machine-checkable — "
+                      f"scored by the judge half instead")
     if not rs:
-        return None, "this course has no checkable skills — nothing to score"
+        # NO BRIEF AT ALL. Not scoreable, and that is not the same as scoring zero — a
+        # course that has not written its rules yet must not be marked down for it, nor
+        # handed a free 5. (Returning a bare None here used to go straight into
+        # `score >= threshold` and take the WHOLE eval run down with a TypeError.)
+        return NOT_APPLICABLE, ("this course has no approved skills — it has not said "
+                                "what it requires, so there is nothing to score")
     slides = [sl for sec in doc.get("sections") or [] for sl in sec.get("slides") or []]
     broken = []
     for sk in rs:
@@ -405,7 +432,6 @@ def _active_course_name() -> str:
 
 
 DETERMINISTIC = {
-    "skill_adherence": _chk_skill_adherence,
     "recording_time_budget": _chk_recording_time,
     "document_length_pages": _chk_document_length,
     "analogy_placement": _chk_analogy_placement,
@@ -422,6 +448,11 @@ DETERMINISTIC = {
 # an example within the share cap that was still unwarranted should not pass on a
 # technicality, and vice versa.
 HYBRID = {
+    # Two halves that genuinely cannot see each other's defects: a `check` is exact and
+    # a machine can settle it, and everything else the course owner wrote is prose that
+    # only a reader can weigh. Combined as the minimum, so a document cannot pass by
+    # satisfying the checkable half while ignoring the brief.
+    "skill_adherence": _chk_skill_adherence,
     "worked_example_appropriateness": _chk_worked_example_share,
     "example_figure_realism": _chk_example_realism,
     # Word overlap catches a bullet that reuses the paragraph's vocabulary; it cannot
@@ -588,7 +619,9 @@ def _learn_from_failures(session, scored: list) -> int:
                if not r["passed"] and r["id"] != "self_evolution_loop"]
     if not reasons:
         return 0
-    return learning.learn_from_issues(session.number, reasons, source="eval_set")
+    return learning.learn_from_issues(
+        session.number, reasons, source="eval_set",
+        course=getattr(session, "course", None) or _active_course_name() or None)
 
 
 def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool = True,
@@ -647,15 +680,31 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
         # the MINIMUM so neither can carry the set on its own.
         if sid in HYBRID:
             d_score, d_detail = HYBRID[sid](doc, session, sset)
+            if d_score is NOT_APPLICABLE:
+                results.append({"id": sid, "grader": "hybrid", "skipped": True,
+                                "reason": d_detail})
+                continue
             if use_llm:
                 try:
                     l_score, l_detail = _llm_score(doc, session, sset,
                                                    enforce_time=enforce_time)
-                    score = min(d_score, l_score)
-                    detail = f"deterministic {d_score}/5 ({d_detail}); judge {l_score}/5: {l_detail}"
-                    grader = "hybrid"
+                    # A None deterministic half does not drag the minimum to nothing —
+                    # it abstains, and the judge's verdict stands on its own.
+                    score = l_score if d_score is None else min(d_score, l_score)
+                    detail = (f"deterministic {'—' if d_score is None else d_score}/5 "
+                              f"({d_detail}); judge {l_score}/5: {l_detail}")
+                    grader = "hybrid" if d_score is not None else "llm_judge"
                 except Exception as e:
+                    if d_score is None:
+                        results.append({"id": sid, "grader": "llm_judge", "skipped": True,
+                                        "reason": f"{d_detail}; llm error: {e}"})
+                        continue
                     score, detail, grader = d_score, f"{d_detail} (llm error: {e})", "deterministic"
+            elif d_score is None:
+                # Nothing left to run: the machine half abstained and the judge is off.
+                results.append({"id": sid, "grader": "llm_judge", "skipped": True,
+                                "reason": f"{d_detail}; judge half skipped (--no-llm)"})
+                continue
             else:
                 score, detail, grader = d_score, f"{d_detail} (judge half skipped: --no-llm)", "deterministic"
             results.append({"id": sid, "grader": grader, "score": score,
@@ -664,6 +713,15 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
         if sid in DETERMINISTIC:
             score, detail = DETERMINISTIC[sid](doc, session, sset)
             grader = "deterministic"
+            # A checker that abstains — either because the set does not apply to this
+            # document, or because it has nothing it can assert and there is no judge
+            # half to fall back on — is a SKIP. It must be one HERE rather than a None
+            # reaching the comparison below, where it took the entire run down with a
+            # TypeError on `None >= 4`.
+            if score is None or score is NOT_APPLICABLE:
+                results.append({"id": sid, "grader": grader, "skipped": True,
+                                "reason": detail})
+                continue
         elif use_llm:
             try:
                 score, detail = _llm_score(doc, session, sset, enforce_time=enforce_time)

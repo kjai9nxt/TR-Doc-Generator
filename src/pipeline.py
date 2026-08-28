@@ -192,7 +192,7 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     llm.reset_usage(run_id)
 
     log("Generating draft 1 … (this LLM step takes ~1-2 minutes)")
-    doc = generator.generate(user_prompt)
+    doc = generator.generate(user_prompt, course=course)
 
     max_rounds = config.harness()["gates"]["max_revision_rounds"]
     history = []
@@ -228,7 +228,7 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
         prev_rubric = cur_rubric
         log(f"Revising (round {rnd + 1}) to fix {len(issues)} issue(s) … (~1-2 minutes)")
         doc = generator.revise(user_prompt, json.dumps(doc, ensure_ascii=False), issues,
-                               enforce_time=enforce_time)
+                               enforce_time=enforce_time, course=course)
 
     # Return the best draft seen, not necessarily the last (avoid regressions).
     _, doc, best_report = best
@@ -241,7 +241,10 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     if surviving:
         try:
             from src import learning
-            n = learning.learn_from_issues(cur.number, surviving, source="judge")
+            # Filed against the course this run is FOR, not the instance-wide active
+            # one — same reason the generator and the judge take it explicitly.
+            n = learning.learn_from_issues(cur.number, surviving, source="judge",
+                                           course=course)
             if n:
                 log(f"Self-evolution: learned {n} new rule(s) from surviving defects "
                     f"→ apply to all future sessions.")
@@ -554,7 +557,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         try:
             patch = generator.repair_patch(doc_json, issues,
                                            enforce_time=enforce_time,
-                                           base_context=base)
+                                           base_context=base, course=course)
             doc, psum = patcher.apply_doc_patch(doc, patch)
             log(f"Repair patch: {len(psum['slides_changed'])} slide(s) edited, "
                 f"{len(psum['slides_removed'])} removed, {psum['slides_added']} added, "
@@ -562,7 +565,8 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
                 + (f" — {psum['note']}" if psum.get("note") else ""))
         except (patcher.PatchError, ValueError, KeyError, TypeError) as e:
             log(f"Repair patch unusable ({e}) — falling back to a full re-draft.")
-            doc = generator.revise(base, doc_json, issues, enforce_time=enforce_time)
+            doc = generator.revise(base, doc_json, issues, enforce_time=enforce_time,
+                                   course=course)
         accepted, report, issues = grade(doc, rnd)
         history.append(report)
         key = _score_key(accepted, report)

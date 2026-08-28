@@ -150,6 +150,12 @@ def _startup_housekeeping() -> None:
             # re-adjudicates them from prose and can fail a compliant doc.
             ("learned-rule retirement", lambda: __import__(
                 "src.learning", fromlist=["learning"]).retire_gated()),
+            # Drop any stored rule that carries no instruction — a distil reply's SCOPE
+            # line saved as if it were the rule. One is in the live store; it goes into
+            # every generation for its course carrying reviewer-level precedence and
+            # says nothing.
+            ("contentless-rule sweep", lambda: __import__(
+                "src.learning", fromlist=["learning"]).drop_contentless()),
             # Guided checkpoints nobody can resume any more.
             ("guided-checkpoint purge", lambda: db.purge_guided(72)),
     ):
@@ -306,6 +312,25 @@ class SplitSlideBody(BaseModel):
     slide_n: int             # which slide in it, by the number shown to the reviewer
 
 
+class AskBody(BaseModel):
+    """A question about one section, in the reviewer's own words.
+
+    Deliberately unconstrained. There is no question type, no intent field and no menu:
+    whatever the reviewer wants to understand about the section is a valid question, and
+    anything that narrowed it would be a guess about what they are allowed to wonder.
+    """
+    # The section being asked about, or -1 for the document as a whole. The two are
+    # different questions with different evidence behind them: "why is it phrased like
+    # that" is answered by one section, "why is this in section 3 and not section 5"
+    # cannot be answered from section 3 at all.
+    index: int
+    question: str
+    # Web search costs a little latency and is not always relevant — a question about
+    # why a section is short is settled by the budget, not by GeeksforGeeks. On by
+    # default because the questions that matter most are usually the factual ones.
+    use_web: bool = True
+
+
 class RegenerateBody(BaseModel):
     index: int
     reason: str | None = None
@@ -343,6 +368,10 @@ class TeamNameBody(BaseModel):
 class FeedbackBody(BaseModel):
     session_no: int
     reason: str              # a plain-language correction; distilled into a durable rule
+    # WHICH COURSE this correction is about. Optional so older clients still work, but
+    # the caller should always send it: without it the rule is filed against the
+    # instance-wide active course, which is whoever selected one last.
+    course: str | None = None
 
 
 class GdocBody(BaseModel):
@@ -1093,6 +1122,18 @@ def _run_prereq_ingest(job_id: str, course: str, name: str, links: list[str]):
          stage="fetching")
     print(f"[prereq] {course!r}: reading {len(links)} deck(s) for {name!r}", flush=True)
     for i, link in enumerate(links, start=1):
+        # RESUMABLE. A deck already stored under this prerequisite at this position, read
+        # from this very link, is not fetched again — so posting the same list after an
+        # interrupted read picks up where it stopped instead of spending minutes
+        # re-downloading what is already there. Thirty links against a free instance that
+        # sleeps is otherwise a race nobody can reliably win.
+        have = pptx_ingest.get_deck(course, i, prereq=name)
+        if have and (have.get("source_link") or "") == link:
+            ok += 1
+            slides += int(have.get("n_slides") or 0)
+            emit(f"  session {i}: already read — kept.", done=ok, slides=slides,
+                 stage=f"reading session {i} of {len(links)}")
+            continue
         emit(f"  session {i}: fetching …", stage=f"reading session {i} of {len(links)}")
         try:
             _chash, data = gslides.content_hash(link)
@@ -1157,10 +1198,19 @@ def add_external_prereq(body: ExternalPrereqBody, user: dict = Depends(current_u
         raise HTTPException(status_code=409, detail={"message":
             f"'{name}' is already a course in this agent — attach it as a prerequisite "
             f"directly instead, and its own decks are used."})
-    if any(p["prereq"] == name for p in db.prereqs(course)):
+    # ALREADY ATTACHED IS NOT AN ERROR when the decks are what is being sent. Reading a
+    # long list can be cut short — a free instance sleeping, a redeploy, a 502 — and the
+    # prerequisite row commits before the first link is fetched, so what is left behind is
+    # a prerequisite attached to a partial set of decks. Refusing the same list back was
+    # refusing the only way to finish it: the alternative was to remove the prerequisite,
+    # which DELETES the decks already read, and start the whole thing again.
+    existing = next((p for p in db.prereqs(course) if p["prereq"] == name), None)
+    if existing and (existing.get("kind") or "course") != "external":
         raise HTTPException(status_code=409, detail={
-            "message": f"'{name}' is already a prerequisite of '{course}'."})
-    db.add_prereq(course, name, added_by=user.get("email"), kind="external")
+            "message": f"'{name}' is already a prerequisite of '{course}', as a course in "
+                       f"this agent. Its own decks are used."})
+    if not existing:
+        db.add_prereq(course, name, added_by=user.get("email"), kind="external")
     job_id = uuid.uuid4().hex[:12]
     with _lock:
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,
@@ -1231,18 +1281,46 @@ def list_skills(course: str | None = None, include_retired: bool = False,
 
 @app.post("/api/skills")
 def add_skill(body: SkillBody, user: dict = Depends(current_user)):
-    """Path A — write a skill yourself. It starts as a DRAFT."""
+    """Path A — write a skill yourself. The agent ARTICULATES it; it starts as a DRAFT.
+
+    What the author types is a note to themselves; what the writer needs is an
+    instruction. "From my requirements" has always closed that gap and this path did not,
+    so the same author's rules reached the prompt at two different grades depending on
+    which button they pressed — one of them verbatim, typos included, carrying precedence
+    over the style guide. The articulation is the same contract as path B: state the
+    intent properly, invent nothing, and keep the author's own words attached so the
+    approval is of a rewrite they can check.
+
+    The draft still needs approving, and the author can Edit it to anything they like —
+    so the model is a drafting aid here, never the last word.
+    """
     from src import skills as skill_rules
     course = _require_skill_author(user, body.course)
     ok, why = skill_rules.validate_check(body.check)
     if not ok:
         raise HTTPException(status_code=400, detail={"message": why})
-    sid = db.add_skill(course, body.text, kind=body.kind, source="user",
-                       created_by=user.get("email"), check=body.check)
+    if not (body.text or "").strip():
+        raise HTTPException(status_code=400, detail={
+            "message": "A skill needs some text."})
+    # NEVER FATAL. The model being unreachable must not lose the instruction the author
+    # just wrote — it is stored in their own words instead, which is exactly what this
+    # path did before, and they can edit it once the model is back.
+    drafted = None
+    try:
+        drafted = skill_rules.articulate(body.text)
+    except Exception as e:
+        print(f"[skills] articulation failed for {course!r}: {e!r}", flush=True)
+    text = (drafted or {}).get("text") or body.text
+    kind = (drafted or {}).get("kind") or body.kind
+    sid = db.add_skill(course, text, kind=kind, source="user",
+                       created_by=user.get("email"), check=body.check,
+                       source_quote=(drafted or {}).get("source_quote"),
+                       source_quotes=(drafted or {}).get("source_quotes"))
     if not sid:
         raise HTTPException(status_code=400, detail={
             "message": "A skill needs some text."})
-    return {"ok": True, "id": sid, "skills": db.skills(course)}
+    return {"ok": True, "id": sid, "articulated": bool(drafted),
+            "skills": db.skills(course)}
 
 
 @app.post("/api/skills/from-requirements")
@@ -1677,6 +1755,11 @@ _GUIDED_PERSIST_KEYS = (
     # every later redraft in the run, so a restart mid-review must not lose them — the
     # reviewer would have no way to know the instruction had stopped applying.
     "standing_notes",
+    # The reviewer's conversation with the agent about these chunks. It is part of the
+    # review, exactly as the approval ticks are: the reason a section was approved may
+    # live entirely in an exchange about it, and losing that to a redeploy or the free
+    # instance sleeping mid-review would leave the tick with nothing behind it.
+    "chat",
     # Persisted so an unfinished run can NAME itself in the resume list without the
     # server loading its whole state or re-deriving the title from a course that may
     # have been re-synced since (see db.unfinished_guided).
@@ -2002,7 +2085,11 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                 "markdown": docx_writer.chunk_to_markdown(kind, fragment)}
     approved_json = _approved_digest(prior)
     fragment = generator.generate_chunk(
-        state["base_context"], instruction, approved_json, reason)
+        state["base_context"], instruction, approved_json, reason,
+        # THIS RUN's course, never the instance-wide "active course": the rules and the
+        # authored brief a document is written under are the course's, and a guided run
+        # spans a long review during which anyone else may select a different one.
+        course=state.get("course") or None)
 
     hits = _chunk_repetition_hits(fragment)
     if hits and index > 0:
@@ -2023,7 +2110,8 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                 # slides the defect was not about, which a re-draft always could.
                 from src import patcher
                 patch = generator.generate_patch(
-                    state["base_context"], kind, fragment, fix)
+                    state["base_context"], kind, fragment, fix,
+                    course=state.get("course") or None)
                 retry, _scope = patcher.apply(kind, fragment, patch)
             except Exception as e:
                 _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
@@ -2174,7 +2262,8 @@ def _patch_one(gid: str, index: int, reason: str) -> tuple[dict, dict]:
         prev_fragment = state["chunks"][index]["fragment"]
         base_context = state["base_context"]
     kind, _ = _chunk_spec(GUIDED[gid], index)
-    patch = generator.generate_patch(base_context, kind, prev_fragment, reason)
+    patch = generator.generate_patch(base_context, kind, prev_fragment, reason,
+                                     course=state.get("course") or None)
     fragment, summary = patcher.apply(kind, prev_fragment, patch)
     markdown = docx_writer.chunk_to_markdown(kind, fragment)
     return {"kind": kind, "fragment": fragment, "markdown": markdown}, summary
@@ -2320,7 +2409,14 @@ def _guided_regenerate(gid: str, index: int, reason: str,
         # remember it so future sessions of this course avoid the same issue.
         try:
             from src import learning
-            learning.record_feedback(session_no, reason, source="regeneration")
+            # THIS RUN's course. Without it the correction is filed against the
+            # instance-wide "active course" — a course this reviewer may not even be
+            # working on — so it would govern documents there for ever and never reach
+            # the one they were actually correcting.
+            with _lock:
+                run_course = (GUIDED.get(gid) or {}).get("course") or None
+            learning.record_feedback(session_no, reason, source="regeneration",
+                                     course=run_course)
         except Exception:
             pass
         _guided_log(gid, f"Regenerating chunk {index + 1}: {GUIDED[gid]['labels'][index]} …")
@@ -2484,6 +2580,11 @@ def _guided_finalize(gid: str):
             GUIDED[gid].update(status="done", result={
                 "run_id": gid,
                 "session_no": session_no,
+                # The course this document was written FROM. Feedback given on the
+                # finished doc is filed against it, so it must travel with the result
+                # rather than being inferred from whatever the page has selected — after
+                # resuming somebody else's run those are not the same course.
+                "course": run_course or "",
                 "accepted": final["accepted"],
                 "time": final["time"],
                 "pages": final.get("pages"),
@@ -2663,6 +2764,11 @@ def _guided_view(state: dict) -> dict:
         # selector to the run being resumed, and it cannot know the number otherwise.
         "session_no": state.get("session_no"),
         "session_title": state.get("session_title"),
+        # The course this run is being written FROM. The page has its own idea of the
+        # selected course, and after resuming somebody else's run they are not the same
+        # — so anything filed from inside this run (a skill promoted out of the chat)
+        # has to use the run's, not the page's.
+        "course": state.get("course") or "",
         "index": state["index"],
         "total": state["total"],
         "enforce_time": state.get("enforce_time", True),
@@ -2681,6 +2787,11 @@ def _guided_view(state: dict) -> dict:
         # governs every later redraft.
         "standing_notes": [n for n in (state.get("standing_notes") or [])
                            if isinstance(n, dict)],
+        # The Q&A about each chunk, oldest first. `pending` marks a question whose
+        # answer is still being written, so the panel can show it immediately rather
+        # than swallowing what the reviewer typed until the model comes back.
+        "chat": [m for m in (state.get("chat") or []) if isinstance(m, dict)],
+        "chat_pending": bool(state.get("chat_pending")),
         "result": state.get("result"),
         "error": state.get("error"),
         # A step that failed but left the run usable (see _guided_step_failed). The
@@ -2852,6 +2963,99 @@ def guided_regenerate(gid: str, body: RegenerateBody,
                      args=(gid, body.index, reason, bool(body.apply_to_following)),
                      daemon=True).start()
     return {"ok": True, "apply_to_following": bool(body.apply_to_following)}
+
+
+def _run_doc_chat(gid: str, index: int, question: str, use_web: bool) -> None:
+    """Answer one reviewer question, on a thread. Never raises out of the thread.
+
+    The reviewer's own message is already on the record before this starts (see the
+    endpoint), so a failure here costs them the ANSWER, never the question — they can
+    ask again without retyping, and the failed turn says what went wrong instead of
+    disappearing.
+    """
+    from src import doc_chat
+    llm.use_meter(gid)      # a question is part of THIS run's cost, in a new thread
+    try:
+        with _lock:
+            state = GUIDED.get(gid)
+            if not state:
+                return
+            # A SNAPSHOT, taken under the lock and used outside it. The model call takes
+            # seconds and must not hold the lock that every poll needs; and the pack has
+            # to describe the document as it was when the question was asked, not as it
+            # may be a regeneration later.
+            snapshot = dict(state)
+        answer = doc_chat.ask(snapshot, index, question, use_web=use_web)
+        msg = {"id": uuid.uuid4().hex[:8], "index": index, "role": "agent",
+               "text": answer["text"], "web": answer.get("web", False),
+               "suggested_feedback": answer.get("suggested_feedback") or "",
+               # A standing preference the conversation settled, kept apart from the
+               # one-off fix above. Offered as a DRAFT course skill, never applied.
+               "suggested_rule": answer.get("suggested_rule") or "",
+               "at": db._now()}
+    except Exception as e:
+        print(f"[chat] {gid} chunk {index}: {e!r}", flush=True)
+        msg = {"id": uuid.uuid4().hex[:8], "index": index, "role": "agent",
+               "failed": True, "at": db._now(),
+               "text": f"That question could not be answered just now — {e}. "
+                       f"Nothing about the document changed. Ask again when you are "
+                       f"ready; your question is still above."}
+    with _lock:
+        state = GUIDED.get(gid)
+        if state is not None:
+            chat = state.setdefault("chat", [])
+            chat.append(msg)
+            # Bounded, so a long review cannot grow the checkpoint without limit.
+            if len(chat) > doc_chat.MAX_TURNS_KEPT:
+                del chat[:len(chat) - doc_chat.MAX_TURNS_KEPT]
+            state["chat_pending"] = False
+    _guided_save(gid)
+
+
+@app.post("/api/guided/{gid}/ask")
+def guided_ask(gid: str, body: AskBody, user: dict = Depends(current_user)):
+    """Ask the agent about one section — why it wrote what it wrote.
+
+    READ-ONLY, and that is the whole design. The reviewer already has a way to change a
+    section: reject it with a reason, which is the right lever once they have decided
+    something is wrong and the wrong one while they are still working out whether it is.
+    This is for that earlier moment. It cannot edit, regenerate or approve anything, so
+    asking a question can never cost the reviewer work they had already accepted — and
+    if the answer does not convince them, regeneration is exactly where it always was.
+
+    Available during review and after the document is built. A finished document is the
+    one people go back and query, and refusing then would be refusing the question at
+    the moment it is most often asked.
+    """
+    state = _guided_require_mine(gid, user)
+    question = " ".join((body.question or "").split())
+    if not question:
+        raise HTTPException(status_code=400, detail={"message": "Ask something."})
+    from src import doc_chat as _chat
+    with _lock:
+        chunks = state.get("chunks") or []
+        if body.index != _chat.WHOLE_DOC and not (0 <= body.index < len(chunks)):
+            raise HTTPException(status_code=400, detail={
+                "message": "That section is not in this run."})
+        if not chunks:
+            raise HTTPException(status_code=400, detail={
+                "message": "There is nothing written yet to ask about."})
+        if state.get("chat_pending"):
+            raise HTTPException(status_code=409, detail={
+                "message": "The last question is still being answered — one at a time, "
+                           "so the answers stay in order."})
+        # ON THE RECORD BEFORE THE CALL. If the model is unreachable the reviewer must
+        # still see what they asked, rather than watching their typing vanish.
+        chat = state.setdefault("chat", [])
+        chat.append({"id": uuid.uuid4().hex[:8], "index": body.index, "role": "user",
+                     "text": question, "at": db._now()})
+        state["chat_pending"] = True
+        view = _guided_view(state)
+    _guided_save(gid)
+    threading.Thread(target=_run_doc_chat,
+                     args=(gid, body.index, question, bool(body.use_web)),
+                     daemon=True).start()
+    return view
 
 
 @app.post("/api/guided/{gid}/approve")
@@ -3042,8 +3246,10 @@ def submit_feedback(body: FeedbackBody, user: dict = Depends(current_user)):
             "Say what should change, in a sentence — it becomes a rule applied to every "
             "future document in this course."})
     before = {r.get("text") for r in learning.rules()}
+    fb_course = _require_course(user, body.course) if body.course else None
     try:
-        learning.record_feedback(body.session_no, reason, source="feedback")
+        learning.record_feedback(body.session_no, reason, source="feedback",
+                                 course=fb_course)
     except Exception as e:
         raise HTTPException(status_code=502, detail={"message": f"Could not record that: {e}"})
     rules = learning.rules()
@@ -3112,6 +3318,53 @@ def migrate_learned_rules(user: dict = Depends(require_admin)):
     scope = learning.scope_existing(app_settings.course_name())
     return {"ok": True, "distil": distil, "scope": scope,
             "rules": learning.rules()}
+
+
+class RuleScopeBody(BaseModel):
+    scope: str                       # "global" (house style) | "course" (subject matter)
+    course: str | None = None        # which course a course-scoped rule belongs to
+
+
+@app.post("/api/learned-rules/{index}/scope")
+def set_learned_rule_scope(index: int, body: RuleScopeBody,
+                           user: dict = Depends(current_user)):
+    """Re-classify ONE rule as house style or subject matter.
+
+    The classification is made by a model at distil time and it gets it wrong: the live
+    store has "Remove working code examples; rely on pseudocode and conceptual
+    explanation instead" marked HOUSE STYLE, learned from "remove slide 8 and 12, working
+    examples are not needed for this topic" — a note about one topic, now a standing
+    instruction for every course on the instance, including ones created next year.
+
+    Until now the only lever was DELETE, which is the wrong one in both directions: a
+    house rule wrongly scoped to a course cannot be promoted at all, and demoting a
+    wrongly-global rule meant destroying it for the course that did ask for it. This
+    moves it instead. The rule's text, its raw note and its hit count are untouched —
+    only where it applies changes.
+    """
+    from src import learning
+    scope = (body.scope or "").strip().lower()
+    if scope not in (learning.GLOBAL, learning.COURSE):
+        raise HTTPException(status_code=400, detail={"message":
+            f"Scope must be {learning.GLOBAL!r} (applies to every course) or "
+            f"{learning.COURSE!r} (applies only to its own)."})
+    data = learning._load()
+    rs = data.get("rules", [])
+    if not (0 <= index < len(rs)):
+        raise HTTPException(status_code=404, detail={"message": "No such rule."})
+    rule = rs[index]
+    if scope == learning.COURSE:
+        # A course rule needs a course, or it applies to nothing and quietly disappears
+        # from every prompt. Keep the one it was learned on unless told otherwise.
+        target = (body.course or rule.get("course") or "").strip()
+        if not target:
+            raise HTTPException(status_code=400, detail={"message":
+                "This rule does not record which course it was learned on, so it cannot "
+                "be narrowed to one without naming it."})
+        rule["course"] = target
+    rule["scope"] = scope
+    learning._save(data)
+    return {"ok": True, "rule": rule, "rules": learning.rules()}
 
 
 @app.delete("/api/learned-rules/{index}")

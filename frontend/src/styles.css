@@ -508,6 +508,12 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .setmain { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .tag { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
   border: 1px solid var(--line2); border-radius: 6px; padding: 2px 7px; font-weight: 600; }
+/* A tag that is also a control — the house/course scope switch on a learned rule. It has
+   to look identical to the static tags beside it, so the browser's button chrome goes and
+   only the hover says it can be clicked. */
+button.tag { background: none; font-family: inherit; line-height: inherit; cursor: pointer; }
+button.tag:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+button.tag:disabled { cursor: default; opacity: .5; }
 
 /* ---------- Auth ---------- */
 .userbox { display: flex; align-items: center; gap: 9px; }
@@ -652,3 +658,33 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
   min-width: 6%;
 }
 .joblive .hint { display: block; }
+
+/* ---------- Ask-the-agent panel (guided review) ----------
+   Visually quieter than the review controls beside it: asking is not an action on the
+   document, and a panel that competes with Approve/Regenerate would suggest it is. */
+.chunkchat-cta { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin: 10px 0 2px; }
+.chunkchat-cta .hint { flex: 1 1 260px; }
+.chunkchat { border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--bg2); padding: 12px; margin: 10px 0 2px; }
+.chatlog { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.chatmsg { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: start; }
+.chatmsg .who { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--faint); font-weight: 700; padding-top: 3px; }
+.chatmsg.user .body { color: var(--text); font-weight: 500; }
+.chatmsg.agent .body { color: var(--muted); }
+.chatmsg.agent .body .md { color: var(--muted); }
+.chatmsg.failed .body { color: var(--warn); }
+.chatmsg .chip { margin-left: 6px; vertical-align: middle; }
+.chatsuggest { margin-top: 10px; padding: 10px; border-radius: var(--r-sm);
+  border: 1px solid var(--line2); background: var(--card); }
+.chatsuggest .sf { margin: 6px 0 8px; color: var(--text); font-style: italic; }
+.chatsuggest .hint { display: block; margin-top: 6px; }
+.chatbox textarea { width: 100%; }
+.chatbox .gactions { align-items: center; }
+/* The document-level question sits above the sections and is about all of them, so it
+   reads as a heading rather than as one more per-section control. */
+.chunkchat-cta.doclevel { border: 1px dashed var(--line2); border-radius: var(--r);
+  padding: 10px 12px; margin: 4px 0 12px; }
+.chatsuggest.rule { border-color: var(--accent); }
+.chatsuggest.rule .sf { color: var(--accent); }

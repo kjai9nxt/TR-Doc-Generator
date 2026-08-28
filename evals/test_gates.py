@@ -342,7 +342,19 @@ check("the output contract demands the defect be quoted",
       "quote the defect" in _contract or "must quote" in _contract)
 check("the caps that fail a doc are still absolute", "caps still bind" in _raw)
 _w = {d["id"]: d["weight"] for d in _rub["dimensions"]}
-check("weights still sum to 100", sum(_w.values()) == 100, f"got {sum(_w.values())}")
+# THE HOUSE DIMENSIONS sum to 100 — the qualities every technical course's document is
+# held to. `course_brief_adherence` is deliberately NOT one of them and sits ON TOP: it
+# is an extra requirement a course imposes on itself by writing a brief, not a
+# reallocation of the standard. Additive rather than carved out of the 100 so that a
+# course with no brief scores EXACTLY as it did before the dimension existed — the
+# judge excludes it and renormalises over these same weights, unchanged.
+_BRIEF_DIM = "course_brief_adherence"
+_house = {k: v for k, v in _w.items() if k != _BRIEF_DIM}
+check("the house dimensions still sum to 100",
+      sum(_house.values()) == 100, f"got {sum(_house.values())}")
+check("the course-brief dimension is additive, not carved out of them",
+      _BRIEF_DIM in _w and sum(_w.values()) == 100 + _w[_BRIEF_DIM],
+      f"got {sum(_w.values())}")
 
 print("\n== page ceiling ==")
 est = page_grader.estimate(GOLDEN)

@@ -239,6 +239,72 @@ def from_requirements(raw: str, model=None) -> list[dict]:
     return out
 
 
+def articulate(text: str, model=None) -> dict | None:
+    """Turn ONE line an author wrote into the instruction a writer works from. Path A.
+
+    WHY PATH A NEEDED THIS TOO. "From my requirements" already did it: the author's rough
+    notes go to the model, which articulates each one into a standing instruction and
+    quotes the words it came from. "Write one" did not — whatever was typed went into the
+    store verbatim and from there, verbatim, into the system prompt of every generation
+    for that course. The live store shows exactly what that produces:
+
+        "Explain the code, the student should be able to wrtite the code on their own
+         after that for the concpet for any given problem reltated to it"
+
+    That is a note to oneself, typos and all, being handed to the model as policy. Beside
+    it, from the other path, sits "Provide code syntax examples wherever a concept
+    requires them to be understood; syntax must be shown when needed to teach the
+    material." Same author, same intent, ten seconds apart — the difference is entirely
+    whether an articulation step ran. Two doors into one store should not produce two
+    grades of instruction.
+
+    ONE IN, ONE OUT. Unlike from_requirements this never splits: the author said they
+    were adding a skill, and they get that skill, articulated. The words they typed are
+    kept as source_quote and shown beside it, so what they approve is a rewrite they can
+    check against their own sentence.
+
+    Returns None when the model is unavailable or gave nothing usable — the caller then
+    stores the author's own words, because losing an instruction is far worse than
+    storing an unpolished one.
+    """
+    text = " ".join((text or "").split())
+    if not text:
+        return None
+    if model is None:
+        model = _default_model
+    prompt = (
+        "A course author has written ONE rule their course must be written under. Turn "
+        "it into the instruction a professional writer will work from.\n\n"
+        "Return JSON: {\"text\": \"...\", \"kind\": \"style|content|structure\"}\n\n"
+        "ARTICULATE. They typed it in a hurry, with typos, as a note to themselves. You "
+        "are writing what a writer who has never spoken to them will follow: state what "
+        "must happen, where it applies, and what it looks like when it is done — one or "
+        "two full sentences, imperative, no hedging, standing on its own without their "
+        "note beside it. Fix the typos. Do not echo their phrasing back at them.\n\n"
+        "DO NOT INVENT. Making their intent explicit is the job; adding requirements "
+        "they did not express is not. If they said to explain the code, do not also "
+        "decide how long the explanation runs, where it sits, or what it must mention. "
+        "Every demand in your sentence must be one they made. When their note is already "
+        "a clear instruction, return it essentially unchanged rather than embroidering "
+        "it — a faithful copy beats a richer rule they did not ask for.\n\n"
+        "`kind` is what the rule governs: content (what the document must contain), "
+        "structure (how it is shaped), style (how it is written).\n\n"
+        f"THE AUTHOR'S RULE:\n{text}")
+    try:
+        data = model(prompt)
+        parsed = json.loads(data) if isinstance(data, str) else data
+    except Exception:
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    out = " ".join(str(parsed.get("text") or "").split())
+    if not out:
+        return None
+    kind = str(parsed.get("kind") or "style").lower()
+    return {"text": out, "kind": kind if kind in KINDS else "style",
+            "source_quote": text, "source_quotes": [text]}
+
+
 def store_drafts(course: str, drafts: list[dict], *, created_by: str | None = None) -> int:
     """Store path-B drafts. They need approving like any other skill."""
     from . import db

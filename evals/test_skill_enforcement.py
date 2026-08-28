@@ -188,8 +188,16 @@ import json as _json
 idx = _json.loads((ROOT / "evals/sets/index.json").read_text())
 check("the set is registered", any(x["file"].startswith("26_") for x in idx["sets"]),
       str([x["file"] for x in idx["sets"]][-2:]))
-check("…with a deterministic checker",
-      "skill_adherence" in run_sets.DETERMINISTIC, str(sorted(run_sets.DETERMINISTIC)))
+# A HYBRID, and it has to be. The machine half settles skills carrying a `check` — using
+# the very same code the generation gate uses, so the eval and the gate cannot disagree —
+# and the judge half reads the rest. "The rest" is nearly all of them: a brief is written
+# in prose, and no assertion settles "explain the code line by line". While this was
+# deterministic-only, the one dimension that measures what makes a course DIFFERENT from
+# every other course skipped on every real course.
+check("…as a hybrid: exact where it can be, judged where it cannot",
+      "skill_adherence" in run_sets.HYBRID
+      and "skill_adherence" not in run_sets.DETERMINISTIC,
+      str(sorted(run_sets.HYBRID)))
 sset = _json.loads((ROOT / "evals/sets/26_skill_adherence.json").read_text())
 check("…and it declares itself parameterised by the course",
       "course" in sset["description"].lower(), sset["description"][:120])
@@ -221,8 +229,10 @@ class _NoSkills:
 
 
 score, detail = run_sets._chk_skill_adherence(doc_with(), _NoSkills(), sset)
-check("a course with no checkable skills is SKIPPED, not failed", score is None,
-      f"{score}: {detail}")
+check("a course with no skills at all is SKIPPED, not failed",
+      score is run_sets.NOT_APPLICABLE, f"{score}: {detail}")
+check("…because it has not said what it requires, which is not a defect",
+      "has not said what it requires" in detail, detail)
 
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

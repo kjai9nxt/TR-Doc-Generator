@@ -225,6 +225,16 @@ export default function App() {
   const [busyAction, setBusyAction] = useState(false)
   // Splitting a slide: which chunk's picker is open, and which slide it names.
   const [splitFor, setSplitFor] = useState(null)
+  // Asking the agent about a chunk. Separate from busyAction on purpose: a question is
+  // read-only, so it must not grey out Approve and Regenerate while it is in flight —
+  // the reviewer can carry on working while an answer is being written.
+  const [askFor, setAskFor] = useState(null)
+  const [askText, setAskText] = useState('')
+  const [askWeb, setAskWeb] = useState(true)
+  const [asking, setAsking] = useState(false)
+  // Which chat suggestions have already been filed as draft skills, so the button can
+  // say so instead of letting the same rule be proposed four times.
+  const [rulePosted, setRulePosted] = useState({})
   const [splitSlide, setSplitSlide] = useState('')
   const [splitErr, setSplitErr] = useState(null)
   // Create-final-TR-doc has to say it is working the moment it is pressed. The status
@@ -293,11 +303,20 @@ export default function App() {
   // Reading a course's decks takes seconds per link. The POST returns immediately, so
   // without live progress the page went silent while a dozen Google Slides decks were
   // pulled, and there was no way to tell that from nothing happening at all.
+  // A poll that fails is not a job that failed. The instance this runs on is a free one:
+  // it sleeps, it redeploys, and a single request can come back 502/503/504 from the
+  // proxy while the read behind it is perfectly alive. This used to clear the interval on
+  // the first such answer, so one blip at deck 9 of 29 ended the progress bar, the form,
+  // and any refresh of the panel — for a job that went on reading. Transient answers are
+  // now ridden out for a while, and only a run of them gives up.
+  const POLL_GRACE = 12            // ~15s of unanswered polls before we stop believing
   function pollJob(id, done) {
     setPrereqJob({ done: 0, total: 0, slides: 0, failed: 0, stage: 'starting' })
+    let misses = 0
     const t = setInterval(async () => {
       try {
         const job = await api.job(id)
+        misses = 0
         if (job.progress) setPrereqJob(job.progress)
         if (job.status === 'done') {
           clearInterval(t); setPrereqJob(null)
@@ -316,8 +335,32 @@ export default function App() {
           setSkillMsg({ ok: false, text: job.error }); done?.()
         }
       } catch (e) {
+        // 404 means the SERVER no longer knows this job: it restarted, and the job list
+        // is in memory. Nothing more will ever come, so stop at once — but the decks read
+        // before it went down are saved as they land, so say what is actually there
+        // rather than implying the whole read was lost.
+        if (e.status === 404) {
+          clearInterval(t); setPrereqJob(null)
+          setSkillMsg({ ok: false, text:
+            'The server restarted while the decks were being read, so it can no longer '
+            + 'report on that job. Every deck read before that is kept — the count below '
+            + 'is the real one. Paste the same list of links again to read the rest: the '
+            + 'ones already read are skipped, not fetched twice.' })
+          done?.()
+          return
+        }
+        misses += 1
+        if (misses < POLL_GRACE) {
+          // Keep the bar up and say why it is not moving, instead of tearing it down.
+          setPrereqJob((j) => ({ ...(j || {}), stage: 'waiting for the server' }))
+          return
+        }
         clearInterval(t); setPrereqJob(null)
-        setSkillMsg({ ok: false, text: e.message })
+        setSkillMsg({ ok: false, text:
+          `${e.message} The reading itself may still be running — this only means the `
+          + 'page stopped being able to ask. Reopen this panel to see what landed, and '
+          + 'paste the same links again to finish: decks already read are skipped.' })
+        done?.()
       }
     }, 1200)
   }
@@ -665,7 +708,7 @@ export default function App() {
   const [fbErr, setFbErr] = useState(null)
   function sendFeedback(session_no) {
     setFbBusy(true); setFbErr(null); setFbDone(null)
-    api.submitFeedback(session_no, fbText)
+    api.submitFeedback(session_no, fbText, result?.course || courseName || undefined)
       .then((d) => { setFbDone(d); setFbText(''); refreshLearned() })
       .catch((e) => setFbErr(e.message))
       .finally(() => setFbBusy(false))
@@ -797,11 +840,18 @@ export default function App() {
         // first poll or two, which is exactly the window the spinner is for.
         if (st.status !== 'assembling' && st.status !== 'reviewing') setFinalizing(false)
         if (st.status === 'reviewing') {
-          clearInterval(guidedPollRef.current)
+          // …unless an answer to a question is still being written. Status stays
+          // 'reviewing' throughout — a question changes nothing, which is the point —
+          // so stopping here would leave the reviewer watching a spinner that no poll
+          // was ever going to clear.
+          if (!st.chat_pending) clearInterval(guidedPollRef.current)
           // Back in review while we thought we were assembling means finalize failed and
           // left the run usable (see _guided_step_failed) — release the button.
           if (st.last_error) setFinalizing(false)
         }
+        // A finished document can still be asked about, and polling stops on 'done'
+        // below — so keep it alive while an answer is outstanding.
+        else if (st.status === 'done' && st.chat_pending) { /* keep polling */ }
         else if (st.status === 'done') {
           clearInterval(guidedPollRef.current); setResult(st.result); rememberGuided(null)
         }
@@ -891,6 +941,40 @@ export default function App() {
       // that text has changed. Polling brings the new list back.
       pollGuided(guidedId)   // resume polling to watch regenerating -> reviewing
     }).catch(handleGuidedError).finally(() => setBusyAction(false))
+  }
+
+  // A question. It cannot change the document, so it deliberately does NOT set
+  // busyAction — the reviewer keeps every other control while the answer is written.
+  // The reply is the whole view, with their question already on it, so what they typed
+  // appears the instant they send it rather than after the model has answered.
+  function askAboutChunk(index) {
+    const q = askText.trim()
+    if (!q || !guidedId) return
+    setAsking(true); setAskText('')
+    api.guidedAsk(guidedId, index, q, askWeb)
+      .then((st) => { setGuided(st); pollGuided(guidedId) })
+      .catch((e) => { setAskText(q); handleGuidedError(e) })
+      .finally(() => setAsking(false))
+  }
+
+  // Promote a standing preference the conversation settled into a DRAFT course skill.
+  // Filed against the RUN's course, not the page's selected one — after resuming
+  // somebody else's run those differ, and a rule landing on the wrong course is worse
+  // than no rule. It goes through the ordinary skills path, so it is articulated and
+  // then waits for approval in Course rules; nothing about the course changes here.
+  function makeSkillFromChat(msgId, text) {
+    const course = guided?.course || courseName
+    if (!course || !text) return
+    setRulePosted((m) => ({ ...m, [msgId]: 'busy' }))
+    api.addSkill(course, text)
+      .then(() => {
+        setRulePosted((m) => ({ ...m, [msgId]: 'done' }))
+        refreshSkills()
+      })
+      .catch((e) => {
+        setRulePosted((m) => { const n = { ...m }; delete n[msgId]; return n })
+        handleGuidedError(e)
+      })
   }
 
   // Splitting is deterministic and synchronous on the server — no model call, no polling.
@@ -1443,6 +1527,31 @@ export default function App() {
                       <span className="gcount"> · {approvedSet.size}/{guided.chunks.length} approved</span>
                     </div>
                   )}
+                  {/* A question about the DOCUMENT, not a section. It sits above them
+                      because that is what it is about, and because the questions it
+                      answers — why is this topic here and not there, does the whole
+                      thing hang together — are the ones you cannot ask from inside a
+                      single section. Same read-only guarantee. */}
+                  <ChunkChat
+                    scope="document"
+                    messages={(guided.chat || []).filter((m) => m.index === -1)}
+                    pending={guided.chat_pending}
+                    open={askFor === -1}
+                    text={askFor === -1 ? askText : ''}
+                    web={askWeb}
+                    asking={asking}
+                    onOpen={() => { setAskFor(-1); setAskText('') }}
+                    onClose={() => { setAskFor(null); setAskText('') }}
+                    onText={setAskText}
+                    onWeb={setAskWeb}
+                    onSend={() => askAboutChunk(-1)}
+                    /* A document-level conclusion has no single section to regenerate,
+                       so it offers the course-skill route only — the reviewer picks the
+                       section themselves if a fix is what they want. */
+                    canRegen={false}
+                    onUseAsFeedback={() => {}}
+                    rulePosted={rulePosted}
+                    onMakeSkill={makeSkillFromChat} />
                   {/* A step that failed but left the run intact. Shown here, inside the
                       panel, so it reads as "that click didn't work, try again" rather
                       than tearing the review screen down. */}
@@ -1465,6 +1574,40 @@ export default function App() {
                         {regenning
                           ? <Busy label="Regenerating this chunk…" />
                           : <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{c.markdown}</ReactMarkdown></div>}
+                        {/* ASK BEFORE YOU DECIDE. Regenerating is the lever for a
+                            section you have decided is wrong; this is for the moment
+                            before that, when you cannot yet tell whether it is. It is
+                            read-only — it cannot edit, regenerate or approve — so a
+                            question can never cost you work you had already accepted.
+                            Available on a finished document too: that is when people
+                            most often go back and ask. */}
+                        {!regenning && (
+                          <ChunkChat
+                            messages={(guided.chat || []).filter((m) => m.index === i)}
+                            pending={guided.chat_pending}
+                            open={askFor === i}
+                            text={askFor === i ? askText : ''}
+                            web={askWeb}
+                            asking={asking}
+                            onOpen={() => { setAskFor(i); setAskText('') }}
+                            onClose={() => { setAskFor(null); setAskText('') }}
+                            onText={setAskText}
+                            onWeb={setAskWeb}
+                            onSend={() => askAboutChunk(i)}
+                            /* The one bridge to the existing lever: if the agent
+                               concludes the document should change, its suggestion
+                               fills the regenerate box rather than being applied. The
+                               reviewer still reads it, edits it and presses the
+                               button — nothing moves without them. */
+                            canRegen={guidedReviewing}
+                            onUseAsFeedback={(t, toFollowing) => {
+                              setRegenFor(i); setRegenReason(t)
+                              setRegenAll(Boolean(toFollowing))
+                              setAskFor(null)
+                            }}
+                            rulePosted={rulePosted}
+                            onMakeSkill={makeSkillFromChat} />
+                        )}
                         {/* Shown BEFORE the Approve button, because this is the cheap
                             moment to fix it: regenerating one section costs a fraction
                             of a repair pass over the assembled document, and these same
@@ -1751,7 +1894,9 @@ export default function App() {
           onDismissNew={() => setJustCreated(null)}
           onAdd={(text) => runSkillAction(
             () => api.addSkill(courseName, text),
-            'Added as a draft. It does not affect anything until you approve it.')}
+            'Written up as a draft — check it against your own words below, edit it if it '
+            + 'says more or less than you meant, and approve it when it is right. '
+            + 'It does not affect anything until you do.')}
           onFromRequirements={(text) => runSkillAction(
             () => api.skillsFromRequirements(courseName, text),
             'Drafted from your requirements. Approve the ones you want — each shows the words it came from.')}
@@ -1896,7 +2041,11 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
                     the same thing twice in different words; those merge into one skill,
                     and the approval only means something if you can see all of what it
                     was built from. */}
-                {s.source === 'requirements'
+                {/* Shown for a hand-written skill too, not just a drafted one. Both
+                    paths articulate now, so both are a REWRITE of something the author
+                    typed — and a rewrite you cannot see the original of is one you
+                    cannot really approve. */}
+                {(s.source === 'requirements' || s.source === 'user')
                   && ((s.source_quotes || []).length || s.source_quote) && (
                   <span className="hint" title="the words this was drawn from">
                     — from your words: {(s.source_quotes?.length
@@ -1941,12 +2090,20 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
           </div>
           {mode === 'write' && (
             <>
+              <span className="hint">
+                Say the rule in your own words. The agent writes it up as the standing
+                instruction a writer works from — it does not add anything you did not
+                ask for, and it shows you your own words beside it. Nothing takes effect
+                until you approve it, and you can edit the wording first.
+              </span>
               <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
                         placeholder="e.g. Show the snippet before explaining it." />
               <div className="gactions">
                 <button className="primary" disabled={busy || !text.trim()}
                         onClick={() => Promise.resolve(onAdd(text))
-                          .then((ok) => { if (ok !== false) setText('') })}>Add as draft</button>
+                          .then((ok) => { if (ok !== false) setText('') })}>
+                  {busy ? 'Writing it up…' : 'Add as draft'}
+                </button>
               </div>
             </>
           )}
@@ -2073,8 +2230,19 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
           )}
         </div>
       )}
+      {/* The report is computed server-side over the decks that are STORED, and it comes
+          with the panel — so while a read is running it is a snapshot from before the
+          read started. It sat directly under a progress line reading "8 of 29 deck(s)
+          read, 343 slide(s) so far" and said "0 session(s), 0 slides": two true numbers
+          that together look like a broken one. While a job is live the line says so
+          instead of quoting a figure it knows is behind. */}
       {attached.length > 0 && (
         <span className="hint">
+          {job ? (
+            <>Read from {attached.length} course(s): counting once this read finishes —{' '}
+            {job.done || 0} deck(s) and {(job.slides || 0).toLocaleString()} slide(s) so far.</>
+          ) : (
+          <>
           Read from {attached.length} course(s): {report.sessions_indexed || 0} session(s),{' '}
           {(report.slides_indexed || 0).toLocaleString()} slides,{' '}
           {report.topics_indexed || 0} distinct topics
@@ -2088,6 +2256,8 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
                 `Session ${o.session_no} (“${(o.topics || [o.topic]).join('”, “')}”, from `
                 + `${(o.prereqs || [o.prereq]).filter(Boolean).join(' / ')})`).join('; ')}
               {report.overlaps.length > 3 ? `, and ${report.overlaps.length - 3} more` : ''}.</>
+          )}
+          </>
           )}
         </span>
       )}
@@ -2956,6 +3126,24 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
     api.deleteLearnedRule(i).then(() => onChanged && onChanged())
       .catch((e) => alert(e.message)).finally(() => setBusy(null))
   }
+  // Flip a rule between house style and subject matter. The rule itself — its wording,
+  // your original note, its hit count — is untouched; only where it applies moves.
+  function rescope(i, r) {
+    const to = r.scope === 'course' ? 'global' : 'course'
+    const target = r.course || course
+    if (to === 'course' && !target) {
+      alert('This rule does not record which course it was learned on, so it cannot be '
+            + 'narrowed to one.')
+      return
+    }
+    const q = to === 'global'
+      ? `Apply this rule to EVERY course, including ones created later?\n\n${r.text}`
+      : `Apply this rule only to “${target}”, and to no other course?\n\n${r.text}`
+    if (!window.confirm(q)) return
+    setBusy(i)
+    api.setLearnedRuleScope(i, to, target).then(() => onChanged && onChanged())
+      .catch((e) => alert(e.message)).finally(() => setBusy(null))
+  }
   function migrate() {
     setMigrating(true)
     api.migrateLearnedRules()
@@ -3002,11 +3190,20 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
                  style={r.applies === false ? { opacity: 0.45 } : undefined}>
               <div className="setmain">
                 <span className="tag">{srcLabel[r.source] || r.source || 'rule'}</span>
-                <span className="tag" title={r.scope === 'course'
-                  ? `Subject-matter rule — applies only to ${r.course || 'its course'}`
-                  : 'House-style rule — applies to every course'}>
+                {/* CLICKABLE. The house/course split is decided by a model at distil
+                    time and it misjudges: a note about one topic ("working examples are
+                    not needed for this topic") became a house rule binding every course
+                    on the instance. Deleting was the only lever, and it is the wrong one
+                    — it destroys the rule for the course that did ask for it. */}
+                <button className="tag" disabled={busy === i}
+                        title={r.scope === 'course'
+                          ? `Subject-matter rule — applies only to ${r.course || 'its course'}. `
+                            + 'Click to make it house style, applying to every course.'
+                          : 'House-style rule — applies to every course. Click to narrow it '
+                            + `to ${r.course || 'the course it was learned on'} alone.`}
+                        onClick={() => rescope(i, r)}>
                   {r.scope === 'course' ? `course · ${r.course || '?'}` : 'house'}
-                </span>
+                </button>
                 <span className="dimname">{r.text}</span>
                 {r.hits > 1 && <span className="chip mid" title="you have asked for this more than once">×{r.hits}</span>}
                 {r.session_no === sessionNo && <span className="chip good">new</span>}
@@ -3028,6 +3225,144 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
         </div>
       )}
     </details>
+  )
+}
+
+// The reviewer's conversation with the agent about ONE section.
+//
+// Deliberately not a general chatbot. It is anchored to the section on screen, it holds
+// no power over the document, and it says so: the whole value is that asking is free.
+// A reviewer who cannot ask has only one move when something looks off — reject and
+// re-roll — and a disagreement that was never a disagreement costs a full regeneration.
+function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose,
+                     onText, onWeb, onSend, canRegen, onUseAsFeedback,
+                     onMakeSkill, rulePosted = {}, scope = 'section' }) {
+  const whole = scope === 'document'
+  const has = messages.length > 0
+  // The answer being written is always for the LAST question, so the spinner belongs
+  // under it — not floating at the bottom of a panel that may be scrolled away.
+  const awaiting = pending && messages.length > 0
+    && messages[messages.length - 1].role === 'user'
+  if (!has && !open) {
+    return (
+      <div className={`chunkchat-cta${whole ? ' doclevel' : ''}`}>
+        <button className="ghostbtn tiny" onClick={onOpen}>
+          💬 {whole ? 'Ask about the whole document' : 'Ask about this section'}
+        </button>
+        <span className="hint">
+          {whole
+            ? `Why a topic sits in one section and not another, whether the document `
+              + `hangs together, what it covers as a whole. The division follows the `
+              + `curriculum's own key takeaways, so this is usually a question about `
+              + `which line owns what.`
+            : `Why it says what it says, where something came from, whether it matches `
+              + `how the topic is normally taught. It answers from the material this `
+              + `section was written from — it cannot change anything.`}
+        </span>
+      </div>
+    )
+  }
+  return (
+    <div className="chunkchat">
+      {has && (
+        <div className="chatlog">
+          {messages.map((m) => (
+            <div key={m.id} className={`chatmsg ${m.role}${m.failed ? ' failed' : ''}`}>
+              <span className="who">{m.role === 'user' ? 'You' : 'Agent'}</span>
+              <div className="body">
+                {m.role === 'agent'
+                  ? <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown></div>
+                  : m.text}
+                {/* Marked, because an answer that checked live sources and one that
+                    reasoned from the document are different kinds of claim and the
+                    reviewer is entitled to tell them apart. */}
+                {m.role === 'agent' && m.web && !m.failed && (
+                  <span className="chip" title="This answer used a live web search alongside the section's own source material.">web-checked</span>
+                )}
+                {m.suggested_feedback && (
+                  <div className="chatsuggest">
+                    <b>It thinks this one should change:</b>
+                    <div className="sf">“{m.suggested_feedback}”</div>
+                    {canRegen
+                      ? <div className="gactions">
+                          <button className="btn sm primary"
+                                  onClick={() => onUseAsFeedback(m.suggested_feedback, false)}>
+                            Put this in the regenerate box
+                          </button>
+                          {/* The same note, but marked to govern every later section
+                              too. It is the existing standing-note mechanism, reached
+                              from the conversation that produced the note instead of
+                              being retyped into the box by hand. */}
+                          <button className="ghostbtn tiny"
+                                  onClick={() => onUseAsFeedback(m.suggested_feedback, true)}>
+                            …and apply it to every later section
+                          </button>
+                        </div>
+                      : <span className="hint">{whole
+                          ? 'This is about the document as a whole, so there is no one '
+                            + 'section to regenerate — open the section it concerns and '
+                            + 'regenerate it there with this as the reason.'
+                          : 'This run is finished, so it is a note for next time rather '
+                            + 'than something to act on here.'}</span>}
+                    <span className="hint">You can edit it before regenerating — and
+                      ignore it entirely if you disagree.</span>
+                  </div>
+                )}
+                {/* A STANDING preference, not a fix. Kept visually apart from the one
+                    above because they do opposite things: that changes this document,
+                    this changes every future one. It becomes a DRAFT — the same
+                    approval step every other skill goes through — so a conversation can
+                    never quietly rewrite what the course is written under. */}
+                {m.suggested_rule && (
+                  <div className="chatsuggest rule">
+                    <b>This sounds like a rule for the whole course:</b>
+                    <div className="sf">“{m.suggested_rule}”</div>
+                    <button className="btn sm" disabled={rulePosted[m.id] === 'busy'}
+                            onClick={() => onMakeSkill(m.id, m.suggested_rule)}>
+                      {rulePosted[m.id] === 'done'
+                        ? '✓ Added as a draft skill'
+                        : rulePosted[m.id] === 'busy' ? 'Adding…'
+                        : 'Propose it as a course skill'}
+                    </button>
+                    <span className="hint">
+                      It arrives as a draft in <b>Course rules</b> and changes nothing
+                      until you approve it there — where you can also reword it.
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {awaiting && <Busy label="Reading back what this section was written from…" />}
+        </div>
+      )}
+      <div className="chatbox">
+        <textarea rows={2} value={text} disabled={asking || pending}
+                  onChange={(e) => onText(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Enter sends, Shift+Enter for a new line — the convention everywhere
+                    // else people type a question.
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend() }
+                  }}
+                  placeholder={whole
+                    ? 'Ask anything about the document as a whole — why a topic is here and not there, what it covers, whether it holds together…'
+                    : 'Ask anything about this section — why it says this, where it came from, what it left out…'} />
+        <div className="gactions">
+          <button className="primary" disabled={asking || pending || !text.trim()}
+                  onClick={onSend}>{pending ? 'Answering…' : 'Ask'}</button>
+          <label className="checkline" title="Checks the answer against live sources. Turn it off for questions about this document's own choices, where the web has nothing to add.">
+            <input type="checkbox" checked={web} disabled={asking || pending}
+                   onChange={(e) => onWeb(e.target.checked)} />
+            <span>Check the web too</span>
+          </label>
+          <button className="ghostbtn tiny" onClick={onClose}>Close</button>
+        </div>
+        <span className="hint">
+          Read-only. Asking never edits, regenerates or approves anything — if the answer
+          doesn't convince you, regenerate with a reason exactly as before.
+        </span>
+      </div>
+    </div>
   )
 }
 

@@ -230,7 +230,28 @@ def put_deck(course: str, session_no: int, deck: dict,
         "n_slides": deck.get("n_slides"),
     }
     _save_manifest(course, manifest, prereq)
+    # MIRRORED NOW, not at the end of the run. On an ephemeral host the file just
+    # written sits on a disk that goes with the next spin-down or redeploy, and the only
+    # thing that copied it to the cloud DB was kb_backup() — called once, after every
+    # link in a sync or a prerequisite import had been read. So a 29-link read that lost
+    # its instance at link 9 lost all nine decks, while the prerequisite row (committed
+    # up front) survived: a prerequisite attached to nothing. One ~50 KB write per deck
+    # ends that. Best effort — a storage hiccup must not fail an extraction that worked.
+    try:
+        from . import db
+        db.kb_put_rel(_kb_rel_path(path))
+        db.kb_put_rel(_kb_rel_path(_manifest_path(course, prereq)))
+    except Exception:
+        pass
     return path
+
+
+def _kb_rel_path(path: Path) -> str:
+    """A KB-relative posix path — the key the cloud mirror stores a file under."""
+    try:
+        return path.resolve().relative_to(config.KB_DIR.resolve()).as_posix()
+    except Exception:
+        return path.name
 
 
 def get_deck(course: str, session_no: int, prereq: str | None = None) -> dict | None:

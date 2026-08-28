@@ -111,6 +111,20 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     # DROPPED entirely — not shown, not scored, not weighted (the remaining dimensions
     # are renormalised to /100). So the toggle removes it from grading altogether.
     exclude = () if enforce_time else ("recording_time",)
+    # A course with no approved skills has no brief, and must not be scored against an
+    # empty one — a free 5 would inflate every total, a 1 would fail every document, and
+    # both are lies about a course that simply has not written its rules down yet. So the
+    # dimension is dropped from the rubric text, from the scores and from the weighted
+    # total, and the rest renormalise — exactly what recording_time does when the
+    # 40-minute limit is off. Computed once here and reused for the prompt block below.
+    _brief = ""
+    try:
+        from src import skills as _skills_mod
+        _brief = _skills_mod.block(course) if course else ""
+    except Exception:
+        _brief = ""
+    if not _brief.strip():
+        exclude = exclude + ("course_brief_adherence",)
     web_note = ""
     # Live web check for market_parity + content_recency: OpenRouter's ":online"
     # variant gives the judge web search (uses the existing OpenRouter key). Only
@@ -193,7 +207,13 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     rules_note = ""
     try:
         from src import learning
-        block = learning.learned_rules_block()
+        # SCOPED TO THE COURSE BEING GRADED. Called bare, this fell back to
+        # app_settings.course_name() — one instance-wide setting — so the judge verified
+        # a document against whichever course somebody had selected last: another
+        # course's subject-matter rules ("use 'cluster' instead of 'block'") reported as
+        # blocking issues, and this course's own rules never checked. The same fix the
+        # taught-digest below already had.
+        block = learning.rules_block(course)
         if block:
             rules_note = (
                 "\n\nREVIEWER-ENFORCED RULES — these were learned from corrections a human "
@@ -217,6 +237,41 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
                 "blocking issue discards a correct document and is then learned as a "
                 "permanent rule.\n"
                 f"\n{block}")
+    except Exception:
+        pass
+    # THE COURSE'S OWN BRIEF — a separate input from the learned rules above, and it has
+    # to be labelled as one. A skill is what the course OWNER WROTE and approved before
+    # any document existed; a learned rule is what was inferred from a correction to one.
+    # They used to travel to the judge down the same channel, under a heading saying they
+    # were "learned from corrections a human made to EARLIER docs" — so on a new course,
+    # which has a brief and no corrections yet, the judge was told the author's own
+    # instructions had been inferred from mistakes nobody had made. The brief is also the
+    # ONE input that differs between two courses of the same house style, so nothing else
+    # in the grade can stand in for it.
+    skills_note = ""
+    try:
+        brief = _brief          # resolved once, above, where the exclusion is decided
+        if brief:
+            skills_note = (
+                "\n\nTHE COURSE'S OWN BRIEF — authored by the course owner and approved "
+                "before it took effect. This is not inferred from anything; it is what "
+                "this course requires that others do not, and the writer was given it.\n"
+                "Check the document against EVERY line of it. Where a line is not "
+                "followed, add a `blocking_issues` entry naming the line and quoting the "
+                "text that breaks it, and reflect it in the most relevant dimension's "
+                "score — a document that ignores its own course's brief is not a good "
+                "document however well it reads.\n"
+                "SAME EVIDENCE BAR as the rules above: quote the offending text and name "
+                "the slide and field. If what you would need to quote is not in the "
+                "document, the line was followed — say nothing. Where a line is a matter "
+                "of degree, judge it generously; a brief is a standing description of how "
+                "the course teaches, not a checklist with a pass mark.\n"
+                "THIS IS ALSO A SCORED DIMENSION: `course_brief_adherence` in the rubric "
+                "asks exactly this question, so score it there as well as raising any "
+                "outright violation as a blocking issue. A document that follows the "
+                "brief loosely should be marked DOWN on that dimension even when nothing "
+                "is broken badly enough to block.\n"
+                f"\n{brief}")
     except Exception:
         pass
     # WHAT EARLIER SESSIONS ALREADY TAUGHT. The judge scores a "no re-teaching a prior
@@ -273,7 +328,7 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
 
 {time_block}{page_block}{facts_block}TR DOC TO GRADE (JSON):
 {json.dumps(doc, ensure_ascii=False, indent=2)}
-{web_note}{depth_note}{taught_note}{rules_note}{_market_note(profile)}
+{web_note}{depth_note}{taught_note}{skills_note}{rules_note}{_market_note(profile)}
 
 Grade now. Return only the contract JSON."""
     # The weights the TOTAL is computed with are the same ones the judge was shown, or

@@ -556,9 +556,17 @@ check("…it returns a job, because fetching decks takes time",
 check("…and is linked as external",
       any(p["prereq"] == "JS Elsewhere" and p["kind"] == "external"
           for p in r.get("prereqs") or []), str(r.get("prereqs")))
+# Sending the SAME external prerequisite again is how an interrupted read is finished —
+# a long list against a host that can sleep mid-way leaves decks half-read, and removing
+# the prerequisite to retry would delete the ones already there. So it resumes, and does
+# not duplicate the link.
 st, r = http("POST", "/prereqs/external", {
     "course": COURSE, "name": "JS Elsewhere", "links": ["https://x/1"]})
-check("declaring the same one twice -> 409", st == 409, f"got {st}")
+check("sending the same one again -> 200, so a part-read list can be finished",
+      st == 200, f"got {st}: {detail(r)}")
+check("…and it is still linked exactly once",
+      len([p for p in r.get("prereqs") or [] if p["prereq"] == "JS Elsewhere"]) == 1,
+      str(r.get("prereqs")))
 st, r = http("DELETE", f"/prereqs?course={COURSE.replace(' ', '%20')}&prereq=JS%20Elsewhere")
 check("removing it -> 200", st == 200, f"got {st}: {detail(r)}")
 check("…and its deck store goes with it, since nothing else owns it",

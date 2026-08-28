@@ -295,6 +295,37 @@ dimensions:
     weight: 3
     question: >
       Grammar, spelling (Indian English), consistent terminology, no filler. [G11]
+  # THE COURSE'S OWN BRIEF. Every dimension above is a house rule — true of a good TR
+  # doc for any course. This is the one that differs between two courses of identical
+  # house style, and until it existed the score was blind to it: a document could break
+  # every instruction its course owner wrote and still total 100/100, because nothing in
+  # the rubric asked. The judge was told about the brief and could raise a blocking
+  # issue, but that is a binary all-or-nothing lever — there was no way for a document
+  # to be marked DOWN for following the brief loosely.
+  #
+  # It is SKIPPED ENTIRELY, and the remaining weights renormalised, for a course with no
+  # approved skills — the same mechanism `recording_time` uses when the 40-minute limit
+  # is off (graders/llm_judge.grade). A course with no brief must not be scored against
+  # an empty one: that would either be a free 5 that inflates every total or a 1 that
+  # fails every document, and both are lies about a course that simply has not written
+  # its rules yet.
+  #
+  # Weight 6: heavier than format_compliance, lighter than pedagogy. High enough that
+  # ignoring the brief costs a document its acceptance (the bar is 90 and every
+  # dimension must reach 4), low enough that a course cannot make its own preferences
+  # outweigh technical accuracy.
+  - id: course_brief_adherence
+    weight: 6
+    question: >
+      Does the document follow THIS COURSE'S OWN BRIEF — the instructions its owner
+      authored and approved, supplied to you under "THE COURSE'S OWN BRIEF"? Judge only
+      against lines actually in that brief; if no brief was supplied this dimension is
+      not scored at all. Score 5 when every line is honoured; 3 when one is followed
+      loosely or in letter but not spirit; 1 when the document ignores what its course
+      requires. Requirements the brief does not make are NOT defects here — grade them
+      under the dimension that owns them. Where a line is a matter of degree, judge
+      generously: a brief is a standing description of how the course teaches, not a
+      checklist with a pass mark. Quote the line and the text that breaks it.
 
 output_contract: |
   Return JSON:
