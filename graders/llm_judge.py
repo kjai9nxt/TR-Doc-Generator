@@ -120,7 +120,10 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     _brief = ""
     try:
         from src import skills as _skills_mod
-        _brief = _skills_mod.block(course) if course else ""
+        # THE SESSION'S BRIEF TOO. A skill written for one session is part of what this
+        # document was required to do, so a judge that cannot see it marks the document
+        # against a brief the writer was not working from.
+        _brief = _skills_mod.block(course, getattr(session, "number", None)) if course else ""
     except Exception:
         _brief = ""
     if not _brief.strip():

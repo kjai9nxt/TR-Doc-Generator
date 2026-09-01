@@ -194,18 +194,25 @@ export const api = {
   // they take effect; prerequisites are what the learner already knew at session 1.
   skills: (course, include_retired = false) =>
     req(`/skills${qs({ course, include_retired: include_retired ? 'true' : undefined })}`),
-  addSkill: (course, text, check) =>
-    req('/skills', { method: 'POST', body: JSON.stringify({ course, text, check }) }),
-  skillsFromRequirements: (course, requirements) =>
+  // `where` is {category, scope, session} — what the skill governs and where it applies.
+  // Optional in full: a skill written with none of it is a course-wide, uncategorised
+  // one, which is exactly what every skill was before scopes existed.
+  addSkill: (course, text, check, where = {}) =>
+    req('/skills', { method: 'POST',
+        body: JSON.stringify({ course, text, check, ...where }) }),
+  skillsFromRequirements: (course, requirements, where = {}) =>
     req('/skills/from-requirements', { method: 'POST',
-        body: JSON.stringify({ course, requirements }) }),
+        body: JSON.stringify({ course, requirements, ...where }) }),
   importSkills: (course, from_course) =>
     req('/skills/import', { method: 'POST',
         body: JSON.stringify({ course, from_course }) }),
   approveSkill: (course, id) =>
     req(`/skills/${id}/approve${qs({ course })}`, { method: 'POST' }),
-  editSkill: (course, id, text) =>
-    req(`/skills/${id}/edit`, { method: 'POST', body: JSON.stringify({ course, text }) }),
+  // `instructions` omitted means LEAVE THEM AS THEY ARE — editing a skill's own
+  // sentence is not a decision to throw away the lines grouped under it.
+  editSkill: (course, id, text, instructions) =>
+    req(`/skills/${id}/edit`, { method: 'POST',
+        body: JSON.stringify({ course, text, instructions }) }),
   retireSkill: (course, id) => req(`/skills/${id}${qs({ course })}`, { method: 'DELETE' }),
   prereqs: (course) => req(`/prereqs${qs({ course })}`),
   addPrereq: (course, prereq) =>

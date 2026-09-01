@@ -330,6 +330,29 @@ _PREREQS_ADDED_COLUMNS = [
 # single string; `source_quotes` holds them all, as JSON.
 _SKILLS_ADDED_COLUMNS = [
     ("source_quotes", "TEXT"),
+    # THE SKILL SYSTEM, added after skills had been in use for months as a flat list of
+    # course-wide style notes. Four columns, each answering a question the flat list
+    # could not:
+    #
+    #   category      WHAT KIND of instruction this is — teaching flow, teaching
+    #                 guidelines, examples & visuals, or a reviewer correction. The
+    #                 writer needs the flow before it needs the wording rules, and a
+    #                 reviewer correction outranks both; a flat list cannot say that.
+    #   scope         WHO it governs: this course, one session of it, or every course.
+    #   session_ref   which session, when scope='session'.
+    #   instructions  THE SKILL'S OWN BULLETS, as JSON. An author who writes four
+    #                 related lines under "Teaching Guidelines" has written ONE skill
+    #                 with four instructions, not four skills. Splitting them loses the
+    #                 grouping and the order the author put them in, and turns one
+    #                 approval into four.
+    #
+    # All four are NULLABLE and every reader defaults them, so the rows written before
+    # this existed are exactly what they always were: course-scoped, uncategorised,
+    # single-instruction skills.
+    ("category", "TEXT"),
+    ("scope", "TEXT"),
+    ("session_ref", "TEXT"),
+    ("instructions", "TEXT"),
 ]
 
 
@@ -972,7 +995,7 @@ def create_run(run_id: str, *, user_email: str | None, course: str | None,
          # Stamped at the START, because that is the set the document was written under.
          # Reading it at finalize would record whatever the skills happened to be by the
          # time a long review ended.
-         skills_version(course) or None))
+         skills_version(course, session_no) or None))
 
 
 def update_stage(run_id: str, stage: str) -> None:
@@ -1437,6 +1460,14 @@ def remove_prereq(course: str, prereq: str) -> bool:
 # --------------------------------------------------------------------------- #
 # course skills (authored instructions, approved before they take effect)
 # --------------------------------------------------------------------------- #
+# The course every course sees. A skill stored under this name is a HOUSE rule: it
+# governs every course on the instance, and it is the weakest tier in the precedence
+# order, so anything a course or a session says about the same thing wins. It is a
+# reserved course name rather than a nullable column so that every existing query,
+# index and foreign relation keeps working unchanged.
+GLOBAL_COURSE = "*"
+
+
 def _shape_skill(r: dict) -> dict:
     try:
         r["check"] = json.loads(r.pop("check_json", None) or "null")
@@ -1451,45 +1482,112 @@ def _shape_skill(r: dict) -> dict:
     if not isinstance(quotes, list) or not quotes:
         quotes = [r["source_quote"]] if r.get("source_quote") else []
     r["source_quotes"] = [q for q in quotes if q]
+    # THE SKILL'S OWN INSTRUCTIONS. One skill, several lines — see the column comment.
+    # A row written before this existed has none, and its `text` IS the instruction;
+    # callers read `instructions` and fall back to `text`, so neither has to know which
+    # kind of row it is holding.
+    try:
+        ins = json.loads(r.get("instructions") or "null")
+    except Exception:
+        ins = None
+    r["instructions"] = [" ".join(str(i).split()) for i in ins
+                         if str(i or "").strip()] if isinstance(ins, list) else []
+    r["scope"] = (r.get("scope") or "course").strip().lower() or "course"
+    r["category"] = (r.get("category") or "").strip().lower() or None
+    ref = r.get("session_ref")
+    r["session_ref"] = str(ref).strip() if ref not in (None, "") else None
     return r
 
 
-def skills(course: str, *, include_retired: bool = False) -> list[dict]:
+def _session_key(session) -> str | None:
+    """A session identity as stored. `12`, `"12"` and `" 12 "` are the same session.
+
+    Anything that is not a bare number is kept as trimmed text, so a course that
+    numbers its sessions '3a' is not silently mapped onto session 3.
+    """
+    if session in (None, ""):
+        return None
+    s = str(session).strip()
+    if not s:
+        return None
+    try:
+        return str(int(s))
+    except (TypeError, ValueError):
+        return s
+
+
+def skills(course: str, *, include_retired: bool = False, session=None,
+           include_global: bool = False) -> list[dict]:
     """One course's skills, newest last. Retired ones are excluded unless asked for —
-    they are kept so an old document can still be explained, not to be applied."""
-    q = "SELECT * FROM course_skills WHERE course=?"
+    they are kept so an old document can still be explained, not to be applied.
+
+    EVERY session's skills by default, because this is what the AUTHORING screen lists
+    and an author managing session 12's skills has to be able to see them from anywhere.
+    Pass `session` to narrow it to the course-wide skills plus that one session's —
+    which is what a RUN needs, and what `approved_skills` does.
+    """
+    names = [(course or "").strip()]
+    if include_global:
+        names.append(GLOBAL_COURSE)
+    q = f"SELECT * FROM course_skills WHERE course IN ({','.join('?' * len(names))})"
     if not include_retired:
         q += " AND status != 'retired'"
     q += " ORDER BY id"
     try:
-        return [_shape_skill(r) for r in _query(q, ((course or "").strip(),))]
+        rows = [_shape_skill(r) for r in _query(q, tuple(names))]
     except Exception:
         return []
+    return _for_session(rows, session) if session not in (None, "") else rows
 
 
-def approved_skills(course: str) -> list[dict]:
-    """The skills that actually govern generation for this course.
+def _for_session(rows: list[dict], session) -> list[dict]:
+    """Drop the session-scoped skills that belong to a DIFFERENT session.
+
+    A session skill applies only to its session. Kept as a filter over already-fetched
+    rows rather than a WHERE clause so that the one rule — 'course-wide always, this
+    session's as well' — is written once and cannot drift between the two readers.
+    """
+    key = _session_key(session)
+    return [r for r in rows
+            if r.get("scope") != "session" or r.get("session_ref") == key]
+
+
+def approved_skills(course: str, *, session=None) -> list[dict]:
+    """The skills that actually govern generation for this course and session.
 
     Approved only. A DRAFT that already applied would make the approval step theatre —
     and the whole point of the workflow is that nothing reaches the writer unreviewed.
+
+    Carries THREE tiers: this course's own skills, the session-scoped ones belonging to
+    THIS session, and the global house skills. Ordering them by authority is
+    src.skills's job, not the store's — see skills.resolve().
     """
+    names = ((course or "").strip(), GLOBAL_COURSE)
     try:
-        return [_shape_skill(r) for r in _query(
-            "SELECT * FROM course_skills WHERE course=? AND status='approved' "
-            "ORDER BY id", ((course or "").strip(),))]
+        rows = [_shape_skill(r) for r in _query(
+            "SELECT * FROM course_skills WHERE course IN (?,?) AND status='approved' "
+            "ORDER BY id", names)]
     except Exception:
         return []
+    return _for_session(rows, session)
 
 
 def add_skill(course: str, text: str, *, kind: str = "style", source: str = "user",
               created_by: str | None = None, check: dict | None = None,
               source_quote: str | None = None,
-              source_quotes: list | None = None) -> int | None:
+              source_quotes: list | None = None,
+              category: str | None = None, scope: str = "course",
+              session_ref=None, instructions: list | None = None) -> int | None:
     """Add a skill as a DRAFT. Returns its id, or None.
 
     `source_quotes` is every phrase the requirement was drawn from — a person says the
     same thing twice in different words and it is still one rule. `source_quote` stays
     the first of them, so callers that want one string keep working.
+
+    `instructions` are the skill's own lines. Four related instructions written under
+    one heading are ONE skill with four instructions — storing them as four skills would
+    lose the author's grouping and their order, and would turn one approval into four.
+    `text` stays the skill's own sentence: what the whole group is for.
     """
     course, text = (course or "").strip(), " ".join((text or "").split())
     if not course or not text:
@@ -1497,35 +1595,60 @@ def add_skill(course: str, text: str, *, kind: str = "style", source: str = "use
     quotes = [" ".join(str(q).split()) for q in (source_quotes or []) if str(q).strip()]
     if source_quote and source_quote not in quotes:
         quotes.insert(0, source_quote)
+    lines = [" ".join(str(i).split()) for i in (instructions or []) if str(i or "").strip()]
+    scope = (scope or "course").strip().lower()
+    if scope not in ("course", "session", "global"):
+        scope = "course"
+    ref = _session_key(session_ref) if scope == "session" else None
+    if scope == "session" and not ref:
+        # A session skill with no session is a course skill that would silently apply
+        # everywhere. Refuse it rather than quietly widening its reach.
+        return None
+    if scope == "global":
+        course = GLOBAL_COURSE
     now = _now()
     try:
         return _exec(
             "INSERT INTO course_skills (course, text, kind, source, source_quote, "
             "source_quotes, status, check_json, version, created_by, created_at, "
-            "updated_at) VALUES (?,?,?,?,?,?,'draft',?,1,?,?,?)",
+            "updated_at, category, scope, session_ref, instructions) "
+            "VALUES (?,?,?,?,?,?,'draft',?,1,?,?,?,?,?,?,?)",
             (course, text, kind, source, (quotes[0] if quotes else None),
              json.dumps(quotes) if quotes else None,
              json.dumps(check) if check else None,
-             (created_by or "").lower() or None, now, now))
+             (created_by or "").lower() or None, now, now,
+             (category or "").strip().lower() or None, scope, ref,
+             json.dumps(lines) if lines else None))
     except Exception as e:
         print(f"[db] add_skill failed: {e!r}")
         return None
 
 
-def edit_skill(skill_id: int, text: str, *, check: dict | None = None) -> bool:
+def edit_skill(skill_id: int, text: str, *, check: dict | None = None,
+               instructions: list | None = None) -> bool:
     """Change a skill's wording. It goes BACK TO DRAFT.
 
     An approval is of the words that were approved. Letting an edit keep the approval
-    would mean a skill nobody signed off governing every document from then on.
+    would mean a skill nobody signed off governing every document from then on. That
+    covers the INSTRUCTIONS too: they are the part a writer actually follows, so an edit
+    that rewrote them while keeping the approval would be the same hole by another door.
+
+    `instructions=None` leaves them as they are — an edit to the skill's own sentence is
+    not a decision to discard its lines.
     """
     text = " ".join((text or "").split())
     if not text:
         return False
+    sets = ["text=?", "check_json=?"]
+    args = [text, json.dumps(check) if check else None]
+    if instructions is not None:
+        lines = [" ".join(str(i).split()) for i in instructions if str(i or "").strip()]
+        sets.append("instructions=?")
+        args.append(json.dumps(lines) if lines else None)
     try:
-        _exec("UPDATE course_skills SET text=?, check_json=?, status='draft', "
+        _exec(f"UPDATE course_skills SET {', '.join(sets)}, status='draft', "
               "approved_by=NULL, approved_at=NULL, version=version+1, updated_at=? "
-              "WHERE id=?",
-              (text, json.dumps(check) if check else None, _now(), int(skill_id)))
+              "WHERE id=?", tuple(args) + (_now(), int(skill_id)))
         return True
     except Exception:
         return False
@@ -1557,8 +1680,13 @@ def import_skills(from_course: str, to_course: str, who: str | None) -> int:
     Drafts on purpose: a skill that was right for one course is a proposal for the next,
     not a decision already taken. Skills whose text is already present are skipped, so
     importing twice is a no-op rather than a pile of duplicates.
+
+    COURSE-SCOPED SKILLS ONLY. A session skill is written about session 12 of the course
+    it was written for — its numbering means nothing in another course — and a global
+    skill already applies to the destination, so copying either would produce a rule
+    that is at best a duplicate and at worst about somebody else's session.
     """
-    src = approved_skills(from_course)
+    src = [s for s in approved_skills(from_course) if s.get("scope") == "course"]
     if not src:
         return 0
     have = {" ".join((s.get("text") or "").split()).lower()
@@ -1570,20 +1698,24 @@ def import_skills(from_course: str, to_course: str, who: str | None) -> int:
             continue
         if add_skill(to_course, text, kind=s.get("kind") or "style",
                      source=f"imported:{from_course}", created_by=who,
-                     check=s.get("check")):
+                     check=s.get("check"), category=s.get("category"),
+                     instructions=s.get("instructions")):
             n += 1
             have.add(text.lower())
     return n
 
 
-def skills_version(course: str) -> str:
+def skills_version(course: str, session=None) -> str:
     """A short fingerprint of the approved skills, stamped on a run.
 
     Without it there is no way to explain why last month's document differs from today's:
-    the skills changed and nothing recorded which set produced which doc.
+    the skills changed and nothing recorded which set produced which doc. It covers the
+    SESSION's skills too, so two runs of different sessions of one course do not claim to
+    have been written under the same set when they were not.
     """
     import hashlib
-    parts = [f"{s['id']}:{s.get('version', 1)}" for s in approved_skills(course)]
+    parts = [f"{s['id']}:{s.get('version', 1)}"
+             for s in approved_skills(course, session=session)]
     if not parts:
         return ""
     return hashlib.md5("|".join(parts).encode("utf-8")).hexdigest()[:8]

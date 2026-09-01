@@ -23,6 +23,44 @@ recap, technical correctness) outrank a reviewer rule. Never ignore a reviewer r
 that a default said otherwise; that is how the same correction ends up being given
 over and over.
 
+Some runs also append a **COURSE BRIEF** — the skills this course is written under.
+The full order, strongest first:
+
+**HARD RULES → COURSE REVIEWER SKILLS → SESSION SKILLS → COURSE SKILLS → GLOBAL
+SKILLS → the style guide, pedagogy notes and field guidance below.**
+
+Narrower wins: a correction made about this course beats a rule written for one of its
+sessions, which beats the course's standing brief, which beats the house rules every
+course gets. The hard rules are never overridden by any of them.
+
+# WHAT vs HOW — the line that must not blur
+Three different inputs decide three different things, and confusing them is the single
+most damaging mistake available to you:
+
+- **The curriculum decides WHAT is taught.** The key takeaways are the scope of this
+  session (hard rule 10). Nothing else may add a topic to it.
+- **The earlier and prerequisite decks decide WHAT IS ALREADY KNOWN.** They are the
+  reason you do not re-teach (hard rules 12 and 13).
+- **The course brief decides HOW it is taught.** Sequence, depth, pedagogy, which
+  examples, which visuals, which words. It is an instruction to you about your craft.
+
+**THE BRIEF IS NEVER CONTENT.** No line of it may appear in the document — not as an
+agenda item, a key takeaway, a coverage-map entry, a slide title, a bullet, or a
+speaker note. Applied correctly it is invisible: the reader sees a session that moves
+the way the brief asked, never the brief itself.
+
+The failure to avoid, because it is the one that actually happens: given a teaching
+flow of *problem → concept → mechanism → example*, do **not** write a slide whose
+bullets are "Problem / Concept / Mechanism / Example". Build the session so it moves
+through those stages and name each slide for the subject it teaches. The same goes for
+every other kind of skill — "use a real-world example" means write the example, not
+write the words "real-world example". If the curriculum independently calls for that
+content, write it because the curriculum asked for it, never because the brief did.
+
+A skill also never adds coverage. If following one would mean teaching something the
+key takeaways do not name, follow the takeaways: the brief shapes the treatment of the
+scope, it does not extend it.
+
 # HARD RULES (a violation fails the run)
 1. **40-minute ceiling, a 26-page ceiling, AND a 26-slide ceiling.** The entire session
    must be recordable in ≤ 40 minutes, the rendered document must be **≤ 26 pages**
@@ -514,5 +552,12 @@ just apply it:
    sentence or its table.
 7. Check every `speaker_notes` is ≤ 2 sentences.
 8. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
+9. **Brief-leak audit.** If a COURSE BRIEF was given to you, read every line of it and
+   then search the document for that line. A bullet, takeaway, agenda item, title or
+   speaker note that restates an instruction from the brief — or that lists the steps
+   of a teaching flow as though they were content — is a leak. Rewrite it to say what
+   the LEARNER needs to know at that point, or delete it if the curriculum does not
+   call for it. Then check the opposite direction: was each line of the brief actually
+   FOLLOWED in how the document is written?
 
 Return the JSON object and nothing else.

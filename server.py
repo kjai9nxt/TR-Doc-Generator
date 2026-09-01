@@ -217,11 +217,24 @@ class SkillBody(BaseModel):
     text: str
     kind: str = "style"
     check: dict | None = None
+    # WHAT the skill governs — teaching flow, teaching guidelines, examples & visuals,
+    # or a reviewer correction. Optional: the agent classifies what the author typed,
+    # and a skill with no category still works exactly as it always did.
+    category: str | None = None
+    # WHERE it applies: "course" (default), "session" (this course's session `session`
+    # only), or "global" (every course — admins only).
+    scope: str = "course"
+    session: int | str | None = None
+    # THE SKILL'S OWN LINES. Four related instructions written under one heading are ONE
+    # skill with four instructions, not four skills — see src/skills.py.
+    instructions: list[str] | None = None
 
 
 class SkillFromRequirementsBody(BaseModel):
     course: str | None = None
     requirements: str
+    scope: str = "course"
+    session: int | str | None = None
 
 
 class PrereqBody(BaseModel):
@@ -1283,16 +1296,76 @@ def _require_skill_author(user: dict, course: str) -> str:
 
 @app.get("/api/skills")
 def list_skills(course: str | None = None, include_retired: bool = False,
-                user: dict = Depends(current_user)):
-    """This course's skills, and whether the caller may change them."""
+                session: int | None = None, user: dict = Depends(current_user)):
+    """This course's skills, and whether the caller may change them.
+
+    EVERY session's, not only one, because this is the authoring screen: someone
+    managing session 12's brief has to be able to find it without first navigating to
+    session 12. The global house skills come too, marked by their reserved course name,
+    so an author can see what their course inherits and is not surprised by a rule they
+    never wrote. `session`, when given, narrows it the way a RUN sees it.
+    """
     course = _require_course(user, course)
     owner = db.course_owner(course)
     return {"course": course,
-            "skills": db.skills(course, include_retired=include_retired),
-            "approved": len(db.approved_skills(course)),
+            "skills": db.skills(course, include_retired=include_retired,
+                                session=session, include_global=True),
+            "approved": len(db.approved_skills(course, session=session)),
+            "global_course": db.GLOBAL_COURSE,
+            # A GLOBAL skill governs every course on the instance, so authoring one is
+            # not something a single course's owner can do — that is an admin act.
+            "can_edit_global": bool(user.get("is_admin")),
+            "categories": list(skill_rules_categories()),
             "can_edit": bool(user.get("is_admin"))
                         or (owner or "") == (user.get("email") or "").lower(),
             "owner": owner}
+
+
+def skill_rules_categories() -> tuple:
+    from src import skills as skill_rules
+    return tuple(skill_rules.CATEGORIES)
+
+
+def _skill_row(course: str, skill_id: int) -> dict | None:
+    """One skill of this course — or one of the global ones it inherits."""
+    for s in db.skills(course, include_retired=True, include_global=True):
+        if s["id"] == skill_id:
+            return s
+    return None
+
+
+def _require_global_admin(row: dict, user: dict) -> None:
+    """A course owner may not approve, edit or retire a GLOBAL skill.
+
+    They can see it — knowing what your course inherits is the point of showing it — but
+    changing it changes every course on the instance, which is not theirs to decide.
+    """
+    if (row.get("course") or "") == db.GLOBAL_COURSE and not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail={"message":
+            "That is a global skill — it applies to every course here, so only an admin "
+            "can change it."})
+
+
+def _skill_scope(body_scope: str, session, user: dict, course: str) -> tuple[str, object]:
+    """(scope, session_ref), refusing what the caller may not author.
+
+    A global skill governs every course on the instance; a course owner deciding their
+    own course's rules is not the same authority as deciding everyone's, so it is an
+    admin act. A session skill needs the session it is about — without one it would
+    quietly become a course skill and apply to all of them.
+    """
+    scope = (body_scope or "course").strip().lower()
+    if scope not in ("course", "session", "global"):
+        raise HTTPException(status_code=400, detail={"message":
+            "A skill's scope is 'course', 'session' or 'global'."})
+    if scope == "global" and not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail={"message":
+            "A global skill applies to every course on this instance, so only an admin "
+            "can write one. Add it to " + course + " instead."})
+    if scope == "session" and str(session or "").strip() == "":
+        raise HTTPException(status_code=400, detail={"message":
+            "A session skill needs the session it is for."})
+    return scope, (session if scope == "session" else None)
 
 
 @app.post("/api/skills")
@@ -1328,21 +1401,34 @@ def add_skill(body: SkillBody, user: dict = Depends(current_user)):
         print(f"[skills] articulation failed for {course!r}: {e!r}", flush=True)
     text = (drafted or {}).get("text") or body.text
     kind = (drafted or {}).get("kind") or body.kind
+    # The author's own choice of category wins over the model's guess: they know which
+    # of their four headings they were writing under, and the classifier does not.
+    category = (skill_rules.normalize_category(body.category)
+                or (drafted or {}).get("category"))
+    scope, session_ref = _skill_scope(body.scope, body.session, user, course)
     sid = db.add_skill(course, text, kind=kind, source="user",
                        created_by=user.get("email"), check=body.check,
                        source_quote=(drafted or {}).get("source_quote"),
-                       source_quotes=(drafted or {}).get("source_quotes"))
+                       source_quotes=(drafted or {}).get("source_quotes"),
+                       category=category, instructions=body.instructions,
+                       scope=scope, session_ref=session_ref)
     if not sid:
         raise HTTPException(status_code=400, detail={
             "message": "A skill needs some text."})
     return {"ok": True, "id": sid, "articulated": bool(drafted),
-            "skills": db.skills(course)}
+            "skills": db.skills(course, include_global=True)}
 
 
 @app.post("/api/skills/from-requirements")
 def skills_from_requirements(body: SkillFromRequirementsBody,
                              user: dict = Depends(current_user)):
-    """Path B — rough requirements become atomic DRAFT skills, each quoting its source.
+    """Path B — rough requirements become DRAFT skills, each quoting its source.
+
+    GROUPED, NOT SCATTERED. Everything the author said about how the session is
+    sequenced becomes ONE teaching-flow skill whose instructions are their lines in the
+    order they wrote them; the same for guidelines, for examples and visuals, and for
+    reviewer corrections. Splitting every sentence into its own skill — which this used
+    to do — loses the grouping and the ordering that were part of what they said.
 
     The agent formalises; it does not invent. A proposal that cannot quote the words it
     came from is dropped before it is ever offered for approval — see
@@ -1364,8 +1450,11 @@ def skills_from_requirements(body: SkillFromRequirementsBody,
             "Nothing could be drawn from that. Say what the course needs in plain "
             "sentences — each draft has to quote the words it came from, so anything "
             "the model could not trace back to your text is discarded."})
-    skill_rules.store_drafts(course, drafts, created_by=user.get("email"))
-    return {"ok": True, "drafts": len(drafts), "skills": db.skills(course)}
+    scope, session_ref = _skill_scope(body.scope, body.session, user, course)
+    skill_rules.store_drafts(course, drafts, created_by=user.get("email"),
+                             scope=scope, session_ref=session_ref)
+    return {"ok": True, "drafts": len(drafts),
+            "skills": db.skills(course, include_global=True)}
 
 
 @app.post("/api/skills/import")
@@ -1374,18 +1463,21 @@ def import_skills(body: SkillImportBody, user: dict = Depends(current_user)):
     course = _require_skill_author(user, body.course)
     src = _require_course(user, body.from_course)
     n = db.import_skills(src, course, user.get("email"))
-    return {"ok": True, "imported": n, "from": src, "skills": db.skills(course)}
+    return {"ok": True, "imported": n, "from": src,
+            "skills": db.skills(course, include_global=True)}
 
 
 @app.post("/api/skills/{skill_id}/approve")
 def approve_skill(skill_id: int, course: str | None = None,
                   user: dict = Depends(current_user)):
     c = _require_skill_author(user, course)
-    if not any(s["id"] == skill_id for s in db.skills(c, include_retired=True)):
+    row = _skill_row(c, skill_id)
+    if not row:
         raise HTTPException(status_code=404, detail={
             "message": "No such skill on this course."})
+    _require_global_admin(row, user)
     db.approve_skill(skill_id, user.get("email"))
-    return {"ok": True, "skills": db.skills(c)}
+    return {"ok": True, "skills": db.skills(c, include_global=True)}
 
 
 @app.post("/api/skills/{skill_id}/edit")
@@ -1394,15 +1486,20 @@ def edit_skill(skill_id: int, body: SkillBody, user: dict = Depends(current_user
     that were approved."""
     from src import skills as skill_rules
     c = _require_skill_author(user, body.course)
-    if not any(s["id"] == skill_id for s in db.skills(c, include_retired=True)):
+    row = _skill_row(c, skill_id)
+    if not row:
         raise HTTPException(status_code=404, detail={
             "message": "No such skill on this course."})
+    _require_global_admin(row, user)
     ok, why = skill_rules.validate_check(body.check)
     if not ok:
         raise HTTPException(status_code=400, detail={"message": why})
-    if not db.edit_skill(skill_id, body.text, check=body.check):
+    # `instructions=None` means "leave them alone" — editing the skill's own sentence is
+    # not a decision to throw its lines away. An empty LIST does clear them.
+    if not db.edit_skill(skill_id, body.text, check=body.check,
+                         instructions=body.instructions):
         raise HTTPException(status_code=400, detail={"message": "A skill needs text."})
-    return {"ok": True, "skills": db.skills(c)}
+    return {"ok": True, "skills": db.skills(c, include_global=True)}
 
 
 @app.delete("/api/skills/{skill_id}")
@@ -1410,11 +1507,13 @@ def retire_skill(skill_id: int, course: str | None = None,
                  user: dict = Depends(current_user)):
     """Retire a skill. The row is KEPT — a finished document was written under it."""
     c = _require_skill_author(user, course)
-    if not any(s["id"] == skill_id for s in db.skills(c, include_retired=True)):
+    row = _skill_row(c, skill_id)
+    if not row:
         raise HTTPException(status_code=404, detail={
             "message": "No such skill on this course."})
+    _require_global_admin(row, user)
     db.retire_skill(skill_id, user.get("email"))
-    return {"ok": True, "skills": db.skills(c)}
+    return {"ok": True, "skills": db.skills(c, include_global=True)}
 
 
 @app.get("/api/course-profile")
@@ -2105,7 +2204,10 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
         # THIS RUN's course, never the instance-wide "active course": the rules and the
         # authored brief a document is written under are the course's, and a guided run
         # spans a long review during which anyone else may select a different one.
-        course=state.get("course") or None)
+        course=state.get("course") or None,
+        # AND this run's session, for the same reason one step narrower: a skill written
+        # for session 12 reaches the writer only if the writer is told it is session 12.
+        session=state.get("session_no"))
 
     hits = _chunk_repetition_hits(fragment)
     if hits and index > 0:
@@ -2127,7 +2229,8 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                 from src import patcher
                 patch = generator.generate_patch(
                     state["base_context"], kind, fragment, fix,
-                    course=state.get("course") or None)
+                    course=state.get("course") or None,
+                    session=state.get("session_no"))
                 retry, _scope = patcher.apply(kind, fragment, patch)
             except Exception as e:
                 _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
@@ -2279,7 +2382,8 @@ def _patch_one(gid: str, index: int, reason: str) -> tuple[dict, dict]:
         base_context = state["base_context"]
     kind, _ = _chunk_spec(GUIDED[gid], index)
     patch = generator.generate_patch(base_context, kind, prev_fragment, reason,
-                                     course=state.get("course") or None)
+                                     course=state.get("course") or None,
+                                     session=state.get("session_no"))
     fragment, summary = patcher.apply(kind, prev_fragment, patch)
     markdown = docx_writer.chunk_to_markdown(kind, fragment)
     return {"kind": kind, "fragment": fragment, "markdown": markdown}, summary

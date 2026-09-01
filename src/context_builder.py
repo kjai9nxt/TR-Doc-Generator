@@ -456,7 +456,7 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool,
         f"them: spend the room on the sub-concepts an exam tests, never on ritual.\n")
 
 
-def course_skills_block(course: str | None) -> str:
+def course_skills_block(course: str | None, session=None) -> str:
     """The course's approved skills, for a prompt that REWRITES approved content.
 
     Generation gets them through the system-level rules block (learning.learned_rules_block,
@@ -469,7 +469,7 @@ def course_skills_block(course: str | None) -> str:
         return ""
     try:
         from . import skills as _skills
-        blk = _skills.block(course)
+        blk = _skills.block(course, session)
     except Exception:
         return ""
     return f"\n\n{blk}" if blk else ""

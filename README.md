@@ -142,13 +142,25 @@ A browser front end covering the whole flow:
    thing that makes the agent multi-course rather than one course with several
    curricula:
    - **Skills** — instructions authored for THIS course ("show the snippet before
-     explaining it", "never teach class components"). Write them yourself, or write
-     rough requirements and have the agent split them into separate skills — each one
-     shows the words it came from, and anything it cannot trace back to your text is
-     discarded. Or import a course's approved skills. **Nothing applies until you
-     approve it**, an edit sends a skill back to draft, and a retired skill is kept so
-     an old document can still be explained. Skills that are mechanically checkable
-     become deterministic gates; the rest reach the writer and the judge.
+     explaining it", "never teach class components"). The curriculum decides **what** is
+     taught and the prerequisite decks decide **what is already known**; a skill decides
+     **how** it is taught, and never becomes content — a leak gate fails the run if any
+     of it is copied onto a slide, into the agenda or into the key takeaways.
+     - **Four categories**: *teaching flow* (the order concepts are taught in),
+       *teaching guidelines* (how they are explained), *examples & visuals*, and
+       *reviewer corrections* (what review keeps sending back on this course).
+     - **One skill, several instructions.** Four related lines under one heading are one
+       skill with four instructions, in the order you wrote them — not four skills. The
+       ordering is part of what you said, and for a teaching flow it *is* what you said.
+     - **Three scopes**: the whole course, **one session** of it, or **every course**
+       (admins only). Precedence, strongest first: hard rules → this course's reviewer
+       corrections → session skills → course skills → global skills.
+     Write them yourself, or write rough requirements and have the agent group them into
+     skills — each one shows the words it came from, and anything it cannot trace back
+     to your text is discarded. Or import a course's approved skills. **Nothing applies
+     until you approve it**, an edit sends a skill back to draft, and a retired skill is
+     kept so an old document can still be explained. Skills that are mechanically
+     checkable become deterministic gates; the rest reach the writer and the judge.
    - **Prerequisites** — courses taught before this one. Their topics become *assumed
      knowledge*: the writer will not re-teach them and may refer to them freely. That is
      the opposite of the rule for earlier sessions of the same course, where repeating a

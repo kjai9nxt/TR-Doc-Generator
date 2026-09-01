@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { api, setAuthToken, setOnUnauthorized, setRenewCredential } from './api'
+import Icon from './Icon'
 
 export default function App() {
   // --- Auth (Google Sign-In, @nxtwave.co.in only) ---
@@ -82,7 +83,41 @@ export default function App() {
   // WHERE the user is working, and WHICH view they are looking at. The whole app used
   // to be one scrolling column; these two pieces of state are what turn it into an
   // application with places you can be.
-  const [tab, setTab] = useState('curriculum')
+  // WHICH SECTION IS OPEN — AND WHICH RUN — in the URL: `#skills`, `#generate/<id>`.
+  //
+  // Both were held only in React state. A reload dropped you back on Curriculum however
+  // deep in a review you were, and the open run survived only in this browser's
+  // localStorage, so the way back into a half-finished review was to find it in the
+  // "unfinished docs" list and press Resume. Neither could be linked to. The hash is the
+  // whole mechanism — no router, no dependency — and an unknown value falls back to the
+  // curriculum rather than rendering nothing.
+  // `window.`-qualified throughout. This component already has state called `history`
+  // (the user's finished docs), which shadows the global — so a bare `history.replaceState`
+  // read the React state, found null, and took the whole app down with it on first
+  // render. The globals are not worth the two characters saved.
+  const readHash = () => {
+    const [t, g] = (window.location.hash || '').replace('#', '').split('/')
+    return { tab: t || 'curriculum', gid: g || null }
+  }
+  const [tab, _setTab] = useState(() => readHash().tab)
+  // The run named by the URL at load, tried once. A ref, not state: it is a one-shot
+  // instruction to resume, and re-running it on every render would fight the user.
+  const hashGidRef = useRef(readHash().gid)
+  const writeHash = (t, gid) => {
+    const h = `#${t}${gid ? `/${gid}` : ''}`
+    if (window.location.hash === h) return
+    if (typeof window.history?.replaceState === 'function') {
+      window.history.replaceState(null, '', h)
+    } else {
+      window.location.hash = h
+    }
+  }
+  const setTab = (id) => { _setTab(id); writeHash(id, id === 'generate' ? guidedId : null) }
+  useEffect(() => {
+    const onHash = () => _setTab(readHash().tab)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
   const [workspace, setWorkspace] = useState(() => {
     try { return JSON.parse(localStorage.getItem('tr_workspace')) || { kind: 'individual' } }
     catch (e) { return { kind: 'individual' } }
@@ -944,6 +979,21 @@ export default function App() {
     api.guidedDiscard(gid).catch(() => {}).finally(refreshResumable)
   }
 
+  // The open run belongs in the URL for as long as it is open, and must leave it the
+  // moment it is not — a stale id in the address bar would try to resume a finished run
+  // on the next reload.
+  useEffect(() => { if (tab === 'generate') writeHash('generate', guidedId) }, [guidedId, tab])
+
+  // …and a URL that names a run opens it, once, as soon as there is a user to open it
+  // for. Cleared before the call, so a run that cannot be resumed produces one error
+  // rather than an attempt on every render.
+  useEffect(() => {
+    const gid = hashGidRef.current
+    if (!user || !gid || guidedId) return
+    hashGidRef.current = null
+    resumeGuided(gid)
+  }, [user, guidedId])
+
   function resumeGuided(gidArg) {
     const gid = gidArg || resumableGid
     if (!gid) return
@@ -1129,24 +1179,27 @@ export default function App() {
 
   const courseCount = curRows.length
   const tabs = [
-    { id: 'curriculum', icon: '📚', label: 'Curriculum',
+    { id: 'curriculum', icon: 'curriculum', label: 'Curriculum',
       badge: courseCount ? String(courseCount) : null },
-    { id: 'generate', icon: '✨', label: 'Generate' },
-    { id: 'history', icon: '🗂', label: 'History' },
-    ...(workspace.kind === 'team' ? [{ id: 'team', icon: '👥', label: 'Team' }] : []),
+    { id: 'generate', icon: 'generate', label: 'Generate' },
+    { id: 'history', icon: 'history', label: 'History' },
+    ...(workspace.kind === 'team' ? [{ id: 'team', icon: 'team', label: 'Team' }] : []),
     // WHAT THIS COURSE IS WRITTEN UNDER — its own instructions and what its learners
     // already knew. Separate from "Agent rules", which are the rules the agent INFERRED
     // from corrections across every course; these were authored for this one.
-    { id: 'skills', icon: '🎯', label: 'Course rules',
+    { id: 'skills', icon: 'skills', label: 'Course rules',
       badge: approvedSkills ? String(approvedSkills) : null },
-    { id: 'rules', icon: '🧠', label: 'Agent rules' },
-    { id: 'settings', icon: '⚙️', label: 'Settings' },
+    { id: 'rules', icon: 'brain', label: 'Agent rules' },
+    { id: 'settings', icon: 'settings', label: 'Settings' },
   ]
 
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand">📝 <b>TR Doc Generator</b></div>
+        <div className="brand">
+          <span className="bmark" aria-hidden="true"><Icon name="doc" size={17} /></span>
+          <b>TR Doc Generator</b>
+        </div>
         {/* No provider/model/version chips: which LLM runs the agent is an internal
             detail that changes over time, and the user has no decision to make on it.
             A missing API key is surfaced where it blocks you — next to Generate. */}
@@ -1171,14 +1224,14 @@ export default function App() {
                 done. */}
             <button className={`wsopt ${workspace.kind === 'individual' ? 'on' : ''}`}
                     onClick={() => switchWorkspace({ kind: 'individual' })}>
-              <span className="wsicon">👤</span>
+              <span className="wsicon"><Icon name="person" /></span>
               <span className="wsbody"><b>Individual</b><span>Just my own docs</span></span>
             </button>
             {myTeams.map((t) => (
               <button key={t.id}
                       className={`wsopt ${workspace.kind === 'team' && workspace.team_id === t.id ? 'on' : ''}`}
                       onClick={() => switchWorkspace({ kind: 'team', team_id: t.id })}>
-                <span className="wsicon">👥</span>
+                <span className="wsicon"><Icon name="team" /></span>
                 <span className="wsbody"><b>{t.name}</b>
                   <span>{t.members.length} member{t.members.length === 1 ? '' : 's'} · {t.courses.length} course{t.courses.length === 1 ? '' : 's'}</span>
                 </span>
@@ -1213,7 +1266,9 @@ export default function App() {
                 </option>
               ))}
             </select>
-            <button className="navlink" onClick={startNewCourse}>＋ Create new course</button>
+            <button className="navlink" onClick={startNewCourse}>
+              <Icon name="plus" size={14} />Create new course
+            </button>
           </div>
 
           <nav className="navsec navtabs">
@@ -1221,17 +1276,20 @@ export default function App() {
             {tabs.map((t) => (
               <button key={t.id} className={`navtab ${tab === t.id ? 'on' : ''}`}
                       onClick={() => setTab(t.id)}>
-                <span className="tabicon">{t.icon}</span>{t.label}
+                <Icon name={t.icon} className="tabicon" />
+                <span className="tablabel">{t.label}</span>
                 {t.badge && <span className="tabbadge">{t.badge}</span>}
               </button>
             ))}
           </nav>
 
           <div className="navsec">
-            <button className="navlink" onClick={loadGuide}>📋 Sheet template</button>
+            <button className="navlink" onClick={loadGuide}>
+              <Icon name="doc" size={14} />Sheet template
+            </button>
             {syncOut?.extraction_warnings?.length > 0 && (
               <button className="navlink" onClick={() => { setShowGaps((v) => !v); setShowGuide(false) }}>
-                🔍 Extraction gaps ({syncOut.extraction_warnings.length})
+                <Icon name="search" size={14} />Extraction gaps ({syncOut.extraction_warnings.length})
               </button>
             )}
           </div>
@@ -1313,7 +1371,7 @@ export default function App() {
           the user could possibly do first. */}
       {tab === 'curriculum' && (showImport || courses.length === 0) && (
       <section className="card">
-        <h2><span className="num">{newCourse ? '+' : '↺'}</span>{' '}
+        <h2><span className="hicon"><Icon name={newCourse ? 'plus' : 'history'} /></span>{' '}
           {newCourse ? 'Create a new course' : `Re-import ${courseName || 'this course'} from its sheet`}</h2>
         <p className="hint">
           {newCourse
@@ -1358,7 +1416,8 @@ export default function App() {
         </span>
         <div className="curactions">
           <button className="primary" disabled={!courseLink || !courseName || syncing} onClick={doSync}>
-            {syncing ? 'Importing…' : (newCourse ? '＋ Create course' : '↺ Re-import')}
+            {syncing ? 'Importing…'
+            : <><Icon name={newCourse ? 'plus' : 'history'} />{newCourse ? 'Create course' : 'Re-import'}</>}
           </button>
           {curRows.length > 0 && (
             <button className="ghostbtn" disabled={syncing}
@@ -1407,7 +1466,7 @@ export default function App() {
                 left panel with the sheet templates — one line here, the detail there. */}
             {syncOut.extraction_warnings?.length > 0 && (
               <button className="link gapslink" onClick={() => { setShowGaps((v) => !v); setShowGuide(false) }}>
-                🔍 {showGaps ? 'Hide' : 'Show'} deck extraction gaps ({syncOut.extraction_warnings.length})
+                <Icon name="search" size={14} />{showGaps ? 'Hide' : 'Show'} deck extraction gaps ({syncOut.extraction_warnings.length})
               </button>
             )}
           </div>
@@ -1421,7 +1480,7 @@ export default function App() {
           moment you open the app. */}
       {tab === 'generate' && sessions.length === 0 && (
         <section className="card">
-          <h2><span className="num">✨</span> Generate a TR doc</h2>
+          <h2><span className="hicon"><Icon name="generate" /></span> Generate a TR doc</h2>
           <p className="hint">
             Every session in <b>{courseName || 'this course'}</b> already has a deck, or
             the course has no sessions yet. Add a session in <b>Curriculum</b> — a row
@@ -1431,7 +1490,7 @@ export default function App() {
       )}
       {tab === 'generate' && sessions.length > 0 && (
         <section className="card">
-          <h2><span className="num">2</span> Generate a TR doc</h2>
+          <h2><span className="hicon"><Icon name="generate" /></span> Generate a TR doc</h2>
           <label>Session</label>
           {/* LOCKED while a run is in flight. A run's session is fixed the moment it
               starts, so leaving this editable let the picker drift away from the work
@@ -1486,7 +1545,7 @@ export default function App() {
             <>
               {!guidedId && (
                 <button className="primary" disabled={sel == null || !status?.key_ok} onClick={startGuided}>
-                  🚦 Generate all chunks
+                  <Icon name="generate" /> Generate all chunks
                 </button>
               )}
               {/* Unfinished runs. Every chunk is checkpointed as it is generated, so
@@ -1496,7 +1555,7 @@ export default function App() {
                   a fallback for a run the server list has not caught up with. */}
               {!guidedId && (serverResumable.length > 0 || resumableGid) && (
                 <div className="resumebox">
-                  <b>↩ Unfinished TR doc{serverResumable.length > 1 ? 's' : ''}</b>
+                  <b><Icon name="history" size={14} /> Unfinished TR doc{serverResumable.length > 1 ? 's' : ''}</b>
                   <div className="hint">
                     Every chunk generated so far is saved on the server, so resuming picks
                     up where you stopped instead of paying for those chunks again.
@@ -1513,7 +1572,8 @@ export default function App() {
                       </span>
                       <span className="ractions">
                         <button className="ghostbtn" disabled={busyAction}
-                                onClick={() => resumeGuided(r.guided_id)}>↩ Resume</button>
+                                onClick={() => resumeGuided(r.guided_id)}>
+                          <Icon name="refresh" size={14} /> Resume</button>
                         <button className="ghostbtn" disabled={busyAction}
                                 onClick={() => discardGuided(r.guided_id)}>Discard</button>
                       </span>
@@ -1525,7 +1585,8 @@ export default function App() {
                       <span className="rtitle">A run started in this browser</span>
                       <span className="ractions">
                         <button className="ghostbtn" disabled={busyAction}
-                                onClick={() => resumeGuided(resumableGid)}>↩ Resume</button>
+                                onClick={() => resumeGuided(resumableGid)}>
+                          <Icon name="refresh" size={14} /> Resume</button>
                         <button className="ghostbtn" onClick={() => discardGuided(resumableGid)}>
                           Discard
                         </button>
@@ -1556,7 +1617,7 @@ export default function App() {
                     {guided.session_title ? ` — ${guided.session_title}` : ''}</b></span>
                   {guided.session_no !== sel && (
                     <span className="runwarn">
-                      ⚠ The picker above shows session {sel}. This run was started for
+                      The picker above shows session {sel}. This run was started for
                       session {guided.session_no} and will produce that document —
                       discard it and start again if that is not what you want.
                     </span>
@@ -1589,9 +1650,26 @@ export default function App() {
                     </div>
                   )}
                   {guidedReviewing && (
+                    /* HOW FAR THROUGH THE REVIEW YOU ARE. This was a sentence with
+                       "· 3/5 approved" appended, which is the one number a reviewer
+                       checks constantly and the hardest shape to check it in. */
                     <div className="gprogress">
-                      Review each chunk — <b>Approve</b> or <b>Regenerate</b>.
-                      <span className="gcount"> · {approvedSet.size}/{guided.chunks.length} approved</span>
+                      <div className="gprow">
+                        <b>Review each chunk</b>
+                        <span className="gcount">
+                          {approvedSet.size} of {guided.chunks.length} approved
+                        </span>
+                      </div>
+                      <div className="gbar" role="progressbar"
+                           aria-valuenow={approvedSet.size} aria-valuemin={0}
+                           aria-valuemax={guided.chunks.length}>
+                        <span style={{ width: `${guided.chunks.length
+                          ? Math.round(100 * approvedSet.size / guided.chunks.length) : 0}%` }} />
+                      </div>
+                      <span className="hint tight">
+                        Approve what is right, or <b>Regenerate</b> with a reason — the
+                        reason also teaches the agent for later sessions.
+                      </span>
                     </div>
                   )}
                   {/* A question about the DOCUMENT, not a section. It sits above them
@@ -1631,14 +1709,14 @@ export default function App() {
                     </div>
                   )}
                   {gStatus === 'done' && (
-                    <div className="ok-note">✅ Final doc created — see the result below. Chunks kept here for reference.</div>
+                    <div className="ok-note"><Icon name="check" /> Final doc created — see the result below. Chunks kept here for reference.</div>
                   )}
                   {guided.chunks.map((c, i) => {
                     const regenning = gStatus === 'regenerating' && guided.regen_index === i
                     const isOk = approvedSet.has(i)
                     return (
                       <details key={i} className={`review-chunk ${isOk ? 'ok' : ''}`} open={gStatus !== 'done'}>
-                        <summary>{isOk ? '✅' : `${i + 1}.`} {c.label}</summary>
+                        <summary>{isOk ? <Icon name="check" className="okmark" /> : <span className="cnum">{i + 1}</span>} {c.label}</summary>
                         {regenning
                           ? <Busy label="Regenerating this chunk…" />
                           : <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{c.markdown}</ReactMarkdown></div>}
@@ -1683,7 +1761,7 @@ export default function App() {
                             bullets will fail the run at finalize otherwise. */}
                         {!regenning && c.repetition?.length > 0 && (
                           <div className="alert warn">
-                            <b>⚠ {c.repetition.length} bullet(s) repeat the paragraph above them</b>
+                            <b><Icon name="warn" /> {c.repetition.length} bullet(s) repeat the paragraph above them</b>
                             <ul>{c.repetition.map((x, k) => <li key={k}>{x}</li>)}</ul>
                             The page budget is fixed, so a repeated line is a line that
                             teaches nothing new. Regenerate with a reason like{' '}
@@ -1696,15 +1774,17 @@ export default function App() {
                             <div className="gactions">
                               {isOk
                                 ? <>
-                                    <span className="approved-badge">✓ Approved</span>
+                                    <span className="approved-badge"><Icon name="check" size={13} /> Approved</span>
                                     <button className="ghostbtn" disabled={busyAction}
                                             title="Un-approve this chunk"
-                                            onClick={() => approveChunk(i, false)}>↩ Undo</button>
+                                            onClick={() => approveChunk(i, false)}>
+                                      <Icon name="refresh" size={13} /> Undo</button>
                                   </>
-                                : <button className="primary" disabled={busyAction} onClick={() => approveChunk(i)}>✅ Approve</button>}
+                                : <button className="primary" disabled={busyAction} onClick={() => approveChunk(i)}><Icon name="check" /> Approve</button>}
                               {regenFor !== i && (
                                 <button className="ghostbtn" disabled={busyAction || gStatus === 'regenerating'}
-                                        onClick={() => { setRegenFor(i); setRegenReason(''); setRegenAll(false) }}>🔄 Regenerate…</button>
+                                        onClick={() => { setRegenFor(i); setRegenReason(''); setRegenAll(false) }}>
+                                          <Icon name="refresh" size={14} /> Regenerate…</button>
                               )}
                               {/* Splitting is a STRUCTURAL edit, not a rewrite: the
                                   slide's content is divided between two slides with no
@@ -1713,7 +1793,7 @@ export default function App() {
                               {splitFor !== i && c.slides?.length > 0 && (
                                 <button className="ghostbtn" disabled={busyAction || gStatus === 'regenerating'}
                                         onClick={() => { setSplitFor(i); setSplitSlide(''); setSplitErr(null) }}>
-                                  ✂ Split a slide…
+                                  <Icon name="scissors" size={14} /> Split a slide…
                                 </button>
                               )}
                             </div>
@@ -1797,7 +1877,7 @@ export default function App() {
                               onClick={finalizeGuided}>
                         {finalizing
                           ? <><span className="spinner" aria-hidden="true" /> Creating the final doc…</>
-                          : '📝 Create final TR Doc'}
+                          : <><Icon name="doc" /> Create final TR Doc</>}
                       </button>
                       {finalizing && <div className="hint">Assembling, grading and rendering — this takes a minute or two.</div>}
                       {!allApproved && !finalizing && <div className="hint">Approve every chunk to enable creating the final doc.</div>}
@@ -1815,9 +1895,9 @@ export default function App() {
 
       {tab === 'generate' && result && (
         <section className="card">
-          <h2><span className="num">3</span> Result</h2>
+          <h2><span className="hicon"><Icon name="check" /></span> Result</h2>
           <div className="metrics">
-            <Metric label="Accepted" value={result.accepted ? '✅ Yes' : '⚠️ Review'} />
+            <Metric label="Accepted" value={result.accepted ? 'Yes' : 'Review'} />
             <Metric label="Est. recording" value={`${result.time.estimated_minutes} min`}
                     sub={`budget ${result.time.max_minutes}`} />
             {result.pages && (
@@ -1838,16 +1918,16 @@ export default function App() {
             </div>
           )}
           <div className="dlrow">
-            <button className="primary download" onClick={() => api.downloadDoc(result.session_no, result.run_id, result.docx_name).catch((e) => setDlErr(e.message))}>⬇️ Download Word (.docx)</button>
+            <button className="primary download" onClick={() => api.downloadDoc(result.session_no, result.run_id, result.docx_name).catch((e) => setDlErr(e.message))}><Icon name="download" /> Download Word (.docx)</button>
             <button className="ghostbtn" disabled={gdocBusy} onClick={() => createGoogleDoc(result.session_no, result.run_id, result.docx_name)}>
-              {gdocBusy ? 'Creating Google Doc…' : '📄 Create Google Doc'}
+              {gdocBusy ? 'Creating Google Doc…' : <><Icon name="doc" /> Create Google Doc</>}
             </button>
             {/* Last-resort escape hatch. A reviewer once had BOTH the download and the
                 Google Doc fail on a finished document and copied it out of the preview
                 by hand. Both paths are fixed, but the copy button stays: no one should
                 ever be one broken button away from losing an hour of review. */}
             <button className="ghostbtn" onClick={() => copyMarkdown(result)}>
-              {copied ? '✓ Copied' : '📋 Copy full text'}
+              {copied ? <><Icon name="check" /> Copied</> : <><Icon name="doc" /> Copy full text</>}
             </button>
           </div>
           {dlErr && (
@@ -1860,7 +1940,7 @@ export default function App() {
           )}
           {gdoc?.session_no === result.session_no && gdoc.link && (
             <a className="gdoclink" href={gdoc.link} target="_blank" rel="noreferrer">
-              🔗 Open in Google Docs — you have edit access
+              <Icon name="link" size={14} /> Open in Google Docs — you have edit access
             </a>
           )}
 
@@ -1869,7 +1949,7 @@ export default function App() {
               this course, and the distilled text is shown back so a bad distillation
               can be spotted and deleted rather than silently applied for months. */}
           <details className="panel feedback">
-            <summary>🧠 Teach the agent — what should change in future docs?</summary>
+            <summary><Icon name="brain" /> Teach the agent — what should change in future docs?</summary>
             <div className="fbbody">
               <textarea
                 rows={3} value={fbText} disabled={fbBusy}
@@ -1905,7 +1985,7 @@ export default function App() {
             <div className="evalhead">
               <div><b>Eval sets</b> <span className="muted">— score this doc against all {19} quality dimensions</span></div>
               <button className="ghostbtn" disabled={evalRunning} onClick={runEvalSets}>
-                {evalRunning ? 'Running…' : '🧪 Run eval sets'}
+                {evalRunning ? 'Running…' : <><Icon name="beaker" /> Run eval sets</>}
               </button>
             </div>
             {evalRunning && <Busy label="Scoring against the eval sets… (deterministic + LLM, ~1–2 min)" />}
@@ -1938,8 +2018,13 @@ export default function App() {
               : <section className="card"><p className="hint">That team is no longer available.</p></section>)
           : (history?.courses?.length > 0
               ? <MyHistory history={history} />
-              : <section className="card"><h2><span className="num">🗂</span> History</h2>
-                  <p className="hint">Nothing generated yet — your finished docs appear here.</p>
+              : <section className="card"><h2><span className="hicon"><Icon name="history" /></span> History</h2>
+                  <div className="emptystate">
+                    <span className="eicon"><Icon name="history" size={20} /></span>
+                    <b>No documents yet</b>
+                    <p>Every TR doc you finish is kept here with its grade, its cost and
+                       the file itself — including the ones your team finished.</p>
+                  </div>
                 </section>)
       )}
 
@@ -1961,13 +2046,13 @@ export default function App() {
           onClearMsg={() => setSkillMsg(null)}
           courses={courses} justCreated={justCreated}
           onDismissNew={() => setJustCreated(null)}
-          onAdd={(text) => runSkillAction(
-            () => api.addSkill(courseName, text),
+          onAdd={(text, where) => runSkillAction(
+            () => api.addSkill(courseName, text, null, where),
             'Written up as a draft — check it against your own words below, edit it if it '
             + 'says more or less than you meant, and approve it when it is right. '
             + 'It does not affect anything until you do.')}
-          onFromRequirements={(text) => runSkillAction(
-            () => api.skillsFromRequirements(courseName, text),
+          onFromRequirements={(text, where) => runSkillAction(
+            () => api.skillsFromRequirements(courseName, text, where),
             'Drafted from your requirements. Approve the ones you want — each shows the words it came from.')}
           onImport={(from) => runSkillAction(
             () => api.importSkills(courseName, from),
@@ -1975,8 +2060,8 @@ export default function App() {
           onApprove={(id) => runSkillAction(
             () => api.approveSkill(courseName, id),
             'Approved — it applies from the next generation.')}
-          onEdit={(id, text) => runSkillAction(
-            () => api.editSkill(courseName, id, text),
+          onEdit={(id, text, instructions) => runSkillAction(
+            () => api.editSkill(courseName, id, text, instructions),
             'Edited. It is back to draft — an approval is of the words that were approved.')}
           onRetire={(id) => runSkillAction(
             () => api.retireSkill(courseName, id),
@@ -2014,7 +2099,7 @@ export default function App() {
       {tab === 'rules' && (
         <LearnedRules rules={learned || []} sessionNo={result?.session_no ?? sel}
                       course={learnedCourse} isAdmin={user.is_admin}
-                      onChanged={refreshLearned} />
+                      onChanged={refreshLearned} standalone />
       )}
         </main>
       </div>
@@ -2032,6 +2117,130 @@ export default function App() {
 // corrections across every course. These were written for this one, on purpose, and
 // nothing here affects a document until a person approves it — which is why a draft is
 // visibly a draft rather than just an un-highlighted row.
+// WHAT A SKILL GOVERNS, in the order a writer needs it — the same four the agent uses
+// (src/skills.py CATEGORIES). The hint is what the author is being asked for, because
+// "teaching flow" alone does not tell anyone what belongs in it.
+const SKILL_CATEGORIES = [
+  ['teaching_flow', 'Teaching flow',
+   'the order concepts are taught in — how a session opens, where examples land, how it closes',
+   'flow'],
+  ['teaching_guidelines', 'Teaching guidelines',
+   'how the content is explained — depth, pedagogy, what to emphasise, what to avoid',
+   'book'],
+  ['examples_visuals', 'Examples & visuals',
+   'the kinds of example and diagram this course uses, and when not to use one',
+   'image'],
+  ['reviewer', 'Reviewer corrections',
+   'a mistake review keeps sending back on this course — outranks the rest',
+   'flag'],
+]
+const SKILL_CATEGORY_LABEL = Object.fromEntries(
+  SKILL_CATEGORIES.map(([id, label]) => [id, label]))
+// The groups the brief is laid out in: the four categories, then one slot for the rules
+// written before categories existed. That last slot is the only one that hides when
+// empty — the four are what a course CAN say, and a course that has never said anything
+// about its examples should be able to see the gap.
+const SKILL_GROUPS = [
+  ...SKILL_CATEGORIES.map(([id, label, hint, icon]) => ({ id, label, hint, icon })),
+  { id: '', label: 'Other rules', icon: 'skills',
+    hint: 'written before this course sorted its rules into the four above' },
+]
+
+/* ONE RULE, as the author needs to read it: what it says, the lines under it, whether
+   it is in force, and where it reaches. Split out of CourseRules because it is the only
+   part of that screen with per-item state, and inlining it made the list markup
+   impossible to follow. */
+function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, editText,
+                     setEditText, editLines, setEditLines, onStartEdit, onCancelEdit,
+                     onSave, onApprove, onRetire }) {
+  const [why, setWhy] = useState(false)
+  const lines = s.instructions || []
+  const isGlobal = s.course === globalCourse
+  // A global rule is SHOWN to a course owner — knowing what your course inherits is the
+  // whole point of showing it — but it is not theirs to change.
+  const mine = canEdit && (!isGlobal || canEditGlobal)
+  const quotes = s.source_quotes?.length ? s.source_quotes
+                 : (s.source_quote ? [s.source_quote] : [])
+  return (
+    <article className={`skill ${s.status} ${isGlobal ? 'inherited' : ''}`}>
+      <div className="skillbody">
+        {editing ? (
+          <>
+            <textarea rows={2} value={editText} onChange={(e) => setEditText(e.target.value)} />
+            {/* ONE RULE, SEVERAL LINES. The author grouped these and put them in this
+                order; the order is part of what they said, so they are edited as a
+                block rather than as separate rules. */}
+            {lines.length > 0 && (
+              <>
+                <label>Its instructions — one per line, in order</label>
+                <textarea rows={Math.min(9, lines.length + 1)} value={editLines}
+                          onChange={(e) => setEditLines(e.target.value)} />
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="skilltext">{s.text}</p>
+            {lines.length > 1 && (
+              <ol className="skillins">
+                {lines.map((line, i) => <li key={i}>{line}</li>)}
+              </ol>
+            )}
+          </>
+        )}
+        <div className="skillmeta">
+          <span className={`dot ${s.status}`} title={s.status === 'approved'
+            ? 'in force' : 'written, not yet approved — it affects nothing'} />
+          <span className="mtext">{s.status === 'approved' ? 'In force' : 'Awaiting approval'}</span>
+          {s.scope === 'session' && (
+            <span className="tag scope">Session {s.session_ref}</span>)}
+          {isGlobal && <span className="tag scope"><Icon name="globe" size={11} /> Every course</span>}
+          {s.check && <span className="tag" title={JSON.stringify(s.check)}>Checked automatically</span>}
+          {s.source?.startsWith('imported:') && (
+            <span className="tag">From {s.source.slice(9)}</span>)}
+          {/* EVERY phrase it was drawn from, not just the first — the author says the
+              same thing twice in different words and those merge into one rule, and the
+              approval only means something if you can see all of what it was built
+              from. Behind a disclosure because it is provenance, not content: it was
+              printed inline on every row and made a six-rule brief unreadable. */}
+          {quotes.length > 0 && (s.source === 'requirements' || s.source === 'user') && (
+            <button className="whybtn" onClick={() => setWhy((v) => !v)}>
+              {why ? 'Hide' : 'From your words'}
+            </button>
+          )}
+        </div>
+        {why && quotes.length > 0 && (
+          <blockquote className="skillquote">
+            {quotes.map((q, i) => <span key={i}>“{q}”</span>)}
+          </blockquote>
+        )}
+      </div>
+      {mine && (
+        <div className="skillacts">
+          {editing ? (
+            <>
+              <button className="primary sm" disabled={busy || !editText.trim()}
+                      onClick={onSave}>Save</button>
+              <button className="ghostbtn sm" onClick={onCancelEdit}>Cancel</button>
+            </>
+          ) : (
+            <>
+              {s.status !== 'approved' && (
+                <button className="primary sm" disabled={busy} onClick={onApprove}>
+                  <Icon name="check" size={13} />Approve</button>)}
+              <button className="iconbtn" disabled={busy} title="Edit this rule"
+                      onClick={onStartEdit}><Icon name="pencil" size={14} /></button>
+              <button className="iconbtn danger" disabled={busy}
+                      title="Retire it — it stops applying, and is kept on the record"
+                      onClick={onRetire}><Icon name="trash" size={14} /></button>
+            </>
+          )}
+        </div>
+      )}
+    </article>
+  )
+}
+
 function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses = [],
                       justCreated, onDismissNew,
                       onAdd, onFromRequirements, onImport, onApprove, onEdit, onRetire,
@@ -2045,6 +2254,18 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
   const [mode, setMode] = useState('write')
   const [editing, setEditing] = useState(null)
   const [editText, setEditText] = useState('')
+  // The skill's own lines, one per row, while it is being edited. Kept apart from its
+  // sentence because they are different things: the sentence says what the skill is,
+  // the lines are what a writer actually follows.
+  const [editLines, setEditLines] = useState('')
+  // WHAT a new skill governs and WHERE it applies. Both default to the answer that was
+  // the only possible one before this existed — uncategorised, whole course — so adding
+  // a skill is still one box and a button for anyone who does not need the rest.
+  const [cat, setCat] = useState('')
+  const [scope, setScope] = useState('course')
+  const [sessionNo, setSessionNo] = useState('')
+  // Which session's brief the list is showing. '' = all of them.
+  const [seeSession, setSeeSession] = useState('')
   // Close the link form once the decks are ACTUALLY read — and only when it worked, so a
   // failed read leaves the links on screen to be corrected instead of retyped.
   useEffect(() => {
@@ -2053,17 +2274,38 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
   }, [job, msg])
   const list = skills?.skills || []
   const canEdit = skills?.can_edit
+  const approvedCount = list.filter((x) => x.status === 'approved').length
+  const draftCount = list.filter((x) => x.status === 'draft').length
+  // Which sessions this course has written anything for — the only ones worth offering
+  // in the filter, since picking a session with no rules of its own shows the course
+  // brief you were already looking at.
+  const sessionsWithSkills = [...new Set(list.filter((x) => x.scope === 'session')
+    .map((x) => x.session_ref).filter(Boolean))].sort((a, b) => Number(a) - Number(b))
+  // WHAT ONE SESSION IS WRITTEN UNDER: its own rules plus everything course-wide, which
+  // is exactly what src/skills.py resolves for a run. Unfiltered, every session's rules
+  // are listed, because this is also the screen where they are managed.
+  const shown = seeSession
+    ? list.filter((x) => x.scope !== 'session' || x.session_ref === seeSession)
+    : list
+  // What the pickers above the box currently say, in the shape the API takes. The
+  // category is only sent when the author chose one — left alone, the agent classifies
+  // what they wrote, which is better than recording a guess as their decision.
+  const whereNow = () => ({
+    category: cat || undefined,
+    scope,
+    session: scope === 'session' ? Number(sessionNo) : undefined,
+  })
   const report = prereqs?.report || {}
   const attached = (prereqs?.prereqs || []).map((p) => p.prereq)
   const available = (prereqs?.available || []).filter((c) => !attached.includes(c))
 
   if (!course) {
-    return <section className="card"><h2><span className="num">🎯</span> Course rules</h2>
+    return <section className="card"><h2><span className="hicon"><Icon name="skills" /></span> Course rules</h2>
       <p className="hint">Open a course first — these belong to one course.</p></section>
   }
   return (
     <section className="card">
-      <h2><span className="num">🎯</span> Course rules — {course}</h2>
+      <h2><span className="hicon"><Icon name="skills" /></span> Course rules — {course}</h2>
       {justCreated === course && (
         <div className="alert ok">
           <b>“{course}” is created. Set what it is written under before you generate.</b>
@@ -2091,85 +2333,172 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
         </div>
       )}
 
-      <label>Skills ({list.filter((s) => s.status === 'approved').length} approved
-        {list.some((s) => s.status === 'draft')
-          ? `, ${list.filter((s) => s.status === 'draft').length} awaiting approval` : ''})</label>
-      {list.length === 0 && <span className="hint">None yet.</span>}
-      <div className="skilllist">
-        {list.map((s) => (
-          <div key={s.id} className={`skillrow ${s.status}`}>
-            <div className="skillmain">
-              {editing === s.id
-                ? <textarea rows={2} value={editText} onChange={(e) => setEditText(e.target.value)} />
-                : <span className="skilltext">{s.text}</span>}
-              <span className="skillmeta">
-                <span className={`chip ${s.status === 'approved' ? 'good' : 'mid'}`}>{s.status}</span>
-                {s.check && <span className="chip" title={JSON.stringify(s.check)}>checked automatically</span>}
-                {s.source?.startsWith('imported:') && <span className="chip">from {s.source.slice(9)}</span>}
-                {/* EVERY phrase it was drawn from, not just the first. The author says
-                    the same thing twice in different words; those merge into one skill,
-                    and the approval only means something if you can see all of what it
-                    was built from. */}
-                {/* Shown for a hand-written skill too, not just a drafted one. Both
-                    paths articulate now, so both are a REWRITE of something the author
-                    typed — and a rewrite you cannot see the original of is one you
-                    cannot really approve. */}
-                {(s.source === 'requirements' || s.source === 'user')
-                  && ((s.source_quotes || []).length || s.source_quote) && (
-                  <span className="hint" title="the words this was drawn from">
-                    — from your words: {(s.source_quotes?.length
-                      ? s.source_quotes : [s.source_quote])
-                      .map((qt) => `“${qt}”`).join(', ')}</span>)}
-              </span>
-            </div>
-            {canEdit && (
-              <div className="skillacts">
-                {editing === s.id ? (
-                  <>
-                    <button className="btn sm primary" disabled={busy || !editText.trim()}
-                            onClick={() => { onEdit(s.id, editText); setEditing(null) }}>Save</button>
-                    <button className="ghostbtn tiny" onClick={() => setEditing(null)}>Cancel</button>
-                  </>
-                ) : (
-                  <>
-                    {s.status !== 'approved' && (
-                      <button className="btn sm primary" disabled={busy}
-                              onClick={() => onApprove(s.id)}>Approve</button>)}
-                    <button className="ghostbtn tiny" disabled={busy}
-                            onClick={() => { setEditing(s.id); setEditText(s.text) }}>Edit</button>
-                    <button className="ghostbtn tiny danger" disabled={busy}
-                            onClick={() => onRetire(s.id)}>Retire</button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+      {/* ── THE BRIEF ──────────────────────────────────────────────────────────
+          Grouped by what each part governs, because that is how the author thinks
+          about it: the order I teach in, how I explain, what I show, what review
+          keeps telling me. A flat list of every rule in one column — which is what
+          this was — gives the reader no way to see that their course has a teaching
+          flow but has never said anything about examples. */}
+      <div className="briefhead">
+        <div>
+          <span className="eyebrow">The brief</span>
+          <p className="hint tight">
+            {approvedCount === 0
+              ? 'Nothing approved yet — this course is written to the house defaults.'
+              : <>{approvedCount} rule{approvedCount === 1 ? '' : 's'} in force
+                  {draftCount > 0 && <>, <b className="warntext">{draftCount} awaiting approval</b></>}.
+                  These shape <b>how</b> the document is written; the curriculum decides
+                  what it covers.</>}
+          </p>
+        </div>
+        {/* WHAT ONE SESSION ACTUALLY GETS. A session skill is invisible from anywhere
+            but that session, so without this the only way to check what session 15 is
+            written under was to generate session 15. */}
+        {sessionsWithSkills.length > 0 && (
+          <label className="filterbox">
+            <span>Showing</span>
+            <select value={seeSession} onChange={(e) => setSeeSession(e.target.value)}>
+              <option value="">every session</option>
+              {sessionsWithSkills.map((n) => (
+                <option key={n} value={n}>session {n} only</option>))}
+            </select>
+          </label>
+        )}
+      </div>
+
+      {/* The order the agent resolves a conflict in. Stated once, here, rather than
+          left for the author to infer from which rule happened to win. */}
+      <ol className="precedence" title="strongest first">
+        {[['Hard rules', 'the structural rules no skill can override'],
+          ['Reviewer', 'corrections review keeps making on this course'],
+          ['Session', 'written for one session only'],
+          ['Course', "this course's standing brief"],
+          ['Global', 'house rules every course gets']].map(([n, why]) => (
+          <li key={n} title={why}>{n}</li>
         ))}
+      </ol>
+
+      <div className="brief">
+        {SKILL_GROUPS.map(({ id, label, hint, icon }) => {
+          const group = shown.filter((s) => (s.category || '') === id)
+          if (id === '' && group.length === 0) return null   // no legacy rows, no slot
+          return (
+            <section key={id || 'other'} className="bgroup">
+              <header className="bghead">
+                <span className="bgicon"><Icon name={icon} /></span>
+                <div className="bgtitle">
+                  <b>{label}</b>
+                  <span>{hint}</span>
+                </div>
+                <span className="bgcount">{group.length || '—'}</span>
+              </header>
+              {/* AN EMPTY CATEGORY IS SHOWN, NOT HIDDEN. The four are what a course
+                  can say about how it teaches, and a course that has never said
+                  anything about its examples should be able to see that. */}
+              {group.length === 0 ? (
+                <p className="bgempty">
+                  Nothing yet. {canEdit ? 'Add a rule below and file it here.' : ''}
+                </p>
+              ) : group.map((s) => (
+                <SkillCard key={s.id} s={s} canEdit={canEdit} busy={busy}
+                           globalCourse={skills?.global_course}
+                           canEditGlobal={skills?.can_edit_global}
+                           editing={editing === s.id}
+                           onStartEdit={() => { setEditing(s.id); setEditText(s.text)
+                                                setEditLines((s.instructions || []).join('\n')) }}
+                           onCancelEdit={() => setEditing(null)}
+                           editText={editText} setEditText={setEditText}
+                           editLines={editLines} setEditLines={setEditLines}
+                           onSave={() => {
+                             // undefined, not [], when the skill has no lines: the API
+                             // reads "omitted" as leave-them-alone and an empty array as
+                             // delete-them.
+                             const lines = (s.instructions || []).length
+                               ? editLines.split('\n').map((l) => l.trim()).filter(Boolean)
+                               : undefined
+                             onEdit(s.id, editText, lines); setEditing(null)
+                           }}
+                           onApprove={() => onApprove(s.id)}
+                           onRetire={() => onRetire(s.id)} />
+              ))}
+            </section>
+          )
+        })}
       </div>
 
       {canEdit && (
-        <>
-          <label>Add a skill</label>
-          <div className="gactions">
-            {[['write', 'Write one'], ['requirements', 'From my requirements'],
-              ['import', 'Import from a course']].map(([m, l]) => (
-              <button key={m} className={`ghostbtn ${mode === m ? 'on' : ''}`}
-                      onClick={() => setMode(m)}>{l}</button>
-            ))}
+        <div className="composer">
+          <div className="cmphead">
+            <span className="eyebrow">Add a rule</span>
+            <div className="segmented">
+              {[['write', 'Write one'], ['requirements', 'From my notes'],
+                ['import', 'Import']].map(([m, l]) => (
+                <button key={m} className={mode === m ? 'on' : ''}
+                        onClick={() => setMode(m)}>{l}</button>
+              ))}
+            </div>
           </div>
+
+          {/* WHAT IT GOVERNS AND WHERE IT APPLIES — shared by both authoring paths,
+              because the answer is about the skill, not about how it was written.
+              Both default to what a skill has always been: uncategorised, whole
+              course. Nobody who does not need this has to touch it. */}
+          {mode !== 'import' && (
+            <div className="cmpwhere">
+              <div className="cmpfield">
+                <label>Files under</label>
+                <div className="chiprow">
+                  <button className={`chipbtn ${cat === '' ? 'on' : ''}`}
+                          onClick={() => setCat('')}
+                          title="let the agent decide which of the four it is">
+                    Decide for me</button>
+                  {SKILL_CATEGORIES.map(([id, label, hint, icon]) => (
+                    <button key={id} className={`chipbtn ${cat === id ? 'on' : ''}`}
+                            title={hint} onClick={() => setCat(id)}>
+                      <Icon name={icon} size={13} />{label}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="cmpfield">
+                <label>Applies to</label>
+                <div className="chiprow">
+                  <button className={`chipbtn ${scope === 'course' ? 'on' : ''}`}
+                          onClick={() => setScope('course')}>All of {course}</button>
+                  <button className={`chipbtn ${scope === 'session' ? 'on' : ''}`}
+                          onClick={() => setScope('session')}>One session</button>
+                  {skills?.can_edit_global && (
+                    <button className={`chipbtn ${scope === 'global' ? 'on' : ''}`}
+                            title="a house rule for every course on this instance"
+                            onClick={() => setScope('global')}>Every course</button>)}
+                  {scope === 'session' && (
+                    <input className="tiny" type="number" min="1" value={sessionNo}
+                           placeholder="no."
+                           onChange={(e) => setSessionNo(e.target.value)} />)}
+                </div>
+                {scope === 'session' && <span className="hint tight">
+                  That session and nowhere else. Where it disagrees with a rule for the
+                  whole course, this one wins.</span>}
+                {scope === 'global' && <span className="hint tight">
+                  Every course here. It is the weakest rule there is — anything a course
+                  or a session says about the same thing overrides it.</span>}
+              </div>
+            </div>
+          )}
+
           {mode === 'write' && (
             <>
-              <span className="hint">
-                Say the rule in your own words. The agent writes it up as the standing
-                instruction a writer works from — it does not add anything you did not
-                ask for, and it shows you your own words beside it. Nothing takes effect
-                until you approve it, and you can edit the wording first.
-              </span>
+              <p className="cmphelp">
+                Say it in your own words. The agent writes it up as the instruction a
+                writer works from — it adds nothing you did not ask for, and shows you
+                your own words beside it. Nothing takes effect until you approve it.
+              </p>
               <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
                         placeholder="e.g. Show the snippet before explaining it." />
-              <div className="gactions">
-                <button className="primary" disabled={busy || !text.trim()}
-                        onClick={() => Promise.resolve(onAdd(text))
+              <div className="cmpfoot">
+                <button className="primary sm"
+                        disabled={busy || !text.trim()
+                                  || (scope === 'session' && !sessionNo)}
+                        onClick={() => Promise.resolve(onAdd(text, whereNow()))
                           .then((ok) => { if (ok !== false) setText('') })}>
                   {busy ? 'Writing it up…' : 'Add as draft'}
                 </button>
@@ -2178,50 +2507,57 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
           )}
           {mode === 'requirements' && (
             <>
-              <span className="hint">
-                Write what this course needs in plain sentences. The agent splits it into
-                separate skills and shows you the words each one came from — it does not
-                invent: anything it cannot trace back to your text is discarded.
-              </span>
+              <p className="cmphelp">
+                Write what the course needs in plain sentences. The agent <b>groups</b>
+                them — everything about the order things are taught in becomes one
+                teaching-flow rule, in the order you wrote it; the same for how things are
+                explained and for examples. It does not invent: anything it cannot trace
+                back to your words is discarded.
+              </p>
               <textarea rows={4} value={reqs} onChange={(e) => setReqs(e.target.value)}
-                        placeholder="e.g. code snippets should be shown, explain the code line by line, give one example and follow that pattern throughout" />
-              <div className="gactions">
-                <button className="primary" disabled={busy || !reqs.trim()}
-                        onClick={() => Promise.resolve(onFromRequirements(reqs))
+                        placeholder="e.g. start with the problem, then the concept, then how it works, then an example — explain intuition before the formal definition, use simple language first, and connect each concept to the last session" />
+              <div className="cmpfoot">
+                <button className="primary sm"
+                        disabled={busy || !reqs.trim()
+                                  || (scope === 'session' && !sessionNo)}
+                        onClick={() => Promise.resolve(onFromRequirements(reqs, whereNow()))
                           .then((ok) => { if (ok !== false) setReqs('') })}>
-                  {busy ? 'Drafting…' : 'Draft skills from this'}
+                  {busy ? 'Drafting…' : 'Draft rules from this'}
                 </button>
               </div>
             </>
           )}
           {mode === 'import' && (
             <>
-              <span className="hint">
-                Copy the approved skills of another course. They arrive as drafts — a rule
-                that was right for one course is a proposal for the next.
-              </span>
-              <div className="gactions">
-                <select defaultValue="" disabled={busy}
-                        onChange={(e) => { if (e.target.value) { onImport(e.target.value); e.target.value = '' } }}>
-                  <option value="" disabled>a course…</option>
-                  {courses.filter((c) => c.name !== course).map((c) => (
-                    <option key={c.name} value={c.name}>{c.name}</option>))}
-                </select>
-              </div>
+              <p className="cmphelp">
+                Copy the approved rules of another course. They arrive as drafts — a rule
+                that was right for one course is a proposal for the next, not a decision
+                already taken.
+              </p>
+              <select defaultValue="" disabled={busy} className="cmpselect"
+                      onChange={(e) => { if (e.target.value) { onImport(e.target.value); e.target.value = '' } }}>
+                <option value="" disabled>from a course…</option>
+                {courses.filter((c) => c.name !== course).map((c) => (
+                  <option key={c.name} value={c.name}>{c.name}</option>))}
+              </select>
             </>
           )}
-        </>
+        </div>
       )}
 
-      <label>Prerequisites — what the learner already knows</label>
-      <span className="hint">
-        Courses taught before this one. Their <b>whole decks are read</b> — not just the
-        topic names but the slide content, so the writer knows how far each topic was
-        actually taken and pitches this course above that level. Those topics are
-        <b> assumed</b>: they are not re-taught, and may be referred to freely. That is
-        the opposite of the rule for earlier sessions of THIS course, where repeating a
-        topic is a failure.
-      </span>
+      <div className="briefhead">
+        <div>
+          <span className="eyebrow">Prerequisites — what the learner already knows</span>
+          <p className="hint tight">
+            Courses taught before this one. Their <b>whole decks are read</b> — not just
+            the topic names but the slide content, so the writer knows how far each topic
+            was actually taken and pitches this course above that level. Those topics are
+            <b> assumed</b>: they are not re-taught, and may be referred to freely — the
+            opposite of the rule for earlier sessions of THIS course, where repeating a
+            topic is a failure.
+          </p>
+        </div>
+      </div>
       <div className="memberlist">
         {attached.length === 0 && <span className="hint">None.</span>}
         {(prereqs?.prereqs || []).map(({ prereq: n, kind }) => (
@@ -2244,7 +2580,7 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
           )}
           <button className={`ghostbtn ${extOpen ? 'on' : ''}`} disabled={busy}
                   onClick={() => setExtOpen((v) => !v)}>
-            ＋ A course not in this agent
+            <Icon name="plus" size={14} /> A course not in this agent
           </button>
         </div>
       )}
@@ -2349,7 +2685,7 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
   const overrides = rows.filter((r) => r.max_pages != null || r.max_slides != null)
   return (
     <section className="card">
-      <h2><span className="num">⚙️</span> Settings — {course || 'no course'}</h2>
+      <h2><span className="hicon"><Icon name="settings" /></span> Settings — {course || 'no course'}</h2>
 
       <label>Course type</label>
       <select value={courseType} onChange={(e) => onCourseType(e.target.value)}>
@@ -2360,16 +2696,21 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
 
       <label>Document length for every session in this course</label>
       <div className="setrowpair">
-        <span className="setfield">
+        {/* The label BELONGS ABOVE ITS BOX. It sat underneath, so on a row of two number
+            fields each caption read as a note about the field below it rather than the
+            one above — and the last caption had nothing under it at all. */}
+        <label className="setfield">
+          <span>Pages</span>
           <input type="number" value={set.max_pages ?? ''} placeholder={String(d.max_pages ?? '')}
                  onChange={(e) => onChange({ max_pages: e.target.value === '' ? null : Number(e.target.value) })} />
-          <span className="hint">pages (blank = {d.max_pages} default)</span>
-        </span>
-        <span className="setfield">
+          <span className="fieldnote">blank = {d.max_pages}</span>
+        </label>
+        <label className="setfield">
+          <span>Slides</span>
           <input type="number" value={set.max_slides ?? ''} placeholder={String(d.max_slides ?? '')}
                  onChange={(e) => onChange({ max_slides: e.target.value === '' ? null : Number(e.target.value) })} />
-          <span className="hint">slides (blank = {d.max_slides} default)</span>
-        </span>
+          <span className="fieldnote">blank = {d.max_slides}</span>
+        </label>
       </div>
       <span className="hint">
         Currently applied: <b>{eff.max_pages} pages</b> and <b>{eff.max_slides} slides</b>
@@ -2396,14 +2737,15 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
                    max_pages: r.max_pages ?? null,
                    max_slides: e.target.value === '' ? null : Number(e.target.value) })} />
           <span className="hint">slides</span>
-          <button className="ghostbtn tiny" title="Back to the course budget"
-                  onClick={() => onSession(r.session_no, { max_pages: null, max_slides: null })}>✕</button>
+          <button className="iconbtn" title="Back to the course budget"
+                  onClick={() => onSession(r.session_no, { max_pages: null, max_slides: null })}>
+            <Icon name="x" size={13} /></button>
         </div>
       ))}
       <div className="ovrow">
         <select value="" onChange={(e) => e.target.value &&
                   onSession(Number(e.target.value), { max_pages: eff.max_pages, max_slides: eff.max_slides })}>
-          <option value="">＋ give a session its own budget…</option>
+          <option value="">+ give a session its own budget…</option>
           {rows.filter((r) => r.max_pages == null && r.max_slides == null).map((r) => (
             <option key={r.session_no} value={r.session_no}>
               {r.session_no} — {r.session_name}
@@ -2422,7 +2764,7 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
           {!deleteAsk || deleteAsk.course !== course ? (
             <>
               <button className="ghostbtn danger" onClick={() => onAskDelete?.(course)}>
-                🗑 Delete “{course}”
+                <Icon name="trash" /> Delete “{course}”
               </button>
               <span className="hint">
                 Removes its curriculum and its length settings.
@@ -2487,7 +2829,7 @@ function TeamPanel({ entry, courses, course, onPick, onAddMember, onRemoveMember
   const outsiders = (entry.contributors || []).filter((c) => !members.includes(c))
   return (
     <section className="card">
-      <h2><span className="num">👥</span> {t.name}</h2>
+      <h2><span className="hicon"><Icon name="team" /></span> {t.name}</h2>
       <div className="metrics">
         <Metric label="Members" value={members.length} />
         <Metric label="Courses" value={owned.length} />
@@ -2511,13 +2853,13 @@ function TeamPanel({ entry, courses, course, onPick, onAddMember, onRemoveMember
         {owned.map((c) => (
           <button key={c} className={`coursechip ${c === course ? 'on' : ''}`}
                   onClick={() => onPick(c)}>
-            {c}{!known.has(c) && ' ⚠'}
+            {c}{!known.has(c) && <Icon name="warn" size={12} className="cwarn" />}
           </button>
         ))}
       </div>
       {missing.length > 0 && (
         <div className="alert warn">
-          <b>⚠ {missing.length === 1 ? 'A course name does not match' : 'Course names do not match'}
+          <b><Icon name="warn" /> {missing.length === 1 ? 'A course name does not match' : 'Course names do not match'}
              any curriculum the agent holds:</b> {missing.join(', ')}.
           <div className="hint">
             A team's course is matched by <b>exact name</b>, so a near miss (for example
@@ -2558,7 +2900,7 @@ function TeamPanel({ entry, courses, course, onPick, onAddMember, onRemoveMember
                    }} />
             <button className="primary" disabled={memberBusy || !newMember.trim()}
                     onClick={() => { onAddMember?.(t.id, newMember); setNewMember('') }}>
-              {memberBusy ? 'Working…' : '＋ Add member'}
+              {memberBusy ? 'Working…' : <><Icon name="plus" /> Add member</>}
             </button>
           </div>
           <span className="hint">
@@ -2596,7 +2938,7 @@ function MyHistory({ history }) {
   const s = history.summary || {}
   return (
     <section className="card">
-      <h2>📚 My TR Docs — History</h2>
+      <h2><span className="hicon"><Icon name="history" /></span> My TR Docs — History</h2>
       <div className="metrics">
         <Metric label="Docs generated" value={s.total_runs || 0} />
         {/* Two different verdicts, and showing only the second under the word
@@ -2619,7 +2961,7 @@ function MyHistory({ history }) {
       </div>
       {history.courses.map((c, i) => (
         <div key={i} className="coursegroup">
-          <div className="coursehead">📗 {c.course}
+          <div className="coursehead"><Icon name="curriculum" size={15} /> {c.course}
             <span className="muted"> — {c.summary.total_runs} doc(s) · ${(c.summary.total_cost || 0).toFixed(4)}</span>
           </div>
           <RunTable runs={c.runs} />
@@ -2632,10 +2974,10 @@ function MyHistory({ history }) {
 function MyTeams({ teams }) {
   return (
     <section className="card">
-      <h2>👥 My Teams</h2>
+      <h2><span className="hicon"><Icon name="team" /></span> My Teams</h2>
       {teams.map((t, i) => (
         <div key={i} className="coursegroup">
-          <div className="coursehead">🧩 {t.team.name}
+          <div className="coursehead"><Icon name="team" size={15} /> {t.team.name}
             <span className="muted"> — {t.team.course || 'no course'} · {t.members.length} member(s): {t.members.join(', ')}</span>
           </div>
           {t.courses.length === 0
@@ -2678,13 +3020,13 @@ function RunTable({ runs }) {
                     graders' verdict rides along as a note. */}
                 {r.status === 'running' ? <span className="chip mid">● {r.stage || 'running'}</span>
                   : r.status === 'error' ? <span className="chip bad">error</span>
-                  : r.approved ? <span className="chip good">✓ approved{r.gates_passed === false && <span className="ms"> · flagged</span>}</span>
+                  : r.approved ? <span className="chip good"><Icon name="check" size={12} /> approved{r.gates_passed === false && <span className="ms"> · flagged</span>}</span>
                   : <span className="chip bad">not approved</span>}
               </span>
               <span className="dashcell">{r.rubric != null ? `${r.rubric}` : '—'}</span>
               <span className="dashcell">${((r.cost || {}).cost || 0).toFixed(4)}</span>
               <span className="dashcell">
-                {done ? <a href="#" onClick={(e) => { e.preventDefault(); api.downloadDoc(r.session_no, r.id, r.docx_name).catch((err) => alert(err.message)) }}>⬇️ .docx</a> : '—'}
+                {done ? <a href="#" onClick={(e) => { e.preventDefault(); api.downloadDoc(r.session_no, r.id, r.docx_name).catch((err) => alert(err.message)) }}><Icon name="download" size={13} /> .docx</a> : '—'}
               </span>
             </div>
             {isOpen && <CostBreakdown cost={{ totals: r.cost, calls: r.calls }} embedded ts={r.ts} rounds={r.rounds} />}
@@ -2729,7 +3071,10 @@ function LoginGate({ cfg, onSignIn, err }) {
   return (
     <div className="app logingate">
       <div className="card loginbox">
-        <div className="brand big">📝 <b>TR Doc Generator</b></div>
+        <div className="brand big">
+          <span className="bmark" aria-hidden="true"><Icon name="doc" size={22} /></span>
+          <b>TR Doc Generator</b>
+        </div>
         <p className="sub">Sign in to continue.</p>
         {!cfg.configured ? (
           <div className="alert warn">
@@ -2759,7 +3104,7 @@ function TemplateSidePanel({ markdown, onClose }) {
   return (
     <aside className="tmplside" aria-label="Required sheet templates">
       <div className="tsidehead">
-        <span className="tsidetitle">📋 Sheet templates</span>
+        <span className="tsidetitle"><Icon name="doc" size={14} /> Sheet templates</span>
         <button className="csideclose" onClick={onClose} title="Hide">×</button>
       </div>
       {markdown
@@ -2825,7 +3170,7 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
   }
   return (
     <section className="card">
-      <h2><span className="num">1</span> Curriculum — {course}</h2>
+      <h2><span className="hicon"><Icon name="curriculum" /></span> Curriculum — {course}</h2>
       <p className="hint">
         This is the agent's own copy of the course. Edit a session, add a new one, or
         paste a deck link and press <b>Save</b>. Decks are downloaded <b>once per link</b>,
@@ -2836,11 +3181,12 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
         <button className="primary" disabled={!dirty || saving || dupNumbers.length > 0}
                 onClick={onSave}
                 title={dupNumbers.length ? `Two rows share session ${dupNumbers.join(', ')}` : ''}>
-          {saving ? 'Saving…' : '💾 Save changes'}
+          {saving ? 'Saving…' : <><Icon name="save" /> Save changes</>}
         </button>
         <button className="ghostbtn" disabled={ingesting || !pending} onClick={() => onIngest(false)}
                 title="Downloads only decks that are new or whose link changed">
-          {ingesting ? 'Fetching…' : `⬇ Fetch new decks${pending ? ` (${pending})` : ''}`}
+          {ingesting ? 'Fetching…'
+            : <><Icon name="download" /> Fetch new decks{pending ? ` (${pending})` : ''}</>}
         </button>
         {/* "Re-check all decks" (onIngest(true) — a forced re-download of EVERY deck)
             was removed from this row. The endpoint still takes `force`; nothing in the
@@ -2894,7 +3240,7 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
               there when wanted and invisible when not. */}
           <button className="insertbar" onClick={() => addRowAt(i)}
                   title={`Insert a session above ${r.session_name || `#${r.session_no}`}`}>
-            <span>＋ insert here</span>
+            <span><Icon name="plus" size={11} /> insert here</span>
           </button>
           <div className={`currow ${r._dirty ? 'dirty' : ''} ${dupNumbers.includes(Number(r.session_no)) ? 'dupe' : ''}`}>
             <input className="c-no" type="number" value={r.session_no}
@@ -2903,7 +3249,7 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
                    onChange={(e) => edit(i, 'topic', e.target.value)} />
             <input className="c-name" value={r.session_name || ''} placeholder="Session name"
                    onChange={(e) => edit(i, 'session_name', e.target.value)} />
-            <textarea className="c-kt" rows={Math.max(3, (r.key_takeaways || []).length)}
+            <AutoTextarea className="c-kt" minRows={3}
                       value={(r.key_takeaways || []).join('\n')}
                       placeholder={'1. Topic: sub-topic; sub-topic\n2. Topic: sub-topic'}
                       title="Each line becomes an agenda item, a section and a Key Takeaway verbatim. Everything after the colon is a promise the session must teach."
@@ -2919,14 +3265,15 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
             <span className="c-deck">{deckChip(r)}</span>
             <span className="c-act">
               <button className="ghostbtn tiny" title="Remove this session"
-                      onClick={() => onDelete(r, i)}>✕</button>
+                      onClick={() => onDelete(r, i)} title="remove this session">
+                        <Icon name="x" size={13} /></button>
             </span>
           </div>
           </React.Fragment>
         ))}
         {/* …and at the END, where you are once you have read to the bottom. */}
         <button className="insertbar last" onClick={() => addRowAt(rows.length)}>
-          <span>＋ Add a session at the end</span>
+          <span><Icon name="plus" size={13} /> Add a session at the end</span>
         </button>
         {rows.length === 0 && (
           <div className="hint curempty">
@@ -2958,7 +3305,7 @@ function GapsSidePanel({ warnings, onClose }) {
   return (
     <aside className="tmplside gapsside" aria-label="Deck extraction gaps">
       <div className="tsidehead">
-        <span className="tsidetitle">🔍 Extraction gaps ({warnings.length})</span>
+        <span className="tsidetitle"><Icon name="search" size={14} /> Extraction gaps ({warnings.length})</span>
         <button className="csideclose" onClick={onClose} title="Hide">×</button>
       </div>
       <div className="tsidebody gapsbody">
@@ -2983,7 +3330,7 @@ function CostSidePanel({ cost, sessionNo, pending, onClose }) {
   return (
     <aside className="costside" aria-label="Cost of this generation">
       <div className="csidehead">
-        <span className="csidetitle">💰 This TR Doc</span>
+        <span className="csidetitle"><Icon name="coin" size={14} /> This TR Doc</span>
         <button className="csideclose" onClick={onClose} title="Hide">×</button>
       </div>
       {pending ? (
@@ -3050,7 +3397,7 @@ function CostBreakdown({ cost, embedded, ts, rounds }) {
   if (embedded) return <div className="costembed">{body}</div>
   return (
     <details className="panel">
-      <summary>💰 Cost breakdown
+      <summary><Icon name="coin" /> Cost breakdown
         <span className="muted"> — ${(t.cost || 0).toFixed(4)} · {(t.total_tokens || 0).toLocaleString()} tokens · {calls.length} call(s)</span>
       </summary>
       {body}
@@ -3104,7 +3451,7 @@ function RubricPanel({ judge }) {
             alone put a document in the mid-80s.</>}
           {belowBar.length > 0 && (
             <div className="rubricblock">
-              ⚠ Below the per-dimension bar, which fails the run on its own:{' '}
+              <Icon name="warn" /> Below the per-dimension bar, which fails the run on its own:{' '}
               <b>{belowBar.map((r) => pretty(r.dim)).join(', ')}</b>
             </div>
           )}
@@ -3118,7 +3465,7 @@ function RubricPanel({ judge }) {
           reviewer reading a low score deserves to know part of it was arithmetic. */}
       {(judge.contradicted_claims || []).length > 0 && (
         <div className="rubricblock judgefix">
-          ⚠ The judge contradicted a check the code had already run and passed
+          <Icon name="warn" /> The judge contradicted a check the code had already run and passed
           {' '}— re-graded, and the claims below were not counted against this document:
           <ul>
             {judge.contradicted_claims.map((c, i) => (
@@ -3179,7 +3526,31 @@ function EvalReport({ report }) {
   )
 }
 
-function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
+/* `standalone` is the Agent-rules TAB; without it this is the collapsible panel under a
+   finished document. Same content, two very different jobs: as a tab it is the whole
+   page and must not arrive collapsed behind a summary line, and as a panel under a
+   result it must stay out of the way until asked for. It used to render the collapsed
+   form in both places, so the tab was a single grey strip with the page empty below. */
+/* A textarea that is as tall as what is in it.
+ *
+ * The curriculum's takeaway cell sized itself with `rows={number of takeaways}`, which
+ * counts LOGICAL lines. In a 280px column a takeaway wraps to two or three visual ones,
+ * so a three-takeaway session got three rows and showed two and a half of them — the
+ * third clipped mid-word, with an inner scrollbar as the only clue that anything was
+ * missing. The one thing a curriculum table has to do is show the curriculum.
+ */
+function AutoTextarea({ value, minRows = 2, ...rest }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'                       // shrink first, or it only ever grows
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
+  return <textarea ref={ref} rows={minRows} value={value} {...rest} />
+}
+
+function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone }) {
   const newCount = rules.filter((r) => r.session_no === sessionNo).length
   const applied = rules.filter((r) => r.applies !== false).length
   // Rules stored before the upgrade have no scope and were never distilled. They are
@@ -3223,13 +3594,20 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
       })
       .catch((e) => alert(e.message)).finally(() => setMigrating(false))
   }
+  const Shell = standalone ? 'section' : 'details'
+  const Head = standalone ? 'header' : 'summary'
   return (
-    <details className="panel learned" open={newCount > 0}>
-      <summary>
-        🧠 What the agent has learned
-        <span className="muted"> — {applied} of {rules.length} rule{rules.length === 1 ? '' : 's'} applied to <b>{course || 'this course'}</b></span>
+    <Shell className={standalone ? 'card learned' : 'panel learned'}
+           {...(standalone ? {} : { open: newCount > 0 })}>
+      <Head className={standalone ? 'learnhead' : undefined}>
+        {standalone
+          ? <h2><span className="hicon"><Icon name="brain" /></span> Agent rules</h2>
+          : <><Icon name="brain" /> What the agent has learned</>}
+        <span className="muted">
+          {standalone ? '' : ' — '}{applied} of {rules.length} rule{rules.length === 1 ? '' : 's'} applied to <b>{course || 'this course'}</b>
+        </span>
         {newCount > 0 && <span className="chip good" style={{ marginLeft: 8 }}>+{newCount} this run</span>}
-      </summary>
+      </Head>
       {rules.length === 0 ? (
         <div className="just" style={{ padding: '6px 2px' }}>
           Nothing learned yet. As generations and eval runs surface defects, durable rules appear here and are injected into later sessions automatically.
@@ -3249,7 +3627,7 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
               and marks it house-style or course-specific. Your original wording is kept.</div>
               {isAdmin
                 ? <button className="ghostbtn" disabled={migrating} onClick={migrate}>
-                    {migrating ? 'Migrating…' : '🔧 Distil & scope them'}
+                    {migrating ? 'Migrating…' : <><Icon name="wrench" /> Distil &amp; scope them</>}
                   </button>
                 : <div className="hint">An admin needs to run this.</div>}
             </div>
@@ -3284,7 +3662,8 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
                 {/* These rules now outrank the style guide, so a badly-generalised one
                     has to be removable — otherwise it is pushed at every session. */}
                 <button className="link" disabled={busy === i} title="Remove this rule"
-                        onClick={() => remove(i, r.text)}>✕</button>
+                        onClick={() => remove(i, r.text)} title="remove this rule">
+                        <Icon name="x" size={13} /></button>
               </div>
               {r.gated && <div className="just">Now enforced by {r.gated} — a hard gate rather than a prompt instruction.</div>}
               {r.raw && <div className="just">you wrote: “{r.raw}”</div>}
@@ -3293,7 +3672,7 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged }) {
           ))}
         </div>
       )}
-    </details>
+    </Shell>
   )
 }
 
@@ -3322,7 +3701,7 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
     return (
       <div className={`chunkchat-cta${whole ? ' doclevel' : ''}`}>
         <button className="ghostbtn tiny" onClick={onOpen}>
-          💬 {has
+          <Icon name="chat" /> {has
             ? `${n} message${n === 1 ? '' : 's'} about ${whole ? 'this document' : 'this section'} — reopen`
             : whole ? 'Ask about the whole document' : 'Ask about this section'}
         </button>
@@ -3436,7 +3815,7 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
                     <button className="btn sm" disabled={rulePosted[m.id] === 'busy'}
                             onClick={() => onMakeSkill(m.id, m.suggested_rule)}>
                       {rulePosted[m.id] === 'done'
-                        ? '✓ Added as a draft skill'
+                        ? 'Added as a draft skill'
                         : rulePosted[m.id] === 'busy' ? 'Adding…'
                         : 'Propose it as a course skill'}
                     </button>

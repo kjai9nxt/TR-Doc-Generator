@@ -93,6 +93,15 @@ jobs:
       # scores skill adherence for any course.
       - name: Run skill-enforcement regression (checks fire, drafts do not)
         run: python -m evals.test_skill_enforcement
+      # THE SKILL SYSTEM itself: what a skill is, where it applies, and the one property
+      # everything else rests on — a skill says HOW to teach and must NEVER appear in the
+      # document as WHAT is taught. Covers the four categories, one-skill-many-
+      # instructions (the author's grouping and ordering survive), course/session/global
+      # scope, the precedence order, and the leak gate in both directions: it catches a
+      # brief printed as bullets, and it leaves ordinary content that merely uses the
+      # same words alone — a gate that fires on correct documents is worse than no gate.
+      - name: Run skill-system regression (categories, scope, precedence, no leaks)
+        run: python -m evals.test_skill_system
       # PREREQUISITE COURSES. "Already taught" meant earlier sessions of THIS course, so
       # a React course whose learners have done JavaScript had no way to say so. The
       # property this guards is the distinction: a prior session's topic may not be

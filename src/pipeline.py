@@ -75,10 +75,14 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
     if profile is None:
         from . import profiles as _profiles
         profile = _profiles.for_course(course)
-    # The course's APPROVED skills. The ones carrying a check are settled here; the rest
-    # reached the writer through the rules block and are weighed by the judge.
+    # The course's APPROVED skills — the course-wide ones AND the ones written for THIS
+    # session, resolved in precedence order. The ones carrying a check are settled here;
+    # the rest reached the writer through the rules block and are weighed by the judge,
+    # and all of them are checked against the assembled document for having leaked into
+    # it as content (guardrails, via skills.leak_failures).
     from . import skills as _skills
-    course_skills = _skills.applicable(course) if course else []
+    _session_no = getattr(session, "number", None) if session is not None else None
+    course_skills = _skills.applicable(course, _session_no) if course else []
     gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time,
                           budgets=budgets, course=course, profile=profile,
                           skills=course_skills)
@@ -192,7 +196,7 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
     llm.reset_usage(run_id)
 
     log("Generating draft 1 … (this LLM step takes ~1-2 minutes)")
-    doc = generator.generate(user_prompt, course=course)
+    doc = generator.generate(user_prompt, course=course, session=cur.number)
 
     max_rounds = config.harness()["gates"]["max_revision_rounds"]
     history = []
@@ -228,7 +232,8 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
         prev_rubric = cur_rubric
         log(f"Revising (round {rnd + 1}) to fix {len(issues)} issue(s) … (~1-2 minutes)")
         doc = generator.revise(user_prompt, json.dumps(doc, ensure_ascii=False), issues,
-                               enforce_time=enforce_time, course=course)
+                               enforce_time=enforce_time, course=course,
+                               session=cur.number)
 
     # Return the best draft seen, not necessarily the last (avoid regressions).
     _, doc, best_report = best
@@ -544,7 +549,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
                 # The rules THIS COURSE is written under travel with the repair,
                 # so what it rewrites is rewritten under them. See
                 # context_builder.course_skills_block.
-                + context_builder.course_skills_block(course)
+                + context_builder.course_skills_block(course, cur.number)
                 + context_builder.standing_notes_block(standing_notes))
         doc_json = json.dumps(doc, ensure_ascii=False)
         # PATCH FIRST. A repair names a handful of defects; asking for the corrected
@@ -557,7 +562,8 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         try:
             patch = generator.repair_patch(doc_json, issues,
                                            enforce_time=enforce_time,
-                                           base_context=base, course=course)
+                                           base_context=base, course=course,
+                                           session=cur.number)
             doc, psum = patcher.apply_doc_patch(doc, patch)
             log(f"Repair patch: {len(psum['slides_changed'])} slide(s) edited, "
                 f"{len(psum['slides_removed'])} removed, {psum['slides_added']} added, "
@@ -566,7 +572,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         except (patcher.PatchError, ValueError, KeyError, TypeError) as e:
             log(f"Repair patch unusable ({e}) — falling back to a full re-draft.")
             doc = generator.revise(base, doc_json, issues, enforce_time=enforce_time,
-                                   course=course)
+                                   course=course, session=cur.number)
         accepted, report, issues = grade(doc, rnd)
         history.append(report)
         key = _score_key(accepted, report)

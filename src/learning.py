@@ -642,7 +642,7 @@ def distil_existing() -> dict:
     return {"before": len(old), "after": len(data["rules"]), "merged": merged}
 
 
-def learned_rules_block(course: str | None = None) -> str:
+def learned_rules_block(course: str | None = None, session=None) -> str:
     """The block injected into generation prompts. Empty string if there is nothing.
 
     Carries TWO things down one channel, deliberately labelled apart:
@@ -666,7 +666,11 @@ def learned_rules_block(course: str | None = None) -> str:
     # does; a subject-matter rule only within its own course.
     try:
         from . import skills as _skills
-        skills_block = _skills.block(course or _active_course())
+        # SESSION TOO, not only course. A skill written for session 12 governs session 12
+        # and nothing else; passed no session, the resolver can only return the
+        # course-wide tiers, and the session's own brief silently never reaches the
+        # writer. Every caller that knows which session it is generating passes it.
+        skills_block = _skills.block(course or _active_course(), session)
     except Exception:
         skills_block = ""
     return skills_block + rules_block(course)

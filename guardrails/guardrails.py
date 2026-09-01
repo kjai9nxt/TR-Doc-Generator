@@ -628,6 +628,20 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
             continue
         fails += _skill_failures(doc, slides, sk, chk)
 
+    # --- the brief must not be IN the document ------------------------------------
+    # A skill says HOW to teach the session; the curriculum says WHAT. Told "start with
+    # the problem, then the concept, then the mechanism", a model reliably writes a slide
+    # whose bullets read "Problem / Concept / Mechanism" — the instruction printed as
+    # content. It is the commonest way the brief leaks, it survives every re-wording of
+    # the prompt, and a reviewer reading the finished document cannot tell it from
+    # curriculum they have forgotten writing. Checked here, on the assembled document,
+    # because that is the only place the leak is visible.
+    try:
+        from src import skills as _skills_mod
+        fails += _skills_mod.leak_failures(doc, skills)
+    except Exception:
+        pass
+
     # --- code blocks are well formed ---------------------------------------------
     # A code slide that shows nothing, or explains a line the snippet does not have, is
     # the same class of defect as a coverage entry pointing at a slide that is not there:

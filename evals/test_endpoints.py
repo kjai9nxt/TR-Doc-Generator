@@ -516,6 +516,79 @@ check("…but is kept for the record", len(r.get("skills") or []) == 1,
 st, r = http("POST", "/skills/9999/approve?course=" + COURSE.replace(" ", "%20"))
 check("a skill that is not there -> 404", st == 404, f"got {st}")
 
+print("\n== a skill's CATEGORY, its SCOPE and the lines grouped under it ==")
+# The whole skill system reaches the author through this one endpoint, so what it
+# accepts is what the author can actually say. Every field here was invisible over HTTP
+# in the first cut: the store knew about categories and sessions, the API did not, and a
+# session brief could be written only by editing the database.
+QS = f"?course={COURSE.replace(' ', '%20')}"
+st, r = http("POST", "/skills", {
+    "course": COURSE, "text": "How this course explains its content.",
+    "category": "teaching_guidelines",
+    "instructions": ["Explain intuition before formal definitions.",
+                     "Use simple language before introducing technical terminology.",
+                     "Connect new concepts to the previous session."]})
+check("a skill with several instructions -> 200", st == 200, f"got {st}: {detail(r)}")
+_gid = r.get("id")
+made = [x for x in r["skills"] if x["id"] == _gid][0]
+# The earlier skill in this section was retired, so this is the only live one — and
+# three instructions must produce exactly one of them.
+check("…is ONE skill, not three", len(r["skills"]) == 1, str(r["skills"]))
+check("…keeping all three lines, in order",
+      made["instructions"][0].startswith("Explain intuition")
+      and len(made["instructions"]) == 3, str(made["instructions"]))
+check("…and its category", made["category"] == "teaching_guidelines",
+      str(made["category"]))
+
+st, r = http("POST", "/skills", {"course": COURSE, "text": "Open on the render loop.",
+                                 "category": "teaching_flow", "scope": "session",
+                                 "session": 31})
+check("a SESSION skill -> 200", st == 200, f"got {st}: {detail(r)}")
+_ssid = r.get("id")
+sess = [x for x in r["skills"] if x["id"] == _ssid][0]
+check("…is stored against its session",
+      sess["scope"] == "session" and sess["session_ref"] == "31", str(sess))
+st, r = http("POST", f"/skills/{_ssid}/approve{QS}")
+check("…and can be approved", st == 200, f"got {st}: {detail(r)}")
+st, r = http("GET", f"/skills{QS}&session=31")
+check("session 31 sees it", any(x["id"] == _ssid for x in r["skills"]),
+      str([x["id"] for x in r["skills"]]))
+st, r = http("GET", f"/skills{QS}&session=32")
+check("…and session 32 does not", not any(x["id"] == _ssid for x in r["skills"]),
+      str([x["id"] for x in r["skills"]]))
+st, r = http("GET", f"/skills{QS}")
+check("…while the authoring screen still lists it, whatever session you are on",
+      any(x["id"] == _ssid for x in r["skills"]),
+      str([x["id"] for x in r["skills"]]))
+
+st, r = http("POST", "/skills", {"course": COURSE, "text": "Somewhere.",
+                                 "scope": "session"})
+check("a session skill with no session -> 400", st == 400, f"got {st}")
+check("…saying what is missing", "session" in detail(r).lower(), detail(r))
+st, r = http("POST", "/skills", {"course": COURSE, "text": "Everywhere.",
+                                 "scope": "sideways"})
+check("a scope that is not one of the three -> 400", st == 400, f"got {st}")
+# A GLOBAL skill governs every course on the instance. Owning one course is not the
+# authority to decide the rules of everybody else's.
+st, r = http("POST", "/skills", {"course": COURSE, "text": "A house rule.",
+                                 "scope": "global"})
+check("a course owner cannot write a global skill -> 403", st == 403, f"got {st}")
+check("…and is told where it CAN go", COURSE in detail(r), detail(r))
+
+# Editing the sentence must not silently discard the lines under it.
+st, r = http("POST", f"/skills/{_gid}/edit",
+             {"course": COURSE, "text": "How this course explains things."})
+check("editing the sentence alone -> 200", st == 200, f"got {st}: {detail(r)}")
+edited = [x for x in r["skills"] if x["id"] == _gid][0]
+check("…leaves its instructions intact", len(edited["instructions"]) == 3,
+      str(edited["instructions"]))
+st, r = http("POST", f"/skills/{_gid}/edit",
+             {"course": COURSE, "text": "How this course explains things.",
+              "instructions": ["Give the intuition first."]})
+check("…and sending new ones replaces them", st == 200 and len(
+      [x for x in r["skills"] if x["id"] == _gid][0]["instructions"]) == 1,
+      str(r["skills"]))
+
 print("\n== prerequisites over HTTP ==")
 st, r = http("GET", f"/prereqs?course={COURSE.replace(' ', '%20')}")
 check("GET /prereqs -> 200", st == 200, f"got {st}: {detail(r)}")

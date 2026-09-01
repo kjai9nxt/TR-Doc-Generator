@@ -209,7 +209,7 @@ def evidence_manifest(state: dict, index: int, question: str) -> list[dict]:
         pass
     try:
         from . import skills as _skills
-        if course and _skills.block(course).strip():
+        if course and _skills.block(course, session_no).strip():
             out.append({"kind": "brief", "label": "this course's authored brief"})
     except Exception:
         pass
@@ -369,7 +369,10 @@ def evidence_pack(state: dict, index: int, question: str) -> str:
     # from their own earlier correction — and neither is visible from the document.
     try:
         from . import skills as _skills
-        brief = _skills.block(course) if course else ""
+        # THE SESSION'S BRIEF TOO. This answers "why is it written like that", and a
+        # reviewer looking at a chunk written under a session skill has to be shown the
+        # session skill — otherwise the honest answer is missing from the evidence.
+        brief = _skills.block(course, session_no) if course else ""
         if brief.strip():
             parts.append("THE COURSE'S OWN BRIEF — written by the course owner and in "
                          "force when this was generated:\n" + brief.strip())

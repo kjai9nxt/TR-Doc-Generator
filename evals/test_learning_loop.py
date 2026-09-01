@@ -160,7 +160,13 @@ def main() -> int:
         check("…for the course being graded, not the instance-wide active one",
               "learning.rules_block(course)" in src, src[:0])
         check("…and the course's authored brief, labelled apart from them",
-              "_skills_mod.block(course)" in src and "THE COURSE'S OWN BRIEF" in src)
+              "_skills_mod.block(course" in src and "THE COURSE'S OWN BRIEF" in src)
+        # AND THE SESSION'S. A skill may be written for one session; a judge that
+        # resolves the brief by course alone grades the document against a brief the
+        # writer was not given.
+        check("…resolved for the session being graded, not the course alone",
+              '_skills_mod.block(course, getattr(session, "number", None))' in src,
+              src[:0])
         # The brief is not only shown to the judge, it is SCORED — see
         # evals/test_skill_scoring.py. Without a scored dimension the only lever was a
         # binary blocking issue, so a document could follow its course's brief loosely

@@ -25,7 +25,7 @@ def _system() -> str:
     ])
 
 
-def _learned(course: str | None = None) -> str:
+def _learned(course: str | None = None, session=None) -> str:
     """This course's brief and reviewer-enforced rules, read FRESH on every call.
 
     Read here rather than baked into the prompt text by the caller: guided mode
@@ -43,16 +43,23 @@ def _learned(course: str | None = None) -> str:
     A's authored brief, and never saw B's own skills at all. Two people on one instance
     is all it takes, and the failure is silent — the document reads fine, it is simply
     written to the wrong course's rules.
+
+    SESSION MUST BE PASSED TOO, for the same reason one step narrower. A course may write
+    a brief for one of its sessions — a flow that session needs, an example it must use,
+    a correction review made on it. Without the session number the resolver cannot tell
+    which of those apply, so it returns none of them and the session brief is authored,
+    approved, and never used.
     """
     try:
         from . import learning
-        return learning.learned_rules_block(course)
+        return learning.learned_rules_block(course, session)
     except Exception:
         return ""
 
 
 def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate",
-                   cached_context: str = "", course: str | None = None) -> dict:
+                   cached_context: str = "", course: str | None = None,
+                   session=None) -> dict:
     """Call the generator and parse its JSON, RETRYING on a parse failure.
 
     Models occasionally emit slightly malformed JSON (a missing comma, stray
@@ -67,7 +74,8 @@ def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate",
     last = None
     for attempt in range(tries):
         raw = llm.complete(
-            system=_system(), system_extra=_learned(course), cached_context=cached_context,
+            system=_system(), system_extra=_learned(course, session),
+            cached_context=cached_context,
             user=user_prompt + (_STRICT_NUDGE if attempt else ""),
             model=m["generator"], max_tokens=m["max_tokens"], temperature=m["temperature"],
             label=label,
@@ -82,12 +90,13 @@ def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate",
         f"The raw output was saved to logs/llm_debug.log.")
 
 
-def generate(user_prompt: str, *, course: str | None = None) -> dict:
-    return _complete_json(user_prompt, course=course)
+def generate(user_prompt: str, *, course: str | None = None, session=None) -> dict:
+    return _complete_json(user_prompt, course=course, session=session)
 
 
 def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
-                   reason: str | None = None, *, course: str | None = None) -> dict:
+                   reason: str | None = None, *, course: str | None = None,
+                   session=None) -> dict:
     """Generate ONE chunk (opening or a per-takeaway section) for guided mode.
 
     base_context   shared course/target/memory block (context_builder.build_guided_base)
@@ -112,7 +121,8 @@ def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
     user_prompt = f"{approved_block}{regen_block}\n{instruction}"
     try:
         return _complete_json(user_prompt, label="generate_chunk",
-                              cached_context=base_context, course=course)
+                              cached_context=base_context, course=course,
+                              session=session)
     except llm.TruncationError:
         # A whole-doc truncation is unrecoverable (re-sampling truncates the same
         # way), but ONE chunk that ran long is: it only has to cover a single key
@@ -122,11 +132,11 @@ def generate_chunk(base_context: str, instruction: str, approved_json: str = "",
         llm.log_debug("CHUNK TRUNCATED — retrying with a concision nudge", user_prompt[-800:])
         return _complete_json(
             user_prompt + _SHRINK_NUDGE, tries=1, label="generate_chunk_retry",
-            cached_context=base_context, course=course)
+            cached_context=base_context, course=course, session=session)
 
 
 def generate_patch(base_context: str, kind: str, prev_fragment: dict,
-                   reason: str, *, course: str | None = None) -> dict:
+                   reason: str, *, course: str | None = None, session=None) -> dict:
     """Ask for a SURGICAL PATCH to one already-generated chunk.
 
     Returns the raw patch dict; src.patcher applies it. Kept separate from
@@ -139,12 +149,12 @@ def generate_patch(base_context: str, kind: str, prev_fragment: dict,
     # base context from cache instead of paying for all 10k tokens of it again.
     prompt = context_builder.patch_instruction(kind, prev_json, reason)
     return _complete_json(prompt, label="regenerate_patch",
-                          cached_context=base_context, course=course)
+                          cached_context=base_context, course=course, session=session)
 
 
 def repair_patch(prev_doc_json: str, issues: list[str], *,
                  enforce_time: bool = True, base_context: str | None = None,
-                 course: str | None = None) -> dict:
+                 course: str | None = None, session=None) -> dict:
     """Ask for a SURGICAL PATCH to the assembled document. src.patcher applies it.
 
     The repair counterpart of generate_patch, and it exists for the same two reasons:
@@ -162,11 +172,12 @@ def repair_patch(prev_doc_json: str, issues: list[str], *,
     prompt = context_builder.repair_instruction(prev_doc_json, issues,
                                                 enforce_time=enforce_time)
     return _complete_json(prompt, label="repair_patch", cached_context=base_context,
-                          course=course)
+                          course=course, session=session)
 
 
 def revise(user_prompt: str, prev_doc_json: str, issues: list[str],
-           *, enforce_time: bool = True, course: str | None = None) -> dict:
+           *, enforce_time: bool = True, course: str | None = None,
+           session=None) -> dict:
     """Repair a draft given concrete failures from guardrails + graders.
 
     When enforce_time is False the 40-minute budget is not a constraint, so we do
@@ -183,4 +194,5 @@ It FAILED review for these reasons — fix EVERY one, keep everything else intac
 {issue_block}
 
 Return the corrected TR doc JSON only."""
-    return _complete_json(revise_prompt, label="revise", course=course)
+    return _complete_json(revise_prompt, label="revise", course=course,
+                          session=session)
