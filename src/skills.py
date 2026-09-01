@@ -28,14 +28,19 @@ Four related lines under "Teaching Guidelines" are ONE skill with four instructi
 four skills. Splitting them loses the author's grouping and their ordering — which for a
 teaching flow IS the instruction — and turns one approval into four.
 
-WHERE A SKILL APPLIES. Three scopes, and the precedence between them is fixed:
+WHERE A SKILL APPLIES. Two scopes, and the precedence between them is fixed:
 
-    HARD RULES  >  COURSE REVIEWER SKILLS  >  SESSION SKILLS  >  COURSE SKILLS  >  GLOBAL
+    HARD RULES  >  COURSE REVIEWER SKILLS  >  SESSION SKILLS  >  COURSE SKILLS
 
 The numbered hard rules about document structure can never be overridden. Below them, a
 correction a reviewer made about this course outranks a rule written for one of its
-sessions, which outranks the course's standing brief, which outranks the house rules
-every course gets. Narrower and more recently-learned wins.
+sessions, which outranks the course's standing brief. Narrower wins.
+
+THERE IS NO "EVERY COURSE" SCOPE, and there was. A rule that applies to every course
+belongs in harness/system_prompt.md and harness/style_guide.md, which are read on every
+generation for every course and are reviewed and versioned like the code beside them.
+Offering a second place to write the same house rule made the two disagree, and the one
+you had not checked was the one in force.
 
 A skill is AUTHORED and APPROVED. Three ways in, two of them authoring:
 
@@ -174,20 +179,11 @@ _TIERS = (
      "written for THIS session only"),
     ("course", "COURSE SKILLS",
      "the course's standing brief"),
-    ("global", "GLOBAL SKILLS",
-     "house rules every course gets; anything above overrides them"),
 )
 
 
 def _tier_of(skill: dict) -> str:
     """Which precedence tier a stored skill sits in."""
-    try:
-        from . import db
-        global_course = db.GLOBAL_COURSE
-    except Exception:
-        global_course = "*"
-    if (skill.get("course") or "").strip() == global_course:
-        return "global"
     if (skill.get("scope") or "course") == "session":
         return "session"
     if normalize_category(skill.get("category") or skill.get("kind")) == "reviewer":
@@ -307,10 +303,10 @@ def block(course: str, session=None) -> str:
            "not because this brief did.",
            "",
            "PRECEDENCE, strongest first: HARD RULES → COURSE REVIEWER SKILLS → SESSION "
-           "SKILLS → COURSE SKILLS → GLOBAL SKILLS. Where any of it conflicts with the "
-           "default style guidance, THE BRIEF WINS; only the numbered HARD RULES about "
-           "document STRUCTURE outrank it. Where two parts of the brief conflict, the "
-           "one from the higher tier wins outright."]
+           "SKILLS → COURSE SKILLS. Where any of it conflicts with the default style "
+           "guidance, THE BRIEF WINS; only the numbered HARD RULES about document "
+           "STRUCTURE outrank it. Where two parts of the brief conflict, the one from "
+           "the higher tier wins outright."]
 
     for tier, label, gloss in _TIERS:
         group = tiers.get(tier) or []
@@ -581,6 +577,11 @@ _SPECIFIC = re.compile(
 # a six-word note is not the failure this is looking for.
 _MIN_KEEP_RATIO = 0.6
 _MIN_WORDS_TO_JUDGE_LENGTH = 22
+# …and the ceiling on the other side, once the model was allowed to sharpen and
+# restructure. Whichever of the two is larger applies, so a four-word note gets room to
+# be said properly and a long one is not held to a percentage.
+_MAX_GROWTH_RATIO = 3
+_MAX_GROWTH_WORDS = 25
 
 
 def _specifics(text: str) -> set[str]:
@@ -621,6 +622,17 @@ def lossy(src: str, out: str) -> str:
     if n_src >= _MIN_WORDS_TO_JUDGE_LENGTH and n_out < _MIN_KEEP_RATIO * n_src:
         return (f"it is a summary, not a rewrite: {n_src} words became {n_out}. "
                 f"Every separate thing the author asked for has to survive.")
+    # …AND THE OTHER DIRECTION. Once the model was allowed to sharpen a vague note and
+    # to give content the structure it deserves, "make the analogies good" came back as
+    #   four confident rules about mapping, domains and testing — none of which the
+    # author had written. Growing is normal and expected; growing FOURFOLD out of a
+    # four-word note is the model writing the brief instead of the author. The allowance
+    # is generous on purpose: a long note may still be rearranged freely, and a short one
+    # gets a flat +25 words of room to be said properly.
+    if n_out > max(_MAX_GROWTH_RATIO * n_src, n_src + _MAX_GROWTH_WORDS):
+        return (f"it is an expansion, not a rewrite: {n_src} words became {n_out}, and "
+                f"the extra is requirements the author never gave. Sharpen what they "
+                f"wrote; do not write the rest of the brief for them.")
     src_bullets, src_blocks = _shape(src)
     out_bullets, out_blocks = _shape(out)
     if src_bullets >= 2 and out_bullets < 2:
@@ -655,8 +667,9 @@ def _default_model(prompt: str) -> dict:
     m = config.harness()["model"]
     raw = llm.complete(
         system=("You turn a course author's rough notes into the brief their course is "
-                "written under. You merge what they said twice, you articulate what they "
-                "meant, you add NOTHING they did not ask for and you DROP NOTHING they "
+                "written under. You fix their English, sharpen what is vague, and give "
+                "the content the structure it deserves. You merge what they said twice. "
+                "You add NO REQUIREMENT they did not ask for and you DROP NOTHING they "
                 "did — every requirement and every example they wrote survives, however "
                 "long that makes it. Reply with JSON only."),
         user=prompt,
@@ -754,6 +767,12 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "THESE ARE INSTRUCTIONS ABOUT HOW TO TEACH, NEVER ABOUT WHAT TO TEACH. If the "
         "author names a topic their course covers, that is CURRICULUM and does not "
         "belong here — skip it. A skill shapes how any topic is taught.\n\n"
+        "MAKE THEM CLEARER, AND GIVE THEM STRUCTURE. Where a note is ambiguous about "
+        "what the writer must DO, say it precisely; where it is missing the condition "
+        "its own words imply, supply that condition. Where several parallel requirements "
+        "are running together in one of their sentences, split them into separate "
+        "instructions — a brief of four rules has to read as four rules. A human "
+        "approves every one of these before it takes effect.\n\n"
         "THE ONE THING YOU MUST NOT DO IS INVENT. Articulating means making the author's "
         "intent explicit and actionable. It does NOT mean adding requirements they did "
         "not express. Every skill must trace to something in the input, and every string "
@@ -894,6 +913,15 @@ def articulate(text: str, model=None) -> dict | None:
     kept as source_quote and shown beside it, so what they approve is a rewrite they can
     check against their own sentence.
 
+    HOW FAR IT MAY GO. It fixes the grammar, sharpens what is vague, and gives the
+    content the structure it deserves — three parallel requirements running together in
+    one of the author's sentences come back as three lines, because a brief of four
+    rules has to read as four rules. What it may NOT do is add a requirement nobody
+    asked for. That line is where it is because a human approves every skill before it
+    takes effect and can see their own words beside the rewrite: a sharper version they
+    can check is worth more than a timid one that needed no thought, and a smuggled
+    requirement is the one thing that review cannot easily catch.
+
     IT MAY NOT SHORTEN THEM. The first version of this prompt asked for "one or two
     full sentences" and told the model not to echo the author's phrasing, and between
     those two instructions a paragraph carrying three worked examples came back as one
@@ -962,16 +990,44 @@ def articulate(text: str, model=None) -> dict | None:
         "So a note that arrives as\n"
         "    do X.\n\n    - a\n    - b\n\n    also do Y.\n"
         "comes back as {\"lines\": [\"Do X.\", \"\", \"- A\", \"- B\", \"\", \"Also do Y.\"]} — same "
-        "blocks, same list, better English. Do NOT chop their prose into bullets either: "
-        "if they "
-        "wrote one plain sentence, return one plain sentence. This is about preserving "
-        "what they did, not adding structure they did not ask for.\n\n"
-        "DO NOT INVENT. Making their intent explicit is the job; adding requirements "
-        "they did not express is not. If they said to explain the code, do not also "
-        "decide how long the explanation runs, where it sits, or what it must mention. "
-        "Every demand in your sentence must be one they made. When their note is already "
-        "a clear instruction, return it essentially unchanged rather than embroidering "
-        "it — a faithful copy beats a richer rule they did not ask for.\n\n"
+        "blocks, same list, better English.\n\n"
+        "ADD THE STRUCTURE THE CONTENT DESERVES. Keeping their shape does NOT mean "
+        "refusing to give it one. An author writing quickly runs things together, and "
+        "two shapes almost always want breaking out:\n"
+        "  - SEVERAL PARALLEL REQUIREMENTS in one sentence or paragraph become a list, "
+        "one per line, each starting with '- '. A brief of four rules has to read as "
+        "four rules.\n"
+        "  - A SEQUENCE OF THREE OR MORE STEPS — 'first X, then Y, then Z' — becomes a "
+        "NUMBERED list, one step per line ('1. ', '2. ', …), because the order IS the "
+        "instruction and a comma does not carry it. This one is missed constantly, so "
+        "here it is worked through: the note 'explain the concept first then the syntax "
+        "then show the code and then explain what the result means' is FOUR STEPS, and "
+        "comes back as {\"lines\": [\"1. Explain the concept.\", \"2. Explain the "
+        "syntax.\", \"3. Show the code.\", \"4. Explain what the result means.\"]} — never "
+        "as one sentence with commas in it. Two steps is not a sequence; leave those as "
+        "a sentence.\n"
+        "If they already made a list, keep it as a list. Do NOT bullet something that is "
+        "one thing: a single instruction stays a single sentence.\n"
+        "EVERY LINE OF A LIST YOU CREATE MUST BE SOMETHING THEY ACTUALLY SAID. You are "
+        "breaking their sentence apart, not filling a list out to a respectable length.\n\n"
+        "MAKE IT CLEARER, NOT JUST TIDIER. Where a sentence is ambiguous about what the "
+        "writer must actually DO, say it precisely. Where a term they used has two "
+        "readings, pin it to the one they plainly meant. Where an instruction is missing "
+        "the condition it obviously depends on — 'when', 'before', 'unless' — supply the "
+        "one their own words imply. A human approves this before it takes effect, so a "
+        "sharper version they can check beats a vaguer one that needed no thought.\n\n"
+        "DO NOT INVENT — the one line you may not cross, and it is checked. Sharpening "
+        "what they asked for is the job. Adding a REQUIREMENT they did not ask for is "
+        "not: a new constraint, a new number, a new thing the document must contain, a "
+        "preference of your own. If they said to explain the code, do not also decide "
+        "how long the explanation runs or what it must mention. Every demand in your "
+        "version must be traceable to a demand in theirs — better worded, better "
+        "structured, sharper, but THEIRS.\n"
+        "   A VAGUE NOTE STAYS ONE INSTRUCTION. When their whole note is short and "
+        "unspecific — 'make the analogies good' — your job is ONE sharper sentence "
+        "saying what they meant, not a list of four rules about analogies that they "
+        "never wrote. A four-word note does not become a paragraph. If you cannot "
+        "sharpen it without inventing, return their words tidied and nothing more.\n\n"
         "A RULE ABOUT HOW TO TEACH, NEVER ABOUT WHAT TO TEACH. The curriculum decides "
         "the topics; this decides how any topic is handled.\n\n"
         "`category` is what the rule governs:\n" + _CATEGORY_BRIEF + "\n"
@@ -1017,8 +1073,9 @@ def articulate(text: str, model=None) -> dict | None:
                  f"That is not acceptable because {why} Write it again, carrying "
                  "EVERYTHING the author wrote — every requirement, every example, every "
                  "number and name — and laid out as they laid it out, one array element "
-                 "per line in `lines`. Fix their English; do not shorten them and do not "
-                 "flatten them. Your answer should be at least as long as their note.")
+                 "per line in `lines`. Fix their English and sharpen what is vague; do "
+                 "not shorten them, do not flatten them, and do not add rules they never "
+                 "wrote.")
     return None
 
 

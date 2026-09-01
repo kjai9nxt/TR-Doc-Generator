@@ -152,9 +152,12 @@ A browser front end covering the whole flow:
      - **One skill, several instructions.** Four related lines under one heading are one
        skill with four instructions, in the order you wrote them — not four skills. The
        ordering is part of what you said, and for a teaching flow it *is* what you said.
-     - **Three scopes**: the whole course, **one session** of it, or **every course**
-       (admins only). Precedence, strongest first: hard rules → this course's reviewer
-       corrections → session skills → course skills → global skills.
+     - **Two scopes**: the whole course, or **one session** of it. Precedence,
+       strongest first: hard rules → this course's reviewer corrections → session
+       skills → course skills. There is deliberately no "every course" scope — a rule
+       for every course belongs in `harness/system_prompt.md` and
+       `harness/style_guide.md`, which are read on every generation and are versioned
+       with the code.
      Write them yourself, or write rough requirements and have the agent group them into
      skills — each one shows the words it came from, and anything it cannot trace back
      to your text is discarded. Or import a course's approved skills. **Nothing applies

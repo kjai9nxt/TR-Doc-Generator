@@ -257,8 +257,6 @@ body::before {
             transition: color .14s, background .14s; }
 .skill.draft .fileicon { color: var(--warn); background: var(--warn-soft);
                          border-color: var(--warn-line); }
-.skill.inherited .fileicon { color: var(--faint); background: var(--card2);
-                             border-color: var(--line); }
 /* The chevron sits ON the file, so "there is more inside" and "this is a file" are one
    object rather than two things to notice. */
 .filechev { position: absolute; right: -5px; bottom: -5px; display: grid;
@@ -272,7 +270,6 @@ body::before {
 .filename { font-size: 13.5px; font-weight: 600; color: var(--strong); line-height: 1.45;
             overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
             -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.skill.inherited .filename { color: var(--muted); font-weight: 550; }
 .filemeta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
 .msep { color: var(--line2); }
 /* THE CONTENTS, once opened: indented to sit under the name, never under the icon. */
@@ -282,8 +279,6 @@ body::before {
 
 .skill.draft { background: rgba(229,172,75,.045); }
 .skill.retired { opacity: .45; }
-/* Inherited from the house brief: present, readable, and visibly not this course's. */
-.skill.inherited .skilltext, .skill.inherited .skilltext > p { color: var(--muted); }
 /* A SKILL IS A PIECE OF WRITING, so it is set like one.
    THE HIERARCHY WAS UPSIDE DOWN. Every paragraph was semi-bold at full contrast and
    every list item was small, grey and light — so in a brief written as

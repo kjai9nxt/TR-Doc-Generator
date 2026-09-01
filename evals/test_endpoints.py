@@ -568,12 +568,14 @@ check("…saying what is missing", "session" in detail(r).lower(), detail(r))
 st, r = http("POST", "/skills", {"course": COURSE, "text": "Everywhere.",
                                  "scope": "sideways"})
 check("a scope that is not one of the three -> 400", st == 400, f"got {st}")
-# A GLOBAL skill governs every course on the instance. Owning one course is not the
-# authority to decide the rules of everybody else's.
+# THERE IS NO "EVERY COURSE" SCOPE. There was, and the endpoint still has to answer for
+# it by name rather than with the generic error, because the message is the only thing
+# that says where such a rule goes now.
 st, r = http("POST", "/skills", {"course": COURSE, "text": "A house rule.",
                                  "scope": "global"})
-check("a course owner cannot write a global skill -> 403", st == 403, f"got {st}")
-check("…and is told where it CAN go", COURSE in detail(r), detail(r))
+check("an 'every course' skill is refused -> 400", st == 400, f"got {st}")
+check("…and is told the repo is where a rule for every course lives",
+      "harness/system_prompt.md" in detail(r), detail(r))
 
 # Editing the sentence must not silently discard the lines under it.
 st, r = http("POST", f"/skills/{_gid}/edit",

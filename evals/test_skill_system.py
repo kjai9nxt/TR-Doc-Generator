@@ -61,7 +61,7 @@ db.init()
 
 
 def approve_all(course):
-    for s in db.skills(course, include_retired=True, include_global=True):
+    for s in db.skills(course, include_retired=True):
         if s["status"] == "draft":
             db.approve_skill(s["id"], ALICE)
 
@@ -131,21 +131,31 @@ check("a session skill with no session is refused, not silently widened",
       db.add_skill(REACT, "Nowhere in particular.", scope="session") is None)
 
 # --------------------------------------------------------------------------- #
-print("\n== GLOBAL SKILLS reach every course, and are the weakest tier ==")
-glo = db.add_skill(db.GLOBAL_COURSE, "House rule: define a term the first time it is used.",
-                   category="teaching_guidelines", scope="global",
-                   source="user", created_by=ALICE)
-db.approve_skill(glo, ALICE)
-check("a course that wrote nothing still gets it",
-      glo in [s["id"] for s in skills.applicable(DBMS)],
-      str(skills.applicable(DBMS)))
-check("…and so does one that wrote plenty",
-      glo in [s["id"] for s in skills.applicable(REACT, 12)])
-check("it is labelled as the house rule it is",
-      "GLOBAL SKILLS" in skills.block(DBMS), skills.block(DBMS))
+print("\n== there is NO 'every course' scope, and a rule for every course says so ==")
+# There was one: a skill under a reserved course name governed every course on the
+# instance. It is gone, because the repo already holds the place for a house rule —
+# harness/system_prompt.md and harness/style_guide.md are read on every generation for
+# every course, and are reviewed and versioned like the code beside them. Two places to
+# write one rule is worse than either alone: the one you did not check is the one in
+# force.
+check("the store offers two scopes, not three", db.SCOPES == ("course", "session"),
+      str(db.SCOPES))
+check("…and the reserved global course name is gone with it",
+      not hasattr(db, "GLOBAL_COURSE"))
+check("a skill asking for it falls back to the course rather than reaching further",
+      (lambda i: db.skills(DBMS) and [x for x in db.skills(DBMS) if x["id"] == i][0]
+       ["scope"] == "course")(db.add_skill(DBMS, "Tried to be global.", scope="global",
+                                           created_by=ALICE)))
+check("…and the brief never grows a global section",
+      "GLOBAL" not in skills.block(DBMS), skills.block(DBMS))
+check("the writer is told the order WITHOUT one",
+      "COURSE SKILLS → GLOBAL" not in (ROOT / "harness" / "system_prompt.md").read_text())
+for _s in db.skills(DBMS, include_retired=True):
+    if _s["text"] == "Tried to be global.":
+        db.retire_skill(_s["id"], ALICE)
 
 # --------------------------------------------------------------------------- #
-print("\n== PRECEDENCE: reviewer, then session, then course, then global ==")
+print("\n== PRECEDENCE: reviewer, then session, then course ==")
 rev = db.add_skill(REACT, "Corrections review keeps making on this course.",
                    category="reviewer",
                    instructions=["Never call a function component a class component."],
@@ -153,14 +163,14 @@ rev = db.add_skill(REACT, "Corrections review keeps making on this course.",
 db.approve_skill(rev, ALICE)
 b = skills.block(REACT, 12)
 order = [b.index(h) for h in ("## COURSE REVIEWER SKILLS", "## SESSION SKILLS",
-                              "## COURSE SKILLS", "## GLOBAL SKILLS")]
+                              "## COURSE SKILLS")]
 check("every tier is present and headed", all(i >= 0 for i in order), str(order))
 check("…strongest first", order == sorted(order), str(order))
 check("the order is also STATED, so it survives a model reading it out of order",
-      "HARD RULES → COURSE REVIEWER SKILLS → SESSION SKILLS → COURSE SKILLS → "
-      "GLOBAL SKILLS" in b, b[:1600])
+      "HARD RULES → COURSE REVIEWER SKILLS → SESSION SKILLS → COURSE SKILLS" in b,
+      b[:1600])
 check("applicable() returns them in that order too",
-      [s["id"] for s in skills.applicable(REACT, 12)] == [rev, sid, gid, glo],
+      [s["id"] for s in skills.applicable(REACT, 12)] == [rev, sid, gid],
       str([s["id"] for s in skills.applicable(REACT, 12)]))
 check("a reviewer correction stays in ITS course",
       rev not in [s["id"] for s in skills.applicable(DBMS)],
@@ -372,6 +382,38 @@ check("…while a faithful layout passes",
 check("…and a plain sentence is never asked for structure it never had",
       skills.lossy("show the snippet first", "Show the snippet first.") == "")
 
+print("\n== …and it may not write the brief FOR the author ==")
+# The other side of "you may sharpen it". Once the model was allowed to clarify a vague
+# note and to give content structure, "make the analogies good" came back as four
+# confident rules about mapping, domains and how to test an analogy — none of which the
+# author had written, all of which would have been approved as theirs.
+VAGUE = "make the analogies good"
+INVENTED = ("Use analogies that map precisely onto the concept being taught.\n"
+            "- The analogy must clarify the target concept, not obscure it.\n"
+            "- Every part of the analogy must correspond to a part of what is being "
+            "explained.\n"
+            "- Choose analogies from domains the reader already understands.\n"
+            "- Test each analogy by asking what someone would wrongly learn from it.")
+check("a four-word note grown into a paragraph of rules is caught",
+      "expansion" in skills.lossy(VAGUE, INVENTED), skills.lossy(VAGUE, INVENTED))
+check("…while saying the same short thing properly is not",
+      skills.lossy(VAGUE, "Make every analogy map onto the concept it explains.") == "")
+check("…and a long note may still be rearranged freely",
+      skills.lossy(" ".join(["word"] * 40), " ".join(["word"] * 100)) == "",
+      "3x of a 40-word note is 120; 100 is inside it")
+check("…with a flat allowance so a SHORT note has room to be said properly",
+      skills.lossy("show snippet first", "Show the code snippet before explaining it, "
+                   "so the learner reads the code before the prose about it.") == "")
+
+check("the prompt asks for the structure the content deserves",
+      "ADD THE STRUCTURE THE CONTENT DESERVES" in inspect.getsource(skills.articulate))
+check("…worked through for the case that is missed constantly, a run-together sequence",
+      "is FOUR STEPS" in inspect.getsource(skills.articulate))
+check("…and forbids padding a list out with lines the author never said",
+      "MUST BE SOMETHING THEY ACTUALLY SAID" in inspect.getsource(skills.articulate))
+check("…and keeps a vague note to ONE instruction",
+      "A VAGUE NOTE STAYS ONE INSTRUCTION" in inspect.getsource(skills.articulate))
+
 _shape_tries = []
 def _flattener(prompt):
     _shape_tries.append(prompt)
@@ -519,9 +561,6 @@ check("…with its instructions intact",
 check("a SESSION skill does not — its numbering means nothing here",
       not any(s.get("scope") == "session" for s in imported.values()),
       str(list(imported)))
-check("nor does a GLOBAL one — it already applies",
-      "House rule: define a term the first time it is used." not in imported,
-      str(list(imported)))
 check("a reviewer correction is a proposal in the new course, not a decision",
       all(s["status"] == "draft" for s in imported.values()),
       str([(t[:20], s["status"]) for t, s in imported.items()]))
@@ -539,8 +578,10 @@ prompt = (ROOT / "harness" / "system_prompt.md").read_text()
 check("the system prompt draws the line",
       "# WHAT vs HOW" in prompt, prompt[:0])
 check("…states the full precedence order",
-      "HARD RULES → COURSE REVIEWER SKILLS → SESSION SKILLS → COURSE SKILLS → GLOBAL"
-      in prompt, prompt[:0])
+      "HARD RULES → COURSE REVIEWER SKILLS → SESSION SKILLS → COURSE SKILLS" in prompt,
+      prompt[:0])
+check("…and says where a rule for EVERY course goes instead",
+      "belongs in this file and in the style guide" in prompt, prompt[:0])
 check("…forbids the brief appearing as content",
       "THE BRIEF IS NEVER CONTENT" in prompt, prompt[:0])
 check("…names the flow-as-bullets failure specifically",

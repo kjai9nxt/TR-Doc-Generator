@@ -26,12 +26,13 @@ over and over.
 Some runs also append a **COURSE BRIEF** — the skills this course is written under.
 The full order, strongest first:
 
-**HARD RULES → COURSE REVIEWER SKILLS → SESSION SKILLS → COURSE SKILLS → GLOBAL
-SKILLS → the style guide, pedagogy notes and field guidance below.**
+**HARD RULES → COURSE REVIEWER SKILLS → SESSION SKILLS → COURSE SKILLS → the style
+guide, pedagogy notes and field guidance below.**
 
 Narrower wins: a correction made about this course beats a rule written for one of its
-sessions, which beats the course's standing brief, which beats the house rules every
-course gets. The hard rules are never overridden by any of them.
+sessions, which beats the course's standing brief. The hard rules are never overridden
+by any of them. There is no per-instance "every course" tier — a rule for every course
+belongs in this file and in the style guide, which is where you are reading it.
 
 # WHAT vs HOW — the line that must not blur
 Three different inputs decide three different things, and confusing them is the single

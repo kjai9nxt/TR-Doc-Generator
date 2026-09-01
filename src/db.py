@@ -1460,12 +1460,18 @@ def remove_prereq(course: str, prereq: str) -> bool:
 # --------------------------------------------------------------------------- #
 # course skills (authored instructions, approved before they take effect)
 # --------------------------------------------------------------------------- #
-# The course every course sees. A skill stored under this name is a HOUSE rule: it
-# governs every course on the instance, and it is the weakest tier in the precedence
-# order, so anything a course or a session says about the same thing wins. It is a
-# reserved course name rather than a nullable column so that every existing query,
-# index and foreign relation keeps working unchanged.
-GLOBAL_COURSE = "*"
+# THERE IS NO "EVERY COURSE" SCOPE. There was: a skill stored under a reserved course
+# name governed every course on the instance. It is gone, because the repo already has
+# the place for a rule that applies to every course — harness/system_prompt.md and
+# harness/style_guide.md are read on every generation, for every course, and they are
+# reviewed and versioned like the code they sit next to. Two places to write the same
+# house rule is worse than either place alone: the one you did not check is the one that
+# was in force.
+#
+# Rows written under the old scope are LEFT WHERE THEY ARE and no longer read — nothing
+# in this module queries for them, so they apply to nothing. Deleting rows to implement
+# a product decision is how a finished document loses the explanation of why it looks
+# as it does.
 
 
 def skill_body(text) -> str:
@@ -1532,6 +1538,11 @@ def _shape_skill(r: dict) -> dict:
     return r
 
 
+# WHERE A SKILL APPLIES. Two answers, not three — see the note at the top of this
+# section on why "every course" is gone.
+SCOPES = ("course", "session")
+
+
 def _session_key(session) -> str | None:
     """A session identity as stored. `12`, `"12"` and `" 12 "` are the same session.
 
@@ -1549,8 +1560,7 @@ def _session_key(session) -> str | None:
         return s
 
 
-def skills(course: str, *, include_retired: bool = False, session=None,
-           include_global: bool = False) -> list[dict]:
+def skills(course: str, *, include_retired: bool = False, session=None) -> list[dict]:
     """One course's skills, newest last. Retired ones are excluded unless asked for —
     they are kept so an old document can still be explained, not to be applied.
 
@@ -1559,15 +1569,12 @@ def skills(course: str, *, include_retired: bool = False, session=None,
     Pass `session` to narrow it to the course-wide skills plus that one session's —
     which is what a RUN needs, and what `approved_skills` does.
     """
-    names = [(course or "").strip()]
-    if include_global:
-        names.append(GLOBAL_COURSE)
-    q = f"SELECT * FROM course_skills WHERE course IN ({','.join('?' * len(names))})"
+    q = "SELECT * FROM course_skills WHERE course=?"
     if not include_retired:
         q += " AND status != 'retired'"
     q += " ORDER BY id"
     try:
-        rows = [_shape_skill(r) for r in _query(q, tuple(names))]
+        rows = [_shape_skill(r) for r in _query(q, ((course or "").strip(),))]
     except Exception:
         return []
     return _for_session(rows, session) if session not in (None, "") else rows
@@ -1591,15 +1598,14 @@ def approved_skills(course: str, *, session=None) -> list[dict]:
     Approved only. A DRAFT that already applied would make the approval step theatre —
     and the whole point of the workflow is that nothing reaches the writer unreviewed.
 
-    Carries THREE tiers: this course's own skills, the session-scoped ones belonging to
-    THIS session, and the global house skills. Ordering them by authority is
-    src.skills's job, not the store's — see skills.resolve().
+    Carries this course's own skills and the session-scoped ones belonging to THIS
+    session. Ordering them by authority is src.skills's job, not the store's — see
+    skills.resolve().
     """
-    names = ((course or "").strip(), GLOBAL_COURSE)
     try:
         rows = [_shape_skill(r) for r in _query(
-            "SELECT * FROM course_skills WHERE course IN (?,?) AND status='approved' "
-            "ORDER BY id", names)]
+            "SELECT * FROM course_skills WHERE course=? AND status='approved' "
+            "ORDER BY id", ((course or "").strip(),))]
     except Exception:
         return []
     return _for_session(rows, session)
@@ -1633,15 +1639,13 @@ def add_skill(course: str, text: str, *, kind: str = "style", source: str = "use
         quotes.insert(0, source_quote)
     lines = [skill_body(i) for i in (instructions or []) if str(i or "").strip()]
     scope = (scope or "course").strip().lower()
-    if scope not in ("course", "session", "global"):
+    if scope not in SCOPES:
         scope = "course"
     ref = _session_key(session_ref) if scope == "session" else None
     if scope == "session" and not ref:
         # A session skill with no session is a course skill that would silently apply
         # everywhere. Refuse it rather than quietly widening its reach.
         return None
-    if scope == "global":
-        course = GLOBAL_COURSE
     now = _now()
     try:
         return _exec(
@@ -1718,9 +1722,8 @@ def import_skills(from_course: str, to_course: str, who: str | None) -> int:
     importing twice is a no-op rather than a pile of duplicates.
 
     COURSE-SCOPED SKILLS ONLY. A session skill is written about session 12 of the course
-    it was written for — its numbering means nothing in another course — and a global
-    skill already applies to the destination, so copying either would produce a rule
-    that is at best a duplicate and at worst about somebody else's session.
+    it was written for, and its numbering means nothing in another course — copying one
+    would produce a rule about somebody else's session.
     """
     src = [s for s in approved_skills(from_course) if s.get("scope") == "course"]
     if not src:

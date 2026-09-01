@@ -2215,15 +2215,18 @@ function SkillsHelpPanel({ onClose }) {
         <dl>
           <div><dt>All of this course</dt><dd>the standing brief for every session.</dd></div>
           <div><dt>One session</dt><dd>that session and nowhere else.</dd></div>
-          <div><dt>Every course</dt>
-            <dd>a house rule for the whole instance. Admins only, and the weakest of
-                them all.</dd></div>
         </dl>
+        <p>
+          There is no <b>every course</b> scope. A rule that applies to every course
+          belongs in the repo — <code>harness/system_prompt.md</code> and
+          <code>harness/style_guide.md</code> are read on every generation, for every
+          course, and are reviewed and versioned like the code beside them.
+        </p>
         <h4>Which one wins</h4>
         <p className="pcopy">
-          Hard rules › Reviewer corrections › Session › Course › Global. Narrower wins:
-          a correction made about this course beats a rule written for one of its
-          sessions, which beats the course brief, which beats the house rules.
+          Hard rules › Reviewer corrections › Session › Course. Narrower wins: a
+          correction made about this course beats a rule written for one of its
+          sessions, which beats the course's standing brief.
         </p>
         <h4>Nothing applies until you approve it</h4>
         <p>
@@ -2360,15 +2363,15 @@ function SkillBody({ text, className = 'skilltext' }) {
  * 900px row is a target you have to aim at. The icon is what makes it read as a file;
  * the row is what makes it easy to open.
  */
-function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, editText,
+function SkillCard({ s, canEdit, busy, editing, editText,
                      setEditText, editLines, setEditLines, onStartEdit, onCancelEdit,
                      onSave, onApprove, onRetire, open, onToggle }) {
-  const [why, setWhy] = useState(false)
+  // OPEN BY DEFAULT ON A DRAFT. The agent is allowed to sharpen a skill and to give it
+  // structure the author did not type, so approving one means checking it against what
+  // you wrote — and that is exactly the moment a draft is being read. On an approved
+  // skill the provenance is history and stays folded away.
+  const [why, setWhy] = useState(s.status === 'draft')
   const lines = s.instructions || []
-  const isGlobal = s.course === globalCourse
-  // A global skill is SHOWN to a course owner — knowing what your course inherits is the
-  // whole point of showing it — but it is not theirs to change.
-  const mine = canEdit && (!isGlobal || canEditGlobal)
   const quotes = s.source_quotes?.length ? s.source_quotes
                  : (s.source_quote ? [s.source_quote] : [])
   // THE FILE NAME is the first line the author wrote, which is how anyone writing an
@@ -2384,7 +2387,7 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
   // Editing always shows everything — you cannot edit what is folded away.
   const shown = open || editing
   return (
-    <article className={`skill ${s.status} ${isGlobal ? 'inherited' : ''} ${shown ? 'open' : ''}`}>
+    <article className={`skill ${s.status} ${shown ? 'open' : ''}`}>
       <div className="filerow">
         <button className="filebtn" onClick={onToggle} disabled={editing || !hasMore}
                 aria-expanded={shown} title={hasMore
@@ -2404,14 +2407,13 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
               <span className="mtext">{size}</span>
               {s.scope === 'session' && (
                 <span className="tag scope">Session {s.session_ref}</span>)}
-              {isGlobal && <span className="tag scope"><Icon name="globe" size={11} /> Every course</span>}
               {s.check && <span className="tag" title={JSON.stringify(s.check)}>Checked automatically</span>}
               {s.source?.startsWith('imported:') && (
                 <span className="tag">From {s.source.slice(9)}</span>)}
             </span>
           </span>
         </button>
-        {mine && (
+        {canEdit && (
           <div className="skillacts">
             {editing ? (
               <>
@@ -2472,7 +2474,9 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
               {quotes.length > 0 && (s.source === 'requirements' || s.source === 'user') && (
                 <>
                   <button className="whybtn" onClick={() => setWhy((v) => !v)}>
-                    {why ? 'Hide the words this came from' : 'From your words'}
+                    {why ? 'Hide what you wrote'
+                         : (s.status === 'draft' ? 'Compare with what you wrote'
+                                                 : 'From your words')}
                   </button>
                   {why && (
                     <blockquote className="skillquote">
@@ -2850,10 +2854,10 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                             onClick={() => setScope('course')}>All of {course}</button>
                     <button className={`chipbtn ${scope === 'session' ? 'on' : ''}`}
                             onClick={() => setScope('session')}>One session</button>
-                    {skills?.can_edit_global && (
-                      <button className={`chipbtn ${scope === 'global' ? 'on' : ''}`}
-                              title="a house rule for every course on this instance"
-                              onClick={() => setScope('global')}>Every course</button>)}
+                    {/* THERE IS NO "EVERY COURSE". A rule for every course belongs in
+                        the repo's harness files, which are read on every generation for
+                        every course and are versioned with the code. A second place to
+                        write the same house rule only made the two disagree. */}
                     {scope === 'session' && (
                       <input className="tiny" type="number" min="1" value={sessionNo}
                              placeholder="no."
@@ -2862,9 +2866,6 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                   {scope === 'session' && <span className="hint tight">
                     That session and nowhere else. Where it disagrees with a skill for the
                     whole course, this one wins.</span>}
-                  {scope === 'global' && <span className="hint tight">
-                    Every course here — and the weakest skill there is: anything a course
-                    or a session says about the same thing overrides it.</span>}
                 </div>
               </div>
             )}
@@ -2991,8 +2992,6 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                 </header>
                 {g.items.map((s) => (
                   <SkillCard key={s.id} s={s} canEdit={canEdit} busy={busy}
-                             globalCourse={skills?.global_course}
-                             canEditGlobal={skills?.can_edit_global}
                              editing={editing === s.id}
                              onStartEdit={() => { setEditing(s.id); setEditText(s.text)
                                                   setEditLines((s.instructions || []).join('\n'))
