@@ -1468,6 +1468,39 @@ def remove_prereq(course: str, prereq: str) -> bool:
 GLOBAL_COURSE = "*"
 
 
+def skill_body(text) -> str:
+    """A skill's text, KEPT AS IT WAS WRITTEN.
+
+    A skill is a fragment of the prompt the writer works from, not a database label, and
+    an author writes it the way they would write any instruction: a paragraph of context,
+    then the points it breaks into, sometimes both. All of that used to go through
+    `" ".join(text.split())`, which collapses newlines along with spaces — so a note laid
+    out as
+
+        Explain every snippet line by line.
+        - name the variable before it is used
+        - say what the line does, not what it says
+
+    was stored, shown for approval, and handed to the model as one run-on paragraph. The
+    author's layout is part of the instruction; a list is a list because they meant it to
+    be read as one.
+
+    Tidied, not flattened: runs of spaces WITHIN a line go, trailing whitespace goes, and
+    three blank lines become one. Line breaks and paragraph breaks stay.
+    """
+    raw = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
+    out: list[str] = []
+    for line in raw.split("\n"):
+        line = " ".join(line.split())
+        if line:
+            out.append(line)
+        elif out and out[-1] != "":       # one blank line between blocks, never more
+            out.append("")
+    while out and out[-1] == "":
+        out.pop()
+    return "\n".join(out)
+
+
 def _shape_skill(r: dict) -> dict:
     try:
         r["check"] = json.loads(r.pop("check_json", None) or "null")
@@ -1490,7 +1523,7 @@ def _shape_skill(r: dict) -> dict:
         ins = json.loads(r.get("instructions") or "null")
     except Exception:
         ins = None
-    r["instructions"] = [" ".join(str(i).split()) for i in ins
+    r["instructions"] = [skill_body(i) for i in ins
                          if str(i or "").strip()] if isinstance(ins, list) else []
     r["scope"] = (r.get("scope") or "course").strip().lower() or "course"
     r["category"] = (r.get("category") or "").strip().lower() or None
@@ -1589,13 +1622,16 @@ def add_skill(course: str, text: str, *, kind: str = "style", source: str = "use
     lose the author's grouping and their order, and would turn one approval into four.
     `text` stays the skill's own sentence: what the whole group is for.
     """
-    course, text = (course or "").strip(), " ".join((text or "").split())
+    course, text = (course or "").strip(), skill_body(text)
     if not course or not text:
         return None
+    # The QUOTES are still flattened: they are evidence of what the author typed, matched
+    # as substrings against a normalised copy of their note, not something anyone reads
+    # as a document.
     quotes = [" ".join(str(q).split()) for q in (source_quotes or []) if str(q).strip()]
     if source_quote and source_quote not in quotes:
         quotes.insert(0, source_quote)
-    lines = [" ".join(str(i).split()) for i in (instructions or []) if str(i or "").strip()]
+    lines = [skill_body(i) for i in (instructions or []) if str(i or "").strip()]
     scope = (scope or "course").strip().lower()
     if scope not in ("course", "session", "global"):
         scope = "course"
@@ -1636,13 +1672,13 @@ def edit_skill(skill_id: int, text: str, *, check: dict | None = None,
     `instructions=None` leaves them as they are — an edit to the skill's own sentence is
     not a decision to discard its lines.
     """
-    text = " ".join((text or "").split())
+    text = skill_body(text)
     if not text:
         return False
     sets = ["text=?", "check_json=?"]
     args = [text, json.dumps(check) if check else None]
     if instructions is not None:
-        lines = [" ".join(str(i).split()) for i in instructions if str(i or "").strip()]
+        lines = [skill_body(i) for i in instructions if str(i or "").strip()]
         sets.append("instructions=?")
         args.append(json.dumps(lines) if lines else None)
     try:

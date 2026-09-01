@@ -2237,6 +2237,61 @@ function SkillsHelpPanel({ onClose }) {
   )
 }
 
+/* A SKILL'S BODY, laid out the way it was written.
+ *
+ * A skill is a fragment of the prompt the writer works from, so an author writes it the
+ * way they would write any instruction: a paragraph of context, the points it breaks
+ * into, sometimes both. The store keeps that layout (db.skill_body) and the prompt
+ * keeps it (skills._render) — this is the third place it has to survive, and it was the
+ * one printing the whole thing as a single run-on paragraph.
+ *
+ * Deliberately NOT a markdown renderer. Markdown swallows a single newline, which is
+ * exactly the break an author writing a three-line instruction meant to keep, and it
+ * would also start interpreting stray underscores and asterisks in ordinary prose. This
+ * understands what `skill_body` preserves and nothing else: paragraphs, blank-line
+ * breaks, `- ` bullets and `1. ` numbers.
+ */
+function SkillBody({ text, className = 'skilltext' }) {
+  const blocks = []
+  let para = []
+  let list = null
+  const flushPara = () => { if (para.length) { blocks.push({ t: 'p', lines: para }); para = [] } }
+  const flushList = () => { if (list) { blocks.push(list); list = null } }
+  for (const line of String(text || '').split('\n')) {
+    if (!line.trim()) { flushPara(); flushList(); continue }
+    const bullet = line.match(/^\s*[-*•]\s+(.*)$/)
+    const number = line.match(/^\s*(\d+)[.)]\s+(.*)$/)
+    if (bullet) {
+      flushPara()
+      if (list?.t !== 'ul') { flushList(); list = { t: 'ul', items: [] } }
+      list.items.push(bullet[1])
+    } else if (number) {
+      flushPara()
+      if (list?.t !== 'ol') { flushList(); list = { t: 'ol', items: [], start: Number(number[1]) } }
+      list.items.push(number[2])
+    } else {
+      flushList()
+      para.push(line)
+    }
+  }
+  flushPara(); flushList()
+  if (!blocks.length) return null
+  return (
+    <div className={className}>
+      {blocks.map((b, i) => {
+        if (b.t === 'p') {
+          // Every line the author typed is a line. Joining them with a space is what
+          // made a laid-out instruction read as prose.
+          return <p key={i}>{b.lines.map((l, j) => (
+            <React.Fragment key={j}>{j > 0 && <br />}{l}</React.Fragment>))}</p>
+        }
+        const Tag = b.t
+        return <Tag key={i} start={b.start}>{b.items.map((it, j) => <li key={j}>{it}</li>)}</Tag>
+      })}
+    </div>
+  )
+}
+
 /* ONE SKILL, as the author needs to read it: what it says, the lines under it, whether
    it is in force, and where it reaches. Split out of CourseRules because it is the only
    part of that screen with per-item state, and inlining it made the list markup
@@ -2257,24 +2312,28 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
       <div className="skillbody">
         {editing ? (
           <>
-            <textarea rows={2} value={editText} onChange={(e) => setEditText(e.target.value)} />
-            {/* ONE SKILL, SEVERAL LINES. The author grouped these and put them in this
+            {/* Auto-sized, because a skill can be a paragraph and its points and a
+                two-row box showed a third of it. */}
+            <AutoTextarea minRows={3} value={editText}
+                          onChange={(e) => setEditText(e.target.value)} />
+            {/* ONE SKILL, SEVERAL POINTS. The author grouped these and put them in this
                 order; the order is part of what they said, so they are edited as a
                 block rather than as separate skills. */}
             {lines.length > 0 && (
               <>
                 <label>Its instructions — one per line, in order</label>
-                <textarea rows={Math.min(9, lines.length + 1)} value={editLines}
-                          onChange={(e) => setEditLines(e.target.value)} />
+                <AutoTextarea minRows={Math.min(9, lines.length + 1)} value={editLines}
+                              onChange={(e) => setEditLines(e.target.value)} />
               </>
             )}
           </>
         ) : (
           <>
-            <p className="skilltext">{s.text}</p>
+            <SkillBody text={s.text} />
             {lines.length > 1 && (
               <ol className="skillins">
-                {lines.map((line, i) => <li key={i}>{line}</li>)}
+                {lines.map((line, i) => (
+                  <li key={i}><SkillBody text={line} className="skillinsbody" /></li>))}
               </ol>
             )}
           </>
@@ -2701,8 +2760,14 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
             {mode === 'write' && (
               <>
                 <label>The skill</label>
-                <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
-                          placeholder="e.g. Show the snippet before explaining it." />
+                <AutoTextarea minRows={4} value={text}
+                              onChange={(e) => setText(e.target.value)}
+                              placeholder={'Write it the way you would say it. Lay it out '
+                                + 'however it needs to be laid out — a paragraph, points, '
+                                + 'or a paragraph and then its points:\n\n'
+                                + 'Explain every snippet line by line.\n'
+                                + '- name each variable before it is used\n'
+                                + '- say what the line does, not what it says'} />
                 <div className="cmpfoot">
                   <span className="hint tight">
                     Written up as the instruction a writer works from, with your own words
@@ -2721,8 +2786,9 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
             {mode === 'requirements' && (
               <>
                 <label>Everything this course needs, in plain sentences</label>
-                <textarea rows={4} value={reqs} onChange={(e) => setReqs(e.target.value)}
-                          placeholder="e.g. start with the problem, then the concept, then how it works, then an example — explain intuition before the formal definition, use simple language first, and connect each concept to the last session" />
+                <AutoTextarea minRows={5} value={reqs}
+                              onChange={(e) => setReqs(e.target.value)}
+                              placeholder="e.g. start with the problem, then the concept, then how it works, then an example — explain intuition before the formal definition, use simple language first, and connect each concept to the last session" />
                 <div className="cmpfoot">
                   <span className="hint tight">
                     Grouped, not scattered: everything about sequence becomes one

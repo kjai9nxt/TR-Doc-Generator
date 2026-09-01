@@ -310,6 +310,92 @@ check("…and they arrive as drafts, applying to nothing yet",
           if s.get("session_ref") == "14"))
 
 # --------------------------------------------------------------------------- #
+print("\n== a skill is a piece of WRITING, and keeps the shape it was written in ==")
+# A skill is a fragment of the prompt the writer works from, so an author lays it out
+# the way they would lay out any instruction: a paragraph, the points it breaks into,
+# sometimes both. All of it used to go through `" ".join(text.split())`, which collapses
+# newlines along with spaces — so a laid-out note was stored, approved and handed to the
+# model as one run-on paragraph. It had to be fixed in four places, and this checks all
+# four, because fixing three of them looks exactly like fixing none.
+LAID_OUT = """Explain every snippet line by line — the learner should write it themselves after.
+
+- name each variable before it is used
+- say what the line does, not what it says
+
+Keep snippets under 12 lines. Never show a whole file."""
+check("1. the STORE keeps the layout byte for byte",
+      db.skill_body(LAID_OUT) == LAID_OUT, repr(db.skill_body(LAID_OUT))[:160])
+check("…tidying only the spaces WITHIN a line",
+      db.skill_body("a   b\n\n  c  ") == "a b\n\nc")
+check("…collapsing a run of blank lines to one, and dropping trailing ones",
+      db.skill_body("a\n\n\n\nb\n\n\n") == "a\n\nb")
+lid = db.add_skill(REACT, LAID_OUT, category="teaching_guidelines", created_by=ALICE)
+db.approve_skill(lid, ALICE)
+stored = [x for x in db.skills(REACT) if x["id"] == lid][0]
+check("…so it comes back out exactly as it went in", stored["text"] == LAID_OUT,
+      repr(stored["text"])[:160])
+
+check("2. instructions_of does not flatten a point that spans lines",
+      skills.instructions_of({"instructions": ["one\ntwo"]}) == ["one\ntwo"],
+      str(skills.instructions_of({"instructions": ["one\ntwo"]})))
+
+blk = skills.block(REACT)
+check("3. the BRIEF keeps the bullets as bullets",
+      "\n  - name each variable before it is used" in blk, blk)
+check("…and indents every continuation under its marker, so a three-line skill does "
+      "not read as three skills",
+      all(ln.startswith("  ") for ln in blk.split("- Explain every snippet")[1]
+          .split("\n")[1:4] if ln.strip()), blk)
+check("…and a grouped point that spans lines keeps its break, indented under its number",
+      "\n       " in "\n".join(skills._indented("a\nb", "    1. ", "       ")),
+      str(skills._indented("a\nb", "    1. ", "       ")))
+
+check("4. the prompt tells the model to give the layout back",
+      "KEEP THEIR SHAPE" in inspect.getsource(skills.articulate))
+check("…asking for it as an ARRAY OF LINES, not newlines inside one string",
+      '\\"lines\\": [' in inspect.getsource(skills.articulate),
+      "a model will not put real newlines in a JSON string; it returns prose every time")
+
+print("\n== 5. and the ARTICULATION is checked for shape, not only for content ==")
+# Everything the author said, in the right order, with nothing dropped — and the list
+# run together into prose. Content-complete on purpose, so this tests the SHAPE check
+# and not the content one that runs before it.
+FLAT = ("Explain every snippet line by line — the learner should write it themselves "
+        "after. Name each variable before it is used. Say what the line does, not what "
+        "it says. Keep snippets under 12 lines. Never show a whole file.")
+check("a list run together into prose is caught",
+      "LIST" in skills.lossy(LAID_OUT, FLAT), skills.lossy(LAID_OUT, FLAT))
+check("…and two blocks merged into one is caught",
+      "blank line" in skills.lossy("first block\n\nsecond block", "first block second block"))
+check("…while a faithful layout passes",
+      skills.lossy("do X\n\n- a\n- b", "Do X.\n\n- A\n- B") == "")
+check("…and a plain sentence is never asked for structure it never had",
+      skills.lossy("show the snippet first", "Show the snippet first.") == "")
+
+_shape_tries = []
+def _flattener(prompt):
+    _shape_tries.append(prompt)
+    return json.dumps({"lines": [FLAT], "category": "teaching_guidelines"})
+check("a model that flattens the author's list is rejected",
+      skills.articulate(LAID_OUT, model=_flattener) is None)
+check("…and told, on the retry, that the list has to come back as a list",
+      len(_shape_tries) == 2 and "LIST" in _shape_tries[1], str(len(_shape_tries)))
+
+check("the `lines` array is joined back into the layout",
+      (skills.articulate("do x\n\n- a\n- b", model=lambda p: json.dumps(
+          {"lines": ["Do X.", "", "- A", "- B"], "category": "teaching_flow"}))
+       or {}).get("text") == "Do X.\n\n- A\n- B")
+# THE INPUT ITSELF used to be flattened on the first line of articulate(), so the model
+# never saw the layout, the shape check had nothing to miss, and `source_quote` recorded
+# a run-on paragraph as "your own words". One line, three bugs.
+_seen = {}
+skills.articulate(LAID_OUT, model=lambda p: _seen.setdefault("p", p) and None or {"text": "x"})
+check("the author's note reaches the model laid out, not flattened",
+      "\n- name each variable" in _seen["p"], _seen["p"][-400:])
+
+db.retire_skill(lid, ALICE)   # leave the brief as the later checks expect it
+
+# --------------------------------------------------------------------------- #
 print("\n== articulating a skill EDITS the author's English, it does not summarise ==")
 # THE BUG THIS GUARDS. The prompt asked for "one or two full sentences" and told the
 # model not to echo the author's phrasing. Between those two instructions, a note

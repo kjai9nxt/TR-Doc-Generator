@@ -240,10 +240,21 @@ body::before {
 .skill.draft { background: rgba(229,172,75,.045); }
 .skill.retired { opacity: .45; }
 /* Inherited from the house brief: present, readable, and visibly not this course's. */
-.skill.inherited .skilltext { color: var(--muted); }
+.skill.inherited .skilltext, .skill.inherited .skilltext > p { color: var(--muted); }
 .skillbody { flex: 1; min-width: 0; }
-.skilltext { margin: 0; font-size: 13.5px; color: var(--text); font-weight: 550;
-             line-height: 1.5; }
+/* A SKILL IS A PIECE OF WRITING, so it is set like one: paragraphs, lists and the
+   breaks between them, at the weight of body text rather than of a label. */
+.skilltext { font-size: 13.5px; color: var(--text); line-height: 1.6; }
+.skilltext > p { margin: 0 0 8px; font-weight: 550; }
+.skilltext > p:last-child { margin-bottom: 0; }
+.skilltext > ul, .skilltext > ol { margin: 0 0 8px; padding-left: 20px; }
+.skilltext > ul:last-child, .skilltext > ol:last-child { margin-bottom: 0; }
+.skilltext li { margin: 3px 0; color: var(--muted); font-weight: 400; }
+.skilltext li::marker { color: var(--faint); }
+/* A point inside a grouped skill can itself be a paragraph and its own sub-points. */
+.skillinsbody > p { margin: 0 0 5px; }
+.skillinsbody > p:last-child { margin-bottom: 0; }
+.skillinsbody > ul, .skillinsbody > ol { margin: 4px 0 0; padding-left: 18px; }
 /* A skill's own instructions. Numbered, because for a teaching flow the ORDER is the
    instruction — a bullet list would throw away half of what the author said. */
 .skillins { margin: 8px 0 0; padding-left: 22px; }

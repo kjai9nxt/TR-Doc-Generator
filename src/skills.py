@@ -148,12 +148,17 @@ def validate_check(check) -> tuple[bool, str]:
 
 
 def instructions_of(skill: dict) -> list[str]:
-    """A skill's own lines. Its `text` when it has none — see db.add_skill."""
-    lines = [" ".join(str(i).split()) for i in (skill.get("instructions") or [])
-             if str(i or "").strip()]
+    """A skill's own points. Its `text` when it has none — see db.add_skill.
+
+    Each one is returned AS WRITTEN, newlines and all. This used to `" ".join(x.split())`
+    every point, which is the same flattening the store had just been fixed to stop:
+    the layout survived being saved and was then destroyed on its way into the prompt,
+    which is the only place it was actually for.
+    """
+    lines = [str(i) for i in (skill.get("instructions") or []) if str(i or "").strip()]
     if lines:
         return lines
-    one = " ".join(str(skill.get("text") or "").split())
+    one = str(skill.get("text") or "").strip()
     return [one] if one else []
 
 
@@ -232,21 +237,40 @@ def _heading_for(cat: str) -> tuple[str, str]:
     return (LEGACY_KINDS.get(cat, cat.upper()), "")
 
 
-def _render(skill: dict, out: list[str]) -> None:
-    """One skill: its own sentence, then the lines the author grouped under it.
+def _indented(text: str, first: str, rest: str) -> list[str]:
+    """A possibly multi-line skill body, laid out under a marker.
 
-    Numbered, because for a teaching flow the ORDER is the instruction and a bullet list
-    says nothing about order. A single-instruction skill is just the sentence — a list of
-    one reads as a checklist item rather than a rule.
+    `text` is kept as the author wrote it — see db.skill_body — so it may be a
+    paragraph, a list, or a paragraph followed by its points. Every line after the first
+    is indented to sit under the marker, which is what stops a three-line skill reading
+    as three separate skills once it is in the brief.
+    """
+    lines = str(text or "").split("\n")
+    out = [f"{first}{lines[0]}"]
+    for ln in lines[1:]:
+        out.append(f"{rest}{ln}" if ln else "")
+    return out
+
+
+def _render(skill: dict, out: list[str]) -> None:
+    """One skill: its own body, then the points the author grouped under it.
+
+    LAID OUT AS WRITTEN. A skill is a fragment of the prompt, so an author's paragraph
+    stays a paragraph and their list stays a list — flattening it to one line here undid,
+    at the last step, exactly what the store had just been fixed to preserve.
+
+    The grouped instructions are NUMBERED, because for a teaching flow the order is the
+    instruction and a bullet list says nothing about order. A single-instruction skill is
+    just its body — a list of one reads as a checklist item rather than a rule.
     """
     lines = instructions_of(skill)
-    text = " ".join(str(skill.get("text") or "").split())
+    text = str(skill.get("text") or "")
     if len(lines) <= 1:
-        out.append(f"- {lines[0] if lines else text}")
+        out += _indented(lines[0] if lines else text, "- ", "  ")
         return
-    out.append(f"- {text}")
+    out += _indented(text, "- ", "  ")
     for i, line in enumerate(lines, start=1):
-        out.append(f"    {i}. {line}")
+        out += _indented(line, f"    {i}. ", "       ")
 
 
 def block(course: str, session=None) -> str:
@@ -564,8 +588,29 @@ def _specifics(text: str) -> set[str]:
             for m in _SPECIFIC.finditer(str(text or ""))}
 
 
+_LIST_LINE = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+\S")
+
+
+def _shape(text: str) -> tuple[int, int]:
+    """(list lines, blank-line-separated blocks) — the layout, as a pair of counts."""
+    lines = str(text or "").split("\n")
+    bullets = sum(1 for ln in lines if _LIST_LINE.match(ln))
+    blocks = len([b for b in re.split(r"\n\s*\n", str(text or "").strip()) if b.strip()])
+    return bullets, blocks
+
+
 def lossy(src: str, out: str) -> str:
-    """Why `out` fails to carry everything `src` said, or "" when it carries it all."""
+    """Why `out` is not a faithful rewrite of `src`, or "" when it is.
+
+    Three ways to be unfaithful, and the author is shown the result to APPROVE, so all
+    three have to be caught before they are shown rather than after:
+      · a SPECIFIC is gone — a number, a name, a quoted phrase;
+      · it is much SHORTER — a summary wearing a rewrite's clothes;
+      · the SHAPE is gone — the author's list came back as prose.
+    The third is not cosmetic. This text is a fragment of the prompt a writer works
+    from, and a list of four rules reads as four rules; run together in a paragraph it
+    reads as one sentence with some commas in it, which is not what was approved.
+    """
     src, out = str(src or ""), str(out or "")
     low = out.lower()
     missing = sorted(x for x in _specifics(src) if x and x not in low)
@@ -576,6 +621,15 @@ def lossy(src: str, out: str) -> str:
     if n_src >= _MIN_WORDS_TO_JUDGE_LENGTH and n_out < _MIN_KEEP_RATIO * n_src:
         return (f"it is a summary, not a rewrite: {n_src} words became {n_out}. "
                 f"Every separate thing the author asked for has to survive.")
+    src_bullets, src_blocks = _shape(src)
+    out_bullets, out_blocks = _shape(out)
+    if src_bullets >= 2 and out_bullets < 2:
+        return (f"the author wrote {src_bullets} points as a LIST and you ran them "
+                f"together into prose. Give the list back as a list, one point per "
+                f"line, each starting with '- '.")
+    if src_blocks >= 2 and out_blocks < 2:
+        return (f"the author wrote {src_blocks} separate blocks, and you ran them into "
+                f"one. Keep the blank line between them.")
     return ""
 
 
@@ -686,6 +740,10 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "code form with the snippet itself before any prose about it; the code is the "
         "primary teaching object, not an illustration of the paragraph above it.' is an "
         "instruction.\n"
+        "   Each instruction is ONE POINT and is written as one; the `instructions` list "
+        "IS the structure, so do not paste bullet characters or numbering inside them. "
+        "Where a point needs a paragraph and then its own sub-points, write that "
+        "instruction with real newlines.\n"
         "   THERE IS NO LENGTH LIMIT, and being shorter than the author is not a virtue. "
         "Every separate thing they asked for becomes an instruction; every EXAMPLE they "
         "gave is carried into the instruction it belongs to, because an author who gives "
@@ -850,7 +908,13 @@ def articulate(text: str, model=None) -> dict | None:
     an unpolished instruction is worth far more than a polished one that lost half of
     what it was for.
     """
-    text = " ".join((text or "").split())
+    # THE AUTHOR'S LAYOUT, KEPT. This was `" ".join(text.split())` — the note was
+    # flattened into one line before the model ever saw it, so "keep their shape" was an
+    # instruction about a shape that had already been destroyed, the check for it could
+    # never fire (there were no list lines left to miss), and `source_quote` recorded a
+    # run-on paragraph as "your own words". One line, three bugs.
+    from . import db as _db
+    text = _db.skill_body(text)
     if not text:
         return None
     if model is None:
@@ -859,9 +923,13 @@ def articulate(text: str, model=None) -> dict | None:
         "A course author has written ONE SKILL their course must be written under — an "
         "instruction about HOW the course is taught. Turn it into the instruction a "
         "professional writer will work from.\n\n"
-        "Return JSON: {\"text\": \"...\", \"category\": \"teaching_flow|"
+        "Return JSON: {\"lines\": [\"...\", \"...\"], \"category\": \"teaching_flow|"
         "teaching_guidelines|examples_visuals|reviewer\", \"kind\": \"style|content|"
         "structure\"}\n\n"
+        "`lines` IS THE LAYOUT, one array element per line of the finished skill. An "
+        "empty string \"\" is a blank line between blocks. This is how you keep the "
+        "author's shape — asking for newlines inside one long string does not work and "
+        "the answer comes back as prose every time.\n\n"
         "YOU ARE EDITING THEIR ENGLISH, NOT SUMMARISING THEM. They typed it in a hurry, "
         "with typos, as a note to themselves. Give it back as what a writer who has "
         "never spoken to them will follow: correct, unambiguous, imperative, no hedging, "
@@ -881,6 +949,23 @@ def articulate(text: str, model=None) -> dict | None:
         "re-word for the sake of it. Where a phrase of theirs already says the thing "
         "clearly, keep that phrase. Change what is wrong or unclear, and leave the rest "
         "alone.\n\n"
+        "KEEP THEIR SHAPE — this one is checked, and a flattened answer is rejected. "
+        "The text becomes part of the prompt a writer works from, so it is a piece of "
+        "WRITING, not a label. Give it back laid out the way they laid it out, one "
+        "array element per line:\n"
+        "  - a paragraph stays a paragraph;\n"
+        "  - A LIST STAYS A LIST — one point per line, each line starting with '- '. "
+        "Running four points together into one paragraph of prose is the single most "
+        "common way this is got wrong, and it will be sent back;\n"
+        "  - a paragraph followed by its points keeps both, in that order, with a blank "
+        "line between them.\n"
+        "So a note that arrives as\n"
+        "    do X.\n\n    - a\n    - b\n\n    also do Y.\n"
+        "comes back as {\"lines\": [\"Do X.\", \"\", \"- A\", \"- B\", \"\", \"Also do Y.\"]} — same "
+        "blocks, same list, better English. Do NOT chop their prose into bullets either: "
+        "if they "
+        "wrote one plain sentence, return one plain sentence. This is about preserving "
+        "what they did, not adding structure they did not ask for.\n\n"
         "DO NOT INVENT. Making their intent explicit is the job; adding requirements "
         "they did not express is not. If they said to explain the code, do not also "
         "decide how long the explanation runs, where it sits, or what it must mention. "
@@ -913,7 +998,12 @@ def articulate(text: str, model=None) -> dict | None:
             return None
         if not isinstance(parsed, dict):
             return None
-        out = " ".join(str(parsed.get("text") or "").split())
+        # `lines` is the layout; `text` is accepted as a fallback for a model that
+        # answers in the older shape, and is normalised the same way either way.
+        raw_lines = parsed.get("lines")
+        out = _db.skill_body(
+            "\n".join(str(x) for x in raw_lines) if isinstance(raw_lines, list)
+            else parsed.get("text"))
         if not out:
             return None
         why = lossy(text, out)
@@ -926,8 +1016,9 @@ def articulate(text: str, model=None) -> dict | None:
                  f"{out}\n\n"
                  f"That is not acceptable because {why} Write it again, carrying "
                  "EVERYTHING the author wrote — every requirement, every example, every "
-                 "number and name. Fix their English; do not shorten them. Your answer "
-                 "should be at least as long as their note.")
+                 "number and name — and laid out as they laid it out, one array element "
+                 "per line in `lines`. Fix their English; do not shorten them and do not "
+                 "flatten them. Your answer should be at least as long as their note.")
     return None
 
 
