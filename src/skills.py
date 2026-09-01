@@ -645,6 +645,43 @@ def lossy(src: str, out: str) -> str:
     return ""
 
 
+def _instructions_from(parsed: dict, _db) -> list[str]:
+    """The `instructions` array, as the store holds them: one string per rule.
+
+    Each entry may be an object with its own `title` — 'Explain in Simple Language
+    First' — and the `text` saying what it requires. They are joined with a newline,
+    which is the shape everything downstream already renders as a labelled step: the
+    title carries the weight, the sentence sits under it.
+    """
+    out = []
+    for it in parsed.get("instructions") or []:
+        if isinstance(it, dict):
+            title = " ".join(str(it.get("title") or "").split())
+            lines = it.get("lines")
+            body = _db.skill_body("\n".join(str(x) for x in lines)
+                                  if isinstance(lines, list) else it.get("text"))
+            one = f"{title}\n{body}".strip() if title else body
+        else:
+            one = _db.skill_body(it)
+        if one:
+            out.append(one)
+    return out
+
+
+def _assembled(text: str, instructions: list[str]) -> str:
+    """The whole skill as one document, for checking against what the author wrote.
+
+    `lossy` counts list lines and blank-line-separated blocks, and a skill whose rules
+    live in a separate array has neither until they are put back together. Without this
+    a perfectly structured answer — a name and ten instructions — looked to the check
+    like one unbroken paragraph, and was rejected for flattening the very list it had
+    just built.
+    """
+    if not instructions:
+        return text
+    return text + "\n\n" + "\n\n".join(f"- {i}" for i in instructions)
+
+
 class ModelUnavailable(RuntimeError):
     """The drafting call itself failed — no answer came back, or it was not JSON.
 
@@ -951,13 +988,29 @@ def articulate(text: str, model=None) -> dict | None:
         "A course author has written ONE SKILL their course must be written under — an "
         "instruction about HOW the course is taught. Turn it into the instruction a "
         "professional writer will work from.\n\n"
-        "Return JSON: {\"lines\": [\"...\", \"...\"], \"category\": \"teaching_flow|"
-        "teaching_guidelines|examples_visuals|reviewer\", \"kind\": \"style|content|"
-        "structure\"}\n\n"
-        "`lines` IS THE LAYOUT, one array element per line of the finished skill. An "
-        "empty string \"\" is a blank line between blocks. This is how you keep the "
-        "author's shape — asking for newlines inside one long string does not work and "
-        "the answer comes back as prose every time.\n\n"
+        "Return JSON:\n"
+        "  {\"name\": \"...\",\n"
+        "   \"instructions\": [{\"title\": \"...\", \"text\": \"...\"}, ...],\n"
+        "   \"lines\": [\"...\", \"...\"],\n"
+        "   \"category\": \"teaching_flow|teaching_guidelines|examples_visuals|reviewer\",\n"
+        "   \"kind\": \"style|content|structure\"}\n\n"
+        "WHICH OF `instructions` AND `lines` YOU FILL IN IS THE WHOLE DECISION:\n\n"
+        "  · SEVERAL RULES → `instructions`, one entry each, and a short `name` for the "
+        "whole skill. This is the common case and the one that is got wrong: a course "
+        "brief is usually a RUN OF NAMED RULES — a short title, then a sentence saying "
+        "what it means, then the next one. Ten of those are ONE skill with TEN "
+        "instructions, not one long document. `title` is the rule's own name (leave it "
+        "out if the author gave none) and `text` is what it requires. `name` is what the "
+        "whole set is about, in three to eight words — NEVER the first rule's title, "
+        "because the first rule is one of ten and naming the set after it hides the "
+        "other nine.\n"
+        "  · ONE INSTRUCTION → `lines`, and leave `instructions` empty. `lines` is the "
+        "layout, one array element per line, an empty string \"\" for a blank line "
+        "between blocks. Use it when the author wrote a single instruction, or a "
+        "paragraph and its own sub-points that only make sense together.\n\n"
+        "Answering in an array either way is deliberate: asking for newlines inside one "
+        "long JSON string does not work and the answer comes back as prose every "
+        "time.\n\n"
         "YOU ARE EDITING THEIR ENGLISH, NOT SUMMARISING THEM. They typed it in a hurry, "
         "with typos, as a note to themselves. Give it back as what a writer who has "
         "never spoken to them will follow: correct, unambiguous, imperative, no hedging, "
@@ -993,7 +1046,12 @@ def articulate(text: str, model=None) -> dict | None:
         "blocks, same list, better English.\n\n"
         "ADD THE STRUCTURE THE CONTENT DESERVES. Keeping their shape does NOT mean "
         "refusing to give it one. An author writing quickly runs things together, and "
-        "two shapes almost always want breaking out:\n"
+        "these shapes always want breaking out:\n"
+        "  - A RUN OF NAMED RULES — 'Explain in Simple Language First' and a sentence, "
+        "then 'Connect Theory to Implementation' and a sentence, and so on — is a LIST. "
+        "Every one of them becomes an `instructions` entry. Left as loose blocks it is a "
+        "wall of prose with headings in it, and the tenth rule is as easy to miss as if "
+        "it had not been written.\n"
         "  - SEVERAL PARALLEL REQUIREMENTS in one sentence or paragraph become a list, "
         "one per line, each starting with '- '. A brief of four rules has to read as "
         "four rules.\n"
@@ -1046,6 +1104,7 @@ def articulate(text: str, model=None) -> dict | None:
     # an example almost always keeps it when the example is named back at it; asking
     # blindly again just re-rolls the same summary.
     nudge = ""
+    out = ""
     for _attempt in range(2):
         try:
             data = model(prompt + nudge)
@@ -1054,18 +1113,26 @@ def articulate(text: str, model=None) -> dict | None:
             return None
         if not isinstance(parsed, dict):
             return None
-        # `lines` is the layout; `text` is accepted as a fallback for a model that
-        # answers in the older shape, and is normalised the same way either way.
+        ins = _instructions_from(parsed, _db)
+        # `lines` is the layout of a single instruction; `text` is accepted as a
+        # fallback for a model answering in the older shape. When there are several
+        # instructions the skill's own text is its NAME — what the whole set is about —
+        # and the rules live in the list beside it, exactly as the "from my notes" path
+        # has always produced them.
         raw_lines = parsed.get("lines")
-        out = _db.skill_body(
-            "\n".join(str(x) for x in raw_lines) if isinstance(raw_lines, list)
-            else parsed.get("text"))
+        body = _db.skill_body("\n".join(str(x) for x in raw_lines)
+                              if isinstance(raw_lines, list) else parsed.get("text"))
+        name = _db.skill_body(parsed.get("name"))
+        out = (name or body) if len(ins) > 1 else (body or name)
+        if len(ins) == 1 and not body:
+            out, ins = ins[0], []          # one rule is the skill, not a list of one
         if not out:
             return None
-        why = lossy(text, out)
+        why = lossy(text, _assembled(out, ins))
         if not why:
             kind = str(parsed.get("kind") or "style").lower()
-            return {"text": out, "kind": kind if kind in KINDS else "style",
+            return {"text": out, "instructions": ins,
+                    "kind": kind if kind in KINDS else "style",
                     "category": normalize_category(parsed.get("category")),
                     "source_quote": text, "source_quotes": [text]}
         nudge = ("\n\nYOUR PREVIOUS ANSWER WAS REJECTED. You wrote:\n"

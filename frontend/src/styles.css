@@ -305,9 +305,16 @@ body::before {
 .skilltext li.labelled .li-head { font-weight: 650; color: var(--strong); }
 .skilltext .li-body { display: block; margin-top: 2px; color: var(--muted);
                       font-weight: 400; }
-/* A point inside a grouped skill can itself be a paragraph and its own sub-points. */
+/* A point inside a grouped skill can itself be a paragraph and its own sub-points.
+   Its OWN heading — 'Explain in Simple Language First' — is the point's name, so it is
+   set like the label of a labelled step and not like a section title. It was falling
+   through to the browser default: bold, oversized, and with a 1em margin above and
+   below that pushed every rule away from its own description. */
 .skillinsbody > p { margin: 0 0 5px; }
 .skillinsbody > p:last-child { margin-bottom: 0; }
+.skillinsbody h4 { margin: 0 0 3px; font-size: 13px; font-weight: 650;
+                   letter-spacing: 0; text-transform: none; color: var(--strong); }
+.skillinsbody h4 + p { color: var(--muted); }
 .skillinsbody > ul, .skillinsbody > ol { margin: 4px 0 0; padding-left: 18px; }
 /* A skill's own instructions. Numbered, because for a teaching flow the ORDER is the
    instruction — a bullet list would throw away half of what the author said. */
@@ -892,8 +899,21 @@ button.tag:disabled { cursor: default; opacity: .5; }
 .gdoclink { display: inline-block; margin-top: 12px; font-weight: 650; color: var(--accent); }
 
 /* ---------- History / teams ---------- */
-.coursegroup { margin-top: 18px; }
-.coursehead { font-weight: 700; font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.coursegroup { margin-top: 14px; }
+/* The head is the toggle. A course with thirty documents printed all thirty, so the
+   count and the spend — which is what most visits are after — sat above a wall. */
+.coursehead { display: flex; align-items: baseline; gap: 9px; width: 100%; text-align: left;
+              background: none; border: none; border-bottom: 1px solid var(--line);
+              padding: 9px 4px; font-family: inherit; font-size: 13.5px; color: var(--text);
+              cursor: pointer; transition: border-color .14s; }
+.coursehead:hover { border-color: var(--line2); }
+.coursehead b { font-weight: 650; color: var(--strong); }
+.coursehead .muted { font-size: 12.5px; }
+.coursehead .ic { color: var(--faint); align-self: center; }
+.chead-chev { display: inline-grid; place-items: center; width: 14px; color: var(--faint);
+              align-self: center; transition: transform .16s ease; }
+.coursegroup.open .chead-chev { transform: rotate(90deg); color: var(--accent); }
+.coursehead:hover .chead-chev { color: var(--text); }
 
 /* ---------- Connect-step settings ---------- */
 .settingsrow { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -905,7 +925,20 @@ button.tag:disabled { cursor: default; opacity: .5; }
 .setmain:has(.dashcell) { flex-wrap: nowrap; gap: 8px; }
 .dashcell { flex: 0 0 66px; text-align: right; font-size: 12.5px; color: var(--muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dashcell.grow { flex: 1 1 auto; text-align: left; color: inherit; font-weight: 600; }
+/* STATUS NEEDS ROOM. "approved · flagged" does not fit in 66px, and a cell that clips
+   its own chip mid-word is worse than no column. */
+.dashcell.st { flex: 0 0 132px; }
+.dashcell:last-child { flex: 0 0 76px; }
+.dashcell.grow { flex: 1 1 auto; text-align: left; color: inherit; font-weight: 600;
+  min-width: 0; white-space: normal; }
+.dashtitle { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The run's last log line — up to 120 characters, so it wraps to one clipped line here
+   and carries the whole thing as its tooltip. */
+.dashstage { display: block; margin-top: 3px; padding-left: 20px; font-size: 11.5px;
+  font-weight: 400; color: var(--faint); white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; }
+.tw { display: inline-grid; place-items: center; width: 14px; color: var(--faint); }
+.tw .ic { transition: transform .16s ease; }
 .dashhead { background: transparent; border-color: transparent; padding-bottom: 4px; }
 .dashhead .dashcell { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; opacity: .6; }
 .dashclick { cursor: pointer; }

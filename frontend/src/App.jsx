@@ -3326,14 +3326,37 @@ function MyHistory({ history }) {
         <Metric label="Total tokens" value={(s.total_tokens || 0).toLocaleString()} />
       </div>
       {history.courses.map((c, i) => (
-        <div key={i} className="coursegroup">
-          <div className="coursehead"><Icon name="curriculum" size={15} /> {c.course}
-            <span className="muted"> — {c.summary.total_runs} doc(s) · ${(c.summary.total_cost || 0).toFixed(4)}</span>
-          </div>
+        <CourseGroup key={i} icon="curriculum" title={c.course} defaultOpen={i === 0}
+                     meta={`${c.summary.total_runs} doc(s) · $${(c.summary.total_cost || 0).toFixed(4)}`}>
           <RunTable runs={c.runs} />
-        </div>
+        </CourseGroup>
       ))}
     </section>
+  )
+}
+
+/* ONE COURSE'S RUNS, foldable.
+ *
+ * A course with thirty documents in it printed all thirty, and three courses printed
+ * ninety — so the page you open to find one document is the longest in the app and the
+ * course you want is somewhere below the fold. The head carries the count and the spend,
+ * which is what most visits are actually after, and the table is a click away.
+ *
+ * The FIRST group is open: landing on a page of nothing but headers reads as a page that
+ * failed to load.
+ */
+function CourseGroup({ icon, title, meta, defaultOpen, children }) {
+  const [open, setOpen] = useState(!!defaultOpen)
+  return (
+    <div className={`coursegroup ${open ? 'open' : ''}`}>
+      <button className="coursehead" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span className="chead-chev"><Icon name="chevron" size={12} /></span>
+        <Icon name={icon} size={15} />
+        <b>{title}</b>
+        <span className="muted">{meta}</span>
+      </button>
+      {open && children}
+    </div>
   )
 }
 
@@ -3342,14 +3365,12 @@ function MyTeams({ teams }) {
     <section className="card">
       <h2><span className="hicon"><Icon name="team" /></span> My Teams</h2>
       {teams.map((t, i) => (
-        <div key={i} className="coursegroup">
-          <div className="coursehead"><Icon name="team" size={15} /> {t.team.name}
-            <span className="muted"> — {t.team.course || 'no course'} · {t.members.length} member(s): {t.members.join(', ')}</span>
-          </div>
+        <CourseGroup key={i} icon="team" title={t.team.name} defaultOpen={i === 0}
+                     meta={`${t.team.course || 'no course'} · ${t.members.length} member(s): ${t.members.join(', ')}`}>
           {t.courses.length === 0
             ? <div className="just" style={{ padding: '4px 2px' }}>No docs built by the team yet.</div>
             : t.courses.map((c, j) => <RunTable key={j} runs={c.runs} />)}
-        </div>
+        </CourseGroup>
       ))}
     </section>
   )
@@ -3362,7 +3383,7 @@ function RunTable({ runs }) {
       <div className="setrow dashhead">
         <div className="setmain">
           <span className="dashcell grow">Session · by</span>
-          <span className="dashcell">Status</span>
+          <span className="dashcell st">Status</span>
           <span className="dashcell">Rubric</span>
           <span className="dashcell">Cost</span>
           <span className="dashcell">Output</span>
@@ -3375,16 +3396,27 @@ function RunTable({ runs }) {
           <div key={i} className="setrow dashrow">
             <div className="setmain">
               <span className="dashcell grow dashclick" onClick={() => setOpen(isOpen ? null : i)}>
-                <span className="tw">{isOpen ? '▾' : '▸'}</span> S{r.session_no}: {r.title}
-                {r.enforce_time === false && <span className="tag" style={{ marginLeft: 6 }}>depth</span>}
-                <span className="uref"> · {r.user_email || 'unknown'}</span>
+                <span className="dashtitle">
+                  <span className="tw"><Icon name="chevron" size={11}
+                        style={{ transform: isOpen ? 'rotate(90deg)' : 'none' }} /></span>
+                  S{r.session_no}: {r.title}
+                  {r.enforce_time === false && <span className="tag" style={{ marginLeft: 6 }}>depth</span>}
+                  <span className="uref"> · {r.user_email || 'unknown'}</span>
+                </span>
+                {/* WHERE THE RUN HAS GOT TO. `stage` is the last log line, up to 120
+                    characters, and it was being rendered inside a 66px status cell —
+                    so every running document showed "⚠ The ch…" and the one thing the
+                    column existed to say was the thing it cut off. The sentence belongs
+                    in the wide column; the chip stays a chip. */}
+                {r.status === 'running' && r.stage && (
+                  <span className="dashstage" title={r.stage}>{r.stage}</span>)}
               </span>
-              <span className="dashcell">
+              <span className="dashcell st">
                 {/* A doc the reviewer approved but the graders still flag is the
                     NORMAL case, so a red "review" chip on it was misleading — it is
                     approved and shipped. The chip states the human decision; the
                     graders' verdict rides along as a note. */}
-                {r.status === 'running' ? <span className="chip mid">● {r.stage || 'running'}</span>
+                {r.status === 'running' ? <span className="chip mid" title={r.stage || ''}>● running</span>
                   : r.status === 'error' ? <span className="chip bad">error</span>
                   : r.approved ? <span className="chip good"><Icon name="check" size={12} /> approved{r.gates_passed === false && <span className="ms"> · flagged</span>}</span>
                   : <span className="chip bad">not approved</span>}

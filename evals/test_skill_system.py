@@ -423,6 +423,62 @@ check("a model that flattens the author's list is rejected",
 check("…and told, on the retry, that the list has to come back as a list",
       len(_shape_tries) == 2 and "LIST" in _shape_tries[1], str(len(_shape_tries)))
 
+print("\n== a RUN OF NAMED RULES becomes a list, not a wall with headings in it ==")
+# THE CASE THIS EXISTS FOR. A course brief is usually written as a short title, a
+# sentence saying what it means, then the next one — ten of them. Left as loose blocks,
+# the skill was one long document whose file name was its FIRST RULE, so the other nine
+# were named after something that was one of them, and the tenth was as easy to miss as
+# if it had not been written.
+NAMED_RULES = """Explain in Simple Language First
+Explain the concept in clear, beginner-friendly language.
+
+Explain Before Showing Code
+Do not introduce code without first explaining what it is intended to achieve.
+
+Build Progressively
+Prefer extending the existing example rather than starting from a new one."""
+_drafted = skills.articulate(NAMED_RULES, model=lambda p: json.dumps({
+    "name": "How this course explains concepts and code",
+    "category": "teaching_guidelines",
+    "instructions": [
+        {"title": "Explain in Simple Language First",
+         "text": "Explain the concept in clear, beginner-friendly language."},
+        {"title": "Explain Before Showing Code",
+         "text": "Do not introduce code without first explaining what it is intended to achieve."},
+        {"title": "Build Progressively",
+         "text": "Prefer extending the existing example rather than starting from a new one."},
+    ]}))
+check("three named rules become three instructions",
+      len((_drafted or {}).get("instructions") or []) == 3, str(_drafted))
+check("…each keeping its own title on its own line, above what it requires",
+      (_drafted["instructions"][0].split("\n")
+       == ["Explain in Simple Language First",
+           "Explain the concept in clear, beginner-friendly language."]),
+      repr(_drafted["instructions"][0]))
+check("…and the skill is named for the WHOLE set, never for its first rule",
+      _drafted["text"] == "How this course explains concepts and code",
+      _drafted["text"])
+# The check runs against the skill PUT BACK TOGETHER. Without that, a perfectly
+# structured answer — a name and three instructions — looks like one unbroken paragraph
+# and is rejected for flattening the very list it just built.
+check("…and a well-structured answer is not rejected as flattened",
+      skills.lossy(NAMED_RULES,
+                   skills._assembled(_drafted["text"], _drafted["instructions"])) == "",
+      skills.lossy(NAMED_RULES,
+                   skills._assembled(_drafted["text"], _drafted["instructions"])))
+check("a single instruction still comes back as one, with no list of one",
+      (skills.articulate("show the snippet first", model=lambda p: json.dumps(
+          {"lines": ["Show the snippet first."], "category": "teaching_flow"}))
+       or {}).get("instructions") == [])
+check("the prompt names the run-of-named-rules case outright",
+      "A RUN OF NAMED RULES" in inspect.getsource(skills.articulate))
+check("…and forbids naming the set after its first rule",
+      "NEVER the first rule's title" in inspect.getsource(skills.articulate))
+_SERVER = (ROOT / "server.py").read_text()
+check("…and the endpoint stores the instructions the agent found",
+      'body.instructions or (drafted or {}).get("instructions")' in _SERVER,
+      "dropping them here would throw away the whole point of the articulation")
+
 check("the `lines` array is joined back into the layout",
       (skills.articulate("do x\n\n- a\n- b", model=lambda p: json.dumps(
           {"lines": ["Do X.", "", "- A", "- B"], "category": "teaching_flow"}))

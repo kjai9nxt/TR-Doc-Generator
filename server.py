@@ -1392,11 +1392,16 @@ def add_skill(body: SkillBody, user: dict = Depends(current_user)):
     category = (skill_rules.normalize_category(body.category)
                 or (drafted or {}).get("category"))
     scope, session_ref = _skill_scope(body.scope, body.session, user, course)
+    # THE INSTRUCTIONS THE AGENT FOUND, when the author did not supply their own. A
+    # course brief is usually a run of named rules, and the whole point of the
+    # articulation step is to come back with those as a list rather than as a wall of
+    # prose with headings in it — dropping them here would have thrown that away.
+    instructions = body.instructions or (drafted or {}).get("instructions")
     sid = db.add_skill(course, text, kind=kind, source="user",
                        created_by=user.get("email"), check=body.check,
                        source_quote=(drafted or {}).get("source_quote"),
                        source_quotes=(drafted or {}).get("source_quotes"),
-                       category=category, instructions=body.instructions,
+                       category=category, instructions=instructions,
                        scope=scope, session_ref=session_ref)
     if not sid:
         raise HTTPException(status_code=400, detail={
