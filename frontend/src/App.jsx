@@ -2259,46 +2259,110 @@ function SkillBody({ text, className = 'skilltext' }) {
   const flushList = () => { if (list) { blocks.push(list); list = null } }
   for (const line of String(text || '').split('\n')) {
     if (!line.trim()) { flushPara(); flushList(); continue }
+    const heading = line.match(/^\s*#{1,4}\s+(.*)$/)
     const bullet = line.match(/^\s*[-*•]\s+(.*)$/)
     const number = line.match(/^\s*(\d+)[.)]\s+(.*)$/)
-    if (bullet) {
+    if (heading) {
+      flushPara(); flushList()
+      blocks.push({ t: 'h', text: heading[1] })
+    } else if (bullet) {
       flushPara()
       if (list?.t !== 'ul') { flushList(); list = { t: 'ul', items: [] } }
-      list.items.push(bullet[1])
+      list.items.push({ head: bullet[1], body: [] })
     } else if (number) {
       flushPara()
       if (list?.t !== 'ol') { flushList(); list = { t: 'ol', items: [], start: Number(number[1]) } }
-      list.items.push(number[2])
+      list.items.push({ head: number[2], body: [] })
+    } else if (list) {
+      // A PLAIN LINE DIRECTLY UNDER A LIST ITEM BELONGS TO IT. This is how people
+      // actually write a numbered brief:
+      //
+      //     1. Explain the Concept First
+      //     Introduce and explain the concept clearly before showing any code.
+      //
+      // Treated as a separate paragraph — which is what this did — the pair came apart:
+      // the heading rendered as a small grey list item and its own description rendered
+      // underneath as a full-width bold paragraph, so the subordinate line looked like
+      // the heading and the heading looked like a footnote. Seven of those in a row is
+      // unreadable, and it is not a styling problem: they are one thing and were being
+      // shown as fourteen.
+      list.items[list.items.length - 1].body.push(line)
     } else {
-      flushList()
       para.push(line)
     }
   }
   flushPara(); flushList()
   if (!blocks.length) return null
+  // A SHORT UNPUNCTUATED FIRST LINE IS A HEADING. People write
+  //
+  //     Preferred Flow
+  //     Concept → Syntax → Code → …
+  //
+  // and mean the first line as a title, without reaching for '#'. Three conditions
+  // together, because any one of them alone is wrong too often: at most six words, no
+  // terminal punctuation, and the line under it starts a new sentence with a capital.
+  // That last one is what separates a title from a wrapped sentence — "Always show the
+  // code / before explaining it." fails it and stays a paragraph, which is right.
+  for (const b of blocks) {
+    if (b.t !== 'p' || b.lines.length < 2) continue
+    const first = b.lines[0].trim()
+    if (first.split(/\s+/).length <= 6 && !/[.:;,!?—-]$/.test(first)
+        && /^[A-Z0-9]/.test(b.lines[1].trim())) {
+      b.head = first
+      b.lines = b.lines.slice(1)
+    }
+  }
+  const lines = (ls) => ls.map((l, j) => (
+    <React.Fragment key={j}>{j > 0 && <br />}{l}</React.Fragment>))
   return (
     <div className={className}>
       {blocks.map((b, i) => {
+        if (b.t === 'h') return <h4 key={i}>{b.text}</h4>
+        // Every line the author typed is a line. Joining them with a space is what
+        // made a laid-out instruction read as prose.
         if (b.t === 'p') {
-          // Every line the author typed is a line. Joining them with a space is what
-          // made a laid-out instruction read as prose.
-          return <p key={i}>{b.lines.map((l, j) => (
-            <React.Fragment key={j}>{j > 0 && <br />}{l}</React.Fragment>))}</p>
+          return (
+            <React.Fragment key={i}>
+              {b.head && <h4>{b.head}</h4>}
+              <p>{lines(b.lines)}</p>
+            </React.Fragment>
+          )
         }
         const Tag = b.t
-        return <Tag key={i} start={b.start}>{b.items.map((it, j) => <li key={j}>{it}</li>)}</Tag>
+        // An item WITH a description underneath is a labelled step, so its first line
+        // is the label and carries the weight; an item on its own is just a point and
+        // is set like one. Deciding that per item rather than per list is what lets one
+        // renderer handle both "1. Explain the Concept First / <what that means>" and a
+        // plain list of three bullets.
+        return (
+          <Tag key={i} start={b.start}>
+            {b.items.map((it, j) => (
+              <li key={j} className={it.body.length ? 'labelled' : ''}>
+                <span className="li-head">{it.head}</span>
+                {it.body.length > 0 && <span className="li-body">{lines(it.body)}</span>}
+              </li>
+            ))}
+          </Tag>
+        )
       })}
     </div>
   )
 }
 
-/* ONE SKILL, as the author needs to read it: what it says, the lines under it, whether
-   it is in force, and where it reaches. Split out of CourseRules because it is the only
-   part of that screen with per-item state, and inlining it made the list markup
-   impossible to follow. */
+/* ONE SKILL, AS A FILE.
+ *
+ * A skill is a document — a paragraph, its points, sometimes several blocks of both —
+ * and a brief is a folder of them. Printed open, end to end, six of them are a wall of
+ * text you have to read all of to find the one you came for. So each is a file: its
+ * name and its state on one row, and its contents behind a click.
+ *
+ * The whole row is the control, not just the icon, because a 40px target inside a
+ * 900px row is a target you have to aim at. The icon is what makes it read as a file;
+ * the row is what makes it easy to open.
+ */
 function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, editText,
                      setEditText, editLines, setEditLines, onStartEdit, onCancelEdit,
-                     onSave, onApprove, onRetire }) {
+                     onSave, onApprove, onRetire, open, onToggle }) {
   const [why, setWhy] = useState(false)
   const lines = s.instructions || []
   const isGlobal = s.course === globalCourse
@@ -2307,82 +2371,116 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
   const mine = canEdit && (!isGlobal || canEditGlobal)
   const quotes = s.source_quotes?.length ? s.source_quotes
                  : (s.source_quote ? [s.source_quote] : [])
+  // THE FILE NAME is the first line the author wrote, which is how anyone writing an
+  // instruction starts it. What follows is the contents.
+  const body = String(s.text || '').split('\n')
+  const name = body[0] || ''
+  const rest = body.slice(1).join('\n').trim()
+  const hasMore = !!rest || lines.length > 0
+  // The file's size, in the unit that means something here.
+  const size = lines.length
+    ? `${lines.length} instruction${lines.length === 1 ? '' : 's'}`
+    : (rest ? `${rest.split('\n').filter((l) => l.trim()).length + 1} lines` : '1 line')
+  // Editing always shows everything — you cannot edit what is folded away.
+  const shown = open || editing
   return (
-    <article className={`skill ${s.status} ${isGlobal ? 'inherited' : ''}`}>
-      <div className="skillbody">
-        {editing ? (
-          <>
-            {/* Auto-sized, because a skill can be a paragraph and its points and a
-                two-row box showed a third of it. */}
-            <AutoTextarea minRows={3} value={editText}
-                          onChange={(e) => setEditText(e.target.value)} />
-            {/* ONE SKILL, SEVERAL POINTS. The author grouped these and put them in this
-                order; the order is part of what they said, so they are edited as a
-                block rather than as separate skills. */}
-            {lines.length > 0 && (
+    <article className={`skill ${s.status} ${isGlobal ? 'inherited' : ''} ${shown ? 'open' : ''}`}>
+      <div className="filerow">
+        <button className="filebtn" onClick={onToggle} disabled={editing || !hasMore}
+                aria-expanded={shown} title={hasMore
+                  ? (shown ? 'Close this skill' : 'Open this skill')
+                  : 'This skill is one line — there is nothing folded away'}>
+          <span className="fileicon">
+            <Icon name="doc" size={22} />
+            {hasMore && <span className="filechev"><Icon name="chevron" size={11} /></span>}
+          </span>
+          <span className="filemain">
+            <span className="filename">{name}</span>
+            <span className="filemeta">
+              <span className={`dot ${s.status}`} title={s.status === 'approved'
+                ? 'in force' : 'written, not yet approved — it affects nothing'} />
+              <span className="mtext">{s.status === 'approved' ? 'In force' : 'Awaiting approval'}</span>
+              <span className="msep">·</span>
+              <span className="mtext">{size}</span>
+              {s.scope === 'session' && (
+                <span className="tag scope">Session {s.session_ref}</span>)}
+              {isGlobal && <span className="tag scope"><Icon name="globe" size={11} /> Every course</span>}
+              {s.check && <span className="tag" title={JSON.stringify(s.check)}>Checked automatically</span>}
+              {s.source?.startsWith('imported:') && (
+                <span className="tag">From {s.source.slice(9)}</span>)}
+            </span>
+          </span>
+        </button>
+        {mine && (
+          <div className="skillacts">
+            {editing ? (
               <>
-                <label>Its instructions — one per line, in order</label>
-                <AutoTextarea minRows={Math.min(9, lines.length + 1)} value={editLines}
-                              onChange={(e) => setEditLines(e.target.value)} />
+                <button className="primary sm" disabled={busy || !editText.trim()}
+                        onClick={onSave}>Save</button>
+                <button className="ghostbtn sm" onClick={onCancelEdit}>Cancel</button>
+              </>
+            ) : (
+              <>
+                {s.status !== 'approved' && (
+                  <button className="primary sm" disabled={busy} onClick={onApprove}>
+                    <Icon name="check" size={13} />Approve</button>)}
+                <button className="iconbtn" disabled={busy} title="Edit this skill"
+                        onClick={onStartEdit}><Icon name="pencil" size={14} /></button>
+                <button className="iconbtn danger" disabled={busy}
+                        title="Retire it — it stops applying, and is kept on the record"
+                        onClick={onRetire}><Icon name="trash" size={14} /></button>
               </>
             )}
-          </>
-        ) : (
-          <>
-            <SkillBody text={s.text} />
-            {lines.length > 1 && (
-              <ol className="skillins">
-                {lines.map((line, i) => (
-                  <li key={i}><SkillBody text={line} className="skillinsbody" /></li>))}
-              </ol>
-            )}
-          </>
-        )}
-        <div className="skillmeta">
-          <span className={`dot ${s.status}`} title={s.status === 'approved'
-            ? 'in force' : 'written, not yet approved — it affects nothing'} />
-          <span className="mtext">{s.status === 'approved' ? 'In force' : 'Awaiting approval'}</span>
-          {s.scope === 'session' && (
-            <span className="tag scope">Session {s.session_ref}</span>)}
-          {isGlobal && <span className="tag scope"><Icon name="globe" size={11} /> Every course</span>}
-          {s.check && <span className="tag" title={JSON.stringify(s.check)}>Checked automatically</span>}
-          {s.source?.startsWith('imported:') && (
-            <span className="tag">From {s.source.slice(9)}</span>)}
-          {/* EVERY phrase it was drawn from, not just the first — the author says the
-              same thing twice in different words and those merge into one skill, and the
-              approval only means something if you can see all of what it was built
-              from. Behind a disclosure because it is provenance, not content: it was
-              printed inline on every row and made a six-skill brief unreadable. */}
-          {quotes.length > 0 && (s.source === 'requirements' || s.source === 'user') && (
-            <button className="whybtn" onClick={() => setWhy((v) => !v)}>
-              {why ? 'Hide' : 'From your words'}
-            </button>
-          )}
-        </div>
-        {why && quotes.length > 0 && (
-          <blockquote className="skillquote">
-            {quotes.map((q, i) => <span key={i}>“{q}”</span>)}
-          </blockquote>
+          </div>
         )}
       </div>
-      {mine && (
-        <div className="skillacts">
+
+      {shown && (
+        <div className="filebody">
           {editing ? (
             <>
-              <button className="primary sm" disabled={busy || !editText.trim()}
-                      onClick={onSave}>Save</button>
-              <button className="ghostbtn sm" onClick={onCancelEdit}>Cancel</button>
+              {/* Auto-sized, because a skill can be a paragraph and its points and a
+                  two-row box showed a third of it. */}
+              <label>The skill</label>
+              <AutoTextarea minRows={4} value={editText}
+                            onChange={(e) => setEditText(e.target.value)} />
+              {/* ONE SKILL, SEVERAL POINTS. The author grouped these and put them in
+                  this order; the order is part of what they said, so they are edited as
+                  a block rather than as separate skills. */}
+              {lines.length > 0 && (
+                <>
+                  <label>Its instructions — one per line, in order</label>
+                  <AutoTextarea minRows={Math.min(9, lines.length + 1)} value={editLines}
+                                onChange={(e) => setEditLines(e.target.value)} />
+                </>
+              )}
             </>
           ) : (
             <>
-              {s.status !== 'approved' && (
-                <button className="primary sm" disabled={busy} onClick={onApprove}>
-                  <Icon name="check" size={13} />Approve</button>)}
-              <button className="iconbtn" disabled={busy} title="Edit this skill"
-                      onClick={onStartEdit}><Icon name="pencil" size={14} /></button>
-              <button className="iconbtn danger" disabled={busy}
-                      title="Retire it — it stops applying, and is kept on the record"
-                      onClick={onRetire}><Icon name="trash" size={14} /></button>
+              {rest && <SkillBody text={rest} />}
+              {lines.length > 1 && (
+                <ol className="skillins">
+                  {lines.map((line, i) => (
+                    <li key={i}><SkillBody text={line} className="skillinsbody" /></li>))}
+                </ol>
+              )}
+              {lines.length === 1 && <SkillBody text={lines[0]} />}
+              {/* EVERY phrase it was drawn from, not just the first — the author says
+                  the same thing twice in different words and those merge into one skill,
+                  and the approval only means something if you can see all of what it was
+                  built from. */}
+              {quotes.length > 0 && (s.source === 'requirements' || s.source === 'user') && (
+                <>
+                  <button className="whybtn" onClick={() => setWhy((v) => !v)}>
+                    {why ? 'Hide the words this came from' : 'From your words'}
+                  </button>
+                  {why && (
+                    <blockquote className="skillquote">
+                      {quotes.map((q, i) => <span key={i}>“{q}”</span>)}
+                    </blockquote>
+                  )}
+                </>
+              )}
             </>
           )}
         </div>
@@ -2427,6 +2525,15 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
   const [sessionNo, setSessionNo] = useState('')
   // Which session's brief the list is showing. '' = all of them.
   const [seeSession, setSeeSession] = useState('')
+  // WHICH FILES ARE OPEN. Held here rather than inside each card so that "open all" is
+  // possible at all, and so a card re-rendering (an approval, an edit) cannot quietly
+  // close itself.
+  const [openIds, setOpenIds] = useState(() => new Set())
+  const toggleOpen = (id) => setOpenIds((prev) => {
+    const next = new Set(prev)
+    next.has(id) ? next.delete(id) : next.add(id)
+    return next
+  })
   // IS THE COMPOSER OPEN. Closed by default once the course has skills, because then
   // the page is for reading what the course is written under; open by default when it
   // has none, because then there is nothing to read and one thing to do.
@@ -2459,6 +2566,11 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
   // The four a course CAN write and has not. Shown as one line of buttons, not as four
   // empty cards: the gap is worth knowing about, and it is worth exactly one line.
   const gaps = byGroup.filter((g) => g.id && g.items.length === 0)
+  // The skills that HAVE something folded away — the only ones "open all" is about.
+  const expandable = shown.filter((x) => String(x.text || '').includes('\n')
+                                         || (x.instructions || []).length > 0)
+                          .map((x) => x.id)
+  const allOpen = expandable.length > 0 && expandable.every((id) => openIds.has(id))
 
   // What the pickers currently say, in the shape the API takes. The category is only
   // sent when the author chose one — left alone, the agent classifies what they wrote,
@@ -2844,6 +2956,15 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
             {draftCount > 0 && (
               <span className="sb warntext"><b>{draftCount}</b> awaiting approval</span>)}
             <span className="sbspacer" />
+            {/* READ THE WHOLE BRIEF, or scan it. A reviewer checking one rule wants the
+                list; someone about to generate wants to read all of it. */}
+            {expandable.length > 0 && (
+              <button className="linkbtn" onClick={() => setOpenIds(
+                allOpen ? new Set() : new Set(expandable))}>
+                <Icon name={allOpen ? 'skills' : 'expand'} size={13} />
+                {allOpen ? 'Close all' : 'Open all'}
+              </button>
+            )}
             {sessionsWithSkills.length > 0 && (
               <label className="filterbox">
                 <span>Showing</span>
@@ -2874,7 +2995,8 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                              canEditGlobal={skills?.can_edit_global}
                              editing={editing === s.id}
                              onStartEdit={() => { setEditing(s.id); setEditText(s.text)
-                                                  setEditLines((s.instructions || []).join('\n')) }}
+                                                  setEditLines((s.instructions || []).join('\n'))
+                                                  setOpenIds((v) => new Set(v).add(s.id)) }}
                              onCancelEdit={() => setEditing(null)}
                              editText={editText} setEditText={setEditText}
                              editLines={editLines} setEditLines={setEditLines}
@@ -2888,7 +3010,8 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                                onEdit(s.id, editText, lines); setEditing(null)
                              }}
                              onApprove={() => onApprove(s.id)}
-                             onRetire={() => onRetire(s.id)} />
+                             onRetire={() => onRetire(s.id)}
+                             open={openIds.has(s.id)} onToggle={() => toggleOpen(s.id)} />
                 ))}
               </section>
             ))}

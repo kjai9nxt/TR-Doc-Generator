@@ -210,6 +210,10 @@ body::before {
 .skillbar .sb b { color: var(--strong); font-weight: 650; margin-right: 3px; }
 .skillbar .sb.warntext b { color: var(--warn); }
 .sbspacer { flex: 1 1 auto; }
+.linkbtn { display: inline-flex; align-items: center; gap: 6px; background: none;
+           border: none; padding: 2px 0; font-family: inherit; font-size: 12px;
+           font-weight: 550; color: var(--muted); cursor: pointer; transition: color .14s; }
+.linkbtn:hover { color: var(--accent); }
 .filterbox { display: inline-flex; align-items: center; gap: 8px; margin: 0;
              text-transform: none; letter-spacing: 0; font-size: 12px; color: var(--faint); }
 .filterbox select { width: auto; min-width: 150px; padding: 5px 30px 5px 11px; font-size: 12.5px; }
@@ -234,23 +238,78 @@ body::before {
    four times and buried the skills that did exist. */
 .gapline { margin: 14px 0 0; font-size: 12.5px; color: var(--faint); }
 
-/* ONE SKILL. A draft has to LOOK like a draft, or the approval step is invisible. */
-.skill { display: flex; gap: 14px; align-items: flex-start; padding: 13px 15px; }
+/* ONE SKILL, AS A FILE. A draft has to LOOK like a draft, or the approval step is
+   invisible. */
+.skill { padding: 6px 10px; }
 .skill + .skill { border-top: 1px solid var(--line); }
+.filerow { display: flex; align-items: center; gap: 10px; }
+/* THE WHOLE ROW IS THE CONTROL. A 40px icon inside a 900px row is a target you have to
+   aim at; the row is not. */
+.filebtn { flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px;
+           background: none; border: none; border-radius: var(--r); padding: 9px 8px;
+           font-family: inherit; text-align: left; color: inherit; cursor: pointer;
+           transition: background .14s; }
+.filebtn:hover:not(:disabled) { background: var(--card); }
+.filebtn:disabled { cursor: default; }
+.fileicon { position: relative; display: grid; place-items: center; flex: none;
+            width: 42px; height: 42px; border-radius: 11px; color: var(--accent);
+            background: var(--accent-soft); border: 1px solid var(--accent-line);
+            transition: color .14s, background .14s; }
+.skill.draft .fileicon { color: var(--warn); background: var(--warn-soft);
+                         border-color: var(--warn-line); }
+.skill.inherited .fileicon { color: var(--faint); background: var(--card2);
+                             border-color: var(--line); }
+/* The chevron sits ON the file, so "there is more inside" and "this is a file" are one
+   object rather than two things to notice. */
+.filechev { position: absolute; right: -5px; bottom: -5px; display: grid;
+            place-items: center; width: 17px; height: 17px; border-radius: 50%;
+            background: var(--card2); border: 1px solid var(--line); color: var(--muted);
+            transition: transform .18s ease, color .14s; }
+.filebtn:hover .filechev { color: var(--text); border-color: var(--line2); }
+.skill.open .filechev { transform: rotate(90deg); color: var(--accent);
+                        border-color: var(--accent-line); }
+.filemain { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.filename { font-size: 13.5px; font-weight: 600; color: var(--strong); line-height: 1.45;
+            overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+            -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.skill.inherited .filename { color: var(--muted); font-weight: 550; }
+.filemeta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.msep { color: var(--line2); }
+/* THE CONTENTS, once opened: indented to sit under the name, never under the icon. */
+.filebody { padding: 4px 12px 14px 73px; }
+.filebody > label:first-child { margin-top: 4px; }
+@media (max-width: 700px) { .filebody { padding-left: 18px; } }
+
 .skill.draft { background: rgba(229,172,75,.045); }
 .skill.retired { opacity: .45; }
 /* Inherited from the house brief: present, readable, and visibly not this course's. */
 .skill.inherited .skilltext, .skill.inherited .skilltext > p { color: var(--muted); }
-.skillbody { flex: 1; min-width: 0; }
-/* A SKILL IS A PIECE OF WRITING, so it is set like one: paragraphs, lists and the
-   breaks between them, at the weight of body text rather than of a label. */
-.skilltext { font-size: 13.5px; color: var(--text); line-height: 1.6; }
-.skilltext > p { margin: 0 0 8px; font-weight: 550; }
-.skilltext > p:last-child { margin-bottom: 0; }
-.skilltext > ul, .skilltext > ol { margin: 0 0 8px; padding-left: 20px; }
-.skilltext > ul:last-child, .skilltext > ol:last-child { margin-bottom: 0; }
-.skilltext li { margin: 3px 0; color: var(--muted); font-weight: 400; }
-.skilltext li::marker { color: var(--faint); }
+/* A SKILL IS A PIECE OF WRITING, so it is set like one.
+   THE HIERARCHY WAS UPSIDE DOWN. Every paragraph was semi-bold at full contrast and
+   every list item was small, grey and light — so in a brief written as
+   "1. Explain the Concept First" followed by what that means, the heading whispered and
+   its own description shouted. Weight now goes: labelled step > paragraph > the
+   description under a step. */
+.skilltext { font-size: 13.5px; color: var(--text); line-height: 1.62; }
+.skilltext > p { margin: 0 0 10px; font-weight: 400; }
+.skilltext > p:first-child { font-weight: 500; }   /* the opening line frames the rest */
+.skilltext > *:last-child { margin-bottom: 0; }
+/* An author who writes their own heading gets a heading. */
+.skilltext h4 { margin: 16px 0 7px; font-size: 11px; font-weight: 700;
+                letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.skilltext > h4:first-child { margin-top: 0; }
+.skilltext ul, .skilltext ol { margin: 0 0 10px; padding-left: 21px; }
+.skilltext li { margin: 4px 0; color: var(--text); font-weight: 400; }
+.skilltext li::marker { color: var(--faint); font-variant-numeric: tabular-nums; }
+.skilltext .li-head { display: block; }
+/* A LABELLED STEP: the number and its title are the structure, the sentence under it
+   is what the step means. Grouped tight so the pair reads as one thing, and separated
+   from the next pair so seven of them read as seven. */
+.skilltext li.labelled { margin: 12px 0; }
+.skilltext li.labelled::marker { color: var(--accent); font-weight: 700; }
+.skilltext li.labelled .li-head { font-weight: 650; color: var(--strong); }
+.skilltext .li-body { display: block; margin-top: 2px; color: var(--muted);
+                      font-weight: 400; }
 /* A point inside a grouped skill can itself be a paragraph and its own sub-points. */
 .skillinsbody > p { margin: 0 0 5px; }
 .skillinsbody > p:last-child { margin-bottom: 0; }
@@ -260,21 +319,20 @@ body::before {
 .skillins { margin: 8px 0 0; padding-left: 22px; }
 .skillins li { font-size: 13px; color: var(--muted); margin: 3px 0; line-height: 1.55; }
 .skillins li::marker { color: var(--faint); font-variant-numeric: tabular-nums; }
-.skillbody label { margin: 12px 0 5px; }
 
-.skillmeta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--faint); }
 .dot.approved { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
 .dot.draft { background: var(--warn); box-shadow: 0 0 0 3px var(--warn-soft); }
 .mtext { font-size: 11.5px; color: var(--faint); }
-.skillmeta .tag { font-size: 11px; font-weight: 550; color: var(--muted);
+.filemeta .tag { font-size: 11px; font-weight: 550; color: var(--muted);
                   background: var(--card2); border: 1px solid var(--line);
                   border-radius: 999px; padding: 2px 9px; display: inline-flex;
                   align-items: center; gap: 5px;
                   text-transform: none; letter-spacing: 0; }
-.skillmeta .tag.scope { color: var(--accent); border-color: var(--accent-line);
+.filemeta .tag.scope { color: var(--accent); border-color: var(--accent-line);
                         background: var(--accent-soft); }
-.whybtn { background: none; border: none; padding: 2px 0; cursor: pointer;
+.whybtn { display: inline-block; margin-top: 12px;
+          background: none; border: none; padding: 2px 0; cursor: pointer;
           font-size: 11.5px; font-weight: 550; color: var(--faint);
           text-decoration: underline; text-underline-offset: 3px; }
 .whybtn:hover { color: var(--accent); }
@@ -283,7 +341,7 @@ body::before {
               display: flex; flex-direction: column; gap: 3px;
               font-size: 12px; color: var(--muted); font-style: italic; }
 
-.skillacts { display: flex; gap: 6px; align-items: center; flex: none; }
+.skillacts { display: flex; gap: 6px; align-items: center; flex: none; padding-right: 4px; }
 /* An icon button: the affordance is the hover, not a border shouting at rest. Edit and
    Retire sat on every row as full-width labelled buttons, so a six-skill brief carried
    twelve competing calls to action and the one that mattered — Approve — was lost. */

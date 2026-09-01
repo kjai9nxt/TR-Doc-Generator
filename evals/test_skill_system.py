@@ -393,6 +393,22 @@ skills.articulate(LAID_OUT, model=lambda p: _seen.setdefault("p", p) and None or
 check("the author's note reaches the model laid out, not flattened",
       "\n- name each variable" in _seen["p"], _seen["p"][-400:])
 
+# …AND THE SCREEN. The store, the prompt and the renderer each have to keep the layout,
+# and the renderer is the one the author actually looks at before approving. Checked as
+# source text rather than by rendering it, which is the most this suite can do for JSX —
+# enough to catch the property being deleted, not enough to catch it being broken.
+_APP = (ROOT / "frontend" / "src" / "App.jsx").read_text()
+check("5. the renderer keeps a step's description WITH the step",
+      "list.items[list.items.length - 1].body.push(line)" in _APP,
+      "a numbered heading and the sentence under it are one thing; split apart, the "
+      "heading rendered small and grey and its own description rendered big and bold")
+check("…and a step that has a description is set as a label, not as a bullet",
+      "it.body.length ? 'labelled' : ''" in _APP)
+check("…and a skill is a FILE that opens and closes",
+      'className="filebtn"' in _APP and "aria-expanded={shown}" in _APP)
+check("…which is forced open while it is being edited",
+      "const shown = open || editing" in _APP)
+
 db.retire_skill(lid, ALICE)   # leave the brief as the later checks expect it
 
 # --------------------------------------------------------------------------- #
