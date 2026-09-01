@@ -72,8 +72,16 @@ print("\n== the author's note is shown their rule, not their typos ==")
 prompt = {}
 skills.articulate(TYPED, model=lambda p: prompt.setdefault("p", p) and None or {"text": "x"})
 p = prompt["p"]
-check("the model is told to articulate", "ARTICULATE" in p)
+check("the model is told to fix the English", "EDITING THEIR ENGLISH" in p)
 check("…and told not to invent", "DO NOT INVENT" in p)
+# THE OTHER HALF, and the one that shipped broken: the prompt asked for "one or two
+# full sentences" and told the model not to echo the author's phrasing, so a note
+# carrying three worked examples came back as one sentence carrying none — and the
+# author was shown that to approve. Not summarising is as much of a contract as not
+# inventing. See evals/test_skill_system.py for the check that enforces it on output.
+check("…and told not to summarise", "LOSE NOTHING" in p)
+check("…with no length cap to compress them into",
+      "one or two full sentences" not in p and "NO LENGTH LIMIT" in p)
 check("…and is given exactly what the author typed", TYPED in p)
 
 print("\n== the model being down never loses what the author wrote ==")

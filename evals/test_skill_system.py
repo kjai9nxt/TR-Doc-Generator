@@ -23,6 +23,7 @@ had to be true for that, and none of them was:
 
 The database is a throwaway under TR_DATA_DIR.
 """
+import inspect
 import json
 import os
 import sys
@@ -239,7 +240,6 @@ check("…nor is a real curriculum bullet about the same subject",
 
 # --------------------------------------------------------------------------- #
 print("\n== the leak check is WIRED IN, not just available ==")
-import inspect                                                    # noqa: E402
 from guardrails import guardrails                                 # noqa: E402
 src = inspect.getsource(guardrails.check)
 check("the guardrails run it on the assembled document",
@@ -308,6 +308,101 @@ check("drafts can be stored against a session", stored == 2, str(stored))
 check("…and they arrive as drafts, applying to nothing yet",
       all(s["status"] == "draft" for s in db.skills(REACT)
           if s.get("session_ref") == "14"))
+
+# --------------------------------------------------------------------------- #
+print("\n== articulating a skill EDITS the author's English, it does not summarise ==")
+# THE BUG THIS GUARDS. The prompt asked for "one or two full sentences" and told the
+# model not to echo the author's phrasing. Between those two instructions, a note
+# carrying three worked examples came back as one clean sentence carrying none — and the
+# author was shown that sentence to APPROVE, with nothing to say anything had gone.
+# Approving it is how the loss becomes permanent, which is the worst possible shape for
+# this failure.
+NOTE = ("explain the code line by line, keep snippets under 12 lines, and for useEffect "
+        "show the empty dep array first, then add a dep and show what re-runs")
+check("a faithful rewrite is clean", skills.lossy(NOTE,
+      "Explain the code line by line. Keep snippets under 12 lines. For useEffect, show "
+      "the empty dep array first, then add a dep and show what re-runs.") == "")
+check("…dropping a NUMBER the author gave is caught",
+      "12" in skills.lossy(NOTE, "Explain the code line by line and keep snippets short. "
+                                 "For useEffect, show the empty dep array first, then add "
+                                 "a dep and show what re-runs."),
+      skills.lossy(NOTE, "…"))
+check("…dropping a NAME the author gave is caught",
+      "useeffect" in skills.lossy(NOTE, "Explain the code line by line, keep snippets "
+                                        "under 12 lines, and show dependency arrays "
+                                        "before adding to them and re-running.").lower())
+check("…and a summary of a long note is caught, even with nothing specific in it",
+      "summary" in skills.lossy(
+          "explain each concept slowly and carefully, giving the learner the intuition "
+          "first, then the definition, then a walked-through case, and always finishing "
+          "with what goes wrong when it is misapplied",
+          "Explain concepts thoroughly."))
+check("…while TIGHTENING a long note is allowed", skills.lossy(
+      "explain each concept slowly and carefully, giving the learner the intuition "
+      "first, then the definition, then a walked-through case, and always finishing "
+      "with what goes wrong when it is misapplied",
+      "Explain each concept carefully: give the intuition first, then the definition, "
+      "then a walked-through case, and finish with what goes wrong when it is "
+      "misapplied.") == "")
+check("a short note is never judged on length alone",
+      skills.lossy("show the snippet first", "Show the snippet first.") == "")
+
+_tries = []
+def _summariser(prompt):
+    _tries.append(prompt)
+    return json.dumps({"text": "Explain the code well.", "category": "teaching_guidelines"})
+check("a model that summarises is REJECTED, not shown to the author",
+      skills.articulate(NOTE, model=_summariser) is None)
+check("…after being told exactly what it dropped, once",
+      len(_tries) == 2 and "REJECTED" in _tries[1] and "12" in _tries[1], str(len(_tries)))
+# The caller stores the author's own words when this returns None (server.add_skill),
+# so the worst case is an unpolished instruction rather than a truncated one.
+
+_n = {"i": 0}
+def _second_time_lucky(prompt):
+    _n["i"] += 1
+    if _n["i"] == 1:
+        return json.dumps({"text": "Explain the code well.", "category": "teaching_guidelines"})
+    return json.dumps({"text": "Explain the code line by line. Keep snippets under 12 "
+                               "lines. For useEffect, show the empty dep array first, "
+                               "then add a dep and show what re-runs.",
+                       "category": "teaching_guidelines"})
+got = skills.articulate(NOTE, model=_second_time_lucky)
+check("…and a faithful retry IS kept", got and "useEffect" in got["text"], str(got))
+
+check("the prompt no longer caps the length",
+      "one or two full sentences" not in inspect.getsource(skills.articulate),
+      "that cap is what turned a paragraph of examples into a sentence")
+check("…and says outright that examples must survive",
+      "LOSE NOTHING" in inspect.getsource(skills.articulate))
+
+print("\n== drafting from notes keeps every example too ==")
+RAW2 = ("use tables to compare, for example TCP vs UDP side by side. "
+        "keep every worked example under 8 steps.")
+drafts2 = skills.from_requirements(RAW2, model=lambda p: json.dumps({"skills": [
+    {"category": "examples_visuals", "text": "The examples and visuals this course uses.",
+     "instructions": ["Use tables for side-by-side comparisons, for example TCP vs UDP.",
+                      "Keep every worked example to 8 steps or fewer."],
+     "source_quotes": ["use tables to compare", "keep every worked example under 8 steps"]},
+]}))
+check("a faithful draft is accepted first time", len(drafts2) == 1, str(drafts2))
+_d = {"i": 0}
+def _lossy_drafter(prompt):
+    _d["i"] += 1
+    if _d["i"] == 1:
+        return json.dumps({"skills": [
+            {"category": "examples_visuals", "text": "Use comparisons.",
+             "instructions": ["Use tables to compare things."],
+             "source_quotes": ["use tables to compare"]}]})
+    return json.dumps({"skills": [
+        {"category": "examples_visuals", "text": "The examples and visuals this course uses.",
+         "instructions": ["Use tables for side-by-side comparisons, for example TCP vs UDP.",
+                          "Keep every worked example to 8 steps or fewer."],
+         "source_quotes": ["use tables to compare"]}]})
+got2 = skills.from_requirements(RAW2, model=_lossy_drafter)
+check("a drafter that drops an example is asked again", _d["i"] == 2, str(_d["i"]))
+check("…and the version that keeps it is the one returned",
+      any("TCP vs UDP" in i for d in got2 for i in d["instructions"]), str(got2))
 
 # --------------------------------------------------------------------------- #
 print("\n== what an import may and may not carry ==")

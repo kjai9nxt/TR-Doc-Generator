@@ -2630,26 +2630,48 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
               </div>
             </div>
 
-            {/* WHAT IT GOVERNS AND WHERE IT APPLIES — shared by both authoring paths,
-                because the answer is about the skill, not about how it was written. */}
+            {/* WHERE IT APPLIES is asked on both authoring paths; WHAT IT GOVERNS only
+                on "Write one".
+                "From my notes" produces ONE SKILL PER CATEGORY — that is the entire
+                point of it — so there is no single category to pin it to, and
+                skills_from_requirements does not read one. Showing the chips there was a
+                control that silently did nothing: you could pick "Teaching flow", get
+                three skills back under three different headings, and have no way to tell
+                whether you had been ignored or had misunderstood the feature. */}
             {mode !== 'import' && (
               <div className="cmpwhere">
-                <div className="cmpfield">
-                  <label>Files under</label>
-                  <div className="chiprow">
-                    <button className={`chipbtn ${cat === '' ? 'on' : ''}`}
-                            onClick={() => setCat('')}
-                            title="let the agent decide which of the four it is">
-                      Decide for me</button>
-                    {SKILL_CATEGORIES.map(([id, label, hint, icon]) => (
-                      <button key={id} className={`chipbtn ${cat === id ? 'on' : ''}`}
-                              title={hint} onClick={() => setCat(id)}>
-                        <Icon name={icon} size={13} />{label}</button>
-                    ))}
+                {mode === 'write' ? (
+                  <div className="cmpfield">
+                    <label>Files under</label>
+                    <div className="chiprow">
+                      <button className={`chipbtn ${cat === '' ? 'on' : ''}`}
+                              onClick={() => setCat('')}
+                              title="write it, and the agent files it under whichever of the four it is">
+                        Decide for me</button>
+                      {SKILL_CATEGORIES.map(([id, label, hint, icon]) => (
+                        <button key={id} className={`chipbtn ${cat === id ? 'on' : ''}`}
+                                title={hint} onClick={() => setCat(id)}>
+                          <Icon name={icon} size={13} />{label}</button>
+                      ))}
+                    </div>
+                    <span className="hint tight">
+                      {cat
+                        ? (SKILL_CATEGORIES.find(([id]) => id === cat) || [])[2]
+                        : 'The agent reads what you wrote and files it under one of the '
+                          + 'four. Pick one yourself and your choice wins.'}
+                    </span>
                   </div>
-                  {cat && <span className="hint tight">
-                    {(SKILL_CATEGORIES.find(([id]) => id === cat) || [])[2]}</span>}
-                </div>
+                ) : (
+                  <div className="cmpfield">
+                    <label>Files under</label>
+                    <span className="hint tight" style={{ marginTop: 0 }}>
+                      Whichever of the four each one turns out to be — this path writes
+                      <b> one skill per category</b>, grouping everything you say about
+                      sequence into one, everything about explaining into another, and so
+                      on. You can re-file any of them afterwards.
+                    </span>
+                  </div>
+                )}
                 <div className="cmpfield">
                   <label>Applies to</label>
                   <div className="chiprow">

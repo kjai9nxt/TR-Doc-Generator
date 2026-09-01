@@ -527,6 +527,58 @@ def leak_failures(doc: dict, skills: list[dict] | None) -> list[str]:
 # --------------------------------------------------------------------------- #
 # authoring
 # --------------------------------------------------------------------------- #
+# WHAT AN ARTICULATION MUST NOT LOSE.
+#
+# The job of `articulate` is to fix the author's English, not to summarise them. It was
+# asked for "one or two full sentences" and told not to echo the author's phrasing, and
+# between those two instructions a model reliably compressed a paragraph carrying three
+# examples into one clean sentence carrying none — and the author was then shown that
+# sentence to approve, with no sign that anything had gone. An author who writes an
+# example has written a REQUIREMENT; the example is the instruction, not decoration.
+#
+# So it is checked. Two things count as losing something:
+#
+#   · A SPECIFIC IS GONE. A number, a quoted phrase, a backticked or code-shaped token,
+#     a name. These are the parts a rewrite has no business touching — "keep snippets
+#     under 12 lines" is a different rule from "keep snippets short".
+#   · IT IS MUCH SHORTER. Tightening is fine; a 60-word note coming back as 12 words is
+#     not a tightening, it is a summary.
+#
+# On either, the author's own words are kept — see `articulate`.
+_SPECIFIC = re.compile(
+    r"`[^`]+`"                      # `useEffect`
+    r"|\"[^\"]{2,}\"|“[^”]{2,}”"     # "quoted phrases"
+    r"|\b\d+(?:\.\d+)?\b"           # 12, 1.5
+    r"|\b\w+[._]\w+\b"              # os.path, max_pages
+    r"|\b[a-z]+[A-Z]\w*\b"           # useEffect, keyTakeaway
+)
+# Below this share of the author's own length, a rewrite has stopped being a rewrite.
+# Only applied to notes long enough for the distinction to mean anything — compressing
+# a six-word note is not the failure this is looking for.
+_MIN_KEEP_RATIO = 0.6
+_MIN_WORDS_TO_JUDGE_LENGTH = 22
+
+
+def _specifics(text: str) -> set[str]:
+    return {m.group(0).strip("`\"“”'").lower()
+            for m in _SPECIFIC.finditer(str(text or ""))}
+
+
+def lossy(src: str, out: str) -> str:
+    """Why `out` fails to carry everything `src` said, or "" when it carries it all."""
+    src, out = str(src or ""), str(out or "")
+    low = out.lower()
+    missing = sorted(x for x in _specifics(src) if x and x not in low)
+    if missing:
+        return ("it drops what the author actually specified: "
+                + ", ".join(f"\u201c{m}\u201d" for m in missing[:6]))
+    n_src, n_out = len(src.split()), len(out.split())
+    if n_src >= _MIN_WORDS_TO_JUDGE_LENGTH and n_out < _MIN_KEEP_RATIO * n_src:
+        return (f"it is a summary, not a rewrite: {n_src} words became {n_out}. "
+                f"Every separate thing the author asked for has to survive.")
+    return ""
+
+
 class ModelUnavailable(RuntimeError):
     """The drafting call itself failed — no answer came back, or it was not JSON.
 
@@ -550,7 +602,9 @@ def _default_model(prompt: str) -> dict:
     raw = llm.complete(
         system=("You turn a course author's rough notes into the brief their course is "
                 "written under. You merge what they said twice, you articulate what they "
-                "meant, and you add NOTHING they did not ask for. Reply with JSON only."),
+                "meant, you add NOTHING they did not ask for and you DROP NOTHING they "
+                "did — every requirement and every example they wrote survives, however "
+                "long that makes it. Reply with JSON only."),
         user=prompt,
         model=m.get("judge", m["generator"]), max_tokens=2000, temperature=0.0,
         label="skills")
@@ -624,14 +678,21 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "obey the other. When in doubt, keep them as separate instructions: a duplicate "
         "is a nuisance, a swallowed requirement is a rule the author asked for and never "
         "got.\n\n"
-        "3. ARTICULATE. Do not echo the author's phrasing back at them. They wrote rough "
-        "notes with typos; you are writing the instructions a professional writer will "
-        "work from. State what must happen, and where, and what it looks like when done "
-        "— one or two full sentences each, imperative, no hedging, standing alone "
-        "without the author's note beside it. 'Show code snippets' is a restatement and "
-        "is USELESS. 'Introduce every concept that has a code form with the snippet "
-        "itself before any prose about it; the code is the primary teaching object, not "
-        "an illustration of the paragraph above it.' is an instruction.\n\n"
+        "3. ARTICULATE, WITHOUT LOSING ANYTHING. They wrote rough notes with typos; you "
+        "are writing the instructions a professional writer will work from. State what "
+        "must happen, and where, and what it looks like when done — imperative, no "
+        "hedging, standing alone without the author's note beside it. 'Show code "
+        "snippets' is a restatement and is USELESS. 'Introduce every concept that has a "
+        "code form with the snippet itself before any prose about it; the code is the "
+        "primary teaching object, not an illustration of the paragraph above it.' is an "
+        "instruction.\n"
+        "   THERE IS NO LENGTH LIMIT, and being shorter than the author is not a virtue. "
+        "Every separate thing they asked for becomes an instruction; every EXAMPLE they "
+        "gave is carried into the instruction it belongs to, because an author who gives "
+        "an example has stated a requirement. Every number, name, quoted phrase and "
+        "piece of code they wrote appears in your version — 'under 12 lines' may not "
+        "become 'short'. Nothing they said is dropped for being long-winded: fix the "
+        "wording, keep the substance.\n\n"
         "THESE ARE INSTRUCTIONS ABOUT HOW TO TEACH, NEVER ABOUT WHAT TO TEACH. If the "
         "author names a topic their course covers, that is CURRICULUM and does not "
         "belong here — skip it. A skill shapes how any topic is taught.\n\n"
@@ -645,6 +706,30 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "NEVER RESTATE WHERE A SKILL APPLIES. Which course and which session are recorded "
         "separately; write what must happen, not where.\n\n"
         f"AUTHOR'S NOTES:\n{raw}")
+
+    # SAME TWO TRIES AS `articulate`, for the same reason: the commonest way this fails
+    # is not inventing but SUMMARISING, and a model that dropped an author's example
+    # keeps it once the example is named back at it. Checked over ALL the drafts
+    # together, because this path splits one note across several skills and a specific
+    # only has to survive into one of them.
+    nudge = ""
+    for _attempt in range(2):
+        out, dropped = _draft_once(model, prompt + nudge, raw)
+        if not dropped:
+            return out
+        nudge = ("\n\nYOUR PREVIOUS ANSWER WAS REJECTED: it drops what the author "
+                 "actually specified — " + ", ".join(f"\u201c{d}\u201d" for d in dropped[:6])
+                 + ". Do it again, and carry every requirement, every example, every "
+                 "number and every name they wrote into one of the skills. Fix their "
+                 "English; do not shorten them.")
+    # Twice, and it still dropped something. The drafts are returned anyway: each one is
+    # traceable to the author's words and is shown beside them for approval, so a partial
+    # draft the author can see and edit beats making them retype the whole note.
+    return out
+
+
+def _draft_once(model, prompt: str, raw: str) -> tuple[list[dict], list[str]]:
+    """One drafting call: (drafts, the author's specifics that no draft carried)."""
     try:
         data = model(prompt)
         parsed = json.loads(data) if isinstance(data, str) else data
@@ -709,7 +794,10 @@ def from_requirements(raw: str, model=None) -> list[dict]:
     for cat, d in by_cat.items():
         if len(d["instructions"]) > 1:
             d["text"] = _group_text(cat, d["text"])
-    return out
+    # Everything the drafts say, checked against everything the author specified.
+    said = " ".join(d["text"] + " " + " ".join(d["instructions"]) for d in out).lower()
+    dropped = sorted(x for x in _specifics(raw) if x and x not in said)
+    return out, dropped
 
 
 _GROUP_TEXT = {
@@ -748,9 +836,19 @@ def articulate(text: str, model=None) -> dict | None:
     kept as source_quote and shown beside it, so what they approve is a rewrite they can
     check against their own sentence.
 
-    Returns None when the model is unavailable or gave nothing usable — the caller then
-    stores the author's own words, because losing an instruction is far worse than
-    storing an unpolished one.
+    IT MAY NOT SHORTEN THEM. The first version of this prompt asked for "one or two
+    full sentences" and told the model not to echo the author's phrasing, and between
+    those two instructions a paragraph carrying three worked examples came back as one
+    clean sentence carrying none. The author was then shown that sentence to approve,
+    with nothing to say anything had been dropped — which is the worst possible shape for
+    this bug, because approving it is how the loss becomes permanent. The prompt now says
+    to edit the English and keep the substance, and `lossy()` checks that it did: one
+    retry naming exactly what went missing, and after that the author's own words.
+
+    Returns None when the model is unavailable, gave nothing usable, or could not do it
+    without dropping something — the caller then stores the author's own words, because
+    an unpolished instruction is worth far more than a polished one that lost half of
+    what it was for.
     """
     text = " ".join((text or "").split())
     if not text:
@@ -764,11 +862,25 @@ def articulate(text: str, model=None) -> dict | None:
         "Return JSON: {\"text\": \"...\", \"category\": \"teaching_flow|"
         "teaching_guidelines|examples_visuals|reviewer\", \"kind\": \"style|content|"
         "structure\"}\n\n"
-        "ARTICULATE. They typed it in a hurry, with typos, as a note to themselves. You "
-        "are writing what a writer who has never spoken to them will follow: state what "
-        "must happen, where it applies, and what it looks like when it is done — one or "
-        "two full sentences, imperative, no hedging, standing on its own without their "
-        "note beside it. Fix the typos. Do not echo their phrasing back at them.\n\n"
+        "YOU ARE EDITING THEIR ENGLISH, NOT SUMMARISING THEM. They typed it in a hurry, "
+        "with typos, as a note to themselves. Give it back as what a writer who has "
+        "never spoken to them will follow: correct, unambiguous, imperative, no hedging, "
+        "standing on its own without their note beside it. Fix the typos and the grammar. "
+        "Say the same things, properly.\n\n"
+        "LOSE NOTHING. This is the rule that matters most, and the one most easily "
+        "broken. EVERY separate thing they asked for survives into your version. So does "
+        "EVERY EXAMPLE they gave — an author who writes an example has written a "
+        "requirement, and the example is the instruction, not decoration for it. So does "
+        "every number, name, quoted phrase and piece of code: \u201ckeep snippets under 12 "
+        "lines\u201d is a different rule from \u201ckeep snippets short\u201d, and you may not "
+        "trade one for the other. There is NO LENGTH LIMIT. If their note carries five "
+        "requirements and three examples, your version carries five requirements and "
+        "three examples, and it will be as long as that takes. Coming back shorter than "
+        "what they wrote is the failure this is warning you about; longer is fine.\n\n"
+        "KEEP THEIR WORDS WHERE THEY ARE ALREADY RIGHT. You are not being asked to "
+        "re-word for the sake of it. Where a phrase of theirs already says the thing "
+        "clearly, keep that phrase. Change what is wrong or unclear, and leave the rest "
+        "alone.\n\n"
         "DO NOT INVENT. Making their intent explicit is the job; adding requirements "
         "they did not express is not. If they said to explain the code, do not also "
         "decide how long the explanation runs, where it sits, or what it must mention. "
@@ -788,20 +900,35 @@ def articulate(text: str, model=None) -> dict | None:
         "return their words essentially unchanged rather than inventing an instruction "
         "for them.\n\n"
         f"THE AUTHOR'S SKILL:\n{text}")
-    try:
-        data = model(prompt)
-        parsed = json.loads(data) if isinstance(data, str) else data
-    except Exception:
-        return None
-    if not isinstance(parsed, dict):
-        return None
-    out = " ".join(str(parsed.get("text") or "").split())
-    if not out:
-        return None
-    kind = str(parsed.get("kind") or "style").lower()
-    return {"text": out, "kind": kind if kind in KINDS else "style",
-            "category": normalize_category(parsed.get("category")),
-            "source_quote": text, "source_quotes": [text]}
+
+    # TWO TRIES, and the second one is told what it did wrong. A model that has dropped
+    # an example almost always keeps it when the example is named back at it; asking
+    # blindly again just re-rolls the same summary.
+    nudge = ""
+    for _attempt in range(2):
+        try:
+            data = model(prompt + nudge)
+            parsed = json.loads(data) if isinstance(data, str) else data
+        except Exception:
+            return None
+        if not isinstance(parsed, dict):
+            return None
+        out = " ".join(str(parsed.get("text") or "").split())
+        if not out:
+            return None
+        why = lossy(text, out)
+        if not why:
+            kind = str(parsed.get("kind") or "style").lower()
+            return {"text": out, "kind": kind if kind in KINDS else "style",
+                    "category": normalize_category(parsed.get("category")),
+                    "source_quote": text, "source_quotes": [text]}
+        nudge = ("\n\nYOUR PREVIOUS ANSWER WAS REJECTED. You wrote:\n"
+                 f"{out}\n\n"
+                 f"That is not acceptable because {why} Write it again, carrying "
+                 "EVERYTHING the author wrote — every requirement, every example, every "
+                 "number and name. Fix their English; do not shorten them. Your answer "
+                 "should be at least as long as their note.")
+    return None
 
 
 def store_drafts(course: str, drafts: list[dict], *, created_by: str | None = None,
