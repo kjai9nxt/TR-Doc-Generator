@@ -53,6 +53,11 @@ def check(name, cond, extra=""):
 
 from src import db, skills                                        # noqa: E402
 
+# The UI source, read once. Several checks below assert on it, because the layout an
+# author writes has to survive the screen as well as the store and the prompt, and this
+# suite cannot render JSX.
+_APP = (ROOT / "frontend" / "src" / "App.jsx").read_text()
+
 REACT = "React Fundamentals"
 DBMS = "Database Systems"
 ALICE = "alice@nxtwave.co.in"
@@ -419,6 +424,72 @@ db.retire_skill(cid, ALICE)
 check("the prompt tells the model to reproduce a snippet exactly",
       "CODE THE AUTHOR PASTED IS QUOTED MATERIAL" in inspect.getsource(skills.articulate))
 
+print("\n== …and PROSE ABOUT the code is not the code ==")
+# THE FAILURE THIS CATCHES, from a real note. Every other check is about words, and a
+# paraphrase of code keeps the words: "a container div with class 'cards' holding three
+# child divs with class 'card'" contains `cards`, `card`, `div`, `1`, `2`, `3`; ".cards
+# with display: flex and gap: 20px" contains every token of the CSS. The specifics check
+# passed, the sentence check passed, the length was right — and the snippet the author
+# pasted, the only part a learner would ever have seen, was gone.
+PASTED = """Use one running example. Initial HTML:
+
+<div class="cards">
+  <div class="card">Card 1</div>
+</div>
+
+Initial CSS:
+
+.cards {
+  display: flex;
+  gap: 20px;
+}"""
+DESCRIBED = ("Use one running example. Begin with a container div with class 'cards' "
+             "holding a child div with class 'card' containing the text 'Card 1'. Then "
+             "apply CSS: .cards with display: flex and gap: 20px.")
+check("the author's snippets are found", len(skills._code_blocks(PASTED)) == 2,
+      str(skills._code_blocks(PASTED)))
+check("…and prose describing them instead of reproducing them is caught",
+      "turns the author's CODE into prose" in skills.lossy(PASTED, DESCRIBED),
+      repr(skills.lossy(PASTED, DESCRIBED))[:200])
+check("…naming the lines that have to come back",
+      '<div class="cards">' in skills.lossy(PASTED, DESCRIBED))
+check("…while reproducing them, re-indented, passes",
+      skills.lossy(PASTED, PASTED.replace("  <div", "    <div")) == "",
+      repr(skills.lossy(PASTED, PASTED.replace("  <div", "    <div"))))
+check("one line that merely ends in a semicolon is not a snippet",
+      skills._code_blocks("Keep it short; that is all.") == [])
+
+print("\n== drafting from notes can EXPRESS a snippet, which is why it kept losing them ==")
+# A multi-line block of code cannot be written as one JSON string — the model will not
+# emit real newlines inside one, which is the same wall `articulate` hit. Path B was
+# still asking for `instructions: ["...", "..."]`, so describing the snippet in a
+# sentence was the only thing it COULD do. It has path A's shape now.
+_dp = {}
+try:
+    skills.from_requirements("x", model=lambda pr: _dp.setdefault("t", pr) and "{}" or "{}")
+except Exception:
+    pass
+check("an instruction may carry its own lines, one array element per line",
+      '"lines": [' in _dp["t"], _dp["t"][:0])
+check("…and the prompt says a described snippet is sent back",
+      "NEVER describe a snippet in words" in _dp["t"])
+check("the drafter reads the structured shape",
+      "_instructions_from(p, _db)" in inspect.getsource(skills._draft_once))
+check("…and the snippets are checked across all the drafts together",
+      "_mangled_code(raw, said)" in inspect.getsource(skills._draft_once))
+_kept = skills.from_requirements(PASTED, model=lambda pr: json.dumps({"skills": [
+    {"category": "examples_visuals", "text": "The examples this course uses.",
+     "instructions": [{"title": "Show the initial layout",
+                       "lines": ["Present this HTML:", "",
+                                 '<div class="cards">',
+                                 '  <div class="card">Card 1</div>',
+                                 "</div>", "", "with this CSS:", "",
+                                 ".cards {", "  display: flex;", "  gap: 20px;", "}"]}],
+     "source_quotes": ["Use one running example"]}]}))
+check("a snippet returned as `lines` comes through with its indentation",
+      '\n  <div class="card">Card 1</div>\n' in _kept[0]["instructions"][0],
+      repr(_kept[0]["instructions"][0])[:200])
+
 check("2. instructions_of does not flatten a point that spans lines",
       skills.instructions_of({"instructions": ["one\ntwo"]}) == ["one\ntwo"],
       str(skills.instructions_of({"instructions": ["one\ntwo"]})))
@@ -619,7 +690,6 @@ check("the author's note reaches the model laid out, not flattened",
 # and the renderer is the one the author actually looks at before approving. Checked as
 # source text rather than by rendering it, which is the most this suite can do for JSX —
 # enough to catch the property being deleted, not enough to catch it being broken.
-_APP = (ROOT / "frontend" / "src" / "App.jsx").read_text()
 check("5. the renderer keeps a step's description WITH the step",
       "list.items[list.items.length - 1].body.push(line)" in _APP,
       "a numbered heading and the sentence under it are one thing; split apart, the "
@@ -737,6 +807,85 @@ got2 = skills.from_requirements(RAW2, model=_lossy_drafter)
 check("a drafter that drops an example is asked again", _d["i"] == 2, str(_d["i"]))
 check("…and the version that keeps it is the one returned",
       any("TCP vs UDP" in i for d in got2 for i in d["instructions"]), str(got2))
+
+# --------------------------------------------------------------------------- #
+print("\n== EVERY WAY A SKILL GETS IN keeps the example ==")
+# ASKED AS A QUESTION, ANSWERED AS A SWEEP. Each of these was fixed on its own and the
+# fix was not carried across: `articulate` learned to keep a snippet and
+# `from_requirements` did not; the store learned to keep indentation and `import_skills`
+# did not; and the EDIT box joined every instruction with newlines and split them back
+# apart on every newline, so opening a skill to fix a typo and pressing Save turned two
+# instructions into seven and stripped the indentation off the code inside them. One
+# check over all of them, so the next path added has somewhere obvious to be added.
+EG = """Use one running example. For example, a checkout page that starts simple.
+
+<div class="cart">
+  <div class="item">Item 1</div>
+</div>
+
+.cart {
+  display: grid;
+  gap: 12px;
+}
+
+Say what breaks when you get it wrong, e.g. forgetting the cleanup leaks a listener.
+Keep every worked example under 8 steps."""
+MARKS = ['<div class="cart">', '  <div class="item">Item 1</div>', ".cart {",
+         "  display: grid;", "  gap: 12px;", "checkout page", "leaks a listener",
+         "8 steps"]
+def _holds(text, instructions):
+    whole = (text or "") + "\n" + "\n".join(instructions or [])
+    return [m for m in MARKS if m not in whole]
+
+SWEEP_A, SWEEP_B = "Sweep Course", "Sweep Destination"
+_a = db.add_skill(SWEEP_A, EG, category="examples_visuals", created_by=ALICE)
+_row = [x for x in db.skills(SWEEP_A) if x["id"] == _a][0]
+check("A. written by hand — the code, the situation and the number all survive",
+      not _holds(_row["text"], _row["instructions"]), str(_holds(_row["text"], _row["instructions"])))
+
+_d = skills.from_requirements(EG, model=lambda p: json.dumps({"skills": [
+    {"category": "examples_visuals", "text": "The examples this course uses.",
+     "instructions": [{"title": "Use one running example",
+                       "lines": ["A checkout page that starts simple.", "",
+                                 '<div class="cart">', '  <div class="item">Item 1</div>',
+                                 "</div>", "", ".cart {", "  display: grid;",
+                                 "  gap: 12px;", "}"]},
+                      {"lines": ["Say what breaks when you get it wrong, e.g. forgetting "
+                                 "the cleanup leaks a listener."]},
+                      {"lines": ["Keep every worked example under 8 steps."]}],
+     "source_quotes": ["Use one running example"]}]}))
+check("B. drafted from notes — same",
+      not _holds(_d[0]["text"], _d[0]["instructions"]),
+      str(_holds(_d[0]["text"], _d[0]["instructions"])))
+skills.store_drafts(SWEEP_A, _d, created_by=ALICE)
+_b = [x for x in db.skills(SWEEP_A) if x["source"] == "requirements"][0]
+check("…and still after the store has had it",
+      not _holds(_b["text"], _b["instructions"]), str(_holds(_b["text"], _b["instructions"])))
+
+for _x in db.skills(SWEEP_A):
+    db.approve_skill(_x["id"], ALICE)
+db.import_skills(SWEEP_A, SWEEP_B, ALICE)
+check("C. imported into another course — same",
+      all(not _holds(x["text"], x["instructions"]) for x in db.skills(SWEEP_B)),
+      str([_holds(x["text"], x["instructions"]) for x in db.skills(SWEEP_B)]))
+
+# The edit box now sends ONE ENTRY PER INSTRUCTION, unchanged — which is the whole fix.
+db.edit_skill(_b["id"], _b["text"], instructions=_b["instructions"])
+_e = [x for x in db.skills(SWEEP_A) if x["id"] == _b["id"]][0]
+check("D. edited and saved — same",
+      not _holds(_e["text"], _e["instructions"]), str(_holds(_e["text"], _e["instructions"])))
+check("…and the edit box no longer splits an instruction on every newline",
+      "editLines" not in _APP and "editIns.filter" in _APP,
+      "joining them and splitting on \\n turned 2 instructions into 7 and stripped the code")
+
+for _x in db.skills(SWEEP_A):
+    db.approve_skill(_x["id"], ALICE)
+_sb = skills.block(SWEEP_A)
+check("E. and the WRITER is handed every one of them",
+      all(m.strip() in _sb for m in MARKS), str([m for m in MARKS if m.strip() not in _sb]))
+_sr = skills.reminder(SWEEP_A)
+check("…twice, since the brief is restated at the end of the instruction",
+      all(m.strip() in _sr for m in MARKS))
 
 # --------------------------------------------------------------------------- #
 print("\n== what an import may and may not carry ==")

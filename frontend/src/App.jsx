@@ -2434,7 +2434,7 @@ function SkillBody({ text, className = 'skilltext', labelFirst = false }) {
  * the row is what makes it easy to open.
  */
 function SkillCard({ s, canEdit, busy, editing, editText,
-                     setEditText, editLines, setEditLines, onStartEdit, onCancelEdit,
+                     setEditText, editIns, setEditIns, onStartEdit, onCancelEdit,
                      onSave, onApprove, onRetire, open, onToggle }) {
   // OPEN BY DEFAULT ON A DRAFT. The agent is allowed to sharpen a skill and to give it
   // structure the author did not type, so approving one means checking it against what
@@ -2516,14 +2516,32 @@ function SkillCard({ s, canEdit, busy, editing, editText,
               <label>The skill</label>
               <AutoTextarea minRows={4} value={editText}
                             onChange={(e) => setEditText(e.target.value)} />
-              {/* ONE SKILL, SEVERAL POINTS. The author grouped these and put them in
-                  this order; the order is part of what they said, so they are edited as
-                  a block rather than as separate skills. */}
-              {lines.length > 0 && (
+              {/* ONE BOX PER INSTRUCTION.
+                  They used to be joined with newlines into a single box and split back
+                  apart on every newline — so an instruction that spans lines (its title,
+                  what it requires, the snippet under it) came back as one instruction
+                  PER LINE, with `.trim()` taking the indentation off the code and
+                  `.filter(Boolean)` removing the blank lines that separated it. Opening
+                  a skill to fix a typo and pressing Save turned two instructions into
+                  seven and destroyed the example inside them. An instruction is a
+                  document; it gets its own box. */}
+              {editIns.length > 0 && (
                 <>
-                  <label>Its instructions — one per line, in order</label>
-                  <AutoTextarea minRows={Math.min(9, lines.length + 1)} value={editLines}
-                                onChange={(e) => setEditLines(e.target.value)} />
+                  <label>Its instructions — in order</label>
+                  {editIns.map((ins, k) => (
+                    <div className="insedit" key={k}>
+                      <span className="insnum">{k + 1}</span>
+                      <AutoTextarea minRows={2} value={ins}
+                                    onChange={(e) => setEditIns(
+                                      (v) => v.map((x, j) => (j === k ? e.target.value : x)))} />
+                      <button className="iconbtn danger" title="Remove this instruction"
+                              onClick={() => setEditIns((v) => v.filter((_, j) => j !== k))}>
+                        <Icon name="x" size={13} /></button>
+                    </div>
+                  ))}
+                  <button className="linkbtn" onClick={() => setEditIns((v) => [...v, ''])}>
+                    <Icon name="plus" size={13} /> Add an instruction
+                  </button>
                 </>
               )}
             </>
@@ -2593,7 +2611,8 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
   // The skill's own lines, one per row, while it is being edited. Kept apart from its
   // sentence because they are different things: the sentence says what the skill is,
   // the lines are what a writer actually follows.
-  const [editLines, setEditLines] = useState('')
+  // One entry per instruction, edited in its own box — see the note in SkillCard.
+  const [editIns, setEditIns] = useState([])
   // WHAT a new skill governs and WHERE it applies. Both default to the answer that was
   // the only possible one before this existed — uncategorised, whole course.
   const [cat, setCat] = useState('')
@@ -3066,19 +3085,21 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                   <SkillCard key={s.id} s={s} canEdit={canEdit} busy={busy}
                              editing={editing === s.id}
                              onStartEdit={() => { setEditing(s.id); setEditText(s.text)
-                                                  setEditLines((s.instructions || []).join('\n'))
+                                                  setEditIns([...(s.instructions || [])])
                                                   setOpenIds((v) => new Set(v).add(s.id)) }}
                              onCancelEdit={() => setEditing(null)}
                              editText={editText} setEditText={setEditText}
-                             editLines={editLines} setEditLines={setEditLines}
+                             editIns={editIns} setEditIns={setEditIns}
                              onSave={() => {
-                               // undefined, not [], when the skill has no lines: the API
-                               // reads "omitted" as leave-them-alone and an empty array
-                               // as delete-them.
-                               const lines = (s.instructions || []).length
-                                 ? editLines.split('\n').map((l) => l.trim()).filter(Boolean)
+                               // undefined, not [], when the skill never had any: the
+                               // API reads "omitted" as leave-them-alone and an empty
+                               // array as delete-them. Each box is ONE instruction and
+                               // keeps its own line breaks and indentation; only
+                               // entirely blank ones are dropped.
+                               const ins = (s.instructions || []).length || editIns.length
+                                 ? editIns.filter((x) => x.trim())
                                  : undefined
-                               onEdit(s.id, editText, lines); setEditing(null)
+                               onEdit(s.id, editText, ins); setEditing(null)
                              }}
                              onApprove={() => onApprove(s.id)}
                              onRetire={() => onRetire(s.id)}

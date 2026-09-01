@@ -669,6 +669,52 @@ def _covered(words: list[str], kept: set[str]) -> int:
 
 _SENTENCE = re.compile(r"[^.!?\n]+")
 
+# A LINE THAT IS CODE RATHER THAN A SENTENCE. The same rule the UI renders by: prose does
+# not start with `<`, `{` or `}`, does not end with `{`, `}` or `;`, does not begin with
+# `.cards`/`#id`/`@media`, and — once db.skill_body keeps indentation only where the
+# author put it — is not indented.
+_CODE_LINE = re.compile(r"^\s+\S|^[<{}]|[{};]\s*$|^[.#@][\w-]")
+
+
+def _code_blocks(text: str) -> list[list[str]]:
+    """Runs of two or more code-ish lines: the snippets the author pasted.
+
+    Two lines minimum, because one line ending in a semicolon is far more likely to be a
+    sentence than a program.
+    """
+    out, run = [], []
+    for line in str(text or "").split("\n"):
+        if line.strip() and _CODE_LINE.search(line):
+            run.append(line.strip())
+        elif not line.strip() and run:
+            continue                      # a blank line inside a snippet stays inside it
+        else:
+            if len(run) > 1:
+                out.append(run)
+            run = []
+    if len(run) > 1:
+        out.append(run)
+    return out
+
+
+def _mangled_code(src: str, out: str) -> list[str]:
+    """Lines of the author's snippets that did not come back as they were written.
+
+    WHY THIS IS ITS OWN CHECK. Every other one is about words, and a paraphrase of code
+    keeps the words: '.cards with display: flex and gap: 20px' contains `.cards`,
+    `display`, `flex`, `gap` and `20px`, so the specifics check passes, the sentence
+    check passes, and the length is fine. What is gone is the SNIPPET — the thing the
+    author actually pasted, and the only part of the note a learner would have seen on
+    screen. Prose describing code is not code.
+    """
+    flat = {" ".join(l.split()) for l in str(out or "").split("\n")}
+    missing = []
+    for block in _code_blocks(src):
+        for line in block:
+            if " ".join(line.split()) not in flat:
+                missing.append(line)
+    return missing
+
 
 def _dropped_sentences(src: str, out: str) -> list[str]:
     """The author's sentences that have no counterpart in the rewrite.
@@ -723,6 +769,12 @@ def lossy(src: str, out: str) -> str:
     if missing:
         return ("it drops what the author actually specified: "
                 + ", ".join(f"\u201c{m}\u201d" for m in missing[:6]))
+    mangled = _mangled_code(src, out)
+    if mangled:
+        return ("it turns the author's CODE into prose about the code. These lines were "
+                "pasted as a snippet and have to come back exactly as they were written, "
+                "on their own lines: "
+                + " | ".join(mangled[:5]))
     gone = _dropped_sentences(src, out)
     if gone:
         return ("it deletes what the author wrote. These sentences of theirs have no "
@@ -868,9 +920,15 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "taught.\n\n"
         "Return JSON: {\"skills\": [{\"category\": \"teaching_flow|teaching_guidelines|"
         "examples_visuals|reviewer\", \"text\": \"<what this skill is, in one "
-        "sentence>\", \"instructions\": [\"...\", \"...\"], \"kind\": \"style|content|"
-        "structure\", \"source_quotes\": [\"<exact words from the input>\", ...], "
-        "\"check\": {...}|null}]}\n\n"
+        "sentence>\", \"instructions\": [{\"title\": \"...\", \"lines\": [\"...\", "
+        "\"...\"]}, ...], \"kind\": \"style|content|structure\", \"source_quotes\": "
+        "[\"<exact words from the input>\", ...], \"check\": {...}|null}]}\n\n"
+        "EACH INSTRUCTION IS AN OBJECT, and `lines` is its layout — ONE ARRAY ELEMENT "
+        "PER LINE, an empty string \"\" for a blank line. `title` is the rule's own short "
+        "name and may be left out. This shape exists so that a snippet the author pasted "
+        "can come back as a snippet: a multi-line block of code cannot be expressed as "
+        "one JSON string, and asking for one is what turned an author's HTML into a "
+        "sentence describing their HTML.\n\n"
         "THE CATEGORIES:\n" + _CATEGORY_BRIEF + "\n"
         "THREE JOBS, and the draft is no use unless you do all three.\n\n"
         "1. GROUP. ONE SKILL PER CATEGORY. Everything the author said about how the "
@@ -900,10 +958,17 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "code form with the snippet itself before any prose about it; the code is the "
         "primary teaching object, not an illustration of the paragraph above it.' is an "
         "instruction.\n"
-        "   Each instruction is ONE POINT and is written as one; the `instructions` list "
-        "IS the structure, so do not paste bullet characters or numbering inside them. "
-        "Where a point needs a paragraph and then its own sub-points, write that "
-        "instruction with real newlines.\n"
+        "   Each instruction is ONE POINT; the `instructions` list IS the structure, so "
+        "do not put bullet characters or numbering at the start of a line. Where a point "
+        "needs a paragraph and then its own sub-points, or a paragraph and then a code "
+        "snippet, put each line in its own `lines` element.\n"
+        "   CODE THE AUTHOR PASTED IS QUOTED MATERIAL. Every snippet comes back EXACTLY "
+        "as they wrote it — line for line, indent for indent, one `lines` element per "
+        "line of code. NEVER describe a snippet in words instead of reproducing it: "
+        "\u201ca container div with class 'cards' holding three child divs\u201d is not "
+        "the author's HTML, it is a sentence about their HTML, and the snippet is the "
+        "thing a learner would have seen. This is checked, and a described snippet is "
+        "sent back to you.\n"
         "   THERE IS NO LENGTH LIMIT, and being shorter than the author is not a virtue. "
         "EVERY SENTENCE THEY WROTE ENDS UP IN ONE OF THE SKILLS — this is checked across "
         "all of them together, and an answer that drops any of it is sent back. Every "
@@ -985,8 +1050,11 @@ def _draft_once(model, prompt: str, raw: str) -> tuple[list[dict], list[str]]:
                 quotes.append(q)
         if not text or not quotes:
             continue
-        lines = [" ".join(str(i).split()) for i in (p.get("instructions") or [])
-                 if str(i or "").strip()]
+        # The same reader path A uses, so an instruction may be a plain string, or an
+        # object carrying its own `title` and `lines` — which is the only shape that can
+        # hold a pasted snippet.
+        from . import db as _db
+        lines = _instructions_from(p, _db)
         kind = str(p.get("kind") or "style").lower()
         cat = normalize_category(p.get("category"))
         chk = p.get("check")
@@ -1021,13 +1089,16 @@ def _draft_once(model, prompt: str, raw: str) -> tuple[list[dict], list[str]]:
         if len(d["instructions"]) > 1:
             d["text"] = _group_text(cat, d["text"])
     # Everything the drafts say, checked against everything the author specified.
-    said = " ".join(d["text"] + " " + " ".join(d["instructions"]) for d in out)
+    said = "\n".join(d["text"] + "\n" + "\n".join(d["instructions"]) for d in out)
     dropped = sorted(x for x in _specifics(raw) if x and x not in said.lower())
     # …and the author's own SENTENCES, across all the drafts together — one note becomes
     # several skills here, so a sentence only has to survive into one of them. Without
     # this the split hides a deletion: four tidy skills look complete, and the example
     # that was in the fifth sentence is simply gone.
     dropped += _dropped_sentences(raw, said)
+    # …and the SNIPPETS. A paraphrase of code keeps every word of it, so nothing above
+    # sees the loss: what is gone is the snippet itself.
+    dropped += _mangled_code(raw, said)
     return out, dropped
 
 

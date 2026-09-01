@@ -1742,8 +1742,12 @@ def import_skills(from_course: str, to_course: str, who: str | None) -> int:
             for s in skills(to_course, include_retired=True)}
     n = 0
     for s in src:
-        text = " ".join((s.get("text") or "").split())
-        if text.lower() in have:
+        # The LAYOUT comes over too. `" ".join(text.split())` was flattening a
+        # laid-out skill into one paragraph on its way into the next course — the same
+        # bug the store had, surviving in the one place that copies a skill. The dedupe
+        # key stays flattened, because that is a comparison and not a document.
+        text = skill_body(s.get("text"))
+        if " ".join(text.split()).lower() in have:
             continue
         if add_skill(to_course, text, kind=s.get("kind") or "style",
                      source=f"imported:{from_course}", created_by=who,

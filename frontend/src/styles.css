@@ -306,6 +306,13 @@ body::before {
                   color: var(--text); white-space: pre; background: none;
                   border: none; padding: 0; }
 .skillinsbody .skillcode { margin: 7px 0; }
+/* Editing: one box per instruction, numbered, with its own remove. */
+.insedit { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 7px; }
+.insedit .insnum { flex: none; width: 20px; padding-top: 9px; text-align: right;
+                   font-size: 12px; font-weight: 650; color: var(--faint);
+                   font-variant-numeric: tabular-nums; }
+.insedit textarea { font-family: var(--mono); font-size: 12px; line-height: 1.6; }
+.insedit .iconbtn { margin-top: 4px; }
 /* A LABELLED STEP: the number and its title are the structure, the sentence under it
    is what the step means. Grouped tight so the pair reads as one thing, and separated
    from the next pair so seven of them read as seven. */
