@@ -1492,12 +1492,22 @@ def skill_body(text) -> str:
     be read as one.
 
     Tidied, not flattened: runs of spaces WITHIN a line go, trailing whitespace goes, and
-    three blank lines become one. Line breaks and paragraph breaks stay.
+    three blank lines become one. Line breaks, paragraph breaks and LEADING INDENTATION
+    stay.
+
+    The indentation matters because authors paste CODE into skills — the HTML their
+    example starts from, the CSS the media query changes. `" ".join(line.split())` tidies
+    a prose line beautifully and takes the indentation off every line of a snippet with
+    it, so a nested <div> and its parent came out at the same column and the example the
+    author wrote was no longer readable as one.
     """
     raw = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
     out: list[str] = []
     for line in raw.split("\n"):
-        line = " ".join(line.split())
+        line = line.replace("\t", "    ")
+        indent = len(line) - len(line.lstrip(" "))
+        body = " ".join(line.split())
+        line = (" " * indent + body) if body else ""
         if line:
             out.append(line)
         elif out and out[-1] != "":       # one blank line between blocks, never more

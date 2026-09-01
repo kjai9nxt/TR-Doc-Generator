@@ -2254,17 +2254,67 @@ function SkillsHelpPanel({ onClose }) {
  * understands what `skill_body` preserves and nothing else: paragraphs, blank-line
  * breaks, `- ` bullets and `1. ` numbers.
  */
-function SkillBody({ text, className = 'skilltext' }) {
+/* Does this line look like code rather than a sentence?
+ *
+ * Authors paste the HTML their example starts from and the CSS the media query changes
+ * — that is the example, and rendering it as prose paragraphs is the same as not
+ * showing it. Prose does not start with `<`, `{` or `}`, does not end with `{`, `}` or
+ * `;`, and (after db.skill_body, which now keeps indentation only where the author put
+ * it) is not indented. Two consecutive such lines are needed before anything is treated
+ * as code, so one odd sentence never becomes a code block on its own.
+ */
+const CODEISH = (l) => (
+  /^\s+\S/.test(l)                      // indented — the author put it there
+  || /^[<{}]/.test(l)                    // <div>, {, }
+  || /[{};]\s*$/.test(l)                 // ends in a brace or semicolon
+  || /^[.#@][\w-]/.test(l)               // .cards, #id, @media
+)
+
+/* `labelFirst` — for one instruction of a grouped skill, where the first line IS the
+ * rule's name by construction (skills._instructions_from joins `title` and `text` with a
+ * newline). Guessing at it instead let the short titles through as headings and left the
+ * long ones as body text, so a list of seven rules had four bold names and three plain
+ * ones for no reason a reader could see. */
+function SkillBody({ text, className = 'skilltext', labelFirst = false }) {
   const blocks = []
   let para = []
   let list = null
+  let code = null
   const flushPara = () => { if (para.length) { blocks.push({ t: 'p', lines: para }); para = [] } }
   const flushList = () => { if (list) { blocks.push(list); list = null } }
-  for (const line of String(text || '').split('\n')) {
-    if (!line.trim()) { flushPara(); flushList(); continue }
+  const flushCode = () => {
+    if (!code) return
+    // One code-ish line on its own is far more likely to be a sentence that happens to
+    // end in a semicolon than it is to be a snippet.
+    if (code.lines.filter((l) => l.trim()).length > 1) blocks.push(code)
+    else para.push(...code.lines.filter((l) => l.trim()))
+    code = null
+  }
+  const raw = String(text || '').split('\n')
+  let fenced = false
+  for (const line of raw) {
+    // An explicit ``` fence is unambiguous and always wins.
+    if (/^\s*```/.test(line)) {
+      if (fenced) { flushCode(); fenced = false } else { flushPara(); flushList(); fenced = true; code = { t: 'code', lines: [] } }
+      continue
+    }
+    if (fenced) { code.lines.push(line); continue }
+    if (!line.trim()) {
+      // A blank line inside a snippet is part of the snippet, not the end of it.
+      if (code) code.lines.push('')
+      else { flushPara(); flushList() }
+      continue
+    }
     const heading = line.match(/^\s*#{1,4}\s+(.*)$/)
     const bullet = line.match(/^\s*[-*•]\s+(.*)$/)
     const number = line.match(/^\s*(\d+)[.)]\s+(.*)$/)
+    if (!heading && !bullet && !number && CODEISH(line)) {
+      flushPara()
+      if (!code) code = { t: 'code', lines: [] }
+      code.lines.push(line)
+      continue
+    }
+    flushCode()
     if (heading) {
       flushPara(); flushList()
       blocks.push({ t: 'h', text: heading[1] })
@@ -2294,8 +2344,16 @@ function SkillBody({ text, className = 'skilltext' }) {
       para.push(line)
     }
   }
-  flushPara(); flushList()
+  flushCode(); flushPara(); flushList()
   if (!blocks.length) return null
+  // The first line is the label, said rather than guessed — see `labelFirst`.
+  if (labelFirst && blocks.length && blocks[0].t === 'p' && blocks[0].lines.length > 1) {
+    blocks[0].head = blocks[0].lines[0].trim()
+    blocks[0].lines = blocks[0].lines.slice(1)
+  } else if (labelFirst && blocks.length > 1 && blocks[0].t === 'p'
+             && blocks[0].lines.length === 1) {
+    blocks[0] = { t: 'h', text: blocks[0].lines[0].trim() }
+  }
   // A SHORT UNPUNCTUATED FIRST LINE IS A HEADING. People write
   //
   //     Preferred Flow
@@ -2307,7 +2365,7 @@ function SkillBody({ text, className = 'skilltext' }) {
   // That last one is what separates a title from a wrapped sentence — "Always show the
   // code / before explaining it." fails it and stays a paragraph, which is right.
   for (const b of blocks) {
-    if (b.t !== 'p' || b.lines.length < 2) continue
+    if (b.t !== 'p' || b.head || b.lines.length < 2) continue
     const first = b.lines[0].trim()
     if (first.split(/\s+/).length <= 6 && !/[.:;,!?—-]$/.test(first)
         && /^[A-Z0-9]/.test(b.lines[1].trim())) {
@@ -2321,6 +2379,18 @@ function SkillBody({ text, className = 'skilltext' }) {
     <div className={className}>
       {blocks.map((b, i) => {
         if (b.t === 'h') return <h4 key={i}>{b.text}</h4>
+        if (b.t === 'code') {
+          // Trimmed of the blank lines a paste leaves at either end, and de-indented by
+          // its own smallest indent so a snippet that was nested in the note does not
+          // arrive wearing that nesting.
+          const ls = [...b.lines]
+          while (ls.length && !ls[0].trim()) ls.shift()
+          while (ls.length && !ls[ls.length - 1].trim()) ls.pop()
+          const pad = Math.min(...ls.filter((l) => l.trim())
+                                 .map((l) => l.length - l.trimStart().length))
+          return <pre key={i} className="skillcode"><code>
+            {ls.map((l) => l.slice(pad)).join('\n')}</code></pre>
+        }
         // Every line the author typed is a line. Joining them with a space is what
         // made a laid-out instruction read as prose.
         if (b.t === 'p') {
@@ -2463,7 +2533,9 @@ function SkillCard({ s, canEdit, busy, editing, editText,
               {lines.length > 1 && (
                 <ol className="skillins">
                   {lines.map((line, i) => (
-                    <li key={i}><SkillBody text={line} className="skillinsbody" /></li>))}
+                    <li key={i}>
+                      <SkillBody text={line} className="skillinsbody" labelFirst />
+                    </li>))}
                 </ol>
               )}
               {lines.length === 1 && <SkillBody text={lines[0]} />}

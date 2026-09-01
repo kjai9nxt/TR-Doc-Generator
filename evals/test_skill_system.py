@@ -379,8 +379,9 @@ LAID_OUT = """Explain every snippet line by line — the learner should write it
 Keep snippets under 12 lines. Never show a whole file."""
 check("1. the STORE keeps the layout byte for byte",
       db.skill_body(LAID_OUT) == LAID_OUT, repr(db.skill_body(LAID_OUT))[:160])
-check("…tidying only the spaces WITHIN a line",
-      db.skill_body("a   b\n\n  c  ") == "a b\n\nc")
+check("…tidying only the spaces WITHIN a line, and never the indent in front of it",
+      db.skill_body("a   b\n\n  c  ") == "a b\n\n  c",
+      repr(db.skill_body("a   b\n\n  c  ")))
 check("…collapsing a run of blank lines to one, and dropping trailing ones",
       db.skill_body("a\n\n\n\nb\n\n\n") == "a\n\nb")
 lid = db.add_skill(REACT, LAID_OUT, category="teaching_guidelines", created_by=ALICE)
@@ -388,6 +389,35 @@ db.approve_skill(lid, ALICE)
 stored = [x for x in db.skills(REACT) if x["id"] == lid][0]
 check("…so it comes back out exactly as it went in", stored["text"] == LAID_OUT,
       repr(stored["text"])[:160])
+
+# CODE THE AUTHOR PASTED. A skill's example is often the snippet the session starts
+# from, and `" ".join(line.split())` — which tidies a prose line beautifully — takes the
+# indentation off every line of it. A nested <div> and its parent came out at the same
+# column, and the example the author wrote was no longer readable as one.
+SNIPPET = """Start with a simple card layout and make it responsive.
+
+<div class="cards">
+  <div class="card">Card 1</div>
+</div>
+
+.cards {
+  display: flex;
+  gap: 20px;
+}"""
+check("1b. a pasted snippet keeps its indentation, byte for byte",
+      db.skill_body(SNIPPET) == SNIPPET, repr(db.skill_body(SNIPPET))[:200])
+check("…while a prose line is still tidied of stray spaces",
+      db.skill_body("  a   b") == "  a b", repr(db.skill_body("  a   b")))
+cid = db.add_skill(REACT, SNIPPET, category="examples_visuals", created_by=ALICE)
+db.approve_skill(cid, ALICE)
+check("…and it survives the round trip through the store",
+      [x for x in db.skills(REACT) if x["id"] == cid][0]["text"] == SNIPPET)
+_cb = skills.block(REACT)
+check("…and reaches the writer with its relative indentation intact",
+      "\n    <div class=\"card\">Card 1</div>" in _cb, _cb)
+db.retire_skill(cid, ALICE)
+check("the prompt tells the model to reproduce a snippet exactly",
+      "CODE THE AUTHOR PASTED IS QUOTED MATERIAL" in inspect.getsource(skills.articulate))
 
 check("2. instructions_of does not flatten a point that spans lines",
       skills.instructions_of({"instructions": ["one\ntwo"]}) == ["one\ntwo"],
@@ -596,6 +626,14 @@ check("5. the renderer keeps a step's description WITH the step",
       "heading rendered small and grey and its own description rendered big and bold")
 check("…and a step that has a description is set as a label, not as a bullet",
       "it.body.length ? 'labelled' : ''" in _APP)
+check("…and renders a pasted snippet as CODE, not as prose paragraphs",
+      "className=\"skillcode\"" in _APP and "const CODEISH" in _APP,
+      "rendering the author's example as body text is the same as not showing it")
+check("…needing two consecutive code-ish lines, so one odd sentence is not a snippet",
+      "code.lines.filter((l) => l.trim()).length > 1" in _APP)
+check("…and an instruction's first line is its label by construction, not by guess",
+      "labelFirst" in _APP,
+      "guessing let short titles through as headings and left long ones as body text")
 check("…and a skill is a FILE that opens and closes",
       'className="filebtn"' in _APP and "aria-expanded={shown}" in _APP)
 check("…which is forced open while it is being edited",

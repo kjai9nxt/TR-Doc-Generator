@@ -297,6 +297,15 @@ body::before {
 .skilltext li { margin: 4px 0; color: var(--text); font-weight: 400; }
 .skilltext li::marker { color: var(--faint); font-variant-numeric: tabular-nums; }
 .skilltext .li-head { display: block; }
+/* CODE THE AUTHOR PASTED. Their example is the most concrete instruction in the skill,
+   and rendered as prose paragraphs it was the same as not showing it. */
+.skillcode { margin: 8px 0; padding: 11px 13px; border-radius: 8px;
+             background: var(--bg); border: 1px solid var(--line);
+             overflow-x: auto; }
+.skillcode code { font-family: var(--mono); font-size: 12px; line-height: 1.6;
+                  color: var(--text); white-space: pre; background: none;
+                  border: none; padding: 0; }
+.skillinsbody .skillcode { margin: 7px 0; }
 /* A LABELLED STEP: the number and its title are the structure, the sentence under it
    is what the step means. Grouped tight so the pair reads as one thing, and separated
    from the next pair so seven of them read as seven. */
