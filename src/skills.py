@@ -611,8 +611,17 @@ _SPECIFIC = re.compile(
 # Below this share of the author's own length, a rewrite has stopped being a rewrite.
 # Only applied to notes long enough for the distinction to mean anything — compressing
 # a six-word note is not the failure this is looking for.
-_MIN_KEEP_RATIO = 0.6
+#
+# 0.75, not the 0.6 it started at. Fixing someone's grammar does not cost a quarter of
+# their words, and at 0.6 a 68-word note could come back at 44 with an entire worked
+# example deleted and pass without comment.
+_MIN_KEEP_RATIO = 0.75
 _MIN_WORDS_TO_JUDGE_LENGTH = 22
+# A sentence of the author's is "still there" when this share of its content words is.
+# Generous, because the whole job is rewording: 'start with a navbar' becoming 'begin
+# with a navbar' has to pass. Deleting the sentence scores zero and does not.
+_SENTENCE_KEPT = 0.5
+_MIN_WORDS_TO_JUDGE_SENTENCE = 5
 # …and the ceiling on the other side, once the model was allowed to sharpen and
 # restructure. Whichever of the two is larger applies, so a four-word note gets room to
 # be said properly and a long one is not held to a percentage.
@@ -623,6 +632,66 @@ _MAX_GROWTH_WORDS = 25
 def _specifics(text: str) -> set[str]:
     return {m.group(0).strip("`\"“”'").lower()
             for m in _SPECIFIC.finditer(str(text or ""))}
+
+
+def _stem(word: str) -> str:
+    """Crude, and deliberately so. `example`/`examples`, `explain`/`explaining` are the
+    same word for the purpose of "is this sentence still here", and a real stemmer is a
+    dependency and a source of surprises for a check that only needs to be roughly
+    right."""
+    return word[:5] if len(word) > 5 else word
+
+
+# How alike two words have to be to count as the same one. THE AUTHOR'S SPELLING IS THE
+# WHOLE PROBLEM HERE: they wrote `exmaple`, `sesion`, `swich`, and the rewrite says
+# `example`, `session`, `switch` — because correcting them is the job. Comparing the
+# words as typed against the words as corrected reported the sentence as DELETED when it
+# was sitting there in full, which is the check punishing the exact fix it was asked for.
+_FUZZY = 0.8
+
+
+def _covered(words: list[str], kept: set[str]) -> int:
+    """How many of `words` survive in `kept`, allowing for the typos being fixed."""
+    from difflib import SequenceMatcher
+    stems = {_stem(k) for k in kept}
+    hits = 0
+    for w in words:
+        if w in kept or _stem(w) in stems:
+            hits += 1
+            continue
+        # Only against words of a similar length: `code` and `core` are one edit apart
+        # and nothing else about them is alike.
+        if any(SequenceMatcher(None, w, k).ratio() >= _FUZZY
+               for k in kept if abs(len(k) - len(w)) <= 2):
+            hits += 1
+    return hits
+
+
+_SENTENCE = re.compile(r"[^.!?\n]+")
+
+
+def _dropped_sentences(src: str, out: str) -> list[str]:
+    """The author's sentences that have no counterpart in the rewrite.
+
+    THE CHECK THAT ACTUALLY IMPLEMENTS "KEEP EVERYTHING". The others are proxies: a
+    specific is a thing a rewrite must not touch, and the length ratio catches wholesale
+    summarising. Neither sees a single sentence being quietly dropped out of the middle
+    of a long note — and the sentence most likely to go is the EXAMPLE, because it reads
+    to a model as illustration rather than as instruction. A 68-word note came back at 44
+    with the worked example deleted, and every check passed.
+
+    Sentences shorter than a few content words are not judged: there is not enough of
+    them left after stopwords to tell a rewrite from a deletion.
+    """
+    kept = set(_tokens(out))
+    lost = []
+    for sentence in _SENTENCE.findall(str(src or "")):
+        words = _tokens(sentence)
+        if len(words) < _MIN_WORDS_TO_JUDGE_SENTENCE:
+            continue
+        if _covered(words, kept) / len(words) < _SENTENCE_KEPT:
+            lost.append(" ".join(sentence.split()))
+    return lost
 
 
 _LIST_LINE = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+\S")
@@ -654,6 +723,11 @@ def lossy(src: str, out: str) -> str:
     if missing:
         return ("it drops what the author actually specified: "
                 + ", ".join(f"\u201c{m}\u201d" for m in missing[:6]))
+    gone = _dropped_sentences(src, out)
+    if gone:
+        return ("it deletes what the author wrote. These sentences of theirs have no "
+                "counterpart in your version: "
+                + "; ".join(f"\u201c{g}\u201d" for g in gone[:4]))
     n_src, n_out = len(src.split()), len(out.split())
     if n_src >= _MIN_WORDS_TO_JUDGE_LENGTH and n_out < _MIN_KEEP_RATIO * n_src:
         return (f"it is a summary, not a rewrite: {n_src} words became {n_out}. "
@@ -831,12 +905,14 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "Where a point needs a paragraph and then its own sub-points, write that "
         "instruction with real newlines.\n"
         "   THERE IS NO LENGTH LIMIT, and being shorter than the author is not a virtue. "
-        "Every separate thing they asked for becomes an instruction; every EXAMPLE they "
-        "gave is carried into the instruction it belongs to, because an author who gives "
-        "an example has stated a requirement. Every number, name, quoted phrase and "
-        "piece of code they wrote appears in your version — 'under 12 lines' may not "
-        "become 'short'. Nothing they said is dropped for being long-winded: fix the "
-        "wording, keep the substance.\n\n"
+        "EVERY SENTENCE THEY WROTE ENDS UP IN ONE OF THE SKILLS — this is checked across "
+        "all of them together, and an answer that drops any of it is sent back. Every "
+        "EXAMPLE they gave is carried into the instruction it belongs to: an author who "
+        "gives an example has stated a requirement about which example to use, and it is "
+        "the first thing you will be tempted to cut because it reads as illustration. "
+        "Every number, name, quoted phrase and piece of code they wrote appears in your "
+        "version — 'under 12 lines' may not become 'short'. Nothing they said is dropped "
+        "for being long-winded: fix the wording, keep the substance.\n\n"
         "THESE ARE INSTRUCTIONS ABOUT HOW TO TEACH, NEVER ABOUT WHAT TO TEACH. If the "
         "author names a topic their course covers, that is CURRICULUM and does not "
         "belong here — skip it. A skill shapes how any topic is taught.\n\n"
@@ -945,8 +1021,13 @@ def _draft_once(model, prompt: str, raw: str) -> tuple[list[dict], list[str]]:
         if len(d["instructions"]) > 1:
             d["text"] = _group_text(cat, d["text"])
     # Everything the drafts say, checked against everything the author specified.
-    said = " ".join(d["text"] + " " + " ".join(d["instructions"]) for d in out).lower()
-    dropped = sorted(x for x in _specifics(raw) if x and x not in said)
+    said = " ".join(d["text"] + " " + " ".join(d["instructions"]) for d in out)
+    dropped = sorted(x for x in _specifics(raw) if x and x not in said.lower())
+    # …and the author's own SENTENCES, across all the drafts together — one note becomes
+    # several skills here, so a sentence only has to survive into one of them. Without
+    # this the split hides a deletion: four tidy skills look complete, and the example
+    # that was in the fifth sentence is simply gone.
+    dropped += _dropped_sentences(raw, said)
     return out, dropped
 
 
@@ -1052,20 +1133,35 @@ def articulate(text: str, model=None) -> dict | None:
         "never spoken to them will follow: correct, unambiguous, imperative, no hedging, "
         "standing on its own without their note beside it. Fix the typos and the grammar. "
         "Say the same things, properly.\n\n"
-        "LOSE NOTHING. This is the rule that matters most, and the one most easily "
-        "broken. EVERY separate thing they asked for survives into your version. So does "
-        "EVERY EXAMPLE they gave — an author who writes an example has written a "
-        "requirement, and the example is the instruction, not decoration for it. So does "
-        "every number, name, quoted phrase and piece of code: \u201ckeep snippets under 12 "
-        "lines\u201d is a different rule from \u201ckeep snippets short\u201d, and you may not "
-        "trade one for the other. There is NO LENGTH LIMIT. If their note carries five "
-        "requirements and three examples, your version carries five requirements and "
-        "three examples, and it will be as long as that takes. Coming back shorter than "
-        "what they wrote is the failure this is warning you about; longer is fine.\n\n"
-        "KEEP THEIR WORDS WHERE THEY ARE ALREADY RIGHT. You are not being asked to "
-        "re-word for the sake of it. Where a phrase of theirs already says the thing "
-        "clearly, keep that phrase. Change what is wrong or unclear, and leave the rest "
-        "alone.\n\n"
+        "DELETE NOTHING. This is the rule that matters most, it is the one most easily "
+        "broken, and it is checked sentence by sentence — an answer that drops any of "
+        "the author's sentences is rejected and sent back to you.\n"
+        "   EVERY SENTENCE THEY WROTE HAS A COUNTERPART IN YOURS. You may re-order it, "
+        "re-word it, and break it into a list; you may not decide that some of it was "
+        "not worth keeping. RESTRUCTURING IS MOVING TEXT, NOT CHOOSING WHICH OF IT TO "
+        "KEEP: if you turn a paragraph into bullets, every sentence of that paragraph "
+        "ends up in one of the bullets. Keeping the tidy bullets and quietly dropping "
+        "the paragraph around them is the exact failure this is about.\n"
+        "   THE EXAMPLE IS THE FIRST THING YOU WILL BE TEMPTED TO DROP, because it reads "
+        "as illustration. It is not. An author who writes an example has written a "
+        "REQUIREMENT — that example is to be used — and cutting it removes the most "
+        "concrete instruction in the note. 'For example, when teaching flexbox start "
+        "with a navbar that collapses on mobile' is a rule about which example to use, "
+        "and it survives in full.\n"
+        "   So does every number, name, quoted phrase and piece of code: \u201ckeep "
+        "snippets under 12 lines\u201d is a different rule from \u201ckeep snippets "
+        "short\u201d, and you may not trade one for the other.\n"
+        "   THERE IS NO LENGTH LIMIT. If their note carries five requirements and three "
+        "examples, your version carries five requirements and three examples, and it "
+        "will be as long as that takes. Coming back shorter than what they wrote is the "
+        "failure this is warning you about; longer is fine.\n\n"
+        "KEEP THEIR WORDS WHERE THEY ARE ALREADY RIGHT, and this is enforced too. You "
+        "are not being asked to re-word for the sake of it. Where a phrase of theirs "
+        "already says the thing clearly, keep that phrase — 'student' does not need to "
+        "become 'learner', and 'on their own' does not need to become 'unaided'. Change "
+        "what is WRONG or UNCLEAR and leave the rest alone. A version that replaces "
+        "every word of theirs with a synonym is indistinguishable, to anyone checking "
+        "it, from one that threw their sentence away, and it will be rejected as such.\n\n"
         "KEEP THEIR SHAPE — this one is checked, and a flattened answer is rejected. "
         "The text becomes part of the prompt a writer works from, so it is a piece of "
         "WRITING, not a label. Give it back laid out the way they laid it out, one "

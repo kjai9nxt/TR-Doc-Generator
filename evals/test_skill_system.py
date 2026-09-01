@@ -426,6 +426,56 @@ check("…while a faithful layout passes",
 check("…and a plain sentence is never asked for structure it never had",
       skills.lossy("show the snippet first", "Show the snippet first.") == "")
 
+print("\n== …and it may not DELETE a sentence out of the middle of a note ==")
+# THE HOLE THIS CLOSES. The other checks are proxies: `_specifics` protects numbers and
+# names, the length ratio catches wholesale summarising. Neither sees one sentence going
+# quietly out of the middle of a long note — and the sentence most likely to go is the
+# EXAMPLE, because it reads to a model as illustration rather than as instruction. A
+# 68-word note came back at 44 with the whole worked example deleted, and every check
+# passed: the ratio was 0.65, above the 0.6 floor, and a prose example carries no number
+# or code token for the specifics check to hold on to.
+WITH_EG = ("Explain the concept before showing any code. Keep to one example for the whole "
+           "session and do not switch to a new one. Explain intuition before formal "
+           "definitions and use simple language before technical terms. Always say what "
+           "breaks when you get it wrong. For example when teaching flexbox start with a "
+           "navbar that collapses on mobile and keep extending that same navbar.")
+NO_EG = WITH_EG[:WITH_EG.index(" For example")]
+check("deleting the example sentence is caught",
+      "deletes what the author wrote" in skills.lossy(WITH_EG, NO_EG),
+      repr(skills.lossy(WITH_EG, NO_EG)))
+check("…and the message quotes the sentence that went, so it can be put back",
+      "flexbox" in skills.lossy(WITH_EG, NO_EG))
+check("…while keeping it, reworded, passes",
+      skills.lossy(WITH_EG, NO_EG + " For example, when teaching flexbox, begin with a "
+                   "navbar that collapses on mobile and keep extending that same navbar.")
+      == "")
+# FIXING THE TYPOS IS THE JOB, so the check may not punish it. Comparing the words as
+# TYPED against the words as CORRECTED reported a sentence as deleted when it was
+# sitting there in full — `exmaple`/`example`, `sesion`/`session`, `swich`/`switch`.
+TYPOS = ("keep to one exmaple for the whole sesion and dont swich to a new one. "
+         "for exmaple when teachng flexbox start with a navbar that colapses on mobile.")
+FIXED = ("Keep to one example for the whole session and do not switch to a new one. "
+         "For example, when teaching flexbox, start with a navbar that collapses on mobile.")
+check("correcting the author's spelling is not read as deleting them",
+      skills.lossy(TYPOS, FIXED) == "", repr(skills.lossy(TYPOS, FIXED)))
+check("…and a deletion is still caught through the typos",
+      "deletes what the author wrote" in skills.lossy(TYPOS, FIXED.split(". ")[0] + "."))
+check("a rewrite may not quietly lose a quarter of the words either",
+      skills._MIN_KEEP_RATIO == 0.75,
+      "fixing someone's grammar does not cost a quarter of their words")
+# Checked on the prompt the model is HANDED, not on the source, so a line broken across
+# two Python string literals cannot make the check lie in either direction.
+_p = {}
+skills.articulate("x", model=lambda pr: _p.setdefault("t", pr) and None or {"text": "y"})
+check("the prompt says restructuring is MOVING text, not choosing what to keep",
+      "RESTRUCTURING IS MOVING TEXT, NOT CHOOSING WHICH OF IT TO KEEP" in _p["t"])
+check("…and that deleting is checked, so it is not merely asked for politely",
+      "checked sentence by sentence" in _p["t"])
+check("…and that the paragraph may not be dropped once its bullets are pulled out",
+      "Keeping the tidy bullets and quietly dropping the paragraph" in _p["t"])
+check("drafting from notes is checked the same way, across all the skills together",
+      "_dropped_sentences(raw, said)" in inspect.getsource(skills._draft_once))
+
 print("\n== …and it may not write the brief FOR the author ==")
 # The other side of "you may sharpen it". Once the model was allowed to clarify a vague
 # note and to give content structure, "make the analogies good" came back as four
@@ -576,11 +626,11 @@ check("…dropping a NAME the author gave is caught",
                                         "under 12 lines, and show dependency arrays "
                                         "before adding to them and re-running.").lower())
 check("…and a summary of a long note is caught, even with nothing specific in it",
-      "summary" in skills.lossy(
+      bool(skills.lossy(
           "explain each concept slowly and carefully, giving the learner the intuition "
           "first, then the definition, then a walked-through case, and always finishing "
           "with what goes wrong when it is misapplied",
-          "Explain concepts thoroughly."))
+          "Explain concepts thoroughly.")))
 check("…while TIGHTENING a long note is allowed", skills.lossy(
       "explain each concept slowly and carefully, giving the learner the intuition "
       "first, then the definition, then a walked-through case, and always finishing "
@@ -618,7 +668,9 @@ check("the prompt no longer caps the length",
       "one or two full sentences" not in inspect.getsource(skills.articulate),
       "that cap is what turned a paragraph of examples into a sentence")
 check("…and says outright that examples must survive",
-      "LOSE NOTHING" in inspect.getsource(skills.articulate))
+      "DELETE NOTHING" in inspect.getsource(skills.articulate)
+      and "THE EXAMPLE IS THE FIRST THING YOU WILL BE TEMPTED TO DROP"
+      in inspect.getsource(skills.articulate))
 
 print("\n== drafting from notes keeps every example too ==")
 RAW2 = ("use tables to compare, for example TCP vs UDP side by side. "

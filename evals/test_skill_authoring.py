@@ -55,8 +55,14 @@ db.init()
 
 TYPED = ("Explain the code, the student should be able to wrtite the code on their own "
          "after that for the concpet")
-WRITTEN_UP = ("Explain every code snippet line by line, to the point where a learner "
-              "could write comparable code for a new problem unaided.")
+# THE SPELLING AND THE GRAMMAR, AND NOT THE AUTHOR'S CHOICE OF WORDS. This fixture used
+# to be a re-authoring — "student" became "learner", "on their own" became "unaided",
+# "for the concept" became "for a new problem" — which reads well and is no longer what
+# this step is for: the author asked for their English fixed and their content left
+# alone, and `lossy` now enforces it. A rewrite that replaces every content word is
+# indistinguishable, to any check, from one that dropped them.
+WRITTEN_UP = ("Explain the code so that the student is able to write the code on their "
+              "own afterwards, for the concept.")
 
 print("\n== a hand-written skill is written up, and keeps the author's words ==")
 drafted = skills.articulate(TYPED, model=lambda p: {"text": WRITTEN_UP, "kind": "style"})
@@ -79,7 +85,9 @@ check("…and told not to invent", "DO NOT INVENT" in p)
 # carrying three worked examples came back as one sentence carrying none — and the
 # author was shown that to approve. Not summarising is as much of a contract as not
 # inventing. See evals/test_skill_system.py for the check that enforces it on output.
-check("…and told not to summarise", "LOSE NOTHING" in p)
+check("…and told not to summarise", "DELETE NOTHING" in p)
+check("…with every sentence of theirs required to have a counterpart",
+      "EVERY SENTENCE THEY WROTE HAS A COUNTERPART IN YOURS" in p)
 check("…with no length cap to compress them into",
       "one or two full sentences" not in p and "NO LENGTH LIMIT" in p)
 check("…and is given exactly what the author typed", TYPED in p)
