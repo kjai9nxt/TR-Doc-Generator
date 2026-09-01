@@ -596,7 +596,8 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         model = _default_model
     prompt = (
         "A course author has written what their course needs, in a hurry. Turn it into "
-        "the SKILLS that course is written under.\n\n"
+        "the SKILLS that course is written under — instructions about HOW it is "
+        "taught.\n\n"
         "Return JSON: {\"skills\": [{\"category\": \"teaching_flow|teaching_guidelines|"
         "examples_visuals|reviewer\", \"text\": \"<what this skill is, in one "
         "sentence>\", \"instructions\": [\"...\", \"...\"], \"kind\": \"style|content|"
@@ -641,6 +642,8 @@ def from_requirements(raw: str, model=None) -> list[dict]:
         "exactly, typos and all. A skill you cannot quote for is dropped.\n\n"
         f"- `check` is optional and must be one of: {', '.join(sorted(CHECKS))}. Add one "
         "only where the requirement is mechanically checkable; otherwise null.\n\n"
+        "NEVER RESTATE WHERE A SKILL APPLIES. Which course and which session are recorded "
+        "separately; write what must happen, not where.\n\n"
         f"AUTHOR'S NOTES:\n{raw}")
     try:
         data = model(prompt)
@@ -755,8 +758,9 @@ def articulate(text: str, model=None) -> dict | None:
     if model is None:
         model = _default_model
     prompt = (
-        "A course author has written ONE rule their course must be written under. Turn "
-        "it into the instruction a professional writer will work from.\n\n"
+        "A course author has written ONE SKILL their course must be written under — an "
+        "instruction about HOW the course is taught. Turn it into the instruction a "
+        "professional writer will work from.\n\n"
         "Return JSON: {\"text\": \"...\", \"category\": \"teaching_flow|"
         "teaching_guidelines|examples_visuals|reviewer\", \"kind\": \"style|content|"
         "structure\"}\n\n"
@@ -777,7 +781,13 @@ def articulate(text: str, model=None) -> dict | None:
         "`kind` is the older, coarser label, kept for compatibility: content (what the "
         "document must contain), structure (how it is shaped), style (how it is "
         "written).\n\n"
-        f"THE AUTHOR'S RULE:\n{text}")
+        "NEVER RESTATE WHERE IT APPLIES. Which course, which session, and whether it is "
+        "a house rule are recorded separately and shown beside your sentence; an author "
+        "who typed \"session 11 only\" has told you the SCOPE, not the instruction. Write "
+        "what must happen, not where it happens. If their note says nothing but a scope, "
+        "return their words essentially unchanged rather than inventing an instruction "
+        "for them.\n\n"
+        f"THE AUTHOR'S SKILL:\n{text}")
     try:
         data = model(prompt)
         parsed = json.loads(data) if isinstance(data, str) else data

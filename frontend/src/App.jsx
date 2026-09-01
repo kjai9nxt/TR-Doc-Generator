@@ -20,6 +20,9 @@ export default function App() {
   // the two is open at a time — they share the slot, and stacking them would cover the
   // page on a laptop screen.
   const [showGaps, setShowGaps] = useState(false)
+  // "How skills work" — the explanation that used to be printed down the skills page.
+  // Same docked slot as the sheet templates, one at a time.
+  const [showSkillHelp, setShowSkillHelp] = useState(false)
 
   // ONE sheet: the curriculum, whose "PPT Links" column carries each session's deck.
   const [courseLink, setCourseLink] = useState('')
@@ -343,7 +346,7 @@ export default function App() {
   // Also on a course switch: these are per COURSE, and showing the previous course's
   // rules under a new one is worse than showing none.
   useEffect(() => {
-    if (user && tab === 'skills') refreshCourseRules()
+    if (user && (tab === 'skills' || tab === 'prereqs')) refreshCourseRules()
   }, [tab, user, courseName])
 
   // Follow a background job to completion, then refresh. Used by the external
@@ -1078,7 +1081,7 @@ export default function App() {
   // Filed against the RUN's course, not the page's selected one — after resuming
   // somebody else's run those differ, and a rule landing on the wrong course is worse
   // than no rule. It goes through the ordinary skills path, so it is articulated and
-  // then waits for approval in Course rules; nothing about the course changes here.
+  // then waits for approval under Skills; nothing about the course changes here.
   function makeSkillFromChat(msgId, text) {
     const course = guided?.course || courseName
     if (!course || !text) return
@@ -1178,17 +1181,22 @@ export default function App() {
   if (!user) return <LoginGate cfg={authCfg} onSignIn={onSignIn} err={authErr} />
 
   const courseCount = curRows.length
+  const prereqCount = (prereqState?.prereqs || []).length
   const tabs = [
     { id: 'curriculum', icon: 'curriculum', label: 'Curriculum',
       badge: courseCount ? String(courseCount) : null },
     { id: 'generate', icon: 'generate', label: 'Generate' },
     { id: 'history', icon: 'history', label: 'History' },
     ...(workspace.kind === 'team' ? [{ id: 'team', icon: 'team', label: 'Team' }] : []),
-    // WHAT THIS COURSE IS WRITTEN UNDER — its own instructions and what its learners
-    // already knew. Separate from "Agent rules", which are the rules the agent INFERRED
-    // from corrections across every course; these were authored for this one.
-    { id: 'skills', icon: 'skills', label: 'Course rules',
+    // WHAT THIS COURSE IS WRITTEN UNDER, and WHAT ITS LEARNERS ALREADY KNEW. Two
+    // entries, not one: they were a single screen with the skills, the composer and the
+    // whole prerequisites section stacked in one card, and it was the longest page in
+    // the app. Separate from "Agent rules", which are the rules the agent INFERRED from
+    // corrections across every course; these were authored for this one.
+    { id: 'skills', icon: 'skills', label: 'Skills',
       badge: approvedSkills ? String(approvedSkills) : null },
+    { id: 'prereqs', icon: 'curriculum', label: 'Prerequisites',
+      badge: prereqCount ? String(prereqCount) : null },
     { id: 'rules', icon: 'brain', label: 'Agent rules' },
     { id: 'settings', icon: 'settings', label: 'Settings' },
   ]
@@ -1284,8 +1292,13 @@ export default function App() {
           </nav>
 
           <div className="navsec">
-            <button className="navlink" onClick={loadGuide}>
+            <button className="navlink" onClick={() => { setShowSkillHelp(false); loadGuide() }}>
               <Icon name="doc" size={14} />Sheet template
+            </button>
+            <button className="navlink"
+                    onClick={() => { setShowGuide(false); setShowGaps(false)
+                                     setShowSkillHelp((v) => !v) }}>
+              <Icon name="skills" size={14} />How skills work
             </button>
             {syncOut?.extraction_warnings?.length > 0 && (
               <button className="navlink" onClick={() => { setShowGaps((v) => !v); setShowGuide(false) }}>
@@ -1339,6 +1352,7 @@ export default function App() {
       )}
 
       {showGuide && <TemplateSidePanel markdown={guide} onClose={() => setShowGuide(false)} />}
+      {showSkillHelp && <SkillsHelpPanel onClose={() => setShowSkillHelp(false)} />}
       {showGaps && syncOut?.extraction_warnings?.length > 0 && (
         <GapsSidePanel warnings={syncOut.extraction_warnings} onClose={() => setShowGaps(false)} />
       )}
@@ -2040,8 +2054,12 @@ export default function App() {
           memberBusy={memberBusy} memberMsg={memberMsg} />
       )}
 
-      {tab === 'skills' && (
-        <CourseRules course={courseName} skills={skillState} prereqs={prereqState}
+      {/* ONE COMPONENT, TWO VIEWS — the props are identical and every handler is
+          shared, so splitting the screen in two did not mean splitting the state that
+          drives it. */}
+      {(tab === 'skills' || tab === 'prereqs') && (
+        <CourseRules view={tab} onHelp={() => { setShowSkillHelp(true); setShowGuide(false); setShowGaps(false) }}
+          course={courseName} skills={skillState} prereqs={prereqState}
           busy={skillBusy} job={prereqJob} msg={skillMsg}
           onClearMsg={() => setSkillMsg(null)}
           courses={courses} justCreated={justCreated}
@@ -2118,8 +2136,14 @@ export default function App() {
 // nothing here affects a document until a person approves it — which is why a draft is
 // visibly a draft rather than just an un-highlighted row.
 // WHAT A SKILL GOVERNS, in the order a writer needs it — the same four the agent uses
-// (src/skills.py CATEGORIES). The hint is what the author is being asked for, because
-// "teaching flow" alone does not tell anyone what belongs in it.
+// (src/skills.py CATEGORIES).
+//
+// The `hint` is NOT printed beside every group any more. Four category headers each
+// carrying a line of explanation, above four empty slots each carrying another, meant a
+// course that had written nothing showed eight sentences of instruction and nothing
+// else — and the box you actually came to type in was below all of it. The hints live
+// in the "How skills work" panel now, and on the chips in the composer where you are
+// choosing between them and the difference matters.
 const SKILL_CATEGORIES = [
   ['teaching_flow', 'Teaching flow',
    'the order concepts are taught in — how a session opens, where examples land, how it closes',
@@ -2131,22 +2155,89 @@ const SKILL_CATEGORIES = [
    'the kinds of example and diagram this course uses, and when not to use one',
    'image'],
   ['reviewer', 'Reviewer corrections',
-   'a mistake review keeps sending back on this course — outranks the rest',
+   'a mistake review keeps sending back on this course — it outranks the rest',
    'flag'],
 ]
 const SKILL_CATEGORY_LABEL = Object.fromEntries(
   SKILL_CATEGORIES.map(([id, label]) => [id, label]))
-// The groups the brief is laid out in: the four categories, then one slot for the rules
-// written before categories existed. That last slot is the only one that hides when
-// empty — the four are what a course CAN say, and a course that has never said anything
-// about its examples should be able to see the gap.
+const SKILL_CATEGORY_ICON = Object.fromEntries(
+  SKILL_CATEGORIES.map(([id, , , icon]) => [id, icon]))
+// The groups the brief is laid out in: the four categories, then one slot for skills
+// written before categories existed.
 const SKILL_GROUPS = [
   ...SKILL_CATEGORIES.map(([id, label, hint, icon]) => ({ id, label, hint, icon })),
-  { id: '', label: 'Other rules', icon: 'skills',
-    hint: 'written before this course sorted its rules into the four above' },
+  { id: '', label: 'Other skills', icon: 'skills',
+    hint: 'written before this course sorted its skills into the four above' },
 ]
 
-/* ONE RULE, as the author needs to read it: what it says, the lines under it, whether
+/* HOW SKILLS WORK — the explanation, out of the way of the work.
+ *
+ * All of this used to be printed down the page: a paragraph under the title, a line
+ * under every category header, a line inside every empty category, a sentence under the
+ * composer. On a course with no skills yet that was the entire screen — instructions
+ * with nothing to act on, and the one control that mattered pushed off the bottom.
+ * It is one click away instead, in the same docked panel the sheet templates use.
+ */
+function SkillsHelpPanel({ onClose }) {
+  return (
+    <aside className="tmplside" aria-label="How skills work">
+      <div className="tsidehead">
+        <span className="tsidetitle"><Icon name="skills" size={14} /> How skills work</span>
+        <button className="csideclose" onClick={onClose} title="Hide">×</button>
+      </div>
+      <div className="tsidebody helpbody">
+        <p>
+          <b>The curriculum decides what is taught.</b> The prerequisite courses decide
+          what the learner already knows. <b>A skill decides how it is taught</b> — the
+          sequence, the depth, the examples, the words.
+        </p>
+        <p>
+          A skill never becomes content. Nothing you write here appears in the document
+          as an agenda item, a takeaway or a bullet; it shapes how the document is
+          written, and the agent fails its own run if any of it leaks onto a slide.
+        </p>
+        <h4>The four kinds</h4>
+        <dl>
+          {SKILL_CATEGORIES.map(([id, label, hint, icon]) => (
+            <div key={id}>
+              <dt><Icon name={icon} size={13} /> {label}</dt>
+              <dd>{hint}</dd>
+            </div>
+          ))}
+        </dl>
+        <h4>One skill, several instructions</h4>
+        <p>
+          Four related lines under one heading are <b>one skill with four
+          instructions</b>, in the order you wrote them — not four skills. The order is
+          part of what you said, and for a teaching flow it <i>is</i> what you said.
+        </p>
+        <h4>Where a skill applies</h4>
+        <dl>
+          <div><dt>All of this course</dt><dd>the standing brief for every session.</dd></div>
+          <div><dt>One session</dt><dd>that session and nowhere else.</dd></div>
+          <div><dt>Every course</dt>
+            <dd>a house rule for the whole instance. Admins only, and the weakest of
+                them all.</dd></div>
+        </dl>
+        <h4>Which one wins</h4>
+        <p className="pcopy">
+          Hard rules › Reviewer corrections › Session › Course › Global. Narrower wins:
+          a correction made about this course beats a rule written for one of its
+          sessions, which beats the course brief, which beats the house rules.
+        </p>
+        <h4>Nothing applies until you approve it</h4>
+        <p>
+          Every skill arrives as a <b>draft</b> and affects nothing until approved.
+          Editing one sends it back to draft — an approval is of the words that were
+          approved. Retiring keeps it on the record, so an old document can still be
+          explained.
+        </p>
+      </div>
+    </aside>
+  )
+}
+
+/* ONE SKILL, as the author needs to read it: what it says, the lines under it, whether
    it is in force, and where it reaches. Split out of CourseRules because it is the only
    part of that screen with per-item state, and inlining it made the list markup
    impossible to follow. */
@@ -2156,7 +2247,7 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
   const [why, setWhy] = useState(false)
   const lines = s.instructions || []
   const isGlobal = s.course === globalCourse
-  // A global rule is SHOWN to a course owner — knowing what your course inherits is the
+  // A global skill is SHOWN to a course owner — knowing what your course inherits is the
   // whole point of showing it — but it is not theirs to change.
   const mine = canEdit && (!isGlobal || canEditGlobal)
   const quotes = s.source_quotes?.length ? s.source_quotes
@@ -2167,9 +2258,9 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
         {editing ? (
           <>
             <textarea rows={2} value={editText} onChange={(e) => setEditText(e.target.value)} />
-            {/* ONE RULE, SEVERAL LINES. The author grouped these and put them in this
+            {/* ONE SKILL, SEVERAL LINES. The author grouped these and put them in this
                 order; the order is part of what they said, so they are edited as a
-                block rather than as separate rules. */}
+                block rather than as separate skills. */}
             {lines.length > 0 && (
               <>
                 <label>Its instructions — one per line, in order</label>
@@ -2199,10 +2290,10 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
           {s.source?.startsWith('imported:') && (
             <span className="tag">From {s.source.slice(9)}</span>)}
           {/* EVERY phrase it was drawn from, not just the first — the author says the
-              same thing twice in different words and those merge into one rule, and the
+              same thing twice in different words and those merge into one skill, and the
               approval only means something if you can see all of what it was built
               from. Behind a disclosure because it is provenance, not content: it was
-              printed inline on every row and made a six-rule brief unreadable. */}
+              printed inline on every row and made a six-skill brief unreadable. */}
           {quotes.length > 0 && (s.source === 'requirements' || s.source === 'user') && (
             <button className="whybtn" onClick={() => setWhy((v) => !v)}>
               {why ? 'Hide' : 'From your words'}
@@ -2228,7 +2319,7 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
               {s.status !== 'approved' && (
                 <button className="primary sm" disabled={busy} onClick={onApprove}>
                   <Icon name="check" size={13} />Approve</button>)}
-              <button className="iconbtn" disabled={busy} title="Edit this rule"
+              <button className="iconbtn" disabled={busy} title="Edit this skill"
                       onClick={onStartEdit}><Icon name="pencil" size={14} /></button>
               <button className="iconbtn danger" disabled={busy}
                       title="Retire it — it stops applying, and is kept on the record"
@@ -2241,8 +2332,20 @@ function SkillCard({ s, canEdit, canEditGlobal, globalCourse, busy, editing, edi
   )
 }
 
-function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses = [],
-                      justCreated, onDismissNew,
+/* THE SKILLS PAGE and THE PREREQUISITES PAGE — one component, two views.
+ *
+ * They were one screen, and it was the longest in the app: a paragraph of explanation,
+ * a precedence ladder, four category cards (empty on a new course, each repeating "add
+ * one below"), the composer, and then the whole prerequisites section underneath. The
+ * thing you came to do was three screens down. They are two rail entries now, and the
+ * composer opens at the TOP of the skills page rather than after everything it could
+ * possibly add to.
+ *
+ * `view` selects which one renders. They stay one component because they share every
+ * handler, the busy flag and the one message strip.
+ */
+function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onClearMsg,
+                      courses = [], justCreated, onDismissNew, onHelp,
                       onAdd, onFromRequirements, onImport, onApprove, onEdit, onRetire,
                       onAddPrereq, onAddExternalPrereq, onRemovePrereq, job }) {
   const jobRan = useRef(false)
@@ -2259,13 +2362,17 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
   // the lines are what a writer actually follows.
   const [editLines, setEditLines] = useState('')
   // WHAT a new skill governs and WHERE it applies. Both default to the answer that was
-  // the only possible one before this existed — uncategorised, whole course — so adding
-  // a skill is still one box and a button for anyone who does not need the rest.
+  // the only possible one before this existed — uncategorised, whole course.
   const [cat, setCat] = useState('')
   const [scope, setScope] = useState('course')
   const [sessionNo, setSessionNo] = useState('')
   // Which session's brief the list is showing. '' = all of them.
   const [seeSession, setSeeSession] = useState('')
+  // IS THE COMPOSER OPEN. Closed by default once the course has skills, because then
+  // the page is for reading what the course is written under; open by default when it
+  // has none, because then there is nothing to read and one thing to do.
+  const [adding, setAdding] = useState(false)
+  const composerRef = useRef(null)
   // Close the link form once the decks are ACTUALLY read — and only when it worked, so a
   // failed read leaves the links on screen to be corrected instead of retyped.
   useEffect(() => {
@@ -2277,54 +2384,222 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
   const approvedCount = list.filter((x) => x.status === 'approved').length
   const draftCount = list.filter((x) => x.status === 'draft').length
   // Which sessions this course has written anything for — the only ones worth offering
-  // in the filter, since picking a session with no rules of its own shows the course
+  // in the filter, since picking a session with no skills of its own shows the course
   // brief you were already looking at.
   const sessionsWithSkills = [...new Set(list.filter((x) => x.scope === 'session')
     .map((x) => x.session_ref).filter(Boolean))].sort((a, b) => Number(a) - Number(b))
-  // WHAT ONE SESSION IS WRITTEN UNDER: its own rules plus everything course-wide, which
-  // is exactly what src/skills.py resolves for a run. Unfiltered, every session's rules
+  // WHAT ONE SESSION IS WRITTEN UNDER: its own skills plus everything course-wide, which
+  // is exactly what src/skills.py resolves for a run. Unfiltered, every session's skills
   // are listed, because this is also the screen where they are managed.
   const shown = seeSession
     ? list.filter((x) => x.scope !== 'session' || x.session_ref === seeSession)
     : list
-  // What the pickers above the box currently say, in the shape the API takes. The
-  // category is only sent when the author chose one — left alone, the agent classifies
-  // what they wrote, which is better than recording a guess as their decision.
+  const byGroup = SKILL_GROUPS.map((g) => ({
+    ...g, items: shown.filter((x) => (x.category || '') === g.id) }))
+  const filled = byGroup.filter((g) => g.items.length > 0)
+  // The four a course CAN write and has not. Shown as one line of buttons, not as four
+  // empty cards: the gap is worth knowing about, and it is worth exactly one line.
+  const gaps = byGroup.filter((g) => g.id && g.items.length === 0)
+
+  // What the pickers currently say, in the shape the API takes. The category is only
+  // sent when the author chose one — left alone, the agent classifies what they wrote,
+  // which is better than recording a guess as their decision.
   const whereNow = () => ({
     category: cat || undefined,
     scope,
     session: scope === 'session' ? Number(sessionNo) : undefined,
   })
+  function openComposer(preset) {
+    if (preset !== undefined) setCat(preset)
+    setAdding(true)
+    // The composer is at the top, so this only matters when the page is already
+    // scrolled — but then it matters a lot.
+    requestAnimationFrame(() => composerRef.current?.scrollIntoView(
+      { behavior: 'smooth', block: 'nearest' }))
+  }
+
   const report = prereqs?.report || {}
   const attached = (prereqs?.prereqs || []).map((p) => p.prereq)
   const available = (prereqs?.available || []).filter((c) => !attached.includes(c))
 
   if (!course) {
-    return <section className="card"><h2><span className="hicon"><Icon name="skills" /></span> Course rules</h2>
-      <p className="hint">Open a course first — these belong to one course.</p></section>
+    return <section className="card">
+      <h2><span className="hicon"><Icon name={view === 'skills' ? 'skills' : 'curriculum'} /></span>
+        {view === 'skills' ? 'Skills' : 'Prerequisites'}</h2>
+      <p className="hint">Open a course first — these belong to one course.</p>
+    </section>
   }
+
+  const alert = msg && (
+    <div className={`alert ${msg.ok ? 'ok' : 'error'}`} onClick={onClearMsg}>{msg.text}</div>
+  )
+
+  // ── PREREQUISITES ───────────────────────────────────────────────────────────
+  if (view === 'prereqs') {
+    return (
+      <section className="card">
+        <header className="pagehead">
+          <div>
+            <h2><span className="hicon"><Icon name="curriculum" /></span>
+              Prerequisites — {course}</h2>
+            <p className="hint tight">
+              Courses taught before this one. Their <b>whole decks are read</b> — not just
+              the topic names but the slide content — so the writer knows how far each
+              topic was taken and pitches above it. Those topics are <b>assumed</b>: never
+              re-taught, and free to refer to. The opposite of the rule for earlier
+              sessions of THIS course, where repeating a topic is a failure.
+            </p>
+          </div>
+        </header>
+        <label>Courses taught before this one</label>
+        <div className="memberlist">
+          {attached.length === 0 && (
+            <span className="hint" style={{ margin: 0 }}>
+              None yet — nothing is assumed, so this course teaches from the ground up.
+            </span>)}
+          {(prereqs?.prereqs || []).map(({ prereq: n, kind }) => (
+            <span key={n} className="memberchip">
+              {n}
+              {kind === 'external' && <span className="mtag" title="taught elsewhere — this agent knows it through its slides">elsewhere</span>}
+              {canEdit && <button className="mx" disabled={busy} title={`Remove ${n}`}
+                                  onClick={() => onRemovePrereq(n)}>×</button>}
+            </span>
+          ))}
+        </div>
+        {canEdit && (
+          <div className="gactions">
+            {available.length > 0 && (
+              <select defaultValue="" disabled={busy}
+                      onChange={(e) => { if (e.target.value) { onAddPrereq(e.target.value); e.target.value = '' } }}>
+                <option value="" disabled>a course in this agent…</option>
+                {available.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            )}
+            <button className={`ghostbtn ${extOpen ? 'on' : ''}`} disabled={busy}
+                    onClick={() => setExtOpen((v) => !v)}>
+              <Icon name="plus" size={14} /> A course not in this agent
+            </button>
+          </div>
+        )}
+        {canEdit && extOpen && (
+          <div className="regen">
+            <span className="hint">
+              A course your learners did somewhere else. This agent knows it only through
+              its slides, so paste one Google Slides link per session. The decks are read
+              the same way this course's own are, and they belong to <b>{course}</b> — they
+              go if it does.
+            </span>
+            <input value={extName} onChange={(e) => setExtName(e.target.value)}
+                   placeholder="e.g. JavaScript Essentials (taught elsewhere)" />
+            <textarea rows={4} value={extLinks} onChange={(e) => setExtLinks(e.target.value)}
+                      placeholder={'https://docs.google.com/presentation/d/…/edit\nhttps://docs.google.com/presentation/d/…/edit'} />
+            <div className="gactions">
+              <button className="primary"
+                      disabled={busy || !!job || !extName.trim() || !extLinks.trim()}
+                      onClick={() => {
+                        // The form used to close on click, which unmounted the only thing
+                        // that could report progress — so pasting twelve links looked
+                        // identical to the button doing nothing. It closes when the decks
+                        // are actually read, not when the request is sent.
+                        const n = extName.trim()
+                        Promise.resolve(onAddExternalPrereq(n,
+                          extLinks.split('\n').map((l) => l.trim()).filter(Boolean)))
+                          .then((ok) => { if (ok === false) return
+                                          setExtName(''); setExtLinks('') })
+                      }}>
+                {busy || job ? 'Reading its decks…' : 'Add and read its decks'}
+              </button>
+              <button className="ghostbtn" disabled={busy || !!job}
+                      onClick={() => setExtOpen(false)}>
+                {job ? 'Reading…' : 'Cancel'}
+              </button>
+            </div>
+            {job && (
+              <div className="joblive">
+                <div className="jobbar">
+                  <span style={{ width: `${job.total ? Math.round(100 * (job.done + job.failed) / job.total) : 8}%` }} />
+                </div>
+                <span className="hint">
+                  {job.stage === 'done'
+                    ? 'Finishing…'
+                    : `${job.stage || 'working'} — ${job.done} of ${job.total || '?'} deck(s) read`}
+                  {job.slides ? `, ${job.slides} slide(s) so far` : ''}
+                  {job.failed ? `, ${job.failed} could not be read` : ''}.
+                  {' '}Each deck is fetched from Google Slides, so this takes a few seconds
+                  per link. You can leave this open.
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        {/* The report is computed server-side over the decks that are STORED, and it comes
+            with the panel — so while a read is running it is a snapshot from before the
+            read started. It sat directly under a progress line reading "8 of 29 deck(s)
+            read, 343 slide(s) so far" and said "0 session(s), 0 slides": two true numbers
+            that together look like a broken one. While a job is live the line says so
+            instead of quoting a figure it knows is behind. */}
+        {attached.length > 0 && (
+          <span className="hint">
+            {job ? (
+              <>Read from {attached.length} course(s): counting once this read finishes —{' '}
+              {job.done || 0} deck(s) and {(job.slides || 0).toLocaleString()} slide(s) so far.</>
+            ) : (
+            <>
+            Read from {attached.length} course(s): {report.sessions_indexed || 0} session(s),{' '}
+            {(report.slides_indexed || 0).toLocaleString()} slides,{' '}
+            {report.topics_indexed || 0} distinct topics
+            {report.content_chars
+              ? ` and ${Math.round(report.content_chars / 1000)}k characters of slide content`
+              : ''}.
+            {report.overlaps?.length > 0 && (
+              <> <b>{report.overlaps.length} of this course's takeaways name something a
+                prerequisite already taught</b> — often right, if the session deepens it,
+                but worth seeing: {report.overlaps.slice(0, 3).map((o) =>
+                  `Session ${o.session_no} (“${(o.topics || [o.topic]).join('”, “')}”, from `
+                  + `${(o.prereqs || [o.prereq]).filter(Boolean).join(' / ')})`).join('; ')}
+                {report.overlaps.length > 3 ? `, and ${report.overlaps.length - 3} more` : ''}.</>
+            )}
+            </>
+            )}
+          </span>
+        )}
+        {alert}
+      </section>
+    )
+  }
+
+  // ── SKILLS ──────────────────────────────────────────────────────────────────
+  const empty = list.length === 0
   return (
     <section className="card">
-      <h2><span className="hicon"><Icon name="skills" /></span> Course rules — {course}</h2>
+      <header className="pagehead">
+        <div>
+          <h2><span className="hicon"><Icon name="skills" /></span> Skills — {course}</h2>
+          <p className="hint tight">
+            How this course is taught — the sequence, the depth, the examples, the words.
+            The curriculum decides <i>what</i> it covers; these decide <i>how</i>.{' '}
+            <button className="link inline" onClick={onHelp}>How skills work</button>
+          </p>
+        </div>
+        {canEdit && !adding && (
+          <button className="primary" onClick={() => openComposer('')}>
+            <Icon name="plus" size={14} /> Add a skill
+          </button>
+        )}
+      </header>
+
       {justCreated === course && (
         <div className="alert ok">
           <b>“{course}” is created. Set what it is written under before you generate.</b>
-          <p>A course's <b>skills</b> are the instructions its documents are written to,
-             and its <b>prerequisites</b> are what its learners already know. Both belong
-             here at the start — the alternative is generating a document under rules
-             nobody set, then correcting it a session at a time. Neither is locked: you
-             can add, edit and retire any of it later.</p>
+          <p>The alternative is generating a document under rules nobody set, then
+             correcting it a session at a time. Nothing here is locked — add, edit and
+             retire any of it later.</p>
           <div className="gactions">
             <button className="ghostbtn" onClick={onDismissNew}>Skip for now</button>
           </div>
         </div>
       )}
-      <p className="hint">
-        What <b>this course</b> is written under. A React course needs things an Operating
-        Systems course does not, and this is where that is said. Nothing here affects a
-        document until it is <b>approved</b>. These are separate from <b>Agent rules</b>,
-        which the agent worked out for itself from corrections.
-      </p>
+
       {!canEdit && (
         <div className="alert warn">
           Only {skills?.owner || 'an admin'} can change these — working on a course and
@@ -2333,343 +2608,224 @@ function CourseRules({ course, skills, prereqs, busy, msg, onClearMsg, courses =
         </div>
       )}
 
-      {/* ── THE BRIEF ──────────────────────────────────────────────────────────
-          Grouped by what each part governs, because that is how the author thinks
-          about it: the order I teach in, how I explain, what I show, what review
-          keeps telling me. A flat list of every rule in one column — which is what
-          this was — gives the reader no way to see that their course has a teaching
-          flow but has never said anything about examples. */}
-      <div className="briefhead">
-        <div>
-          <span className="eyebrow">The brief</span>
-          <p className="hint tight">
-            {approvedCount === 0
-              ? 'Nothing approved yet — this course is written to the house defaults.'
-              : <>{approvedCount} rule{approvedCount === 1 ? '' : 's'} in force
-                  {draftCount > 0 && <>, <b className="warntext">{draftCount} awaiting approval</b></>}.
-                  These shape <b>how</b> the document is written; the curriculum decides
-                  what it covers.</>}
-          </p>
-        </div>
-        {/* WHAT ONE SESSION ACTUALLY GETS. A session skill is invisible from anywhere
-            but that session, so without this the only way to check what session 15 is
-            written under was to generate session 15. */}
-        {sessionsWithSkills.length > 0 && (
-          <label className="filterbox">
-            <span>Showing</span>
-            <select value={seeSession} onChange={(e) => setSeeSession(e.target.value)}>
-              <option value="">every session</option>
-              {sessionsWithSkills.map((n) => (
-                <option key={n} value={n}>session {n} only</option>))}
-            </select>
-          </label>
+      {/* THE COMPOSER, AT THE TOP. It used to sit under every category it could add to,
+          which on an empty course meant four "nothing here yet" cards stood between the
+          author and the only control on the page. */}
+      <div ref={composerRef}>
+        {canEdit && (adding || empty) && (
+          <div className="composer">
+            <div className="cmphead">
+              <span className="eyebrow">Add a skill</span>
+              <div className="cmpheadright">
+                <div className="segmented">
+                  {[['write', 'Write one'], ['requirements', 'From my notes'],
+                    ['import', 'Import']].map(([m, l]) => (
+                    <button key={m} className={mode === m ? 'on' : ''}
+                            onClick={() => setMode(m)}>{l}</button>
+                  ))}
+                </div>
+                {!empty && (
+                  <button className="iconbtn" title="Close" onClick={() => setAdding(false)}>
+                    <Icon name="x" size={14} /></button>)}
+              </div>
+            </div>
+
+            {/* WHAT IT GOVERNS AND WHERE IT APPLIES — shared by both authoring paths,
+                because the answer is about the skill, not about how it was written. */}
+            {mode !== 'import' && (
+              <div className="cmpwhere">
+                <div className="cmpfield">
+                  <label>Files under</label>
+                  <div className="chiprow">
+                    <button className={`chipbtn ${cat === '' ? 'on' : ''}`}
+                            onClick={() => setCat('')}
+                            title="let the agent decide which of the four it is">
+                      Decide for me</button>
+                    {SKILL_CATEGORIES.map(([id, label, hint, icon]) => (
+                      <button key={id} className={`chipbtn ${cat === id ? 'on' : ''}`}
+                              title={hint} onClick={() => setCat(id)}>
+                        <Icon name={icon} size={13} />{label}</button>
+                    ))}
+                  </div>
+                  {cat && <span className="hint tight">
+                    {(SKILL_CATEGORIES.find(([id]) => id === cat) || [])[2]}</span>}
+                </div>
+                <div className="cmpfield">
+                  <label>Applies to</label>
+                  <div className="chiprow">
+                    <button className={`chipbtn ${scope === 'course' ? 'on' : ''}`}
+                            onClick={() => setScope('course')}>All of {course}</button>
+                    <button className={`chipbtn ${scope === 'session' ? 'on' : ''}`}
+                            onClick={() => setScope('session')}>One session</button>
+                    {skills?.can_edit_global && (
+                      <button className={`chipbtn ${scope === 'global' ? 'on' : ''}`}
+                              title="a house rule for every course on this instance"
+                              onClick={() => setScope('global')}>Every course</button>)}
+                    {scope === 'session' && (
+                      <input className="tiny" type="number" min="1" value={sessionNo}
+                             placeholder="no."
+                             onChange={(e) => setSessionNo(e.target.value)} />)}
+                  </div>
+                  {scope === 'session' && <span className="hint tight">
+                    That session and nowhere else. Where it disagrees with a skill for the
+                    whole course, this one wins.</span>}
+                  {scope === 'global' && <span className="hint tight">
+                    Every course here — and the weakest skill there is: anything a course
+                    or a session says about the same thing overrides it.</span>}
+                </div>
+              </div>
+            )}
+
+            {mode === 'write' && (
+              <>
+                <label>The skill</label>
+                <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
+                          placeholder="e.g. Show the snippet before explaining it." />
+                <div className="cmpfoot">
+                  <span className="hint tight">
+                    Written up as the instruction a writer works from, with your own words
+                    kept beside it. It affects nothing until you approve it.
+                  </span>
+                  <button className="primary sm"
+                          disabled={busy || !text.trim()
+                                    || (scope === 'session' && !sessionNo)}
+                          onClick={() => Promise.resolve(onAdd(text, whereNow()))
+                            .then((ok) => { if (ok !== false) setText('') })}>
+                    {busy ? 'Writing it up…' : 'Add as draft'}
+                  </button>
+                </div>
+              </>
+            )}
+            {mode === 'requirements' && (
+              <>
+                <label>Everything this course needs, in plain sentences</label>
+                <textarea rows={4} value={reqs} onChange={(e) => setReqs(e.target.value)}
+                          placeholder="e.g. start with the problem, then the concept, then how it works, then an example — explain intuition before the formal definition, use simple language first, and connect each concept to the last session" />
+                <div className="cmpfoot">
+                  <span className="hint tight">
+                    Grouped, not scattered: everything about sequence becomes one
+                    teaching-flow skill in the order you wrote it. Nothing it cannot trace
+                    back to your words is kept.
+                  </span>
+                  <button className="primary sm"
+                          disabled={busy || !reqs.trim()
+                                    || (scope === 'session' && !sessionNo)}
+                          onClick={() => Promise.resolve(onFromRequirements(reqs, whereNow()))
+                            .then((ok) => { if (ok !== false) setReqs('') })}>
+                    {busy ? 'Drafting…' : 'Draft skills from this'}
+                  </button>
+                </div>
+              </>
+            )}
+            {mode === 'import' && (
+              <>
+                <label>Copy another course's approved skills</label>
+                <div className="cmpfoot">
+                  <span className="hint tight">
+                    They arrive as drafts — a skill that was right for one course is a
+                    proposal for the next, not a decision already taken.
+                  </span>
+                  <select defaultValue="" disabled={busy} className="cmpselect"
+                          onChange={(e) => { if (e.target.value) { onImport(e.target.value); e.target.value = '' } }}>
+                    <option value="" disabled>from a course…</option>
+                    {courses.filter((c) => c.name !== course).map((c) => (
+                      <option key={c.name} value={c.name}>{c.name}</option>))}
+                  </select>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
 
-      {/* The order the agent resolves a conflict in. Stated once, here, rather than
-          left for the author to infer from which rule happened to win. */}
-      <ol className="precedence" title="strongest first">
-        {[['Hard rules', 'the structural rules no skill can override'],
-          ['Reviewer', 'corrections review keeps making on this course'],
-          ['Session', 'written for one session only'],
-          ['Course', "this course's standing brief"],
-          ['Global', 'house rules every course gets']].map(([n, why]) => (
-          <li key={n} title={why}>{n}</li>
-        ))}
-      </ol>
+      {empty && !canEdit && (
+        <div className="emptystate">
+          <span className="eicon"><Icon name="skills" size={20} /></span>
+          <b>No skills yet</b>
+          <p>This course is written to the house defaults. Its owner
+             ({skills?.owner || 'an admin'}) decides what it needs beyond them.</p>
+        </div>
+      )}
 
-      <div className="brief">
-        {SKILL_GROUPS.map(({ id, label, hint, icon }) => {
-          const group = shown.filter((s) => (s.category || '') === id)
-          if (id === '' && group.length === 0) return null   // no legacy rows, no slot
-          return (
-            <section key={id || 'other'} className="bgroup">
-              <header className="bghead">
-                <span className="bgicon"><Icon name={icon} /></span>
-                <div className="bgtitle">
-                  <b>{label}</b>
-                  <span>{hint}</span>
-                </div>
-                <span className="bgcount">{group.length || '—'}</span>
-              </header>
-              {/* AN EMPTY CATEGORY IS SHOWN, NOT HIDDEN. The four are what a course
-                  can say about how it teaches, and a course that has never said
-                  anything about its examples should be able to see that. */}
-              {group.length === 0 ? (
-                <p className="bgempty">
-                  Nothing yet. {canEdit ? 'Add a rule below and file it here.' : ''}
-                </p>
-              ) : group.map((s) => (
-                <SkillCard key={s.id} s={s} canEdit={canEdit} busy={busy}
-                           globalCourse={skills?.global_course}
-                           canEditGlobal={skills?.can_edit_global}
-                           editing={editing === s.id}
-                           onStartEdit={() => { setEditing(s.id); setEditText(s.text)
-                                                setEditLines((s.instructions || []).join('\n')) }}
-                           onCancelEdit={() => setEditing(null)}
-                           editText={editText} setEditText={setEditText}
-                           editLines={editLines} setEditLines={setEditLines}
-                           onSave={() => {
-                             // undefined, not [], when the skill has no lines: the API
-                             // reads "omitted" as leave-them-alone and an empty array as
-                             // delete-them.
-                             const lines = (s.instructions || []).length
-                               ? editLines.split('\n').map((l) => l.trim()).filter(Boolean)
-                               : undefined
-                             onEdit(s.id, editText, lines); setEditing(null)
-                           }}
-                           onApprove={() => onApprove(s.id)}
-                           onRetire={() => onRetire(s.id)} />
-              ))}
-            </section>
-          )
-        })}
-      </div>
-
-      {canEdit && (
-        <div className="composer">
-          <div className="cmphead">
-            <span className="eyebrow">Add a rule</span>
-            <div className="segmented">
-              {[['write', 'Write one'], ['requirements', 'From my notes'],
-                ['import', 'Import']].map(([m, l]) => (
-                <button key={m} className={mode === m ? 'on' : ''}
-                        onClick={() => setMode(m)}>{l}</button>
-              ))}
-            </div>
+      {!empty && (
+        <>
+          {/* ONE STRIP: how many are in force, how many are waiting, and whose brief you
+              are looking at. Three separate lines of prose before. */}
+          <div className="skillbar">
+            <span className="sb"><b>{approvedCount}</b> in force</span>
+            {draftCount > 0 && (
+              <span className="sb warntext"><b>{draftCount}</b> awaiting approval</span>)}
+            <span className="sbspacer" />
+            {sessionsWithSkills.length > 0 && (
+              <label className="filterbox">
+                <span>Showing</span>
+                <select value={seeSession} onChange={(e) => setSeeSession(e.target.value)}>
+                  <option value="">every session</option>
+                  {sessionsWithSkills.map((n) => (
+                    <option key={n} value={n}>session {n} only</option>))}
+                </select>
+              </label>
+            )}
           </div>
 
-          {/* WHAT IT GOVERNS AND WHERE IT APPLIES — shared by both authoring paths,
-              because the answer is about the skill, not about how it was written.
-              Both default to what a skill has always been: uncategorised, whole
-              course. Nobody who does not need this has to touch it. */}
-          {mode !== 'import' && (
-            <div className="cmpwhere">
-              <div className="cmpfield">
-                <label>Files under</label>
-                <div className="chiprow">
-                  <button className={`chipbtn ${cat === '' ? 'on' : ''}`}
-                          onClick={() => setCat('')}
-                          title="let the agent decide which of the four it is">
-                    Decide for me</button>
-                  {SKILL_CATEGORIES.map(([id, label, hint, icon]) => (
-                    <button key={id} className={`chipbtn ${cat === id ? 'on' : ''}`}
-                            title={hint} onClick={() => setCat(id)}>
-                      <Icon name={icon} size={13} />{label}</button>
-                  ))}
-                </div>
-              </div>
-              <div className="cmpfield">
-                <label>Applies to</label>
-                <div className="chiprow">
-                  <button className={`chipbtn ${scope === 'course' ? 'on' : ''}`}
-                          onClick={() => setScope('course')}>All of {course}</button>
-                  <button className={`chipbtn ${scope === 'session' ? 'on' : ''}`}
-                          onClick={() => setScope('session')}>One session</button>
-                  {skills?.can_edit_global && (
-                    <button className={`chipbtn ${scope === 'global' ? 'on' : ''}`}
-                            title="a house rule for every course on this instance"
-                            onClick={() => setScope('global')}>Every course</button>)}
-                  {scope === 'session' && (
-                    <input className="tiny" type="number" min="1" value={sessionNo}
-                           placeholder="no."
-                           onChange={(e) => setSessionNo(e.target.value)} />)}
-                </div>
-                {scope === 'session' && <span className="hint tight">
-                  That session and nowhere else. Where it disagrees with a rule for the
-                  whole course, this one wins.</span>}
-                {scope === 'global' && <span className="hint tight">
-                  Every course here. It is the weakest rule there is — anything a course
-                  or a session says about the same thing overrides it.</span>}
-              </div>
-            </div>
-          )}
-
-          {mode === 'write' && (
-            <>
-              <p className="cmphelp">
-                Say it in your own words. The agent writes it up as the instruction a
-                writer works from — it adds nothing you did not ask for, and shows you
-                your own words beside it. Nothing takes effect until you approve it.
-              </p>
-              <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
-                        placeholder="e.g. Show the snippet before explaining it." />
-              <div className="cmpfoot">
-                <button className="primary sm"
-                        disabled={busy || !text.trim()
-                                  || (scope === 'session' && !sessionNo)}
-                        onClick={() => Promise.resolve(onAdd(text, whereNow()))
-                          .then((ok) => { if (ok !== false) setText('') })}>
-                  {busy ? 'Writing it up…' : 'Add as draft'}
-                </button>
-              </div>
-            </>
-          )}
-          {mode === 'requirements' && (
-            <>
-              <p className="cmphelp">
-                Write what the course needs in plain sentences. The agent <b>groups</b>
-                them — everything about the order things are taught in becomes one
-                teaching-flow rule, in the order you wrote it; the same for how things are
-                explained and for examples. It does not invent: anything it cannot trace
-                back to your words is discarded.
-              </p>
-              <textarea rows={4} value={reqs} onChange={(e) => setReqs(e.target.value)}
-                        placeholder="e.g. start with the problem, then the concept, then how it works, then an example — explain intuition before the formal definition, use simple language first, and connect each concept to the last session" />
-              <div className="cmpfoot">
-                <button className="primary sm"
-                        disabled={busy || !reqs.trim()
-                                  || (scope === 'session' && !sessionNo)}
-                        onClick={() => Promise.resolve(onFromRequirements(reqs, whereNow()))
-                          .then((ok) => { if (ok !== false) setReqs('') })}>
-                  {busy ? 'Drafting…' : 'Draft rules from this'}
-                </button>
-              </div>
-            </>
-          )}
-          {mode === 'import' && (
-            <>
-              <p className="cmphelp">
-                Copy the approved rules of another course. They arrive as drafts — a rule
-                that was right for one course is a proposal for the next, not a decision
-                already taken.
-              </p>
-              <select defaultValue="" disabled={busy} className="cmpselect"
-                      onChange={(e) => { if (e.target.value) { onImport(e.target.value); e.target.value = '' } }}>
-                <option value="" disabled>from a course…</option>
-                {courses.filter((c) => c.name !== course).map((c) => (
-                  <option key={c.name} value={c.name}>{c.name}</option>))}
-              </select>
-            </>
-          )}
-        </div>
-      )}
-
-      <div className="briefhead">
-        <div>
-          <span className="eyebrow">Prerequisites — what the learner already knows</span>
-          <p className="hint tight">
-            Courses taught before this one. Their <b>whole decks are read</b> — not just
-            the topic names but the slide content, so the writer knows how far each topic
-            was actually taken and pitches this course above that level. Those topics are
-            <b> assumed</b>: they are not re-taught, and may be referred to freely — the
-            opposite of the rule for earlier sessions of THIS course, where repeating a
-            topic is a failure.
-          </p>
-        </div>
-      </div>
-      <div className="memberlist">
-        {attached.length === 0 && <span className="hint">None.</span>}
-        {(prereqs?.prereqs || []).map(({ prereq: n, kind }) => (
-          <span key={n} className="memberchip">
-            {n}
-            {kind === 'external' && <span className="mtag" title="taught elsewhere — this agent knows it through its slides">elsewhere</span>}
-            {canEdit && <button className="mx" disabled={busy} title={`Remove ${n}`}
-                                onClick={() => onRemovePrereq(n)}>×</button>}
-          </span>
-        ))}
-      </div>
-      {canEdit && (
-        <div className="gactions">
-          {available.length > 0 && (
-            <select defaultValue="" disabled={busy}
-                    onChange={(e) => { if (e.target.value) { onAddPrereq(e.target.value); e.target.value = '' } }}>
-              <option value="" disabled>a course in this agent…</option>
-              {available.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          )}
-          <button className={`ghostbtn ${extOpen ? 'on' : ''}`} disabled={busy}
-                  onClick={() => setExtOpen((v) => !v)}>
-            <Icon name="plus" size={14} /> A course not in this agent
-          </button>
-        </div>
-      )}
-      {canEdit && extOpen && (
-        <div className="regen">
-          <span className="hint">
-            A course your learners did somewhere else. This agent knows it only through
-            its slides, so paste one Google Slides link per session. The decks are read
-            the same way this course's own are, and they belong to <b>{course}</b> — they
-            go if it does.
-          </span>
-          <input value={extName} onChange={(e) => setExtName(e.target.value)}
-                 placeholder="e.g. JavaScript Essentials (taught elsewhere)" />
-          <textarea rows={4} value={extLinks} onChange={(e) => setExtLinks(e.target.value)}
-                    placeholder={'https://docs.google.com/presentation/d/…/edit\nhttps://docs.google.com/presentation/d/…/edit'} />
-          <div className="gactions">
-            <button className="primary"
-                    disabled={busy || !!job || !extName.trim() || !extLinks.trim()}
-                    onClick={() => {
-                      // The form used to close on click, which unmounted the only thing
-                      // that could report progress — so pasting twelve links looked
-                      // identical to the button doing nothing. It closes when the decks
-                      // are actually read, not when the request is sent.
-                      const n = extName.trim()
-                      Promise.resolve(onAddExternalPrereq(n,
-                        extLinks.split('\n').map((l) => l.trim()).filter(Boolean)))
-                        .then((ok) => { if (ok === false) return
-                                        setExtName(''); setExtLinks('') })
-                    }}>
-              {busy || job ? 'Reading its decks…' : 'Add and read its decks'}
-            </button>
-            <button className="ghostbtn" disabled={busy || !!job}
-                    onClick={() => setExtOpen(false)}>
-              {job ? 'Reading…' : 'Cancel'}
-            </button>
+          <div className="brief">
+            {filled.map((g) => (
+              <section key={g.id || 'other'} className="bgroup">
+                <header className="bghead">
+                  <span className="bgicon"><Icon name={g.icon} /></span>
+                  <b className="bgtitle" title={g.hint}>{g.label}</b>
+                  <span className="bgcount">{g.items.length}</span>
+                  {canEdit && g.id && (
+                    <button className="iconbtn" title={`Add a ${g.label.toLowerCase()} skill`}
+                            onClick={() => openComposer(g.id)}>
+                      <Icon name="plus" size={14} /></button>)}
+                </header>
+                {g.items.map((s) => (
+                  <SkillCard key={s.id} s={s} canEdit={canEdit} busy={busy}
+                             globalCourse={skills?.global_course}
+                             canEditGlobal={skills?.can_edit_global}
+                             editing={editing === s.id}
+                             onStartEdit={() => { setEditing(s.id); setEditText(s.text)
+                                                  setEditLines((s.instructions || []).join('\n')) }}
+                             onCancelEdit={() => setEditing(null)}
+                             editText={editText} setEditText={setEditText}
+                             editLines={editLines} setEditLines={setEditLines}
+                             onSave={() => {
+                               // undefined, not [], when the skill has no lines: the API
+                               // reads "omitted" as leave-them-alone and an empty array
+                               // as delete-them.
+                               const lines = (s.instructions || []).length
+                                 ? editLines.split('\n').map((l) => l.trim()).filter(Boolean)
+                                 : undefined
+                               onEdit(s.id, editText, lines); setEditing(null)
+                             }}
+                             onApprove={() => onApprove(s.id)}
+                             onRetire={() => onRetire(s.id)} />
+                ))}
+              </section>
+            ))}
           </div>
-          {job && (
-            <div className="joblive">
-              <div className="jobbar">
-                <span style={{ width: `${job.total ? Math.round(100 * (job.done + job.failed) / job.total) : 8}%` }} />
-              </div>
-              <span className="hint">
-                {job.stage === 'done'
-                  ? 'Finishing…'
-                  : `${job.stage || 'working'} — ${job.done} of ${job.total || '?'} deck(s) read`}
-                {job.slides ? `, ${job.slides} slide(s) so far` : ''}
-                {job.failed ? `, ${job.failed} could not be read` : ''}.
-                {' '}Each deck is fetched from Google Slides, so this takes a few seconds
-                per link. You can leave this open.
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-      {/* The report is computed server-side over the decks that are STORED, and it comes
-          with the panel — so while a read is running it is a snapshot from before the
-          read started. It sat directly under a progress line reading "8 of 29 deck(s)
-          read, 343 slide(s) so far" and said "0 session(s), 0 slides": two true numbers
-          that together look like a broken one. While a job is live the line says so
-          instead of quoting a figure it knows is behind. */}
-      {attached.length > 0 && (
-        <span className="hint">
-          {job ? (
-            <>Read from {attached.length} course(s): counting once this read finishes —{' '}
-            {job.done || 0} deck(s) and {(job.slides || 0).toLocaleString()} slide(s) so far.</>
-          ) : (
-          <>
-          Read from {attached.length} course(s): {report.sessions_indexed || 0} session(s),{' '}
-          {(report.slides_indexed || 0).toLocaleString()} slides,{' '}
-          {report.topics_indexed || 0} distinct topics
-          {report.content_chars
-            ? ` and ${Math.round(report.content_chars / 1000)}k characters of slide content`
-            : ''}.
-          {report.overlaps?.length > 0 && (
-            <> <b>{report.overlaps.length} of this course's takeaways name something a
-              prerequisite already taught</b> — often right, if the session deepens it,
-              but worth seeing: {report.overlaps.slice(0, 3).map((o) =>
-                `Session ${o.session_no} (“${(o.topics || [o.topic]).join('”, “')}”, from `
-                + `${(o.prereqs || [o.prereq]).filter(Boolean).join(' / ')})`).join('; ')}
-              {report.overlaps.length > 3 ? `, and ${report.overlaps.length - 3} more` : ''}.</>
-          )}
-          </>
-          )}
-        </span>
+        </>
       )}
 
-      {msg && (
-        <div className={`alert ${msg.ok ? 'ok' : 'error'}`} onClick={onClearMsg}>{msg.text}</div>
+      {/* THE GAPS, in one line — in both states. Four empty cards each saying "nothing
+          yet" said the same thing four times and buried the skills that did exist; on a
+          course with none at all they WERE the whole page. Each one opens the composer
+          filed under that category, so the line is a way in rather than a scolding. */}
+      {canEdit && gaps.length > 0 && (
+        <p className="gapline">
+          Nothing said yet about{' '}
+          {gaps.map((g, i) => (
+            <span key={g.id}>
+              {i > 0 && (i === gaps.length - 1 ? ' or ' : ', ')}
+              <button className="link inline" onClick={() => openComposer(g.id)}>
+                {g.label.toLowerCase()}</button>
+            </span>
+          ))}.
+        </p>
       )}
+
+      {alert}
     </section>
   )
 }
@@ -3820,7 +3976,7 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
                         : 'Propose it as a course skill'}
                     </button>
                     <span className="hint">
-                      It arrives as a draft in <b>Course rules</b> and changes nothing
+                      It arrives as a draft under <b>Skills</b> and changes nothing
                       until you approve it there — where you can also reword it.
                     </span>
                   </div>
