@@ -553,7 +553,12 @@ just apply it:
    sentence or its table.
 7. Check every `speaker_notes` is ≤ 2 sentences.
 8. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
-9. **Brief-leak audit.** If a COURSE BRIEF was given to you, read every line of it and
+9. **Brief-adherence audit.** If a COURSE BRIEF was given to you, take each of its
+   lines in turn and find where this output obeys it. A line you cannot point to is a
+   line you did not apply — go back and apply it. This is the input that differs between
+   two courses covering the same syllabus, so skipping it produces a document that is
+   correct and generic instead of correct and this course's.
+10. **Brief-leak audit.** If a COURSE BRIEF was given to you, read every line of it and
    then search the document for that line. A bullet, takeaway, agenda item, title or
    speaker note that restates an instruction from the brief — or that lists the steps
    of a teaching flow as though they were content — is a leak. Rewrite it to say what

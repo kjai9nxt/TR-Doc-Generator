@@ -269,7 +269,41 @@ def _render(skill: dict, out: list[str]) -> None:
         out += _indented(line, f"    {i}. ", "       ")
 
 
-def block(course: str, session=None) -> str:
+def reminder(course: str, session=None) -> str:
+    """The brief again, at the END of the user message. Empty when there is none.
+
+    WHY IT IS SAID TWICE. The brief reaches the writer as a block of the SYSTEM prompt,
+    which gives it authority — and, on a real run, 2,591 characters of it sitting inside
+    71,114 characters of hard rules, format spec and style guide, followed by ten
+    thousand tokens of prior-deck context, and then a per-chunk instruction that never
+    mentions it. Nothing was lost in transit; every line arrived. It was simply the one
+    input with no presence in the task the model was actually answering, and the course
+    owner's instructions came back half-applied.
+
+    So it is repeated where the model is looking: last, after the instruction, framed as
+    something to check the output against rather than as background. The cost is a few
+    hundred tokens a call, which is the cheapest thing in this pipeline and buys the one
+    input that is different for every course.
+    """
+    body = block(course, session, compact=True)
+    if not body.strip():
+        return ""
+    return (
+        "\n\n---\n"
+        "# THE COURSE BRIEF — APPLY EVERY LINE OF IT TO WHAT YOU WRITE NOW\n"
+        "This is repeated from your instructions because it is the part most often "
+        "skimmed. It is not background: it is how THIS course is taught, and it is the "
+        "one thing that makes this document different from the same session written for "
+        "another course.\n"
+        "BEFORE YOU RETURN, take every line below and check what you wrote against it. "
+        "A line you did not apply is an instruction the course owner wrote and did not "
+        "get. If two lines pull in different directions, the higher tier wins.\n"
+        "And none of it may appear IN the document as content — it shapes how you write, "
+        "it is never what you write about.\n\n"
+        + body)
+
+
+def block(course: str, session=None, compact: bool = False) -> str:
     """The skills, composed as ONE BRIEF for the prompt. Empty when there are none.
 
     Composed, not listed. This used to emit a flat run of bullets, and four terse
@@ -285,7 +319,9 @@ def block(course: str, session=None) -> str:
     tiers = resolve(course, session)
     if not any(tiers.values()):
         return ""
-    out = [f"# HOW '{course}' IS WRITTEN — the course brief",
+    # `compact` drops the preamble and keeps the instructions — for `reminder`, where
+    # the framing has already been said and only the lines themselves are wanted.
+    out = [] if compact else [f"# HOW '{course}' IS WRITTEN — the course brief",
            "Authored by the person who owns this course and approved before it took "
            "effect. This is what THIS course needs that others do not: it is the "
            "standing brief for every document produced for it, not a checklist to "

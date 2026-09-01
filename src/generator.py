@@ -57,6 +57,20 @@ def _learned(course: str | None = None, session=None) -> str:
         return ""
 
 
+def _brief_reminder(course: str | None = None, session=None) -> str:
+    """The course brief restated at the end of the user message. "" when there is none.
+
+    Read fresh per call for the same reason `_learned` is: a guided run freezes its base
+    context at /guided/start, so a brief edited during a long review would otherwise
+    stop at the chunk that was in flight.
+    """
+    try:
+        from . import skills
+        return skills.reminder(course, session)
+    except Exception:
+        return ""
+
+
 def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate",
                    cached_context: str = "", course: str | None = None,
                    session=None) -> dict:
@@ -72,11 +86,21 @@ def _complete_json(user_prompt: str, *, tries: int = 2, label: str = "generate",
     than inside the user message — see generate_chunk."""
     m = config.harness()["model"]
     last = None
+    # THE COURSE BRIEF, LAST. It already reaches the model as a system block, which is
+    # where its authority comes from — and on a real run that is 2.6k characters inside
+    # a 71k-character system prompt, behind ten thousand tokens of deck context, in front
+    # of a per-chunk instruction that never mentions it. Nothing was being lost; it was
+    # simply the one input with no presence in the task being answered, and the course
+    # owner's instructions came back half-applied.
+    #
+    # Appended HERE rather than at each call site so that a generator added later cannot
+    # forget it: every call that writes document content goes through this function.
+    brief = _brief_reminder(course, session)
     for attempt in range(tries):
         raw = llm.complete(
             system=_system(), system_extra=_learned(course, session),
             cached_context=cached_context,
-            user=user_prompt + (_STRICT_NUDGE if attempt else ""),
+            user=user_prompt + brief + (_STRICT_NUDGE if attempt else ""),
             model=m["generator"], max_tokens=m["max_tokens"], temperature=m["temperature"],
             label=label,
         )

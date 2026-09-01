@@ -249,6 +249,50 @@ check("…nor is a real curriculum bullet about the same subject",
                            "The reducer decides what the next state is"), live)))
 
 # --------------------------------------------------------------------------- #
+print("\n== the brief reaches the WRITER where the writer is looking ==")
+# WHY THIS IS NOT ENOUGH TO SEND IT ONCE. The brief goes to the model as a system block,
+# which is where its authority comes from. On a real run that is 2,591 characters of it
+# inside a 71,114-character system prompt, behind ten thousand tokens of prior-deck
+# context, in front of a per-chunk instruction that mentioned it nowhere — `brief` and
+# `skill` appeared ZERO times in the whole of context_builder. Nothing was being lost in
+# transit; every line arrived. It was simply the one input with no presence in the task
+# being answered, and the course owner's instructions came back half-applied.
+import inspect as _i                                              # noqa: E402
+from src import generator                                         # noqa: E402
+_rem = skills.reminder(REACT, 12)
+check("the reminder carries every instruction of every skill",
+      all(line in _rem
+          for sk in skills.applicable(REACT, 12)
+          for ins in skills.instructions_of(sk)
+          for line in [ins.split("\n")[0]]), _rem)
+check("…framed as something to CHECK the output against, not as background",
+      "APPLY EVERY LINE" in _rem and "BEFORE YOU RETURN" in _rem, _rem[:400])
+check("…and it repeats the no-leak rule, since it is now the last thing read",
+      "never what you write about" in _rem, _rem[:600])
+check("a course with no skills adds nothing at all",
+      skills.reminder("A Course With Nothing", 1) == "")
+
+# It is appended in _complete_json rather than at each call site, so a generator added
+# later cannot forget it. Checked by CALLING one, not by reading the source.
+_sent = {}
+_real_complete = generator.llm.complete
+generator.llm.complete = lambda **kw: (_sent.update(kw), '{"ok": 1}')[1]
+try:
+    generator.generate("WRITE THE OPENING.", course=REACT, session=12)
+finally:
+    generator.llm.complete = _real_complete
+check("every content-writing call gets the brief",
+      "APPLY EVERY LINE" in _sent.get("user", ""), str(_sent.get("user", ""))[:200])
+check("…at the END of the user message, after the instruction",
+      _sent["user"].index("WRITE THE OPENING.") < _sent["user"].index("APPLY EVERY LINE"))
+check("…and it still has system-level authority as well",
+      "Explain the mechanism only once the concept is named."
+      in _sent.get("system_extra", "") or "HOW '" in _sent.get("system_extra", ""),
+      _sent.get("system_extra", "")[:200])
+check("the self-check asks the writer to find where it obeyed each line",
+      "Brief-adherence audit" in (ROOT / "harness" / "system_prompt.md").read_text())
+
+# --------------------------------------------------------------------------- #
 print("\n== the leak check is WIRED IN, not just available ==")
 from guardrails import guardrails                                 # noqa: E402
 src = inspect.getsource(guardrails.check)
