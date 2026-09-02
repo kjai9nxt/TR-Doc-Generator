@@ -105,7 +105,14 @@ export default function App() {
   const [tab, _setTab] = useState(() => readHash().tab)
   // The run named by the URL at load, tried once. A ref, not state: it is a one-shot
   // instruction to resume, and re-running it on every render would fight the user.
-  const hashGidRef = useRef(readHash().gid)
+  // THE REPORT ROUTE'S ID, kept apart from the resume one-shot below. `#skill-report/<id>`
+  // has the same `<tab>/<id>` shape as a resumable run, and the resume effect nulls that
+  // ref before using it — so the report page lost its id before it could render, and the
+  // same id was handed to resumeGuided, which tried to reopen a finished document as a
+  // live review. Two routes with one slot is one route too many.
+  const reportRunId = useRef(
+    readHash().tab === 'skill-report' ? readHash().gid : null).current
+  const hashGidRef = useRef(readHash().tab === 'skill-report' ? null : readHash().gid)
   const writeHash = (t, gid) => {
     const h = `#${t}${gid ? `/${gid}` : ''}`
     if (window.location.hash === h) return
@@ -294,6 +301,11 @@ export default function App() {
 
   // Eval-sets (System B) run on the finished doc
   const [evalReport, setEvalReport] = useState(null)
+  // WHETHER THE EVAL PANEL IS OPEN. It has to be real state rather than the browser's
+  // own `<details>` toggle, because two things drive it: the reader clicking, and a run
+  // finishing (which must reveal its own result — nobody presses Run and then wants to
+  // go looking for the answer).
+  const [evalOpen, setEvalOpen] = useState(false)
   const [evalRunning, setEvalRunning] = useState(false)
   const [evalErr, setEvalErr] = useState(null)
   const evalPollRef = useRef(null)
@@ -1122,6 +1134,7 @@ export default function App() {
 
   function runEvalSets() {
     setEvalRunning(true); setEvalReport(null); setEvalErr(null)
+    setEvalOpen(true)          // so the progress, and then the result, are on screen
     // The RUN's course, not the page's selection: after resuming somebody else's run
     // those are not the same course, and the document belongs to the run.
     api.evalSets(result.session_no, true, policy.time_always_enforced,
@@ -1129,9 +1142,9 @@ export default function App() {
       evalPollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
-          if (job.status === 'done') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalReport(job.result) }
-          else if (job.status === 'error') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(job.error) }
-        } catch (e) { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(e.message) }
+          if (job.status === 'done') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalReport(job.result); setEvalOpen(true) }
+          else if (job.status === 'error') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(job.error); setEvalOpen(true) }
+        } catch (e) { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(e.message); setEvalOpen(true) }
       }, 1500)
     }).catch((e) => { setEvalRunning(false); setEvalErr(e.message) })
   }
@@ -1182,6 +1195,15 @@ export default function App() {
   // --- Auth gate: block the whole app until a valid @nxtwave.co.in login ---
   if (!authCfg) return <div className="app"><p className="sub">Loading…</p></div>
   if (!user) return <LoginGate cfg={authCfg} onSignIn={onSignIn} err={authErr} />
+
+  // THE REPORT AS A PAGE OF ITS OWN. Opened in a new tab from the result card or from
+  // History, so it renders WITHOUT the rail and the breadcrumb: it is a document about
+  // one run, not a section of the app, and it is the thing you keep open beside the TR
+  // doc while reading it. The auth token lives in localStorage, so a new tab on this
+  // origin is already signed in.
+  if (tab === 'skill-report' && reportRunId) {
+    return <SkillReportPage runId={reportRunId} />
+  }
 
   const courseCount = curRows.length
   const prereqCount = (prereqState?.prereqs || []).length
@@ -2053,22 +2075,48 @@ export default function App() {
               course than for anyone else's. */}
           {(result.skill_report || result.judge?.skill_report) && (
             <SkillReportPanel report={result.skill_report || result.judge.skill_report}
-                              course={result.course} />
+                              course={result.course} runId={result.run_id} />
           )}
 
           {result.judge?.scores && <RubricPanel judge={result.judge} />}
 
-          <div className="panel evalsets">
-            <div className="evalhead">
-              <div><b>Eval sets</b> <span className="muted">— score this doc against all {19} quality dimensions</span></div>
-              <button className="ghostbtn" disabled={evalRunning} onClick={runEvalSets}>
-                {evalRunning ? 'Running…' : <><Icon name="beaker" /> Run eval sets</>}
+          {/* A `<details>`, like every other panel on this page. It was a plain `<div>`,
+              so it was the one panel that could not be shut: run the sets and a
+              twenty-six row report was pinned open above the cost breakdown and the
+              preview for the rest of the session, with no control to collapse it. The
+              Rubric, the Course brief, the Cost breakdown and the Preview all fold
+              away; this did not, and it is the longest of them. */}
+          <details className="panel evalsets" open={evalOpen}
+                   onToggle={(e) => setEvalOpen(e.currentTarget.open)}>
+            <summary>
+              <Icon name="beaker" /> Eval sets
+              {/* THE COUNT, ONCE IT IS KNOWN. This read "all 19 quality dimensions" as a
+                  literal in the markup; there are 26 sets, and the number had been wrong
+                  since the seven after it were written. The report knows how many it
+                  scored, so it is the only thing that should be saying so. */}
+              {evalReport
+                ? <span className="muted"> — {evalReport.passed}/{evalReport.scored} passed
+                    {evalReport.skipped ? `, ${evalReport.skipped} skipped` : ''}</span>
+                : <span className="muted"> — score this doc against every quality dimension</span>}
+              {evalReport && <span className={`chip ${evalReport.overall_pass ? 'good' : 'bad'}`}>
+                {evalReport.overall_pass ? 'pass' : 'review'}</span>}
+              {evalRunning && <span className="chip mid">running…</span>}
+              {/* Inside a <summary>, a plain click toggles the disclosure instead of
+                  reaching the handler. */}
+              <button className="ghostbtn tiny evalrun" disabled={evalRunning}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); runEvalSets() }}>
+                {evalRunning ? 'Running…' : evalReport ? 'Run again' : 'Run eval sets'}
               </button>
-            </div>
+            </summary>
             {evalRunning && <Busy label="Scoring against the eval sets… (deterministic + LLM, ~1–2 min)" />}
             {evalErr && <div className="alert error"><pre>{evalErr}</pre></div>}
             {evalReport && <EvalReport report={evalReport} />}
-          </div>
+            {!evalRunning && !evalErr && !evalReport && (
+              <div className="hint">Nothing scored yet. Each set is one quality dimension —
+                some settled by code, some weighed by the reviewer model, and the course's
+                own skills among them.</div>
+            )}
+          </details>
 
           {result.cost?.calls?.length > 0 && <CostBreakdown cost={result.cost} />}
 
@@ -3908,6 +3956,17 @@ function CostSidePanel({ cost, sessionNo, pending, onClose }) {
   )
 }
 
+// The part of a model id that differs between rows. Every model here is an Anthropic
+// Claude model, so "anthropic/claude-" is seven characters of prefix repeated down the
+// column while the family and version — the only things anyone reads it for — were the
+// characters being cut off.
+function shortModel(id) {
+  const m = String(id || '').replace(/^[^/]+\//, '').replace(/^claude-/, '')
+  // ":online" is the web-search variant of the judge model, which is worth seeing: it
+  // costs more than the plain call and explains a judge row that looks expensive.
+  return m || '—'
+}
+
 function CostBreakdown({ cost, embedded, ts, rounds }) {
   const calls = cost.calls || []
   const t = cost.totals || {}
@@ -3917,10 +3976,10 @@ function CostBreakdown({ cost, embedded, ts, rounds }) {
       <div className="setrow dashhead">
         <div className="setmain">
           <span className="dashcell grow">Call</span>
-          <span className="dashcell">Model</span>
-          <span className="dashcell">In</span>
-          <span className="dashcell">Out</span>
-          <span className="dashcell">Total</span>
+          <span className="dashcell mdl">Model</span>
+          <span className="dashcell io">In</span>
+          <span className="dashcell io">Out</span>
+          <span className="dashcell tot">Total</span>
           <span className="dashcell">Cost</span>
         </div>
       </div>
@@ -3928,10 +3987,17 @@ function CostBreakdown({ cost, embedded, ts, rounds }) {
         <div key={i} className="setrow">
           <div className="setmain">
             <span className="dashcell grow"><span className="tag">{c.label || 'call'}</span></span>
-            <span className="dashcell mono">{(c.model || '').replace('anthropic/', '')}</span>
-            <span className="dashcell">{(c.prompt_tokens || 0).toLocaleString()}</span>
-            <span className="dashcell">{(c.completion_tokens || 0).toLocaleString()}</span>
-            <span className="dashcell">{(c.total_tokens || 0).toLocaleString()}</span>
+            {/* THE FULL ID IN THE TOOLTIP, the distinguishing part on screen. This cell
+                had 66px and the ids are `anthropic/claude-sonnet-5` and
+                `anthropic/claude-haiku-4.5`, so every row rendered as `claude-s…` or
+                `claude-h…` — a column whose entire job is to name the model, clipped one
+                character before the name. The vendor and the word "claude" are the same
+                on every row and carry nothing; the family and version are the answer. */}
+            <span className="dashcell mdl mono" title={c.model || ''}>
+              {shortModel(c.model)}</span>
+            <span className="dashcell io">{(c.prompt_tokens || 0).toLocaleString()}</span>
+            <span className="dashcell io">{(c.completion_tokens || 0).toLocaleString()}</span>
+            <span className="dashcell tot">{(c.total_tokens || 0).toLocaleString()}</span>
             <span className="dashcell">${(c.cost || 0).toFixed(4)}</span>
           </div>
         </div>
@@ -3939,10 +4005,10 @@ function CostBreakdown({ cost, embedded, ts, rounds }) {
       <div className="setrow dashtotal">
         <div className="setmain">
           <span className="dashcell grow"><b>Total</b></span>
-          <span className="dashcell" />
-          <span className="dashcell">{(t.prompt_tokens || 0).toLocaleString()}</span>
-          <span className="dashcell">{(t.completion_tokens || 0).toLocaleString()}</span>
-          <span className="dashcell">{(t.total_tokens || 0).toLocaleString()}</span>
+          <span className="dashcell mdl" />
+          <span className="dashcell io">{(t.prompt_tokens || 0).toLocaleString()}</span>
+          <span className="dashcell io">{(t.completion_tokens || 0).toLocaleString()}</span>
+          <span className="dashcell tot">{(t.total_tokens || 0).toLocaleString()}</span>
           <span className="dashcell"><b>${(t.cost || 0).toFixed(4)}</b></span>
         </div>
       </div>
@@ -3953,6 +4019,15 @@ function CostBreakdown({ cost, embedded, ts, rounds }) {
     <details className="panel">
       <summary><Icon name="coin" /> Cost breakdown
         <span className="muted"> — ${(t.cost || 0).toFixed(4)} · {(t.total_tokens || 0).toLocaleString()} tokens · {calls.length} call(s)</span>
+        {/* A total that is missing calls has to say so. The dollar figure is the
+            provider's own, and one provider returns none — which used to render as a
+            confident $0.0000 indistinguishable from a run that really cost nothing. */}
+        {t.unpriced_calls > 0 && (
+          <span className="chip mid" title="These calls were made and billed, but the provider returned no cost for them, so they are not in the total.">
+            {t.unpriced_calls} unpriced</span>)}
+        {t.cached_prompt_tokens > 0 && (
+          <span className="chip good" title="Prompt tokens read from cache instead of being re-billed at full rate. This is why a guided run costs less than the token count suggests.">
+            {Math.round(100 * t.cached_prompt_tokens / (t.prompt_tokens || 1))}% cached</span>)}
       </summary>
       {body}
     </details>
@@ -3990,7 +4065,200 @@ function ScoreChip({ score, max = 5 }) {
 // means nobody ruled on it, and it is drawn as its own thing rather than folded in with
 // the ones that passed. A brief that was not assessed must never read like a brief that
 // was followed.
-function SkillReportPanel({ report, course }) {
+// ============================================================================
+// THE SKILL REPORT, AS A PAGE
+//
+// The panel on the result card answers "did my rules survive?" in one line each. This
+// answers the question underneath it: DID EACH RULE ACTUALLY DO ANY WORK, and where?
+//
+// The distinction the panel could not draw is `engaged`. A rule with nothing to apply to
+// is trivially unbroken — "every worked example shows its code" reads identically on a
+// document with four worked examples that all show code and on one with no worked
+// examples at all. "Kept" was therefore compatible with "had no effect on this
+// document", which is precisely the thing a course owner is trying to find out. So each
+// row names the slides it shaped and what following it looked like there, and a rule that
+// never came up says so in those words.
+//
+// It also shows the arithmetic. The 6-point `course_brief_adherence` score is derived
+// from these rows — 0 broken is 5, one is 3, more than one is 1 — and a score whose
+// derivation is printed beside it can be argued with, which is the only way a grade
+// becomes useful rather than merely authoritative.
+// ============================================================================
+const VERDICT = {
+  kept: { chip: 'good', word: 'kept', hue: 'prereqs' },
+  broken: { chip: 'bad', word: 'broken', hue: 'rules' },
+  unknown: { chip: 'mid', word: 'not assessed', hue: 'skills' },
+}
+
+function SiteList({ sites, kind }) {
+  if (!sites?.length) return null
+  return (
+    <div className={`sites ${kind}`}>
+      <b>{kind === 'applied' ? 'Where it shaped this document' : 'Where it was broken'}</b>
+      <ul>
+        {sites.map((st, i) => (
+          <li key={i}>
+            {st.slide != null
+              ? <span className="siteat">Slide {st.slide}{st.section ? ` · ${st.section}` : ''}</span>
+              : <span className="siteat whole">Whole document</span>}
+            {st.note && <span className="sitenote">{st.note}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function SkillReportPage({ runId }) {
+  const [data, setData] = useState(null)
+  const [err, setErr] = useState(null)
+  useEffect(() => {
+    api.skillReport(runId).then(setData).catch((e) => setErr(e.message))
+  }, [runId])
+
+  if (err) {
+    return (
+      <div className="app reportpage">
+        <div className="card"><h2><span className="hicon"><Icon name="skills" /></span>
+          Skill report</h2>
+          <div className="alert warn"><b>No report for this run.</b><div>{err}</div></div>
+        </div>
+      </div>
+    )
+  }
+  if (!data) {
+    return <div className="app reportpage"><div className="card">
+      <Busy label="Building the report…" /></div></div>
+  }
+
+  const r = data.report || {}
+  const rows = r.skills || []
+  const broken = rows.filter((x) => x.verdict === 'broken')
+  const unknown = rows.filter((x) => x.verdict === 'unknown')
+  const idle = rows.filter((x) => x.verdict !== 'unknown' && !x.engaged)
+  // Broken first, then never-engaged, then unassessed, then the ones that worked: the
+  // reader is here to find what to act on.
+  const rank = (x) => (x.verdict === 'broken' ? 0
+    : !x.engaged && x.verdict !== 'unknown' ? 1 : x.verdict === 'unknown' ? 2 : 3)
+  const ordered = [...rows].sort((a, b) => rank(a) - rank(b))
+
+  return (
+    <div className="app reportpage" data-sec="skills">
+      <header className="rphead">
+        <div>
+          <span className="eyebrow">Skill report</span>
+          <h1>{data.course || 'Course'}{data.session_no != null
+            ? ` — Session ${data.session_no}` : ''}</h1>
+          <p className="hint">
+            {data.session_title || ''}
+            {data.generated_at ? ` · generated ${String(data.generated_at).replace('T', ' ')}` : ''}
+            {` · ${r.slides || 0} slides`}
+          </p>
+        </div>
+        {/* The number this page explains. Stated with its weight, because 5/5 on a
+            dimension worth 6 of 100 is a different claim from 5/5 overall. */}
+        <div className="rpscore">
+          <div className="rpsval">{r.score != null ? `${r.score}/5` : '—'}</div>
+          <div className="rpslab">Course brief adherence<br /><span>6 of 100 rubric points</span></div>
+        </div>
+      </header>
+
+      <div className="rpstats">
+        <Metric label="Rules in force" value={r.total || 0} />
+        <Metric label="Kept" value={r.kept || 0} />
+        <Metric label="Broken" value={r.broken || 0} />
+        {/* THE NUMBER THIS PAGE EXISTS FOR. */}
+        <Metric label="Actually applied" value={r.engaged || 0}
+                sub={`of ${r.total || 0}`} />
+        <Metric label="Not assessed" value={r.unknown || 0} />
+      </div>
+
+      {/* THE ARITHMETIC, printed. */}
+      <div className="card rpmath">
+        <b>How the score was reached</b>
+        <p className="hint">
+          Every approved skill governing this session is ruled on. A skill carrying a
+          machine-checkable rule is settled exactly, by the same check that gates
+          generation — no opinion involved. The rest are prose, so the reviewer model
+          weighs them and must quote the text to call one broken. The score then follows
+          from the count: <b>no rule broken is 5</b>, <b>one is 3</b>, <b>more than one
+          is 1</b>. This document broke <b>{r.broken || 0}</b>, so it scores{' '}
+          <b>{r.score != null ? r.score : '—'}</b>.
+        </p>
+        {unknown.length > 0 && (
+          <p className="hint">
+            <b>{unknown.length} rule{unknown.length === 1 ? '' : 's'} could not be ruled
+            on</b> and are excluded rather than counted as kept — a brief that was not
+            assessed must not read like a brief that passed.
+          </p>
+        )}
+        {idle.length > 0 && (
+          <p className="hint warntext">
+            <b>{idle.length} rule{idle.length === 1 ? '' : 's'} went unbroken without
+            ever being engaged.</b> Nothing in this document gave{' '}
+            {idle.length === 1 ? 'it' : 'them'} anything to apply to, so{' '}
+            {idle.length === 1 ? 'it' : 'they'} did not shape it. That is not a defect in
+            the document — it may mean the rule is about something this session does not
+            cover, or that it is written too narrowly to bite.
+          </p>
+        )}
+      </div>
+
+      <div className="rprules">
+        {ordered.map((x) => {
+          const v = VERDICT[x.verdict] || VERDICT.unknown
+          return (
+            <section key={x.ref} className={`card rprule v-${x.verdict}`}
+                     data-cat={x.category || ''}>
+              <header className="rpruleh">
+                <span className="tag">{x.ref}</span>
+                <span className={`chip ${v.chip}`}>{v.word}</span>
+                <span className="tag" title={x.how === 'checked'
+                  ? 'Settled exactly, by the same check that gates generation.'
+                  : x.how === 'judged'
+                    ? 'Weighed by the reviewer model, which had to quote the text to call it broken.'
+                    : 'Nothing ruled on this one.'}>{x.how}</span>
+                {!x.engaged && x.verdict !== 'unknown' && (
+                  <span className="chip mid" title="Nothing in this document gave the rule anything to apply to.">never engaged</span>)}
+                {x.tier !== 'course brief' && <span className="chip">{x.tier}</span>}
+                {x.category && <span className="tag">{String(x.category).replace(/_/g, ' ')}</span>}
+              </header>
+              <p className="rpruletext">{x.text}</p>
+              {x.instructions?.length > 0 && (
+                <ol className="skillsteps">
+                  {x.instructions.map((line, k) => <li key={k}>{line}</li>)}
+                </ol>
+              )}
+              <SiteList sites={x.applied} kind="applied" />
+              <SiteList sites={x.broke} kind="broke" />
+              {/* The quote, but only when the sites above have not already carried it.
+                  A deterministic check writes its failure message INTO the site note, so
+                  printing both put the same sentence on screen twice under two different
+                  headings — which reads as two findings. */}
+              {x.evidence && x.verdict === 'broken' && !x.broke?.length && (
+                <div className="just evidence">{x.evidence}</div>)}
+              {x.verdict === 'kept' && !x.engaged && (
+                <div className="just">Nothing was found against it, and nothing in this
+                  document engaged it either — so it neither shaped nor was broken by
+                  this session.</div>)}
+              {x.verdict === 'unknown' && (
+                <div className="just">Not ruled on. Re-grade with the quality check on,
+                  or give this rule a machine-checkable form, to get a verdict.</div>)}
+            </section>
+          )
+        })}
+      </div>
+
+      {rows.length === 0 && (
+        <div className="emptystate"><b>No approved skills</b>
+          <p>This course had nothing in force when the document was written, so there is
+             nothing to hold it to.</p></div>
+      )}
+    </div>
+  )
+}
+
+function SkillReportPanel({ report, course, runId }) {
   const rows = report.skills || []
   const broken = rows.filter((r) => r.verdict === 'broken')
   const unknown = rows.filter((r) => r.verdict === 'unknown')
@@ -4007,6 +4275,18 @@ function SkillReportPanel({ report, course }) {
         {unknown.length > 0 && <span className="chip mid">{unknown.length} not assessed</span>}
         {report.score != null && <ScoreChip score={report.score} />}
       </summary>
+      {/* THE FULL REPORT, in its own tab. This panel is the summary — one line per
+          rule — and the page behind it is the thing that answers "did each rule
+          actually do any work, and where": the slides each one shaped, and the
+          arithmetic behind the score. Kept as a link rather than folded in here,
+          because it is read beside the document, not inside the result card. */}
+      {runId && (
+        <button className="ghostbtn tiny rpopen"
+                onClick={() => window.open(`#skill-report/${runId}`, '_blank',
+                                           'noopener,noreferrer')}>
+          <Icon name="skills" size={13} /> Open the full skill report
+        </button>
+      )}
       <div className="just skillrepintro">
         The rules <b>{course || 'this course'}</b> is written under, as you approved them.
         {report.score != null && <> They score <b>{report.score}/5</b> on{' '}

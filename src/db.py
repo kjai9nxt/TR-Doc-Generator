@@ -288,6 +288,13 @@ _RUNS_ADDED_COLUMNS = [
     # there is no way to explain why last month's doc differs from today's: the skills
     # changed and nothing recorded which set was in force.
     ("skills_version", "TEXT"),
+    # THE PER-SKILL REPORT for this document (graders/skill_report.build). Persisted
+    # rather than left in the run's in-memory result, because the report is opened as a
+    # page of its own — from the result card, from History, or from a link somebody was
+    # sent — and a report that exists only until the process restarts cannot be any of
+    # those. It is also the one artefact that explains a `course_brief_adherence` score
+    # after the fact, which is exactly the question asked weeks later.
+    ("skill_report_json", "TEXT"),
 ]
 
 
@@ -1002,6 +1009,21 @@ def update_stage(run_id: str, stage: str) -> None:
     _exec("UPDATE runs SET stage=?, updated=? WHERE id=?", (stage, _now(), run_id))
 
 
+def save_skill_report(run_id: str, report: dict | None) -> None:
+    """Store this run's per-skill report. Silent no-op when there is nothing to store.
+
+    Written separately from finish_run so it survives the paths that do not finish a run
+    cleanly, and so a re-grade can replace it without touching anything else.
+    """
+    if not report:
+        return
+    try:
+        _exec("UPDATE runs SET skill_report_json=?, updated=? WHERE id=?",
+              (json.dumps(report), _now(), run_id))
+    except Exception:
+        pass
+
+
 def update_cost(run_id: str, cost: dict | None, calls: list | None = None) -> None:
     """Write a run's cost-so-far WITHOUT finishing it.
 
@@ -1087,6 +1109,13 @@ def _shape_run(d: dict) -> dict:
     d["enforce_time"] = None if d.get("enforce_time") is None else bool(d["enforce_time"])
     d["cost"] = json.loads(d.pop("cost_json", None) or "{}")
     d["calls"] = json.loads(d.pop("calls_json", None) or "[]")
+    # None, not {}: a run from before the report existed has no report, and an empty
+    # object would render as "0 of 0 skills kept" — a confident statement about a
+    # course whose brief was never assessed.
+    try:
+        d["skill_report"] = json.loads(d.pop("skill_report_json", None) or "null")
+    except Exception:
+        d["skill_report"] = None
     d["duration_min"] = _duration_min(d)
     d["abandoned"] = _is_abandoned(d)
     # A single, UI-friendly outcome: completed | approved | failed | abandoned | running

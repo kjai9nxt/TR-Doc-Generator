@@ -219,7 +219,10 @@ const CHAT = []       // the conversation the fake server has accumulated
 let PENDING_FOR = 0   // polls remaining before the answer is ready
 let PENDING_INDEX = 0
 let PENDING_WEB = false
-let FAIL_POLLS = 0    // transient poll failures the stub should inject
+let FAIL_POLLS = 0
+let RUN_DONE = false            // set by the eval-panel block below, so the
+                                // finalize tests above still see a run in flight
+const EVAL_RUNS = []            // every /eval-sets request the panel fired    // transient poll failures the stub should inject
 // Rows the fake server holds, so an insert can be answered the way the real one does:
 // shift everything at or after the position, then put the new row in. Without this the
 // stub would return the same list forever and the numbering — the whole point of the
@@ -346,6 +349,32 @@ function route(url, opts) {
     return v
   }
   if (p === '/guided/g31/finalize') { FINALIZED.push(1); return { ok: true } }
+  // A FINISHED RUN, so the result section — and the eval panel under it — can be
+  // reached at all. Every test above this leaves the run in review on purpose; this
+  // only switches on once finalize has been called, at the very end.
+  if (p === '/guided/g31' && !opts.method && RUN_DONE) {
+    return { status: 'done', session_no: 31, course: 'Operating Systems',
+             chunks: ROUTES['/guided/g31'].chunks,
+             approved_chunks: APPROVED.slice(),
+             result: { run_id: 'g31', session_no: 31, course: 'Operating Systems',
+                       accepted: true, time: { estimated_minutes: 31, slide_count: 14 },
+                       pages: { estimated_pages: 12 }, issues: [],
+                       docx_name: 'Session 31.docx', markdown: '# S31',
+                       cost: { totals: { cost: 0.4, total_tokens: 1000 }, calls: [] } } }
+  }
+  if (p === '/eval-sets') { EVAL_RUNS.push(1); return { job_id: 'ev1' } }
+  if (p === '/jobs/ev1') {
+    return { status: 'done', result: {
+      overall_pass: false, passed: 2, scored: 3, skipped: 1,
+      sets: [{ id: 'skill_adherence', score: 3, passed: false, grader: 'hybrid',
+               detail: '1 checkable skill violated' },
+             { id: 'conciseness', score: 5, passed: true, grader: 'deterministic',
+               detail: 'within budget' },
+             { id: 'analogy_placement', score: 4, passed: true, grader: 'deterministic',
+               detail: 'one analogy off a concept_intro slide' },
+             { id: 'market_coverage_completeness', skipped: true,
+               reason: 'no web check configured' }] } }
+  }
   if (p === '/guided/g31' && !opts.method && FAIL_POLLS > 0) {
     FAIL_POLLS -= 1
     const err = new Error('The server is rate-limiting this page (HTTP 429)')
@@ -867,9 +896,15 @@ console.log('\n== Create final TR Doc says it is working ==')
 // reply carries the updated list, and the panel reads its state back from it.
 for (const b of $('button').filter((x) => x.textContent.includes('Approve'))) await click(b)
 check('every tick reached the server', APPROVED.length === 3, JSON.stringify(APPROVED))
+// "3 of 3 approved", not "3/3". The progress line was deliberately reworded — see the
+// comment on `.gcount`: "· 3/5 approved" appended to a sentence was the one number a
+// reviewer checks constantly, in the hardest shape to check it in. The wording changed
+// and this literal did not, so the assertion has been failing on correct behaviour ever
+// since — with the two checks either side of it (the ticks reached the server, the final
+// button is enabled) passing throughout and proving the panel was right all along.
 check('…and the panel shows them from the server\'s answer',
-      text().includes('3/3 approved'),
-      text().replace(/\s+/g, ' ').match(/.{0,20}approved.{0,10}/)?.[0])
+      text().includes('3 of 3 approved'),
+      text().replace(/\s+/g, ' ').match(/.{0,20}of 3 approved.{0,10}/)?.[0])
 const finalBtn = () => $('button.bigfinal')[0]
 check('the final-doc button is enabled once every chunk is approved',
       finalBtn() && !finalBtn().disabled,
@@ -886,8 +921,72 @@ check('…and cannot be pressed twice', finalBtn().disabled)
 check('…and it says how long this takes',
       text().includes('Assembling, grading and rendering'))
 
-console.log('\n== Course rules: what THIS course is written under ==')
-await click(byLabel('Course rules'))
+console.log('\n== the eval-set panel can be CLOSED again ==')
+// THE REPORTED DEFECT. Every panel under a finished document is a `<details>` that
+// folds away — Rubric, Course brief, Cost breakdown, Preview — except this one, which
+// was a plain `<div>`. So running the sets pinned a twenty-six row report open above
+// everything below it for the rest of the session, with no control to collapse it.
+// The run completes only now: every check above this deliberately watches a run
+// still in flight, and finishing it in the /finalize handler tore the
+// "Creating the final doc" button away before those assertions could read it.
+RUN_DONE = true
+await act(async () => { await new Promise((r) => setTimeout(r, 2200)) })
+const evalPanel = () => $('details.panel.evalsets')[0]
+check('the result section is reached once the run finishes',
+      text().includes('Eval sets'), text().replace(/\s+/g, ' ').slice(0, 120))
+check('the eval panel is a disclosure, not a fixed block', evalPanel() !== undefined,
+      $('.evalsets').map((e) => e.tagName).join(',') || 'no .evalsets at all')
+check('…and it starts closed, so it is out of the way until asked for',
+      evalPanel() && evalPanel().open === false, String(evalPanel()?.open))
+const evalSummary = () => evalPanel().querySelector('summary')
+const runBtn = () => evalPanel().querySelector('.evalrun')
+check('…and states what it is for before anything has been scored',
+      evalSummary().textContent.includes('every quality dimension'),
+      evalSummary().textContent)
+// The old header claimed "all 19 quality dimensions" as a literal. There are 26, and
+// the number had been wrong since the seven after it were written.
+check('…without claiming a set count from the markup',
+      !/\b19\b/.test(evalSummary().textContent), evalSummary().textContent)
+
+await click(evalSummary())
+check('clicking the summary OPENS it', evalPanel().open === true)
+await click(evalSummary())
+check('…and clicking it again CLOSES it — the whole complaint',
+      evalPanel().open === false)
+
+// The Run control lives inside the summary, where a plain click would toggle the
+// disclosure instead of reaching the handler.
+await click(evalSummary())
+const evalsBefore = EVAL_RUNS.length
+await click(runBtn())
+check('Run eval sets fires the request', EVAL_RUNS.length === evalsBefore + 1,
+      String(EVAL_RUNS.length))
+check('…and does NOT collapse the panel it is reporting into',
+      evalPanel().open === true, String(evalPanel().open))
+await act(async () => { await new Promise((r) => setTimeout(r, 2200)) })
+check('the scores arrive', text().includes('Skill Adherence'),
+      text().replace(/\s+/g, ' ').match(/.{0,60}Adherence.{0,40}/)?.[0])
+check('…and the summary now carries the count the report actually scored',
+      evalSummary().textContent.includes('2/3 passed'), evalSummary().textContent)
+check('…and says one was skipped rather than counting it as passed',
+      evalSummary().textContent.includes('1 skipped'), evalSummary().textContent)
+check('…and the overall verdict is on the closed strip too',
+      evalSummary().textContent.toLowerCase().includes('review'),
+      evalSummary().textContent)
+check('the button now offers a re-run rather than a first run',
+      runBtn().textContent.includes('Run again'), runBtn().textContent)
+await click(evalSummary())
+check('…and it still closes with a report inside it',
+      evalPanel().open === false, String(evalPanel().open))
+
+
+console.log('\n== Skills: what THIS course is written under ==')
+// THE TAB IS CALLED "Skills". It was "Course rules" when this block was written, and
+// `byLabel` returns undefined for a label that is not there — so `click(undefined)`
+// threw and took the 84 assertions after this line with it. A suite that dies a third
+// of the way through still prints a passing tally for everything before the crash,
+// which is the worst way for coverage to disappear: silently, while looking fine.
+await click(byLabel('Skills'))
 // Named against the course actually OPEN, not a literal: which course the tests above
 // leave selected is their business, and these rules belong to whichever it is.
 const openForRules = $('.navselect')[0].value

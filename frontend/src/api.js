@@ -347,6 +347,7 @@ export const api = {
   // falls back to the instance-wide active course — one global shared by everyone
   // signed in — so a colleague opening their course mid-review repointed the grading at
   // their brief, and the document was scored against rules its author never wrote.
+  skillReport: (run_id) => req(`/runs/${encodeURIComponent(run_id)}/skill-report`),
   evalSets: (session_no, use_llm, enforce_time, course) =>
     req('/eval-sets', { method: 'POST', body: JSON.stringify({ session_no, use_llm, enforce_time, course }) }),
 }

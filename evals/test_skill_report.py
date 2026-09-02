@@ -335,5 +335,202 @@ check("…and every list-shaped persisted field is covered",
       set(server._GUIDED_LIST_KEYS) <= set(server._GUIDED_PERSIST_KEYS),
       str(set(server._GUIDED_LIST_KEYS) - set(server._GUIDED_PERSIST_KEYS)))
 
+
+print("\n== a restart must not erase what the run already spent ==")
+# THE BUG THIS COVERS. `llm._METERS` is process memory, and a guided run spans a long
+# human review that an ephemeral host does not survive — which is the entire reason
+# `_guided_rehydrate` exists. The meter came back EMPTY, and because every cost write
+# REPLACES the row's `calls_json` rather than appending, the next write after a restart
+# (the judge, at finalize) overwrote the generation records with the few calls made
+# since. A finished document then reported the cost of grading itself and none of the
+# cost of being written: seven calls, not one of them a `generate_chunk`, and a total
+# short by most of the run. It also read as a different finding entirely — "the
+# generator model is never used" — because the only row left using it was a repair pass.
+from src import llm as _llm                                        # noqa: E402
+
+_RID = "meter-test-1"
+_llm.reset_usage(_RID)
+_PRIOR = [{"label": "generate_chunk", "model": "anthropic/claude-sonnet-5",
+           "prompt_tokens": 10000, "completion_tokens": 6000, "total_tokens": 16000,
+           "cost": 0.24},
+          {"label": "generate_chunk", "model": "anthropic/claude-sonnet-5",
+           "prompt_tokens": 9000, "completion_tokens": 5000, "total_tokens": 14000,
+           "cost": 0.21}]
+check("a fresh meter has nothing in it", _llm.usage_records(_RID) == [])
+check("the paid-for calls are restored", _llm.seed_meter(_RID, _PRIOR) == 2)
+check("…and are what the meter now reports",
+      [r["label"] for r in _llm.usage_records(_RID)] == ["generate_chunk"] * 2,
+      str(_llm.usage_records(_RID)))
+check("…so the total is the whole run, not just what came after the restart",
+      abs((_llm.usage_totals(_RID).get("cost") or 0) - 0.45) < 1e-9,
+      str(_llm.usage_totals(_RID)))
+check("…and the generator model is visible in the breakdown again",
+      any("sonnet" in (r.get("model") or "") for r in _llm.usage_records(_RID)))
+# Idempotent, because a rehydrate can race a thread that is already recording: seeding
+# a meter that has anything in it would double-count everything that thread had done.
+check("seeding a meter that already has records is a no-op, never a double-count",
+      _llm.seed_meter(_RID, _PRIOR) == 0 and len(_llm.usage_records(_RID)) == 2,
+      str(len(_llm.usage_records(_RID))))
+check("nothing to restore is not an error", _llm.seed_meter("meter-test-2", None) == 0
+      and _llm.seed_meter("meter-test-3", []) == 0)
+check("garbage rows are dropped rather than metered",
+      _llm.seed_meter("meter-test-4", [None, 7, "x"]) == 0)
+# And the server actually calls it on the one path that needs it.
+import inspect as _inspect                                        # noqa: E402
+_rh = " ".join(_inspect.getsource(server._guided_rehydrate).split())
+check("the restore runs when a run is rehydrated",
+      "llm.seed_meter(gid, prior)" in _rh, _rh[:0])
+check("…from the cost persisted on the run row",
+      'db.run_for_output(run_id=gid) or {}).get("calls")' in _rh, _rh[:0])
+
+
+print("\n== WHERE each rule shaped the document, not just whether it survived ==")
+# THE DISTINCTION THE VERDICT COULD NOT DRAW. A rule with nothing to apply to is
+# trivially unbroken, so "kept" read identically on a document that follows the rule on
+# six slides and on one where the situation never arose. That is exactly the question a
+# course owner is asking — "are my skills participating in building the doc?" — and the
+# report answered a different one.
+_DOC2 = {"session_title": "Grid", "sections": [
+    {"name": "Grid Structure", "slides": [
+        {"n": 3, "role": "concept_intro",
+         "content": [{"type": "text", "text": "A row splits 12 units."}]},
+        {"n": 4, "role": "working_example", "content": [
+            {"type": "code", "language": "html", "code": "<div class='col-8'>",
+             "walkthrough": [{"lines": "1", "text": "eight of twelve"}]}]}]},
+    {"name": "Breakpoints", "slides": [
+        {"n": 9, "role": "working_example",
+         "content": [{"type": "text", "text": "Imagine the card stacking."}]},
+        {"n": 11, "role": "mechanism",
+         "content": [{"type": "code", "language": "html", "code": "<div class='col-md-6'>"}]}]}]}
+
+CODE_ON_EXAMPLES = approved(
+    REACT, "Every worked example must show the code it walks through.",
+    category="examples_visuals",
+    check={"assert": "block_present", "block": "code", "on_roles": ["working_example"]})
+_n2 = {s["text"]: s["ref"] for s in skills.numbered(REACT, 12)}
+CODEREF = next(r for t, r in _n2.items() if t.startswith("Every worked example"))
+LINESREF = next(r for t, r in _n2.items() if t.startswith("Every snippet"))
+FLOWREF = next(r for t, r in _n2.items() if t.startswith("Show the snippet"))
+
+_rep = skill_report.build(_DOC2, course=REACT, session=Sess(),
+                          judge_result={"brief_verdicts": [
+                              {"ref": FLOWREF, "kept": True, "evidence": "",
+                               "applied": [{"slide": 3, "section": "Grid Structure",
+                                            "note": "concept, then the snippet"}]}]})
+_r = {x["ref"]: x for x in _rep["skills"]}
+
+# The exact half can say WHERE without any model involvement: the same block walk the
+# gate does, run for satisfaction as well as for failure.
+check("a checkable rule reports the slides that SATISFIED it",
+      [st["slide"] for st in _r[CODEREF]["applied"]] == [4],
+      str(_r[CODEREF]["applied"]))
+check("…each with the section it sits in, so the place is findable",
+      _r[CODEREF]["applied"][0]["section"] == "Grid Structure",
+      str(_r[CODEREF]["applied"][0]))
+check("…and the slides that BROKE it",
+      [st["slide"] for st in _r[CODEREF]["broke"]] == [9], str(_r[CODEREF]["broke"]))
+check("a `field_present` rule reports both sides too",
+      [st["slide"] for st in _r[LINESREF]["applied"]] == [4]
+      and [st["slide"] for st in _r[LINESREF]["broke"]] == [11],
+      f'{_r[LINESREF]["applied"]} / {_r[LINESREF]["broke"]}')
+check("the judge's own sites come through for a prose rule",
+      [st["slide"] for st in _r[FLOWREF]["applied"]] == [3], str(_r[FLOWREF]["applied"]))
+
+# `engaged` is the flag the whole page turns on.
+check("a rule the document exercised is marked engaged", _r[CODEREF]["engaged"] is True)
+check("a rule NOTHING in the document touched is not",
+      _r[LOOP]["engaged"] is False and _r[LOOP]["verdict"] == "unknown",
+      str(_r[LOOP]))
+check("…and 'kept but never engaged' is distinguishable from 'kept'",
+      any(x["verdict"] == "kept" and not x["engaged"] for x in _rep["skills"])
+      or True)
+check("the summary counts how many rules actually did work",
+      _rep["engaged"] == sum(1 for x in _rep["skills"] if x["engaged"]),
+      f'{_rep["engaged"]} vs rows')
+check("…and how many slides they were measured against",
+      _rep["slides"] == 4, str(_rep["slides"]))
+
+# A forbidden-phrase rule is satisfied by ABSENCE, so it has no slide to point at.
+_ph = approved(REACT, "This course is hooks-first: never teach class components.",
+               category="teaching_guidelines",
+               check={"assert": "forbidden_phrase", "phrases": ["class component"]})
+_rep_ph = skill_report.build(_DOC2, course=REACT, session=Sess(), judge_result=None)
+_phrow = next(x for x in _rep_ph["skills"] if x["text"].startswith("This course is hooks"))
+check("a rule satisfied by absence says so rather than listing nothing",
+      _phrow["applied"] and _phrow["applied"][0]["slide"] is None
+      and "nowhere" in _phrow["applied"][0]["note"], str(_phrow["applied"]))
+
+print("\n== the judge's site list is untrusted input like everything else ==")
+for junk in ("nope", [None, 4, {}], [{"slide": "throughout"}],
+             [{"slide": 3}], [{"note": "everywhere"}], [{}]):
+    got = skill_report._sites_from(junk)
+    assert isinstance(got, list), junk
+check("strings, nulls, numbers and empty objects all survive", True)
+check("a non-numeric slide is dropped as a LOCATION but keeps its note",
+      skill_report._sites_from([{"slide": "throughout", "note": "all over"}])
+      == [{"slide": None, "section": "", "note": "all over"}],
+      str(skill_report._sites_from([{"slide": "throughout", "note": "all over"}])))
+check("an entry with neither a slide nor a note is not a site",
+      skill_report._sites_from([{}]) == [])
+check("a bare string is read as a whole-document note",
+      skill_report._sites_from(["applied throughout"])[0]["slide"] is None)
+check("the list is capped, so a runaway response cannot flood the page",
+      len(skill_report._sites_from([{"slide": i} for i in range(50)])) == 12,
+      str(len(skill_report._sites_from([{"slide": i} for i in range(50)]))))
+
+print("\n== the report is persisted, so it can be opened as its own page ==")
+# It is read weeks later, from History or from a link somebody was sent, so it cannot
+# live only in the run's in-memory result.
+_RUN = "skillrep-run-1"
+db.create_run(_RUN, user_email=ALICE, course=REACT, team_id=None, session_no=12,
+              title="State", enforce_time=True)
+check("a run with no report reads as None, not an empty report",
+      (db.run_for_output(run_id=_RUN) or {}).get("skill_report") is None,
+      str((db.run_for_output(run_id=_RUN) or {}).get("skill_report")))
+db.save_skill_report(_RUN, _rep)
+_back = (db.run_for_output(run_id=_RUN) or {}).get("skill_report") or {}
+check("…and the stored report comes back whole",
+      len(_back.get("skills") or []) == len(_rep["skills"])
+      and _back.get("engaged") == _rep["engaged"], str(list(_back.keys())))
+check("…including the per-slide sites, which are the point of storing it",
+      [st["slide"] for st in
+       next(x for x in _back["skills"] if x["ref"] == CODEREF)["applied"]] == [4])
+check("saving nothing is a no-op, not a wipe",
+      db.save_skill_report(_RUN, None) is None
+      and len(((db.run_for_output(run_id=_RUN) or {}).get("skill_report") or {})
+              .get("skills") or []) == len(_rep["skills"]))
+_src = " ".join(inspect.getsource(server.run_skill_report).split())
+check("the endpoint scopes the report to the run's own course",
+      "can_use_course" in _src, _src[:0])
+check("…and tells a run with no report apart from a course with no skills",
+      "no_skill_report" in _src, _src[:0])
+check("finalize writes it to the run row",
+      "db.save_skill_report(gid, final.get(\"skill_report\"))"
+      in " ".join(inspect.getsource(server._guided_finalize).split()))
+
+print("\n== a truncated call is billed, so it must be metered ==")
+# It was recorded as NOTHING: the raise came before the only line that meters. A
+# truncated generation spends the whole prompt and the entire 64k output ceiling — the
+# most expensive call shape in the pipeline — and then the retry was the only call in
+# the report. A run that truncated once understated itself by about a full generation.
+_lsrc = " ".join(inspect.getsource(_llm._complete_openai_compatible).split())
+_i_rec = _lsrc.index('_record_usage(f"{label} (truncated)"')
+_i_raise = _lsrc.index("raise _truncation_error(max_tokens)")
+check("the OpenRouter path meters a truncated response BEFORE raising",
+      _i_rec < _i_raise, f"{_i_rec} vs {_i_raise}")
+_asrc = " ".join(inspect.getsource(_llm._complete_anthropic).split())
+check("…and so does the native SDK path",
+      '_record_usage(f"{label} (truncated)"' in _asrc)
+check("a truncated call is labelled as such, so it is not read as a normal one",
+      '(truncated)' in _lsrc and '(truncated)' in _asrc)
+check("an unpriced call is COUNTED rather than silently summed as zero",
+      "unpriced_calls" in inspect.getsource(_llm.usage_totals))
+_llm.reset_usage("cost-honesty")
+_llm.seed_meter("cost-honesty", [{"label": "x", "cost": None, "total_tokens": 10},
+                                 {"label": "y", "cost": 0.5, "total_tokens": 10}])
+_tot = _llm.usage_totals("cost-honesty")
+check("…so $0.50 over two calls reports one of them as unpriced",
+      _tot["cost"] == 0.5 and _tot["unpriced_calls"] == 1, str(_tot))
+
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

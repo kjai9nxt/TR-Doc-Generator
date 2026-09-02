@@ -98,6 +98,36 @@ def reset_usage(run_id: str | None = None) -> None:
     _current.mid = mid
 
 
+def seed_meter(run_id: str, records: list | None) -> int:
+    """Prime a run's meter with usage it already paid for. Returns how many were taken.
+
+    WHY A METER HAS TO BE RESTORABLE. `_METERS` is process memory. A guided run spans a
+    long human review, and on an ephemeral host the process does not survive it — which
+    is the whole reason `_guided_rehydrate` exists. Generation records were therefore
+    lost on every restart, and because the DB write REPLACES a run's `calls_json` rather
+    than appending, the next write — the judge at finalize — overwrote the six correct
+    generation rows with whatever had happened since the restart.
+
+    The result was a finished document reporting the cost of its grading and none of its
+    writing: seven calls, no `generate_chunk` among them, and a total understated by most
+    of the run. Worse, it read as a real finding — "the generator model is never used" —
+    because the one row using it was a repair pass.
+
+    Restored ONLY when the meter is empty. A rehydrate that raced a live thread would
+    otherwise double-count everything that thread had already recorded.
+    """
+    mid = run_id or _DEFAULT_METER
+    _open_meter(mid)
+    rows = [r for r in (records or []) if isinstance(r, dict)]
+    if not rows:
+        return 0
+    with _METERS_LOCK:
+        if _METERS.get(mid):
+            return 0
+        _METERS[mid] = rows
+    return len(rows)
+
+
 def close_usage(run_id: str) -> None:
     """Drop a finished run's meter (best-effort; keeps a long-lived server tidy)."""
     with _METERS_LOCK:
@@ -112,7 +142,17 @@ def usage_records(run_id: str | None = None) -> list[dict]:
 
 
 def usage_totals(run_id: str | None = None) -> dict:
-    """Aggregate the records collected for this run since its last reset."""
+    """Aggregate the records collected for this run since its last reset.
+
+    `unpriced_calls` COUNTS WHAT THE TOTAL CANNOT INCLUDE. The dollar figure is the
+    provider's own — OpenRouter returns `usage.cost`, which already carries the
+    prompt-cache discount and the `:online` web-search surcharge, so nothing here has to
+    keep a price table that could drift out of date. The native Anthropic SDK returns no
+    cost field at all, and `sum(r.get("cost") or 0)` turned that into a confident
+    $0.0000: a run that had spent real money reported none, and there was no way to tell
+    that total from a run that genuinely cost nothing. Counting the unpriced calls is
+    what lets a reader tell "this cost nothing" from "nobody told us what this cost".
+    """
     recs = usage_records(run_id)
     return {
         "prompt_tokens": sum(r.get("prompt_tokens") or 0 for r in recs),
@@ -120,6 +160,8 @@ def usage_totals(run_id: str | None = None) -> dict:
         "total_tokens": sum(r.get("total_tokens") or 0 for r in recs),
         "cost": round(sum(r.get("cost") or 0.0 for r in recs), 6),
         "calls": len(recs),
+        "unpriced_calls": sum(1 for r in recs if r.get("cost") is None),
+        "cached_prompt_tokens": sum(r.get("cached_prompt_tokens") or 0 for r in recs),
     }
 
 
@@ -290,6 +332,15 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
                     _log_truncation(provider="openrouter", model=model,
                                     finish_reason="length", max_tokens=max_tokens,
                                     usage=data.get("usage"), content=content)
+                    # METERED BEFORE IT IS RAISED. A truncated response is the most
+                    # expensive call shape in the pipeline — it spent the entire prompt
+                    # and the whole output ceiling, which for the generator is 64k
+                    # tokens — and it was recorded as nothing at all, because the raise
+                    # came before the only line that meters. The caller then retries or
+                    # re-drafts, and THAT call was the only one billed in the report. A
+                    # run that truncated once therefore understated its own cost by
+                    # roughly a full generation, and the money was already spent.
+                    _record_usage(f"{label} (truncated)", model, data.get("usage"))
                     raise _truncation_error(max_tokens)
                 _record_usage(label, model, data.get("usage"))
                 return content
@@ -329,6 +380,11 @@ def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
                 _log_truncation(provider="anthropic", model=model,
                                 finish_reason="max_tokens", max_tokens=max_tokens,
                                 usage=getattr(resp, "usage", None), content=text)
+                _u = getattr(resp, "usage", None)
+                if _u is not None:                  # billed, so it is metered
+                    _record_usage(f"{label} (truncated)", model,
+                                  {"input_tokens": getattr(_u, "input_tokens", None),
+                                   "output_tokens": getattr(_u, "output_tokens", None)})
                 raise _truncation_error(max_tokens)
             u = getattr(resp, "usage", None)
             if u is not None:

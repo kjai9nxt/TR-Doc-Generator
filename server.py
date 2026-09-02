@@ -1965,6 +1965,26 @@ def _guided_rehydrate(gid: str) -> dict | None:
         state["index"] = len(state["chunks"])
         GUIDED[gid] = state
 
+    # THE MONEY THIS RUN HAS ALREADY SPENT. The meter lives in process memory, and this
+    # function exists precisely because the process does not survive a long review — so
+    # without this the run came back with an empty meter. That would be merely wrong,
+    # except that every cost write REPLACES the row's `calls_json`: the next write after
+    # a restart therefore erased the generation records with the handful of calls made
+    # since. A finished doc reported the cost of grading itself and none of the cost of
+    # being written, which also made it look as though the generator model was never
+    # used at all.
+    try:
+        prior = (db.run_for_output(run_id=gid) or {}).get("calls") or []
+        restored = llm.seed_meter(gid, prior)
+        if restored:
+            with _lock:
+                if gid in GUIDED:
+                    GUIDED[gid]["logs"].append(
+                        f"↺ Restored the record of {restored} LLM call(s) already paid "
+                        f"for on this run, so the cost stays whole.")
+    except Exception as e:
+        print(f"[guided] could not restore the cost meter for {gid}: {e!r}")
+
     _guided_save(gid)
     if resume_generation:
         threading.Thread(target=_guided_generate_all, args=(gid,), daemon=True).start()
@@ -2746,6 +2766,10 @@ def _guided_finalize(gid: str):
                 slides=final.get("time", {}).get("slide_count"),
                 cost=cost.get("totals"), calls=cost.get("calls"),
                 docx_path=result.get("docx"))
+            # The per-skill report, on the run row. It is opened as a page of its own —
+            # weeks later, from History, or from a link — so it cannot live only in the
+            # in-memory result.
+            db.save_skill_report(gid, final.get("skill_report"))
         except Exception:
             pass
     except Exception as e:
@@ -4028,6 +4052,43 @@ def _resolve_output(session_no: int, run_id: str | None, name: str | None,
             f"If the document was generated on an earlier deploy its file may have been "
             f"cleared — regenerate it, or copy it from the preview below."})
     return got
+
+
+@app.get("/api/runs/{run_id}/skill-report")
+def run_skill_report(run_id: str, user: dict = Depends(current_user)):
+    """The per-skill report for one run — for the standalone report page.
+
+    SCOPED THE SAME WAY A DOWNLOAD IS. A run id names a document, and this returns the
+    course's own authored brief alongside a verdict on each line of it, so it is exactly
+    as private as the document itself. The run row says which course it belongs to, which
+    is the question the rest of the app already asks.
+    """
+    row = db.run_for_output(run_id=run_id)
+    if not row:
+        raise HTTPException(status_code=404, detail={"message":
+            "No such run. The report is written when a document is created."})
+    if not user.get("is_admin") and not db.can_use_course(
+            user.get("email"), row.get("course") or "", is_admin=False):
+        raise HTTPException(status_code=403, detail={"message":
+            "That document was generated for a course you cannot open."})
+    report = row.get("skill_report")
+    if not report:
+        # Told apart on purpose. A course with no approved skills has nothing to report
+        # and never will; a run from before the report existed simply was not measured.
+        # Both used to be an empty panel, which reads as "your skills were ignored".
+        raise HTTPException(status_code=404, detail={"message":
+            "This run has no skill report. Either its course had no approved skills "
+            "when the document was written, or it predates per-skill reporting — "
+            "regenerate the document to get one.", "kind": "no_skill_report"})
+    return {
+        "run_id": run_id,
+        "course": row.get("course") or "",
+        "session_no": row.get("session_no"),
+        "session_title": row.get("title") or "",
+        "generated_at": row.get("ts"),
+        "rubric_total": row.get("rubric"),
+        "report": report,
+    }
 
 
 @app.get("/api/download/{session_no}")

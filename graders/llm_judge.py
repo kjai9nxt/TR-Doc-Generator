@@ -290,10 +290,35 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
                 # withholds which line — so the one action it implies is the one thing
                 # it does not support. Each skill carries a label; rule on each label.
                 "\nAND RETURN A VERDICT FOR EVERY LABELLED SKILL, in `brief_verdicts`:\n"
-                '  "brief_verdicts": [{"ref": "S1", "kept": true, "evidence": ""}, '
-                '{"ref": "S2", "kept": false, "evidence": "Slide 14 content: \'a class '
-                'component keeps state in this.state\'"}]\n'
+                '  "brief_verdicts": [\n'
+                '    {"ref": "S1", "kept": true, "evidence": "",\n'
+                '     "applied": [{"slide": 4, "section": "Grid Structure", "note": '
+                '"concept stated, then the snippet, then the walkthrough"},\n'
+                '                 {"slide": 9, "section": "Breakpoints", "note": '
+                '"same worked example extended rather than replaced"}],\n'
+                '     "broke": []},\n'
+                '    {"ref": "S2", "kept": false, "evidence": "Slide 14 content: \'a '
+                'class component keeps state in this.state\'",\n'
+                '     "applied": [], "broke": [{"slide": 14, "section": "State", '
+                '"note": "teaches the pattern this course has moved off"}]}\n'
+                '  ]\n'
                 "  · ONE ENTRY PER LABEL. Every [S…] in the brief below, none invented.\n"
+                # THE PART A COURSE OWNER ACTUALLY READS. A verdict says a rule was not
+                # contradicted; it does not say the rule did any work. "Open from the
+                # broken page, then the fix — kept" reads exactly the same on a document
+                # that does it on six slides and on one where the situation never arose,
+                # because a rule with nothing to apply to is trivially unbroken. So name
+                # the slides.
+                "  · `applied` LISTS WHERE THE SKILL SHAPED THIS DOCUMENT — the slides "
+                "that follow it, with one short note each saying what following it looked "
+                "like there. This is the most useful field in your whole response: it is "
+                "what tells the course owner their rule participated in writing the doc "
+                "rather than merely going unbroken.\n"
+                "  · Leave `applied` EMPTY when the document genuinely never engaged the "
+                "rule. That is a real and useful answer — do not pad it with slides that "
+                "happen to exist.\n"
+                "  · `broke` lists where it was violated, same shape. Every entry in it "
+                "needs the quote that shows it.\n"
                 "  · `kept: false` REQUIRES `evidence`: the slide number and the text "
                 "that breaks the skill, quoted. A verdict of false with no quote is not "
                 "a finding — if you cannot quote it, the skill was kept.\n"

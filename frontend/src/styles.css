@@ -1078,8 +1078,14 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .just { color: var(--muted); font-size: 12.5px; line-height: 1.55; margin-top: 4px; }
 
 /* eval sets */
-.evalhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.evalhead .ghostbtn { margin: 0; }
+/* `.evalhead` is gone with the div it styled — the panel's summary row does that job
+   now, like every other panel's. The Run control pins to the right of it. */
+.panel.evalsets > summary { flex-wrap: wrap; }
+.panel.evalsets > summary .evalrun { margin-left: auto; margin-top: 0; flex: none; }
+/* The summary's own text should not be squeezed out by the button on a narrow screen. */
+@media (max-width: 560px) {
+  .panel.evalsets > summary .evalrun { margin-left: 0; }
+}
 .evalreport { margin-top: 14px; }
 .evalsummary { display: flex; align-items: center; gap: 10px; font-size: 14px; margin-bottom: 10px; }
 .badge { font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 4px 11px; border-radius: 7px; }
@@ -1166,6 +1172,11 @@ button.tag:disabled { cursor: default; opacity: .5; }
 /* STATUS NEEDS ROOM. "approved · flagged" does not fit in 66px, and a cell that clips
    its own chip mid-word is worse than no column. */
 .dashcell.st { flex: 0 0 132px; }
+/* THE MODEL NEEDS ROOM AND WANTS TO BE READ, so it is left-aligned like a name rather
+   than right-aligned like a number. At 66px "sonnet-5" and "haiku-4.5" both clipped, and
+   a column that cannot finish either of the two values it ever holds is not telling you
+   which model ran — it is telling you that one did. */
+.dashcell.mdl { flex: 0 0 116px; text-align: left; }
 .dashcell:last-child { flex: 0 0 76px; }
 .dashcell.grow { flex: 1 1 auto; text-align: left; color: inherit; font-weight: 600;
   min-width: 0; white-space: normal; }
@@ -1180,6 +1191,39 @@ button.tag:disabled { cursor: default; opacity: .5; }
 .dashhead { background: transparent; border-color: transparent; padding-bottom: 4px; }
 .dashhead .dashcell { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; opacity: .6; }
 .dashclick { cursor: pointer; }
+/* THE COST TABLE ON A NARROW SCREEN. Six fixed cells at `flex-wrap: nowrap` cannot fit
+   a phone, and the row was clipping the two columns on the right — Total and Cost, the
+   ones the panel exists for. In and Out are the breakdown of Total, so they are the two
+   that can go; the tooltip on the row keeps nothing from being unreachable. */
+/* A FLOOR AND A SCROLLER, so nothing is clipped by a narrow CONTAINER rather than a
+   narrow screen. The media queries below only know the viewport; this table also renders
+   inside a half-width column on the dashboard, and six fixed cells at `nowrap` responded
+   by crushing the Call cell to nothing and cutting Cost off the right edge — losing the
+   row's name and its point in one go. A minimum width plus a scrolling wrapper means the
+   worst case is a table you drag, never a number you cannot see.
+   Scoped with `:has(.dashhead)` so the rubric and skill lists, which wrap happily, are
+   untouched. STATED BEFORE the media queries, because it is the rule they override: a
+   media query does not outrank a later declaration of equal specificity, and with this
+   pair written underneath them the 460px floor won at every width — which is how a
+   measured 400px viewport came back with `setmain w=460` and Cost sitting at x=507
+   inside a 338px box. */
+.scorelist:has(.dashhead) { overflow-x: auto; }
+.scorelist:has(.dashhead) .setmain { min-width: 460px; }
+@media (max-width: 700px) {
+  /* In and Out are the two halves of Total, so they are what can go first. */
+  .dashcell.io { display: none; }
+  .dashcell.mdl { flex: 0 0 92px; }
+}
+@media (max-width: 480px) {
+  /* Narrower still, and things leave in reverse order of how much they matter. The
+     panel is called Cost breakdown, so Cost is the last thing that may go; the label
+     identifies the row and the model is what you came to check. Token totals leave —
+     they are the sum of two columns already dropped, and the panel's summary line still
+     states the run's total. With them gone the row fits, so the floor is released and
+     the table stops needing to scroll at all. */
+  .dashcell.tot { display: none; }
+  .scorelist:has(.dashhead) .setmain { min-width: 0; }
+}
 .dashrow { transition: border-left-color .14s, background .14s; }
 .dashrow:hover { border-left-color: var(--accent); background: var(--card2); }
 .dashtotal { background: var(--card2); }
@@ -1421,3 +1465,66 @@ summary:hover::before { border-left-color: var(--accent); }
 .panel.skillrep .evidence { margin-top: 5px; padding-left: 10px;
   border-left: 2px solid var(--warn, #d08b2c); color: var(--muted); }
 .panel.skillrep .setrow.pass .evidence { border-left-color: var(--ok-line, #2f6b4d); }
+
+/* ============================================================================
+   THE SKILL REPORT, AS A PAGE
+   Opened in its own tab, so it carries no rail and no breadcrumb: it is a document
+   about one run rather than a section of the app, and it is meant to sit open beside
+   the TR doc it describes.
+   ============================================================================ */
+.reportpage { max-width: 940px; padding-top: 26px; }
+.rphead { display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap; padding-bottom: 18px; margin-bottom: 18px;
+  border-bottom: 1px solid var(--line); }
+.rphead h1 { margin: 6px 0 0; font-size: 24px; font-weight: 700; letter-spacing: -.02em;
+  color: var(--strong); }
+.rphead .hint { margin-top: 6px; }
+/* The number the page exists to explain, stated with its weight — 5/5 on a dimension
+   worth 6 of 100 is a different claim from 5/5 overall, and showing one without the
+   other is how a small score gets read as a verdict on the whole document. */
+.rpscore { display: flex; align-items: center; gap: 12px; flex: none;
+  padding: 12px 16px; border-radius: var(--r-lg);
+  background: var(--hue-soft); border: 1px solid var(--hue-line); }
+.rpsval { font-size: 30px; font-weight: 750; letter-spacing: -.02em; color: var(--hue);
+  line-height: 1; font-variant-numeric: tabular-nums; }
+.rpslab { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+.rpslab span { color: var(--faint); font-size: 11px; }
+.rpstats { display: grid; gap: 12px; margin-bottom: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
+.rpmath { margin: 0 0 18px; }
+.rpmath b { color: var(--strong); }
+.rpmath .hint { margin: 8px 0 0; }
+.rprules { display: flex; flex-direction: column; gap: 14px; }
+/* One card per rule, edged in its VERDICT rather than its category: on this page the
+   question is what happened to the rule, and the category is a label inside it. */
+.rprule { margin: 0; border-left: 3px solid var(--line2); }
+.rprule.v-kept { border-left-color: var(--ok-line); }
+.rprule.v-broken { border-left-color: var(--err); }
+.rprule.v-unknown { border-left-color: var(--warn-line); }
+.rpruleh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rpruletext { margin: 10px 0 0; font-size: 14.5px; font-weight: 500; color: var(--strong);
+  line-height: 1.55; }
+/* WHERE THE RULE DID ITS WORK. The half a verdict cannot carry: a list of slides, each
+   with what following the rule looked like there. Applied reads calm, broken reads
+   warm — they are answers to opposite questions and must not look alike. */
+.sites { margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm);
+  background: var(--sunken); border: 1px solid var(--line); }
+.sites > b { display: block; font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--faint); margin-bottom: 6px; }
+.sites.applied { border-left: 2px solid var(--ok-line); }
+.sites.broke { border-left: 2px solid var(--err); background: var(--err-soft); }
+.sites ul { margin: 0; padding: 0; list-style: none; display: flex;
+  flex-direction: column; gap: 5px; }
+.sites li { display: flex; gap: 10px; align-items: baseline; font-size: 13px; }
+.siteat { flex: none; font-weight: 600; color: var(--text);
+  font-variant-numeric: tabular-nums; }
+.siteat.whole { color: var(--muted); font-weight: 550; }
+.sitenote { color: var(--muted); min-width: 0; }
+.rprule .evidence { margin-top: 10px; padding-left: 10px;
+  border-left: 2px solid var(--err); color: var(--muted); }
+@media (max-width: 640px) {
+  .reportpage { padding-top: 16px; }
+  .rphead h1 { font-size: 20px; }
+  .rpscore { width: 100%; }
+  .sites li { flex-direction: column; gap: 1px; }
+}

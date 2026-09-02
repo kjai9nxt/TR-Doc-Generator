@@ -28,6 +28,7 @@ was not assessed must not read like a brief that passed.
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -53,13 +54,82 @@ def _slides(doc: dict) -> list:
     return [sl for sec in (doc.get("sections") or []) for sl in (sec.get("slides") or [])]
 
 
-def _deterministic(doc: dict, skills: list[dict]) -> dict[str, list[str]]:
-    """`{ref: [failure, …]}` for the skills a machine can settle. Absent = not checkable.
+def _section_of(doc: dict, n) -> str:
+    """The section a slide number belongs to, for a report row that has to say WHERE."""
+    for sec in (doc.get("sections") or []):
+        for sl in (sec.get("slides") or []):
+            if sl.get("n") == n:
+                return str(sec.get("name") or "")
+    return ""
+
+
+def _site(doc: dict, n, note: str = "") -> dict:
+    return {"slide": n, "section": _section_of(doc, n), "note": note}
+
+
+def _slide_nums(text: str) -> list:
+    """Slide numbers a failure message names, so a message becomes a place.
+
+    `guardrails._skill_failures` already writes "Slide 14: …" — the location is in the
+    string. Parsing it here rather than changing that function's return type keeps the
+    gate and the report reading the same values from the same code.
+    """
+    return [int(m) for m in re.findall(r"Slide (\d+)", str(text or ""))]
+
+
+def _applied_sites(doc: dict, skill: dict, chk: dict) -> list[dict]:
+    """The slides where a CHECKABLE skill was actually satisfied.
+
+    THE HALF THE REPORT WAS MISSING. A verdict says a rule was kept; it does not say the
+    rule did anything. "Every worked example shows its code — kept" reads identically on
+    a document with four worked examples that all show code and on one with no worked
+    examples at all, because a rule with nothing to apply to is trivially unbroken. This
+    lists the slides that actually carried the thing, so "kept" can be told apart from
+    "never came up" — which is the question "are my skills participating in building the
+    doc?" asked precisely.
+    """
+    kind = chk.get("assert")
+    out: list[dict] = []
+    try:
+        from guardrails import guardrails as _gr
+    except Exception:
+        return out
+    slides = _slides(doc)
+    if kind in ("block_present", "min_count"):
+        want = str(chk.get("block") or "")
+        roles = [r for r in (chk.get("on_roles") or []) if r]
+        for sl in slides:
+            if roles and str(sl.get("role") or "") not in roles:
+                continue
+            n_blocks = len(_gr._blocks_of(sl, want))
+            if n_blocks:
+                out.append(_site(doc, sl.get("n"),
+                                 f"carries {n_blocks} `{want}` block(s)"))
+    elif kind == "field_present":
+        field, when = str(chk.get("field") or ""), str(chk.get("when_block") or "")
+        for sl in slides:
+            hits = sum(1 for b in (_gr._blocks_of(sl, when) if when
+                                   else (sl.get("content") or []))
+                       if isinstance(b, dict) and b.get(field))
+            if hits:
+                out.append(_site(doc, sl.get("n"),
+                                 f"{hits} `{when or 'content'}` block(s) carry `{field}`"))
+    elif kind == "forbidden_phrase":
+        # Nothing to point at: the rule is satisfied by ABSENCE. Saying so is more use
+        # than an empty list the reader has to interpret.
+        out.append({"slide": None, "section": "",
+                    "note": "satisfied across the whole document — the phrases this "
+                            "course does not teach appear nowhere"})
+    return out
+
+
+def _deterministic(doc: dict, skills: list[dict]) -> dict[str, dict]:
+    """`{ref: {"failures": [...], "applied": [...]}}` for the skills a machine can settle.
 
     Reuses the gate's own function rather than re-implementing the four assertions, so a
     skill that fails the run cannot be reported as kept by the document that failed it.
     """
-    out: dict[str, list[str]] = {}
+    out: dict[str, dict] = {}
     try:
         from guardrails import guardrails as _gr
     except Exception:
@@ -70,7 +140,12 @@ def _deterministic(doc: dict, skills: list[dict]) -> dict[str, list[str]]:
         if not isinstance(chk, dict) or not chk.get("assert"):
             continue
         try:
-            out[sk["ref"]] = _gr._skill_failures(doc, slides, sk, chk)
+            fails = _gr._skill_failures(doc, slides, sk, chk)
+            out[sk["ref"]] = {
+                "failures": fails,
+                "applied": _applied_sites(doc, sk, chk),
+                "broke": [_site(doc, n, f) for f in fails for n in _slide_nums(f)],
+            }
         except Exception:
             continue                      # a broken check must not take the report down
     return out
@@ -96,7 +171,38 @@ def _verdicts_from_judge(judge_result: dict | None) -> dict[str, dict]:
             kept = kept.strip().lower() in ("true", "yes", "kept", "y")
         if not isinstance(kept, bool):
             continue
-        out[ref] = {"kept": kept, "evidence": str(v.get("evidence") or "").strip()[:400]}
+        out[ref] = {"kept": kept,
+                    "evidence": str(v.get("evidence") or "").strip()[:400],
+                    "applied": _sites_from(v.get("applied")),
+                    "broke": _sites_from(v.get("broke"))}
+    return out
+
+
+def _sites_from(raw) -> list[dict]:
+    """The places a judge says a skill shaped, cleaned. Model output, so nothing raises.
+
+    A slide number is kept only when it is actually a number: "slide 4" and "throughout"
+    are both things a model returns, and a report that prints the second one as a
+    location is worse than one that prints nothing. The note survives either way, so a
+    verdict about the document as a whole still says what it saw.
+    """
+    out: list[dict] = []
+    for it in (raw or [])[:12]:
+        if isinstance(it, str):
+            out.append({"slide": None, "section": "", "note": it.strip()[:240]})
+            continue
+        if not isinstance(it, dict):
+            continue
+        n = it.get("slide")
+        try:
+            n = int(n)
+        except (TypeError, ValueError):
+            n = None
+        note = str(it.get("note") or it.get("quote") or "").strip()[:240]
+        if n is None and not note:
+            continue
+        out.append({"slide": n, "section": str(it.get("section") or "").strip()[:80],
+                    "note": note})
     return out
 
 
@@ -147,18 +253,27 @@ def build(doc: dict, *, course: str | None, session=None,
             # and an opinion must not overturn a count. (It is also the half that already
             # failed the run, so a row disagreeing with the gate would be reporting a
             # document that does not exist.)
-            fails = checked[ref]
+            det = checked[ref]
+            fails = det["failures"]
             row.update(how="checked", verdict="broken" if fails else "kept",
-                       evidence="; ".join(fails[:3]))
+                       evidence="; ".join(fails[:3]),
+                       applied=det["applied"], broke=det["broke"])
         elif ref in judged:
             v = judged[ref]
             row.update(how="judged", verdict="kept" if v["kept"] else "broken",
-                       evidence=v["evidence"])
+                       evidence=v["evidence"],
+                       applied=v.get("applied") or [], broke=v.get("broke") or [])
         else:
             # NOT ASSESSED. The judge returned nothing for this skill — it was off, it
             # errored, or it simply skipped the line. Shown as its own state, because a
             # rule nobody looked at must not read like a rule that passed.
-            row.update(how="unreported", verdict="unknown", evidence="")
+            row.update(how="unreported", verdict="unknown", evidence="",
+                       applied=[], broke=[])
+        # WHETHER THE RULE EVER CAME UP. A rule with nothing to apply to is trivially
+        # unbroken, so "kept" alone cannot tell a course owner that their skill did any
+        # work. This is the flag that separates "followed, here and here" from "nothing
+        # in this document engaged it".
+        row["engaged"] = bool(row["applied"] or row["broke"])
         rows.append(row)
         if row["verdict"] == "broken":
             broken += 1
@@ -171,6 +286,10 @@ def build(doc: dict, *, course: str | None, session=None,
     return {
         "skills": rows,
         "kept": kept, "broken": broken, "unknown": unknown, "total": len(rows),
+        # How many rules the document actually exercised, as opposed to merely not
+        # contradicting. The count a course owner is really asking for.
+        "engaged": sum(1 for r in rows if r["engaged"]),
+        "slides": len(_slides(doc)),
         # No score when NOTHING could be ruled on — every row unknown means the grader
         # did not run, which is a fact about the grading and not about the document. The
         # caller leaves the dimension as the judge left it rather than inventing a 5.
