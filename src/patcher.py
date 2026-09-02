@@ -442,6 +442,22 @@ def _doc_slides(doc: dict) -> list[tuple[dict, dict]]:
     return out
 
 
+def renumber_doc(doc: dict) -> dict:
+    """Public name for `_renumber_doc` — for a document a MODEL returned whole.
+
+    A patch is applied by this module and renumbered on the way out. A full re-draft is
+    not: `generator.revise` hands back a fresh document, and a model asked to trim four
+    slides deletes their objects and leaves the survivors' numbers alone. The count is
+    then right and every label above the first deletion is wrong — a thirteen-slide
+    document whose last slide is headed "Slide 17", with gaps wherever a cut landed and
+    a coverage map still citing the old numbers.
+
+    Same function, exported so the one other place that produces a whole document can
+    reach it. See src/pipeline, after each `generator.revise`.
+    """
+    return _renumber_doc(doc)
+
+
 def _renumber_doc(doc: dict) -> dict:
     """Renumber every slide 1..N and carry the coverage map's references with them.
 

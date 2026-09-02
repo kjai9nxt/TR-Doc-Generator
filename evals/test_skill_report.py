@@ -609,5 +609,402 @@ check("…and the reason tells the reviewer to run it again",
       any("re-run the grade" in i or "again to re-run" in i or "re-run" in i
           for i in _iss), str(_iss[-1])[:120] if _iss else "no issues")
 
+
+print("\n== the slide numbers on screen must describe the document produced ==")
+# THE REPORTED MISMATCH: a review pane headed "Slide 17" beside a Result card reporting
+# 13 slides. Both numbers were real; only one described the document.
+#
+# A chunk's markdown is rendered once, at generation, and each chunk numbers its slides
+# consecutively after the chunks approved AT THAT MOMENT. Regenerate an early chunk
+# shorter and every later chunk keeps the numbers it was handed. `assemble_doc` renumbers
+# the real document 1..N, so the count was right and the panes were stale.
+from src import docx_writer as _dw                                 # noqa: E402
+
+
+def _sl(n, h):
+    return {"n": n, "heading": h, "title": h, "subheading": "s", "content": [],
+            "visual_guidance": "v", "speaker_notes": "sn"}
+
+
+_OPENING = {"recap": None, "agenda": ["a"]}
+_SECS = [{"name": "Breakpoints", "slides": [_sl(1, "A"), _sl(2, "B"), _sl(3, "C")]},
+         # generated while the first chunk still had eight slides
+         {"name": "Scaling", "slides": [_sl(9, "D"), _sl(17, "Grid Scaling Recap")]}]
+
+
+def _pane_nums(sec):
+    return [int(l.split()[2].rstrip(":"))
+            for l in _dw.chunk_to_markdown("section", {"section": sec}).split("\n")
+            if l.startswith("### Slide")]
+
+
+check("a pane rendered at generation time carries the STALE numbers",
+      _pane_nums(_SECS[1]) == [9, 17], str(_pane_nums(_SECS[1])))
+
+_cur = course_loader.Session(number=2, name="Grid", module="m", topic="t",
+                             key_takeaways=["k1", "k2"], course=REACT)
+_assembled = _pipe.assemble_doc(_cur, None, _OPENING, [dict(x) for x in _SECS])
+_fin = [s["n"] for sec in _assembled["sections"] for s in sec["slides"]]
+check("…while the assembled DOCUMENT is renumbered 1..N",
+      _fin == [1, 2, 3, 4, 5], str(_fin))
+check("…so the count the Result card reports was right all along",
+      len(_fin) == 5 and max(_fin) == len(_fin), str(_fin))
+
+# THE FIX: the panes are re-rendered from the document that was produced, so the two
+# agree once the run finishes.
+_refreshed = [_pane_nums(sec) for sec in _assembled["sections"]]
+check("re-rendering a pane from the assembled doc gives the document's own numbers",
+      _refreshed == [[1, 2, 3], [4, 5]], str(_refreshed))
+check("…with no number above the slide count anywhere",
+      max(n for pane in _refreshed for n in pane) == len(_fin),
+      str(_refreshed))
+_fsrc = " ".join(inspect.getsource(server._guided_finalize).split())
+check("finalize refreshes the panes from the doc it RENDERED, not the pre-grade one",
+      'result.get("doc") or doc' in _fsrc and "chunk_to_markdown(" in _fsrc, _fsrc[:0])
+check("…including the opening, in case the repair edited the recap or agenda",
+      '"opening", {"recap"' in _fsrc, _fsrc[:0])
+check("…and a pane that cannot be re-rendered does not cost the result",
+      "Could not refresh the review panes" in _fsrc, _fsrc[:0])
+
+# The gate that would catch any FUTURE path shipping a mis-numbered document.
+_gsrc = " ".join(inspect.getsource(__import__("guardrails.guardrails",
+                                              fromlist=["x"]).check).split())
+check("a non-contiguous document is a hard guardrail failure",
+      "they must run 1.." in _gsrc, _gsrc[:0])
+from src import config as _cfg                                     # noqa: E402
+check("…and that gate is switched on",
+      _cfg.harness()["constraints"]["numbering"]["contiguous"] is True)
+# A full RE-DRAFT is the one path that produced a whole document without renumbering.
+check("a re-drafted document is renumbered too, so it cannot trip that gate",
+      "patcher.renumber_doc(doc)" in " ".join(inspect.getsource(_pipe.finalize).split()),
+      "")
+_bad = {"sections": [{"name": "s", "slides": [_sl(1, "a"), _sl(5, "b"), _sl(17, "c")]}],
+        "coverage_map": [{"takeaway": "t", "sub_concepts": [{"name": "x", "slide": 17}]}]}
+_pipe.patcher.renumber_doc(_bad)
+check("…and its coverage map follows the renumbering",
+      [s["n"] for s in _bad["sections"][0]["slides"]] == [1, 2, 3]
+      and _bad["coverage_map"][0]["sub_concepts"][0]["slide"] == 3,
+      str(_bad["coverage_map"]))
+
+
+print("\n== PARTIAL: a rule followed in some places and not others ==")
+# THE STATE THAT WAS MISSING, and the one most real findings are in. "The same example
+# runs through most of the session and then an unrelated one appears" is neither followed
+# nor ignored, and forcing it to either extreme was the difference between passing
+# silently and failing a whole document over a loose line.
+SR = skill_report
+check("no rule wrong scores 5", SR.score_for(0, 0) == 5)
+check("one LOOSE rule scores 4 — above the bar, so it repairs rather than blocks",
+      SR.score_for(0, 1) == 4)
+check("two loose rules score 3", SR.score_for(0, 2) == 3)
+check("one BROKEN rule scores 3 — below the bar of 4, so the document stops",
+      SR.score_for(1, 0) == 3)
+check("several broken rules score 1", SR.score_for(2, 0) == 1)
+# The release condition, stated as arithmetic.
+_bar = _cfg.harness()["gates"]["rubric_min_per_dimension"]
+check("…so a PARTIAL clears the release bar and a FAIL does not",
+      SR.score_for(0, 1) >= _bar and SR.score_for(1, 0) < _bar,
+      f"partial={SR.score_for(0, 1)} fail={SR.score_for(1, 0)} bar={_bar}")
+
+# A CHECKABLE rule's partial is a COUNT, not an opinion: slide 4 carries the block,
+# slide 9 does not.
+_rp = skill_report.build(_DOC2, course=REACT, session=Sess(), judge_result=None)
+_rr = {x["ref"]: x for x in _rp["skills"]}
+check("a checkable rule satisfied on one slide and broken on another is PARTIAL",
+      _rr[CODEREF]["verdict"] == "partial", str(_rr[CODEREF]["verdict"]))
+check("…and both sides are on the row, which is what makes it partial",
+      [st["slide"] for st in _rr[CODEREF]["applied"]] == [4]
+      and [st["slide"] for st in _rr[CODEREF]["broke"]] == [9])
+check("a checkable rule nothing engaged is NOT APPLICABLE, not a pass",
+      _rr[FLOWREF]["verdict"] == "not_applicable" or _rr[FLOWREF]["how"] != "checked",
+      f'{_rr[FLOWREF]["verdict"]} / {_rr[FLOWREF]["how"]}')
+
+print("\n== the judge's claim is checked against the judge's own evidence ==")
+# EVIDENCE BEATS CLAIM. A model that has just listed a slide where the rule is violated
+# will still sometimes call the rule followed, because the document reads well overall.
+def _rc(**v):
+    return SR._reconcile({"evidence": "", **v})
+
+
+check("a 'pass' that lists a broken slide is recorded as PARTIAL",
+      _rc(status="pass", broke=[{"slide": 4}]) == "partial")
+check("a 'fail' that also lists slides FOLLOWING the rule is PARTIAL",
+      _rc(status="fail", applied=[{"slide": 4}]) == "partial")
+check("a clean 'pass' stays a pass", _rc(status="pass") == "kept")
+check("a 'fail' with no mitigation stays a fail",
+      _rc(status="fail", broke=[{"slide": 9}]) == "broken")
+check("'not_applicable' is believed only when nothing was cited either way",
+      _rc(status="not_applicable") == "not_applicable"
+      and _rc(status="not_applicable", applied=[{"slide": 2}]) == "kept"
+      and _rc(status="not_applicable", broke=[{"slide": 2}]) == "partial")
+check("a missing status falls back to the boolean the judge always returned",
+      _rc(kept=True) == "kept" and _rc(kept=False) == "broken")
+# An unrecognised status word never reaches the reconciler: a verdict is admitted only
+# when it carries a boolean OR a status in the vocabulary, so "mostly ok" with no flag is
+# not a verdict at all and the rule comes back "not assessed" — which is the truth about
+# it, and safer than reading an improvised word as any particular state.
+check("an unrecognised status word is not read as a verdict at all",
+      {x["ref"]: x["verdict"] for x in skill_report.build(
+          DOC, course=REACT, session=Sess(),
+          judge_result={"brief_verdicts": [{"ref": SNIPPET, "status": "mostly ok"}]}
+      )["skills"]}[SNIPPET] == "unknown")
+check("a verdict carrying ONLY a status is still read — the old flag is not required",
+      {x["ref"]: x["verdict"] for x in skill_report.build(
+          DOC, course=REACT, session=Sess(),
+          judge_result={"brief_verdicts": [{"ref": SNIPPET, "status": "partial",
+                                            "applied": [{"slide": 1}]}]}
+      )["skills"]}[SNIPPET] == "partial")
+
+print("\n== the compliance figure, and what it refuses to count ==")
+_mix = skill_report.build(DOC, course=REACT, session=Sess(), judge_result={
+    "brief_verdicts": [
+        {"ref": SNIPPET, "status": "pass", "applied": [{"slide": 1}]},
+        {"ref": TONE, "status": "partial", "applied": [{"slide": 1}],
+         "broke": [{"slide": 1, "note": "reads like a spec"}]},
+        {"ref": LOOP, "status": "not_applicable"},
+    ]})
+_c = {x["ref"]: x["verdict"] for x in _mix["skills"]}
+# Derived from the rows rather than hardcoded: this course has picked up more skills as
+# the suite ran, and a fixture that assumes a count is a test that breaks whenever an
+# earlier block adds one.
+_w = {"kept": 1.0, "partial": 0.5, "broken": 0.0}
+_expect_applicable = sum(1 for x in _mix["skills"] if x["verdict"] in _w)
+_expect_pct = round(100 * sum(_w[x["verdict"]] for x in _mix["skills"]
+                              if x["verdict"] in _w) / _expect_applicable)
+check("a pass counts one and a partial counts a half",
+      _mix["applicable"] == _expect_applicable and _mix["compliance_pct"] == _expect_pct,
+      f'applicable={_mix["applicable"]}/{_expect_applicable} '
+      f'pct={_mix["compliance_pct"]}/{_expect_pct} {_c}')
+check("…the partial really is counted as a half, not rounded to either end",
+      0 < _mix["compliance_pct"] < 100 and _mix["partial"] >= 1,
+      f'pct={_mix["compliance_pct"]} partial={_mix["partial"]}')
+check("…N/A is excluded from the denominator, not counted as a pass",
+      _c[LOOP] == "not_applicable"
+      and _mix["applicable"] == len(_mix["skills"]) - _mix["not_applicable"]
+      - _mix["unknown"], str(_c))
+check("…and a rule nobody ruled on is excluded too",
+      _mix["kept"] + _mix["partial"] + _mix["broken"] == _mix["applicable"], str(_mix))
+# ON AN ALL-PROSE COURSE. Two of React's rules carry a machine check, and a check is
+# arithmetic over the document — it beats the judge's claim outright, so declaring
+# everything inapplicable cannot make those two inapplicable. That is the intended
+# precedence, so the test has to pick a brief the judge is the only ruler of.
+_pn = skill_report.build(DOC, course="Prose Only Course", judge_result={
+    "brief_verdicts": [{"ref": x["ref"], "status": "not_applicable"}
+                       for x in skill_report.build(
+                           DOC, course="Prose Only Course")["skills"]]})
+check("nothing applicable means NO percentage, because 0/0 is not 0%",
+      _pn["applicable"] == 0 and _pn["compliance_pct"] is None
+      and _pn["score"] is None,
+      f'applicable={_pn["applicable"]} pct={_pn["compliance_pct"]} '
+      f'score={_pn["score"]}')
+# THE INVARIANT, stated properly. A `checked` row's verdict is a function of its OWN
+# two site lists and nothing else — so the judge saying "not_applicable" about a rule the
+# check settled changes nothing. (A checked rule may itself come out N/A, when the
+# document gave it nothing to act on; that is the check's finding, not the judge's.)
+def _from_sites(x):
+    if x["broke"] and x["applied"]:
+        return "partial"
+    if x["broke"]:
+        return "broken"
+    return "kept" if x["applied"] else "not_applicable"
+
+
+_checked_rows = [x for x in _mix["skills"] if x["how"] == "checked"]
+check("…and a checkable rule's verdict comes from its own sites, whatever the judge said",
+      _checked_rows and all(x["verdict"] == _from_sites(x) for x in _checked_rows),
+      str([(x["ref"], x["verdict"], _from_sites(x)) for x in _checked_rows]))
+check("every state is tallied separately",
+      set(("kept", "partial", "broken", "not_applicable", "unknown", "applicable",
+           "compliance_pct")) <= set(_mix), str(sorted(_mix)))
+
+print("\n== a broken or loose rule now triggers the REPAIR pass ==")
+# Before this, a broken skill BLOCKED the release (dimension 3, under the bar) and
+# nothing tried to fix it: the reviewer got a rejected document and a reason. A loose one
+# was accepted and never looked at, because the repair loop was gated on `not accepted`.
+check("the brief is a configured repair trigger",
+      _cfg.harness()["gates"]["guided_repair_on"].get("course_brief") is True)
+_rsrc = " ".join(inspect.getsource(_pipe._repair_reasons).split())
+check("…and _repair_reasons reads the report to raise it",
+      "skill_report" in _rsrc and "repairable" in _rsrc, _rsrc[:0])
+_fsrc2 = " ".join(inspect.getsource(_pipe.finalize).split())
+# Matched on the LOOP STATEMENT, not on the phrase: the comment above it explains what
+# it replaced, so searching for "not accepted" anywhere in the source found my own prose.
+check("the repair loop is no longer gated on the document being REJECTED",
+      "while rnd < max_repair:" in _fsrc2
+      and "while not accepted and" not in _fsrc2, _fsrc2[:0])
+_esrc = " ".join(inspect.getsource(_pipe.evaluate).split())
+check("the repair pass is told which rule, and where",
+      "COURSE SKILL" in _esrc and "What following it looks like" in _esrc, _esrc[:0])
+check("…and told to change HOW the slides teach, not WHAT",
+      "not WHAT they teach" in _esrc, _esrc[:0])
+check("…and never to write the rule into the document",
+      "never write the rule itself" in _esrc, _esrc[:0])
+
+# A rule the session never engaged must NOT be repairable: satisfying it would mean
+# adding curriculum the session does not own.
+_rep_na = {"skills": [
+    {"ref": "S1", "verdict": "broken"}, {"ref": "S2", "verdict": "partial"},
+    {"ref": "S3", "verdict": "not_applicable"}, {"ref": "S4", "verdict": "unknown"},
+    {"ref": "S5", "verdict": "kept"}]}
+check("only FAIL and PARTIAL are repairable",
+      [r["ref"] for r in SR.repairable(_rep_na)] == ["S1", "S2"],
+      str([r["ref"] for r in SR.repairable(_rep_na)]))
+check("…failures first, so the blocking ones are fixed first",
+      SR.repairable(_rep_na)[0]["verdict"] == "broken")
+check("an N/A rule is never handed to the repair pass — it would have to invent content",
+      all(r["verdict"] != "not_applicable" for r in SR.repairable(_rep_na)))
+
+print("\n== 'PASS' and 'PARTIAL -> REPAIRED' are different facts ==")
+_before = {"skills": [{"ref": "S1", "verdict": "broken"},
+                      {"ref": "S2", "verdict": "partial"},
+                      {"ref": "S3", "verdict": "broken"},
+                      {"ref": "S4", "verdict": "kept"}]}
+_after = {"skills": [{"ref": "S1", "verdict": "kept"},
+                     {"ref": "S2", "verdict": "kept"},
+                     {"ref": "S3", "verdict": "partial"},
+                     {"ref": "S4", "verdict": "kept"}]}
+SR.mark_repaired(_before, _after)
+_a = {r["ref"]: r for r in _after["skills"]}
+check("a rule fixed by the repair pass is marked, with what it was",
+      _a["S1"].get("repaired") is True and _a["S1"].get("was") == "broken", str(_a["S1"]))
+check("…a loose one that was tightened too", _a["S2"].get("repaired") is True)
+check("…and one only PARTLY fixed says so rather than claiming a pass",
+      _a["S3"].get("repaired") == "partly", str(_a["S3"]))
+check("a rule that was right all along is NOT marked repaired",
+      "repaired" not in _a["S4"], str(_a["S4"]))
+check("the count travels on the report", _after.get("repaired") == 3,
+      str(_after.get("repaired")))
+check("no prior round means nothing to compare, not a crash",
+      SR.mark_repaired(None, _after) is _after)
+_fs3 = " ".join(inspect.getsource(_pipe.finalize).split())
+check("finalize records it between rounds", "mark_repaired(" in _fs3, _fs3[:0])
+
+print("\n== the judge is asked for a CRITERION, not an impression ==")
+_j = " ".join(inspect.getsource(judge.grade).split())
+check("it must write what following the rule would look like, first",
+      "FIRST WRITE THE CRITERION" in _j, _j[:0])
+check("…and is told not to judge on whether the rule's words appear",
+      "whether the behaviour it asks for is in the writing" in _j, _j[:0])
+check("…and given all four states, with partial described as the inconsistent case",
+      all(w in _j for w in ("pass", "partial", "fail", "not_applicable"))
+      and "followed inconsistently" in _j, _j[:0])
+check("…and warned that its sites are read back against its status",
+      "read back against it" in _j, _j[:0])
+check("a checkable rule states its criterion exactly, not via a model",
+      SR._check_criterion({"assert": "block_present", "block": "code",
+                           "on_roles": ["working_example"]})
+      == "a `code` block is present on every working_example slide",
+      SR._check_criterion({"assert": "block_present", "block": "code",
+                           "on_roles": ["working_example"]}))
+check("…for every assertion in the vocabulary",
+      all(SR._check_criterion({"assert": k, "block": "code", "field": "walkthrough",
+                               "when_block": "code", "min": 2, "phrases": ["x"]})
+          for k in ("block_present", "field_present", "min_count", "forbidden_phrase")))
+check("…and every row carries the criterion it was measured against",
+      all("criterion" in x for x in _mix["skills"]),
+      str([x.get("criterion") for x in _mix["skills"]]))
+
+print("\n== the eval set and the gate rank a document the same way ==")
+_es = " ".join(inspect.getsource(run_sets._chk_skill_adherence).split())
+check("the eval set scores on the shared ladder, not its own count",
+      "skill_report" in _es and "score_for(" in _es, _es[:0])
+_esc, _esd = run_sets._chk_skill_adherence(_DOC2, Sess(), {"id": "skill_adherence"})
+check("…so the partial document scores the same 4 in both places",
+      _esc == _rp["score"], f"eval={_esc} grade={_rp['score']}")
+check("…and the detail names the rule and its state", "partial" in _esd, _esd[:100])
+
+
+print("\n== the brief rolls up BY CATEGORY, the level it is written at ==")
+# An author does not think in six numbered rules; they think "the teaching flow" and
+# "what we show". Six per-rule rows answer "which line was missed"; this answers "is my
+# teaching flow landing?" — different questions with different fixes.
+_cats = {c["category"]: c for c in _mix["by_category"]}
+check("every category the brief uses gets a row, and no others",
+      set(_cats) == {x["category"] for x in _mix["skills"]}, str(sorted(_cats)))
+check("…each with the writer's own name for it",
+      _cats["teaching_guidelines"]["title"] == "Teaching Guidelines"
+      and _cats["examples_visuals"]["title"] == "Examples & Visuals",
+      str([c["title"] for c in _mix["by_category"]]))
+check("…in the order the brief is written in, not dict order",
+      [c["category"] for c in _mix["by_category"]]
+      == [k for k in SR._CATEGORY_TITLES if k in _cats],
+      str([c["category"] for c in _mix["by_category"]]))
+# WORST WINS. A category is not passing while one of its rules is broken.
+_grp = {"skills": [{"category": "teaching_flow", "verdict": "kept", "applied": [], "broke": []},
+                   {"category": "teaching_flow", "verdict": "broken", "applied": [], "broke": []},
+                   {"category": "reviewer", "verdict": "kept", "applied": [], "broke": []},
+                   {"category": "reviewer", "verdict": "partial", "applied": [], "broke": []},
+                   {"category": "examples_visuals", "verdict": "not_applicable",
+                    "applied": [], "broke": []}]}
+_r2 = {c["category"]: c for c in SR._by_category(_grp["skills"])}
+check("a category with any FAIL is FAILING, whatever else passed in it",
+      _r2["teaching_flow"]["status"] == "broken", str(_r2["teaching_flow"]))
+check("…one with a PARTIAL and no fail is PARTIAL",
+      _r2["reviewer"]["status"] == "partial", str(_r2["reviewer"]))
+check("…and one with nothing applicable is N/A, not a pass",
+      _r2["examples_visuals"]["status"] == "not_applicable"
+      and _r2["examples_visuals"]["compliance_pct"] is None,
+      str(_r2["examples_visuals"]))
+check("each category carries its own compliance figure",
+      _r2["teaching_flow"]["compliance_pct"] == 50
+      and _r2["reviewer"]["compliance_pct"] == 75,
+      f'flow={_r2["teaching_flow"]["compliance_pct"]} '
+      f'reviewer={_r2["reviewer"]["compliance_pct"]}')
+# The rollup must not predate the repair marks.
+_b = {"skills": [{"ref": "S1", "verdict": "broken", "category": "reviewer"}]}
+_a = {"skills": [{"ref": "S1", "verdict": "kept", "category": "reviewer"}],
+      "by_category": [{"category": "reviewer", "repaired": 0}]}
+SR.mark_repaired(_b, _a)
+check("…and the rollup is recomputed after a repair, not left stale",
+      _a["by_category"][0]["repaired"] == 1, str(_a["by_category"]))
+
+print("\n== §5: the coverage map is scanned for leaks too ==")
+# The one shape of leak nobody would notice: the brief restated as a sub-concept the
+# document CLAIMS TO TEACH. A sub-concept is a promise about what the session covers, so
+# an instruction landing there turns "how to teach" into a topic the doc says it taught.
+# It was not scanned at all.
+# The rule used here has FOUR content words. `_LEAK_MIN_WORDS` is 4 by design: a
+# three-word overlap is too weak to call a leak, or ordinary prose that happens to say
+# "show snippet explaining" would be failed. That floor applies everywhere, so a test
+# fixture below it proves nothing about which surfaces are scanned — it only proves the
+# floor. ("Show the snippet before explaining it." is three content words and is
+# undetectable in a slide bullet too.)
+_LEAKTXT = "Every snippet must be explained line by line."
+check("the rule under test is long enough to be detectable at all",
+      len(skills._tokens(_LEAKTXT)) >= skills._LEAK_MIN_WORDS,
+      f"{skills._tokens(_LEAKTXT)} vs floor {skills._LEAK_MIN_WORDS}")
+_SLIDES = [{"n": 1, "role": "mechanism", "heading": "h", "subheading": "s",
+            "content": [{"type": "text", "text": "ordinary teaching prose"}],
+            "visual_guidance": "v", "speaker_notes": "sn"}]
+_BASE = {"session_title": "T", "agenda": ["a"], "key_takeaways": ["k"], "closing": "c",
+         "sections": [{"index": 1, "name": "s", "slides": _SLIDES}]}
+_live = skills.applicable(REACT, 12)
+
+
+def _leak_where(doc):
+    return [h["where"] for h in skills.leaks(doc, _live)]
+
+
+# A SUB-CONCEPT IS A PROMISE about what the session covers, so an instruction landing
+# there turns "how to teach" into a topic the document claims to have taught. This was
+# not scanned at all.
+check("a skill copied into a coverage-map SUB-CONCEPT is caught",
+      any("sub_concepts" in w for w in _leak_where(
+          {**_BASE, "coverage_map": [{"takeaway": "k", "sub_concepts": [
+              {"name": _LEAKTXT, "slide": 1}]}]})),
+      str(_leak_where({**_BASE, "coverage_map": [{"takeaway": "k", "sub_concepts": [
+          {"name": _LEAKTXT, "slide": 1}]}]})))
+check("…and into a coverage-map TAKEAWAY",
+      any("takeaway" in w for w in _leak_where(
+          {**_BASE, "coverage_map": [{"takeaway": _LEAKTXT, "sub_concepts": []}]})))
+check("…and into a SECTION NAME, which is a heading the reader sees",
+      any("section" in w for w in _leak_where(
+          {"sections": [{"index": 1, "name": _LEAKTXT, "slides": _SLIDES}]})))
+check("every place §5 names is scanned",
+      all(k in inspect.getsource(skills._visible_strings)
+          for k in ("agenda", "key_takeaways", "coverage_map", "bullets", "name")))
+check("…and a clean document is still not a leak", _leak_where(_BASE) == [],
+      str(_leak_where(_BASE)))
+
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

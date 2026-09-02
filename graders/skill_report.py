@@ -40,13 +40,42 @@ if str(ROOT) not in sys.path:
 # this one derives the score, llm_judge writes it into the grade.
 DIMENSION = "course_brief_adherence"
 
-# HOW MANY BROKEN RULES COST WHAT. The same shape the rubric text already describes —
-# 5 when every line is honoured, 3 when one is not, 1 when the document ignores what its
-# course requires — and the same thresholds evals/run_sets.py scores the eval set on, so
-# the gate, the grade and the eval cannot rank the same document three different ways.
-def score_for(broken: int) -> int:
+# THE FIVE THINGS A RULE CAN BE. `partial` is the one that was missing, and it is the
+# state most real findings are in: "the same example runs through most of the session and
+# then an unrelated one appears" is neither followed nor ignored, and forcing it into
+# either was the difference between passing silently and failing the whole run.
+#
+# `not_applicable` is now its own state too, rather than being inferred from a `kept` row
+# with `engaged: false`. A rule the session never gave anything to apply to has not been
+# honoured — there was nothing to honour — and counting it as a pass inflates every
+# compliance figure by however many rules happen not to bite this week.
+PASS, PARTIAL, FAIL, NA, UNKNOWN = "kept", "partial", "broken", "not_applicable", "unknown"
+
+# The words the JUDGE answers in. Deliberately not the same strings as the internal
+# states: the model is asked for "pass"/"partial"/"fail"/"not_applicable" because that is
+# the vocabulary the instruction uses, and the report stores `kept`/`broken` because that
+# is what every consumer already reads. Mapping them in one place beats teaching either
+# side the other's words.
+PASS_W, PARTIAL_W, FAIL_W, NA_W = "pass", "partial", "fail", "not_applicable"
+
+# What each is worth when the rules are totalled. A half for `partial` is the whole point
+# of having it: a rule followed in most places is most of the way there, and the number
+# should say so rather than rounding to one extreme.
+_WEIGHT = {PASS: 1.0, PARTIAL: 0.5, FAIL: 0.0}
+
+
+# HOW MANY BROKEN RULES COST WHAT — now with a rung for `partial`, which is what the
+# rubric's own wording always described: "3 when one is followed LOOSELY or in letter but
+# not spirit". Loosely followed is exactly partial, and it had nowhere to land.
+#
+# The ladder matters because `gates.rubric_min_per_dimension` is 4:
+#   · a PARTIAL scores 4 — it does NOT block the release, it triggers a repair;
+#   · a FAIL scores 3 — below the bar, so the document is not accepted.
+# That is the release condition stated as arithmetic: no unresolved FAIL ships, and a
+# PARTIAL gets a repair attempt without throwing away a document over a loose line.
+def score_for(broken: int, partial: int = 0) -> int:
     if broken <= 0:
-        return 5
+        return 5 if partial <= 0 else (4 if partial == 1 else 3)
     return 3 if broken == 1 else 1
 
 
@@ -170,8 +199,20 @@ def _verdicts_from_judge(judge_result: dict | None) -> dict[str, dict]:
         if isinstance(kept, str):
             kept = kept.strip().lower() in ("true", "yes", "kept", "y")
         if not isinstance(kept, bool):
+            kept = None
+        # A verdict needs EITHER a boolean or a status word. Requiring the boolean meant
+        # a judge that answered the new four-way question and omitted the old flag was
+        # discarded entirely, and every rule it ruled on came back "not assessed".
+        if kept is None and str(v.get("status") or "").strip().lower() not in (
+                PASS_W, PARTIAL_W, FAIL_W, NA_W):
             continue
         out[ref] = {"kept": kept,
+                    "status": str(v.get("status") or "").strip().lower(),
+                    # WHAT WAS MEASURED, in the judge's own words. Shown on the report
+                    # beside the verdict: a reader who disagrees with a status can then
+                    # see whether the disagreement is about the document or about what
+                    # the rule was taken to mean — which is usually the real argument.
+                    "criterion": str(v.get("criterion") or "").strip()[:300],
                     "evidence": str(v.get("evidence") or "").strip()[:400],
                     "applied": _sites_from(v.get("applied")),
                     "broke": _sites_from(v.get("broke"))}
@@ -204,6 +245,61 @@ def _sites_from(raw) -> list[dict]:
         out.append({"slide": n, "section": str(it.get("section") or "").strip()[:80],
                     "note": note})
     return out
+
+
+def _check_criterion(chk: dict) -> str:
+    """A machine-checkable rule, written out as the thing being looked for.
+
+    The four assertions in one sentence each, so a `checked` row reads the same way a
+    `judged` one does — the reader should not have to know which half produced a verdict
+    in order to know what was measured.
+    """
+    kind, blk = chk.get("assert"), chk.get("block")
+    roles = ", ".join(r for r in (chk.get("on_roles") or []) if r)
+    if kind == "block_present":
+        where = f" on every {roles} slide" if roles else " on every slide"
+        return f"a `{blk}` block is present{where}"
+    if kind == "field_present":
+        when = chk.get("when_block")
+        return (f"every `{when}` block carries `{chk.get('field')}`" if when
+                else f"every content block carries `{chk.get('field')}`")
+    if kind == "min_count":
+        return f"the document carries at least {chk.get('min')} `{blk}` block(s)"
+    if kind == "forbidden_phrase":
+        ph = ", ".join(f"“{pp}”" for pp in (chk.get("phrases") or [])[:4])
+        return f"the teaching text never says {ph}"
+    return ""
+
+
+def _reconcile(v: dict) -> str:
+    """The judge's status for one prose rule, checked against the sites it itself gave.
+
+    EVIDENCE BEATS CLAIM. The judge returns both a status and the places it saw the rule
+    honoured and broken, and those can disagree — a model that has just listed a slide
+    where the rule is violated will still sometimes call the rule followed, because the
+    document reads well overall. Where they disagree the sites win: they are specific and
+    checkable by the reader, and the status is a summary of them.
+
+    So a "pass" carrying broken sites is at best PARTIAL, and a "fail" that also lists
+    places the rule WAS followed is PARTIAL rather than FAIL — a rule followed on four
+    slides and dropped on the fifth has not been ignored.
+    """
+    said = str(v.get("status") or "").strip().lower()
+    if said not in (PASS_W, PARTIAL_W, FAIL_W, NA_W):
+        # No status, or one that is not in the vocabulary: fall back to the boolean,
+        # which is the field the judge has always returned.
+        said = PASS_W if v.get("kept") else FAIL_W
+    has_broke = bool(v.get("broke"))
+    has_applied = bool(v.get("applied"))
+    if said == NA_W:
+        # Only believed when nothing was cited either way. A rule the judge calls
+        # inapplicable while naming slides it shaped did apply.
+        return NA if not (has_broke or has_applied) else (PARTIAL if has_broke else PASS)
+    if said == PASS_W:
+        return PARTIAL if has_broke else PASS
+    if said == FAIL_W:
+        return PARTIAL if has_applied else FAIL
+    return PARTIAL
 
 
 def _tier_label(sk: dict) -> str:
@@ -254,20 +350,37 @@ def build(doc: dict, *, course: str | None, session=None,
             # failed the run, so a row disagreeing with the gate would be reporting a
             # document that does not exist.)
             det = checked[ref]
-            fails = det["failures"]
-            row.update(how="checked", verdict="broken" if fails else "kept",
+            fails, applied = det["failures"], det["applied"]
+            # THE OBSERVABLE CRITERION, read off the two site lists the check produced.
+            # Both non-empty means the rule was honoured on some slides and broken on
+            # others, which is the definition of partial and is a COUNT here, not an
+            # opinion: slide 4 carries the code block, slide 9 does not.
+            if fails and applied:
+                verdict = PARTIAL
+            elif fails:
+                verdict = FAIL
+            elif applied:
+                verdict = PASS
+            else:
+                # Nothing satisfied it and nothing broke it: the document never put the
+                # rule in a position to apply.
+                verdict = NA
+            row.update(how="checked", verdict=verdict,
                        evidence="; ".join(fails[:3]),
-                       applied=det["applied"], broke=det["broke"])
+                       # A check IS its criterion, so it can be stated exactly rather
+                       # than paraphrased by a model.
+                       criterion=_check_criterion(sk.get("check") or {}),
+                       applied=applied, broke=det["broke"])
         elif ref in judged:
             v = judged[ref]
-            row.update(how="judged", verdict="kept" if v["kept"] else "broken",
-                       evidence=v["evidence"],
+            row.update(how="judged", verdict=_reconcile(v),
+                       evidence=v["evidence"], criterion=v.get("criterion") or "",
                        applied=v.get("applied") or [], broke=v.get("broke") or [])
         else:
             # NOT ASSESSED. The judge returned nothing for this skill — it was off, it
             # errored, or it simply skipped the line. Shown as its own state, because a
             # rule nobody looked at must not read like a rule that passed.
-            row.update(how="unreported", verdict="unknown", evidence="",
+            row.update(how="unreported", verdict=UNKNOWN, evidence="", criterion="",
                        applied=[], broke=[])
         # WHETHER THE RULE EVER CAME UP. A rule with nothing to apply to is trivially
         # unbroken, so "kept" alone cannot tell a course owner that their skill did any
@@ -275,27 +388,138 @@ def build(doc: dict, *, course: str | None, session=None,
         # in this document engaged it".
         row["engaged"] = bool(row["applied"] or row["broke"])
         rows.append(row)
-        if row["verdict"] == "broken":
-            broken += 1
-        elif row["verdict"] == "kept":
-            kept += 1
-        else:
-            unknown += 1
 
-    assessed = kept + broken
+    counts = {v: sum(1 for r in rows if r["verdict"] == v)
+              for v in (PASS, PARTIAL, FAIL, NA, UNKNOWN)}
+    # APPLICABLE means "could be ruled on at all". A rule the session never engaged and
+    # a rule nobody looked at are both excluded, for opposite reasons — one has no
+    # verdict to give, the other has one nobody took — and counting either as a pass is
+    # how a compliance figure gets to 100% by having nothing to measure.
+    applicable = counts[PASS] + counts[PARTIAL] + counts[FAIL]
+    earned = sum(_WEIGHT[r["verdict"]] for r in rows if r["verdict"] in _WEIGHT)
     return {
         "skills": rows,
-        "kept": kept, "broken": broken, "unknown": unknown, "total": len(rows),
+        # `kept` / `broken` / `unknown` keep their names: every consumer reads them, and
+        # renaming a field to match a new vocabulary breaks the stored reports of every
+        # run that came before it.
+        "kept": counts[PASS], "partial": counts[PARTIAL], "broken": counts[FAIL],
+        "not_applicable": counts[NA], "unknown": counts[UNKNOWN], "total": len(rows),
+        "applicable": applicable,
+        # THE DEVELOPER-FACING NUMBER: what share of the rules that could be judged were
+        # actually followed, with a partial counting half. None when nothing was
+        # applicable, because 0/0 is not 0% — it is "no answer".
+        "compliance_pct": round(100 * earned / applicable) if applicable else None,
         # How many rules the document actually exercised, as opposed to merely not
         # contradicting. The count a course owner is really asking for.
         "engaged": sum(1 for r in rows if r["engaged"]),
         "slides": len(_slides(doc)),
-        # No score when NOTHING could be ruled on — every row unknown means the grader
-        # did not run, which is a fact about the grading and not about the document. The
-        # caller leaves the dimension as the judge left it rather than inventing a 5.
-        "score": score_for(broken) if assessed else None,
+        # No score when NOTHING could be ruled on — every row unknown or inapplicable
+        # means the grader had nothing to weigh, which is a fact about the grading and
+        # not about the document. The caller then leaves the dimension as the judge left
+        # it rather than inventing a 5.
+        "score": score_for(counts[FAIL], counts[PARTIAL]) if applicable else None,
         "dimension": DIMENSION,
+        # BY CATEGORY, because that is the level the brief is WRITTEN at. An author does
+        # not think in six numbered rules; they think "the teaching flow" and "what we
+        # show". Six per-rule rows answer "which line was missed"; this answers "is my
+        # teaching flow landing?" — and those are different questions with different
+        # fixes. A category whose rules keep coming back PARTIAL is a category that needs
+        # rewording, which no single row can tell you.
+        "by_category": _by_category(rows),
     }
+
+
+# The four things a skill can govern, in the order a writer needs them, plus the legacy
+# labels. Named here so a category with no rules this session is still absent rather than
+# showing as an empty row — and so the order does not depend on dict insertion.
+_CATEGORY_TITLES = {
+    "teaching_flow": "Teaching Flow",
+    "teaching_guidelines": "Teaching Guidelines",
+    "examples_visuals": "Examples & Visuals",
+    "reviewer": "Reviewer Corrections",
+    "content": "What it must contain",
+    "structure": "How it must be structured",
+    "style": "How it must be written",
+}
+
+
+def _by_category(rows: list[dict]) -> list[dict]:
+    """One rollup per category the brief actually uses, worst-first within each.
+
+    `status` is the category's own verdict, and it takes the WORST rule in it: a category
+    is not passing while one of its rules is broken. `repaired` is carried up too,
+    because "Reviewer Corrections — 1 PARTIAL, repaired" is the line that says the rule
+    is not landing at generation time.
+    """
+    seen: dict[str, list[dict]] = {}
+    for r in rows:
+        seen.setdefault(str(r.get("category") or "other"), []).append(r)
+    order = [c for c in _CATEGORY_TITLES if c in seen] + \
+            [c for c in seen if c not in _CATEGORY_TITLES]
+    out = []
+    for cat in order:
+        group = seen[cat]
+        counts = {v: sum(1 for r in group if r["verdict"] == v)
+                  for v in (PASS, PARTIAL, FAIL, NA, UNKNOWN)}
+        applicable = counts[PASS] + counts[PARTIAL] + counts[FAIL]
+        earned = sum(_WEIGHT[r["verdict"]] for r in group if r["verdict"] in _WEIGHT)
+        # Worst wins: a category with any FAIL is failing, whatever else passed in it.
+        status = (FAIL if counts[FAIL] else
+                  PARTIAL if counts[PARTIAL] else
+                  PASS if counts[PASS] else
+                  NA if counts[NA] else UNKNOWN)
+        out.append({
+            "category": cat,
+            "title": _CATEGORY_TITLES.get(cat, cat.replace("_", " ").title()),
+            "status": status,
+            "total": len(group), "applicable": applicable,
+            "kept": counts[PASS], "partial": counts[PARTIAL], "broken": counts[FAIL],
+            "not_applicable": counts[NA], "unknown": counts[UNKNOWN],
+            "repaired": sum(1 for r in group if r.get("repaired")),
+            "compliance_pct": round(100 * earned / applicable) if applicable else None,
+        })
+    return out
+
+
+def mark_repaired(prev: dict | None, new: dict | None) -> dict | None:
+    """Stamp `repaired` on rules the repair pass actually fixed. Returns `new`.
+
+    WHY THIS IS WORTH RECORDING. "Teaching Flow PASS" is a different fact from
+    "Teaching Flow 1 PARTIAL → REPAIRED": the first says the document was written right,
+    the second says it was written wrong and then corrected. A course owner reading the
+    second learns that the rule is not landing at generation time, which is the signal
+    that the rule needs rewording — and it is invisible if only the final state is kept.
+    """
+    if not new or not prev:
+        return new
+    was = {r.get("ref"): r.get("verdict") for r in (prev.get("skills") or [])}
+    for r in new.get("skills") or []:
+        before = was.get(r.get("ref"))
+        if before in (FAIL, PARTIAL) and r.get("verdict") in (PASS, NA):
+            r["repaired"] = True
+            r["was"] = before
+        elif before == FAIL and r.get("verdict") == PARTIAL:
+            # Improved but not finished — worth saying, and not the same as fixed.
+            r["repaired"] = "partly"
+            r["was"] = before
+    new["repaired"] = sum(1 for r in new.get("skills") or [] if r.get("repaired"))
+    # Recomputed, because the rollup was built before the rows knew they had been
+    # repaired — leaving it stale would put "0 repaired" beside a row marked repaired.
+    new["by_category"] = _by_category(new.get("skills") or [])
+    return new
+
+
+def repairable(report: dict | None) -> list[dict]:
+    """The rows a repair pass should act on: broken first, then loosely followed.
+
+    N/A and unknown are NOT repairable. A rule the session never engaged cannot be
+    satisfied without adding curriculum the session does not own, and a rule nobody
+    ruled on has no defect to fix — attempting either is how a repair pass starts
+    inventing content to satisfy a brief.
+    """
+    rows = (report or {}).get("skills") or []
+    return ([r for r in rows if r.get("verdict") == FAIL]
+            + [r for r in rows if r.get("verdict") == PARTIAL])
 
 
 def _skills_instructions(sk: dict) -> list[str]:
@@ -318,14 +542,25 @@ def justification(report: dict) -> str:
     """
     if not report:
         return ""
-    broken = [r for r in report["skills"] if r["verdict"] == "broken"]
-    unknown = report.get("unknown") or 0
-    tail = f" ({unknown} not assessed)" if unknown else ""
-    if not broken:
-        return (f"All {report['kept']} of this course's approved skills were "
+    bad = repairable(report)
+    bits = []
+    if report.get("unknown"):
+        bits.append(f"{report['unknown']} not assessed")
+    if report.get("not_applicable"):
+        bits.append(f"{report['not_applicable']} not applicable to this session")
+    tail = f" ({'; '.join(bits)})" if bits else ""
+    if not bad:
+        return (f"All {report['kept']} applicable skills of this course's brief were "
                 f"honoured{tail}.")
     named = "; ".join(
-        f"{r['ref']} “{r['text'][:80]}” — {r['evidence'][:160] or 'not followed'}"
-        for r in broken[:3])
-    more = f" and {len(broken) - 3} more" if len(broken) > 3 else ""
-    return f"{len(broken)} of {report['total']} skills broken: {named}{more}{tail}."
+        f"{r['ref']} ({'loosely followed' if r['verdict'] == PARTIAL else 'not followed'}) "
+        f"“{r['text'][:70]}” — {r['evidence'][:140] or 'no evidence given'}"
+        for r in bad[:3])
+    more = f" and {len(bad) - 3} more" if len(bad) > 3 else ""
+    head = []
+    if report.get("broken"):
+        head.append(f"{report['broken']} broken")
+    if report.get("partial"):
+        head.append(f"{report['partial']} followed loosely")
+    return (f"{' and '.join(head)} of {report.get('applicable') or 0} applicable "
+            f"skills: {named}{more}{tail}.")

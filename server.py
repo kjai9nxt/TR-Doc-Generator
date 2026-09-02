@@ -2727,6 +2727,38 @@ def _guided_finalize(gid: str):
                                    course=run_course,
                                    on_event=lambda m: _guided_log(gid, m))
         final = result.get("final") or result["history"][-1]
+        # RE-RENDER THE REVIEW PANES FROM THE DOCUMENT THAT WAS ACTUALLY PRODUCED.
+        #
+        # A chunk's markdown is rendered once, when the chunk is generated, and each
+        # chunk numbers its slides consecutively after the chunks approved at the time.
+        # Regenerate an early chunk shorter and every later chunk keeps the numbers it
+        # was given — so the panes, which are kept on screen "for reference" after the
+        # run finishes, showed a slide headed "Slide 17" beside a Result card correctly
+        # reporting 13 slides. Both numbers were describing something real; only one of
+        # them was describing the document.
+        #
+        # `assemble_doc` already renumbers the real document 1..N, and the repair pass
+        # can change it again, so the authority is the doc that was rendered — not the
+        # one assembled before grading.
+        try:
+            _fdoc = result.get("doc") or doc
+            _fsecs = _fdoc.get("sections") or []
+            with _lock:
+                _st = GUIDED.get(gid) or {}
+                _ch = _st.get("chunks") or []
+                if _ch:
+                    _ch[0]["markdown"] = docx_writer.chunk_to_markdown(
+                        "opening", {"recap": _fdoc.get("recap"),
+                                    "agenda": _fdoc.get("agenda") or []})
+                for _i, _sec in enumerate(_fsecs, start=1):
+                    if _i < len(_ch):
+                        _ch[_i]["markdown"] = docx_writer.chunk_to_markdown(
+                            "section", {"section": _sec})
+        except Exception as _e:
+            # A pane that could not be re-rendered keeps its old text; it is a reference
+            # copy, and losing the result over it would be the wrong trade.
+            _guided_log(gid, f"Could not refresh the review panes ({_e}) — they may show "
+                             f"the slide numbers from before assembly.")
         # Persist the rendered outputs BEFORE surfacing the result. A guided run has
         # already cost a long human review by this point, so its document must not be
         # recoverable only from the instance disk.

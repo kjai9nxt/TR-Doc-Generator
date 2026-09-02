@@ -2399,6 +2399,18 @@ gates:
   # matter of the reviewer's taste at all. Ordinary quality/style opinions are still NOT
   # auto-revised — the human gated each chunk and their judgement stands.
   guided_repair_on:
+    # THE COURSE'S OWN BRIEF. A rule the document broke, or followed only in places, is
+    # a defect the repair pass can actually fix — the same class as a length bust: a
+    # property of the assembled whole that no single chunk review could see, because
+    # "one running example throughout" is invisible until the sections sit together.
+    #
+    # Until this existed a broken skill BLOCKED the release (the derived dimension falls
+    # to 3, under the per-dimension bar of 4) and nothing tried to repair it, so the
+    # reviewer got a rejected document and a reason. Now it is attempted first, and only
+    # an unrepaired failure reaches them. A rule the session never engaged is NOT
+    # repairable and is left alone — satisfying it would mean adding curriculum the
+    # session does not own.
+    course_brief: true
     # slides / recording time / pages — the three ceilings only the assembled doc has.
     length: true
     # Any HARD guardrail failure on the assembled doc: the prose/bullet mix share, an

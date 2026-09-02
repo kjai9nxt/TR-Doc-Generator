@@ -4084,10 +4084,15 @@ function ScoreChip({ score, max = 5 }) {
 // derivation is printed beside it can be argued with, which is the only way a grade
 // becomes useful rather than merely authoritative.
 // ============================================================================
+// FIVE STATES, and the middle one is the one that was missing. A rule followed in some
+// places and not others is neither a pass nor a failure, and rounding it to either was
+// the difference between passing silently and failing a whole document over a loose line.
 const VERDICT = {
-  kept: { chip: 'good', word: 'kept', hue: 'prereqs' },
-  broken: { chip: 'bad', word: 'broken', hue: 'rules' },
-  unknown: { chip: 'mid', word: 'not assessed', hue: 'skills' },
+  kept: { chip: 'good', word: 'PASS' },
+  partial: { chip: 'mid', word: 'PARTIAL' },
+  broken: { chip: 'bad', word: 'FAIL' },
+  not_applicable: { chip: '', word: 'N/A' },
+  unknown: { chip: 'mid', word: 'not assessed' },
 }
 
 function SiteList({ sites, kind }) {
@@ -4134,13 +4139,14 @@ function SkillReportPage({ runId }) {
   const r = data.report || {}
   const rows = r.skills || []
   const broken = rows.filter((x) => x.verdict === 'broken')
+  const partial = rows.filter((x) => x.verdict === 'partial')
   const unknown = rows.filter((x) => x.verdict === 'unknown')
-  const idle = rows.filter((x) => x.verdict !== 'unknown' && !x.engaged)
-  // Broken first, then never-engaged, then unassessed, then the ones that worked: the
-  // reader is here to find what to act on.
-  const rank = (x) => (x.verdict === 'broken' ? 0
-    : !x.engaged && x.verdict !== 'unknown' ? 1 : x.verdict === 'unknown' ? 2 : 3)
-  const ordered = [...rows].sort((a, b) => rank(a) - rank(b))
+  const na = rows.filter((x) => x.verdict === 'not_applicable')
+  const repaired = rows.filter((x) => x.repaired)
+  // FAIL first, then PARTIAL, then the ones nothing could be said about, then the passes:
+  // the reader is here to find what to act on.
+  const RANK = { broken: 0, partial: 1, unknown: 2, not_applicable: 3, kept: 4 }
+  const ordered = [...rows].sort((a, b) => (RANK[a.verdict] ?? 9) - (RANK[b.verdict] ?? 9))
 
   return (
     <div className="app reportpage" data-sec="skills">
@@ -4157,34 +4163,91 @@ function SkillReportPage({ runId }) {
         </div>
         {/* The number this page explains. Stated with its weight, because 5/5 on a
             dimension worth 6 of 100 is a different claim from 5/5 overall. */}
+        {/* THE HEADLINE IS COMPLIANCE, not the rubric score. "92%" answers "are my
+            rules being followed?"; "4/5 on a dimension worth 6 of 100" answers a
+            question about the grade. Both are shown, the useful one larger. */}
         <div className="rpscore">
-          <div className="rpsval">{r.score != null ? `${r.score}/5` : '—'}</div>
-          <div className="rpslab">Course brief adherence<br /><span>6 of 100 rubric points</span></div>
+          <div className="rpsval">{r.compliance_pct != null ? `${r.compliance_pct}%` : '—'}</div>
+          <div className="rpslab">Skill compliance<br />
+            <span>{r.score != null
+              ? `${r.score}/5 on Course brief adherence · 6 of 100 rubric points`
+              : 'nothing applicable to score'}</span></div>
         </div>
       </header>
 
       <div className="rpstats">
         <Metric label="Rules in force" value={r.total || 0} />
-        <Metric label="Kept" value={r.kept || 0} />
-        <Metric label="Broken" value={r.broken || 0} />
-        {/* THE NUMBER THIS PAGE EXISTS FOR. */}
-        <Metric label="Actually applied" value={r.engaged || 0}
-                sub={`of ${r.total || 0}`} />
-        <Metric label="Not assessed" value={r.unknown || 0} />
+        <Metric label="Pass" value={r.kept || 0} />
+        <Metric label="Partial" value={r.partial || 0} />
+        <Metric label="Fail" value={r.broken || 0} />
+        <Metric label="N/A" value={r.not_applicable || 0} sub="never engaged" />
+        {(r.unknown || 0) > 0 && <Metric label="Not assessed" value={r.unknown} />}
+        {repaired.length > 0 && <Metric label="Repaired" value={repaired.length}
+                                        sub="fixed on a repair pass" />}
       </div>
+
+      {/* BY CATEGORY, first — the level the brief is written at. An author does not
+          think in six numbered rules, they think "the teaching flow" and "what we show",
+          and a category whose rules keep coming back PARTIAL wants rewording rather than
+          re-enforcing. The per-rule cards below answer the narrower question. */}
+      {(r.by_category || []).length > 0 && (
+        <div className="card rpcats">
+          <b>By category</b>
+          <div className="catrows">
+            {r.by_category.map((c) => (
+              <div key={c.category} className={`catrow v-${c.status}`}>
+                <span className={`chip ${(VERDICT[c.status] || {}).chip || ''}`}>
+                  {(VERDICT[c.status] || {}).word || c.status}</span>
+                <span className="cattitle">{c.title}</span>
+                <span className="catmeta">
+                  {c.applicable > 0
+                    ? <>{c.kept} pass{c.partial ? `, ${c.partial} partial` : ''}
+                        {c.broken ? `, ${c.broken} fail` : ''} of {c.applicable}</>
+                    : <>nothing applicable this session</>}
+                  {c.repaired > 0 && <span className="chip good">{c.repaired} repaired</span>}
+                </span>
+                <span className="catpct">{c.compliance_pct != null ? `${c.compliance_pct}%` : '—'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* THE ARITHMETIC, printed. */}
       <div className="card rpmath">
         <b>How the score was reached</b>
         <p className="hint">
-          Every approved skill governing this session is ruled on. A skill carrying a
-          machine-checkable rule is settled exactly, by the same check that gates
-          generation — no opinion involved. The rest are prose, so the reviewer model
-          weighs them and must quote the text to call one broken. The score then follows
-          from the count: <b>no rule broken is 5</b>, <b>one is 3</b>, <b>more than one
-          is 1</b>. This document broke <b>{r.broken || 0}</b>, so it scores{' '}
-          <b>{r.score != null ? r.score : '—'}</b>.
+          Every rule is turned into something observable and the document is checked
+          against that, not against whether the rule's words appear in it. A rule
+          carrying a machine-checkable form is settled exactly, by the same check that
+          gates generation — no opinion involved. The rest are prose: the reviewer model
+          writes down what following the rule would look like, then judges the document
+          against it, and must name the slides to call one broken.
         </p>
+        <p className="hint">
+          <b>Compliance</b> counts a PASS as one and a PARTIAL as a half, over the{' '}
+          <b>{r.applicable || 0}</b> rule{(r.applicable || 0) === 1 ? '' : 's'} that could
+          be ruled on at all — {r.compliance_pct != null ? `${r.compliance_pct}%` : '—'}.
+          The rubric score is stricter, because it decides whether the document ships:{' '}
+          <b>nothing wrong is 5</b>, <b>one loose rule is 4</b>, <b>one broken rule is
+          3</b>, <b>more is 1</b>. The bar is <b>4</b> — so a PARTIAL triggers a repair
+          and a FAIL stops the document.
+        </p>
+        {partial.length > 0 && (
+          <p className="hint">
+            <b>{partial.length} rule{partial.length === 1 ? '' : 's'} followed only in
+            places.</b> Each one shows both the slides that follow it and the slides that
+            do not, below — that is what makes it partial rather than a guess.
+          </p>
+        )}
+        {repaired.length > 0 && (
+          <p className="hint">
+            <b>{repaired.length} rule{repaired.length === 1 ? '' : 's'} had to be
+            repaired</b> after the first draft. Worth knowing on its own: a rule that
+            needs repairing every session is not landing at generation time, and usually
+            wants rewording rather than re-enforcing.
+          </p>
+        )}
         {unknown.length > 0 && (
           <p className="hint">
             <b>{unknown.length} rule{unknown.length === 1 ? '' : 's'} could not be ruled
@@ -4192,14 +4255,13 @@ function SkillReportPage({ runId }) {
             assessed must not read like a brief that passed.
           </p>
         )}
-        {idle.length > 0 && (
-          <p className="hint warntext">
-            <b>{idle.length} rule{idle.length === 1 ? '' : 's'} went unbroken without
-            ever being engaged.</b> Nothing in this document gave{' '}
-            {idle.length === 1 ? 'it' : 'them'} anything to apply to, so{' '}
-            {idle.length === 1 ? 'it' : 'they'} did not shape it. That is not a defect in
-            the document — it may mean the rule is about something this session does not
-            cover, or that it is written too narrowly to bite.
+        {na.length > 0 && (
+          <p className="hint">
+            <b>{na.length} rule{na.length === 1 ? '' : 's'} did not apply to this
+            session.</b> Nothing in it gave {na.length === 1 ? 'the rule' : 'them'}
+            {' '}anything to act on, so {na.length === 1 ? 'it is' : 'they are'} left out
+            of the compliance figure rather than counted as passes. That is not a defect
+            — it may mean the rule is about something this session does not cover.
           </p>
         )}
       </div>
@@ -4218,12 +4280,18 @@ function SkillReportPage({ runId }) {
                   : x.how === 'judged'
                     ? 'Weighed by the reviewer model, which had to quote the text to call it broken.'
                     : 'Nothing ruled on this one.'}>{x.how}</span>
-                {!x.engaged && x.verdict !== 'unknown' && (
-                  <span className="chip mid" title="Nothing in this document gave the rule anything to apply to.">never engaged</span>)}
+                {x.repaired && (
+                  <span className="chip good" title={`Was ${VERDICT[x.was]?.word || x.was} on the first draft and fixed by the repair pass.`}>
+                    {x.repaired === 'partly' ? 'improved by repair' : 'repaired'}</span>)}
                 {x.tier !== 'course brief' && <span className="chip">{x.tier}</span>}
                 {x.category && <span className="tag">{String(x.category).replace(/_/g, ' ')}</span>}
               </header>
               <p className="rpruletext">{x.text}</p>
+              {/* WHAT WAS ACTUALLY MEASURED. A reader who disagrees with a verdict can
+                  then see whether the disagreement is about the document or about what
+                  the rule was taken to mean — which is usually the real argument. */}
+              {x.criterion && (
+                <p className="rpcriterion"><b>Checked for:</b> {x.criterion}</p>)}
               {x.instructions?.length > 0 && (
                 <ol className="skillsteps">
                   {x.instructions.map((line, k) => <li key={k}>{line}</li>)}
@@ -4237,10 +4305,10 @@ function SkillReportPage({ runId }) {
                   headings — which reads as two findings. */}
               {x.evidence && x.verdict === 'broken' && !x.broke?.length && (
                 <div className="just evidence">{x.evidence}</div>)}
-              {x.verdict === 'kept' && !x.engaged && (
-                <div className="just">Nothing was found against it, and nothing in this
-                  document engaged it either — so it neither shaped nor was broken by
-                  this session.</div>)}
+              {x.verdict === 'not_applicable' && (
+                <div className="just">This session gave the rule nothing to apply to, so
+                  it neither shaped this document nor was broken by it. Left out of the
+                  compliance figure rather than counted as a pass.</div>)}
               {x.verdict === 'unknown' && (
                 <div className="just">Not ruled on. Re-grade with the quality check on,
                   or give this rule a machine-checkable form, to get a verdict.</div>)}
@@ -4261,17 +4329,20 @@ function SkillReportPage({ runId }) {
 function SkillReportPanel({ report, course, runId }) {
   const rows = report.skills || []
   const broken = rows.filter((r) => r.verdict === 'broken')
+  const partial = rows.filter((r) => r.verdict === 'partial')
   const unknown = rows.filter((r) => r.verdict === 'unknown')
-  // Broken first, then unassessed, then kept: the reader is here to find what to fix.
-  const rank = { broken: 0, unknown: 1, kept: 2 }
-  const ordered = [...rows].sort((a, b) => rank[a.verdict] - rank[b.verdict])
-  const verdictChip = { kept: 'good', broken: 'bad', unknown: 'mid' }
-  const verdictWord = { kept: 'kept', broken: 'broken', unknown: 'not assessed' }
+  // FAIL first, then PARTIAL, then unassessed, then N/A, then the passes.
+  const RANK = { broken: 0, partial: 1, unknown: 2, not_applicable: 3, kept: 4 }
+  const ordered = [...rows].sort((a, b) => (RANK[a.verdict] ?? 9) - (RANK[b.verdict] ?? 9))
   return (
     <details className="panel skillrep" open={broken.length > 0}>
       <summary>
-        Course brief — <b>{report.kept}</b> of <b>{report.total}</b> skills kept
-        {broken.length > 0 && <span className="chip bad">{broken.length} broken</span>}
+        Course brief — <b>{report.compliance_pct != null
+          ? `${report.compliance_pct}% compliance` : 'not scored'}</b>
+        <span className="muted"> — {report.kept} pass of {report.applicable || 0} applicable</span>
+        {broken.length > 0 && <span className="chip bad">{broken.length} fail</span>}
+        {partial.length > 0 && <span className="chip mid">{partial.length} partial</span>}
+        {report.repaired > 0 && <span className="chip good">{report.repaired} repaired</span>}
         {unknown.length > 0 && <span className="chip mid">{unknown.length} not assessed</span>}
         {report.score != null && <ScoreChip score={report.score} />}
       </summary>
@@ -4298,7 +4369,8 @@ function SkillReportPanel({ report, course, runId }) {
           <div key={r.ref} className={`setrow ${r.verdict === 'kept' ? 'pass' : ''}`}>
             <div className="setmain">
               <span className="tag">{r.ref}</span>
-              <span className={`chip ${verdictChip[r.verdict]}`}>{verdictWord[r.verdict]}</span>
+              <span className={`chip ${(VERDICT[r.verdict] || {}).chip || ''}`}>
+                {(VERDICT[r.verdict] || {}).word || r.verdict}</span>
               {/* HOW it was settled, because the two are different kinds of claim: a
                   check is arithmetic over the document, a judgement is a reading of it,
                   and the reader is entitled to tell them apart before acting. */}
@@ -4319,6 +4391,9 @@ function SkillReportPanel({ report, course, runId }) {
             {r.verdict === 'unknown' && (
               <div className="just">Not ruled on — run the grader with the quality check
                 on, or give this skill a machine-checkable rule, to get a verdict.</div>
+            )}
+            {r.verdict === 'not_applicable' && (
+              <div className="just">This session gave the rule nothing to apply to.</div>
             )}
           </div>
         ))}

@@ -462,7 +462,26 @@ def _visible_strings(doc: dict) -> list[tuple[str, str]]:
 
     for key in ("recap", "agenda", "key_takeaways", "upcoming_session", "closing"):
         add(key, doc.get(key))
+    # THE COVERAGE MAP, which a reviewer reads and which drives the coverage gate. It was
+    # not scanned at all, so the one shape of leak nobody would notice — the brief
+    # restated as a sub-concept the document claims to teach — passed the check that
+    # exists to catch exactly that. A leak here is worse than one on a slide: a
+    # sub-concept is a PROMISE about what the session covers, so a teaching instruction
+    # landing in it turns "how to teach" into a topic the doc says it taught.
+    for i, entry in enumerate(doc.get("coverage_map") or [], start=1):
+        if not isinstance(entry, dict):
+            continue
+        add(f"coverage_map[{i}] takeaway", entry.get("takeaway"))
+        for j, sub in enumerate(entry.get("sub_concepts") or [], start=1):
+            if isinstance(sub, dict):
+                add(f"coverage_map[{i}].sub_concepts[{j}]", sub.get("name"))
+            else:
+                add(f"coverage_map[{i}].sub_concepts[{j}]", sub)
     for sec in doc.get("sections") or []:
+        # A SECTION NAME is a heading the reader sees, and a section named after the
+        # brief's own words is the brief presented as curriculum structure.
+        if isinstance(sec, dict):
+            add(f"section {sec.get('index', '?')} name", sec.get("name"))
         for s in sec.get("slides") or []:
             tag = f"slide {s.get('n', '?')}"
             for f in ("title", "heading", "subheading", "analogy", "visual_guidance",

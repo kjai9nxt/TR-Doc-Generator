@@ -426,14 +426,23 @@ def _chk_skill_adherence(doc, session, sset):
         # `score >= threshold` and take the WHOLE eval run down with a TypeError.)
         return NOT_APPLICABLE, ("this course has no approved skills — it has not said "
                                 "what it requires, so there is nothing to score")
-    slides = [sl for sec in doc.get("sections") or [] for sl in sec.get("slides") or []]
-    broken = []
-    for sk in rs:
-        broken += guardrails._skill_failures(doc, slides, sk, sk["check"])
-    score = 5 if not broken else (3 if len(broken) == 1 else 1)
-    detail = (f"{len(rs)} checkable skill(s); "
-              + ("all satisfied" if not broken
-                 else f"{len(broken)} violation(s): " + "; ".join(broken[:3])))
+    # SCORED BY THE SAME CODE THE GATE USES, on the same ladder. Counting violations here
+    # and deriving the grade's dimension from statuses there let the two rank one document
+    # differently — a doc with one rule followed on three slides and dropped on a fourth
+    # was a 3 to this set and a 4 (PARTIAL) to the grade. One builder, one ladder.
+    from graders import skill_report as _sr
+    rep = _sr.build(doc, course=course, session=session, judge_result=None)
+    checked = [r for r in (rep.get("skills") or []) if r.get("how") == "checked"]
+    if rep.get("score") is None or not checked:
+        return None, (f"{len(approved)} approved skill(s), nothing the machine half "
+                      f"could settle — scored by the judge half instead")
+    bad = [r for r in checked if r["verdict"] in ("broken", "partial")]
+    n_f = sum(1 for r in bad if r["verdict"] == "broken")
+    score = _sr.score_for(n_f, len(bad) - n_f)
+    detail = (f"{len(checked)} checkable skill(s); "
+              + ("all satisfied" if not bad
+                 else "; ".join(f"{r['ref']} {r['verdict']}: {r['evidence'][:90]}"
+                                for r in bad[:3])))
     return score, detail
 
 

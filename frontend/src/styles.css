@@ -1528,3 +1528,37 @@ summary:hover::before { border-left-color: var(--accent); }
   .rpscore { width: 100%; }
   .sites li { flex-direction: column; gap: 1px; }
 }
+
+/* The criterion a rule was measured against, above its evidence. Quieter than the rule
+   itself and set apart from the verdict: it is what the verdict MEANS, and a reader who
+   disagrees needs to see it before the slides. */
+.rpcriterion { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+.rpcriterion b { color: var(--faint); font-weight: 650; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .05em; margin-right: 6px; }
+.rprule.v-partial { border-left-color: var(--warn); }
+.rprule.v-not_applicable { border-left-color: var(--line2); opacity: .78; }
+.panel.skillrep .setrow .chip:empty { display: none; }
+
+/* The by-category rollup: one line per thing the brief governs, read before the rules.
+   A grid rather than a flex row so the four columns line up down the block — a column of
+   verdicts you can scan is the whole point of aggregating at all. */
+.rpcats { margin: 0 0 18px; }
+.rpcats > b { color: var(--strong); }
+.catrows { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; }
+.catrow { display: grid; align-items: center; gap: 12px; padding: 9px 10px;
+  grid-template-columns: 78px minmax(140px, 1fr) minmax(0, 1.4fr) 52px;
+  border-radius: var(--r-sm); border-left: 3px solid var(--line2); background: var(--sunken); }
+.catrow.v-kept { border-left-color: var(--ok-line); }
+.catrow.v-partial { border-left-color: var(--warn); }
+.catrow.v-broken { border-left-color: var(--err); }
+.catrow.v-not_applicable, .catrow.v-unknown { opacity: .72; }
+.catrow .chip { justify-self: start; }
+.cattitle { font-weight: 600; color: var(--text); min-width: 0; }
+.catmeta { font-size: 12.5px; color: var(--muted); min-width: 0;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.catpct { text-align: right; font-weight: 700; color: var(--strong);
+  font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .catrow { grid-template-columns: 72px 1fr auto; }
+  .catmeta { grid-column: 2 / -1; }
+}

@@ -159,6 +159,29 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
             rep = _sr.build(doc, course=course, session=session, judge_result=None)
         if rep:
             report["skill_report"] = rep
+            # WHAT THE REPAIR PASS IS TOLD, per skill. `issues` is the list the revision
+            # prompt is handed, and a judge's prose blocking-issue ("the brief's flow is
+            # not followed") is not something a patch can act on. Each row already knows
+            # the rule, the criterion it was measured against, and the slides it went
+            # wrong on — so the instruction names all three and says what to change.
+            #
+            # NOT for a rule the session never engaged: satisfying that would mean adding
+            # curriculum the session does not own, which is the one thing a repair must
+            # never do. `skill_report.repairable` excludes those.
+            for r in _sr.repairable(rep):
+                where = ", ".join(
+                    f"slide {st['slide']}" for st in (r.get("broke") or [])
+                    if st.get("slide") is not None) or "across the document"
+                verb = ("is followed on some slides and not others"
+                        if r["verdict"] == "partial" else "is not followed")
+                issues.append(
+                    f"COURSE SKILL {r['ref']} {verb} — “{r['text'][:160]}”. "
+                    + (f"What following it looks like: {r['criterion']}. "
+                       if r.get("criterion") else "")
+                    + f"Fix it at {where}. {r.get('evidence') or ''} "
+                    f"Change HOW those slides teach, not WHAT they teach: do not add a "
+                    f"topic, drop a sub-concept, or touch the agenda or key takeaways, "
+                    f"and never write the rule itself into the document.".strip())
     except Exception:
         pass
 
@@ -273,6 +296,9 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
         doc = generator.revise(user_prompt, json.dumps(doc, ensure_ascii=False), issues,
                                enforce_time=enforce_time, course=course,
                                session=cur.number)
+        # Same reason as the re-draft in finalize: a document the model returns whole
+        # carries whatever numbers it felt like keeping.
+        patcher.renumber_doc(doc)
 
     # Return the best draft seen, not necessarily the last (avoid regressions).
     _, doc, best_report = best
@@ -461,6 +487,19 @@ def _repair_reasons(doc: dict, report: dict) -> list[str]:
     if cfg.get("guardrails", False) and not report.get("guardrails", {}).get("passed", True):
         n = len(report.get("guardrails", {}).get("failures") or [])
         reasons.append(f"{n} structural guardrail failure(s) on the assembled document")
+    if cfg.get("course_brief", False):
+        try:
+            from graders import skill_report as _sr
+            bad = _sr.repairable(report.get("skill_report"))
+        except Exception:
+            bad = []
+        if bad:
+            n_f = sum(1 for r in bad if r.get("verdict") == "broken")
+            n_p = len(bad) - n_f
+            parts = ([f"{n_f} not followed"] if n_f else []) + \
+                    ([f"{n_p} followed only in places"] if n_p else [])
+            reasons.append(f"{len(bad)} of this course's own skills "
+                           f"({', '.join(parts)})")
     if cfg.get("technical_accuracy", False):
         bar = config.harness()["gates"].get("rubric_min_per_dimension", 4)
         score = ((report.get("judge") or {}).get("scores") or {}).get(
@@ -571,7 +610,14 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     max_repair = int(config.harness()["gates"].get("guided_length_repair_rounds", 1) or 0)
     best = (_score_key(accepted, report), doc, report)
     rnd = 0
-    while not accepted and rnd < max_repair:
+    # `while rnd < max_repair`, NOT `while not accepted`. A PARTIAL skill scores 4, which
+    # clears the per-dimension bar — so a document with a loosely-followed rule was
+    # accepted, and a loop gated on `not accepted` never looked at it. The guard is
+    # `_repair_reasons` returning nothing, which it does for an accepted document under
+    # every other trigger (within budget, guardrails passed, accuracy at the bar), so
+    # this changes no existing verdict — it just stops "accepted" from meaning "nothing
+    # left worth fixing". `best` still refuses to ship a repair that scored worse.
+    while rnd < max_repair:
         over = _repair_reasons(doc, report)
         if not over:
             break
@@ -612,7 +658,25 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
             log(f"Repair patch unusable ({e}) — falling back to a full re-draft.")
             doc = generator.revise(base, doc_json, issues, enforce_time=enforce_time,
                                    course=course, session=cur.number)
+            # RENUMBERED, because a re-draft is a whole new document. The patch path
+            # renumbers on the way out (patcher.apply_doc_patch); this path did not, and
+            # a repair pass exists precisely to CUT slides — so the model deleted four
+            # slide objects, left the survivors' numbers untouched, and the document came
+            # back with thirteen slides whose last heading read "Slide 17". The count in
+            # the result was right; every label above the first cut was wrong, and the
+            # coverage map still cited the numbers that had gone.
+            patcher.renumber_doc(doc)
+        prev_report = report
         accepted, report, issues = grade(doc, rnd)
+        # "PASS" and "PARTIAL → REPAIRED" are different facts: the second says the rule
+        # did not land at generation time and had to be corrected, which is the signal
+        # that the rule needs rewording. Only the final state survived before.
+        try:
+            from graders import skill_report as _sr2
+            _sr2.mark_repaired(prev_report.get("skill_report"),
+                               report.get("skill_report"))
+        except Exception:
+            pass
         history.append(report)
         key = _score_key(accepted, report)
         if key > best[0]:

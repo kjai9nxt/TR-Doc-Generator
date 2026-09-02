@@ -299,20 +299,54 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
                 # reads. A single 4/5 over the whole brief says a line was missed and
                 # withholds which line — so the one action it implies is the one thing
                 # it does not support. Each skill carries a label; rule on each label.
-                "\nAND RETURN A VERDICT FOR EVERY LABELLED SKILL, in `brief_verdicts`:\n"
+                "\nAND RETURN A VERDICT FOR EVERY LABELLED SKILL, in `brief_verdicts`.\n"
+                # THE CRITERION FIRST, THEN THE VERDICT. Asked only "was this rule
+                # followed?", a model answers from how the document reads — and a
+                # well-written document reads as though every rule were followed. Making
+                # it first state what following the rule would LOOK LIKE forces the rule
+                # into something observable, and the verdict is then a comparison against
+                # that rather than an impression. "Use one running example throughout"
+                # becomes "the same example recurs across the concepts instead of a new
+                # one per concept", which is a thing you can look for and find or not.
+                "FOR EACH ONE, FIRST WRITE THE CRITERION — one line saying what a "
+                "document that follows this rule would visibly DO — and only then judge "
+                "the document against it. Not whether the rule's words appear anywhere: "
+                "whether the behaviour it asks for is in the writing.\n"
                 '  "brief_verdicts": [\n'
-                '    {"ref": "S1", "kept": true, "evidence": "",\n'
+                '    {"ref": "S1", "criterion": "the same worked example recurs across '
+                'the concepts instead of a new one per concept", "status": "pass",\n'
+                '     "kept": true, "evidence": "",\n'
                 '     "applied": [{"slide": 4, "section": "Grid Structure", "note": '
                 '"concept stated, then the snippet, then the walkthrough"},\n'
                 '                 {"slide": 9, "section": "Breakpoints", "note": '
                 '"same worked example extended rather than replaced"}],\n'
                 '     "broke": []},\n'
-                '    {"ref": "S2", "kept": false, "evidence": "Slide 14 content: \'a '
+                '    {"ref": "S2", "criterion": "no slide teaches or recommends '
+                'class components", "status": "partial",\n'
+                '     "kept": false, "evidence": "Slide 14 content: \'a '
                 'class component keeps state in this.state\'",\n'
-                '     "applied": [], "broke": [{"slide": 14, "section": "State", '
+                '     "applied": [{"slide": 3, "section": "State", "note": "hooks used '
+                'throughout the introduction"}],\n'
+                '     "broke": [{"slide": 14, "section": "State", '
                 '"note": "teaches the pattern this course has moved off"}]}\n'
                 '  ]\n'
                 "  · ONE ENTRY PER LABEL. Every [S…] in the brief below, none invented.\n"
+                # FOUR STATES, because most real findings are in the middle one and
+                # forcing them to an extreme is the difference between passing silently
+                # and failing a whole document over a loose line.
+                "  · `status` IS ONE OF FOUR:\n"
+                "      \"pass\"           the criterion is met wherever it applies;\n"
+                "      \"partial\"        met in some relevant places and not others — "
+                "use this whenever the rule is followed inconsistently rather than "
+                "rounding to pass or fail;\n"
+                "      \"fail\"           the document goes against the rule;\n"
+                "      \"not_applicable\" this session gave the rule nothing to apply "
+                "to. NOT the same as pass: say this rather than passing a rule that "
+                "never came up, and cite nothing.\n"
+                "  · `applied` AND `broke` ARE THE EVIDENCE FOR THE STATUS, and they are "
+                "read back against it — a \"pass\" that lists a broken slide is recorded "
+                "as partial, and a \"fail\" that also lists slides following the rule is "
+                "recorded as partial. Make the three agree.\n"
                 # THE PART A COURSE OWNER ACTUALLY READS. A verdict says a rule was not
                 # contradicted; it does not say the rule did any work. "Open from the
                 # broken page, then the fix — kept" reads exactly the same on a document
