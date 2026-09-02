@@ -343,6 +343,10 @@ export const api = {
 
   dashboard: () => req('/dashboard'),
 
-  evalSets: (session_no, use_llm, enforce_time) =>
-    req('/eval-sets', { method: 'POST', body: JSON.stringify({ session_no, use_llm, enforce_time }) }),
+  // `course` is the curriculum the DOCUMENT was written from. Without it the server
+  // falls back to the instance-wide active course — one global shared by everyone
+  // signed in — so a colleague opening their course mid-review repointed the grading at
+  // their brief, and the document was scored against rules its author never wrote.
+  evalSets: (session_no, use_llm, enforce_time, course) =>
+    req('/eval-sets', { method: 'POST', body: JSON.stringify({ session_no, use_llm, enforce_time, course }) }),
 }

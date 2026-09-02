@@ -123,6 +123,25 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
         judge_ok, judge_reasons = llm_judge.passes_gates(jr, profile)
         issues += judge_reasons
 
+    # WHICH OF THIS COURSE'S RULES THE DOCUMENT KEPT, one row per skill. Lifted to the
+    # top of the report because it is the answer to "were my skills used?", which no
+    # single score can give: `course_brief_adherence` says a line was missed and will
+    # not say which line.
+    #
+    # Built here even when the judge is OFF. The deterministic half still rules on every
+    # skill carrying a check, and the rest come back `unknown` — which is the truth about
+    # an ungraded run, and better than the course brief vanishing from the report
+    # entirely on the one path where nothing is looking at it.
+    try:
+        from graders import skill_report as _sr
+        rep = (report.get("judge") or {}).get("skill_report")
+        if rep is None:
+            rep = _sr.build(doc, course=course, session=session, judge_result=None)
+        if rep:
+            report["skill_report"] = rep
+    except Exception:
+        pass
+
     accepted = gr.passed and time_ok and page_ok and judge_ok
     report["accepted"] = accepted
     report["issues"] = issues

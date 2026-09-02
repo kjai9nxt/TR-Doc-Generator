@@ -1122,7 +1122,10 @@ export default function App() {
 
   function runEvalSets() {
     setEvalRunning(true); setEvalReport(null); setEvalErr(null)
-    api.evalSets(result.session_no, true, policy.time_always_enforced).then(({ job_id }) => {
+    // The RUN's course, not the page's selection: after resuming somebody else's run
+    // those are not the same course, and the document belongs to the run.
+    api.evalSets(result.session_no, true, policy.time_always_enforced,
+                 result.course || courseName || undefined).then(({ job_id }) => {
       evalPollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -1213,7 +1216,11 @@ export default function App() {
             A missing API key is surfaced where it blocks you — next to Generate. */}
         <div className="userbox">
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
-          <span className="uemail">{user.email}{user.is_admin && <span className="pill admin">admin</span>}</span>
+          {/* The address is wrapped so a phone can drop it and keep the ADMIN pill and
+              Sign out — at 390px it is 18 unbreakable characters shoving the only
+              control in the bar off the edge of the screen. */}
+          <span className="uemail"><span className="etext">{user.email}</span>
+            {user.is_admin && <span className="pill admin">admin</span>}</span>
           <button className="link" onClick={signOut}>Sign out</button>
         </div>
       </header>
@@ -1282,7 +1289,11 @@ export default function App() {
           <nav className="navsec navtabs">
             <div className="navlabel">Sections</div>
             {tabs.map((t) => (
-              <button key={t.id} className={`navtab ${tab === t.id ? 'on' : ''}`}
+              /* `data-sec` is the ONLY thing the hue system needs from the markup:
+                 the stylesheet keys the three custom properties off it, so a section
+                 added later is three lines of CSS and nothing here. */
+              <button key={t.id} data-sec={t.id}
+                      className={`navtab ${tab === t.id ? 'on' : ''}`}
                       onClick={() => setTab(t.id)}>
                 <Icon name={t.icon} className="tabicon" />
                 <span className="tablabel">{t.label}</span>
@@ -1308,7 +1319,13 @@ export default function App() {
           </div>
         </aside>
 
-        <main className="main">
+        {/* THE WHOLE VIEW BELONGS TO ITS SECTION, so the hue is set once here and
+            inherited by every hue-aware thing inside it — the page header's icon tile,
+            a badge, a group's edge. Tagging fifteen individual headers would have left
+            the sixteenth grey, and a colour system with a hole in it reads as a bug. A
+            narrower `[data-cat]` inside (a skill category) simply wins, which is the
+            behaviour wanted: the group's own colour beats the page's. */}
+        <main className="main" data-sec={tab}>
       {/* WHERE YOU ARE, in one line, above whatever section is open. The rail holds the
           controls; this says what they currently add up to — which workspace, which
           course, and (in a team) who else is in it. In a team with more than one course
@@ -1691,15 +1708,19 @@ export default function App() {
                       answers — why is this topic here and not there, does the whole
                       thing hang together — are the ones you cannot ask from inside a
                       single section. Same read-only guarantee. */}
+                  {!chatIsOpen(-1) ? (
+                    <ChunkChatTrigger
+                      scope="document"
+                      messages={(guided.chat || []).filter((m) => m.index === -1)}
+                      onOpen={() => setChatOpen((m) => ({ ...m, [-1]: true }))} />
+                  ) : (
                   <ChunkChat
                     scope="document"
                     messages={(guided.chat || []).filter((m) => m.index === -1)}
                     pending={guided.chat_pending}
-                    open={chatIsOpen(-1)}
                     text={askText[-1] || ''}
                     web={askWeb}
                     asking={asking}
-                    onOpen={() => setChatOpen((m) => ({ ...m, [-1]: true }))}
                     onClose={() => setChatOpen((m) => ({ ...m, [-1]: false }))}
                     onText={(v) => setAskText((m) => ({ ...m, [-1]: v }))}
                     onWeb={setAskWeb}
@@ -1712,6 +1733,7 @@ export default function App() {
                     rulePosted={rulePosted}
                     onMakeSkill={makeSkillFromChat}
                     stage={guided.chat_stage?.index === -1 ? guided.chat_stage : null} />
+                  )}
                   {/* A step that failed but left the run intact. Shown here, inside the
                       panel, so it reads as "that click didn't work, try again" rather
                       than tearing the review screen down. */}
@@ -1730,26 +1752,49 @@ export default function App() {
                     const isOk = approvedSet.has(i)
                     return (
                       <details key={i} className={`review-chunk ${isOk ? 'ok' : ''}`} open={gStatus !== 'done'}>
-                        <summary>{isOk ? <Icon name="check" className="okmark" /> : <span className="cnum">{i + 1}</span>} {c.label}</summary>
+                        <summary>
+                          {isOk ? <Icon name="check" className="okmark" /> : <span className="cnum">{i + 1}</span>}
+                          <span className="clabel">{c.label}</span>
+                          {/* THE ASK CONTROL LIVES IN THE HEADER. Under the document it
+                              sat between the material and the Approve/Regenerate buttons
+                              — with its two-line pitch repeated on every chunk — so the
+                              decision the page exists for was pushed a screenful down
+                              once per section and the review read as a stack of chat
+                              boxes with documents attached. Here it is in the same place
+                              on every chunk, costs no vertical space, and says how many
+                              messages are already behind it. */}
+                          {!regenning && !chatIsOpen(i) && (
+                            <ChunkChatTrigger
+                              messages={(guided.chat || []).filter((m) => m.index === i)}
+                              onOpen={() => setChatOpen((m) => ({ ...m, [i]: true }))} />
+                          )}
+                        </summary>
                         {regenning
                           ? <Busy label="Regenerating this chunk…" />
-                          : <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{c.markdown}</ReactMarkdown></div>}
-                        {/* ASK BEFORE YOU DECIDE. Regenerating is the lever for a
-                            section you have decided is wrong; this is for the moment
-                            before that, when you cannot yet tell whether it is. It is
-                            read-only — it cannot edit, regenerate or approve — so a
-                            question can never cost you work you had already accepted.
-                            Available on a finished document too: that is when people
-                            most often go back and ask. */}
-                        {!regenning && (
+                          : (
+                        /* SIDE BY SIDE while a question is open. The answer is about the
+                           text on screen, so hiding the text to show the answer is the
+                           one layout that cannot work: you end up scrolling between the
+                           claim and the reply to check it. Both panes scroll on their
+                           own and the panel is sticky, so the section stays readable for
+                           as long as the conversation lasts. Below ~1180px there is not
+                           enough width for two readable columns and it stacks. */
+                        <div className={`chunkwork${chatIsOpen(i) ? ' split' : ''}`}>
+                          <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{c.markdown}</ReactMarkdown></div>
+                          {/* ASK BEFORE YOU DECIDE. Regenerating is the lever for a
+                              section you have decided is wrong; this is for the moment
+                              before that, when you cannot yet tell whether it is. It is
+                              read-only — it cannot edit, regenerate or approve — so a
+                              question can never cost you work you had already accepted.
+                              Available on a finished document too: that is when people
+                              most often go back and ask. */}
+                          {chatIsOpen(i) && (
                           <ChunkChat
                             messages={(guided.chat || []).filter((m) => m.index === i)}
                             pending={guided.chat_pending}
-                            open={chatIsOpen(i)}
                             text={askText[i] || ''}
                             web={askWeb}
                             asking={asking}
-                            onOpen={() => setChatOpen((m) => ({ ...m, [i]: true }))}
                             onClose={() => setChatOpen((m) => ({ ...m, [i]: false }))}
                             onText={(v) => setAskText((m) => ({ ...m, [i]: v }))}
                             onWeb={setAskWeb}
@@ -1763,11 +1808,19 @@ export default function App() {
                             onUseAsFeedback={(t, toFollowing) => {
                               setRegenFor(i); setRegenReason(t)
                               setRegenAll(Boolean(toFollowing))
-                              setAskFor(null)
+                              // The suggestion has moved to the regenerate box below, so
+                              // the conversation folds away and the section goes back to
+                              // full width to be read against it. (This line called
+                              // `setAskFor`, which stopped existing when the open state
+                              // became per-section — so the button threw instead of
+                              // filling the box.)
+                              setChatOpen((m) => ({ ...m, [i]: false }))
                             }}
                             rulePosted={rulePosted}
                             onMakeSkill={makeSkillFromChat}
                             stage={guided.chat_stage?.index === i ? guided.chat_stage : null} />
+                          )}
+                        </div>
                         )}
                         {/* Shown BEFORE the Approve button, because this is the cheap
                             moment to fix it: regenerating one section costs a fraction
@@ -1992,6 +2045,16 @@ export default function App() {
               )}
             </div>
           </details>
+
+          {/* THE COURSE'S OWN RULES, ONE ROW EACH — above the rubric, because it answers
+              a different and more immediate question. The rubric asks how good the
+              document is; this asks whether the rules THIS course's owner wrote were
+              applied, which is the only thing on the page that is different for their
+              course than for anyone else's. */}
+          {(result.skill_report || result.judge?.skill_report) && (
+            <SkillReportPanel report={result.skill_report || result.judge.skill_report}
+                              course={result.course} />
+          )}
 
           {result.judge?.scores && <RubricPanel judge={result.judge} />}
 
@@ -3071,7 +3134,7 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
 
           <div className="brief">
             {filled.map((g) => (
-              <section key={g.id || 'other'} className="bgroup">
+              <section key={g.id || 'other'} className="bgroup" data-cat={g.id || ''}>
                 <header className="bghead">
                   <span className="bgicon"><Icon name={g.icon} /></span>
                   <b className="bgtitle" title={g.hint}>{g.label}</b>
@@ -3916,6 +3979,78 @@ function ScoreChip({ score, max = 5 }) {
 // — weight x how far below 5 they scored — and the bar is stated, so the panel answers
 // the question it used to raise. A doc needs the total AND at least the per-dimension
 // minimum on every single dimension, so a lone 3 fails a 95-point document.
+// WHICH OF THIS COURSE'S SKILLS THE DOCUMENT KEPT.
+//
+// The course owner writes seven rules, approves them, and used to get back one number:
+// `course_brief_adherence`, 4 out of 5, six weighted points. That says a line was missed
+// and withholds WHICH line — so the one action it implies, go and look at the rule that
+// was missed, is the one thing it does not support. This is that list.
+//
+// Three states, and the third is the point. `kept` and `broken` are verdicts; `unknown`
+// means nobody ruled on it, and it is drawn as its own thing rather than folded in with
+// the ones that passed. A brief that was not assessed must never read like a brief that
+// was followed.
+function SkillReportPanel({ report, course }) {
+  const rows = report.skills || []
+  const broken = rows.filter((r) => r.verdict === 'broken')
+  const unknown = rows.filter((r) => r.verdict === 'unknown')
+  // Broken first, then unassessed, then kept: the reader is here to find what to fix.
+  const rank = { broken: 0, unknown: 1, kept: 2 }
+  const ordered = [...rows].sort((a, b) => rank[a.verdict] - rank[b.verdict])
+  const verdictChip = { kept: 'good', broken: 'bad', unknown: 'mid' }
+  const verdictWord = { kept: 'kept', broken: 'broken', unknown: 'not assessed' }
+  return (
+    <details className="panel skillrep" open={broken.length > 0}>
+      <summary>
+        Course brief — <b>{report.kept}</b> of <b>{report.total}</b> skills kept
+        {broken.length > 0 && <span className="chip bad">{broken.length} broken</span>}
+        {unknown.length > 0 && <span className="chip mid">{unknown.length} not assessed</span>}
+        {report.score != null && <ScoreChip score={report.score} />}
+      </summary>
+      <div className="just skillrepintro">
+        The rules <b>{course || 'this course'}</b> is written under, as you approved them.
+        {report.score != null && <> They score <b>{report.score}/5</b> on{' '}
+          <i>Course brief adherence</i>, worth <b>6</b> of the rubric's 100 points — that
+          number is computed from the rows below, so it cannot disagree with them.</>}
+      </div>
+      <div className="scorelist">
+        {ordered.map((r) => (
+          <div key={r.ref} className={`setrow ${r.verdict === 'kept' ? 'pass' : ''}`}>
+            <div className="setmain">
+              <span className="tag">{r.ref}</span>
+              <span className={`chip ${verdictChip[r.verdict]}`}>{verdictWord[r.verdict]}</span>
+              {/* HOW it was settled, because the two are different kinds of claim: a
+                  check is arithmetic over the document, a judgement is a reading of it,
+                  and the reader is entitled to tell them apart before acting. */}
+              <span className="tag" title={r.how === 'checked'
+                ? 'Settled exactly, by the same check that gates generation — not an opinion.'
+                : r.how === 'judged'
+                  ? 'Weighed by the reviewer model, which had to quote the text to call it broken.'
+                  : 'Nothing ruled on this one. It is not a pass.'}>{r.how}</span>
+              {r.tier !== 'course brief' && <span className="chip">{r.tier}</span>}
+              <span className="dimname">{r.text}</span>
+            </div>
+            {r.instructions?.length > 0 && (
+              <ol className="skillsteps">
+                {r.instructions.map((line, k) => <li key={k}>{line}</li>)}
+              </ol>
+            )}
+            {r.evidence && <div className="just evidence">{r.evidence}</div>}
+            {r.verdict === 'unknown' && (
+              <div className="just">Not ruled on — run the grader with the quality check
+                on, or give this skill a machine-checkable rule, to get a verdict.</div>
+            )}
+          </div>
+        ))}
+      </div>
+      {rows.length === 0 && (
+        <div className="just">This course has no approved skills yet, so there is nothing
+          to hold the document to. Write them under <b>Skills</b>.</div>
+      )}
+    </details>
+  )
+}
+
 function RubricPanel({ judge }) {
   const weights = judge.weights || {}
   const minTotal = judge.gates?.min_total
@@ -4127,13 +4262,24 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
             <div key={i} className={`setrow ${r.session_no === sessionNo ? 'pass' : ''}`}
                  style={r.applies === false ? { opacity: 0.45 } : undefined}>
               <div className="setmain">
-                <span className="tag">{srcLabel[r.source] || r.source || 'rule'}</span>
+                {/* WHERE THE RULE CAME FROM, coloured. A correction a person made and
+                    one the grader inferred carry different authority — the page says so
+                    in prose — and they were two identical grey tags, so the distinction
+                    existed only for whoever read the paragraph. */}
+                <span className={`tag ${String(srcLabel[r.source] || '').startsWith('human')
+                  ? 'src-human' : 'src-auto'}`}>
+                  {srcLabel[r.source] || r.source || 'rule'}</span>
                 {/* CLICKABLE. The house/course split is decided by a model at distil
                     time and it misjudges: a note about one topic ("working examples are
                     not needed for this topic") became a house rule binding every course
                     on the instance. Deleting was the only lever, and it is the wrong one
                     — it destroys the rule for the course that did ask for it. */}
-                <button className="tag" disabled={busy === i}
+                {/* HOUSE IS THE CONSEQUENTIAL ONE: it binds every course on the
+                    instance, which is the whole reason this button exists and the
+                    migration alert above warns about it. It gets the warm tag; a rule
+                    contained to one course gets the calm one. */}
+                <button className={`tag ${r.scope === 'course' ? 'scope-course' : 'scope-house'}`}
+                        disabled={busy === i}
                         title={r.scope === 'course'
                           ? `Subject-matter rule — applies only to ${r.course || 'its course'}. `
                             + 'Click to make it house style, applying to every course.'
@@ -4173,7 +4319,65 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
 // no power over the document, and it says so: the whole value is that asking is free.
 // A reviewer who cannot ask has only one move when something looks off — reject and
 // re-roll — and a disagreement that was never a disagreement costs a full regeneration.
-function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose,
+const CHAT_PITCH = {
+  section: 'Why it says what it says, where something came from, whether it matches how '
+    + 'the topic is normally taught. It answers from the material this section was '
+    + 'written from — it cannot change anything.',
+  document: 'Why a topic sits in one section and not another, whether the document hangs '
+    + "together, what it covers as a whole. The division follows the curriculum's own key "
+    + 'takeaways, so this is usually a question about which line owns what.',
+}
+
+// The control that OPENS a conversation, kept apart from the panel it opens.
+//
+// A section's trigger renders inside the chunk's header row; the document-level one is
+// its own banner above the sections, because it is about all of them. The pitch used to
+// print under every chunk as two lines of body text — five sections meant reading it
+// five times to get past it — so for a section it is a tooltip, said once, where someone
+// who has not asked yet will find it and everyone else will not have to scroll it.
+function ChunkChatTrigger({ messages = [], scope = 'section', onOpen }) {
+  const whole = scope === 'document'
+  const n = messages.length
+  const pitch = CHAT_PITCH[whole ? 'document' : 'section']
+  if (whole) {
+    return (
+      <div className="chunkchat-cta doclevel">
+        <button className="ghostbtn tiny" onClick={onOpen}>
+          <Icon name="chat" /> {n > 0
+            ? `${n} message${n === 1 ? '' : 's'} about this document — reopen`
+            : 'Ask about the whole document'}
+        </button>
+        <span className="hint">
+          {n > 0 ? 'Kept — nothing is lost by closing it.' : pitch}
+        </span>
+      </div>
+    )
+  }
+  // Inside a <summary>, a plain click toggles the disclosure instead of reaching the
+  // handler — hence preventDefault. And a question about a collapsed section is a
+  // question you cannot check the answer to, so opening the chat opens the chunk.
+  const open = (e) => {
+    e.preventDefault(); e.stopPropagation()
+    const d = e.currentTarget.closest('details')
+    if (d) d.open = true
+    onOpen()
+  }
+  return (
+    <button className={`askbtn${n > 0 ? ' has' : ''}`} onClick={open}
+            /* Collapsing must never look like deleting: the conversation is checkpointed
+               with the run and comes back exactly as it was, and the pill is the only
+               place left to say so once the panel is shut. */
+            title={n > 0
+              ? `${n} message${n === 1 ? '' : 's'} about this section — kept, nothing was `
+                + 'lost by closing it. Click to reopen.'
+              : pitch}>
+      <Icon name="chat" size={13} />
+      {n > 0 ? `${n} message${n === 1 ? '' : 's'} — reopen` : 'Ask about this'}
+    </button>
+  )
+}
+
+function ChunkChat({ messages, pending, text, web, asking, onClose,
                      onText, onWeb, onSend, canRegen, onUseAsFeedback,
                      onMakeSkill, rulePosted = {}, scope = 'section', stage = null }) {
   const whole = scope === 'document'
@@ -4182,42 +4386,21 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
   // under it — not floating at the bottom of a panel that may be scrolled away.
   const awaiting = pending && messages.length > 0
     && messages[messages.length - 1].role === 'user'
-  // COLLAPSED whenever `open` is false — including when there is a conversation to
-  // collapse. The condition here used to be `!has && !open`, so as soon as a section had
-  // one exchange the expanded panel was the only thing that could render: Close set the
-  // flag, the flag was ignored, and the button did nothing at all. A control that does
-  // nothing is worse than no control, because you go looking for what you broke.
-  if (!open) {
-    const n = messages.length
-    return (
-      <div className={`chunkchat-cta${whole ? ' doclevel' : ''}`}>
-        <button className="ghostbtn tiny" onClick={onOpen}>
-          <Icon name="chat" /> {has
-            ? `${n} message${n === 1 ? '' : 's'} about ${whole ? 'this document' : 'this section'} — reopen`
-            : whole ? 'Ask about the whole document' : 'Ask about this section'}
-        </button>
-        {/* The pitch is for someone who has not asked yet. Once they have, the button
-            says what is behind it and the sales copy would just be noise. */}
-        {!has && (
-          <span className="hint">
-            {whole
-              ? `Why a topic sits in one section and not another, whether the document `
-                + `hangs together, what it covers as a whole. The division follows the `
-                + `curriculum's own key takeaways, so this is usually a question about `
-                + `which line owns what.`
-              : `Why it says what it says, where something came from, whether it matches `
-                + `how the topic is normally taught. It answers from the material this `
-                + `section was written from — it cannot change anything.`}
-          </span>
-        )}
-        {/* Collapsing must never look like deleting. The conversation is checkpointed
-            with the run and comes back exactly as it was. */}
-        {has && <span className="hint">Kept — nothing is lost by closing it.</span>}
-      </div>
-    )
-  }
   return (
-    <div className="chunkchat">
+    <div className={`chunkchat${whole ? ' doclevel' : ''}`}>
+      {/* The panel names itself and carries its own Close. In the right-hand rail it is
+          a thing beside the document rather than a block under it, and a reader coming
+          to it cold needs to be told, once, that asking cannot change anything. */}
+      <div className="chathead">
+        <span className="ctitle">
+          <Icon name="chat" size={13} /> {whole ? 'About this document' : 'About this section'}
+        </span>
+        <span className="cro" title="Asking never edits, regenerates or approves anything.">read-only</span>
+        <button className="ghostbtn tiny closex" onClick={onClose}>Close</button>
+      </div>
+      {!has && (
+        <p className="hint tight">{CHAT_PITCH[whole ? 'document' : 'section']}</p>
+      )}
       {has && (
         <div className="chatlog">
           {messages.map((m) => (
@@ -4336,16 +4519,17 @@ function ChunkChat({ messages, pending, open, text, web, asking, onOpen, onClose
         <div className="gactions">
           <button className="primary" disabled={asking || pending || !text.trim()}
                   onClick={onSend}>{pending ? 'Answering…' : 'Ask'}</button>
+          {/* Close moved to the panel header — in a sticky right-hand rail the footer
+              can be scrolled past, and a way out that you have to scroll to find is not
+              one. */}
           <label className="checkline" title="Checks the answer against live sources. Turn it off for questions about this document's own choices, where the web has nothing to add.">
             <input type="checkbox" checked={web} disabled={asking || pending}
                    onChange={(e) => onWeb(e.target.checked)} />
             <span>Check the web too</span>
           </label>
-          <button className="ghostbtn tiny" onClick={onClose}>Close</button>
         </div>
-        <span className="hint">
-          Read-only. Asking never edits, regenerates or approves anything — if the answer
-          doesn't convince you, regenerate with a reason exactly as before.
+        <span className="hint tight">
+          If the answer doesn't convince you, regenerate with a reason exactly as before.
         </span>
       </div>
     </div>

@@ -48,7 +48,70 @@
   --font: "Inter var", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Helvetica Neue", sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ---- SECTION HUE, the default ----
+     Every hue-aware component reads these three, so anything that is not inside a
+     `[data-sec]` or `[data-cat]` block still paints in the action accent exactly as
+     before. Nothing has to opt out. */
+  --hue: var(--accent);
+  --hue-soft: var(--accent-soft);
+  --hue-line: var(--accent-line);
 }
+
+/* ============================================================================
+   SECTION HUES — colour that carries information, not decoration
+
+   The rule above still holds: ONE accent means "this is the action", and every button,
+   link and focus ring in the app stays indigo. What was missing is a different job that
+   colour does well — telling you WHERE YOU ARE. Eight sections rendered in one blue
+   meant the rail, the header tile and the badge on Skills were indistinguishable from
+   the same three things on Prerequisites, so the only thing marking your place was a
+   slightly lighter background.
+
+   So each section owns a hue, and it is spent in exactly three places: the nav icon and
+   marker when that section is current, the badge on its rail entry, and the icon tile on
+   its page header. That is enough for the rail to read as a map and for a screenshot to
+   be placeable at a glance — and few enough that nothing turns into a paint chart.
+
+   Hues are set as CUSTOM PROPERTIES on the element, not as one rule per section per
+   component. A component asks for `var(--hue)` once; adding a section is three lines
+   here and nothing anywhere else.
+   ============================================================================ */
+[data-sec="curriculum"] { --hue: #7c93ff; --hue-soft: rgba(124,147,255,.14);
+                          --hue-line: rgba(124,147,255,.42); }
+[data-sec="generate"]   { --hue: #a97bff; --hue-soft: rgba(169,123,255,.15);
+                          --hue-line: rgba(169,123,255,.44); }
+[data-sec="history"]    { --hue: #46bfd8; --hue-soft: rgba(70,191,216,.14);
+                          --hue-line: rgba(70,191,216,.40); }
+[data-sec="team"]       { --hue: #5aa9f0; --hue-soft: rgba(90,169,240,.14);
+                          --hue-line: rgba(90,169,240,.42); }
+[data-sec="skills"]     { --hue: #e8b357; --hue-soft: rgba(232,179,87,.14);
+                          --hue-line: rgba(232,179,87,.40); }
+[data-sec="prereqs"]    { --hue: #3ecfae; --hue-soft: rgba(62,207,174,.13);
+                          --hue-line: rgba(62,207,174,.38); }
+[data-sec="rules"]      { --hue: #ef85b0; --hue-soft: rgba(239,133,176,.14);
+                          --hue-line: rgba(239,133,176,.42); }
+[data-sec="settings"]   { --hue: #9aa6bd; --hue-soft: rgba(154,166,189,.13);
+                          --hue-line: rgba(154,166,189,.36); }
+
+/* ---- CATEGORY HUES, for the four things a skill can govern ----
+   The same idea one level down. A brief of six skills came out as six identical blue
+   tiles under four identical blue headers, so the grouping the author had done — the
+   sequence, the depth, what the course shows, what review keeps returning — was
+   carried by the heading text alone and vanished the moment you scanned. The three
+   legacy labels keep a neutral slate: they are real and still in force, and giving them
+   a category colour would claim a grouping their author never chose. */
+[data-cat="teaching_flow"]       { --hue: #a97bff; --hue-soft: rgba(169,123,255,.15);
+                                   --hue-line: rgba(169,123,255,.44); }
+[data-cat="teaching_guidelines"] { --hue: #7c93ff; --hue-soft: rgba(124,147,255,.14);
+                                   --hue-line: rgba(124,147,255,.42); }
+[data-cat="examples_visuals"]    { --hue: #3ecfae; --hue-soft: rgba(62,207,174,.13);
+                                   --hue-line: rgba(62,207,174,.38); }
+[data-cat="reviewer"]            { --hue: #e8b357; --hue-soft: rgba(232,179,87,.14);
+                                   --hue-line: rgba(232,179,87,.40); }
+[data-cat="content"], [data-cat="structure"], [data-cat="style"]
+                                 { --hue: #9aa6bd; --hue-soft: rgba(154,166,189,.13);
+                                   --hue-line: rgba(154,166,189,.36); }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
@@ -138,17 +201,26 @@ body::before {
           font-weight: 550; color: var(--muted); cursor: pointer;
           transition: background .14s, color .14s; }
 .navtab:hover { background: var(--card); color: var(--text); }
-.navtab.on { background: var(--card); color: var(--strong); font-weight: 600; }
+/* CURRENT SECTION: its own hue, in three places and no more — the marker, the icon and
+   the badge — over a wash faint enough to stay a surface rather than become a button.
+   Eight sections in one blue meant the rail could tell you that SOMETHING was selected
+   and never which kind of thing it was. */
+.navtab.on { background: linear-gradient(90deg, var(--hue-soft), transparent 78%),
+                         var(--card);
+             color: var(--strong); font-weight: 600; }
 .navtab.on::before { content: ''; position: absolute; left: -8px; top: 50%;
                      transform: translateY(-50%); width: 3px; height: 17px;
-                     border-radius: 99px; background: var(--accent); }
+                     border-radius: 99px; background: var(--hue); }
 .navtab .tabicon { color: var(--faint); transition: color .14s; }
-.navtab:hover .tabicon { color: var(--muted); }
-.navtab.on .tabicon { color: var(--accent); }
+/* Hover shows the section's own colour too, so the rail previews where you are going
+   instead of going grey-to-grey. */
+.navtab:hover .tabicon { color: var(--hue); }
+.navtab.on .tabicon { color: var(--hue); }
 .tablabel { flex: 1; min-width: 0; }
 .tabbadge { font-size: 11px; font-weight: 600; color: var(--faint);
-            background: var(--card2); border-radius: 999px; padding: 1px 7px; }
-.navtab.on .tabbadge { color: var(--accent); background: var(--accent-soft); }
+            background: var(--card2); border-radius: 999px; padding: 1px 7px;
+            transition: color .14s, background .14s; }
+.navtab.on .tabbadge { color: var(--hue); background: var(--hue-soft); }
 .main { min-width: 0; }
 .main > .card:first-child { margin-top: 0; }
 
@@ -224,8 +296,11 @@ body::before {
 .bghead { display: flex; align-items: center; gap: 11px; padding: 10px 12px 10px 14px;
           border-bottom: 1px solid var(--line); background: var(--card); }
 .bgicon { display: grid; place-items: center; width: 28px; height: 28px; flex: none;
-          border-radius: 8px; color: var(--accent);
-          background: var(--accent-soft); border: 1px solid var(--accent-line); }
+          border-radius: 8px; color: var(--hue);
+          background: var(--hue-soft); border: 1px solid var(--hue-line); }
+/* A hairline of the category's colour down the left edge of its group, so four groups
+   read as four things while scrolling rather than as one long list with headings in it. */
+.bgroup { border-left: 2px solid var(--hue-line); }
 /* The category's explanation is a TITLE, not a second line of type. Printed under every
    header it turned a four-group brief into eight sentences of instruction. */
 .bgtitle { font-size: 13.5px; font-weight: 650; color: var(--strong); cursor: help; }
@@ -252,8 +327,8 @@ body::before {
 .filebtn:hover:not(:disabled) { background: var(--card); }
 .filebtn:disabled { cursor: default; }
 .fileicon { position: relative; display: grid; place-items: center; flex: none;
-            width: 42px; height: 42px; border-radius: 11px; color: var(--accent);
-            background: var(--accent-soft); border: 1px solid var(--accent-line);
+            width: 42px; height: 42px; border-radius: 11px; color: var(--hue);
+            background: var(--hue-soft); border: 1px solid var(--hue-line);
             transition: color .14s, background .14s; }
 .skill.draft .fileicon { color: var(--warn); background: var(--warn-soft);
                          border-color: var(--warn-line); }
@@ -264,8 +339,8 @@ body::before {
             background: var(--card2); border: 1px solid var(--line); color: var(--muted);
             transition: transform .18s ease, color .14s; }
 .filebtn:hover .filechev { color: var(--text); border-color: var(--line2); }
-.skill.open .filechev { transform: rotate(90deg); color: var(--accent);
-                        border-color: var(--accent-line); }
+.skill.open .filechev { transform: rotate(90deg); color: var(--hue);
+                        border-color: var(--hue-line); }
 .filemain { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .filename { font-size: 13.5px; font-weight: 600; color: var(--strong); line-height: 1.45;
             overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
@@ -434,16 +509,53 @@ body::before {
      The tabs become a WRAPPING ROW of their own width. Turning only the container into
      a row left every tab at `width: 100%`, so each still took a full line and the strip
      was as tall as the rail it replaced, with three columns of dead space beside it. */
-  .shell { grid-template-columns: 1fr; }
+  /* `minmax(0, 1fr)`, NOT `1fr`. A bare `1fr` is `minmax(auto, 1fr)`, and `auto` floors
+     the track at its content's min-content width — so one wide descendant (the
+     curriculum sheet is 900px by design) grew the single column past the viewport and
+     took the WHOLE PAGE with it. Every section then rendered at that width: the top bar
+     ran off the right edge, the nav strip's second row was clipped, and the body
+     scrolled sideways on a phone. The desktop track was already written this way; the
+     mobile override was the one that was not. */
+  .shell { grid-template-columns: minmax(0, 1fr); }
   .nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 14px 20px;
          padding-bottom: 16px; border-bottom: 1px solid var(--line); }
-  .navsec { flex: 1 1 220px; }
-  .navtabs { flex: 1 1 100%; flex-direction: row; flex-wrap: wrap; gap: 4px; }
-  .navtabs .navlabel { width: 100%; }
+  .navsec { flex: 1 1 220px; min-width: 0; }
+  /* A GRID, not a wrapping row. Wrapped, the eight tabs landed wherever they fitted —
+     three on one line, three on the next, two on a third, each a different width — so
+     the strip that replaces the rail had no columns to scan down. Auto-fill gives even
+     tracks at every width and degrades to one column on a narrow phone. */
+  .navtabs { flex: 1 1 100%; display: grid; gap: 4px;
+             grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); }
+  .navtabs .navlabel { grid-column: 1 / -1; }
   .navtabs .navtab { width: auto; }
   /* The marker hangs outside the button, which has nothing to hang into in a row. */
   .navtab.on::before { display: none; }
-  .navtab.on { box-shadow: inset 0 -2px 0 var(--accent); }
+  .navtab.on { box-shadow: inset 0 -2px 0 var(--hue); }
+}
+
+/* ---------- Phone ----------
+   Below ~560px the page is one column of content and nothing else fits beside it. The
+   app had no breakpoint here at all, so a phone got the tablet layout inside a 342px
+   viewport: 26px of card padding on each side of a 290px measure, and a top bar whose
+   three items could not sit on one line and were simply cut off. */
+@media (max-width: 560px) {
+  .app { padding: 0 14px 64px; }
+  .card { padding: 18px 16px; border-radius: var(--r); }
+  .topbar { padding: 11px 2px; margin: 0 -2px 14px; gap: 8px; }
+  .brand { font-size: 14.5px; gap: 8px; }
+  /* The signed-in ADDRESS goes, the identity does not: on this width it is 18
+     characters of unbreakable text competing with the one control that matters, and the
+     avatar plus Sign out already answer "who am I / how do I leave". */
+  .uemail .etext { display: none; }
+  .userbox { gap: 8px; font-size: 12.5px; }
+  .navtabs { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+  .navsec { flex: 1 1 100%; }
+  h2 { font-size: 16px; }
+  .pagehead { gap: 12px; margin-bottom: 14px; }
+  .pagehead > div { flex: 1 1 100%; }
+  .pagehead .primary { width: 100%; justify-content: center; }
+  /* A control that is 40px tall on a desktop is a target you can miss on a phone. */
+  .primary, .ghostbtn { padding: 9px 14px; }
 }
 
 /* ---------- Top bar (sticky, blurred) ---------- */
@@ -508,8 +620,8 @@ h2 {
    its rail entry are visibly the same thing. */
 .hicon {
   display: grid; place-items: center; width: 28px; height: 28px; flex: none;
-  border-radius: 8px; color: var(--accent);
-  background: var(--accent-soft); border: 1px solid var(--accent-line);
+  border-radius: 8px; color: var(--hue);
+  background: var(--hue-soft); border: 1px solid var(--hue-line);
 }
 /* h2 used to carry the whole gap below it; a header followed by a paragraph then had
    two different spacings depending on whether the paragraph existed. */
@@ -737,15 +849,45 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
 .sheetlike .c-deck, .sheetlike .c-act { padding-top: 8px; }
 @media (max-width: 1100px) {
   /* Below this the seven columns stop being readable, so the row becomes a stacked
-     card — still every field visible, no expander to click. */
-  .sheetlike .currow { grid-template-columns: 74px 1fr 92px 30px; }
-  .sheetlike .c-name { grid-column: 2 / -1; }
-  .sheetlike .c-kt, .sheetlike .c-ppt { grid-column: 1 / -1; }
-  .sheetlike .curhead .c-kt, .sheetlike .curhead .c-ppt,
-  .sheetlike .curhead .c-topic { display: none; }
-  .sheetlike .c-topic { grid-column: 2 / -1; }
+     card — still every field visible, no expander to click.
+     AND THE 900px FLOOR HAS TO GO WITH THEM. It stayed, so the collapsed four-column
+     row was still held open to 900px inside a scrolling container: the sheet went on
+     scrolling sideways at every width below the one where scrolling was the answer,
+     and the four cells were stretched across a row two and a half viewports wide. */
+  /* TWO COLUMNS, and the row reads top to bottom: number and name, then topic, then the
+     takeaways, then the link, then the deck and its remove control on one last line.
+     The old collapse kept a four-column grid and spanned `c-name` to the last track, so
+     the DECK cell was pushed onto a row of its own and sat halfway across the card with
+     the ✕ stranded to its right. */
+  .sheetlike .currow { grid-template-columns: 74px minmax(0, 1fr); min-width: 0;
+                       gap: 7px 10px; padding: 12px 12px; }
+  .curtable { overflow-x: visible; }
+  /* PLACED EXPLICITLY, because the source order is not the stacked order. Topic sits
+     between the number and the name in the sheet's columns, so letting the cells flow
+     put the full-width Topic on row 2 and pushed the NAME to row 3 column 2 — indented,
+     alone, with an empty 74px cell beside it. Naming the rows costs seven lines and
+     removes the guesswork. */
+  .sheetlike .c-no    { grid-area: 1 / 1; }
+  .sheetlike .c-name  { grid-area: 1 / 2; }
+  .sheetlike .c-topic { grid-area: 2 / 1 / 3 / -1; }
+  .sheetlike .c-kt    { grid-area: 3 / 1 / 4 / -1; }
+  .sheetlike .c-ppt   { grid-area: 4 / 1 / 5 / -1; }
+  /* The column headings go with the columns. Two labels above a five-line stacked card
+     name the wrong cells, and every input already carries the placeholder that says
+     what it is. */
+  .sheetlike .curhead { display: none; }
+  .sheetlike .currow input.c-no { max-width: none; }
+  .sheetlike .c-deck { grid-area: 5 / 1; padding-top: 0; }
+  .sheetlike .c-act { grid-area: 5 / 2; justify-content: flex-start; padding-top: 0; }
 }
 .currow:first-child { border-top: none; }
+/* Once the row has stacked it is a card, so it gets a card's hover — at seven inline
+   columns the row was obvious, at five stacked lines the boundary between one session
+   and the next is the only thing telling you where you are. */
+@media (max-width: 1100px) {
+  .sheetlike .currow:hover { background: var(--card); }
+  .sheetlike .currow { border-top-color: var(--line2); }
+}
 .curhead { background: transparent; font-size: 11px; text-transform: uppercase;
            letter-spacing: .04em; color: var(--muted); font-weight: 700; }
 .currow.dirty { background: rgba(124,147,255,.08); }
@@ -756,9 +898,27 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
 .c-act { display: flex; justify-content: center; }
 .ghostbtn.tiny { padding: 4px 8px; font-size: 12px; }
 .curempty { padding: 16px; text-align: center; }
-@media (max-width: 900px) {
-  .currow { grid-template-columns: 54px 1fr 92px 34px; }
-  .currow .c-topic, .curhead .c-topic { display: none; }
+/* NO 900px BLOCK. There used to be one, re-columning `.currow` and hiding `.c-topic` —
+   and `.currow` exists in exactly one place in the app, inside `.curtable.sheetlike`,
+   so `.sheetlike .currow` outranked its grid every time and the only rule that ever
+   took effect was the one hiding the Topic. That hid the topic INPUT: a field the user
+   has to read and edit disappeared at every width below 900px, with the header label
+   gone too, so nothing said the column existed. Dropping a heading that no longer fits
+   is housekeeping; dropping the data is losing it. The 1100px and 560px blocks above
+   already lay this row out at every width. */
+@media (max-width: 560px) {
+  /* One field per line. Below ~560px even the number and the name cannot share a row
+     without the name becoming a 200px slot for a sentence. */
+  .sheetlike .currow { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 12px 10px; }
+  /* `grid-area: auto` FIRST, to undo the explicit rows placed above — otherwise every
+     cell keeps the row it was assigned for the two-column layout and the single column
+     comes out full of holes. */
+  .sheetlike .currow > * { grid-area: auto; grid-column: 1 / -1; }
+  /* `input.c-no`, not `.c-no`: the cell is an <input> in the row and a <span> in the
+     head, and `.currow input { … }` was already reaching it at higher specificity, so a
+     two-class selector could not hold a session number to the width of a session
+     number. */
+  .sheetlike .currow input.c-no { max-width: 110px; }
 }
 
 .rtitle { font-size: 13px; font-weight: 600; }
@@ -845,6 +1005,46 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .review-chunk.ok > summary { color: var(--muted); font-weight: 600; }
 .review-chunk.ok > summary .okmark { color: var(--ok); }
 .review-chunk .md { max-height: 460px; }
+/* The title takes whatever room is left so the Ask control can pin to the right edge of
+   the header without the two fighting over a long takeaway name. */
+.review-chunk > summary .clabel { flex: 1 1 auto; min-width: 0; }
+/* ASK, in the header. Quiet by default — asking is not an action on the document — and
+   accented once there is a conversation behind it, which is the only state where the
+   button is also a piece of information. */
+.askbtn { flex: none; margin-left: auto; display: inline-flex; align-items: center;
+  gap: 6px; font: inherit; font-size: 12px; font-weight: 600; color: var(--muted);
+  background: var(--card2); border: 1px solid var(--line); border-radius: 999px;
+  padding: 4px 11px; cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s; }
+.askbtn:hover { color: var(--strong); border-color: var(--line2); background: var(--card); }
+.askbtn.has { color: var(--accent); border-color: var(--accent); }
+
+/* THE SECTION AND THE CONVERSATION ABOUT IT, SIDE BY SIDE.
+   The answer is about the text on screen, so a layout that hides the text to show the
+   answer is the one that cannot work — you end up scrolling between the claim and the
+   reply to check it. One column until a question is open; two once there is something
+   to read beside the document. */
+.chunkwork { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px;
+             align-items: start; }
+.chunkwork.split { grid-template-columns: minmax(0, 1.32fr) minmax(320px, 1fr); }
+/* Taller when split: the pane is narrower, so the same slide needs more rows, and a
+   460px window beside a full-height conversation reads as the document being the
+   secondary thing. */
+.chunkwork.split .md { max-height: min(74vh, 640px); }
+.chunkwork.split > .chunkchat { position: sticky; top: 14px; margin: 12px 0 0;
+  max-height: min(74vh, 640px); display: flex; flex-direction: column; }
+/* The log scrolls, the header and the box stay put — so the question you are typing and
+   the way out are always on screen however long the conversation gets. */
+.chunkwork.split > .chunkchat .chatlog { flex: 1 1 auto; min-height: 0;
+  overflow-y: auto; margin-bottom: 10px; padding-right: 4px; }
+.chunkwork.split > .chunkchat .chatbox { flex: none; }
+/* Under ~1180px two readable columns do not fit, so it stacks — the old layout, kept
+   for the width where it is the right one. */
+@media (max-width: 1180px) {
+  .chunkwork.split { grid-template-columns: minmax(0, 1fr); }
+  .chunkwork.split > .chunkchat { position: static; max-height: none; }
+  .chunkwork.split .md { max-height: 460px; }
+}
 .chunk-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .chunk-actions .primary, .chunk-actions .ghostbtn { margin-top: 0; }
 .approved-badge { display: inline-flex; align-items: center; gap: 6px; color: var(--ok);
@@ -898,6 +1098,28 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
    only the hover says it can be clicked. */
 button.tag { background: none; font-family: inherit; line-height: inherit; cursor: pointer; }
 button.tag:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+/* ---- TAGS THAT MEAN SOMETHING ----
+   Two distinctions the Agent-rules page explains in prose and then rendered as four
+   identical grey pills, so the explanation was the only place the difference existed.
+     · provenance — a person's correction vs one the grader inferred. Same channel,
+       different authority; the page already says the model should be able to tell them
+       apart, and so should the reader.
+     · scope — HOUSE binds every course on the instance and COURSE is contained to one.
+       House is the consequential setting (it is what the migration warning is about), so
+       it takes the warm tag and the contained one takes the calm one. */
+.tag.src-human   { color: var(--text); border-color: var(--line2);
+                   background: rgba(255,255,255,.045); }
+.tag.src-auto    { color: var(--faint); border-color: var(--line); }
+.tag.scope-house { color: var(--warn); border-color: var(--warn-line);
+                   background: var(--warn-soft); }
+.tag.scope-course{ color: var(--ok); border-color: var(--ok-line);
+                   background: var(--ok-soft); }
+button.tag.scope-house:hover:not(:disabled),
+button.tag.scope-course:hover:not(:disabled) { color: var(--strong); }
+/* The report's `checked` / `judged` / `unreported` tags are the same distinction one
+   page over — an exact check, a reader's judgement, or nobody — so they are painted the
+   same way rather than inventing a second vocabulary for it. */
+.panel.skillrep .setmain .tag { color: var(--faint); }
 button.tag:disabled { cursor: default; opacity: .5; }
 
 /* ---------- Auth ----------
@@ -1084,6 +1306,16 @@ button.tag:disabled { cursor: default; opacity: .5; }
 .chunkchat-cta .hint { margin: 0; max-width: 80ch; }
 .chunkchat { border: 1px solid var(--line); border-radius: var(--r);
   background: var(--sunken); padding: 12px; margin: 10px 0 2px; }
+.chunkchat.doclevel { margin: 4px 0 14px; }
+.chathead { display: flex; align-items: center; gap: 9px; margin-bottom: 10px;
+  padding-bottom: 9px; border-bottom: 1px solid var(--line); }
+.chathead .ctitle { display: inline-flex; align-items: center; gap: 6px; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .05em; color: var(--faint); font-weight: 700; }
+/* Said on the panel itself, not only in the footer copy: the whole value of asking is
+   that it costs nothing, and that has to be visible before you type, not after. */
+.chathead .cro { font-size: 10.5px; letter-spacing: .03em; color: var(--faint);
+  border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; }
+.chathead .closex { margin-left: auto; margin-top: 0; flex: none; }
 .chatlog { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
 .chatmsg { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: start; }
 .chatmsg .who { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em;
@@ -1093,6 +1325,13 @@ button.tag:disabled { cursor: default; opacity: .5; }
 .chatmsg.agent .body .md { color: var(--muted); }
 .chatmsg.failed .body { color: var(--warn); }
 .chatmsg .chip { margin-left: 6px; vertical-align: middle; }
+/* In the right-hand rail a 58px gutter for the word "AGENT" is a fifth of the column, so
+   the speaker label goes ABOVE its message and the text gets the full width. */
+.chunkwork.split .chatmsg { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+.chunkwork.split .chatmsg .who { padding-top: 0; }
+.chunkwork.split .chatmsg .body { font-size: 13px; line-height: 1.6; }
+.chunkwork.split .chatmsg .body .md { padding: 0; margin: 0; border: 0;
+  background: none; max-height: none; overflow: visible; font-size: 13px; }
 .chatsuggest { margin-top: 10px; padding: 10px; border-radius: var(--r-sm);
   border: 1px solid var(--line2); background: var(--card); }
 .chatsuggest .sf { margin: 6px 0 8px; color: var(--text); font-style: italic; }
@@ -1159,3 +1398,26 @@ summary:hover::before { border-left-color: var(--accent); }
                      background: var(--card2); border: 1px solid var(--line); }
 .emptystate b { color: var(--text); font-size: 14px; font-weight: 600; }
 .emptystate p { margin: 0; font-size: 13px; max-width: 46ch; }
+
+/* ---------- The course brief, rule by rule ----------
+   The rubric's `course_brief_adherence` is one number over a whole brief; this is the
+   list it summarises. Drawn as a panel of its own and placed ABOVE the rubric, because
+   "were the rules I wrote applied?" is a different question from "how good is this
+   document", and it is the only one on the page whose answer differs per course. */
+.panel.skillrep > summary .chip { margin-left: 2px; }
+.skillrepintro { padding: 4px 2px 10px; }
+/* The rule itself gets its own line under the badges, so six rows scan as one column of
+   verdicts with the text beneath each — `display: block` alone does nothing here, since
+   a block child of a flex row is still a flex item. */
+.panel.skillrep .setrow .dimname { flex: 1 0 100%; margin-top: 3px; color: var(--text);
+  font-weight: 500; }
+.panel.skillrep .setmain { flex-wrap: wrap; row-gap: 5px; }
+/* The instructions an author grouped under one skill: numbered, because for a teaching
+   flow the ORDER is the instruction and a bullet list says nothing about order. */
+.skillsteps { margin: 6px 0 0 0; padding-left: 22px; color: var(--muted); font-size: 12.5px; }
+.skillsteps li { margin: 2px 0; }
+/* The quote that settles it. A verdict of "broken" with nothing under it is an opinion;
+   with the slide and the offending text it is a finding the reader can go and check. */
+.panel.skillrep .evidence { margin-top: 5px; padding-left: 10px;
+  border-left: 2px solid var(--warn, #d08b2c); color: var(--muted); }
+.panel.skillrep .setrow.pass .evidence { border-left-color: var(--ok-line, #2f6b4d); }

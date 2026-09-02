@@ -221,6 +221,35 @@ def applicable(course: str, session=None) -> list[dict]:
     return [s for t, _, _ in _TIERS for s in tiers[t]]
 
 
+def _ref_map(tiers: dict) -> dict:
+    """`{skill id: "S1"}` in precedence order — the same order `applicable` returns.
+
+    A SHORT NAME FOR ONE SKILL, because the grade is now per skill and something has to
+    name the one being ruled on. Quoting the text back does not work: a skill may be a
+    paragraph with four numbered instructions under it, and a model asked to echo it
+    paraphrases. The database id is stable but says nothing to a person reading the
+    report. So the brief carries the label, the verdict comes back against it, and the
+    report joins the two.
+    """
+    out: dict = {}
+    for i, sk in enumerate([s for t, _, _ in _TIERS for s in tiers.get(t) or []], start=1):
+        sid = sk.get("id")
+        if sid is not None:
+            out[sid] = f"S{i}"
+    return out
+
+
+def numbered(course: str, session=None) -> list[dict]:
+    """`applicable()`, each skill carrying the `ref` the brief and the verdicts use.
+
+    Same list, same order, same rows — the label is the only addition, and it is derived
+    from the position, so the brief the judge reads and the report a reviewer reads
+    cannot be numbering two different things.
+    """
+    return [{**sk, "ref": f"S{i}"}
+            for i, sk in enumerate(applicable(course, session), start=1)]
+
+
 # --------------------------------------------------------------------------- #
 # the brief
 # --------------------------------------------------------------------------- #
@@ -248,8 +277,13 @@ def _indented(text: str, first: str, rest: str) -> list[str]:
     return out
 
 
-def _render(skill: dict, out: list[str]) -> None:
+def _render(skill: dict, out: list[str], ref: str | None = None) -> None:
     """One skill: its own body, then the points the author grouped under it.
+
+    `ref` prints the skill's short label ahead of it — used for the judge's copy of the
+    brief, which has to be able to return a verdict naming one skill. The writer's copy
+    is rendered without it: a label is a grading handle, and a prompt that reads like a
+    numbered form invites the model to answer it as one.
 
     LAID OUT AS WRITTEN. A skill is a fragment of the prompt, so an author's paragraph
     stays a paragraph and their list stays a list — flattening it to one line here undid,
@@ -261,10 +295,12 @@ def _render(skill: dict, out: list[str]) -> None:
     """
     lines = instructions_of(skill)
     text = str(skill.get("text") or "")
+    marker = f"- [{ref}] " if ref else "- "
+    pad = " " * len(marker)
     if len(lines) <= 1:
-        out += _indented(lines[0] if lines else text, "- ", "  ")
+        out += _indented(lines[0] if lines else text, marker, pad)
         return
-    out += _indented(text, "- ", "  ")
+    out += _indented(text, marker, pad)
     for i, line in enumerate(lines, start=1):
         out += _indented(line, f"    {i}. ", "       ")
 
@@ -303,7 +339,7 @@ def reminder(course: str, session=None) -> str:
         + body)
 
 
-def block(course: str, session=None, compact: bool = False) -> str:
+def block(course: str, session=None, compact: bool = False, refs: bool = False) -> str:
     """The skills, composed as ONE BRIEF for the prompt. Empty when there are none.
 
     Composed, not listed. This used to emit a flat run of bullets, and four terse
@@ -319,6 +355,10 @@ def block(course: str, session=None, compact: bool = False) -> str:
     tiers = resolve(course, session)
     if not any(tiers.values()):
         return ""
+    # `refs` labels each skill S1, S2, … — for the JUDGE's copy, which has to be able to
+    # name the one skill a verdict is about. Derived from the same precedence ordering
+    # `numbered()` uses, so a verdict on S3 and the report's third row are the same rule.
+    ref_of = _ref_map(tiers) if refs else {}
     # `compact` drops the preamble and keeps the instructions — for `reminder`, where
     # the framing has already been said and only the lines themselves are wanted.
     out = [] if compact else [f"# HOW '{course}' IS WRITTEN — the course brief",
@@ -367,11 +407,11 @@ def block(course: str, session=None, compact: bool = False) -> str:
             if gloss_c:
                 out.append(gloss_c)
             for s in batch:
-                _render(s, out)
+                _render(s, out, ref_of.get(s.get("id")))
         for cat, batch in by_cat.items():           # a category added later, still shown
             out += ["", f"### {cat.upper()}"]
             for s in batch:
-                _render(s, out)
+                _render(s, out, ref_of.get(s.get("id")))
     return "\n".join(out) + "\n"
 
 

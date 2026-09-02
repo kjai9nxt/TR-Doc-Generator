@@ -101,6 +101,14 @@ def _contradicted(text: str, facts: dict) -> list[str]:
     return hits
 
 
+# The dimension the per-skill report summarises. Imported from the report module rather
+# than spelled twice: the score written here and the rows built there are one verdict.
+try:
+    from graders.skill_report import DIMENSION as DIMENSION_BRIEF
+except Exception:                                    # pragma: no cover
+    DIMENSION_BRIEF = "course_brief_adherence"
+
+
 def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None = None,
           enforce_time: bool = True, course: str | None = None,
           profile: dict | None = None) -> dict:
@@ -123,11 +131,14 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
         # THE SESSION'S BRIEF TOO. A skill written for one session is part of what this
         # document was required to do, so a judge that cannot see it marks the document
         # against a brief the writer was not working from.
-        _brief = _skills_mod.block(course, getattr(session, "number", None)) if course else ""
+        # WITH LABELS (refs=True). The grade is now per skill, so the judge has to be
+        # able to name the one it is ruling on — see skills._ref_map.
+        _brief = _skills_mod.block(course, getattr(session, "number", None),
+                                   refs=True) if course else ""
     except Exception:
         _brief = ""
     if not _brief.strip():
-        exclude = exclude + ("course_brief_adherence",)
+        exclude = exclude + (DIMENSION_BRIEF,)
     web_note = ""
     # Live web check for market_parity + content_recency: OpenRouter's ":online"
     # variant gives the judge web search (uses the existing OpenRouter key). Only
@@ -274,6 +285,24 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
                 "outright violation as a blocking issue. A document that follows the "
                 "brief loosely should be marked DOWN on that dimension even when nothing "
                 "is broken badly enough to block.\n"
+                # ONE VERDICT PER SKILL, and this is the part the course owner actually
+                # reads. A single 4/5 over the whole brief says a line was missed and
+                # withholds which line — so the one action it implies is the one thing
+                # it does not support. Each skill carries a label; rule on each label.
+                "\nAND RETURN A VERDICT FOR EVERY LABELLED SKILL, in `brief_verdicts`:\n"
+                '  "brief_verdicts": [{"ref": "S1", "kept": true, "evidence": ""}, '
+                '{"ref": "S2", "kept": false, "evidence": "Slide 14 content: \'a class '
+                'component keeps state in this.state\'"}]\n'
+                "  · ONE ENTRY PER LABEL. Every [S…] in the brief below, none invented.\n"
+                "  · `kept: false` REQUIRES `evidence`: the slide number and the text "
+                "that breaks the skill, quoted. A verdict of false with no quote is not "
+                "a finding — if you cannot quote it, the skill was kept.\n"
+                "  · `kept: true` takes an empty `evidence`.\n"
+                "  · Judge a matter of degree GENEROUSLY, as above. A skill is broken "
+                "when the document goes against it, not when it could have followed it "
+                "more enthusiastically.\n"
+                "  · The `course_brief_adherence` score is computed FROM these verdicts, "
+                "so they and your score must tell the same story.\n"
                 f"\n{brief}")
     except Exception:
         pass
@@ -437,6 +466,34 @@ Grade now. Return only the contract JSON."""
             missing = _unscored(result, dims)
     if contradicted:
         result["contradicted_claims"] = contradicted
+
+    # ---- the per-skill report, and the brief score DERIVED FROM IT -----------------
+    # The course owner's question is "which of my rules did this document keep?", and a
+    # single 4/5 over the whole brief cannot answer it. So the verdicts asked for above
+    # are joined with the checks a machine can settle, and the dimension's score is
+    # COMPUTED from the result rather than taken as a second, independent opinion.
+    #
+    # Why derived and not just reported alongside: when the two were separate the judge
+    # could return 5/5 while the row list held a broken rule, and a reviewer had no way
+    # to know which of its own outputs to believe. A number that is a summary of the list
+    # cannot contradict the list.
+    if DIMENSION_BRIEF not in exclude:
+        try:
+            from graders import skill_report as _sr
+            rep = _sr.build(doc, course=course, session=session, judge_result=result)
+            if rep:
+                result["skill_report"] = rep
+                if rep.get("score") is not None:
+                    prev = _score_of(result, DIMENSION_BRIEF)
+                    result.setdefault("scores", {})[DIMENSION_BRIEF] = {
+                        "score": rep["score"],
+                        "justification": _sr.justification(rep),
+                        # Kept when it differs, because a judge that scored the brief 5
+                        # and then listed a rule it broke is telling you something about
+                        # the grade — and silently overwriting it hides that.
+                        **({"judge_said": prev} if prev != rep["score"] else {})}
+        except Exception as e:
+            llm.log_debug("PER-SKILL REPORT FAILED", repr(e))
 
     # Recompute the weighted total over the dimensions that were ACTUALLY scored, and
     # renormalise. Counting an unscored dimension as 0 would invent a verdict the judge

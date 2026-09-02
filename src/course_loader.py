@@ -31,6 +31,16 @@ class Session:
     # this document's pages on a topic that already has its own session, and makes that
     # session's deck the second telling. The leakage gate needs to know what they are.
     next_key_takeaways: list[str] = field(default_factory=list)
+    # WHICH CURRICULUM THIS SESSION BELONGS TO. Optional, because the loader is also used
+    # offline against a bare spreadsheet that names no course.
+    #
+    # It exists because graders kept ASKING for it and getting nothing:
+    # `getattr(session, "course", None) or <the instance-wide active course>` was written
+    # in evals/run_sets.py to prefer the run's own course — and since no such attribute
+    # existed it could only ever take the fallback, so a document was evaluated against
+    # whichever course the dropdown happened to be showing. The `or` made the bug
+    # invisible: the code read as though it handled the case it silently never hit.
+    course: str | None = None
 
     @property
     def key_takeaways_count(self) -> int:
@@ -83,12 +93,16 @@ def load_sessions_from_cache(course: str | None = None) -> list[Session] | None:
     """
     try:
         from . import db, app_settings
-        rows = db.curriculum((course or "").strip() or app_settings.course_name() or "default")
+        # Resolved once, and STAMPED ON EVERY SESSION below: a grader handed a session
+        # can then tell which curriculum it came from instead of falling back to the
+        # instance-wide selection, which is one global shared by everyone signed in.
+        name = (course or "").strip() or app_settings.course_name() or "default"
+        rows = db.curriculum(name)
         if rows:
             sessions = [
                 Session(number=r["session_no"], name=r.get("session_name", ""),
                         module=r.get("topic", ""), topic=r.get("topic", ""),
-                        key_takeaways=r.get("key_takeaways", []))
+                        key_takeaways=r.get("key_takeaways", []), course=name)
                 for r in rows
             ]
             sessions.sort(key=lambda s: s.number)
@@ -101,10 +115,14 @@ def load_sessions_from_cache(course: str | None = None) -> list[Session] | None:
         return None
     import json
     data = json.loads(p.read_text())
+    # The on-disk cache is the projection of ONE course, so the name is whatever the
+    # caller asked for; None when they asked for nothing, which is honest — the offline
+    # path genuinely does not know.
+    cached_course = (course or "").strip() or None
     sessions = [
         Session(number=v["number"], name=v.get("name", ""),
                 module=v.get("topic", ""), topic=v.get("topic", ""),
-                key_takeaways=v.get("key_takeaways", []))
+                key_takeaways=v.get("key_takeaways", []), course=cached_course)
         for v in data.values()
     ]
     sessions.sort(key=lambda s: s.number)
@@ -158,6 +176,10 @@ def load_sessions(course_file: str | Path | None = None,
             module=cur_mod,
             topic=cur_top,
             key_takeaways=_split_takeaways(r[i_kt]),
+            # None when the caller read a bare spreadsheet and named no course — the
+            # offline path genuinely does not know, and guessing is what put a document
+            # in front of another course's rules in the first place.
+            course=(course or "").strip() or None,
         ))
     sessions.sort(key=lambda s: s.number)
     return sessions

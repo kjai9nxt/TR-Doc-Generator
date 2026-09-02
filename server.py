@@ -302,6 +302,11 @@ class EvalSetsBody(BaseModel):
     session_no: int
     use_llm: bool = True
     enforce_time: bool = True
+    # WHICH COURSE'S DOCUMENT IS BEING EVALUATED. Optional so an older client still
+    # works, but the UI sends it: without it the eval falls back to the instance-wide
+    # active course, which is one global shared by everyone signed in — so a colleague
+    # opening their course mid-run repointed the grading at their brief.
+    course: str | None = None
 
 
 class GuidedStartBody(BaseModel):
@@ -1778,10 +1783,13 @@ def _read_markdown(docx_path: str) -> str:
     return md.read_text(encoding="utf-8") if md.exists() else ""
 
 
-def _run_eval_sets(job_id: str, session_no: int, use_llm: bool, enforce_time: bool):
+def _run_eval_sets(job_id: str, session_no: int, use_llm: bool, enforce_time: bool,
+                   course: str | None = None):
     try:
         from evals import run_sets
-        sessions = course_loader.load_sessions(None)
+        # The curriculum is read for the course being evaluated, not for whichever one
+        # the instance-wide setting happens to name.
+        sessions = course_loader.load_sessions(None, course=course)
         _, cur, _ = course_loader.neighbours(session_no, sessions)
         out = config.harness()["output"]
         safe = out["docx_filename"].format(N=cur.number, SessionName=cur.name).replace("/", "-")
@@ -1789,7 +1797,8 @@ def _run_eval_sets(job_id: str, session_no: int, use_llm: bool, enforce_time: bo
         if not doc_path.exists():
             raise RuntimeError("No generated doc found for this session — generate it first.")
         doc = json.loads(doc_path.read_text(encoding="utf-8"))
-        report = run_sets.run_on_doc(doc, cur, use_llm=use_llm, enforce_time=enforce_time)
+        report = run_sets.run_on_doc(doc, cur, use_llm=use_llm,
+                                     enforce_time=enforce_time, course=course)
         with _lock:
             JOBS[job_id].update(status="done", result=report)
     except Exception as e:
@@ -1805,7 +1814,8 @@ def eval_sets(body: EvalSetsBody, user: dict = Depends(current_user)):
     with _lock:
         JOBS[job_id] = {"status": "running", "logs": [], "result": None, "error": None}
     threading.Thread(target=_run_eval_sets,
-                     args=(job_id, body.session_no, body.use_llm, body.enforce_time),
+                     args=(job_id, body.session_no, body.use_llm, body.enforce_time,
+                           (body.course or "").strip() or None),
                      daemon=True).start()
     return {"job_id": job_id}
 
@@ -1872,8 +1882,24 @@ _GUIDED_PERSIST_KEYS = (
 )
 
 
+# THE FIELDS THAT ARE LISTS. A run only grows some of these when the reviewer does
+# something — nobody asks a question, so `chat` is never set; nobody writes a standing
+# note, so `standing_notes` is never set. `state.get(k)` then checkpointed None for
+# them, and on resume the key EXISTED holding None, so `state.setdefault("chat", [])`
+# handed back None and appending the reviewer's question raised
+# `'NoneType' object has no attribute 'append'` — every question on every resumed run,
+# and the same for the first standing note. A missing list and an empty list mean the
+# same thing here, so the checkpoint stores the empty one and the restore insists on it.
+_GUIDED_LIST_KEYS = ("chunks", "logs", "labels", "chat", "approved_chunks",
+                     "standing_notes")
+
+
 def _guided_snapshot(state: dict) -> dict:
-    return {k: state.get(k) for k in _GUIDED_PERSIST_KEYS}
+    snap = {k: state.get(k) for k in _GUIDED_PERSIST_KEYS}
+    for k in _GUIDED_LIST_KEYS:
+        if k in snap and not isinstance(snap[k], list):
+            snap[k] = []
+    return snap
 
 
 def _guided_save(gid: str) -> None:
@@ -1917,8 +1943,12 @@ def _guided_rehydrate(gid: str) -> dict | None:
             return GUIDED[gid]
         state = dict(snap)
         state.update(prev=prev, cur=cur, nxt=nxt)
-        state.setdefault("chunks", [])
-        state.setdefault("logs", [])
+        # Coerced on the way IN, not just on the way out: checkpoints written before the
+        # snapshot was fixed still hold None for a list nobody had touched, and this is
+        # the one door those rows come back through.
+        for k in _GUIDED_LIST_KEYS:
+            if not isinstance(state.get(k), list):
+                state[k] = []
         state["logs"] = list(state["logs"]) + [
             "⟳ Server restarted — this guided run was restored from its last checkpoint."]
         state["regen_index"] = None
@@ -2694,6 +2724,11 @@ def _guided_finalize(gid: str):
                 "time": final["time"],
                 "pages": final.get("pages"),
                 "judge": final.get("judge"),
+                # WHICH OF THIS COURSE'S SKILLS THE DOCUMENT KEPT, row by row. Sent
+                # separately from `judge` because it is also built when the judge is off,
+                # and because it is the answer to a different question: not "how good is
+                # this document" but "were the rules I wrote for this course applied?".
+                "skill_report": final.get("skill_report"),
                 "issues": final.get("issues", []),
                 "docx_name": Path(result["docx"]).name,
                 "markdown": _read_markdown(result["docx"]),

@@ -396,8 +396,19 @@ def _chk_skill_adherence(doc, session, sset):
     whether a skill was obeyed.
     """
     from src import skills as _skills
+    # THE COURSE THIS DOCUMENT WAS WRITTEN FOR. `session.course` is now really carried
+    # (src/course_loader.Session) — before it was, this getattr could only ever miss and
+    # every document was scored against whichever course the instance-wide dropdown was
+    # showing. Evaluate a React doc while a colleague has Operating Systems selected and
+    # it was graded against Operating Systems' brief, silently and plausibly.
     course = getattr(session, "course", None) or _active_course_name()
-    approved = _skills.applicable(course)
+    # AND THE SESSION, so session-scoped skills count. A skill written for session 12
+    # governs session 12: the writer was given it (src/pipeline.py resolves with the
+    # session), so a grader that resolves without one marks the document against a
+    # SMALLER brief than it was written under — it can be let off a rule it broke, or
+    # marked down for one it was never told.
+    session_no = getattr(session, "number", None)
+    approved = _skills.applicable(course, session_no)
     rs = [s for s in approved if isinstance((s or {}).get("check"), dict)]
     if not rs and approved:  # prose-only brief -> the judge half scores it alone
         # THE COMMON CASE, and it used to score nothing. Every skill in the live store is
@@ -466,6 +477,45 @@ HYBRID = {
 # --------------------------------------------------------------------------- #
 # generic LLM-judge for qualitative sets
 # --------------------------------------------------------------------------- #
+def _set_context(sset, session) -> str:
+    """Extra prompt material a single set needs, beyond its own criterion text.
+
+    THE BUG THIS FIXES. `skill_adherence` asks "is every approved skill governing this
+    course honoured?" — and this function sent the judge the set's title, its rubric, the
+    session's key takeaways and the document. The SKILLS THEMSELVES were never in the
+    prompt. It was being asked whether a student followed the teacher's instructions
+    without ever being shown the instructions, so it answered from the shape of the
+    document and the wording of the question.
+
+    It survived because the set's own test replaces this whole function with a stub that
+    returns a fixed score: the plumbing was tested, the prompt never was. And because the
+    deterministic half of the same set abstains for prose skills — which is every skill
+    in a real store — that blind answer was, on its own, the entire verdict.
+    """
+    if sset.get("id") != "skill_adherence":
+        return ""
+    try:
+        from src import skills as _skills
+        course = getattr(session, "course", None) or _active_course_name()
+        # Course AND session scope, and labelled — the same brief the writer was given
+        # and the same labels the grade's per-skill report uses, so a reviewer comparing
+        # the eval with the rubric is comparing two readings of one list.
+        brief = _skills.block(course, getattr(session, "number", None), refs=True)
+    except Exception:
+        brief = ""
+    if not brief.strip():
+        return ""
+    return (
+        "\n\nTHE COURSE'S OWN BRIEF — this is what you are scoring the document "
+        "against. It was authored by the course owner, approved before it took effect, "
+        "and given to the writer. Nothing else in this suite measures it.\n"
+        "Score ONLY against lines that are actually below. Where a line is a matter of "
+        "degree, judge generously — a brief describes how a course teaches, it is not a "
+        "checklist with a pass mark. Name the line and quote the text that breaks it in "
+        "your justification; if you cannot quote it, the line was followed.\n"
+        f"\n{brief}")
+
+
 def _llm_score(doc, session, sset, *, enforce_time: bool = True) -> tuple[int, str]:
     h = config.harness()
     m = h["model"]
@@ -490,7 +540,7 @@ def _llm_score(doc, session, sset, *, enforce_time: bool = True) -> tuple[int, s
     user = f"""DIMENSION: {sset['title']}
 WHAT TO CHECK: {sset.get('criterion', sset.get('description',''))}
 SCORING RUBRIC:
-{rubric}{web}{depth}
+{rubric}{web}{depth}{_set_context(sset, session)}
 
 SESSION KEY TAKEAWAYS:
 {json.dumps(session.key_takeaways, ensure_ascii=False)}
@@ -625,7 +675,21 @@ def _learn_from_failures(session, scored: list) -> int:
 
 
 def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool = True,
-               learn: bool = True) -> dict:
+               learn: bool = True, course: str | None = None) -> dict:
+    """`course` is the curriculum THIS DOCUMENT was written from.
+
+    Passed by a caller that knows it — the run that produced the doc does — and stamped
+    onto the session so every checker below reads one course rather than each falling
+    back to the instance-wide selection. That fallback is a single global shared by
+    everyone signed in, so without this a document could be graded against a brief its
+    author never wrote, with nothing in the report to say so.
+    """
+    if course and not getattr(session, "course", None):
+        try:
+            from dataclasses import replace as _replace
+            session = _replace(session, course=course)
+        except Exception:
+            pass
     results = []
     self_evo_thr = 4
     for sset in _load_sets():

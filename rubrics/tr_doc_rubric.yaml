@@ -326,6 +326,10 @@ dimensions:
       under the dimension that owns them. Where a line is a matter of degree, judge
       generously: a brief is a standing description of how the course teaches, not a
       checklist with a pass mark. Quote the line and the text that breaks it.
+      Each line of that brief carries a label ([S1], [S2], …); return a verdict for every
+      one of them in `brief_verdicts` as your instructions describe. THIS SCORE IS THEN
+      COMPUTED FROM THOSE VERDICTS — no rule broken is 5, one is 3, more than one is 1 —
+      so a score here that disagrees with your own verdicts is a score you did not give.
 
 output_contract: |
   Return JSON:

@@ -168,7 +168,14 @@ const ROUTES = {
                                        prereqs: ['Computer Networks'],
                                        prereq: 'Computer Networks',
                                        takeaway: 'Sockets: the API' }] } },
-  '/learned-rules': { rules: [{ text: 'Do not restate the paragraph in the bullets', scope: 'course', session_no: 30, source: 'judge', hits: 2, applies: true }], course: 'Operating Systems' },
+  // TWO rules, and deliberately one of each kind on both axes: a grader-inferred rule
+  // scoped to this course, and a person's correction promoted to house style. One rule
+  // could only ever exercise one branch of the scope/provenance colouring, and a colour
+  // that distinguishes two things cannot be tested against one of them.
+  '/learned-rules': { rules: [
+    { text: 'Do not restate the paragraph in the bullets', scope: 'course', session_no: 30, source: 'judge', hits: 2, applies: true },
+    { text: 'Name the breakpoint whenever a class is called responsive', scope: 'house', session_no: 29, source: 'feedback', hits: 1, applies: true },
+  ], course: 'Operating Systems' },
   // An abandoned run for a DIFFERENT session than the one selected — the situation
   // that produces a document for a session you did not think you asked for.
   '/course-settings': { course: 'Operating Systems', settings: {},
@@ -516,10 +523,32 @@ check('deck status shows per row', text().includes('extracted') && text().includ
 check('the create-course card is NOT shown for a course that exists',
       !text().includes('Create a new course'))
 
+console.log('\n== every section is colour-keyed, and the key is in the markup ==')
+// The hue system reads three custom properties off `[data-sec]` / `[data-cat]`, so the
+// markup carrying that attribute IS the contract — miss it and the section silently
+// falls back to the action accent, which is the state the whole app was in: eight
+// sections rendered in one blue, so the rail could say that something was selected and
+// never which kind of thing it was.
+check('every rail entry declares its section',
+      $('.navtab').length > 0 && $('.navtab').every((b) => b.dataset.sec),
+      $('.navtab').map((b) => b.dataset.sec || '?').join(','))
+check('…each one distinct, so no two sections share a colour',
+      new Set($('.navtab').map((b) => b.dataset.sec)).size === $('.navtab').length)
+check('and the open view declares it too, so its header tile matches the rail',
+      $('.main')[0]?.dataset.sec === 'curriculum', $('.main')[0]?.dataset.sec)
+// The phone drops the signed-in ADDRESS and keeps the identity and the way out; that
+// needs the address in its own element to hide.
+check('the signed-in address is wrapped so a narrow screen can drop it',
+      $('.uemail .etext').length === 1 &&
+      $('.uemail .etext')[0].textContent.includes('@'),
+      $('.uemail')[0]?.innerHTML?.slice(0, 80))
+
 console.log('\n== switching tabs changes the view ==')
 const byLabel = (label) => $('.navtab').find((b) => b.textContent.includes(label))
 await click(byLabel('Generate'))
 check('Generate shows the session picker', text().includes('Generate a TR doc'))
+check('…and the view re-keys its colour to the section now open',
+      $('.main')[0]?.dataset.sec === 'generate', $('.main')[0]?.dataset.sec)
 check('…and the curriculum table is gone', $('.curtable').length === 0)
 check('the session needing a doc is offered', text().includes('Spooling, Buffering'))
 
@@ -542,6 +571,17 @@ check('no Team tab while working individually — there is no team to show',
 
 await click(byLabel('Agent rules'))
 check('Agent rules renders without crashing', text().includes('restate the paragraph'))
+// HOUSE binds every course on the instance, COURSE is contained to one, and a person's
+// correction outranks one the grader inferred. The page explains all three in prose and
+// used to render them as four identical grey pills, so the distinction lived only in the
+// paragraph. Each now carries the class its colour hangs off.
+check('the scope of a rule is marked, not just described',
+      $('.tag.scope-house').length + $('.tag.scope-course').length
+      === $('.setrow .setmain button.tag').length,
+      `${$('.tag.scope-house').length} house / ${$('.tag.scope-course').length} course`)
+check('…and so is whether a person or the grader found it',
+      $('.tag.src-human').length > 0 && $('.tag.src-auto').length > 0,
+      `${$('.tag.src-human').length} human / ${$('.tag.src-auto').length} auto`)
 
 console.log('\n== switching into the team workspace ==')
 const teamWs = $('.wsopt').find((b) => b.textContent.includes('OS Curriculum Team'))
@@ -678,14 +718,35 @@ const setTextareaVal = (el, v) => act(async () => {
   setter.call(el, v)
   el.dispatchEvent(new window.Event('input', { bubbles: true }))
 })
-const askOpener = () => $('button').find((b) => b.textContent.includes('Ask about this section'))
+// AND IT LIVES IN THE CHUNK'S HEADER, not under the document. Beneath the material it
+// sat between the section and the Approve/Regenerate buttons, with its two-line pitch
+// repeated on every chunk — so the decision the page exists for was a screenful further
+// down once per section, and the review read as a stack of chat boxes with documents
+// attached. The pitch is a tooltip now; the control is a pill in the summary row.
+const askOpener = () => $('summary .askbtn')[0]
 check('every section offers a question before you have asked one',
-      $('button').filter((b) => b.textContent.includes('Ask about this section')).length >= 1)
+      $('summary .askbtn').length >= 1,
+      $('button').map((b) => b.textContent).join(' | ').slice(0, 200))
+check('…from the chunk header, so nothing sits between the section and the decision',
+      $('.chunkchat-cta').every((el) => el.classList.contains('doclevel')),
+      $('.chunkchat-cta').map((el) => el.className).join(' | '))
+check('…with the pitch on the control rather than printed under every chunk',
+      (askOpener()?.title || '').includes('it cannot change anything'),
+      askOpener()?.title)
 await click(askOpener())
 const askBox = () => $('textarea').find((t) => t.placeholder?.includes('Ask anything about this section'))
 check('the box opens', askBox() !== undefined)
 check('…saying plainly that it cannot change anything',
-      text().includes('Asking never edits, regenerates or approves anything'))
+      text().includes('read-only') && text().includes('it cannot change anything'),
+      text().match(/.{0,60}read-only.{0,60}/)?.[0])
+// THE SECTION STAYS ON SCREEN. The answer is about the text being reviewed, so a panel
+// that replaced or displaced it would leave you scrolling between the claim and the
+// reply to check one against the other.
+check('the conversation opens BESIDE the section, which is still rendered',
+      $('.chunkwork.split').length === 1 && $('.chunkwork.split > .md').length === 1,
+      `split=${$('.chunkwork.split').length} md=${$('.chunkwork.split > .md').length}`)
+check('…and only the section being asked about is split',
+      $('.chunkwork').length > 1, String($('.chunkwork').length))
 await setTextareaVal(askBox(), 'why is slide 2 here?')
 await click($('button').find((b) => b.textContent.trim() === 'Ask'))
 await act(async () => { await new Promise((r) => setTimeout(r, 100)) })
@@ -712,8 +773,10 @@ check('CLOSING ACTUALLY COLLAPSES IT', !text().includes('Because [S1 · Slide 2]
       text().replace(/\s+/g, ' ').match(/.{0,80}Because.{0,40}/)?.[0])
 check('…and says how much is behind the button', text().includes('1 message') ||
       text().includes('2 messages'), text().replace(/\s+/g, ' ').match(/.{0,50}messages?.{0,30}/)?.[0])
-check('…and that nothing was lost by closing', text().includes('Kept — nothing is lost'))
-await click($('button').find((b) => b.textContent.includes('reopen')))
+check('…and that nothing was lost by closing',
+      (askOpener()?.title || '').includes('nothing was lost'), askOpener()?.title)
+check('…and the section is back to full width', $('.chunkwork.split').length === 0)
+await click(askOpener())
 check('reopening brings the conversation back',
       text().includes('Because [S1 · Slide 2] says so.'))
 check('…and asking again is still possible', askBox() !== undefined)

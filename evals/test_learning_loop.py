@@ -164,9 +164,17 @@ def main() -> int:
         # AND THE SESSION'S. A skill may be written for one session; a judge that
         # resolves the brief by course alone grades the document against a brief the
         # writer was not given.
+        # Matched on the NORMALISED source, not on an exact literal. The previous form
+        # pinned the call's line breaks, so wrapping the argument list — or adding one —
+        # failed a test whose subject is which arguments are passed, not how they are
+        # laid out.
+        _flat = " ".join(src.split())
         check("…resolved for the session being graded, not the course alone",
-              '_skills_mod.block(course, getattr(session, "number", None))' in src,
-              src[:0])
+              '_skills_mod.block(course, getattr(session, "number", None)' in _flat,
+              _flat[:0])
+        # AND LABELLED. The grade is per skill now, so the judge's copy of the brief
+        # carries a ref on each line for the verdicts to name — see graders/skill_report.
+        check("…and labelled, so a verdict can name one skill", "refs=True" in _flat)
         # The brief is not only shown to the judge, it is SCORED — see
         # evals/test_skill_scoring.py. Without a scored dimension the only lever was a
         # binary blocking issue, so a document could follow its course's brief loosely
