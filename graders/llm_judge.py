@@ -50,6 +50,16 @@ def _market_note(profile: dict | None) -> str:
             + "; ".join(plats))
 
 
+class JudgeUnavailable(RuntimeError):
+    """The grader could not produce a usable grade.
+
+    Its own type, because the CALLER's response has to differ from any other failure:
+    a document whose every chunk a human approved must still be produced, marked
+    ungraded, rather than thrown away because the grader stumbled. See
+    src/pipeline.grade.
+    """
+
+
 JUDGE_SYSTEM = (
     "You are a strict, fair curriculum reviewer grading a TR (Teaching Reference) "
     "doc for a technical course session. Score honestly against the rubric. "
@@ -319,6 +329,16 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
                 "happen to exist.\n"
                 "  · `broke` lists where it was violated, same shape. Every entry in it "
                 "needs the quote that shows it.\n"
+                # THE SHAPE OF THE STRINGS, not just the shape of the object. This block
+                # asks the judge to quote the document back — slide content, a speaker
+                # note — and a quoted passage carrying a real line break makes the JSON
+                # string unterminated. The parser then resynchronises further on and
+                # reports something like "Expecting ',' delimiter: line 25 column 768",
+                # which names a comma and blames a newline hundreds of characters back.
+                "  · KEEP EVERY `note` AND `evidence` TO ONE SHORT LINE — one sentence, "
+                "no line breaks, and quote only the fragment that matters rather than a "
+                "whole slide. Escape any double quote inside them as \\\", and never "
+                "put a real newline in a JSON string.\n"
                 "  · `kept: false` REQUIRES `evidence`: the slide number and the text "
                 "that breaks the skill, quoted. A verdict of false with no quote is not "
                 "a finding — if you cannot quote it, the skill was kept.\n"
@@ -393,17 +413,41 @@ Grade now. Return only the contract JSON."""
     dims = {d["id"]: float(_weights.get(d["id"], d["weight"]))
             for d in config.rubric()["dimensions"] if d["id"] not in exclude}
 
+    # A PARSE FAILURE IS RE-ASKED, exactly as a generation's is (generator._complete_json
+    # has had this since the beginning; the judge never did). One malformed response used
+    # to propagate straight out of grade() and out of finalize, so a document whose every
+    # chunk a human had already approved was lost to a stray character in its grade —
+    # reported as `Creating the final TR doc failed: Expecting ',' delimiter: line 25
+    # column 768`. The judge quotes the document back at itself, so its response is the
+    # one most likely to contain an awkward passage; it is the last call that should have
+    # been the unprotected one.
+    _STRICT = ("\n\nRETURN STRICT JSON AND NOTHING ELSE. Your previous response could "
+               "not be parsed. No prose before or after the object, no trailing commas, "
+               "no code fences. Inside a string, escape every double quote as \\\" and "
+               "write line breaks as \\\\n — never a real newline. Keep every quoted "
+               "passage to one short line.")
+
     def _ask(extra: str = "") -> dict:
-        raw = llm.complete(
-            system=JUDGE_SYSTEM, user=prompt + extra,
-            model=judge_model, max_tokens=m.get("judge_max_tokens", 8000),
-            temperature=0.0, label="judge", cached_context=rubric_block,
-        )
-        r = llm.extract_json(raw)
-        # Drop the excluded dimension from the scores entirely (not shown/gated).
-        for ex in exclude:
-            r.get("scores", {}).pop(ex, None)
-        return r
+        last = None
+        for attempt in range(2):
+            raw = llm.complete(
+                system=JUDGE_SYSTEM, user=prompt + extra + (_STRICT if attempt else ""),
+                model=judge_model, max_tokens=m.get("judge_max_tokens", 8000),
+                temperature=0.0, label="judge" if not attempt else "judge_retry",
+                cached_context=rubric_block,
+            )
+            try:
+                r = llm.extract_json(raw)
+            except (ValueError, json.JSONDecodeError) as e:
+                last = e
+                llm.log_debug("JUDGE RESPONSE WOULD NOT PARSE — re-asking", raw[-2000:],
+                              extra=f"{type(e).__name__}: {e}")
+                continue
+            # Drop the excluded dimension from the scores entirely (not shown/gated).
+            for ex in exclude:
+                r.get("scores", {}).pop(ex, None)
+            return r
+        raise JudgeUnavailable(f"the grade could not be parsed ({last})") from last
 
     result = _ask()
     missing = _unscored(result, dims)

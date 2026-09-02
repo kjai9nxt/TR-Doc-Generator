@@ -116,12 +116,32 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
     judge_ok = True
     rubric_total = 100
     if use_judge:
-        jr = llm_judge.grade(doc, session, te, page_estimate=pe,
-                             enforce_time=enforce_time, course=course, profile=profile)
-        report["judge"] = jr
-        rubric_total = jr.get("weighted_total", 0)
-        judge_ok, judge_reasons = llm_judge.passes_gates(jr, profile)
-        issues += judge_reasons
+        # A GRADER FAILURE MUST NOT DESTROY THE DOCUMENT. By the time this runs a human
+        # has read and approved every chunk, and the .docx is a `pipeline.assemble_doc`
+        # away. Letting the exception out of here took the whole run down — the reviewer
+        # saw "Creating the final TR doc failed: Expecting ',' delimiter" and had a long
+        # review with nothing to show for it, over a stray character in a grade.
+        #
+        # Nor is it treated as a pass. The document comes back NOT accepted with the
+        # reason on it, so nothing slips through ungraded and the fix is one click:
+        # press the button again and the grade is re-asked.
+        try:
+            jr = llm_judge.grade(doc, session, te, page_estimate=pe,
+                                 enforce_time=enforce_time, course=course, profile=profile)
+            report["judge"] = jr
+            rubric_total = jr.get("weighted_total", 0)
+            judge_ok, judge_reasons = llm_judge.passes_gates(jr, profile)
+            issues += judge_reasons
+        except Exception as e:
+            # `evaluate` has no logger of its own — it is called from several places —
+            # so the failure travels on the report, which every caller already reads.
+            report["judge_error"] = str(e)
+            rubric_total = 0
+            judge_ok = False
+            issues.append(
+                f"The quality check did not complete ({e}), so this document has not "
+                f"been graded. Nothing about it is wrong — the grader failed, not the "
+                f"doc. Create the final TR doc again to re-run the grade.")
 
     # WHICH OF THIS COURSE'S RULES THE DOCUMENT KEPT, one row per skill. Lifted to the
     # top of the report because it is the answer to "were my skills used?", which no

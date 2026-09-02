@@ -65,6 +65,16 @@ ALICE = "alice@nxtwave.co.in"
 db.init()
 
 
+def raised_by(fn):
+    """The exception `fn` raises, so a check can assert on its type rather than on the
+    absence of a crash."""
+    try:
+        fn()
+    except Exception as e:
+        return e
+    return None
+
+
 def approved(course, text, **kw):
     sid = db.add_skill(course, text, created_by=ALICE, **kw)
     db.approve_skill(sid, ALICE)
@@ -531,6 +541,73 @@ _llm.seed_meter("cost-honesty", [{"label": "x", "cost": None, "total_tokens": 10
 _tot = _llm.usage_totals("cost-honesty")
 check("…so $0.50 over two calls reports one of them as unpriced",
       _tot["cost"] == 0.5 and _tot["unpriced_calls"] == 1, str(_tot))
+
+
+print("\n== a grade that will not parse must not destroy the document ==")
+# THE LIVE FAILURE. `Creating the final TR doc failed: Expecting ',' delimiter: line 25
+# column 768` — a JSONDecodeError from the judge's own response, raised straight out of
+# grade(), out of evaluate(), out of finalize. A document whose every chunk a human had
+# already read and approved was lost to a stray character in its grade.
+#
+# The message names a comma and the cause is a newline: the judge quotes the document
+# back at itself, and the moment a quoted passage carries a real line break the JSON
+# string is unterminated and the parser resynchronises somewhere further on.
+_BAD = ('{"scores": {"technical_accuracy": {"score": 4, "justification": "Slide 3 says:\n'
+        'the grid is 12 units\nwhich is right"}}, "blocking_issues": [],}')
+check("a raw newline inside a quoted passage is repaired, not fatal",
+      _llm.extract_json(_BAD)["scores"]["technical_accuracy"]["score"] == 4,
+      _BAD[:60])
+check("…and the quoted text survives the repair intact",
+      "12 units" in _llm.extract_json(_BAD)["scores"]["technical_accuracy"]["justification"])
+check("a trailing comma is repaired too", _llm.extract_json('{"a": [1,2,],}') == {"a": [1, 2]})
+check("an escaped quote is left exactly as written",
+      _llm.extract_json(r'{"a": "he said \"hi\""}')["a"] == 'he said "hi"')
+check("prose either side of the object is still tolerated",
+      _llm.extract_json('Here: {"a": 3} — hope that helps') == {"a": 3})
+check("a fenced object is still tolerated", _llm.extract_json('```json\n{"a": 2}\n```') == {"a": 2})
+check("something with no object at all is still an error, not a guess",
+      isinstance(raised_by(lambda: _llm.extract_json("no json here")), ValueError))
+
+# The judge now re-asks, exactly as generation always has.
+_jsrc = " ".join(inspect.getsource(judge.grade).split())
+check("the judge RE-ASKS when its answer will not parse",
+      "json.JSONDecodeError" in _jsrc and "judge_retry" in _jsrc, _jsrc[:0])
+check("…and the retry demands strict JSON, naming the newline trap",
+      "never a real newline" in _jsrc.lower() or "real newline" in _jsrc, _jsrc[:0])
+check("…and a grader that still cannot answer raises its OWN type",
+      "JudgeUnavailable" in _jsrc and issubclass(judge.JudgeUnavailable, RuntimeError))
+
+# …and if it truly cannot, the run survives.
+_ev = " ".join(inspect.getsource(__import__("src.pipeline", fromlist=["x"]).evaluate).split())
+check("evaluate() catches a grader failure instead of letting it out",
+      "except Exception as e:" in _ev and 'report["judge_error"] = str(e)' in _ev, _ev[:0])
+check("…and does NOT count it as a pass", "judge_ok = False" in _ev, _ev[:0])
+check("…and says on the report that the grader failed, not the document",
+      "the grader failed, not the" in _ev, _ev[:0])
+
+# End to end: a judge that always returns garbage still produces a graded-as-failed
+# report rather than an exception.
+from src import pipeline as _pipe                                  # noqa: E402
+# THE REAL `Session`, not this suite's stand-in. `evaluate` runs the guardrails, which
+# read `session.key_takeaways_count` — a property on the dataclass that a hand-rolled
+# double does not have and will keep not having as the dataclass grows. Where a test
+# exercises the real pipeline it should hand it the real object.
+_REAL_SESS = course_loader.Session(
+    number=12, name="State", module="React", topic="State",
+    key_takeaways=["State and re-render"], course=REACT)
+_real_complete = judge.llm.complete
+judge.llm.complete = lambda **kw: "this is not JSON at all, sorry"
+try:
+    _acc, _rep, _iss, _rev = _pipe.evaluate(DOC, _REAL_SESS, False, False,
+                                            use_judge=True, course=REACT)
+finally:
+    judge.llm.complete = _real_complete
+check("a totally unparseable grade returns a REPORT, not an exception",
+      isinstance(_rep, dict) and "judge_error" in _rep, str(list(_rep.keys())))
+check("…the document is not accepted on it", _acc is False)
+check("…and the reason tells the reviewer to run it again",
+      any("re-run the grade" in i or "again to re-run" in i or "re-run" in i
+          for i in _iss), str(_iss[-1])[:120] if _iss else "no issues")
 
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

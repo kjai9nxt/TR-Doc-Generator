@@ -423,15 +423,73 @@ def complete(system: str, user: str, *, model: str, max_tokens: int,
 # --------------------------------------------------------------------------- #
 # JSON extraction (unchanged)
 # --------------------------------------------------------------------------- #
+def _repair_json(src: str) -> str:
+    """The two defects a model's JSON actually has, repaired. Best effort, never clever.
+
+    Both are things a strict parser rejects and a reader would not notice:
+
+      · a TRAILING COMMA before `}` or `]`, which JSON forbids and most other formats
+        allow;
+      · a RAW NEWLINE inside a string literal. This is the one that bites here. The
+        judge quotes the document back — a slide's content, a speaker note — and the
+        moment a quoted passage contains a line break the string is unterminated, the
+        parser resynchronises on the next token and reports something like
+        `Expecting ',' delimiter: line 25 column 768`. The message names a comma; the
+        cause is a newline several hundred characters earlier.
+
+    Anything else is left alone. A repair that guesses at structure would turn a
+    malformed grade into a confidently wrong one, which is worse than a failed parse.
+    """
+    out, in_str, esc = [], False, False
+    for ch in src:
+        if in_str:
+            if esc:
+                out.append(ch)
+                esc = False
+                continue
+            if ch == "\\":
+                out.append(ch)
+                esc = True
+                continue
+            if ch == '"':
+                in_str = False
+                out.append(ch)
+                continue
+            # A literal newline or tab inside a string: escape it rather than drop it,
+            # so the quoted evidence survives intact.
+            if ch == "\n":
+                out.append("\\n")
+            elif ch == "\r":
+                pass
+            elif ch == "\t":
+                out.append("\\t")
+            else:
+                out.append(ch)
+            continue
+        if ch == '"':
+            in_str = True
+        out.append(ch)
+    fixed = "".join(out)
+    return re.sub(r",(\s*[}\]])", r"\1", fixed)
+
+
 def extract_json(text: str) -> dict:
-    """Pull the first JSON object out of a model response, tolerating fences."""
+    """Pull the first JSON object out of a model response, tolerating fences.
+
+    Three attempts, in order of how much they assume: the whole string, the outermost
+    balanced object in it, and then the same object with the two known model defects
+    repaired (see `_repair_json`). A JSONDecodeError from the last of those is raised as
+    itself, because its message names the position and callers log it.
+    """
     text = text.strip()
     if text.startswith("```"):
         text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.S).strip()
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        start = text.find("{")
+        pass
+    start = text.find("{")
+    if start >= 0:
         depth = 0
         for i in range(start, len(text)):
             if text[i] == "{":
@@ -439,5 +497,12 @@ def extract_json(text: str) -> dict:
             elif text[i] == "}":
                 depth -= 1
                 if depth == 0:
-                    return json.loads(text[start:i + 1])
+                    blob = text[start:i + 1]
+                    try:
+                        return json.loads(blob)
+                    except json.JSONDecodeError:
+                        return json.loads(_repair_json(blob))
+        # Unbalanced: the response was cut off. Repair what is there in case the
+        # damage is only a stray newline inside a string.
+        return json.loads(_repair_json(text[start:]))
     raise ValueError("No valid JSON object found in model response.")
