@@ -8,7 +8,9 @@
     "build": "vite build",
     "verify:dist": "./scripts/verify-dist.sh",
     "preview": "vite preview",
-    "test:ui": "node test/ui_smoke.mjs"
+    "test:ui": "node test/ui_smoke.mjs",
+    "test:contrast": "node test/theme_contrast.mjs",
+    "test:shots": "THEME_SHOTS=1 node test/ui_smoke.mjs > /dev/null 2>&1; node test/theme_shots.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

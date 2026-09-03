@@ -139,6 +139,13 @@ jobs:
       # course after both server.py and App.jsx had been fixed.
       - name: Build, and verify the committed bundle matches the source
         run: frontend/scripts/verify-dist.sh
+      # Both themes, every colour pair the app renders, composited and measured against
+      # WCAG AA. It runs in CI because a light theme does not break loudly — it breaks
+      # in the one panel nobody screenshots, and a token added to one palette and
+      # forgotten in the other looks fine until someone switches.
+      - name: Theme contrast audit (light + dark)
+        working-directory: frontend
+        run: npm run test:contrast
 
   live-eval:
     name: Live eval (generates + judges, uses API) — manual only

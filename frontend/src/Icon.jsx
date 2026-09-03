@@ -57,6 +57,13 @@ const P = {
   wrench: <><path d="M14.7 6.3a4.5 4.5 0 0 0 5.8 5.8l-8 8a2.5 2.5 0 1 1-3.5-3.5l8-8z"/><path d="M6.5 6.5 4 4"/></>,
   chat: <><path d="M20.5 12c0 4.1-3.8 7.4-8.5 7.4a10 10 0 0 1-2.4-.3L4.5 21l1.2-3.6A7 7 0 0 1 3.5 12c0-4.1 3.8-7.4 8.5-7.4s8.5 3.3 8.5 7.4z"/></>,
   traffic: <><rect x="7.5" y="2.5" width="9" height="19" rx="3"/><path d="M12 7v.4M12 12v.4M12 17v.4"/></>,
+  // --- theme -----------------------------------------------------------------
+  // Three, because the choice is three-valued: follow the OS, or override it either
+  // way. Drawn at the same 24-box weight as the rest so the switch in the top bar
+  // reads as part of the bar and not as a widget dropped into it.
+  sun: <><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7"/></>,
+  moon: <><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.5 8.5 0 1 0 10.2 10.2z"/></>,
+  monitor: <><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M9 20h6M12 16.5V20"/></>,
 }
 
 export const ICON_NAMES = Object.keys(P)

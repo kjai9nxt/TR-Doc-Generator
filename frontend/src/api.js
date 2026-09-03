@@ -226,6 +226,11 @@ export const api = {
     req(`/prereqs${qs({ course, prereq })}`, { method: 'DELETE' }),
 
   // A course's length budget (pages/slides), and what it inherits when unset.
+  courseProfile: (course) => req(`/course-profile${qs({ course })}`),
+  // The whole profile goes back, so a save of the descriptive fields cannot drop the
+  // numeric overrides that share the row with them.
+  saveCourseProfile: (course, profile) =>
+    req('/course-profile', { method: 'POST', body: JSON.stringify({ course, profile }) }),
   courseSettings: (course) => req(`/course-settings${qs({ course })}`),
   saveCourseSettings: (course, settings) =>
     req('/course-settings', { method: 'POST', body: JSON.stringify({ course, ...settings }) }),
@@ -339,6 +344,11 @@ export const api = {
   setLearnedRuleScope: (index, scope, course) =>
     req(`/learned-rules/${index}/scope`,
         { method: 'POST', body: JSON.stringify({ scope, course }) }),
+  // Make a learned rule a DRAFT reviewer skill. It stops being injected as a rule the
+  // moment it is promoted — the skill channel owns it from then on.
+  promoteLearnedRule: (index, course) =>
+    req(`/learned-rules/${index}/promote`,
+        { method: 'POST', body: JSON.stringify({ course }) }),
   migrateLearnedRules: () => req('/learned-rules/migrate', { method: 'POST' }),
 
   dashboard: () => req('/dashboard'),

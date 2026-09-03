@@ -639,6 +639,12 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     try:
         from src import skills as _skills_mod
         fails += _skills_mod.leak_failures(doc, skills)
+        # AND THE COURSE PROFILE, under the same rule. It is background about the course
+        # — beginner, practical/coding, layout comparisons — and a document that prints
+        # it has turned a fact about its audience into a slide. Checked here because the
+        # assembled document is the only place it is visible, and because a profile that
+        # can reach the page is a profile that quietly becomes curriculum.
+        fails += _skills_mod.profile_leak_failures(doc, profile)
     except Exception:
         pass
 

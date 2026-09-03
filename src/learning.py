@@ -289,14 +289,76 @@ def drop_contentless() -> int:
     return len(dropped)
 
 
+def promoted_skill_id(rule: dict) -> int | None:
+    """The skill this rule became, or None. Stamped by `promote_to_skill`.
+
+    A PROMOTED RULE STOPS BEING A RULE. It is now an approved skill: injected through the
+    course brief, given a PASS/PARTIAL/FAIL verdict, and repaired when it is not
+    followed. Leaving it in this store as well would inject the same sentence down two
+    channels — dilution in a prompt that has already been bitten by it once — and the
+    reviewer would see one instruction reported twice under two different names.
+
+    Exactly the treatment `superseded_by_gate` already gives a rule a guardrail took
+    over. Same reason, one level up: the rule has not been deleted, something stronger
+    now owns it.
+    """
+    sid = rule.get("promoted_to_skill")
+    return sid if isinstance(sid, int) else None
+
+
+def promote_to_skill(index: int, course: str, *, created_by: str | None = None):
+    """Turn learned rule `index` into a DRAFT reviewer skill. Returns (ok, skill_id, why).
+
+    A DRAFT, never approved. The whole reason skills are worth more than rules is that a
+    person chose them, and a promotion that applied itself would be this store's
+    inference wearing a skill's authority — the exact swap the codebase refuses
+    elsewhere. So it lands under Skills awaiting approval, where it can also be reworded
+    before it takes effect.
+
+    Filed under the REVIEWER category because that is what it is: a correction review
+    kept making on this course. That category is also the strongest skill tier, which is
+    right — it outranks the standing brief, and a reviewer who had to say something twice
+    has earned that.
+    """
+    from . import db
+    data = _load()
+    rs = data.get("rules", [])
+    if not (0 <= index < len(rs)):
+        return False, None, "no such rule"
+    rule = rs[index]
+    if promoted_skill_id(rule):
+        return False, None, "this rule has already been promoted to a skill"
+    text = str(rule.get("text") or "").strip()
+    if not text:
+        return False, None, "this rule has no text to promote"
+    course = (course or rule.get("course") or "").strip()
+    if not course:
+        return False, None, ("this rule does not record which course it was learned on, "
+                             "so there is no course to promote it into")
+    sid = db.add_skill(
+        course, text, category="reviewer", scope="course",
+        # WHERE IT CAME FROM, so the skill's own audit trail does not start blank. The
+        # raw note the reviewer typed is kept as the source quote — it is the evidence
+        # for the rule, and the person approving it should see the words behind it.
+        source="learned", created_by=created_by,
+        source_quote=str(rule.get("raw") or "").strip() or None)
+    if not sid:
+        return False, None, "the skill could not be created"
+    rule["promoted_to_skill"] = sid
+    _save(data)
+    return True, sid, ""
+
+
 def applicable_rules(course: str | None = None) -> list[dict]:
     """The rules that apply to `course`: every global rule + that course's own, minus
-    any that a deterministic gate now enforces (see the note above).
+    any that a deterministic gate now enforces (see the note above), and minus any that
+    have been PROMOTED to a skill — those are injected as skills instead.
 
     Honours self_evolution.scope_rules — set it false in the harness to go back to
     injecting every rule everywhere.
     """
-    rs = [r for r in rules() if not gate_for(r) and not _is_contentless(r.get("text"))]
+    rs = [r for r in rules() if not gate_for(r) and not _is_contentless(r.get("text"))
+          and not promoted_skill_id(r)]
     if not _self_evo_cfg().get("scope_rules", True):
         return rs
     course = _active_course() if course is None else course

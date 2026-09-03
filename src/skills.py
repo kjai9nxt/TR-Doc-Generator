@@ -31,6 +31,7 @@ teaching flow IS the instruction — and turns one approval into four.
 WHERE A SKILL APPLIES. Two scopes, and the precedence between them is fixed:
 
     HARD RULES  >  COURSE REVIEWER SKILLS  >  SESSION SKILLS  >  COURSE SKILLS
+                >  THE COURSE PROFILE (src/profiles.py — background, weakest of all)
 
 The numbered hard rules about document structure can never be overridden. Below them, a
 correction a reviewer made about this course outranks a rule written for one of its
@@ -379,10 +380,13 @@ def block(course: str, session=None, compact: bool = False, refs: bool = False) 
            "not because this brief did.",
            "",
            "PRECEDENCE, strongest first: HARD RULES → COURSE REVIEWER SKILLS → SESSION "
-           "SKILLS → COURSE SKILLS. Where any of it conflicts with the default style "
-           "guidance, THE BRIEF WINS; only the numbered HARD RULES about document "
-           "STRUCTURE outrank it. Where two parts of the brief conflict, the one from "
-           "the higher tier wins outright."]
+           "SKILLS → COURSE SKILLS → THE COURSE PROFILE. Where any of it conflicts with "
+           "the default style guidance, THE BRIEF WINS; only the numbered HARD RULES "
+           "about document STRUCTURE outrank it. Where two parts of the brief conflict, "
+           "the one from the higher tier wins outright. And the course profile — the "
+           "background describing what kind of course this is — is the WEAKEST of all: "
+           "every line below overrides it, because these were written and approved for "
+           "this course and that is a standing assumption about it."]
 
     for tier, label, gloss in _TIERS:
         group = tiers.get(tier) or []
@@ -625,6 +629,92 @@ def leaks(doc: dict, skills: list[dict] | None) -> list[dict]:
                         "text": "; ".join(items[:6])[:200], "instruction": ins,
                         "why": "prints the steps of a teaching flow as a list"})
     return found
+
+
+# A label a document might put in front of a leaked profile field, so "Level: Beginner"
+# is caught as readily as "Beginner". Deliberately short: this is about a field printed
+# WITH its name, not about prose that happens to begin with one of these words.
+_DNA_LABEL_RE = re.compile(
+    r"^(?:course\s+)?(?:type|level|learner\s+level|audience|domain|subject|nature|"
+    r"depth|approach|terminology|examples?|visuals?|style)\s*[:\u2014-]\s*", re.I)
+
+
+def profile_leaks(doc: dict, profile: dict | None) -> list[dict]:
+    """Where the COURSE PROFILE has been printed into the document. [] when it has not.
+
+    A SEPARATE MATCHER FROM `leaks`, because the two are different shapes of text and the
+    skill matcher cannot see this one. `_copied` needs four content words to call an
+    overlap a copy — below that, ordinary prose that happens to echo an instruction would
+    be failed. Profile fields are phrases: "Beginner", "Practical / Coding". Every one of
+    them is under that floor, so routing them through the skill matcher would have added
+    a check that could never fire, which is worse than no check because it looks like
+    cover.
+    So the rule here is different and much stricter: a field is a leak when a visible
+    string IS that field — the whole bullet, the whole heading, the whole takeaway —
+    optionally behind a label. "Level: Beginner" as a bullet is the failure; a sentence
+    that uses the word "beginner" while teaching is not, and must not be touched.
+    A `learning_approach` written as steps ("concept → syntax → code") gets the flow
+    treatment as well, because that is how a sequence leaks: as a list naming its steps.
+    """
+    dna = (profile or {}).get("dna") or {}
+    if not dna:
+        return []
+    found: list[dict] = []
+    seen: set[tuple] = set()
+    visible = _visible_strings(doc)
+    lists = [(w, items, [set(_tokens(i)) for i in items]) for w, items in _bullet_lists(doc)]
+    for field, raw in dna.items():
+        value = " ".join(str(raw or "").split())
+        want = _dna_norm(value)
+        if not want:
+            continue
+        for where, line in visible:
+            got = _dna_norm(_DNA_LABEL_RE.sub("", " ".join(str(line or "").split())))
+            if got and got == want and (field, where) not in seen:
+                seen.add((field, where))
+                found.append({
+                    "field": field, "where": where, "text": str(line)[:200],
+                    "value": value,
+                    "why": "prints a course-profile field as document content"})
+        # The sequence case: "concept → syntax → code" reappearing as its own bullets.
+        steps = _flow_steps(value, is_flow=True)
+        if not steps:
+            continue
+        step_tokens = [set(_tokens(st)) for st in steps]
+        for where, items, item_tokens in lists:
+            pairs = {(i, j) for i, item in enumerate(item_tokens)
+                     for j, st in enumerate(step_tokens) if _same_step(item, st)}
+            if (len({j for _, j in pairs}) >= _FLOW_MIN_STEPS
+                    and len({i for i, _ in pairs}) >= _FLOW_MIN_STEPS
+                    and (field, where, "flow") not in seen):
+                seen.add((field, where, "flow"))
+                found.append({
+                    "field": field, "where": where,
+                    "text": "; ".join(items[:6])[:200], "value": value,
+                    "why": "prints the steps of a course-profile sequence as a list"})
+    return found
+
+
+def _dna_norm(text: str) -> str:
+    """A visible string reduced to what it says, for whole-string comparison.
+
+    Punctuation and case go, and so does the order — "Practical / Coding" and
+    "coding, practical" are the same claim printed two ways, and a check that missed the
+    second would be trivial to walk past by accident.
+    """
+    return " ".join(sorted(re.findall(r"[a-z0-9']+", str(text or "").lower())))
+
+
+def profile_leak_failures(doc: dict, profile: dict | None) -> list[str]:
+    """`profile_leaks` as guardrail failure lines. Same voice as the brief's own."""
+    out = []
+    for hit in profile_leaks(doc, profile):
+        out.append(
+            f"{hit['where']} prints the course profile as content: "
+            f"\u201c{hit['text']}\u201d. The profile is background about the course — "
+            f"it decides HOW this document is written and is never what it says. "
+            f"({hit['field']}: \u201c{hit['value']}\u201d) — {hit['why']}.")
+    return out
 
 
 def leak_failures(doc: dict, skills: list[dict] | None) -> list[str]:

@@ -1006,5 +1006,253 @@ check("every place §5 names is scanned",
 check("…and a clean document is still not a leak", _leak_where(_BASE) == [],
       str(_leak_where(_BASE)))
 
+
+print("\n== a provider refusal explains itself ==")
+# THE OBSERVED FAILURE: `LLM call failed: HTTP 403: {"error":{"message":"Key limit
+# exceeded (total limit). Manage it using https://openrouter.ai/...` — accurate,
+# unreadable, and no way for the reviewer watching a run die to tell whether the
+# document was at fault, the app was broken, or somebody needed to click something.
+_KEYLIMIT = ('{"error":{"message":"Key limit exceeded (total limit). Manage it using '
+             'https://openrouter.ai/workspaces/default/keys/d5b7f91a","code":403}}')
+check("a reached spend cap says so, and says it is not the document",
+      "SPEND LIMIT IS REACHED" in _llm._provider_hint(403, _KEYLIMIT)
+      and "not a fault in the app or the document" in _llm._provider_hint(403, _KEYLIMIT),
+      _llm._provider_hint(403, _KEYLIMIT)[:80])
+check("…and that nothing generated has been lost",
+      "still here" in _llm._provider_hint(403, _KEYLIMIT))
+check("a rejected key points at the setting, not at the run",
+      "OPENROUTER_API_KEY" in _llm._provider_hint(401, "invalid api key"))
+check("an empty account says top it up",
+      "out of credit" in _llm._provider_hint(402, "insufficient credit"))
+check("a rate limit says it is temporary",
+      "temporary" in _llm._provider_hint(429, "rate limited"))
+check("a provider outage says it is at their end, not ours",
+      "at its end" in _llm._provider_hint(503, "upstream unavailable"),
+      _llm._provider_hint(503, "upstream unavailable"))
+check("a status with nothing to explain adds nothing",
+      _llm._provider_hint(200, "fine") == "")
+# WHAT IS AND IS NOT WORTH RETRYING. A spend cap will not come good on the third
+# attempt; a rate limit might.
+check("a key or account failure is not retried",
+      all(st in _llm._NON_TRANSIENT for st in (400, 401, 402, 403, 404)))
+check("…but a rate limit and an outage are",
+      429 not in _llm._NON_TRANSIENT and 503 not in _llm._NON_TRANSIENT)
+_osrc = " ".join(inspect.getsource(_llm._complete_openai_compatible).split())
+check("the HTTP path leads with the diagnosis and keeps the provider's own words",
+      "_provider_hint(resp.status_code" in _osrc and "Provider said" in _osrc
+      and "resp.text[:400]" in _osrc, _osrc[:0])
+_asrc2 = " ".join(inspect.getsource(_llm._complete_anthropic).split())
+check("the native SDK path short-circuits a refusal instead of retrying it three times",
+      "_NON_TRANSIENT" in _asrc2 and "_provider_hint(" in _asrc2, _asrc2[:0])
+
+
+print("\n== COURSE PROFILE: what kind of course this is, as background ==")
+from src import profiles as PR                                     # noqa: E402
+from src import context_builder as CB                              # noqa: E402
+
+_DNA = {"domain": "Responsive web design with Bootstrap",
+        "learner_level": "Beginner",
+        "nature": "Practical / Coding",
+        "learning_approach": "Concept → Syntax → Code → Result",
+        "visual_patterns": "Layout and screen-size comparisons"}
+_PROF = {"dna": _DNA}
+
+check("the eight descriptive fields are a CLOSED set",
+      len(PR.DNA_FIELDS) == 8 and "domain" in PR.DNA_FIELDS
+      and "visual_patterns" in PR.DNA_FIELDS, str(sorted(PR.DNA_FIELDS)))
+check("a field nobody defined is refused, and named",
+      PR.validate({"dna": {"vibe": "x"}})[0] is False
+      and "vibe" in PR.validate({"dna": {"vibe": "x"}})[2])
+# CAPPED, because the prompt is already ~71k characters and this codebase has been bitten
+# by dilution once: the brief was 2,591 characters inside it and came back half-applied.
+check("a field longer than the cap is refused",
+      PR.validate({"dna": {"domain": "x" * (PR.DNA_MAX_CHARS + 1)}})[0] is False)
+check("…and the refusal points at Skills, where a real rule belongs",
+      "belongs in Skills" in PR.validate({"dna": {"domain": "x" * 400}})[2])
+check("a newline is collapsed rather than starting a paragraph",
+      PR.validate({"dna": {"domain": "a\n\nb"}})[1]["dna"]["domain"] == "a b")
+check("a blank field is an absent field",
+      PR.validate({"dna": {"domain": "   ", "learner_level": "Beginner"}})[1]["dna"]
+      == {"learner_level": "Beginner"})
+check("…and an all-blank profile stores NOTHING, so the course goes back to default",
+      "dna" not in PR.validate({"dna": {"domain": " "}})[1])
+
+print("\n== it reaches the writer as background, and says it is the weakest input ==")
+_blk = CB.course_dna_block(_PROF)
+check("every field the course set is in the block",
+      all(v in _blk for v in _DNA.values()), _blk[:120])
+# On the LABELS, not on the values: the preamble deliberately uses the phrase
+# "Level: Beginner" as its example of what not to print, so searching the whole block for
+# a value finds my own copy first. The labels appear once each, in the field list only.
+check("…in a fixed order, not the order the form was filled in",
+      _blk.index("SUBJECT:") < _blk.index("WHO IT IS FOR:")
+      < _blk.index("NATURE:") < _blk.index("HOW ITS LEARNERS GET THERE:")
+      < _blk.index("TYPICAL VISUALS:"),
+      _blk[_blk.index("SUBJECT:"):][:160])
+check("it is labelled BACKGROUND, not a rule", "background" in _blk.lower())
+# THE PRIORITY THE USER ASKED FOR, in the words the model reads.
+check("…and states that it is the weakest thing given",
+      "WEAKEST" in _blk, _blk[:400])
+check("…naming the three things that override it",
+      all(w in _blk for w in ("HARD RULES", "approved skills", "curriculum")), _blk[:400])
+check("…and that it must never be printed", "never content" in _blk.lower())
+_brief = skills.block(REACT, 12)
+check("the brief's own precedence ladder ends with the profile, not the skills",
+      "COURSE SKILLS → THE COURSE PROFILE" in _brief, _brief[:0])
+check("…and says every skill overrides it",
+      "WEAKEST of all" in _brief, _brief[:0])
+
+print("\n== a course with NO profile behaves exactly as it does today ==")
+# The whole safety argument for this feature: blank means unchanged.
+check("no dna -> no block at all", CB.course_dna_block({}) == ""
+      and CB.course_dna_block(None) == ""
+      and CB.course_dna_block({"dna": {}}) == "")
+check("…and no leak check to run", skills.profile_leaks(DOC, None) == []
+      and skills.profile_leaks(DOC, {}) == []
+      and skills.profile_leaks(DOC, {"dna": {}}) == [])
+
+print("\n== the profile is never CONTENT, and that is enforced ==")
+# The hole this feature would otherwise have opened. Skills have a leak check; the
+# profile had none, so "Level: Beginner" could ship as a slide bullet with nothing
+# stopping it. A separate matcher, because the skill one cannot see these: `_copied`
+# needs four content words to call an overlap a copy, and every profile field is a
+# phrase below that floor. Routing them through it would have added a check that could
+# never fire — worse than no check, because it looks like cover.
+def _pdoc(*, bullets=None, heading=None, kt=None, text=None):
+    sl = {"n": 1, "heading": heading or "Grid basics", "subheading": "s",
+          "content": ([{"type": "bullets", "items": bullets}] if bullets else
+                      [{"type": "text", "text": text or "A row splits twelve units."}]),
+          "visual_guidance": "v", "speaker_notes": "sn"}
+    return {"key_takeaways": kt or ["Containers and rows"], "agenda": ["a"],
+            "sections": [{"index": 1, "name": "Grid", "slides": [sl]}]}
+
+
+check("a field printed as a bullet is a leak",
+      skills.profile_leaks(_pdoc(bullets=["Beginner", "x", "y"]), _PROF))
+check("…behind its own label too",
+      skills.profile_leaks(_pdoc(bullets=["Level: Beginner", "x", "y"]), _PROF))
+check("…as a slide heading", skills.profile_leaks(_pdoc(heading="Practical / Coding"), _PROF))
+check("…as a key takeaway",
+      skills.profile_leaks(_pdoc(kt=["Layout and screen-size comparisons"]), _PROF))
+# Reordering the words is the obvious way to walk past a naive check by accident.
+check("…and with the words reordered",
+      skills.profile_leaks(_pdoc(bullets=["Coding, practical", "x", "y"]), _PROF))
+# A sequence leaks as a list naming its steps — the same shape a teaching-flow skill does.
+check("a sequence field printed as its own steps is a leak",
+      skills.profile_leaks(_pdoc(bullets=["Concept", "Syntax", "Code", "Result"]), _PROF))
+# AND THE FALSE POSITIVES THAT WOULD MAKE IT USELESS.
+check("PROSE that merely uses the word is NOT a leak",
+      skills.profile_leaks(
+          _pdoc(text="This is a beginner-friendly way to think about rows."), _PROF) == [],
+      str(skills.profile_leaks(
+          _pdoc(text="This is a beginner-friendly way to think about rows."), _PROF)))
+check("…and an ordinary document is clean", skills.profile_leaks(_pdoc(), _PROF) == [])
+check("the failure line says what the profile is FOR, not just that it leaked",
+      any("never what it says" in f for f in
+          skills.profile_leak_failures(_pdoc(bullets=["Beginner", "x", "y"]), _PROF)),
+      str(skills.profile_leak_failures(_pdoc(bullets=["Beginner", "x", "y"]), _PROF))[:140])
+_gsrc2 = " ".join(inspect.getsource(__import__("guardrails.guardrails",
+                                               fromlist=["x"]).check).split())
+check("and the guardrails enforce it on the assembled document",
+      "profile_leak_failures(doc, profile)" in _gsrc2, _gsrc2[:0])
+
+
+print("\n== a learned rule can be PROMOTED into a skill you own ==")
+# WHY THIS MOVE EXISTS. Review feedback becomes a learned RULE: it reaches the writer and
+# is then never measured — no verdict, absent from the skill report, and nothing repairs a
+# document that ignored it. Skills get all three. There was no way to move a rule that had
+# proved itself into the column where it is checked; the only levers were delete and
+# re-scope.
+from src import learning as LR                                     # noqa: E402
+
+_PC = "Promotion Course"
+LR.add_rule("Name the breakpoint whenever a class is called responsive",
+            source="regeneration", session_no=3, course=_PC, scope="course",
+            raw="dont just say responsive, say which breakpoint!!")
+_idx = next(i for i, r in enumerate(LR.rules())
+            if r.get("course") == _PC and "breakpoint" in r.get("text", ""))
+check("the rule is applied as a RULE before promotion",
+      any("breakpoint" in r["text"] for r in LR.applicable_rules(_PC)))
+check("…and there is no skill for it yet", db.skills(_PC) == [])
+
+_ok, _sid, _why = LR.promote_to_skill(_idx, _PC, created_by=ALICE)
+check("promotion succeeds and returns the new skill's id",
+      _ok is True and isinstance(_sid, int), f"{_ok} {_sid} {_why!r}")
+_row = next(r for r in db.skills(_PC) if r["id"] == _sid)
+# A DRAFT, because what makes a skill worth more than a rule is that a person chose it.
+# A promotion that applied itself would hand this store's inference a skill's authority.
+check("it arrives as a DRAFT, not in force", _row["status"] == "draft", _row["status"])
+check("…so nothing is applied until it is approved",
+      skills.applicable(_PC) == [], str(skills.applicable(_PC)))
+# The REVIEWER category is both what it is and the strongest skill tier — a reviewer who
+# had to say something twice has earned outranking the standing brief.
+check("…filed under REVIEWER, the strongest skill tier",
+      _row["category"] == "reviewer", _row["category"])
+check("…carrying the words the reviewer actually typed, as its evidence",
+      "which breakpoint" in (_row.get("source_quote") or ""),
+      repr(_row.get("source_quote")))
+check("…scoped to the course it was learned on, not to every course",
+      (_row.get("scope") or "course") == "course")
+
+# THE DOUBLE-INJECTION TRAP. A promoted rule that stayed a rule would push the same
+# sentence down two channels — dilution in a prompt already bitten by it once — and the
+# reviewer would see one instruction reported twice under two names.
+check("THE RULE STOPS BEING A RULE the moment it is promoted",
+      not any("breakpoint" in r["text"] for r in LR.applicable_rules(_PC)),
+      str([r["text"][:40] for r in LR.applicable_rules(_PC)]))
+check("…and it is not injected into the writer's rules block either",
+      "breakpoint" not in LR.rules_block(_PC), LR.rules_block(_PC)[:120])
+check("…but the row is still VISIBLE, stamped with what owns it now",
+      LR.promoted_skill_id(LR.rules()[_idx]) == _sid,
+      str(LR.rules()[_idx].get("promoted_to_skill")))
+
+db.approve_skill(_sid, ALICE)
+check("once approved it IS in force",
+      any("breakpoint" in s["text"] for s in skills.applicable(_PC)),
+      str([s["text"][:40] for s in skills.applicable(_PC)]))
+check("…in the reviewer tier, above the standing brief",
+      skills._tier_of(next(s for s in skills.applicable(_PC)
+                           if "breakpoint" in s["text"])) == "reviewer")
+# AND NOW IT IS MEASURED — the whole point of the promotion.
+_prep = skill_report.build(DOC, course=_PC, judge_result=None)
+check("…and it now appears in the skill report, which a rule never did",
+      any("breakpoint" in r["text"] for r in _prep["skills"]),
+      str([r["text"][:30] for r in _prep["skills"]]))
+
+check("promoting the same rule twice is refused, not duplicated",
+      LR.promote_to_skill(_idx, _PC)[2] == "this rule has already been promoted to a skill")
+check("a rule that does not exist is refused",
+      LR.promote_to_skill(999, _PC)[2] == "no such rule")
+# A rule with NO COURSE would become a skill belonging to nothing. `add_rule` cannot
+# produce that state — it falls back to the active course — so the guard is for LEGACY
+# rows written before the course was recorded, and there are such rows in live stores
+# (the same reason `set_learned_rule_scope` carries the same guard). Constructed
+# directly, because that is the only honest way to reach the state it defends against.
+_data = LR._load()
+_data["rules"].append({"text": "A rule from before courses were recorded",
+                       "source": "judge", "scope": "course"})
+LR._save(_data)
+_gidx = next(i for i, r in enumerate(LR.rules())
+             if "before courses were recorded" in r.get("text", ""))
+check("a legacy rule with no course cannot be promoted without one being named",
+      "no course to promote it into" in LR.promote_to_skill(_gidx, "")[2],
+      LR.promote_to_skill(_gidx, "")[2])
+check("…but naming one promotes it there",
+      LR.promote_to_skill(_gidx, _PC)[0] is True)
+check("an empty rule is refused rather than becoming a blank skill",
+      "no text to promote" in (lambda: (
+          LR._save({**LR._load(), "rules": LR._load()["rules"] + [{"text": "  "}]})
+          or LR.promote_to_skill(len(LR.rules()) - 1, _PC)[2]))(),
+      "")
+
+_esrc3 = " ".join(inspect.getsource(server.promote_learned_rule).split())
+check("the endpoint files it against a course the user may actually open",
+      "_require_course(user, body.course)" in _esrc3, _esrc3[:0])
+check("…and takes its own body model rather than one demanding an unused field",
+      "RulePromoteBody" in _esrc3, _esrc3[:0])
+_lsrc2 = " ".join(inspect.getsource(server.learned_rules).split())
+check("the rule list reports what has been promoted, so the row explains itself",
+      "promoted_skill_id(r)" in _lsrc2, _lsrc2[:0])
+
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

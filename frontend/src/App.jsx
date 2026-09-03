@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { api, setAuthToken, setOnUnauthorized, setRenewCredential } from './api'
 import Icon from './Icon'
+import * as theme from './theme'
 
 export default function App() {
   // --- Auth (Google Sign-In, @nxtwave.co.in only) ---
@@ -1237,6 +1238,7 @@ export default function App() {
             detail that changes over time, and the user has no decision to make on it.
             A missing API key is surfaced where it blocks you — next to Generate. */}
         <div className="userbox">
+          <ThemeSwitch />
           {user.picture && <img className="avatar" src={user.picture} alt="" referrerPolicy="no-referrer" />}
           {/* The address is wrapped so a phone can drop it and keep the ADMIN pill and
               Sign out — at 390px it is 18 unbreakable characters shoving the only
@@ -2289,6 +2291,51 @@ const SKILL_GROUPS = [
  * with nothing to act on, and the one control that mattered pushed off the bottom.
  * It is one click away instead, in the same docked panel the sheet templates use.
  */
+/* THE THEME SWITCH.
+ *
+ * Three buttons rather than one toggle, because the preference is genuinely
+ * three-valued: a one-button toggle can express "light" and "dark" but not "follow the
+ * machine", which is the state most people want and the one a laptop that dims at
+ * sunset depends on. Three 26px targets cost less bar than the dropdown the third
+ * state would otherwise need, and the current one is readable without opening anything.
+ *
+ * The label under each icon is screen-reader-only: a sun is unambiguous, `aria-pressed`
+ * carries the state, and `title` gives the sighted user the same words on hover.
+ */
+function ThemeSwitch() {
+  const OPTS = [
+    { id: 'light', icon: 'sun', label: 'Light' },
+    { id: 'system', icon: 'monitor', label: 'Match my system' },
+    { id: 'dark', icon: 'moon', label: 'Dark' },
+  ]
+  // Seeded from what the shell already painted, so the switch never disagrees with the
+  // colours on screen for a frame.
+  const [pref, setPref] = useState(() => theme.apply())
+  useEffect(() => {
+    // The app is routinely open in two tabs (curriculum in one, a generation running in
+    // the other). Without this the second tab keeps the old palette until it reloads.
+    const onStorage = (e) => {
+      if (e.key !== theme.KEY) return
+      setPref(theme.apply())
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+  return (
+    <div className="themesw" role="group" aria-label="Colour theme">
+      {OPTS.map((o) => (
+        <button key={o.id} type="button" title={o.label}
+                className={`themebtn${pref === o.id ? ' on' : ''}`}
+                aria-pressed={pref === o.id}
+                onClick={() => { theme.setPref(o.id); setPref(o.id) }}>
+          <Icon name={o.icon} size={14} />
+          <span className="sronly">{o.label}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function SkillsHelpPanel({ onClose }) {
   return (
     <aside className="tmplside" aria-label="How skills work">
@@ -3324,6 +3371,13 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
         </select>
       </div>
 
+      {/* WHAT KIND OF COURSE THIS IS. Background, not rules — and the weakest input in
+          the system, which the section says out loud so nobody reaches for it to enforce
+          something. A rule belongs in Skills, where it is approved, evaluated and
+          repaired; this is the standing description a writer would want before reading
+          either. */}
+      <CourseDna course={course} />
+
       {/* DELETING THE COURSE. Offered to whoever created it (and to admins), because a
           course you imported and no longer need has, until now, had to stay on your shelf
           for ever. Two steps, never one click: the confirmation states exactly what goes
@@ -3672,6 +3726,7 @@ function LoginGate({ cfg, onSignIn, err }) {
 
   return (
     <div className="app logingate">
+      <div className="loginbar"><ThemeSwitch /></div>
       <div className="card loginbox">
         <div className="brand big">
           <span className="bmark" aria-hidden="true"><Icon name="doc" size={22} /></span>
@@ -3866,8 +3921,11 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
                 rare adjustment, so they live in Settings; this table stays the course. */}
             <span className="c-deck">{deckChip(r)}</span>
             <span className="c-act">
+              {/* ONE `title`. There were two, so JSX kept the LAST — the tooltip a
+                  reader actually saw was the lowercase afterthought, not the written
+                  one. The build has been warning about this. */}
               <button className="ghostbtn tiny" title="Remove this session"
-                      onClick={() => onDelete(r, i)} title="remove this session">
+                      onClick={() => onDelete(r, i)}>
                         <Icon name="x" size={13} /></button>
             </span>
           </div>
@@ -4110,6 +4168,88 @@ function SiteList({ sites, kind }) {
           </li>
         ))}
       </ul>
+    </div>
+  )
+}
+
+// THE COURSE PROFILE — eight phrases describing the course, and nothing more.
+//
+// Fields and help text come from the SERVER (`dna_fields`), which reads them off the one
+// definition in src/profiles.py. Add a field there and it appears here; the client has no
+// list of its own to fall out of date.
+//
+// The copy leads with what this is NOT. Every other per-course thing in the app either
+// measures a document or instructs the writer, and somebody arriving at a form of empty
+// text boxes will reasonably assume it does one of those. It does neither: it is the
+// weakest input in the system, every approved skill overrides it, and it never reaches
+// the page.
+function CourseDna({ course }) {
+  const [fields, setFields] = useState([])
+  const [vals, setVals] = useState({})
+  const [max, setMax] = useState(200)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState(null)
+  const [err, setErr] = useState(null)
+  const [dirty, setDirty] = useState(false)
+
+  useEffect(() => {
+    if (!course) return
+    setDirty(false); setMsg(null); setErr(null)
+    api.courseProfile(course).then((r) => {
+      setFields(r.dna_fields || [])
+      setMax(r.dna_max_chars || 200)
+      setVals((r.overrides?.dna) || {})
+    }).catch((e) => setErr(e.message))
+  }, [course])
+
+  function save() {
+    setBusy(true); setErr(null); setMsg(null)
+    // Blank fields are dropped server-side, so clearing every box clears the profile and
+    // the course goes back to behaving exactly as one that never had one.
+    const dna = Object.fromEntries(
+      Object.entries(vals).map(([k, v]) => [k, String(v || '').trim()]).filter(([, v]) => v))
+    api.courseProfile(course)
+      .then((r) => api.saveCourseProfile(course, { ...(r.overrides || {}), dna }))
+      .then(() => { setMsg('Saved. It applies to the next document generated.'); setDirty(false) })
+      .catch((e) => setErr(e.message))
+      .finally(() => setBusy(false))
+  }
+
+  if (!course) return null
+  return (
+    <div className="dnabox">
+      <label>Course profile — what kind of course this is</label>
+      <p className="hint">
+        Background the writer assumes: the subject, who it is for, how its learners get
+        there. It shapes <i>how</i> every document for this course is written.
+      </p>
+      <p className="hint">
+        <b>This is the weakest input in the system.</b> The hard rules, this course's
+        approved <b>Skills</b> and the curriculum all override it — so put a rule you want
+        enforced in Skills, where it is approved, evaluated and repaired. Nothing here is
+        ever printed in a document; a run that prints it fails.
+      </p>
+      {fields.map((f) => (
+        <div key={f.name} className="dnafield">
+          <label htmlFor={`dna-${f.name}`}>{f.name.replace(/_/g, ' ')}</label>
+          <input id={`dna-${f.name}`} maxLength={max}
+                 value={vals[f.name] || ''} placeholder={f.help}
+                 onChange={(e) => { setVals({ ...vals, [f.name]: e.target.value }); setDirty(true) }} />
+        </div>
+      ))}
+      <div className="gactions">
+        <button className="primary" disabled={busy || !dirty} onClick={save}>
+          {busy ? 'Saving…' : 'Save profile'}
+        </button>
+        {msg && <span className="okhint">{msg}</span>}
+      </div>
+      {err && <div className="alert warn"><pre>{err}</pre></div>}
+      <p className="hint tight">
+        Leave a field blank when the course has nothing stable to say about it — a guess
+        here is worse than a gap, because it is background nobody reviews. Keep each to a
+        phrase; {max} characters is the cap, and a long profile makes every instruction
+        beside it weaker.
+      </p>
     </div>
   )
 }
@@ -4565,6 +4705,36 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
     api.setLearnedRuleScope(i, to, target).then(() => onChanged && onChanged())
       .catch((e) => alert(e.message)).finally(() => setBusy(null))
   }
+  // PROMOTE a rule the agent inferred into a skill you own.
+  //
+  // The difference is not cosmetic. A rule reaches the writer and is never measured: no
+  // verdict, absent from the skill report, and nothing repairs a document that ignored
+  // it. A skill gets all three. So this is the move for a rule that has proved itself —
+  // and it lands as a DRAFT, because what makes a skill worth more than a rule is that a
+  // person chose it.
+  function promote(i, r) {
+    const target = r.course || course
+    if (!target) {
+      alert('This rule does not record which course it was learned on, so there is no '
+            + 'course to promote it into.')
+      return
+    }
+    if (!window.confirm(
+      `Make this a reviewer skill for “${target}”?\n\n${r.text}\n\n`
+      + 'It arrives as a DRAFT under Skills and changes nothing until you approve it '
+      + 'there — where you can also reword it first.\n\n'
+      + 'Once approved it is checked on every document (pass / partial / fail) and '
+      + 'repaired when it is not followed, which a learned rule never is. It stops '
+      + 'being applied as a rule straight away, so it is never counted twice.')) return
+    setBusy(i)
+    api.promoteLearnedRule(i, target)
+      .then(() => {
+        onChanged && onChanged()
+        alert('Added as a draft reviewer skill. Open Skills to approve it — until then '
+              + 'this instruction is not being applied at all.')
+      })
+      .catch((e) => alert(e.message)).finally(() => setBusy(null))
+  }
   function migrate() {
     setMigrating(true)
     api.migrateLearnedRules()
@@ -4651,13 +4821,28 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
                     fail a compliant doc on a violation that wasn't there. Shown, not
                     hidden, so it's clear the correction is still in force. */}
                 {r.gated && <span className="chip good" title={`Enforced automatically by ${r.gated}. No longer sent to the model or the judge — the check is exact now.`}>auto-enforced</span>}
+                {r.promoted && <span className="chip good" title="This rule is now a course skill. It is injected through the course brief instead, and checked on every document.">now a skill</span>}
+                {/* MAKE IT A SKILL. A learned rule reaches the writer and is never
+                    measured — no verdict, nothing in the skill report, no repair when a
+                    document ignores it. This is the one move that was missing: promote a
+                    rule that has proved itself into the column where it gets checked.
+                    Hidden once promoted, and once a gate already owns it — a gate is
+                    exact, which is stronger than either. */}
+                {!r.promoted && !r.gated && (
+                  <button className="link" disabled={busy === i}
+                          title="Make this a draft reviewer skill, so it is checked on every document and repaired when it is not followed"
+                          onClick={() => promote(i, r)}>
+                    <Icon name="skills" size={13} /> make it a skill</button>)}
                 {/* These rules now outrank the style guide, so a badly-generalised one
                     has to be removable — otherwise it is pushed at every session. */}
-                <button className="link" disabled={busy === i} title="Remove this rule"
+                <button className="link" disabled={busy === i}
                         onClick={() => remove(i, r.text)} title="remove this rule">
                         <Icon name="x" size={13} /></button>
               </div>
               {r.gated && <div className="just">Now enforced by {r.gated} — a hard gate rather than a prompt instruction.</div>}
+              {r.promoted && <div className="just">Promoted to a course skill — approve it under
+                <b> Skills</b> to put it in force. It is no longer applied as a rule, so
+                until then this instruction is not being applied at all.</div>}
               {r.raw && <div className="just">you wrote: “{r.raw}”</div>}
               {r.session_no != null && <div className="just">learned at Session {r.session_no}</div>}
             </div>

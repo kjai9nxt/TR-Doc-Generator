@@ -196,6 +196,46 @@ def _record_usage(label: str, model: str, usage: dict | None) -> None:
         _METERS[mid].append(rec)
 
 
+# HTTP statuses that will never come good by trying again: the key, the account or the
+# request is wrong, and a retry spends latency to be told so a second time.
+_NON_TRANSIENT = (400, 401, 402, 403, 404)
+
+
+def _provider_hint(status: int, body: str) -> str:
+    """What a provider failure MEANS, in a sentence, ahead of its raw text.
+
+    The raw reply is accurate and unreadable: a reviewer watching a run die saw 400
+    characters of JSON with a key identifier in the middle of it and no way to tell
+    whether the document was at fault, the app was broken, or somebody needed to click
+    something. These five are the whole of what actually goes wrong with a hosted model,
+    and each has a different person and a different action behind it.
+
+    The raw body still follows — it is the authority, and a hint that quietly replaced it
+    would be one more thing to distrust.
+    """
+    low = (body or "").lower()
+    if status == 401:
+        return ("The API key was rejected. Check OPENROUTER_API_KEY in the environment — "
+                "this is a configuration problem, not a problem with the document.")
+    if status == 402 or "insufficient" in low or "credit" in low:
+        return ("The account is out of credit. Top it up and run this again; nothing "
+                "about the document is wrong and no work has been lost.")
+    if status == 403 and "limit" in low:
+        return ("THE KEY'S SPEND LIMIT IS REACHED — not a fault in the app or the "
+                "document. Raise or clear the cap on the key (the link below opens it), "
+                "or point OPENROUTER_API_KEY at a key with room, then run this again. "
+                "Everything already generated is still here.")
+    if status == 403:
+        return ("The provider refused the request for this key — usually a spend cap or "
+                "a model this key is not allowed to call.")
+    if status == 429:
+        return ("The provider is rate-limiting this key. This one is temporary: wait a "
+                "moment and run it again.")
+    if status >= 500:
+        return "The provider is having trouble at its end. Worth trying again shortly."
+    return ""
+
+
 def _log_truncation(*, provider: str, model: str, finish_reason, max_tokens: int,
                     usage, content: str) -> None:
     """Record a truncated (max_tokens) response to logs/llm_debug.log so the cause
@@ -344,8 +384,14 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
                     raise _truncation_error(max_tokens)
                 _record_usage(label, model, data.get("usage"))
                 return content
-            last = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:400]}")
-            if resp.status_code in (400, 401, 403, 404):
+            # THE DIAGNOSIS FIRST, the provider's own words after it. A run that dies
+            # on a spend cap is not a defect in the document, and the reviewer watching
+            # it has no way to tell that from 400 characters of JSON.
+            hint = _provider_hint(resp.status_code, resp.text)
+            last = RuntimeError(
+                (f"{hint}\n\nProvider said (HTTP {resp.status_code}): " if hint
+                 else f"HTTP {resp.status_code}: ") + resp.text[:400])
+            if resp.status_code in _NON_TRANSIENT:
                 break  # not transient — stop retrying
         except TruncationError:
             raise  # retrying would truncate identically — surface it now
@@ -395,7 +441,16 @@ def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
         except TruncationError:
             raise  # retrying would truncate identically — surface it now
         except Exception as e:
-            last = e
+            # SAME SHORT-CIRCUIT AS THE HTTP PATH. A rejected key or a reached spend cap
+            # is not going to come good on the third attempt, and this path retried all
+            # of them with backoff — so a misconfigured key took three sleeps to report
+            # what it knew immediately.
+            status = getattr(e, "status_code", None) or getattr(
+                getattr(e, "response", None), "status_code", None)
+            hint = _provider_hint(status, str(e)) if isinstance(status, int) else ""
+            last = RuntimeError(f"{hint}\n\nProvider said: {e}") if hint else e
+            if isinstance(status, int) and status in _NON_TRANSIENT:
+                break
             time.sleep(2 * (attempt + 1))
     raise RuntimeError(f"LLM call failed after {retries} retries: {last}")
 

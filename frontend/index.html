@@ -4,6 +4,48 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TR Doc Generator</title>
+    <!-- THEME BOOTSTRAP. Inline, in <head>, before the bundle — deliberately.
+         Resolving the theme inside React means the browser paints the default palette
+         for one frame and then flips, and on a page this dark that flash is the most
+         visible thing about the feature. Running here, the attribute is on <html>
+         before the first paint.
+
+         Three stored states, two rendered ones: 'system' is resolved to light/dark
+         here and re-resolved when the OS preference changes, so the CSS only ever has
+         to define `[data-theme="light"]` once instead of duplicating the whole palette
+         inside a media query. `window.__theme` is the contract with the app.
+
+         THE UNSET STATE IS 'dark', NOT 'system'. This app is designed dark — the
+         surface ladder, the washes and the elevation were all picked for a near-black
+         ground — so dark is what it should open as, and light is something a person
+         asks for. Defaulting to 'system' would have silently moved every existing user
+         on a light-themed OS onto a palette they never chose. 'system' is still
+         SELECTABLE for anyone who wants the app to follow their machine; it is just no
+         longer what you get by saying nothing. -->
+    <script>
+      (function () {
+        var KEY = 'trdoc.theme';                 // 'system' | 'light' | 'dark'
+        var mq = window.matchMedia('(prefers-color-scheme: light)');
+        function stored() {
+          try { return localStorage.getItem(KEY) || 'dark'; } catch (e) { return 'dark'; }
+        }
+        function apply(pref) {
+          var resolved = pref === 'system' ? (mq.matches ? 'light' : 'dark') : pref;
+          document.documentElement.setAttribute('data-theme', resolved);
+          window.__theme = { pref: pref, resolved: resolved };
+        }
+        window.__setTheme = function (pref) {
+          try { localStorage.setItem(KEY, pref); } catch (e) {}
+          apply(pref);
+        };
+        // Only matters while the preference is 'system'; a user who has chosen a side
+        // keeps it when the OS flips at sunset.
+        var onChange = function () { if (stored() === 'system') apply('system'); };
+        if (mq.addEventListener) mq.addEventListener('change', onChange);
+        else if (mq.addListener) mq.addListener(onChange);
+        apply(stored());
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

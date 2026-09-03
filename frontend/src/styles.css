@@ -12,6 +12,7 @@
    the same surface.
    ============================================================================ */
 :root {
+  color-scheme: dark;
   /* Surfaces: deep, faintly blue, layered by lightness only */
   --bg: #0a0c12;
   --sunken: #0d1017;          /* inputs, wells, code */
@@ -24,11 +25,14 @@
   --text: #e9edf5;            /* body */
   --strong: #ffffff;          /* headings and numbers */
   --muted: #98a2b6;           /* secondary prose */
-  --faint: #6a7386;           /* labels, meta, placeholders */
+  /* Raised from #6a7386, which was 3.6:1 on --card2 — below AA for text of any
+     size, and this is the SMALLEST text in the app (.navlabel is 10px). Still a
+     clear step below --muted, so it is as faint as it was designed to look. */
+  --faint: #7d8698;           /* labels, meta, placeholders */
 
   /* Brand + status. One accent, used sparingly — it means "this is the action". */
   --accent: #7c93ff;
-  --accent2: #5a72f0;
+  --accent2: #4a60e0;   /* was #5a72f0: white on it was 4.12:1 */
   --accent-soft: rgba(124,147,255,.13);
   --accent-line: rgba(124,147,255,.42);
   --ok: #3ecf8e; --ok-soft: rgba(62,207,142,.12); --ok-line: rgba(62,207,142,.34);
@@ -53,6 +57,36 @@
      Every hue-aware component reads these three, so anything that is not inside a
      `[data-sec]` or `[data-cat]` block still paints in the action accent exactly as
      before. Nothing has to opt out. */
+
+  /* ---- Colours that were literals until the light theme existed ----
+     Each one below was a hex or rgba() sitting in a component rule. A literal is
+     invisible to a theme: it paints the same on white as on near-black, which is how
+     a "themed" UI ends up with three unreadable panels. Everything a theme has to be
+     able to repaint is a token, and the light block is the same list of names. */
+  --on-accent: #ffffff;       /* text on a filled accent button, both themes */
+  --accent-hover: #5069df; --accent-hover-line: #8ea1ff;
+  --accent-wash: rgba(124,147,255,.08);   /* a row the user has edited */
+  --accent-faint: rgba(124,147,255,.05);  /* blockquote ground */
+  /* Was #1f9f6b/#24b478 — white on them was 3.37:1 and 2.67:1, the worst pair in
+     either theme, on the button that downloads the finished document. */
+  --dl: #14804f; --dl-hover: #168552; --dl-hover-line: #34c98a;
+  --ghost-hover: #1d2231;     /* secondary button hover ground */
+  --ok-text: #7ee0ac;         /* status PROSE, which needs more contrast than a border */
+  --warn-text: #eecf95;
+  --err-text: #f2b3b3;
+  --code-bg: #070a10;         /* code + the live log: below the sunken step */
+  --log-text: #9fd0b4;
+  --md-h3: #a7b6ff;
+  --zebra: rgba(255,255,255,.015);      /* table stripe */
+  --hover-wash: rgba(255,255,255,.045); /* generic row hover */
+  --topbar-bg: rgba(10,12,18,.85);      /* the sticky bar's blur ground */
+  --tile-grad: #171d2b;                 /* stat tile gradient end */
+  --track: rgba(127,127,127,.22);       /* progress rail */
+  --scroll-hover: #414b5e;
+  --sel: rgba(124,147,255,.3);
+  --draft-wash: rgba(229,172,75,.045);  /* an unapproved skill */
+  --wash1: rgba(90,114,240,.10);        /* the two fixed page washes */
+  --wash2: rgba(62,207,142,.045);
   --hue: var(--accent);
   --hue-soft: var(--accent-soft);
   --hue-line: var(--accent-line);
@@ -112,6 +146,129 @@
 [data-cat="content"], [data-cat="structure"], [data-cat="style"]
                                  { --hue: #9aa6bd; --hue-soft: rgba(154,166,189,.13);
                                    --hue-line: rgba(154,166,189,.36); }
+
+/* ============================================================================
+   LIGHT THEME
+
+   The theme is applied as `data-theme` on <html> by the bootstrap script in
+   index.html, which runs BEFORE React mounts — a theme resolved in a React effect
+   paints the dark palette first and then flips, and that flash is the single most
+   visible bug a theme can have. "System" is resolved to a concrete value there and
+   re-resolved when the OS preference changes, so the CSS only ever has two states
+   and this palette is written once instead of once per media query.
+
+   It is NOT the dark palette inverted. Three things do not survive inversion:
+
+   · ACCENTS. #7c93ff is 2.6:1 on white — fine as a large fill on near-black, illegible
+     as link text on paper. Every hue is re-picked darker and more saturated, and the
+     status colours most of all: #3ecf8e on white is 1.9:1.
+   · ELEVATION. On a dark ground a shadow is the only cue, so it is heavy. On a light
+     one the border already carries the step and a .5-alpha black shadow reads as dirt,
+     so the shadows drop to ~.06 alpha and the ladder leans on the hairlines.
+   · SURFACE ORDER. Dark elevates by getting LIGHTER (bg -> card -> card2). Light
+     elevates by going WHITE and letting the page recede, so `--card` is #fff and the
+     page is the tinted one. `--sunken` still has to read as a well, so it goes darker
+     than the page rather than lighter.
+   ============================================================================ */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces: the ladder inverts — the CARD is white and the page recedes */
+  --bg: #f7f8fb;
+  --sunken: #eceff5;
+  --card: #ffffff;
+  --card2: #f3f5fa;
+  --line: #dee2ec;
+  --line2: #c3cad9;
+
+  /* Text: same four jobs, each re-picked for a light ground.
+     --faint is the tightest: 10–12px labels, so it is held at 4.8:1 on the page
+     rather than the 3:1 a "faint" colour drifts to. */
+  --text: #1c2230;
+  --strong: #0b0f18;
+  --muted: #4c5566;
+  --faint: #5f6878;
+
+  /* Brand + status, re-picked. White-on-fill is >=4.6:1 for every filled button. */
+  --accent: #4257d4;
+  --accent2: #3a4dc4;
+  --accent-soft: rgba(66,87,212,.10);
+  --accent-line: rgba(66,87,212,.34);
+  --ok: #0d7c4f; --ok-soft: rgba(13,124,79,.10); --ok-line: rgba(13,124,79,.30);
+  --warn: #96600a; --warn-soft: rgba(150,96,10,.10); --warn-line: rgba(150,96,10,.30);
+  --err: #cf3b3b; --err-soft: rgba(207,59,59,.08); --err-line: rgba(207,59,59,.30);
+
+  /* Elevation: light, tight, and mostly the hairline's job */
+  --sh-sm: 0 1px 2px rgba(16,24,40,.05);
+  --sh: 0 1px 2px rgba(16,24,40,.05), 0 4px 12px -6px rgba(16,24,40,.10);
+  --sh-lg: 0 2px 4px rgba(16,24,40,.05), 0 16px 40px -16px rgba(16,24,40,.16);
+  --ring: 0 0 0 3px rgba(66,87,212,.22);
+
+  /* The tokenised literals, same names */
+  --on-accent: #ffffff;
+  --accent-hover: #3346b8; --accent-hover-line: #2c3ea6;
+  --accent-wash: rgba(66,87,212,.06);
+  --accent-faint: rgba(66,87,212,.045);
+  --dl: #12855a; --dl-hover: #0e7049; --dl-hover-line: #0b5c3c;
+  --ghost-hover: #eef1f7;
+  --ok-text: #0b6e46;
+  --warn-text: #8a5806;
+  --err-text: #a32828;
+  --code-bg: #f4f6fb;
+  --log-text: #14563a;
+  --md-h3: #3a4dc4;
+  --zebra: rgba(16,24,40,.022);
+  --hover-wash: rgba(16,24,40,.04);
+  --topbar-bg: rgba(247,248,251,.85);
+  --tile-grad: #eef1f7;
+  --track: rgba(16,24,40,.10);
+  --scroll-hover: #aab2c2;
+  --sel: rgba(66,87,212,.20);
+  --draft-wash: rgba(181,116,7,.07);
+  --wash1: rgba(90,114,240,.07);
+  --wash2: rgba(15,138,88,.05);
+
+  /* The default section hue follows the accent, exactly as in dark */
+  --hue: var(--accent);
+  --hue-soft: var(--accent-soft);
+  --hue-line: var(--accent-line);
+}
+
+/* SECTION + CATEGORY HUES, light. Same eight jobs, re-picked: the dark hues are chosen
+   to glow on near-black and every one of them lands between 1.8:1 and 2.9:1 on white,
+   where they are spent on an icon and a badge label — small text. Each is darkened to
+   clear 4.5:1 on the page while keeping the hue recognisably the same colour, so the
+   rail still reads as a map. */
+:root[data-theme="light"] [data-sec="curriculum"] { --hue: #4257d4; --hue-soft: rgba(66,87,212,.10);
+                          --hue-line: rgba(66,87,212,.34); }
+:root[data-theme="light"] [data-sec="generate"]   { --hue: #7636c9; --hue-soft: rgba(118,54,201,.10);
+                          --hue-line: rgba(118,54,201,.34); }
+:root[data-theme="light"] [data-sec="history"]    { --hue: #0d6d80; --hue-soft: rgba(13,109,128,.10);
+                          --hue-line: rgba(13,109,128,.32); }
+:root[data-theme="light"] [data-sec="team"]       { --hue: #1a63a8; --hue-soft: rgba(26,99,168,.10);
+                          --hue-line: rgba(26,99,168,.32); }
+:root[data-theme="light"] [data-sec="skills"]     { --hue: #8a5806; --hue-soft: rgba(138,88,6,.10);
+                          --hue-line: rgba(138,88,6,.30); }
+:root[data-theme="light"] [data-sec="prereqs"]    { --hue: #0c7259; --hue-soft: rgba(12,114,89,.10);
+                          --hue-line: rgba(12,114,89,.30); }
+:root[data-theme="light"] [data-sec="rules"]      { --hue: #ab3a70; --hue-soft: rgba(171,58,112,.10);
+                          --hue-line: rgba(171,58,112,.32); }
+:root[data-theme="light"] [data-sec="settings"]   { --hue: #56607a; --hue-soft: rgba(86,96,122,.10);
+                          --hue-line: rgba(86,96,122,.30); }
+:root[data-theme="light"] [data-cat="teaching_flow"]       { --hue: #7636c9; --hue-soft: rgba(118,54,201,.10);
+                                   --hue-line: rgba(118,54,201,.34); }
+:root[data-theme="light"] [data-cat="teaching_guidelines"] { --hue: #4257d4; --hue-soft: rgba(66,87,212,.10);
+                                   --hue-line: rgba(66,87,212,.34); }
+:root[data-theme="light"] [data-cat="examples_visuals"]    { --hue: #0c7259; --hue-soft: rgba(12,114,89,.10);
+                                   --hue-line: rgba(12,114,89,.30); }
+:root[data-theme="light"] [data-cat="reviewer"]            { --hue: #8a5806; --hue-soft: rgba(138,88,6,.10);
+                                   --hue-line: rgba(138,88,6,.30); }
+:root[data-theme="light"] [data-cat="content"],
+:root[data-theme="light"] [data-cat="structure"],
+:root[data-theme="light"] [data-cat="style"]
+                                 { --hue: #56607a; --hue-soft: rgba(86,96,122,.10);
+                                   --hue-line: rgba(86,96,122,.30); }
+
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
@@ -128,15 +285,15 @@ body {
 body::before {
   content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
-    radial-gradient(1200px 700px at 80% -10%, rgba(90,114,240,.10), transparent 62%),
-    radial-gradient(800px 500px at 0% 0%, rgba(62,207,142,.045), transparent 55%);
+    radial-gradient(1200px 700px at 80% -10%, var(--wash1), transparent 62%),
+    radial-gradient(800px 500px at 0% 0%, var(--wash2), transparent 55%);
 }
-::selection { background: rgba(124,147,255,.3); }
+::selection { background: var(--sel); }
 /* Scrollbars */
 * { scrollbar-width: thin; scrollbar-color: var(--line2) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
-*::-webkit-scrollbar-thumb:hover { background: #414b5e; }
+*::-webkit-scrollbar-thumb:hover { background: var(--scroll-hover); }
 
 /* ---------- Icons ----------
    Every icon inherits the type colour and sits on the text baseline. This one rule is
@@ -229,7 +386,7 @@ body::before {
 .coursechip { background: var(--sunken); border: 1px solid var(--line); border-radius: 999px;
               padding: 5px 13px; font-size: 12.5px; color: var(--text); cursor: pointer; }
 .coursechip:hover { border-color: var(--line2); }
-.coursechip.on { border-color: var(--accent); background: rgba(124,147,255,.14); }
+.coursechip.on { border-color: var(--accent); background: var(--accent-soft); }
 .memberchip { background: var(--sunken); border: 1px solid var(--line); border-radius: 999px;
               padding: 4px 11px; font-size: 12px; color: var(--muted); }
 .mdot { color: var(--ok); margin-left: 6px; font-size: 9px; vertical-align: middle; }
@@ -352,7 +509,7 @@ body::before {
 .filebody > label:first-child { margin-top: 4px; }
 @media (max-width: 700px) { .filebody { padding-left: 18px; } }
 
-.skill.draft { background: rgba(229,172,75,.045); }
+.skill.draft { background: var(--draft-wash); }
 .skill.retired { opacity: .45; }
 /* A SKILL IS A PIECE OF WRITING, so it is set like one.
    THE HIERARCHY WAS UPSIDE DOWN. Every paragraph was semi-bold at full contrast and
@@ -498,10 +655,10 @@ body::before {
 .helpbody dd { margin: 2px 0 0 19px; font-size: 12px; color: var(--muted); line-height: 1.55; }
 .helpbody .pcopy { color: var(--text); }
 
-.ghostbtn.on { border-color: var(--accent); background: rgba(124,147,255,.14); }
-.ghostbtn.tiny.danger { border-color: rgba(239,99,99,.42); color: #f2b3b3; }
-.ghostbtn.danger { border-color: rgba(239,99,99,.42); color: #f2b3b3; }
-.ghostbtn.danger:hover:not(:disabled) { border-color: var(--err); background: rgba(239,99,99,.1); }
+.ghostbtn.on { border-color: var(--accent); background: var(--accent-soft); }
+.ghostbtn.tiny.danger { border-color: var(--err-line); color: var(--err-text); }
+.ghostbtn.danger { border-color: var(--err-line); color: var(--err-text); }
+.ghostbtn.danger:hover:not(:disabled) { border-color: var(--err); background: var(--err-soft); }
 
 @media (max-width: 900px) {
   /* The rail becomes a strip above the content rather than a column squeezed to
@@ -548,6 +705,7 @@ body::before {
      avatar plus Sign out already answer "who am I / how do I leave". */
   .uemail .etext { display: none; }
   .userbox { gap: 8px; font-size: 12.5px; }
+  .loginbar { top: 10px; right: 14px; }
   .navtabs { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
   .navsec { flex: 1 1 100%; }
   h2 { font-size: 16px; }
@@ -563,7 +721,7 @@ body::before {
   position: sticky; top: 0; z-index: 20;
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
   padding: 14px 4px; margin: 0 -4px 18px;
-  background: rgba(10,12,18,.85);
+  background: var(--topbar-bg);
   backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border-bottom: 1px solid var(--line);
 }
@@ -579,6 +737,33 @@ body::before {
 .brand.big .bmark { width: 38px; height: 38px; border-radius: 11px; }
 .userbox { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
 .avatar { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); }
+
+/* ---------- The theme switch ----------
+   A segmented control on the SUNKEN step, so it reads as one object in the bar rather
+   than as three buttons that happen to be adjacent. The selected segment is the only
+   thing that gets a raised surface and full-strength text; the other two sit at
+   --faint, which is the same relationship the nav tabs use.
+
+   26px targets, and `flex: none` on each: the bar is a flex row that shrinks, and
+   without it the three segments are the first thing squeezed to nothing. */
+.themesw { display: inline-flex; flex: none; align-items: center; gap: 2px;
+           padding: 2px; border-radius: var(--r-sm);
+           background: var(--sunken); border: 1px solid var(--line); }
+.themebtn { display: grid; place-items: center; flex: none;
+            width: 26px; height: 22px; padding: 0; cursor: pointer;
+            background: none; border: 1px solid transparent; border-radius: 6px;
+            color: var(--faint); transition: color .14s, background .14s, border-color .14s; }
+.themebtn:hover { color: var(--text); background: var(--hover-wash); }
+.themebtn.on { color: var(--accent); background: var(--card); border-color: var(--line2);
+               box-shadow: var(--sh-sm); }
+/* The switch is not a place to lose a focus ring: it is three unlabelled icons, so a
+   keyboard user has nothing else telling them where they are. */
+.themebtn:focus-visible { box-shadow: var(--ring); }
+
+/* Screen-reader-only. The three segments are icon-only by design; this is the label
+   that makes them announce as "Light", "Match my system", "Dark" rather than "button". */
+.sronly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+          overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .uemail { display: inline-flex; align-items: center; gap: 8px; }
 .pill {
   background: var(--card2); border: 1px solid var(--line); border-radius: 999px;
@@ -674,23 +859,23 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16
 button.primary, a.primary {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   margin-top: 16px;
-  background: var(--accent2); color: #fff; border: 1px solid var(--accent);
+  background: var(--accent2); color: var(--on-accent); border: 1px solid var(--accent);
   border-radius: var(--r); padding: 9px 16px; font-size: 13.5px; font-weight: 600;
   cursor: pointer; text-decoration: none; box-shadow: var(--sh-sm);
   transition: background .14s, border-color .14s, transform .1s, opacity .14s;
 }
-button.primary:hover:not(:disabled), a.primary:hover { background: #6b81f5; border-color: #8ea1ff; }
+button.primary:hover:not(:disabled), a.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover-line); }
 button.primary:active:not(:disabled), a.primary:active { transform: translateY(1px); }
 button.primary:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
-a.download, button.download { background: #1f9f6b; border-color: var(--ok); }
-a.download:hover, button.download:hover:not(:disabled) { background: #24b478; border-color: #4fdd9d; }
+a.download, button.download { background: var(--dl); border-color: var(--ok); }
+a.download:hover, button.download:hover:not(:disabled) { background: var(--dl-hover); border-color: var(--dl-hover-line); }
 .ghostbtn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   background: var(--card2); color: var(--text); border: 1px solid var(--line);
   border-radius: var(--r); padding: 9px 15px; cursor: pointer; font-size: 13.5px;
   font-weight: 550; transition: border-color .14s, background .14s, color .14s;
 }
-.ghostbtn:hover:not(:disabled) { border-color: var(--line2); background: #1d2231; }
+.ghostbtn:hover:not(:disabled) { border-color: var(--line2); background: var(--ghost-hover); }
 .ghostbtn:disabled { opacity: .4; cursor: not-allowed; }
 .ghostbtn.on { border-color: var(--accent-line); background: var(--accent-soft); color: var(--strong); }
 .ghostbtn.sm, button.primary.sm { padding: 6px 12px; font-size: 12.5px; margin-top: 0; }
@@ -699,7 +884,7 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
 /* ---------- Metrics ---------- */
 .metrics { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0; }
 .metric {
-  flex: 1 1 130px; background: linear-gradient(160deg, var(--card2), #171d2b);
+  flex: 1 1 130px; background: linear-gradient(160deg, var(--card2), var(--tile-grad));
   border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; transition: transform .14s, border-color .14s;
 }
 .metric:hover { transform: translateY(-2px); border-color: var(--line2); }
@@ -709,12 +894,12 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
 
 /* ---------- Alerts / notes ---------- */
 .alert { margin-top: 14px; border-radius: var(--r); padding: 12px 15px; font-size: 13px; border: 1px solid; }
-.alert.warn { background: rgba(232,179,74,.09); border-color: rgba(232,179,74,.38); color: #eecf95; }
-.alert.error { background: rgba(239,99,99,.09); border-color: rgba(239,99,99,.4); color: #f2b3b3; }
+.alert.warn { background: var(--warn-soft); border-color: var(--warn-line); color: var(--warn-text); }
+.alert.error { background: var(--err-soft); border-color: var(--err-line); color: var(--err-text); }
 .alert b { color: var(--text); }
 .alert pre { white-space: pre-wrap; margin: 6px 0 0; font-family: ui-monospace, monospace; }
 .alert ul { margin: 8px 0 0; padding-left: 18px; }
-.ok-note { margin-top: 14px; color: #7ee0ac; font-weight: 600; }
+.ok-note { margin-top: 14px; color: var(--ok-text); font-weight: 600; }
 /* BLOCK, or the measure below does nothing. Most hints are written as <span>, and
    max-width has no effect on an inline box — so every "constrained" hint in the app was
    still running the full 1400px. Flex and grid children are blockified anyway, which is
@@ -727,9 +912,9 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
 
 /* ---------- Logs ---------- */
 .logs {
-  background: #070a10; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--code-bg); border: 1px solid var(--line); border-radius: var(--r);
   padding: 13px 15px; margin-top: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px; color: #9fd0b4; max-height: 280px; overflow: auto; white-space: pre-wrap; line-height: 1.7;
+  font-size: 12px; color: var(--log-text); max-height: 280px; overflow: auto; white-space: pre-wrap; line-height: 1.7;
 }
 
 /* ---------- Markdown preview ---------- */
@@ -769,7 +954,7 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
 .runhead { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 4px;
            padding: 10px 14px; font-size: 13px; background: var(--sunken);
            border: 1px solid var(--line); border-radius: var(--r); }
-.runhead.mismatch { border-color: var(--warn); background: rgba(232,179,74,.10); }
+.runhead.mismatch { border-color: var(--warn); background: var(--warn-soft); }
 .runwarn { font-size: 12.5px; color: var(--warn); line-height: 1.5; }
 
 /* The context line: which workspace, which course, who it is shared with. */
@@ -890,7 +1075,7 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
 }
 .curhead { background: transparent; font-size: 11px; text-transform: uppercase;
            letter-spacing: .04em; color: var(--muted); font-weight: 700; }
-.currow.dirty { background: rgba(124,147,255,.08); }
+.currow.dirty { background: var(--accent-wash); }
 .currow input { margin: 0; padding: 7px 9px; font-size: 13px; }
 .curhead span { padding: 0 2px; }
 /* The per-row expander (.ktbtn/.ktedit) is gone: every column is inline now, so there
@@ -934,7 +1119,7 @@ a.download:hover, button.download:hover:not(:disabled) { background: #24b478; bo
    itself instead of prompting "why is it 86?". */
 .rubricbar { margin: 10px 0 4px; font-size: 13px; color: var(--muted); line-height: 1.6; }
 .rubricbar b { color: var(--text); }
-.rubricblock { margin-top: 6px; color: var(--warn, #e0a34a); }
+.rubricblock { margin-top: 6px; color: var(--warn); }
 .dimcost { font-size: 12px; margin-left: 8px; }
 .scorerow.cost .dimname { color: var(--text); }
 summary { cursor: pointer; color: var(--accent); font-size: 14px; }
@@ -948,18 +1133,18 @@ summary { cursor: pointer; color: var(--accent); font-size: 14px; }
 .md p { margin: 10px 0; }
 .md h1 { font-size: 21px; font-weight: 750; margin: 20px 0 12px; line-height: 1.3; letter-spacing: -.3px; }
 .md h2 { font-size: 16px; font-weight: 700; margin: 24px 0 11px; padding-bottom: 6px; line-height: 1.35; border-bottom: 1px solid var(--line); }
-.md h3 { font-size: 14.5px; font-weight: 650; margin: 18px 0 6px; line-height: 1.35; color: #a7b6ff; }
+.md h3 { font-size: 14.5px; font-weight: 650; margin: 18px 0 6px; line-height: 1.35; color: var(--md-h3); }
 .md ul, .md ol { margin: 8px 0; padding-left: 22px; }
 .md li { margin: 5px 0; }
 .md li::marker { color: var(--accent); }
-.md strong { color: #fff; font-weight: 700; }
+.md strong { color: var(--strong); font-weight: 700; }
 .md a { color: var(--accent); }
-.md blockquote { margin: 12px 0; padding: 4px 14px; border-left: 3px solid var(--accent2); color: var(--muted); background: rgba(124,147,255,.05); border-radius: 0 8px 8px 0; }
+.md blockquote { margin: 12px 0; padding: 4px 14px; border-left: 3px solid var(--accent2); color: var(--muted); background: var(--accent-faint); border-radius: 0 8px 8px 0; }
 .md table { border-collapse: collapse; width: 100%; margin: 14px 0; display: block; overflow-x: auto; }
 .md th, .md td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; font-size: 13px; }
 .md th { background: var(--card2); font-weight: 650; }
-.md tr:nth-child(even) td { background: rgba(255,255,255,.015); }
-.md code { background: #070a10; padding: 1.5px 6px; border-radius: 5px; font-size: 12.5px; border: 1px solid var(--line); }
+.md tr:nth-child(even) td { background: var(--zebra); }
+.md code { background: var(--code-bg); padding: 1.5px 6px; border-radius: 5px; font-size: 12.5px; border: 1px solid var(--line); }
 
 /* ---------- Busy spinner ---------- */
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -1114,7 +1299,7 @@ button.tag:hover:not(:disabled) { color: var(--text); border-color: var(--accent
        House is the consequential setting (it is what the migration warning is about), so
        it takes the warm tag and the contained one takes the calm one. */
 .tag.src-human   { color: var(--text); border-color: var(--line2);
-                   background: rgba(255,255,255,.045); }
+                   background: var(--hover-wash); }
 .tag.src-auto    { color: var(--faint); border-color: var(--line); }
 .tag.scope-house { color: var(--warn); border-color: var(--warn-line);
                    background: var(--warn-soft); }
@@ -1130,7 +1315,10 @@ button.tag:disabled { cursor: default; opacity: .5; }
 
 /* ---------- Auth ----------
    .userbox/.avatar/.uemail live with the topbar, which is the only place they appear. */
-.logingate { display: flex; align-items: center; justify-content: center; min-height: 88vh; padding-bottom: 0; }
+/* The sign-in screen centres one card in the viewport, so there is no bar to put the
+   switch in. This is that bar: pinned top-right, out of the card's way. */
+.loginbar { position: absolute; top: 18px; right: 24px; }
+.logingate { display: flex; align-items: center; justify-content: center; min-height: 88vh; position: relative; padding-bottom: 0; }
 .loginbox { max-width: 420px; text-align: center; box-shadow: var(--sh-lg); padding: 36px 32px; }
 .brand.big { margin-bottom: 6px; justify-content: center; }
 .gsi-btn { display: flex; justify-content: center; margin: 22px 0 10px; }
@@ -1253,7 +1441,7 @@ button.tag:disabled { cursor: default; opacity: .5; }
   font-size: 17px; line-height: 1; padding: 0 2px;
 }
 .csideclose:hover { color: var(--text); }
-.csideval { font-size: 27px; font-weight: 750; letter-spacing: -.5px; margin-top: 10px; color: #7ee0ac; }
+.csideval { font-size: 27px; font-weight: 750; letter-spacing: -.5px; margin-top: 10px; color: var(--ok-text); }
 .csidesub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 .csiderows { margin-top: 13px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); padding-top: 11px; }
 .csiderows > div { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; }
@@ -1309,7 +1497,7 @@ button.tag:disabled { cursor: default; opacity: .5; }
 .feedback textarea:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
 .feedback .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .alert.ok {
-  background: rgba(66, 190, 130, .1); border: 1px solid rgba(66, 190, 130, .35);
+  background: var(--ok-soft); border: 1px solid var(--ok-line);
   color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 13px;
 }
 /* The distilled rule, shown back so a bad distillation is visible immediately
@@ -1318,7 +1506,7 @@ button.tag:disabled { cursor: default; opacity: .5; }
 
 /* The judge miscounted something the code had already measured — see App.jsx. Warm
    rather than red: the document is fine, the grade needed correcting. */
-.rubricblock.judgefix { border-left: 3px solid var(--warn, #d08b2c); }
+.rubricblock.judgefix { border-left: 3px solid var(--warn); }
 .rubricblock.judgefix ul { margin: .4rem 0 0; padding-left: 1.1rem; }
 .rubricblock.judgefix li { margin-bottom: .35rem; }
 .judgeclaim { opacity: .75; font-style: italic; margin: .15rem 0 .1rem; }
@@ -1329,11 +1517,11 @@ button.tag:disabled { cursor: default; opacity: .5; }
 .joblive { margin-top: 12px; }
 .jobbar {
   height: 6px; border-radius: 999px; overflow: hidden;
-  background: rgba(127, 127, 127, 0.22); margin-bottom: 8px;
+  background: var(--track); margin-bottom: 8px;
 }
 .jobbar > span {
   display: block; height: 100%; border-radius: 999px;
-  background: var(--accent, #6c8cff);
+  background: var(--accent);
   transition: width 400ms ease;
   min-width: 6%;
 }
@@ -1463,8 +1651,8 @@ summary:hover::before { border-left-color: var(--accent); }
 /* The quote that settles it. A verdict of "broken" with nothing under it is an opinion;
    with the slide and the offending text it is a finding the reader can go and check. */
 .panel.skillrep .evidence { margin-top: 5px; padding-left: 10px;
-  border-left: 2px solid var(--warn, #d08b2c); color: var(--muted); }
-.panel.skillrep .setrow.pass .evidence { border-left-color: var(--ok-line, #2f6b4d); }
+  border-left: 2px solid var(--warn); color: var(--muted); }
+.panel.skillrep .setrow.pass .evidence { border-left-color: var(--ok-line); }
 
 /* ============================================================================
    THE SKILL REPORT, AS A PAGE
@@ -1561,4 +1749,19 @@ summary:hover::before { border-left-color: var(--accent); }
 @media (max-width: 640px) {
   .catrow { grid-template-columns: 72px 1fr auto; }
   .catmeta { grid-column: 2 / -1; }
+}
+
+/* The course profile form. Set apart from the numeric settings above it and quieter than
+   them: it is background, and a box that looks like a control invites being used as one. */
+.dnabox { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
+.dnabox > .hint { margin: 6px 0; }
+.dnafield { margin-top: 12px; }
+.dnafield > label { text-transform: capitalize; letter-spacing: 0; font-size: 12px;
+  color: var(--muted); margin-bottom: 5px; }
+.dnabox .okhint { font-size: 12.5px; color: var(--ok); align-self: center; }
+@media (min-width: 760px) {
+  /* Two columns: eight single-line fields in one column is a long scroll for what is
+     eight phrases. */
+  .dnabox .dnafield { display: inline-block; width: calc(50% - 7px); vertical-align: top; }
+  .dnabox .dnafield:nth-child(even) { margin-right: 12px; }
 }

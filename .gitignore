@@ -28,3 +28,9 @@ frontend/node_modules/
 # NOTE: frontend/dist/ IS committed on purpose. Render's Python build does not run
 # a Node build, so the server serves this pre-built output. Rebuild it whenever the
 # frontend source changes:  cd frontend && npm run build   (then commit the result).
+
+# Theme-screenshot artefacts (npm run test:shots) — regenerated on demand, and the
+# PNGs are a few hundred kB each. The DOM dump is a snapshot of the jsdom harness.
+frontend/test/shots/
+frontend/test/_shot.*.html
+frontend/test/_app.bundle.mjs

@@ -268,6 +268,7 @@ class CourseSettingsBody(BaseModel):
     max_slides: int | None = None
 
 
+
 class SessionSettingsBody(BaseModel):
     session_no: int
     course: str | None = None
@@ -1519,7 +1520,16 @@ def get_course_profile(course: str | None = None, user: dict = Depends(current_u
     return {"course": course,
             "profile": profile_rules.for_course(course),
             "overrides": db.course_profile(course),
-            "defaults": profile_rules.harness_defaults()}
+            "defaults": profile_rules.harness_defaults(),
+            # THE DESCRIPTIVE FIELDS AND THEIR HELP, so the form is built from the one
+            # definition in src.profiles rather than a copy in the client — add a field
+            # there and it appears in the UI with no further change. Sent alongside the
+            # existing three rather than on a route of its own: the profile is one thing,
+            # and a second endpoint for half of it was a route collision waiting to
+            # happen (it was — I wrote it, and it shadowed this one).
+            "dna_fields": [{"name": k, "help": v}
+                           for k, v in profile_rules.DNA_FIELDS.items()],
+            "dna_max_chars": profile_rules.DNA_MAX_CHARS}
 
 
 @app.post("/api/course-profile")
@@ -3499,8 +3509,13 @@ def learned_rules(user: dict = Depends(current_user)):
     # occasionally invent a violation). Nothing is hidden — the rule stays visible.
     return {
         "course": course,
+        # `promoted` is the other reason a rule is listed but not applied: it has become
+        # an approved-pending skill, so it is injected through the course brief instead
+        # and reported there with a PASS/PARTIAL/FAIL verdict. Same principle as `gated`
+        # — something stronger owns it now, and the row stays visible saying so.
         "rules": [{**r, "applies": r.get("text") in applies,
-                   "gated": learning.gate_for(r)}
+                   "gated": learning.gate_for(r),
+                   "promoted": learning.promoted_skill_id(r)}
                   for r in learning.rules()],
     }
 
@@ -3539,6 +3554,14 @@ def migrate_learned_rules(user: dict = Depends(require_admin)):
 class RuleScopeBody(BaseModel):
     scope: str                       # "global" (house style) | "course" (subject matter)
     course: str | None = None        # which course a course-scoped rule belongs to
+
+
+class RulePromoteBody(BaseModel):
+    """Which course to promote a learned rule INTO. Its own model rather than reusing
+    RuleScopeBody, whose `scope` is required — a promote caller would have had to send a
+    value that means nothing here, and a required field nobody reads is a trap for
+    whoever writes the next client."""
+    course: str | None = None
 
 
 @app.post("/api/learned-rules/{index}/scope")
@@ -3581,6 +3604,32 @@ def set_learned_rule_scope(index: int, body: RuleScopeBody,
     rule["scope"] = scope
     learning._save(data)
     return {"ok": True, "rule": rule, "rules": learning.rules()}
+
+
+@app.post("/api/learned-rules/{index}/promote")
+def promote_learned_rule(index: int, body: RulePromoteBody,
+                         user: dict = Depends(current_user)):
+    """Make ONE learned rule a DRAFT reviewer skill.
+
+    WHY THIS EXISTS. A rule inferred from your feedback reaches the writer but is never
+    measured: it has no verdict, it is absent from the skill report, and nothing repairs
+    a document that ignored it. Skills get all three. Until now there was no way to move
+    a rule that had proved itself into the column where it would be checked — the only
+    levers were delete and re-scope.
+
+    A DRAFT, deliberately. Skills are worth more than rules precisely because a person
+    chose them; a promotion that took effect on its own would hand this store's inference
+    a skill's authority. It waits under Skills, where it can be reworded first.
+    """
+    from src import learning
+    course = _require_course(user, body.course)
+    ok, skill_id, why = learning.promote_to_skill(
+        index, course, created_by=user.get("email"))
+    if not ok:
+        raise HTTPException(status_code=(404 if why == "no such rule" else 400),
+                            detail={"message": why})
+    return {"ok": True, "skill_id": skill_id, "course": course,
+            "rules": learning.rules()}
 
 
 @app.delete("/api/learned-rules/{index}")

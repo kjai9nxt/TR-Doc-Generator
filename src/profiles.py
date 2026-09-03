@@ -38,6 +38,44 @@ from . import config
 COURSE_TYPES = ("semester", "interview")
 DOC_KINDS = ("theory", "code_along")
 
+# --------------------------------------------------------------------------- #
+# COURSE DNA — what kind of course this is, in words
+# --------------------------------------------------------------------------- #
+# Everything above and below this block is a NUMBER: a ceiling, a share, a weight. Those
+# say how a document is measured. None of them say what the course IS — so a beginner
+# code-along and a final-year theory paper reached the writer as the same course with
+# different limits, and the only per-course description in the system was the skills,
+# which are instructions rather than background.
+#
+# THIS IS THE WEAKEST INPUT IN THE SYSTEM, deliberately, and it is stated as such in the
+# prompt. The precedence is:
+#
+#     HARD RULES > REVIEWER SKILLS > SESSION SKILLS > COURSE SKILLS > COURSE PROFILE
+#
+# because a skill is something a person wrote and approved for this course, and this is
+# background the writer should assume unless told otherwise. A profile that could
+# override an approved skill would be worse than no profile: the thing you reviewed
+# would lose to the thing you typed once into Settings.
+#
+# SHORT ON PURPOSE. The system prompt is already ~71,000 characters, and this codebase
+# has already been bitten by dilution once — the course brief was 2,591 characters inside
+# it and came back half-applied, which is why `skills.reminder` repeats it at the end.
+# More background makes every instruction weaker, so each field is capped hard and the
+# UI asks for a phrase, not a paragraph.
+DNA_FIELDS = {
+    "domain": "What the course is about — the subject, not the syllabus.",
+    "learner_level": "Who it is for: beginner, intermediate, final-year, working dev.",
+    "nature": "Conceptual, practical, coding, mathematical, theoretical, or a mix.",
+    "learning_approach": "How its learners get there — e.g. concept → syntax → code.",
+    "explanation_depth": "How deep an explanation this course expects.",
+    "terminology": "Words and conventions this course uses, and ones it avoids.",
+    "example_patterns": "What its examples typically are.",
+    "visual_patterns": "What its visuals typically are.",
+}
+# Long enough for a real phrase, short enough that eight of them cannot crowd out the
+# instructions they sit beside. Eight × 200 is ~400 tokens against a 71k prompt.
+DNA_MAX_CHARS = 200
+
 
 def harness_defaults() -> dict:
     """The instance-wide profile: what every course gets when it says nothing."""
@@ -69,7 +107,7 @@ _SIMPLE = {
 _MERGEABLE = ("slide_roles", "analogy", "content", "worked_example", "recording",
               "gates", "model")
 _ALLOWED = set(_SIMPLE) | set(_MERGEABLE) | {"market_reference_platforms",
-                                             "rubric_weights"}
+                                             "rubric_weights", "dna"}
 
 # Gates a course may tighten but never loosen. The direction is the point: a course that
 # can set rubric_min_total to 60 has turned the quality bar off.
@@ -98,6 +136,33 @@ def validate(overrides) -> tuple[bool, dict, str]:
         if v not in allowed:
             return False, {}, f"{key} must be one of {', '.join(allowed)}, not {v!r}"
         cleaned[key] = v
+
+    if "dna" in overrides:
+        v = overrides["dna"]
+        if not isinstance(v, dict):
+            return False, {}, "dna must be an object of field -> short description"
+        bad = sorted(set(v) - set(DNA_FIELDS))
+        if bad:
+            return False, {}, (f"dna names unknown field(s): {', '.join(bad)}. It may "
+                               f"set {', '.join(sorted(DNA_FIELDS))}.")
+        out = {}
+        for k, raw in v.items():
+            # Collapsed to one line: a newline in a background field is the start of a
+            # paragraph, and a paragraph here is the dilution this block exists to avoid.
+            text = " ".join(str(raw or "").split())
+            if not text:
+                continue                     # a blank field is an absent field
+            if len(text) > DNA_MAX_CHARS:
+                return False, {}, (f"dna.{k} is {len(text)} characters — keep it under "
+                                   f"{DNA_MAX_CHARS}. This is background the writer "
+                                   f"assumes, not an instruction; a rule that needs "
+                                   f"spelling out belongs in Skills, where it is "
+                                   f"approved and enforced.")
+            out[k] = text
+        # An object whose every field was blank stores nothing, so a course that clears
+        # its profile goes back to behaving exactly as one that never had one.
+        if out:
+            cleaned["dna"] = out
 
     if "market_reference_platforms" in overrides:
         v = overrides["market_reference_platforms"]

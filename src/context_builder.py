@@ -188,6 +188,61 @@ def prereq_level_block(course: str, cur: Session, takeaway: str, *,
         return ""
 
 
+# The order the fields are read in: what the course is, then who it is for, then how it
+# is taught. Fixed here so a profile always reads the same way and does not depend on the
+# order somebody happened to fill the form in.
+_DNA_ORDER = ("domain", "learner_level", "nature", "learning_approach",
+              "explanation_depth", "terminology", "example_patterns", "visual_patterns")
+_DNA_LABEL = {
+    "domain": "SUBJECT",
+    "learner_level": "WHO IT IS FOR",
+    "nature": "NATURE",
+    "learning_approach": "HOW ITS LEARNERS GET THERE",
+    "explanation_depth": "EXPECTED DEPTH",
+    "terminology": "TERMINOLOGY & CONVENTIONS",
+    "example_patterns": "TYPICAL EXAMPLES",
+    "visual_patterns": "TYPICAL VISUALS",
+}
+
+
+def course_dna_block(profile: dict | None = None) -> str:
+    """What kind of course this is, as BACKGROUND. "" when the course has not said.
+
+    THE WEAKEST INPUT IN THE SYSTEM, and it says so in its own words. Everything else
+    per-course is either a number the document is measured against or a skill somebody
+    wrote and approved; this is the standing description a writer would want before
+    either. So it is framed as an assumption to work from and is explicitly overridden by
+    every skill — a profile that could beat an approved skill would mean the thing you
+    reviewed losing to the thing you typed once into Settings.
+
+    PLACED EARLY, before the skills, for the same reason the brief is repeated LAST:
+    position is salience in a 71,000-character prompt. Background belongs where
+    background goes; the instructions stay closest to the task.
+
+    AND IT IS NEVER CONTENT. Same rule as the brief, same enforcement — see
+    skills.profile_leak_failures, which fails the run when a field of this is found in
+    the document.
+    """
+    dna = (profile or {}).get("dna") or {}
+    lines = [(k, dna[k]) for k in _DNA_ORDER if str(dna.get(k) or "").strip()]
+    if not lines:
+        return ""
+    body = "\n".join(f"  {_DNA_LABEL[k]}: {v}" for k, v in lines)
+    return (
+        "\n\n=== WHAT KIND OF COURSE THIS IS (background) ===\n"
+        "Assume this about the course unless something more specific tells you "
+        "otherwise. It is the standing character of the course, not a rule and not a "
+        "topic list.\n"
+        "IT IS THE WEAKEST THING YOU HAVE BEEN GIVEN. The numbered HARD RULES, the "
+        "course's approved skills and the curriculum ALL override it — where any of them "
+        "says something different, they are right and this is out of date.\n"
+        "IT IS ALSO NEVER CONTENT. Do not print any of it: not as a bullet, a heading, "
+        "an agenda line, a key takeaway or a coverage-map entry. A course whose learners "
+        "are beginners gets a document written for beginners; it does not get a slide "
+        "saying \"Level: Beginner\".\n"
+        f"{body}\n")
+
+
 def course_type_block(profile: dict | None = None) -> str:
     """Inject the course-type teaching strategy. Both course types must ultimately help
     the learner clear interview questions; a semester course additionally goes deep on
@@ -273,7 +328,7 @@ def build_guided_base(course: str, prev: Session | None, cur: Session,
 MODULE: {cur.module}
 TOPIC: {cur.topic}
 
-{course_type_block(profile)}
+{course_type_block(profile)}{course_dna_block(profile)}
 
 === TARGET SESSION ===
 Session {cur.number}: {cur.name}

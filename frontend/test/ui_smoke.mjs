@@ -508,6 +508,90 @@ check('it bootstraps', bootCalls >= 1)
 check('…instead of fanning out across the per-concern endpoints', fanout <= 1,
       `${fanout} fan-out calls`)
 
+console.log('\n== the theme switch ==')
+// The unset state is DARK, not 'system': the app is designed dark and light is an
+// opt-in, so an OS set to light must not move anyone onto it. That is asserted below
+// against a matchMedia stubbed to report a LIGHT machine — jsdom's own answers
+// `matches: false` to everything, which would pass the check for the wrong reason.
+const themeBtns = () => $('.themesw .themebtn')
+const attr = () => document.documentElement.getAttribute('data-theme')
+const stored = () => window.localStorage.getItem('trdoc.theme')
+const onSeg = () => themeBtns().filter((b) => b.classList.contains('on'))
+check('the switch is in the top bar', $('.themesw').length === 1)
+check('…with three segments', themeBtns().length === 3,
+      `found ${themeBtns().length}`)
+check('…each labelled for a screen reader',
+      themeBtns().map((b) => b.textContent).join('|') === 'Light|Match my system|Dark',
+      themeBtns().map((b) => b.textContent).join('|'))
+check('exactly one segment is marked current', onSeg().length === 1,
+      `${onSeg().length} marked`)
+check('…and it is Dark by default', onSeg()[0]?.title === 'Dark', onSeg()[0]?.title)
+check('an unset preference paints dark', attr() === 'dark', String(attr()))
+check('…without writing a preference nobody expressed', stored() === null, String(stored()))
+
+const seg = (title) => themeBtns().find((b) => b.title === title)
+await click(seg('Light'))
+check('choosing Light paints light', attr() === 'light', String(attr()))
+check('…and is persisted', stored() === 'light', String(stored()))
+check('…and moves the current marker', onSeg()[0]?.title === 'Light', onSeg()[0]?.title)
+check('…and is announced as pressed', seg('Light').getAttribute('aria-pressed') === 'true')
+check('…while the others are not',
+      seg('Dark').getAttribute('aria-pressed') === 'false'
+      && seg('Match my system').getAttribute('aria-pressed') === 'false')
+
+await click(seg('Dark'))
+check('choosing Dark paints dark', attr() === 'dark', String(attr()))
+check('…and is persisted', stored() === 'dark', String(stored()))
+
+await click(seg('Match my system'))
+check('going back to System stores the preference, not the resolved value',
+      stored() === 'system', String(stored()))
+check('…and still paints a concrete theme',
+      attr() === 'dark' || attr() === 'light', String(attr()))
+
+// THE REGRESSION THIS FEATURE COULD MOST EASILY CAUSE: a light OS quietly flipping
+// everyone who never asked for light. Stub matchMedia to report a light machine, wipe
+// every trace of a stored or in-memory choice, and re-resolve.
+const realMM = window.matchMedia
+window.matchMedia = () => ({ matches: true, addEventListener() {}, removeEventListener() {},
+                             addListener() {}, removeListener() {} })
+window.localStorage.removeItem('trdoc.theme')
+window.__theme = undefined
+await act(async () => {
+  window.dispatchEvent(Object.assign(new window.Event('storage'), { key: 'trdoc.theme' }))
+  await new Promise((r) => setTimeout(r, 40))
+})
+check('an OS set to LIGHT does not move an unset user off dark',
+      attr() === 'dark', String(attr()))
+check('…and the switch says Dark, not System', onSeg()[0]?.title === 'Dark',
+      onSeg()[0]?.title)
+// A user who ASKS to follow the machine still does.
+await click(seg('Match my system'))
+check('choosing System on a light machine does paint light',
+      attr() === 'light', String(attr()))
+window.matchMedia = realMM
+
+// The app is routinely open twice (curriculum in one tab, a run in the other). A
+// `storage` event is how the second tab hears about the first tab's choice.
+window.localStorage.setItem('trdoc.theme', 'light')
+await act(async () => {
+  window.dispatchEvent(Object.assign(new window.Event('storage'), { key: 'trdoc.theme' }))
+  await new Promise((r) => setTimeout(r, 40))
+})
+check('a choice made in another tab is picked up here',
+      attr() === 'light' && onSeg()[0]?.title === 'Light',
+      `${attr()} / ${onSeg()[0]?.title}`)
+
+// A DOM DUMP FOR THE THEME SCREENSHOTS (opt-in, off in CI).
+// `npm run test:shots` sets this, writes the mounted markup to disk and renders it in
+// headless Chrome under each theme. It lives here rather than in its own harness
+// because THIS is the only place the real App is mounted against a stubbed backend —
+// a second copy of that 400-line route table would rot the day either one changed.
+if (process.env.THEME_SHOTS) {
+  fs.writeFileSync(path.join(FRONTEND, 'test', '_shot.curriculum.html'),
+                   document.documentElement.outerHTML)
+}
+
 console.log('\n== the shell renders ==')
 check('a left navigation rail exists', $('.nav').length === 1)
 check('one main content area', $('.main').length === 1)
