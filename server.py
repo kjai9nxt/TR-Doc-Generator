@@ -29,7 +29,7 @@ from pydantic import BaseModel
 
 from src import (config, sheets, sync, course_loader, pipeline, pptx_ingest,
                  context_builder, generator, docx_writer, app_settings, auth, db,
-                 outputs, llm, gslides)
+                 outputs, llm, gslides, course_memory)
 from src import prereqs as prereqs_mod
 
 app = FastAPI(title="TR Doc Generator API")
@@ -2366,6 +2366,111 @@ def _guided_repetition_note(gid: str, index: int, fragment: dict | None) -> None
                      f"if you want it fixed now: " + "; ".join(hits[:3]))
 
 
+def _guided_gate_note(gid: str, index: int, fragment: dict | None) -> None:
+    """Run the DETERMINISTIC GATES over one chunk and say what they found, now.
+
+    Same guardrails, same harness config, same measures that decide whether the final
+    document is released — run while the reviewer still has this section open. A
+    structural failure or a leaked skill costs one regenerate here; at finalize it costs
+    a bounded repair pass over slides the reviewer has already approved, with the panel
+    gone.
+
+    Only an EARLY WARNING. The gates that are about the whole document — agenda equals
+    the takeaways, one section per takeaway in order, the recap, the same thing taught
+    in two different sections, the coverage map, slide numbering, the totals — are not
+    answerable from a fragment and are not asked here. finalize still runs everything
+    and remains the release gate.
+    """
+    if index == 0:
+        return                       # the opening chunk is recap + agenda, no slides
+    with _lock:
+        state = GUIDED.get(gid) or {}
+        cur = state.get("cur")
+        budgets = state.get("budgets") or {}
+        course = state.get("course") or None
+        profile = state.get("profile")
+        enforce_time = state.get("enforce_time", True)
+        session_no = state.get("session_no")
+    if cur is None or not fragment:
+        return
+    try:
+        from graders import chunk_check
+        from src import skills as _skills
+        course_skills = _skills.applicable(course, session_no) if course else []
+        res = chunk_check.gates(fragment, cur, index - 1, rich=not enforce_time,
+                                budgets=budgets, course=course, profile=profile,
+                                skills=course_skills)
+    except Exception as e:
+        _guided_log(gid, f"Chunk {index + 1}: the early gate check could not run "
+                         f"({e}) — finalize still checks everything.")
+        return
+    if res is None:
+        return
+    fails, warns = list(res.failures or []), list(res.warnings or [])
+    if fails:
+        _guided_log(gid, f"⚠ Chunk {index + 1}: {len(fails)} gate failure(s) that WILL "
+                         f"fail the final document unless fixed. Regenerating this one "
+                         f"section now is far cheaper than the repair pass at finalize:")
+        for f in fails[:6]:
+            _guided_log(gid, f"    · {f}")
+        if len(fails) > 6:
+            _guided_log(gid, f"    · …and {len(fails) - 6} more.")
+    if warns:
+        _guided_log(gid, f"Chunk {index + 1}: {len(warns)} warning(s) — not gates, but "
+                         f"what the judge is asked to weigh: " + "; ".join(warns[:3]))
+
+
+def _guided_length_note(gid: str, index: int) -> None:
+    """The RUNNING length after this chunk, and where the document is heading.
+
+    Recording time and page count used to be computed in exactly one place — finalize —
+    so a reviewer approved every section without ever being told they were at 22 of 26
+    pages. The overrun then arrived after the last approval, when the only remedy was a
+    repair pass over work they had already accepted.
+
+    The projection is a plain extrapolation of what has been spent across the sections
+    still to come. Crude on purpose: at chunk 2 the useful signal is the direction, and
+    a precise number would only invite trust it has not earned.
+    """
+    with _lock:
+        state = GUIDED.get(gid) or {}
+        cur, nxt = state.get("cur"), state.get("nxt")
+        frags = [c.get("fragment") for c in (state.get("chunks") or [])]
+        budgets = state.get("budgets") or {}
+        total = state.get("total")
+    if cur is None or not frags:
+        return
+    try:
+        from graders import chunk_check
+        m = chunk_check.running_length(
+            cur, nxt, frags, budgets=budgets,
+            sections_total=(total - 1) if isinstance(total, int) and total > 1 else None)
+    except Exception:
+        return
+    if not m:
+        return
+    head = (f"After {m['sections_done']}/{m['sections_total']} sections: "
+            f"{m['slides']} slides · {m['pages']} of {m['pages_max']} pages · "
+            f"{m['minutes']} of {m['minutes_max']} min.")
+    if m.get("over_pages") or m.get("over_time"):
+        over = " and ".join(([f"the {m['pages_max']}-page ceiling"] if m.get("over_pages") else [])
+                            + ([f"the {m['minutes_max']}-minute ceiling"] if m.get("over_time") else []))
+        _guided_log(gid, f"⚠ {head} Already over {over} with sections still to write — "
+                         f"cut a chunk now rather than at finalize.")
+    elif m.get("projected_pages") is not None:
+        tail = ""
+        if m["projected_pages"] > m["pages_max"]:
+            tail = (f" ⚠ At this rate the finished document lands near "
+                    f"{m['projected_pages']} pages, over the {m['pages_max']}-page "
+                    f"ceiling — trim as you review rather than repairing at the end.")
+        elif m["projected_minutes"] > m["minutes_max"]:
+            tail = (f" ⚠ At this rate the recording lands near "
+                    f"{m['projected_minutes']} min, over {m['minutes_max']}.")
+        _guided_log(gid, head + (tail or f" On track for ~{m['projected_pages']} pages."))
+    else:
+        _guided_log(gid, head)
+
+
 def _guided_generate_all(gid: str):
     """Generate every chunk up front, then move to the review phase."""
     llm.use_meter(gid)      # this thread's LLM spend belongs to this guided run
@@ -2396,6 +2501,8 @@ def _guided_generate_all(gid: str):
             # review panel is gone by then.
             _guided_slide_budget_note(gid, i, allowance)
             _guided_repetition_note(gid, i, chunk.get("fragment"))
+            _guided_gate_note(gid, i, chunk.get("fragment"))
+            _guided_length_note(gid, i)
             # Checkpoint per chunk: an LLM call each, so a restart must never cost
             # more than the one chunk that was in flight.
             _guided_save(gid)
@@ -2553,6 +2660,8 @@ def _apply_to_following(gid: str, from_index: int, reason: str) -> None:
             _frag = GUIDED.get(gid, {}).get("chunks", [{}])[j].get("fragment") \
                 if gid in GUIDED and j < len(GUIDED[gid]["chunks"]) else None
         _guided_repetition_note(gid, j, _frag)
+        _guided_gate_note(gid, j, _frag)
+        _guided_length_note(gid, j)
         _guided_save(gid)
 
 
@@ -2682,6 +2791,8 @@ def _guided_regenerate(gid: str, index: int, reason: str,
             _frag = (GUIDED.get(gid, {}).get("chunks") or [{}])[index].get("fragment") \
                 if index < len(GUIDED.get(gid, {}).get("chunks") or []) else None
         _guided_repetition_note(gid, index, _frag)
+        _guided_gate_note(gid, index, _frag)
+        _guided_length_note(gid, index)
         _guided_save(gid)
         if apply_to_following:
             with _lock:
@@ -2814,6 +2925,29 @@ def _guided_finalize(gid: str):
             db.save_skill_report(gid, final.get("skill_report"))
         except Exception:
             pass
+        # COURSE MEMORY. Reaching finalize IS the human approval (the endpoint refuses
+        # unless every chunk is ticked, and db.mark_approved is stamped there), so this
+        # is the moment the spec calls for: a document a person signed off is the only
+        # thing worth remembering.
+        #
+        # Recorded from the document that was RENDERED, not the one assembled before
+        # grading — the repair pass can add, remove and renumber slides, and the memory
+        # has to describe what exists.
+        #
+        # Wrapped, and last: the document is written, graded, rendered and persisted by
+        # this point, and no memory write may be allowed to lose it.
+        try:
+            _mem = course_memory.record(run_course, session_no,
+                                        result.get("doc") or doc, run_id=gid)
+            if _mem.get("topics") or _mem.get("examples"):
+                _guided_log(gid, f"Course memory updated — {_mem['topics']} topic(s) "
+                                 f"and {_mem['examples']} worked example(s) recorded for "
+                                 f"session {session_no}. The topics stand in for this "
+                                 f"session in the already-taught index until its deck is "
+                                 f"recorded.")
+        except Exception as _e:
+            _guided_log(gid, f"Could not update course memory ({_e}) — the document is "
+                             f"unaffected.")
     except Exception as e:
         # Assembly/grading failed, but every approved chunk is still here — send the
         # user back to review so they can fix a chunk and click Create again.

@@ -676,6 +676,22 @@ def taught_index(course: str, before_session: int,
     """Per prior session OF THIS COURSE: the distinct topics its deck actually taught.
 
     Returns [{session_no, deck_title, topics: [...]}] in session order, oldest first.
+
+    A session with an APPROVED TR BUT NO DECK YET is included from course memory, and
+    this is the ONE place that merge happens — deliberately. Every consumer of "what
+    has this course already taught" funnels through here: the digest the writer reads,
+    the digest the judge reads, `taught_titles` behind the repetition guardrail, and the
+    prerequisite index. Merging at the source means the gap closes for all four at once
+    and none of them has to know the entry came from a document rather than a deck.
+
+    A DECK ALWAYS WINS. A provisional entry is dropped the moment its session has an
+    extracted deck, so the placeholder can never contradict the recording; it only
+    covers the weeks between approving a document and recording it.
+
+    Not merged when `prereq` is set: that path reads a deck store belonging to a course
+    that DECLARED an external prerequisite, where a session number means a session of
+    the prerequisite rather than of `course`, so a row keyed (course, session_no) here
+    would be about something else entirely.
     """
     out = []
     for deck in decks_before(course, before_session, prereq):
@@ -694,6 +710,40 @@ def taught_index(course: str, before_session: int,
             topics.append(t)
         out.append({"session_no": deck["session_no"], "deck_title": deck_title,
                     "topics": topics})
+    if prereq is None:
+        out += _provisional_entries(course, before_session,
+                                    have={e["session_no"] for e in out})
+        out.sort(key=lambda e: e["session_no"])
+    return out
+
+
+def _provisional_entries(course: str, before_session: int, *, have: set) -> list[dict]:
+    """Approved-but-unrecorded sessions, shaped exactly like a deck entry.
+
+    Best effort: this runs inside every generation, and a database that is unreachable
+    must degrade to "no provisional memory" rather than fail the run — which is the
+    behaviour before this existed.
+    """
+    try:
+        from . import db
+        rows = db.provisional_taught(course)
+    except Exception:
+        return []
+    out = []
+    for r in rows:
+        no = r.get("session_no")
+        if no is None or no in have or no >= before_session:
+            continue
+        # `deck_title` is what the digest prints as the session's name, so a provisional
+        # entry says so plainly. The writer and the judge are both told the difference
+        # matters: this session's material is what the TR says it will be, not what a
+        # recording confirmed it was.
+        title = (r.get("session_name") or "").strip()
+        out.append({"session_no": no,
+                    "deck_title": (f"{title} (TR approved, not yet recorded)"
+                                   if title else "TR approved, not yet recorded"),
+                    "topics": r.get("topics") or [],
+                    "provisional": True})
     return out
 
 
@@ -714,6 +764,23 @@ def taught_titles(course: str, before_session: int) -> list[tuple[int, str]]:
     lookup the repetition guardrail compares a new slide's title against."""
     return [(e["session_no"], t)
             for e in taught_index(course, before_session) for t in e["topics"]]
+
+
+def provisional_sessions(course: str, before_session: int) -> set[int]:
+    """Which of those sessions are known from an APPROVED TR rather than from a deck.
+
+    Provenance only — it does NOT soften the gate, and it must not. Sessions are
+    delivered in order, so session 12 is recorded before session 13 is ever delivered:
+    by the time a learner reaches 13, they have been taught 12 whether or not the
+    recording exists on the day 13 is written. Re-introducing it is a repeat either way,
+    and that is the whole point of holding the approved TR in the index.
+
+    What this is for is the MESSAGE. Told only "Session 12 already introduced this", a
+    reviewer goes looking for session 12's deck, finds none, and cannot tell whether the
+    gate is right or broken. Naming the source sends them to the TR instead.
+    """
+    return {e["session_no"] for e in taught_index(course, before_session)
+            if e.get("provisional")}
 
 
 # --------------------------------------------------------------------------- #

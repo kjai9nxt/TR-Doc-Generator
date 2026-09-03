@@ -80,12 +80,30 @@ def past_ppts_context(course: str, cur: Session) -> str:
         pptx_ingest.ingest(course, verbose=True)
         prior = pptx_ingest.decks_before(course, cur.number)
 
+    # THE INDEX, NOT THE DECKS, decides whether there is anything to say here.
+    #
+    # This block used to be gated on `decks_before(...)`, which is a narrower question
+    # than the one being asked: a session whose TR is approved but whose deck has not
+    # been recorded yet is in the taught index (course memory) and has no deck. Gated
+    # on decks, a course with twelve approved documents and no recordings printed
+    # "(No prior decks in the knowledge base yet)" and the writer was told nothing —
+    # which is the exact hole the provisional entries exist to close.
+    taught = pptx_ingest.taught_index(course, cur.number)
+    provisional = [e for e in taught if e.get("provisional")]
     parts = []
-    if prior:
-        covered = ", ".join(f"S{d['session_no']}" for d in prior)
+    if taught:
+        covered = ", ".join(f"S{e['session_no']}" for e in taught)
+        # Say WHERE it came from, honestly. "Extracted from their actual decks" is a
+        # claim about evidence, and for a provisional entry it is not true: the material
+        # is what the approved TR says the session teaches, which is a promise rather
+        # than a recording. The digest marks those sessions individually too.
+        source = ("extracted from their actual decks"
+                  if not provisional else
+                  "from their decks where recorded, and from the approved TR document "
+                  "where the session has not been recorded yet (marked below)")
         parts.append(
-            f"ALREADY TAUGHT IN THIS COURSE — sessions {covered}, extracted from their "
-            f"actual decks. THIS IS BINDING: a learner reaching the target session has "
+            f"ALREADY TAUGHT IN THIS COURSE — sessions {covered}, {source}. "
+            f"THIS IS BINDING: a learner reaching the target session has "
             f"ALREADY been taught everything below.\n"
             f"  · Do NOT re-teach any of it. No slide may explain, define or walk "
             f"through a topic listed here.\n"
@@ -98,9 +116,12 @@ def past_ppts_context(course: str, cur: Session) -> str:
             f"allowed.\n"
             f"{pptx_ingest.taught_digest(course, cur.number)}")
 
+        # The detail layer needs real decks — a provisional entry carries slide TITLES
+        # and no bodies, so there is nothing to retrieve from it.
         query = cur.name + " " + " ".join(cur.key_takeaways)
         top_k = config.harness()["context"].get("rag_top_k", 6)
-        hits = pptx_ingest.retrieve(course, query, cur.number, top_k=top_k)
+        hits = (pptx_ingest.retrieve(course, query, cur.number, top_k=top_k)
+                if prior else [])
         if hits:
             rag = "\n".join(
                 f"  [S{h['session_no']} · Slide {h['slide']}] {h['title']}: {h['excerpt']}"
@@ -110,8 +131,9 @@ def past_ppts_context(course: str, cur: Session) -> str:
                 "content — this is the material you must NOT restate, and the level you "
                 "must start ABOVE):\n" + rag)
     else:
-        parts.append("(No prior decks in the knowledge base yet — treat earlier "
-                      "sessions' scope as given by the course structure above.)")
+        parts.append("(No prior sessions on record yet — no decks in the knowledge base "
+                      "and no approved TR documents — so treat earlier sessions' scope "
+                      "as given by the course structure above.)")
 
     # WHAT THE LEARNER KNEW BEFORE SESSION 1. A separate block with the OPPOSITE
     # instruction from the one above: prior-session topics may not be repeated, a
@@ -131,6 +153,20 @@ def past_ppts_context(course: str, cur: Session) -> str:
             course, cur.name + " " + " ".join(cur.key_takeaways))
         if detail:
             parts.append(detail)
+
+    # WHICH WORKED EXAMPLES THE COURSE HAS ALREADY SPENT. Filed here because it is
+    # prior-session material like everything else in this function, and it answers a
+    # question none of the blocks above can: the taught index says which TOPICS were
+    # covered, and re-deriving a topic more deeply is required whenever a takeaway names
+    # it — but rebuilding the same example, with the same figures, is pure waste and
+    # nothing was watching for it across documents.
+    try:
+        from . import course_memory as _cmem
+        ex = _cmem.examples_block(course, cur.number)
+    except Exception:
+        ex = ""
+    if ex:
+        parts.append(ex)
 
     docs = past_docs_summary(cur.number)
     if docs.strip():
@@ -341,7 +377,7 @@ Agenda must have at most {cur.key_takeaways_count} bullets.
 
 === {next_block} ===
 
-=== COURSE MEMORY — PRIOR SESSIONS (from ingested PowerPoint decks) ===
+=== COURSE MEMORY — PRIOR SESSIONS (ingested decks, and approved TR documents for sessions not yet recorded) ===
 Build on this; do NOT re-teach it. Use it for an accurate recap and smooth transitions.
 {past}
 """

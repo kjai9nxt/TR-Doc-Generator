@@ -116,6 +116,20 @@ jobs:
       # prior sessions and fail a slide for building on exactly what it was told to.
       - name: Run external-prerequisite regression (decks with no course of their own)
         run: python -m evals.test_external_prereq
+      # COURSE MEMORY. Two windows nothing else covers: a session whose TR is approved
+      # but whose deck is not recorded yet (invisible to the taught index, so invisible
+      # to the repetition guardrail), and a worked example reused in a LATER document.
+      # The suite also pins the two ways this could go wrong — a deck losing to a
+      # placeholder, and one course reading another's memory.
+      - name: Run course-memory regression (approved-but-unrecorded + example ledger)
+        run: python -m evals.test_course_memory
+      # THE GATES RUN TWICE NOW — once per chunk while the reviewer still has it open,
+      # once over the assembled document at finalize, which is still the release gate.
+      # This suite pins the two ways that can go wrong: the synthetic one-takeaway
+      # wrapper inventing failures a section never had, and chunk scope leaking into
+      # the default path (it may only ever SUBTRACT, and never from doc scope).
+      - name: Run per-chunk gate regression (chunk scope vs doc scope)
+        run: python -m evals.test_chunk_check
 
   frontend-build:
     name: Frontend build + committed-bundle check (Vite/React)

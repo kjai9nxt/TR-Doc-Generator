@@ -338,10 +338,35 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
           *, rich: bool = False, budgets: dict | None = None,
           course: str | None = None,
           profile: dict | None = None,
-          skills: list | None = None) -> GuardrailResult:
+          skills: list | None = None,
+          scope: str = "doc") -> GuardrailResult:
     """`budgets` (src.budgets.for_session) is the slide/page allowance THIS document
     is held to — a course may set its own, and a single session may override that.
     Omitted, the harness numbers apply exactly as before.
+
+    `scope` is "doc" (the default, and the ONLY value the release gate ever uses) or
+    "chunk", which runs the same gates over ONE guided section while the reviewer still
+    has it open. Everything in here is deterministic, so running it early costs nothing
+    and a defect found at review is a one-section regenerate instead of a repair pass
+    over a document somebody has already approved slide by slide.
+
+    Only FOUR gates are dropped in chunk scope, and all four for the same reason —
+    they measure a PROPORTION or a TOTAL over the whole document, so a fragment cannot
+    answer them and a fragment's answer would be noise:
+
+      · the slide count floor and ceiling (a 3-slide section is not a 3-slide document;
+        the running total is reported separately by graders.chunk_check)
+      · max_concept_intro_share (a section that introduces one concept is often 100%
+        concept_intro and entirely correct)
+      · the worked-example rules (the share cap is doc-wide, and "this session teaches
+        an algorithm so SOME slide must work one through" is satisfied by a different
+        section than the one being checked)
+      · slide numbering 1..N (a chunk's slides are numbered from where the previous
+        chunk ended, and are renumbered by assemble_doc; the numbers are kept as-is
+        here precisely so the chunk's own coverage references still resolve)
+
+    Everything else applies unchanged, and DOC SCOPE IS BYTE-IDENTICAL to before —
+    which is what evals/test_gates asserts, gate by gate.
 
     `course` scopes the prior-deck repetition check below. Without it that check read
     EVERY deck on the instance, so a slide could be failed for repeating a title from a
@@ -411,10 +436,10 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     or (con["slides"].get("max_rich", con["slides"]["max"]) if rich
                         else con["slides"]["max"]))
     slide_min = int((budgets or {}).get("min_slides") or con["slides"]["min"])
-    if len(slides) < slide_min:
+    if scope == "doc" and len(slides) < slide_min:
         fails.append(f"Only {len(slides)} slides (min {slide_min}) — "
                      f"split content across more slides, don't cram.")
-    if len(slides) > slide_max:
+    if scope == "doc" and len(slides) > slide_max:
         # This message is not just for the reviewer: it goes into `issues`, which is what
         # the revision pass is told to fix. It used to read "split content, don't cram" —
         # the advice for being UNDER the minimum — so a doc with too many slides was
@@ -464,7 +489,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
         # calling every slide a first introduction and keeping every analogy.
         share_cap = role_cfg.get("max_concept_intro_share")
         n_intro = sum(1 for r in roles.values() if r == "concept_intro")
-        if share_cap and slides and n_intro > share_cap * len(slides):
+        if scope == "doc" and share_cap and slides and n_intro > share_cap * len(slides):
             fails.append(
                 f"{n_intro} of {len(slides)} slides are labelled 'concept_intro' "
                 f"(max {share_cap:.0%}) — most slides build on a concept already "
@@ -939,7 +964,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # pipeline.assemble renumbers the whole document; this asserts it worked. A gap or
     # a duplicate means a regenerated chunk changed length and the remap missed it,
     # which also silently invalidates every coverage_map slide reference.
-    if con.get("numbering", {}).get("contiguous", False) and slides:
+    if scope == "doc" and con.get("numbering", {}).get("contiguous", False) and slides:
         nums = [s.get("n") for s in slides]
         if nums != list(range(1, len(nums) + 1)):
             fails.append(
@@ -1013,7 +1038,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # three algorithms traced on three different request queues cannot be compared,
     # which is the whole reason a session teaches them together. One input, one results
     # table, and the comparison makes itself.
-    if we_cfg.get("required_for_algorithm_sessions", False):
+    if scope == "doc" and we_cfg.get("required_for_algorithm_sessions", False):
         markers = [m.lower() for m in we_cfg.get("algorithm_markers", [])]
         # The session must be ABOUT an algorithm, not merely mention one. The first cut
         # of this asked whether any marker appeared anywhere in the session's text, and
@@ -1061,7 +1086,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"slide {base_n}'s input and end with one table of results.")
 
     we_cap = we_cfg.get("max_share_of_slides")
-    if we_cap and slides and len(we_slides) > we_cap * len(slides):
+    if scope == "doc" and we_cap and slides and len(we_slides) > we_cap * len(slides):
         fails.append(
             f"{len(we_slides)} of {len(slides)} slides are worked examples "
             f"(max {we_cap:.0%}) — keep the examples that let the learner EXECUTE "
@@ -1305,8 +1330,12 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
         try:
             from src import pptx_ingest
             prior = pptx_ingest.taught_titles(course, session.number)
+            # WHERE each prior session is known from. The gate is identical either way
+            # (see pptx_ingest.provisional_sessions), but the message must not send a
+            # reviewer hunting for a deck that does not exist yet.
+            prov = pptx_ingest.provisional_sessions(course, session.number)
         except Exception:
-            prior = []
+            prior, prov = [], set()
         if prior:
             prior_toks = [(sn, t, _norm_tokens(t)) for sn, t in prior]
             near = float(rep_cfg.get("near_duplicate_jaccard", 0.7))
@@ -1327,18 +1356,23 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     continue
                 j, sn, ptitle = best
                 role = roles.get(s.get("n")) or str(s.get("role") or "")
+                src = (" — known from that session's APPROVED TR document; its deck "
+                       "is not recorded yet, and sessions are delivered in order, so "
+                       "the learner still reaches it first"
+                       if sn in prov else "")
                 if j >= 1.0 and role == "concept_intro":
                     fails.append(
                         f"Slide {s.get('n', '?')} \"{title}\" introduces a concept Session "
-                        f"{sn} already introduced under the same title — the learner has "
-                        f"been taught this. Either build on it (a deeper mechanism, the "
-                        f"case that session did not cover, with role changed from "
-                        f"concept_intro) or drop the slide and use the recap line.")
+                        f"{sn} already introduced under the same title{src}. The learner "
+                        f"will have been taught this. Either build on it (a deeper "
+                        f"mechanism, the case that session did not cover, with role "
+                        f"changed from concept_intro) or drop the slide and use the "
+                        f"recap line.")
                 elif j >= near:
                     warns.append(
                         f"Slide {s.get('n', '?')} \"{title}\" closely matches Session {sn}'s "
-                        f"slide \"{ptitle}\" — make sure this goes BEYOND what was already "
-                        f"taught rather than repeating it.")
+                        f"slide \"{ptitle}\"{src} — make sure this goes BEYOND what was "
+                        f"already taught rather than repeating it.")
 
     # --- AND DO NOT TEACH WHAT THE NEXT SESSION IS FOR ---------------------------
     # The other edge of "coverage = syllabus, no more". The gate above guards the past;

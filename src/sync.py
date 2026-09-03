@@ -186,6 +186,22 @@ def prune_orphan_decks(course: str | None = None) -> list[int]:
         state["decks"] = {k: v for k, v in (state.get("decks") or {}).items()
                           if v.get("session_no") not in cleared}
         _save_state(state)
+    # COURSE MEMORY FOLLOWS THE CURRICULUM TOO, for both of the reasons above it.
+    #
+    #  · SUPERSEDED: a session that now HAS an extracted deck no longer needs the
+    #    placeholder written from its approved TR. The deck is the recording; the
+    #    placeholder was a promise. Leaving it would put two opinions of one session in
+    #    the taught index, and the weaker one second.
+    #  · ORPHANED: a session removed from the curriculum takes its memory with it, which
+    #    is the same rule this function applies to decks — and it matters more here,
+    #    because an orphaned deck at least described something that was recorded.
+    try:
+        from . import course_memory
+        course_memory.prune(course,
+                            recorded_sessions=pptx_ingest.deck_session_numbers(course),
+                            curriculum_sessions=known)
+    except Exception:
+        pass          # never break a sync over housekeeping
     return cleared
 
 
@@ -364,6 +380,20 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
     state["last_sync"] = _now()
     _save_state(state)
     _extraction_report(res, course)
+
+    # A DECK JUST ARRIVED FOR A SESSION COURSE MEMORY WAS STANDING IN FOR.
+    #
+    # Superseding happens here as well as in prune_orphan_decks because this is the
+    # path that actually ingests decks, and it is reachable on its own ("Fetch new
+    # decks") without any curriculum edit. `taught_index` also ignores a provisional
+    # entry whose session has a deck, so a missed prune is never a correctness problem
+    # — it would just leave a dead row behind.
+    try:
+        from . import course_memory
+        course_memory.prune(course,
+                            recorded_sessions=pptx_ingest.deck_session_numbers(course))
+    except Exception:
+        pass
 
     try:
         from . import db as _db

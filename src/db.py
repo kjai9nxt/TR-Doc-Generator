@@ -259,6 +259,50 @@ _SCHEMA = [
          PRIMARY KEY (course, prereq))""",
     "CREATE INDEX IF NOT EXISTS idx_course_prereqs_prereq ON course_prereqs(prereq)",
     "CREATE INDEX IF NOT EXISTS idx_curriculum_course ON curriculum(course)",
+    # ----------------------------------------------------------------------------
+    # COURSE MEMORY, part 1: WHAT AN APPROVED TR TAUGHT, BEFORE ITS DECK EXISTS.
+    #
+    # The already-taught index is built from EXTRACTED DECKS and nothing else
+    # (pptx_ingest.taught_index), and sync.prune_orphan_decks states the rule the whole
+    # design rests on: a curriculum row with no link has no deck. That is correct for
+    # decks and wrong for knowledge, because the two arrive weeks apart — a TR is
+    # written, reviewed and approved now, and the deck is recorded and linked later.
+    #
+    # In that window the course has no memory of the session at all. Session 13 is
+    # generated with session 12 missing from the taught index, missing from the digest
+    # the writer and the judge read, and missing from taught_titles, which is what the
+    # repetition guardrail compares a new slide title against. So a batch of TRs written
+    # ahead of recording can re-teach itself and NOTHING fires. This table is that
+    # window, and only that window: an entry is ignored the moment the session has a
+    # real deck, and pruned when one is ingested. The deck is always the truth; this is
+    # a placeholder for the time before it exists.
+    #
+    # PRIMARY KEY (course, session_no): re-approving a session REPLACES what it claims
+    # to have taught rather than adding a second, older opinion of it.
+    """CREATE TABLE IF NOT EXISTS provisional_taught (
+         course TEXT NOT NULL, session_no INTEGER NOT NULL,
+         session_name TEXT, topics_json TEXT NOT NULL,
+         run_id TEXT, recorded_at TEXT,
+         PRIMARY KEY (course, session_no))""",
+    "CREATE INDEX IF NOT EXISTS idx_prov_taught_course ON provisional_taught(course)",
+    # ----------------------------------------------------------------------------
+    # COURSE MEMORY, part 2: THE EXAMPLES THIS COURSE HAS ALREADY SPENT.
+    #
+    # guardrails.check catches the same example reused across slides of ONE document.
+    # Nothing has ever looked across documents, so the same worked example can be built
+    # in session 4 and built again in session 11 — and with realistic figures required,
+    # a reviewer notices a repeated example faster than almost anything else.
+    #
+    # Rows, not a blob: one example per row with the concept it taught and the figures
+    # it used, so it can be read, pruned per session, and later turned into a gate. It
+    # is append-only within a session and REPLACED per session on re-approval, for the
+    # same reason as above.
+    """CREATE TABLE IF NOT EXISTS examples_used (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         course TEXT NOT NULL, session_no INTEGER NOT NULL,
+         concept TEXT, summary TEXT, figures_json TEXT,
+         run_id TEXT, recorded_at TEXT)""",
+    "CREATE INDEX IF NOT EXISTS idx_examples_used_course ON examples_used(course)",
 ]
 
 
@@ -1462,6 +1506,144 @@ def add_prereq(course: str, prereq: str, *, added_by: str | None = None,
         return True
     except Exception:
         return False
+
+
+# --------------------------------------------------------------------------- #
+# COURSE MEMORY — see the two table definitions in _SCHEMA for why each exists.
+#
+# Both are keyed on `course` and every read filters on it, so one course can never
+# read another's memory. That is enforced here rather than asked for in a prompt,
+# because learning.record_feedback documents what the alternative costs: a value read
+# from the wrong course is one bad document, a value WRITTEN to the wrong course is
+# permanent. The course therefore comes from the RUN in both writers below.
+# --------------------------------------------------------------------------- #
+def provisional_taught(course: str) -> list[dict]:
+    """Every approved-but-unrecorded session of this course, oldest first."""
+    rows = _query("SELECT * FROM provisional_taught WHERE course=? ORDER BY session_no",
+                  ((course or "").strip(),))
+    out = []
+    for r in rows:
+        try:
+            topics = json.loads(r.get("topics_json") or "[]")
+        except Exception:
+            continue                      # a corrupt row is skipped, never fatal
+        if isinstance(topics, list) and topics:
+            out.append({"session_no": r["session_no"],
+                        "session_name": r.get("session_name") or "",
+                        "topics": [str(t) for t in topics],
+                        "run_id": r.get("run_id"),
+                        "recorded_at": r.get("recorded_at")})
+    return out
+
+
+def put_provisional_taught(course: str, session_no: int, topics: list[str], *,
+                           session_name: str = "", run_id: str | None = None) -> bool:
+    """Record what an approved TR taught. Replaces any earlier claim for the session."""
+    course = (course or "").strip()
+    topics = [str(t).strip() for t in (topics or []) if str(t or "").strip()]
+    if not course or session_no is None or not topics:
+        return False
+    try:
+        _exec("INSERT OR REPLACE INTO provisional_taught "
+              "(course, session_no, session_name, topics_json, run_id, recorded_at) "
+              "VALUES (?,?,?,?,?,?)",
+              (course, int(session_no), (session_name or "").strip(),
+               json.dumps(topics, ensure_ascii=False), run_id, _now()))
+        return True
+    except Exception:
+        return False
+
+
+def drop_provisional_taught(course: str, sessions) -> int:
+    """Forget provisional entries — a deck arrived, or the row left the curriculum."""
+    course = (course or "").strip()
+    nums = sorted({int(n) for n in (sessions or []) if n is not None})
+    if not course or not nums:
+        return 0
+    dropped = 0
+    for n in nums:
+        try:
+            _exec("DELETE FROM provisional_taught WHERE course=? AND session_no=?",
+                  (course, n))
+            dropped += 1
+        except Exception:
+            pass
+    return dropped
+
+
+def examples_used(course: str, before_session: int | None = None) -> list[dict]:
+    """The examples this course has already spent, oldest session first.
+
+    `before_session` exists because the caller is almost always writing a session and
+    must not be told about its own examples — on a re-run the session's previous rows
+    are still there until finalize replaces them, and "do not reuse this example"
+    pointed at the document being rewritten is nonsense.
+    """
+    q = "SELECT * FROM examples_used WHERE course=?"
+    args: list = [(course or "").strip()]
+    if before_session is not None:
+        q += " AND session_no < ?"
+        args.append(int(before_session))
+    out = []
+    for r in _query(q + " ORDER BY session_no, id", tuple(args)):
+        try:
+            figs = json.loads(r.get("figures_json") or "[]")
+        except Exception:
+            figs = []
+        out.append({"session_no": r["session_no"], "concept": r.get("concept") or "",
+                    "summary": r.get("summary") or "",
+                    "figures": [str(f) for f in figs] if isinstance(figs, list) else []})
+    return out
+
+
+def put_examples_used(course: str, session_no: int, examples: list[dict], *,
+                      run_id: str | None = None) -> int:
+    """Replace this session's example rows with `examples`. Returns rows written.
+
+    Replace, not append: a session finalised twice would otherwise be remembered as
+    having spent both drafts' examples, and the draft that was thrown away is exactly
+    the one the next session must NOT be steered away from.
+    """
+    course = (course or "").strip()
+    if not course or session_no is None:
+        return 0
+    try:
+        _exec("DELETE FROM examples_used WHERE course=? AND session_no=?",
+              (course, int(session_no)))
+    except Exception:
+        return 0
+    written = 0
+    for e in (examples or []):
+        concept = str((e or {}).get("concept") or "").strip()
+        summary = str((e or {}).get("summary") or "").strip()
+        if not (concept or summary):
+            continue
+        figs = [str(f) for f in ((e or {}).get("figures") or [])]
+        try:
+            _exec("INSERT INTO examples_used (course, session_no, concept, summary, "
+                  "figures_json, run_id, recorded_at) VALUES (?,?,?,?,?,?,?)",
+                  (course, int(session_no), concept, summary,
+                   json.dumps(figs, ensure_ascii=False), run_id, _now()))
+            written += 1
+        except Exception:
+            pass
+    return written
+
+
+def drop_examples_used(course: str, sessions) -> int:
+    """Forget a session's examples — its row left the curriculum."""
+    course = (course or "").strip()
+    nums = sorted({int(n) for n in (sessions or []) if n is not None})
+    if not course or not nums:
+        return 0
+    dropped = 0
+    for n in nums:
+        try:
+            _exec("DELETE FROM examples_used WHERE course=? AND session_no=?", (course, n))
+            dropped += 1
+        except Exception:
+            pass
+    return dropped
 
 
 def remove_prereq(course: str, prereq: str) -> bool:
