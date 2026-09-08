@@ -189,6 +189,21 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
     report["accepted"] = accepted
     report["issues"] = issues
 
+    # THE COMBINED VERDICT — one line per source the document is written against.
+    #
+    # Adds no judgement: `accepted` above is still the release gate and every number is
+    # already computed. It is a projection of this report onto the five things a TR doc
+    # is held to (curriculum, profile, skills, memory, house rules), so "did this respect
+    # the curriculum?" stops being a question you answer by reading nineteen failure
+    # strings and knowing which of them are about the curriculum.
+    #
+    # LAST, and wrapped: a summary must never be the reason a graded document is lost.
+    try:
+        from graders import verdict as _verdict
+        report["verdict"] = _verdict.build(report)
+    except Exception as e:
+        report["verdict_error"] = str(e)
+
     # Revising costs another ~1-2 min LLM call, so only do it when it clearly pays:
     # a HARD gate fails (structure/time/pages), or the rubric is badly below bar.
     hard_fail = ((not gr.passed) or (enforce_time and not te["within_budget"])

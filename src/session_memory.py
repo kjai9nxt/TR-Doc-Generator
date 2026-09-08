@@ -1,7 +1,26 @@
-"""COURSE MEMORY — the two things this course remembers that nothing else records.
+"""SESSION MEMORY — two of the three sources COURSE MEMORY is built from.
 
-There is already a lot of per-course memory here, and it is deliberately NOT in this
-module: extracted decks and the already-taught index (`pptx_ingest`), assumed knowledge
+NAMING, because the term is load-bearing. "Course memory" already meant something in
+this project before this module existed: the README section, the prompt header
+(`=== COURSE MEMORY — PRIOR SESSIONS ===`) and `harness/system_prompt.md` ("do not
+contradict what earlier sessions established — see the course memory") all use it, and
+`sync.prune_orphan_decks` used it for the DECKS. Calling this module `course_memory`
+made the phrase mean two things — twice inside one function in sync.py, 27 lines apart.
+
+So: COURSE MEMORY is the umbrella — what this course remembers about its own past — and
+it has THREE sources:
+
+    decks           sessions already recorded          src/pptx_ingest.py
+    provisional     TR approved, not recorded yet      THIS MODULE
+    example ledger  worked examples already spent      THIS MODULE
+
+This module is named for what it holds rather than for the whole, because the decks are
+the largest source and they live elsewhere. Everything reaches the writer through
+`pptx_ingest.taught_index`, which is the one place the deck and provisional sources are
+merged — see the note there.
+
+There is already a lot of OTHER per-course memory here, and it is deliberately NOT in
+this module: extracted decks and the already-taught index (`pptx_ingest`), assumed knowledge
 from earlier courses (`prereqs`), the rules distilled from reviewer corrections
 (`learning`), the instructions a course is written under (`skills`), and what kind of
 course it is (`profiles`). Anything derivable from those belongs to them.
@@ -31,7 +50,7 @@ EXTRACTED from a document a human approved, which is what makes it auditable —
 is why there is no cap and no eviction policy: the stores are bounded by the number of
 sessions in the course, and part 1 empties itself as the course gets recorded.
 
-Course Memory is internal context. It reaches the writer as prior-session material and
+Course memory is internal context. It reaches the writer as prior-session material and
 must never appear in a document; `skills.leaks` already fails the run when internal text
 lands on a slide, in the agenda or in the key takeaways.
 """

@@ -29,7 +29,7 @@ from pydantic import BaseModel
 
 from src import (config, sheets, sync, course_loader, pipeline, pptx_ingest,
                  context_builder, generator, docx_writer, app_settings, auth, db,
-                 outputs, llm, gslides, course_memory)
+                 outputs, llm, gslides, session_memory)
 from src import prereqs as prereqs_mod
 
 app = FastAPI(title="TR Doc Generator API")
@@ -2155,9 +2155,14 @@ def _chunk_spec(state: dict, index: int):
 def _chunk_allowance(state: dict, index: int) -> int:
     """The slide allowance the instruction for `index` states (for the over-budget log)."""
     used, left = _slide_budget_state(state, index)
+    # THE INDEX MATTERS, and cannot be derived here. On a RE-DRAFT every other section
+    # already exists, so `sections_left` is 1 and would point at the last takeaway rather
+    # than the one being redrafted — and the share is now weighted per takeaway, so
+    # pointing at the wrong one hands over the wrong budget. Chunk 0 is the opening.
     return context_builder.chunk_slide_allowance(
         state["cur"], slides_used=used, sections_left=left,
-        enforce_time=state.get("enforce_time", True))
+        enforce_time=state.get("enforce_time", True),
+        takeaway_index=max(index - 1, 0))
 
 
 def _approved_digest(prior: list[dict]) -> str:
@@ -2487,6 +2492,29 @@ def _guided_generate_all(gid: str):
             # Say which chunks cost a model call and which do not — the opening is
             # copied from the curriculum, and "Generating" would misreport that.
             verb = "Building" if i == 0 else "Generating"
+            # THE PLAN, ONCE, BEFORE ANY OF IT IS SPENT. The share each section gets is
+            # now weighted by how much its takeaway owes rather than split evenly, and a
+            # budget nobody can see is a budget nobody can question. Shown so the
+            # reviewer can tell straight away if a takeaway has been under-read — which
+            # is also the only calibration signal the weighting has.
+            if i == 0:
+                try:
+                    _plan = context_builder.slide_plan(
+                        GUIDED[gid]["cur"],
+                        enforce_time=GUIDED[gid].get("enforce_time", True),
+                        budgets=GUIDED[gid].get("budgets") or {})
+                    if _plan:
+                        _kts = list(GUIDED[gid]["cur"].key_takeaways)
+                        _guided_log(gid, f"Slide plan ({sum(_plan)} of "
+                                         f"{context_builder.slide_ceiling(GUIDED[gid].get('enforce_time', True), GUIDED[gid].get('budgets') or {})} "
+                                         f"slides), shared out by how much each takeaway "
+                                         f"owes rather than evenly:")
+                        for _j, _p in enumerate(_plan):
+                            _n_items = context_builder._owed_items(_kts[_j]) if _j < len(_kts) else 1
+                            _guided_log(gid, f"    {_p} slide(s) · {_n_items} item(s) owed "
+                                             f"· {str(_kts[_j])[:70] if _j < len(_kts) else ''}")
+                except Exception:
+                    pass
             _guided_log(gid, f"{verb} chunk {i + 1}/{total}: {GUIDED[gid]['labels'][i]} …")
             with _lock:
                 allowance = _chunk_allowance(GUIDED[gid], i) if i else 0
@@ -2689,8 +2717,24 @@ def _guided_regenerate(gid: str, index: int, reason: str,
             # the one they were actually correcting.
             with _lock:
                 run_course = (GUIDED.get(gid) or {}).get("course") or None
-            learning.record_feedback(session_no, reason, source="regeneration",
-                                     course=run_course)
+            _new, _at = learning.record_feedback_detail(
+                session_no, reason, source="regeneration", course=run_course)
+            _rules = learning.rules()
+            _r = _rules[_at] if _at is not None and 0 <= _at < len(_rules) else None
+            # SAY IT WHERE THE REVIEWER IS. The count has always been kept; nothing ever
+            # mentioned it, so the action it implies depended on someone opening the
+            # Agent-rules screen and reading a small badge.
+            if _r and learning.suggests_promotion(_r):
+                _guided_log(gid, f"You have now asked for this {_r.get('hits')} times: "
+                                 f"\u201c{str(_r.get('text'))[:120]}\u201d — worth making it a "
+                                 f"course skill under Agent rules, where it gets a "
+                                 f"per-document verdict and a repair when it is missed. "
+                                 f"As a learned rule it gets neither.")
+            elif _r and learning.is_one_off(_r):
+                _guided_log(gid, "Noted for this document only — it reads as a "
+                                 "correction rather than a standing instruction, so it "
+                                 "is not being applied to future sessions. If that is "
+                                 "wrong, keep it standing under Agent rules.")
         except Exception:
             pass
         _guided_log(gid, f"Regenerating chunk {index + 1}: {GUIDED[gid]['labels'][index]} …")
@@ -2880,6 +2924,28 @@ def _guided_finalize(gid: str):
             # copy, and losing the result over it would be the wrong trade.
             _guided_log(gid, f"Could not refresh the review panes ({_e}) — they may show "
                              f"the slide numbers from before assembly.")
+        # THE COMBINED VERDICT, in the run log. The same information was always in the
+        # result — spread across the guardrail list, the estimates, the rubric and the
+        # skill rows — so the one question a reviewer actually opens with ("what is wrong
+        # with it, and with which of my rules?") took reading all four.
+        #
+        # Shown rather than withheld, deliberately. The spec this came from said not to
+        # expose it unless asked; the same argument was made once before about the skill
+        # report and answered in graders/skill_report — asked "how do I know my skills
+        # were used?", the honest answer was "you don't, you have a score". A verdict
+        # nobody sees has the same problem.
+        try:
+            _v = (final.get("verdict") or {})
+            if _v.get("text"):
+                _guided_log(gid, "Evaluation — " + _v["text"].split("\n\n")[0])
+                for _line in (_v.get("issues") or [])[:8]:
+                    _guided_log(gid, f"    · [{_line['source']}] {_line['detail'][:200]}")
+                _extra = len(_v.get("issues") or []) - 8
+                if _extra > 0:
+                    _guided_log(gid, f"    · …and {_extra} more (full list on the result).")
+        except Exception:
+            pass
+
         # Persist the rendered outputs BEFORE surfacing the result. A guided run has
         # already cost a long human review by this point, so its document must not be
         # recoverable only from the instance disk.
@@ -2894,6 +2960,8 @@ def _guided_finalize(gid: str):
                 # resuming somebody else's run those are not the same course.
                 "course": run_course or "",
                 "accepted": final["accepted"],
+                # One line per source, plus the failed/partial list — see graders/verdict.
+                "verdict": final.get("verdict"),
                 "time": final["time"],
                 "pages": final.get("pages"),
                 "judge": final.get("judge"),
@@ -2937,7 +3005,7 @@ def _guided_finalize(gid: str):
         # Wrapped, and last: the document is written, graded, rendered and persisted by
         # this point, and no memory write may be allowed to lose it.
         try:
-            _mem = course_memory.record(run_course, session_no,
+            _mem = session_memory.record(run_course, session_no,
                                         result.get("doc") or doc, run_id=gid)
             if _mem.get("topics") or _mem.get("examples"):
                 _guided_log(gid, f"Course memory updated — {_mem['topics']} topic(s) "
@@ -3605,23 +3673,39 @@ def submit_feedback(body: FeedbackBody, user: dict = Depends(current_user)):
         raise HTTPException(status_code=400, detail={"message":
             "Say what should change, in a sentence — it becomes a rule applied to every "
             "future document in this course."})
-    before = {r.get("text") for r in learning.rules()}
     fb_course = _require_course(user, body.course) if body.course else None
     try:
-        learning.record_feedback(body.session_no, reason, source="feedback",
-                                 course=fb_course)
+        # DETAIL, not the boolean. The reinforced rule has to be identified exactly:
+        # this used to fall back to `max(rules, key=hits)` — the most-reinforced rule in
+        # the whole store — which on the merge path is very often not the rule that was
+        # just touched, so the reviewer was shown someone else's rule as "yours".
+        is_new, at = learning.record_feedback_detail(
+            body.session_no, reason, source="feedback", course=fb_course)
     except Exception as e:
         raise HTTPException(status_code=502, detail={"message": f"Could not record that: {e}"})
     rules = learning.rules()
-    added = next((r for r in reversed(rules) if r.get("text") not in before), None)
-    # No new rule means it folded into an existing one (a restatement) — which is the
-    # dedupe working, not a failure, so report the reinforced rule instead.
-    if added is None:
-        added = max(rules, key=lambda r: (r.get("hits") or 1)) if rules else None
-        return {"ok": True, "merged": True, "rule": added,
-                "message": "Folded into an existing rule and raised its priority."}
-    return {"ok": True, "merged": False, "rule": added,
-            "message": "Learned — this will be applied to every future doc in this course."}
+    added = rules[at] if at is not None and 0 <= at < len(rules) else None
+    suggest = bool(added) and learning.suggests_promotion(added)
+    out = {"ok": True, "merged": not is_new, "rule": added, "index": at,
+           # Gap 3: say it, rather than leaving the reviewer to notice a badge on a
+           # screen they may never open. See learning.suggests_promotion.
+           "suggest_promote": suggest,
+           "promote_course": (added or {}).get("course") if suggest else None}
+    if suggest:
+        out["message"] = (
+            f"Folded into an existing rule — you have now asked for this "
+            f"{added.get('hits')} times. Worth making it a course skill, where it is "
+            f"checked on every document and repaired when it is missed.")
+    elif not is_new:
+        out["message"] = "Folded into an existing rule and raised its priority."
+    elif learning.is_one_off(added or {}):
+        out["message"] = ("Recorded as a one-off — it reads as a correction to this "
+                          "document rather than a standing instruction, so it is NOT "
+                          "being applied to future documents. Say 'keep it standing' "
+                          "under Agent rules if that is wrong.")
+    else:
+        out["message"] = "Learned — this will be applied to every future doc in this course."
+    return out
 
 
 @app.get("/api/learned-rules")
@@ -3647,9 +3731,16 @@ def learned_rules(user: dict = Depends(current_user)):
         # an approved-pending skill, so it is injected through the course brief instead
         # and reported there with a PASS/PARTIAL/FAIL verdict. Same principle as `gated`
         # — something stronger owns it now, and the row stays visible saying so.
+        # `one_off` is the THIRD reason a rule is listed but not applied, and the only
+        # one where nothing stronger owns it: the note was judged a correction to one
+        # document rather than a standing instruction, so it is kept as a record and
+        # injected nowhere. Unlike the other two it is a GUESS, made from a single
+        # sentence — hence `keep_standing` below, and hence a second asking clearing it
+        # by itself.
         "rules": [{**r, "applies": r.get("text") in applies,
                    "gated": learning.gate_for(r),
-                   "promoted": learning.promoted_skill_id(r)}
+                   "promoted": learning.promoted_skill_id(r),
+                   "one_off": learning.is_one_off(r)}
                   for r in learning.rules()],
     }
 
@@ -3754,16 +3845,44 @@ def promote_learned_rule(index: int, body: RulePromoteBody,
     A DRAFT, deliberately. Skills are worth more than rules precisely because a person
     chose them; a promotion that took effect on its own would hand this store's inference
     a skill's authority. It waits under Skills, where it can be reworded first.
+
+    CONSOLIDATED. It joins the draft group this course's promotions are already
+    accumulating rather than opening a card of its own — `lines` says how many
+    instructions that group now holds, so the answer can tell the user which happened
+    instead of leaving them to go and look.
     """
     from src import learning
     course = _require_course(user, body.course)
-    ok, skill_id, why = learning.promote_to_skill(
+    ok, skill_id, why, lines = learning.promote_to_skill(
         index, course, created_by=user.get("email"))
     if not ok:
         raise HTTPException(status_code=(404 if why == "no such rule" else 400),
                             detail={"message": why})
-    return {"ok": True, "skill_id": skill_id, "course": course,
-            "rules": learning.rules()}
+    return {"ok": True, "skill_id": skill_id, "course": course, "lines": lines,
+            "grouped": lines > 1, "rules": learning.rules()}
+
+
+@app.post("/api/learned-rules/{index}/keep")
+def keep_learned_rule_standing(index: int, user: dict = Depends(current_user)):
+    """Say that a rule marked ONE-OFF is in fact a standing instruction.
+
+    WHY THIS EXISTS. Every non-duplicate reviewer note used to become a standing rule
+    injected into every future generation — including corrections to one slide, which
+    carry no instruction for the next document and dilute the ones that do. So notes are
+    now classified, and a one-off is stored but not injected.
+
+    That classification is a GUESS from a single sentence, and the two ways it can be
+    wrong are not symmetric. A standing rule wrongly marked one-off simply stops being
+    applied, silently — so it needs a one-click correction here. (The other direction
+    needs nothing: a one-off wrongly left standing just adds a line, and asking for the
+    same thing a second time clears the mark on its own.)
+    """
+    from src import learning
+    ok, why = learning.keep_standing(index)
+    if not ok:
+        raise HTTPException(status_code=(404 if why == "no such rule" else 400),
+                            detail={"message": why})
+    return {"ok": True, "rules": learning.rules()}
 
 
 @app.delete("/api/learned-rules/{index}")

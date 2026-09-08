@@ -122,7 +122,7 @@ jobs:
       # The suite also pins the two ways this could go wrong — a deck losing to a
       # placeholder, and one course reading another's memory.
       - name: Run course-memory regression (approved-but-unrecorded + example ledger)
-        run: python -m evals.test_course_memory
+        run: python -m evals.test_session_memory
       # THE GATES RUN TWICE NOW — once per chunk while the reviewer still has it open,
       # once over the assembled document at finalize, which is still the release gate.
       # This suite pins the two ways that can go wrong: the synthetic one-takeaway
@@ -130,6 +130,27 @@ jobs:
       # the default path (it may only ever SUBTRACT, and never from doc scope).
       - name: Run per-chunk gate regression (chunk scope vs doc scope)
         run: python -m evals.test_chunk_check
+      # WHAT THE LEARNED-RULE STORE KEEPS, INJECTS AND OFFERS. Three defects: one cap
+      # shared by every course (a busy course evicting a dormant one's rules, silently
+      # and permanently), every note becoming a standing instruction including
+      # corrections to one slide, and a repeat count that was kept but never mentioned.
+      # The suite also pins the hazard behind all of it — a rule's INDEX is its address,
+      # so a trim that reordered survivors would make a stale index promote or delete
+      # the wrong rule.
+      - name: Run learned-rule hygiene regression (per-course caps, one-offs, nudge)
+        run: python -m evals.test_learning_hygiene
+      # THE COMBINED VERDICT. One status per source the document is written against,
+      # attributed from the tag each gate carries rather than by reading failure text
+      # (which src/pipeline._repair_reasons explains is a bug waiting for the next
+      # reword). It must also add NO judgement: `accepted` is still the release gate.
+      - name: Run combined-verdict regression (per-source attribution)
+        run: python -m evals.test_verdict
+      # THE SLIDE BUDGET, shared out by what each takeaway OWES rather than evenly and
+      # first-come-first-served. Two properties have to survive it: the parts sum to the
+      # ceiling exactly, and a section that runs long squeezes the later ones down to the
+      # coverage floor and no further.
+      - name: Run slide-plan regression (weighted allocation)
+        run: python -m evals.test_slide_plan
 
   frontend-build:
     name: Frontend build + committed-bundle check (Vite/React)

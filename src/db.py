@@ -1915,6 +1915,63 @@ def edit_skill(skill_id: int, text: str, *, check: dict | None = None,
         return False
 
 
+def append_skill_instruction(skill_id: int, instruction: str, *,
+                             source_quote: str | None = None,
+                             heading: str | None = None) -> tuple[bool, int, str]:
+    """Add one line to a DRAFT skill. Returns (ok, how many lines it now has, why not).
+
+    ONLY A DRAFT, and that is the whole design of this function. `edit_skill` sends a
+    skill back to draft precisely because "an approval is of the words that were
+    approved" — so appending to an APPROVED skill would revoke the approval of the lines
+    already signed off, and one new line would silently switch off three live rules.
+    Refusing here means the caller has to start a new draft instead, which costs an extra
+    card and costs nothing that was already working.
+
+    `heading` is used only when the row has no instructions yet. Such a row is the older
+    one-line shape where `text` IS the instruction (see db.add_skill), so its text is
+    moved down into the first instruction and the heading takes its place — otherwise
+    appending a second line would leave the first one serving as both the group's title
+    and one of its points.
+    """
+    instruction = skill_body(instruction)
+    if not instruction:
+        return False, 0, "no instruction to add"
+    rows = _query("SELECT * FROM course_skills WHERE id=?", (int(skill_id),))
+    if not rows:
+        return False, 0, "no such skill"
+    row = _shape_skill(rows[0])
+    status = (row.get("status") or "").strip().lower()
+    if status != "draft":
+        return False, 0, (f"that skill is {status or 'not a draft'}; a line may only be "
+                          f"added to a draft, or the approval of the lines already in "
+                          f"it would be revoked")
+    lines = list(row.get("instructions") or [])
+    text = str(row.get("text") or "")
+    if not lines and text:
+        lines = [text]
+        text = skill_body(heading) or text
+    # A line already present is not added twice — the same request in the same words is
+    # one instruction, exactly as add_rule treats a repeated note as one rule.
+    norm = {" ".join(x.split()).lower() for x in lines}
+    if " ".join(instruction.split()).lower() not in norm:
+        lines.append(instruction)
+    quotes = list(row.get("source_quotes") or [])
+    if source_quote:
+        q = " ".join(str(source_quote).split())
+        if q and q not in quotes:
+            quotes.append(q)
+    try:
+        _exec("UPDATE course_skills SET text=?, instructions=?, source_quote=?, "
+              "source_quotes=?, version=version+1, updated_at=? WHERE id=?",
+              (text or instruction, json.dumps(lines),
+               (quotes[0] if quotes else None),
+               json.dumps(quotes) if quotes else None,
+               _now(), int(skill_id)))
+        return True, len(lines), ""
+    except Exception as e:
+        return False, 0, str(e)
+
+
 def approve_skill(skill_id: int, who: str | None) -> bool:
     try:
         _exec("UPDATE course_skills SET status='approved', approved_by=?, approved_at=?, "

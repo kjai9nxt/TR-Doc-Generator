@@ -12,14 +12,60 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src import config  # noqa: E402
 
 
+# WHICH SOURCE A GATE IS ENFORCING. Five, matching the things a document is written
+# against: the curriculum, the course's profile, its own skills, what earlier sessions
+# already taught, and the house rules that hold for every TR doc.
+#
+# It exists so a verdict can be reported PER SOURCE ("Curriculum: PASS, Skills:
+# PARTIAL") without anyone parsing failure text. `_repair_reasons` in src/pipeline says
+# why that matters: the issue strings are written for the reviewer and edited freely, so
+# reading them for meaning is a bug waiting for the next reword.
+CURRICULUM, PROFILE, SKILLS, MEMORY, GENERIC = (
+    "curriculum", "profile", "skills", "memory", "generic")
+
+
+class _Tagged(list):
+    """A list of failures that also records WHICH SOURCE each one came from.
+
+    Deliberately a list subclass rather than a rewrite of `check`. There are well over a
+    hundred `fails.append(...)` sites in that function, each carefully worded; changing
+    every one to pass a category would be a hundred chances to introduce a typo into a
+    gate. Instead the category is set ONCE at the top of each block — `fails.cat = ...` —
+    and recorded here on the way past. The appends are untouched, and doc-scope behaviour
+    is provably identical: evals/test_gates asserts every gate still fires on its own
+    defect.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.tags: list[str] = []
+        self.cat: str = GENERIC
+
+    def append(self, item):
+        super().append(item)
+        self.tags.append(self.cat)
+
+    def __iadd__(self, other):
+        for x in other:                       # `fails += [...]` must tag too
+            self.append(x)
+        return self
+
+
 @dataclass
 class GuardrailResult:
     passed: bool
     failures: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    # Parallel to `failures`/`warnings`: the source each one is enforcing. Same length,
+    # same order. Empty for a result built by hand (a test fixture, an older caller).
+    failure_sources: list[str] = field(default_factory=list)
+    warning_sources: list[str] = field(default_factory=list)
 
     def as_dict(self):
-        return {"passed": self.passed, "failures": self.failures, "warnings": self.warnings}
+        return {"passed": self.passed, "failures": list(self.failures),
+                "warnings": list(self.warnings),
+                "failure_sources": list(self.failure_sources),
+                "warning_sources": list(self.warning_sources)}
 
 
 def _slides(doc: dict) -> list[dict]:
@@ -394,9 +440,15 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                          ("slide_roles", "analogy", "content", "worked_example",
                           "recording") if profile.get(k)}}
         gates = {**gates, **(profile.get("gates") or {})}
-    fails: list[str] = []
-    warns: list[str] = []
+    # Tagged, so the verdict can be reported per source without reading failure text.
+    # `_cat(...)` sets the source for every gate that follows it, until the next call.
+    fails = _Tagged()
+    warns = _Tagged()
 
+    def _cat(name: str) -> None:
+        fails.cat = warns.cat = name
+
+    _cat(GENERIC)
     # --- required top-level fields ---
     if not doc.get("session_title"):
         fails.append("Missing session_title.")
@@ -409,26 +461,31 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     if not doc.get("closing"):
         fails.append("Missing closing.")
 
+    _cat(CURRICULUM)
     # --- recap rule ---
     if is_first and doc.get("recap"):
         warns.append("Recap present on the first session — should be omitted.")
     if not is_first and not doc.get("recap"):
         fails.append("Recap missing (required for non-first sessions).")
 
+    _cat(CURRICULUM)
     # --- upcoming session rule ---
     if not is_last and not doc.get("upcoming_session"):
         fails.append("upcoming_session missing (not the final session).")
 
+    _cat(CURRICULUM)
     # --- agenda <= key takeaways ---
     n_kt = session.key_takeaways_count
     if len(doc.get("agenda", [])) > n_kt:
         fails.append(f"Agenda has {len(doc['agenda'])} bullets > {n_kt} key takeaways.")
 
+    _cat(CURRICULUM)
     # --- coverage: every takeaway represented somewhere ---
     doc_kt = doc.get("key_takeaways", [])
     if len(doc_kt) < n_kt:
         warns.append(f"Doc lists {len(doc_kt)} takeaways vs {n_kt} in the structure.")
 
+    _cat(GENERIC)
     # --- slide count ---
     slides = _slides(doc)
     # Depth mode (40-min limit off) allows more slides for worked examples etc.
@@ -455,6 +512,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
             f"concept_intro slides and worked examples the topic does not need. Never drop "
             f"a sub-concept. Longest sections: {worst}.")
 
+    _cat(GENERIC)
     # --- per-slide required fields ---
     # Five fields are unconditional. `analogy` is NOT: it is required on a first
     # introduction and forbidden everywhere else (see the role/analogy gate below) —
@@ -467,6 +525,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
             if not s.get(req) or not str(s.get(req)).strip():
                 fails.append(f"{tag}: missing '{req}' (required on every slide).")
 
+    _cat(PROFILE)
     # --- slide role: declared, valid, and honestly distributed ------------------
     # The role is what makes the analogy and worked-example rules checkable at all.
     role_cfg = con.get("slide_roles", {})
@@ -519,6 +578,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"which types/kinds/parts it has, all in one place, before any "
                         f"single one of them is taught.")
 
+    _cat(PROFILE)
     # --- analogy placement: an EXACT biconditional against the role -------------
     # required iff role == concept_intro. An analogy earns its lines the first time a
     # concept is met; on a mechanism, comparison, pros/cons, reasoning, application or
@@ -541,6 +601,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"'analogy' field. An analogy belongs only where a concept is "
                     f"introduced for the first time.")
 
+    _cat(GENERIC)
     # --- heading / subheading word cap ---
     # A heading is a slide LABEL, not a sentence: hard 4-word cap (house rule).
     # Enforced in BOTH modes — depth mode adds body depth, never longer headings.
@@ -553,6 +614,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"Slide {s.get('n', '?')}: {fld} has {len(words)} words "
                     f"(max {hcap}) — \"{s.get(fld)}\". Shorten to a {hcap}-word label.")
 
+    _cat(GENERIC)
     # --- no repeated analogy across slides (exact match; backstop for the
     #     no-repeat rule — the LLM eval set also catches same-theme reuse) ---
     analogies = [str(s.get("analogy", "")).strip().lower() for s in slides if s.get("analogy")]
@@ -561,6 +623,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
         fails.append(f"Duplicate analogy reused across {len(dupes)} slide group(s) — "
                      f"each slide needs a distinct analogy.")
 
+    _cat(CURRICULUM)
     # --- agenda text == key takeaway text, numbered 1..N ------------------------
     # The reviewer asked for this repeatedly and the model kept paraphrasing, so it
     # is a gate now, not a preference. Compared on normalised lines so the numbering
@@ -591,6 +654,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"{len(unnumbered)} agenda item(s) are not numbered — number them "
                 f"1..{len(agenda)} to mirror the numbered Key Takeaways.")
 
+    _cat(CURRICULUM)
     # --- one section per takeaway, named after it, in order ---------------------
     # The layout rule has always been "one section breaker per agenda item, in agenda
     # order, with the same text", but only the rubric ever looked at it. That left the
@@ -612,6 +676,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"takeaway {i + 1} verbatim (it is the agenda item too):\n"
                     f"    expected: {src_kt[i]}")
 
+    _cat(MEMORY)
     # --- recap must carry ALL of the previous session's agenda items -------------
     rc_cfg = con.get("recap", {})
     if (rc_cfg.get("must_cover_all_prev_agenda_items", False)
@@ -624,6 +689,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"{n_prev} agenda items — the recap must carry ALL of them, verbatim, "
                 f"in its 'topic: subtopics' format.")
 
+    _cat(PROFILE)
     # --- content text blocks: tight, not prose ---------------------------------
     # Applies in depth mode too: depth is meant to come from MORE slides covering
     # more sub-concepts, never from fatter paragraphs (see harness/depth_mode.md).
@@ -643,6 +709,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"{tag}: content text block {i + 1} has {_sentence_count(t)} "
                     f"sentences (max {max_cs}).")
 
+    _cat(SKILLS)
     # --- the course's own skills, where they carry a check ------------------------
     # Prose skills go to the writer and the judge; these are the ones a machine can
     # settle. The failure QUOTES the skill, because "guardrail failure" against a rule
@@ -653,6 +720,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
             continue
         fails += _skill_failures(doc, slides, sk, chk)
 
+    _cat(SKILLS)
     # --- the brief must not be IN the document ------------------------------------
     # A skill says HOW to teach the session; the curriculum says WHAT. Told "start with
     # the problem, then the concept, then the mechanism", a model reliably writes a slide
@@ -669,10 +737,13 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
         # it has turned a fact about its audience into a slide. Checked here because the
         # assembled document is the only place it is visible, and because a profile that
         # can reach the page is a profile that quietly becomes curriculum.
+        _cat(PROFILE)
         fails += _skills_mod.profile_leak_failures(doc, profile)
+        _cat(SKILLS)
     except Exception:
         pass
 
+    _cat(GENERIC)
     # --- code blocks are well formed ---------------------------------------------
     # A code slide that shows nothing, or explains a line the snippet does not have, is
     # the same class of defect as a coverage entry pointing at a slide that is not there:
@@ -719,6 +790,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"{n_lines} line(s). A reference to a line that is not there "
                         f"points the learner at nothing.")
 
+    _cat(PROFILE)
     # --- prose / bullet MIX ------------------------------------------------------
     # The reviewer's complaint: "mostly all the content is bullets only, which looks
     # odd". It did, and nothing checked it — every earlier rule pushed the same way
@@ -773,6 +845,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"(field names, ports, flags), say them in the paragraph or "
                         f"make them a table.")
 
+    _cat(GENERIC)
     # --- no redundancy on a slide ----------------------------------------------
     # A bullet that repeats its lead-in sentence, or a table restated as bullets,
     # burns slide space and recording time for no new information.
@@ -786,6 +859,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         fails.append(
                             f"{tag}: a bullet restates the lead-in sentence verbatim "
                             f"(\"{it[:60]}…\") — keep one or the other, not both.")
+    _cat(GENERIC)
     # --- THE PARAGRAPH AND THE BULLETS MUST SAY DIFFERENT THINGS -----------------
     # The pattern the reviewer found on nearly every slide: a lead-in sentence, then
     # bullets that say the same thing in other words —
@@ -876,6 +950,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                             f"make it say what the table cannot — why the numbers come "
                             f"out that way, when the choice flips, what it costs.")
 
+    _cat(GENERIC)
     # --- THE SAME THING IS NOT TAUGHT ON TWO SLIDES ----------------------------
     # Everything above is within one slide. This is across the deck: the reviewer's
     # rule that "any concept, definition, criteria list, comparison table or
@@ -928,6 +1003,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"and delete the other. The page ceiling is fixed, so the second "
                     f"telling costs a line of coverage this document cannot get back.")
 
+    _cat(CURRICULUM)
     # --- NO PADDING A THIN TOPIC INTO THREE SLIDES -----------------------------
     # "A single-line syllabus point (e.g. 'why X matters') gets at most 2 slides."
     # The failure mode is structural, not stylistic: the slide MINIMUM plus a takeaway
@@ -960,6 +1036,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"under three titles. Merge them into {pad_max}, and give the pages "
                     f"back to the takeaways that carry several sub-topics.")
 
+    _cat(GENERIC)
     # --- slides are numbered 1..N, no gaps, no repeats --------------------------
     # pipeline.assemble renumbers the whole document; this asserts it worked. A gap or
     # a duplicate means a regenerated chunk changed length and the remap missed it,
@@ -972,6 +1049,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"gaps or repeats. Renumber every slide in document order and update "
                 f"the coverage_map references to match.")
 
+    _cat(GENERIC)
     # --- speaker notes: 2 sentences, one cue + one exam hook -------------------
     max_ns = con.get("speaker_notes", {}).get("max_sentences")
     if max_ns:
@@ -983,6 +1061,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"(max {max_ns}) — one teaching cue plus one exam/interview hook, "
                     f"then stop.")
 
+    _cat(GENERIC)
     # --- voice: no second person, no filler, no navigation in visible text -----
     v_cfg = con.get("voice", {})
     banned_you = v_cfg.get("banned_second_person", []) if not v_cfg.get("allow_second_person", True) else []
@@ -1009,6 +1088,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"{', '.join(repr(x) for x in hits)} — address the instructor's action, "
                 f"not the learner.")
 
+    _cat(PROFILE)
     # --- analogies must correlate, not just illustrate -------------------------
     if a_cfg.get("require_explicit_tie_back", False):
         connectives = a_cfg.get("tie_back_connectives", [])
@@ -1020,6 +1100,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"End it with an explicit mapping — e.g. \"… — just as <how the concept "
                     f"works>\" — naming what it stands for.")
 
+    _cat(PROFILE)
     # --- worked examples: only where one earns its slide -----------------------
     # depth_mode used to make a worked example MANDATORY on every doc, so definitional
     # takeaways ("what a file is", "types of scheduling") got a traced example that
@@ -1092,6 +1173,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
             f"(max {we_cap:.0%}) — keep the examples that let the learner EXECUTE "
             f"something and fold the rest back into the concept slides.")
 
+    _cat(PROFILE)
     # --- examples must use realistic, concrete figures -------------------------
     # A toy number teaches a toy mental model: "base = 5" is not an address. The
     # magnitude/shape judgement is the judge's; deterministically we require that a
@@ -1120,6 +1202,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"{', '.join(repr(x) for x in hits)} — substitute a realistic "
                     f"value a practitioner would recognise.")
 
+    _cat(CURRICULUM)
     # --- coverage map: the sub-concept enumeration, VERIFIED -------------------
     # The prompt has asked for this enumeration since 1.24, but only in the model's
     # head, so "I forgot one" stayed invisible. Emitting it turns a silent omission
@@ -1264,6 +1347,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"coverage map — worth a look; that is what off-agenda content "
                         f"looks like.")
 
+    _cat(CURRICULUM)
     # --- 100% OF EACH TAKEAWAY: the sub-topics the CURRICULUM LINE itself names ----
     # Everything checked above measures the doc against the model's OWN enumeration of
     # sub-concepts, so a promise the curriculum made and the model never enumerated was
@@ -1311,6 +1395,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                     f"in {where}. Do not defer or drop a sub-topic the takeaway "
                     f"itself names.")
 
+    _cat(MEMORY)
     # --- DO NOT RE-TEACH WHAT AN EARLIER SESSION ALREADY TAUGHT -------------------
     # The whole reason prior decks are ingested. Until now nothing checked it: the
     # instruction lived in the prompt, and the judge scored "no repetition" without
@@ -1374,6 +1459,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         f"slide \"{ptitle}\"{src} — make sure this goes BEYOND what was "
                         f"already taught rather than repeating it.")
 
+    _cat(CURRICULUM)
     # --- AND DO NOT TEACH WHAT THE NEXT SESSION IS FOR ---------------------------
     # The other edge of "coverage = syllabus, no more". The gate above guards the past;
     # this guards the future. Same shape deliberately: an outright INTRODUCTION of a
@@ -1422,7 +1508,9 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     passed = len(fails) == 0
     if gates.get("structural_pass") is True and not passed:
         pass  # already reflected in fails
-    return GuardrailResult(passed=passed, failures=fails, warnings=warns)
+    return GuardrailResult(passed=passed, failures=list(fails), warnings=list(warns),
+                           failure_sources=list(fails.tags),
+                           warning_sources=list(warns.tags))
 
 
 # --------------------------------------------------------------------------- #

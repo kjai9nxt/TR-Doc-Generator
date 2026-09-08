@@ -2483,7 +2483,21 @@ self_evolution:
   learn_from_judge: true            # surviving guardrail/judge/time defects (per-generation) -> durable rules
   learn_from_eval_sets: true        # eval-set FAILURES (evals/run_sets.py, System B) -> durable rules (LLM runs only)
   distill: true                     # LLM-rewrite each raw defect into a general, reusable DO/DON'T rule
-  max_rules: 40                     # cap on injected rules (oldest trimmed first; also in learning.py)
+  # THE CAP IS PER BUCKET, not one limit shared by every course. Injection is
+  # `global + this course`, so these two sum to what one generation can receive —
+  # deliberately the same 40 as the single cap they replace. `max_rules` is kept as the
+  # fallback both are derived from when they are absent.
+  max_rules: 40
+  max_global_rules: 20      # house style, shared by every course
+  max_course_rules: 20      # one course's own subject-matter rules
+  # ASK before the reviewer has to notice. A rule reinforced this many times has earned
+  # being offered as a course SKILL, where it gets a per-document verdict and a repair
+  # when it is ignored — neither of which a rule ever gets. 0 turns the suggestion off.
+  promote_suggest_at: 3
+  # Ask, per new rule, whether the distilled instruction is a standing preference or a
+  # truism left over from correcting one thing (learning.is_one_time_note). False stores
+  # every note as standing, which is the behaviour that predates the classification.
+  classify_one_off: true                     # cap on injected rules (oldest trimmed first; also in learning.py)
 
 # ----------------------------------------------------------------------------
 # AUTH — Google Sign-In, restricted to the org domain.

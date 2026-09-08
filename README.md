@@ -61,6 +61,31 @@ See `harness/sheet_templates.md` (or `python run.py --template-guide`).
 
 ## Course memory + live sync
 
+**Course memory** is what this course remembers about its own past, and it has **three
+sources**. The name covers all three — a single term, because they answer one question
+("what has this course already done?") and are merged before anyone reads them.
+
+| Source | What it is | Where |
+|---|---|---|
+| **Decks** | sessions already **recorded** — the largest source, and always the truth | `src/pptx_ingest.py` |
+| **Provisional** | a session whose TR is **approved but not recorded yet** | `src/session_memory.py` |
+| **Example ledger** | worked examples the course has already **spent** | `src/session_memory.py` |
+
+The first two are merged in exactly one place — `pptx_ingest.taught_index` — so every
+consumer gets both without knowing the difference: the digest the writer reads, the
+digest the judge reads, `taught_titles` behind the repetition guardrail, and the
+prerequisite index. **A deck always wins**: a provisional entry is ignored the moment its
+session has an extracted deck, and pruned when one is ingested.
+
+Provisional exists because the two arrive weeks apart. A TR is written, reviewed and
+approved now; the deck is recorded and linked later. In that window the session used to
+be invisible — absent from the writer's context, absent from the judge's, and absent
+from the repetition gate — so a batch of TRs written ahead of recording could re-teach
+itself with every gate green.
+
+Course memory is **internal context**. It never appears in a document; `skills.leaks`
+fails the run if internal text reaches a slide, the agenda or the key takeaways.
+
 On every run the agent **syncs** with the sheet:
 - validates it against the template (discards + guides you if it doesn't match),
 - reads each row's deck link straight off that row,
@@ -266,8 +291,11 @@ python -m evals.test_gates        # offline: each gate fires on its own defect (
 python -m evals.test_api_contracts # offline: handlers only read fields their model declares
 python -m evals.test_endpoints    # boots the real server, real HTTP, throwaway DB (no API)
 python -m evals.test_cloud_driver # the DEPLOYED driver (libSQL) on a local file; skips if absent
-python -m evals.test_course_memory # course memory: approved-but-unrecorded sessions + the example ledger
+python -m evals.test_session_memory # course memory's two non-deck sources: provisional + examples
 python -m evals.test_chunk_check   # the gates per chunk vs over the whole doc
+python -m evals.test_learning_hygiene # per-course rule caps, one-off notes, promotion nudge
+python -m evals.test_verdict       # the combined verdict: one status per source
+python -m evals.test_slide_plan    # the slide budget weighted by what each takeaway owes
 npm --prefix frontend run test:ui # mounts the real App.jsx in jsdom
 python -m evals.run_sets --session N   # score one doc against all 24 eval sets
 python -m evals.run_eval --live   # full pipeline on sample sessions (needs API)

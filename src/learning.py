@@ -139,12 +139,22 @@ def _merge_plausible(note: str, rule: str) -> bool:
 
 
 def reinforce(index: int, session_no=None) -> None:
-    """Bump an existing rule's hit count — the reviewer has asked for it again."""
+    """Bump an existing rule's hit count — the reviewer has asked for it again.
+
+    A SECOND ASKING CANCELS THE ONE-OFF MARK. `distill_feedback` decides one-time versus
+    standing from a single note, which is a guess: you cannot tell from one sentence
+    whether it will come back. Recurrence is not a guess. So the moment the same request
+    arrives twice the rule starts being injected, and the classifier's mistake corrects
+    itself instead of needing to be noticed.
+    """
     data = _load()
     if 0 <= index < len(data["rules"]):
         r = data["rules"][index]
         r["hits"] = r.get("hits", 1) + 1
         r["last_session_no"] = session_no
+        if r.pop("one_off", None):
+            print(f"[learning] asked for a second time, so it is no longer treated as a "
+                  f"one-off: {str(r.get('text'))[:120]!r}")
         _save(data)
 
 
@@ -289,6 +299,58 @@ def drop_contentless() -> int:
     return len(dropped)
 
 
+def promote_suggest_at() -> int:
+    """How many askings before promotion is SUGGESTED. 0 turns the suggestion off."""
+    try:
+        return int(_self_evo_cfg().get("promote_suggest_at", 3) or 0)
+    except Exception:
+        return 3
+
+
+def suggests_promotion(rule: dict) -> bool:
+    """Whether this rule has earned being offered as a course skill.
+
+    The store has always COUNTED how often the same request comes back — `_similar` and
+    `distill_feedback` fold a repeat into one rule and raise its `hits` — and the UI has
+    always shown the count as a small "x3" chip. Nothing ever said anything, so the one
+    action the count implies (make it a skill, where it is verified per document and
+    repaired when ignored, which a rule never is) depended on the reviewer happening to
+    open that screen and happening to read the badge.
+
+    A rule is only offered when promotion would actually do something: it must still be
+    injected as a rule (not already a skill, not superseded by a gate, not a one-off),
+    and it must record the course to be promoted INTO — `promote_to_skill` refuses
+    without one, so suggesting it there would be an offer that cannot be accepted.
+    """
+    at = promote_suggest_at()
+    if not at or int((rule or {}).get("hits") or 1) < at:
+        return False
+    return _injectable(rule) and bool((rule or {}).get("course"))
+
+
+def is_one_off(rule: dict) -> bool:
+    """Whether this rule was judged a correction to ONE document rather than a standing
+    instruction. Such a rule is stored and visible, and is not injected anywhere."""
+    return bool((rule or {}).get("one_off"))
+
+
+def keep_standing(index: int) -> tuple[bool, str]:
+    """Clear the one-off mark: the reviewer says this IS a standing instruction.
+
+    The classifier is a guess made from one sentence, so it has to be correctable
+    without the reviewer having to say the same thing again on a later session just to
+    reach the second hit that would clear it automatically.
+    """
+    data = _load()
+    rs = data.get("rules", [])
+    if not (0 <= index < len(rs)):
+        return False, "no such rule"
+    if not rs[index].pop("one_off", None):
+        return False, "that rule is already a standing instruction"
+    _save(data)
+    return True, ""
+
+
 def promoted_skill_id(rule: dict) -> int | None:
     """The skill this rule became, or None. Stamped by `promote_to_skill`.
 
@@ -306,8 +368,48 @@ def promoted_skill_id(rule: dict) -> int | None:
     return sid if isinstance(sid, int) else None
 
 
+# The heading a group of promoted rules sits under. Only ever SEEN once the group has a
+# second line: skills._render prints a one-instruction skill as just its instruction, so
+# the first promotion reads exactly as it always has.
+_PROMOTED_HEADING = "Corrections this course's review keeps sending back."
+
+
+def _promotion_target(course: str) -> dict | None:
+    """The DRAFT skill this course's promotions are accumulating in, if there is one.
+
+    Three filters, each of them load-bearing:
+
+      · status DRAFT — an approved skill may not be appended to (db.append_skill_
+        instruction refuses), because that would revoke the approval of every line
+        already in it. So an approved group is closed, and the next promotion opens a
+        new draft beside it.
+      · source LEARNED — a reviewer-category skill the AUTHOR wrote by hand is theirs.
+        Appending this store's inference into it would be the same authority swap the
+        draft-only rule exists to prevent, one level down.
+      · scope COURSE — a session-scoped skill applies to one session; a rule learned
+        across the course does not belong inside it.
+
+    The OLDEST match, so repeated promotions accumulate in one place instead of
+    scattering across every draft that happens to qualify.
+    """
+    from . import db
+    try:
+        rows = db.skills(course)
+    except Exception:
+        return None
+    cand = [r for r in rows
+            if (r.get("category") or "") == "reviewer"
+            and (r.get("status") or "") == "draft"
+            and (r.get("source") or "") == "learned"
+            and (r.get("scope") or "course") == "course"]
+    return min(cand, key=lambda r: r.get("id") or 0) if cand else None
+
+
 def promote_to_skill(index: int, course: str, *, created_by: str | None = None):
-    """Turn learned rule `index` into a DRAFT reviewer skill. Returns (ok, skill_id, why).
+    """Turn learned rule `index` into a DRAFT reviewer skill.
+
+    Returns (ok, skill_id, why, lines) — `lines` being how many instructions that skill
+    now carries, so the caller can say whether this joined a group or started one.
 
     A DRAFT, never approved. The whole reason skills are worth more than rules is that a
     person chose them, and a promotion that applied itself would be this store's
@@ -319,6 +421,14 @@ def promote_to_skill(index: int, course: str, *, created_by: str | None = None):
     kept making on this course. That category is also the strongest skill tier, which is
     right — it outranks the standing brief, and a reviewer who had to say something twice
     has earned that.
+
+    CONSOLIDATED, not one card per rule. Four related corrections used to arrive as four
+    separate skills: four cards to read, four approvals to give, and no defined order
+    between them — while db.add_skill's own contract says the opposite ("Four related
+    instructions written under one heading are ONE skill with four instructions —
+    storing them as four skills would lose the author's grouping and their order, and
+    would turn one approval into four"). So a promotion joins the draft group this
+    course is already accumulating, and only starts a new one when there is none open.
     """
     from . import db
     data = _load()
@@ -327,26 +437,43 @@ def promote_to_skill(index: int, course: str, *, created_by: str | None = None):
         return False, None, "no such rule"
     rule = rs[index]
     if promoted_skill_id(rule):
-        return False, None, "this rule has already been promoted to a skill"
+        return False, None, "this rule has already been promoted to a skill", 0
     text = str(rule.get("text") or "").strip()
     if not text:
-        return False, None, "this rule has no text to promote"
+        return False, None, "this rule has no text to promote", 0
     course = (course or rule.get("course") or "").strip()
     if not course:
         return False, None, ("this rule does not record which course it was learned on, "
-                             "so there is no course to promote it into")
-    sid = db.add_skill(
-        course, text, category="reviewer", scope="course",
-        # WHERE IT CAME FROM, so the skill's own audit trail does not start blank. The
-        # raw note the reviewer typed is kept as the source quote — it is the evidence
-        # for the rule, and the person approving it should see the words behind it.
-        source="learned", created_by=created_by,
-        source_quote=str(rule.get("raw") or "").strip() or None)
-    if not sid:
-        return False, None, "the skill could not be created"
+                             "so there is no course to promote it into"), 0
+    # WHERE IT CAME FROM, so the skill's audit trail does not start blank. The raw note
+    # the reviewer typed is the evidence for the rule, and the person approving it should
+    # see the words behind it — whether it opens a group or joins one.
+    quote = str(rule.get("raw") or "").strip() or None
+    target = _promotion_target(course)
+    if target is not None:
+        ok, lines, why = db.append_skill_instruction(
+            target["id"], text, source_quote=quote, heading=_PROMOTED_HEADING)
+        if not ok:
+            return False, None, why or "the line could not be added", 0
+        sid, n_lines = target["id"], lines
+    else:
+        # THE FIRST PROMOTION IS UNCHANGED: the rule is the skill's own sentence, with no
+        # instruction list and no heading. That is the one-line shape the store has
+        # always written, it is what skills._render and instructions_of already fall back
+        # to, and a group heading over a group of one would be furniture.
+        #
+        # The heading arrives with the SECOND line, not before it: append_skill_
+        # instruction moves this sentence down to become instruction 1 and puts the
+        # heading in its place, which is exactly what its `heading` argument is for.
+        sid = db.add_skill(
+            course, text, category="reviewer", scope="course",
+            source="learned", created_by=created_by, source_quote=quote)
+        if not sid:
+            return False, None, "the skill could not be created", 0
+        n_lines = 1
     rule["promoted_to_skill"] = sid
     _save(data)
-    return True, sid, ""
+    return True, sid, "", n_lines
 
 
 def applicable_rules(course: str | None = None) -> list[dict]:
@@ -358,7 +485,7 @@ def applicable_rules(course: str | None = None) -> list[dict]:
     injecting every rule everywhere.
     """
     rs = [r for r in rules() if not gate_for(r) and not _is_contentless(r.get("text"))
-          and not promoted_skill_id(r)]
+          and not promoted_skill_id(r) and not is_one_off(r)]
     if not _self_evo_cfg().get("scope_rules", True):
         return rs
     course = _active_course() if course is None else course
@@ -367,30 +494,96 @@ def applicable_rules(course: str | None = None) -> list[dict]:
 
 
 def _cap() -> int:
+    """The legacy single cap. Kept because it is what `self_evolution.max_rules` means,
+    and it is the fallback the two real caps are derived from."""
     try:
         return int(_self_evo_cfg().get("max_rules", _MAX_RULES) or _MAX_RULES)
     except Exception:
         return _MAX_RULES
 
 
-def _trim(rs: list[dict]) -> list[dict]:
-    """Enforce the cap, dropping the LEAST-REINFORCED rules first.
+def _caps() -> tuple[int, int]:
+    """(global cap, per-course cap).
 
-    Trimming purely by age (the old behaviour) meant a rule the human had insisted
-    on repeatedly could be pushed out by a one-off grader nitpick. Rules that keep
-    coming back have a higher `hits` count and survive.
+    Default to HALF the legacy total each, so the number of rules that can reach one
+    generation is unchanged. That is the number the cap is actually for: injection is
+    `global + this course` (see applicable_rules), so 20 + 20 is today's 40, while
+    reusing 40 for each bucket would quietly double the size of the block the model
+    reads — trading one problem for another.
     """
-    cap = _cap()
-    if len(rs) <= cap:
-        return rs
-    indexed = list(enumerate(rs))
-    indexed.sort(key=lambda p: (p[1].get("hits", 1), p[0]), reverse=True)
-    keep = {i for i, _ in indexed[:cap]}
+    cfg = _self_evo_cfg()
+    legacy = _cap()
+    try:
+        g = int(cfg.get("max_global_rules") or 0)
+        c = int(cfg.get("max_course_rules") or 0)
+    except Exception:
+        g = c = 0
+    half = max(legacy // 2, 1)
+    return (g or half), (c or half)
+
+
+def _bucket_of(r: dict) -> str:
+    """Which cap a rule competes under: house style, or one particular course."""
+    return GLOBAL if _scope_of(r) == GLOBAL else f"course:{r.get('course') or ''}"
+
+
+def _injectable(r: dict) -> bool:
+    """Whether this rule would actually reach a generation — the same three exclusions
+    `applicable_rules` makes, minus the course filter.
+
+    Rules that cannot be injected cost no prompt space, so they must not compete for it:
+    a rule a guardrail has taken over, or one promoted to a skill, is kept as a RECORD
+    (deleting it would lose the fact that the reviewer asked), and counting those records
+    against the cap would let history evict a live instruction.
+    """
+    return not gate_for(r) and not promoted_skill_id(r) \
+        and not _is_contentless(r.get("text")) and not is_one_off(r)
+
+
+def _trim(rs: list[dict]) -> list[dict]:
+    """Enforce the caps PER BUCKET, dropping the least-reinforced rules first.
+
+    TWO BUGS, one function.
+
+    1. THE CAP USED TO BE SHARED BY EVERY COURSE. One list, one limit, whichever rules
+       happened to be least reinforced. So a course under active work generated rules
+       that evicted a DORMANT course's — and nothing said so. You would find out months
+       later, regenerating an old session, when a mistake that had been fixed came back;
+       the note that prevented it had been pushed out by a course you were not even
+       working on. Rules now compete only against others that would be injected
+       ALONGSIDE them, which is the only comparison that means anything.
+
+    2. RECORDS COMPETED WITH INSTRUCTIONS. A gated or promoted rule is not injected but
+       still occupied a slot, so the store's own history could evict a live rule. Those
+       are now kept unconditionally and counted against nothing.
+
+    ORDER IS PRESERVED, and that is load-bearing rather than tidy: a rule's INDEX is its
+    address. `reinforce`, `promote_to_skill`, `set_learned_rule_scope` and the
+    /api/learned-rules/{index} endpoints all address rules positionally, so reordering
+    survivors would make a stale index in an open browser tab promote or delete the
+    WRONG rule, permanently.
+    """
+    g_cap, c_cap = _caps()
+    buckets: dict[str, list[tuple[int, dict]]] = {}
+    keep: set[int] = set()
+    for i, r in enumerate(rs):
+        if not _injectable(r):
+            keep.add(i)                       # a record, not an instruction
+            continue
+        buckets.setdefault(_bucket_of(r), []).append((i, r))
+    for bucket, items in buckets.items():
+        cap = g_cap if bucket == GLOBAL else c_cap
+        if len(items) <= cap:
+            keep.update(i for i, _ in items)
+            continue
+        items.sort(key=lambda p: (p[1].get("hits", 1), p[0]), reverse=True)
+        keep.update(i for i, _ in items[:cap])
     return [r for i, r in enumerate(rs) if i in keep]
 
 
 def add_rule(text: str, *, source: str, session_no=None, raw: str | None = None,
-             scope: str = GLOBAL, course: str | None = None) -> bool:
+             scope: str = GLOBAL, course: str | None = None,
+             one_off: bool = False) -> bool:
     """Add a durable rule. Returns True if NEWLY added.
 
     A rule that merely restates one already stored is not appended again — it
@@ -416,6 +609,11 @@ def add_rule(text: str, *, source: str, session_no=None, raw: str | None = None,
             return False
     entry = {"text": text, "source": source, "session_no": session_no, "hits": 1,
              "scope": COURSE if scope == COURSE else GLOBAL, "course": course}
+    if one_off:
+        # RECORDED BUT NOT INJECTED — see distill_feedback. Kept so the reviewer's words
+        # are never silently lost, and so `reinforce` can promote it to a standing rule
+        # the moment the same request comes back.
+        entry["one_off"] = True
     if raw and _norm(raw) != _norm(text):
         entry["raw"] = raw[:_MAX_RULE_LEN]      # what the human actually typed
     data["rules"].append(entry)
@@ -424,9 +622,12 @@ def add_rule(text: str, *, source: str, session_no=None, raw: str | None = None,
     return True
 
 
-def record_feedback(session_no, reason: str, *, source: str = "feedback",
-                    course: str | None = None) -> bool:
+def record_feedback_detail(session_no, reason: str, *, source: str = "feedback",
+                           course: str | None = None) -> tuple[bool, int | None]:
     """A human reason for rejecting/regenerating content -> a durable preference.
+
+    Returns True when a NEW rule was stored. `record_feedback_detail` is the same call
+    and also says WHICH rule changed — use that when you need to report on it.
 
     The raw reason is NOT usable as a cross-session rule: it is typed in a hurry
     ("Simce no analogy is needed for an rexample remove the field of analogy from
@@ -437,12 +638,15 @@ def record_feedback(session_no, reason: str, *, source: str = "feedback",
     text alongside it for auditing.
     """
     if not (reason or "").strip():
-        return False
+        return False, None
     cfg = _self_evo_cfg()
     if not cfg.get("enabled", True):
-        return False
+        return False, None
     if not cfg.get("distill", True):
-        return add_rule(reason, source=source, session_no=session_no, course=course)
+        added = add_rule(reason, source=source, session_no=session_no, course=course)
+        at = next((i for i, r in enumerate(rules())
+                   if r.get("text") == (reason or "").strip()), None)
+        return added, at
     # Compare only against rules that CO-APPLY with this one (global + this course),
     # but keep the mapping back to positions in the full store so `reinforce` targets
     # the right rule.
@@ -460,11 +664,30 @@ def record_feedback(session_no, reason: str, *, source: str = "feedback",
     text, dup_index, scope = distill_feedback(reason, [t for _, t in visible])
     if dup_index is not None:
         # Same instruction as one already stored, just phrased differently. Reinforce
-        # it rather than adding a third wording of the same thing.
-        reinforce(visible[dup_index][0], session_no)
-        return False
-    return add_rule(text, source=source, session_no=session_no, raw=reason,
-                    scope=scope, course=course)
+        # it rather than adding a third wording of the same thing — and `reinforce`
+        # also clears a one-off mark, since a request that comes back is not one.
+        at = visible[dup_index][0]
+        reinforce(at, session_no)
+        return False, at
+    # ONE-TIME OR STANDING, asked only now: there is an instruction to judge, and a
+    # merge above has already returned, so a repeat never reaches this.
+    one_off = is_one_time_note(text, reason) if cfg.get("classify_one_off", True) else False
+    added = add_rule(text, source=source, session_no=session_no, raw=reason,
+                     scope=scope, course=course, one_off=one_off)
+    # WHERE it landed. A rule's index is how every caller addresses it, and the one
+    # thing a caller wants right after recording feedback is to say something about the
+    # rule that just changed — which it cannot do from a boolean. The alternative the
+    # feedback endpoint used was `max(rules, key=hits)`, i.e. the most-reinforced rule in
+    # the whole store, which on the merge path is very often NOT the one just touched.
+    at = next((i for i, r in enumerate(rules()) if r.get("text") == text), None)
+    return added, at
+
+
+def record_feedback(session_no, reason: str, *, source: str = "feedback",
+                    course: str | None = None) -> bool:
+    """Whether a NEW rule was stored. The boolean face of `record_feedback_detail`,
+    kept because that is the contract every existing caller was written against."""
+    return record_feedback_detail(session_no, reason, source=source, course=course)[0]
 
 
 def record_issues(session_no, issues: list[str], *, source: str = "judge",
@@ -506,6 +729,65 @@ def distill_rule(issue: str) -> str:
         return issue
 
 
+def is_one_time_note(rule_text: str, reason: str) -> bool:
+    """Does this distilled instruction carry anything for the NEXT document?
+
+    ITS OWN CALL, deliberately. This started as a third branch inside
+    `distill_feedback`'s prompt — dedupe, scope and one-off in one answer — and it was
+    wrong on the very example that prompt itself gave as a counter-example: "the base
+    addresses in this example are unrealistic, use proper hex ones" came back ONCE,
+    though the instruction distilled from it ("use realistic hexadecimal base addresses
+    in worked examples") is exactly the kind of standing preference the store exists to
+    keep. Three judgements competing in one answer, and the narrowest one lost. Asked on
+    its own it is a single yes/no with the generalised instruction already in hand,
+    which is a much easier question than deciding it while also writing that
+    instruction.
+
+    Only reached when a NEW rule is about to be stored — never on a merge, because a
+    request that comes back is not a one-off whatever it looked like the first time. So
+    the extra call is rare: rules are created far less often than feedback is given.
+
+    FAILS SAFE. Anything other than a clear YES is treated as standing, which is the
+    behaviour that predates this. A one-off wrongly kept costs a line in the injected
+    block; a preference wrongly dropped has to be taught all over again, and nothing
+    would say it had been.
+    """
+    text = (rule_text or "").strip()
+    if not text:
+        return False
+    from . import llm
+    m = config.harness()["model"]
+    try:
+        out = llm.complete(
+            system=(
+                "A reviewer corrected one teaching document. Their note has been "
+                "generalised into a STANDING INSTRUCTION for every future document of "
+                "this course.\n"
+                "Decide whether that instruction is worth standing, or whether it is a "
+                "TRUISM left over from fixing one particular thing.\n"
+                "Answer KEEP if it tells a writer something they could act on: what to "
+                "do, what to prefer, what to avoid, how much, in what order. A note that "
+                "pointed at one slide still counts — what matters is the instruction, not "
+                "the note.\n"
+                "Answer ONCE only if the instruction is vacuous: it merely says to be "
+                "correct, complete or appropriate, and any competent writer would already "
+                "be trying to do it. Typically what is left after correcting a single "
+                "fact, figure, or a specific line to cut or add.\n"
+                "Examples — ONCE: 'State correct RFC numbers.' 'Do not include "
+                "unnecessary bullets.' 'Ensure analogies are relevant.'\n"
+                "Examples — KEEP: 'Use realistic hexadecimal base addresses in worked "
+                "examples.' 'Never put an analogy on a worked-example slide.' 'Keep "
+                "speaker notes to two sentences.'\n"
+                "If it is at all arguable, answer KEEP. Output exactly one word: KEEP or "
+                "ONCE."),
+            user=f"REVIEWER'S NOTE:\n{reason}\n\nSTANDING INSTRUCTION:\n{text}\n\nAnswer:",
+            model=m.get("judge", m["generator"]), max_tokens=6, temperature=0.0,
+            label="classify_one_off")
+        return bool(re.match(r"^\s*ONCE\b", str(out or ""), re.I))
+    except Exception:
+        return False
+
+
 def distill_feedback(reason: str, existing: list[str] | None = None
                      ) -> tuple[str, int | None, str]:
     """Turn one human regeneration reason into a general, reusable instruction.
@@ -514,6 +796,9 @@ def distill_feedback(reason: str, existing: list[str] | None = None
     already in `existing`, duplicate_index is that rule's position and rule_text is
     that rule. `scope` is "global" for house style or "course" when the rule is about
     this curriculum's subject matter (see the SCOPE note above).
+
+    The ONE-TIME/STANDING split is NOT decided here — see `is_one_time_note`, which is
+    asked separately once this has produced the instruction to judge.
 
     Different job from distill_rule(): the input is not a QA failure report but a
     hurried human note, so the prompt has to cope with typos and — critically —
@@ -563,6 +848,7 @@ def distill_feedback(reason: str, existing: list[str] | None = None
         if mm:
             idx = int(mm.group(1))
             if 0 <= idx < len(existing) and _merge_plausible(reason, existing[idx]):
+                # A repeat is never a one-off, whatever it was called the first time.
                 return existing[idx], idx, _scope_of({})
             # Named a rule that isn't there, or one with nothing in common with the
             # note. Don't drop the feedback — distil it on its own instead (one more
@@ -578,6 +864,9 @@ def distill_feedback(reason: str, existing: list[str] | None = None
             return line, None, scope
         return reason, None, scope
     except Exception:
+        # No model, no classification. A note kept as a STANDING rule is the behaviour
+        # that predates this, and the safe direction: the cost is a line in the block,
+        # not a preference silently discarded.
         for i, t in enumerate(existing):
             if _similar(t, reason):
                 return t, i, GLOBAL

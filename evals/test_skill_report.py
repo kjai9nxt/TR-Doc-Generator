@@ -1175,9 +1175,13 @@ check("the rule is applied as a RULE before promotion",
       any("breakpoint" in r["text"] for r in LR.applicable_rules(_PC)))
 check("…and there is no skill for it yet", db.skills(_PC) == [])
 
-_ok, _sid, _why = LR.promote_to_skill(_idx, _PC, created_by=ALICE)
+# `_lines` is how many instructions the skill now carries — 1 when the promotion
+# opened a group, more when it joined one.
+_ok, _sid, _why, _lines = LR.promote_to_skill(_idx, _PC, created_by=ALICE)
 check("promotion succeeds and returns the new skill's id",
       _ok is True and isinstance(_sid, int), f"{_ok} {_sid} {_why!r}")
+check("…as a group of one, so it reads exactly as a single rule always has",
+      _lines == 1, str(_lines))
 _row = next(r for r in db.skills(_PC) if r["id"] == _sid)
 # A DRAFT, because what makes a skill worth more than a rule is that a person chose it.
 # A promotion that applied itself would hand this store's inference a skill's authority.
@@ -1253,6 +1257,124 @@ check("…and takes its own body model rather than one demanding an unused field
 _lsrc2 = " ".join(inspect.getsource(server.learned_rules).split())
 check("the rule list reports what has been promoted, so the row explains itself",
       "promoted_skill_id(r)" in _lsrc2, _lsrc2[:0])
+
+# --------------------------------------------------------------------------- #
+# PROMOTED FEEDBACK IS CONSOLIDATED, not one card per rule.
+#
+# `db.add_skill`'s own contract says four related instructions under one heading are ONE
+# skill: "storing them as four skills would lose the author's grouping and their order,
+# and would turn one approval into four." Promotion did exactly that — a new card per
+# rule — so four analogy corrections arrived as four cards, four approvals, and no
+# defined order between them.
+#
+# The constraint that shapes the fix: `edit_skill` sends a skill BACK TO DRAFT because
+# "an approval is of the words that were approved". So an APPROVED group cannot be
+# appended to — one new line would revoke the approval of every line already in it. A
+# group is therefore open while it is a draft and closed once it is approved.
+# --------------------------------------------------------------------------- #
+print("\n== promoted feedback is consolidated into one skill ==")
+_CC = "Consolidation Course"
+
+
+def _learn_and_promote(text, raw):
+    LR.add_rule(text, source="regeneration", session_no=4, course=_CC,
+                scope="course", raw=raw)
+    i = next(i for i, r in enumerate(LR.rules())
+             if r.get("course") == _CC and r.get("text") == text)
+    return LR.promote_to_skill(i, _CC, created_by=ALICE)
+
+_ok1, _sid1, _w1, _n1 = _learn_and_promote(
+    "Never put an analogy on a worked-example slide",
+    "no analogy on the example slides pls")
+check("the first promotion opens a group of one",
+      _ok1 and _n1 == 1 and len(db.skills(_CC)) == 1, f"{_n1} line(s), {len(db.skills(_CC))} skill(s)")
+_r1 = db.skills(_CC)[0]
+check("…shaped exactly as a single promoted rule always was: no heading, no list",
+      _r1["text"] == "Never put an analogy on a worked-example slide"
+      and _r1["instructions"] == [], f"{_r1['text']!r} {_r1['instructions']}")
+
+_ok2, _sid2, _w2, _n2 = _learn_and_promote(
+    "Tie every analogy back to the concept it illustrates",
+    "the analogy has to come back to the concept!!")
+check("the second promotion JOINS it instead of opening a card of its own",
+      _ok2 and len(db.skills(_CC)) == 1, f"{len(db.skills(_CC))} skill(s)")
+check("…and reports the group now holds two lines", _n2 == 2, str(_n2))
+check("…stamping BOTH rules with the same skill", _sid2 == _sid1, f"{_sid1} vs {_sid2}")
+_r2 = next(r for r in db.skills(_CC) if r["id"] == _sid1)
+check("…the first rule moved down to become instruction 1, not lost",
+      _r2["instructions"][0] == "Never put an analogy on a worked-example slide",
+      str(_r2["instructions"]))
+check("…the second is instruction 2, in the order they were learned",
+      _r2["instructions"][1] == "Tie every analogy back to the concept it illustrates",
+      str(_r2["instructions"]))
+check("…and only NOW does a heading appear, over a group that has one",
+      "keeps sending back" in _r2["text"], _r2["text"])
+check("every reviewer's actual words are kept as the group's evidence",
+      any("no analogy on the example" in q for q in _r2["source_quotes"])
+      and any("come back to the concept" in q for q in _r2["source_quotes"]),
+      str(_r2["source_quotes"]))
+check("…and it is still a DRAFT: consolidating is not approving",
+      _r2["status"] == "draft", _r2["status"])
+check("…so neither line is in force yet", skills.applicable(_CC) == [],
+      str(skills.applicable(_CC)))
+
+print("\n== one approval covers the whole group ==")
+db.approve_skill(_sid1, ALICE)
+_app = skills.applicable(_CC)
+check("one approval puts BOTH lines in force", len(_app) == 1
+      and len(skills.instructions_of(_app[0])) == 2, str(_app))
+_brief = skills.block(_CC)
+check("…and the brief renders them numbered under the heading",
+      "1. Never put an analogy" in _brief and "2. Tie every analogy" in _brief,
+      _brief[:260])
+
+print("\n== an APPROVED group is closed ==")
+# The whole reason append refuses a non-draft. Promoting a third rule must NOT revoke
+# the approval the two lines above already have.
+_ok3, _sid3, _w3, _n3 = _learn_and_promote(
+    "Keep an analogy to two lines at most", "analogies are too long")
+check("a third promotion starts a NEW draft rather than reopening the approved one",
+      _ok3 and _sid3 != _sid1 and len(db.skills(_CC)) == 2,
+      f"{_sid3} vs {_sid1}, {len(db.skills(_CC))} skill(s)")
+check("…and the approved group KEEPS its approval",
+      next(r for r in db.skills(_CC) if r["id"] == _sid1)["status"] == "approved")
+check("…so the two lines already signed off stay in force",
+      len(skills.applicable(_CC)) == 1
+      and len(skills.instructions_of(skills.applicable(_CC)[0])) == 2,
+      str(skills.applicable(_CC)))
+check("appending to an approved skill is refused outright, with the reason",
+      db.append_skill_instruction(_sid1, "anything")[0] is False
+      and "revoked" in db.append_skill_instruction(_sid1, "anything")[2],
+      str(db.append_skill_instruction(_sid1, "anything")))
+
+print("\n== a skill the AUTHOR wrote is never appended to ==")
+# Same authority swap the draft-only rule exists to stop, one level down: this store's
+# inference must not be filed inside a rule a person wrote and owns.
+_HC = "Hand Authored Course"
+_hand = db.add_skill(_HC, "Show the snippet before explaining it",
+                     category="reviewer", scope="course", source="user",
+                     created_by=ALICE)
+LR.add_rule("State the breakpoint whenever a class is called responsive",
+            source="regeneration", session_no=2, course=_HC, scope="course",
+            raw="say which breakpoint")
+_hidx = next(i for i, r in enumerate(LR.rules())
+             if r.get("course") == _HC and "breakpoint" in r.get("text", ""))
+_okh, _sidh, _wh, _nh = LR.promote_to_skill(_hidx, _HC, created_by=ALICE)
+check("a promotion does not join the author's own draft",
+      _okh and _sidh != _hand, f"{_sidh} vs {_hand}")
+check("…which is left exactly as they wrote it",
+      db.skills(_HC) and next(r for r in db.skills(_HC) if r["id"] == _hand)
+      ["instructions"] == [],
+      str(next(r for r in db.skills(_HC) if r["id"] == _hand)["instructions"]))
+
+print("\n== a repeated line is not added twice ==")
+_dup_id = db.skills(_HC) and _sidh
+db.append_skill_instruction(_dup_id, "One line", heading="H")
+_before = next(r for r in db.skills(_HC) if r["id"] == _dup_id)["instructions"]
+db.append_skill_instruction(_dup_id, "one   LINE", heading="H")
+_after = next(r for r in db.skills(_HC) if r["id"] == _dup_id)["instructions"]
+check("the same instruction in the same words is one instruction",
+      _before == _after, f"{_before} -> {_after}")
 
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

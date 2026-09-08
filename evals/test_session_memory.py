@@ -1,6 +1,6 @@
 """COURSE MEMORY — the two gaps it closes, and the two it must not open.
 
-    python -m evals.test_course_memory       # no API key needed, ~2 seconds
+    python -m evals.test_session_memory       # no API key needed, ~2 seconds
 
 WHY THIS EXISTS. Two things were not remembered anywhere:
 
@@ -36,7 +36,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-TMP = tempfile.mkdtemp(prefix="tr_course_memory_")
+TMP = tempfile.mkdtemp(prefix="tr_session_memory_")
 os.environ["TR_DATA_DIR"] = TMP
 os.environ.pop("TURSO_DATABASE_URL", None)
 os.environ.pop("TURSO_AUTH_TOKEN", None)
@@ -54,7 +54,7 @@ def check(name, cond, extra=""):
         print(f"  FAIL {name} {extra}")
 
 
-from src import course_memory, db, pptx_ingest, sync   # noqa: E402
+from src import session_memory, db, pptx_ingest, sync   # noqa: E402
 
 OS_C = "Operating Systems"
 REACT = "React Fundamentals"
@@ -102,10 +102,10 @@ for n, name in ((1, "Processes & Threads"), (2, "CPU Scheduling"), (3, "Deadlock
 check("with nothing recorded, the taught index is empty",
       pptx_ingest.taught_index(OS_C, 3) == [])
 
-course_memory.record(OS_C, 1, doc(1, "Processes & Threads",
+session_memory.record(OS_C, 1, doc(1, "Processes & Threads",
                                   ["Process Control Block", "Context Switching",
                                    "Agenda", "Quiz Time!"]), run_id="r1")
-course_memory.record(OS_C, 2, doc(2, "CPU Scheduling",
+session_memory.record(OS_C, 2, doc(2, "CPU Scheduling",
                                   ["Round Robin", "Shortest Job First"]), run_id="r2")
 
 idx = pptx_ingest.taught_index(OS_C, 3)
@@ -166,7 +166,7 @@ check("…and its examples too",
 print("\n== one course cannot read another's memory ==")
 db.curriculum_upsert(REACT, 1, topic="T", session_name="JSX", key_takeaways=["k"])
 db.curriculum_upsert(REACT, 2, topic="T", session_name="Hooks", key_takeaways=["k"])
-course_memory.record(REACT, 1, doc(1, "JSX", ["Virtual DOM", "Reconciliation"]), run_id="r3")
+session_memory.record(REACT, 1, doc(1, "JSX", ["Virtual DOM", "Reconciliation"]), run_id="r3")
 react_topics = [t for _n, t in pptx_ingest.taught_titles(REACT, 9)]
 os_topics = [t for _n, t in pptx_ingest.taught_titles(OS_C, 9)]
 check("React sees only React", "Virtual DOM" in react_topics
@@ -177,7 +177,7 @@ check("…and Operating Systems only its own",
 print("\n== the examples ledger ==")
 db.curriculum_upsert(OS_C, 4, topic="T", session_name="Paging", key_takeaways=["k"])
 db.curriculum_upsert(OS_C, 5, topic="T", session_name="Segmentation", key_takeaways=["k"])
-course_memory.record(OS_C, 4, doc(
+session_memory.record(OS_C, 4, doc(
     4, "Paging", ["Page Tables"],
     examples=[("Translating a logical address",
                "Translate 0x2F1A with a 4096-byte page and frame 0x07.")]), run_id="r4")
@@ -191,20 +191,20 @@ check("…and the FIGURES that make it that example, not another one",
 check("only working_example slides are counted",
       all(e["concept"] != "Page Tables" for e in ex), str(ex))
 
-blk = course_memory.examples_block(OS_C, 5)
+blk = session_memory.examples_block(OS_C, 5)
 check("the writer is told which examples are spent",
       "0x2F1A" in blk and "Session 4" in blk, blk[:160])
 check("…and told that the CONCEPT may still be revisited",
       "same CONCEPT again at greater depth" in blk, blk[:200])
 check("a session is not shown its own examples",
-      "0x2F1A" not in course_memory.examples_block(OS_C, 4),
-      course_memory.examples_block(OS_C, 4)[:120])
+      "0x2F1A" not in session_memory.examples_block(OS_C, 4),
+      session_memory.examples_block(OS_C, 4)[:120])
 check("…and a course is not shown another course's",
-      "0x2F1A" not in course_memory.examples_block(REACT, 9),
-      course_memory.examples_block(REACT, 9)[:120])
+      "0x2F1A" not in session_memory.examples_block(REACT, 9),
+      session_memory.examples_block(REACT, 9)[:120])
 
 print("\n== re-approving a session REPLACES what it claims, never appends ==")
-course_memory.record(OS_C, 4, doc(
+session_memory.record(OS_C, 4, doc(
     4, "Paging", ["Page Tables", "TLB"],
     examples=[("Translating a logical address",
                "Translate 0x5B20 with a 8192-byte page and frame 0x11.")]), run_id="r5")
@@ -237,9 +237,9 @@ print("\n== nothing here can break a generation ==")
 # "no memory" rather than raise. Asserted against a course that does not exist.
 check("an unknown course reads as empty, not as an error",
       pptx_ingest.taught_index("No Such Course", 5) == []
-      and course_memory.examples_block("No Such Course", 5) == "")
+      and session_memory.examples_block("No Such Course", 5) == "")
 check("a doc with no sections records nothing and does not raise",
-      course_memory.record(OS_C, 9, {"session_title": "x"}) == {"topics": 0, "examples": 0})
+      session_memory.record(OS_C, 9, {"session_title": "x"}) == {"topics": 0, "examples": 0})
 
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

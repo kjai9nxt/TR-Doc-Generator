@@ -349,6 +349,11 @@ export const api = {
   promoteLearnedRule: (index, course) =>
     req(`/learned-rules/${index}/promote`,
         { method: 'POST', body: JSON.stringify({ course }) }),
+  // A note judged a ONE-OFF is stored but injected nowhere. That judgement is made from
+  // a single sentence, so it has to be correctable in one click — a standing preference
+  // wrongly marked would otherwise stop being applied silently.
+  keepLearnedRuleStanding: (index) =>
+    req(`/learned-rules/${index}/keep`, { method: 'POST' }),
   migrateLearnedRules: () => req('/learned-rules/migrate', { method: 'POST' }),
 
   dashboard: () => req('/dashboard'),

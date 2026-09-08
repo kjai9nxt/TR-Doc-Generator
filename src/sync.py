@@ -160,6 +160,8 @@ def prune_orphan_decks(course: str | None = None) -> list[int]:
     "needs a TR doc" list even though its row said `no deck`, and the agent went on
     feeding that deck to the writer as material "already taught". The curriculum is the
     source of truth, so course memory has to follow it — a row with no link has no deck.
+    (Course memory has three sources: the decks this prunes, and the two in
+    src/session_memory.py, pruned at the end of this function.)
 
     Guarded against the empty case: with no curriculum rows this does nothing at all,
     so a process that has not loaded a course (or a database that has not been restored
@@ -186,7 +188,9 @@ def prune_orphan_decks(course: str | None = None) -> list[int]:
         state["decks"] = {k: v for k, v in (state.get("decks") or {}).items()
                           if v.get("session_no") not in cleared}
         _save_state(state)
-    # COURSE MEMORY FOLLOWS THE CURRICULUM TOO, for both of the reasons above it.
+    # AND SO DO THE OTHER TWO SOURCES of course memory — the approved-but-unrecorded
+    # sessions and the example ledger, both in src/session_memory.py — for both of the
+    # reasons the deck prune above it exists.
     #
     #  · SUPERSEDED: a session that now HAS an extracted deck no longer needs the
     #    placeholder written from its approved TR. The deck is the recording; the
@@ -196,8 +200,8 @@ def prune_orphan_decks(course: str | None = None) -> list[int]:
     #    is the same rule this function applies to decks — and it matters more here,
     #    because an orphaned deck at least described something that was recorded.
     try:
-        from . import course_memory
-        course_memory.prune(course,
+        from . import session_memory
+        session_memory.prune(course,
                             recorded_sessions=pptx_ingest.deck_session_numbers(course),
                             curriculum_sessions=known)
     except Exception:
@@ -389,8 +393,8 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
     # entry whose session has a deck, so a missed prune is never a correctness problem
     # — it would just leave a dead row behind.
     try:
-        from . import course_memory
-        course_memory.prune(course,
+        from . import session_memory
+        session_memory.prune(course,
                             recorded_sessions=pptx_ingest.deck_session_numbers(course))
     except Exception:
         pass

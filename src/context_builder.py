@@ -161,7 +161,7 @@ def past_ppts_context(course: str, cur: Session) -> str:
     # it — but rebuilding the same example, with the same figures, is pure waste and
     # nothing was watching for it across documents.
     try:
-        from . import course_memory as _cmem
+        from . import session_memory as _cmem
         ex = _cmem.examples_block(course, cur.number)
     except Exception:
         ex = ""
@@ -829,8 +829,115 @@ RULES FOR THE PATCH
 Return ONLY the patch JSON object."""
 
 
+def section_floor(n_takeaways: int, budget: int) -> int:
+    """The fewest slides any one section may be squeezed to.
+
+    `min_sub_concepts_per_takeaway`, because a section that cannot fit its required
+    sub-concepts fails the coverage gate instead — being under the slide budget is not a
+    saving if the document is then rejected for missing material.
+
+    A session with more takeaways than budget/floor cannot give every section that floor
+    AND fit the ceiling (8 takeaways x 2 > 14), so it drops to 1: sub-concepts are
+    allowed to share a slide, and the instruction says so. Issuing a budget whose parts
+    cannot sum to the whole is exactly the prompt-says-X-gate-says-not-X trap the
+    deterministic gates exist to avoid.
+
+    Shared by `slide_plan` and `chunk_slide_allowance` on purpose. When the clamp used
+    `min(plan)` instead, a squeezed section could not fall below the smallest PLANNED
+    share — which is above the real floor, so an overspent document had nowhere left to
+    give and the ceiling stopped being reachable.
+    """
+    n = max(int(n_takeaways or 0), 1)
+    floor = int(config.harness()["constraints"]["coverage"]
+                .get("min_sub_concepts_per_takeaway", 2))
+    return 1 if floor * n > budget else floor
+
+
+def _owed_items(line: str) -> int:
+    """How many things a key-takeaway line OWES the learner.
+
+    A takeaway is a contract: `Topic: item; item, item` — every item after the colon is
+    promised, and the coverage gate checks each one is taught. That count is the closest
+    deterministic measure of how much material a section actually carries.
+
+    Two edges, both borrowed from the padding gate so the two agree:
+      · NO COLON yields no sub-topics at all. That is "cannot tell", not "one idea", so
+        it weighs 1 — neutral, which leaves the allocation uniform for a curriculum that
+        gives nothing to weigh on.
+      · A lone sub-topic that COORDINATES two things ("LOOK & C-LOOK", "IntServ and
+        DiffServ") is two ideas sharing a line, so it weighs 2. The splitter keeps "&"
+        inside a sub-topic deliberately, since "Bit & byte" really is one thing.
+    """
+    try:
+        from guardrails.guardrails import takeaway_subtopics
+        subs = takeaway_subtopics(line)
+    except Exception:
+        return 1
+    if not subs:
+        return 1
+    import re as _re
+    n = 0
+    for sub in subs:
+        n += 2 if _re.search(r"\s(?:&|and|/|or|vs\.?|versus)\s", sub, _re.I) else 1
+    return max(n, 1)
+
+
+def slide_plan(cur: Session, *, enforce_time: bool = True,
+               budgets: dict | None = None) -> list[int]:
+    """The slide budget shared out across the takeaways BY HOW MUCH EACH ONE OWES.
+
+    WHAT THIS REPLACES. The ceiling used to be divided equally among the sections still
+    to be written — `divmod(remaining, sections_left)` — which is blind twice over:
+
+      · IT COULD NOT SEE THE CONTRACT. `Topic: a; b, c, d, e` owes five items and
+        `Topic: a` owes one, and both got the same three slides. Length is supposed to be
+        spent on coverage, and the allocator could not see coverage.
+      · ORDER DECIDED THE BUDGET. The remainder went to whoever was drafted first (the
+        old docstring's own example: "a 14-slide budget over 5 takeaways is 3,3,3,3,2"),
+        so takeaway 5 paid for takeaway 1's appetite regardless of which had more to
+        teach.
+
+    Now every section gets the floor first, and what is left is apportioned by owed-item
+    count using largest remainders — so the parts still sum EXACTLY to the ceiling, which
+    is the property the old division had and the one that keeps the prompt from promising
+    a budget the gate will not honour.
+
+    Deliberately NOT weighted by what earlier sessions already taught. That was the other
+    half of the original proposal, and it is wrong here: the rule is that revisiting a
+    topic to go DEEPER is required whenever a takeaway names it, so a takeaway whose topic
+    a prior deck introduced may well need more slides rather than fewer. A discount there
+    would cut exactly the sections asked to go furthest.
+    """
+    budget = slide_ceiling(enforce_time, budgets)
+    kts = list(getattr(cur, "key_takeaways", []) or [])
+    n = len(kts)
+    if n <= 0:
+        return []
+    floor = section_floor(n, budget)
+    if floor * n > budget:                     # still impossible: share out what there is
+        base, extra = divmod(max(budget, 0), n)
+        return [base + (1 if i < extra else 0) for i in range(n)]
+
+    plan = [floor] * n
+    spare = budget - floor * n
+    if spare <= 0:
+        return plan
+    weights = [_owed_items(k) for k in kts]
+    total_w = sum(weights) or n
+    exact = [spare * w / total_w for w in weights]
+    whole = [int(x) for x in exact]
+    # LARGEST REMAINDER, tie-broken by position. Without the tie-break the leftover would
+    # depend on dict/sort order, so the same curriculum could be planned two ways.
+    left = spare - sum(whole)
+    order = sorted(range(n), key=lambda i: (-(exact[i] - whole[i]), i))
+    for i in order[:max(left, 0)]:
+        whole[i] += 1
+    return [plan[i] + whole[i] for i in range(n)]
+
+
 def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
-                          enforce_time: bool = True, budgets: dict | None = None) -> int:
+                          enforce_time: bool = True, budgets: dict | None = None,
+                          takeaway_index: int | None = None) -> int:
     """How many slides THIS guided section may use.
 
     Guided mode drafts one section per LLM call, so no single call can see the
@@ -838,26 +945,37 @@ def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
     an exam would test, EACH with a slide" and nothing else, which is an open-ended
     instruction. Five takeaways answered it with 23 slides against a ceiling of 14.
 
-    So the ceiling is divided here, from the slides the earlier sections ACTUALLY used
-    rather than from a fixed per-section quota: a section that ran one slide long
-    squeezes the ones after it instead of silently pushing the total over. The remainder
-    goes to the earlier sections (a 14-slide budget over 5 takeaways is 3,3,3,3,2, not
-    2,2,2,2,6). The floor is min_sub_concepts_per_takeaway, since a section that cannot
-    fit its required sub-concepts would fail the coverage gate instead.
+    TWO THINGS HAVE TO HOLD AT ONCE, and this is the whole subtlety:
+
+      · the section should get the share `slide_plan` allotted it, which is weighted by
+        how much its takeaway actually owes rather than by its position;
+      · the DOCUMENT must still fit. So the plan is clamped against what the ceiling has
+        left after the sections that already exist, minus the floor the sections after
+        this one are still owed. A section that ran long therefore squeezes the ones
+        after it — as before — but they are squeezed against their own planned share
+        instead of an equal split.
+
+    `takeaway_index` is which takeaway this section teaches. Derived from `sections_left`
+    when it is not given, which is correct while drafting forward; the caller passes it
+    explicitly because on a RE-DRAFT every other section already exists, so
+    `sections_left` is 1 and would point at the last takeaway rather than this one.
+
+    When this is the only section left to place, it gets whatever the ceiling still has —
+    the behaviour `server._slide_budget_state` documents and depends on, and what makes
+    a re-drafted section able to use the room its neighbours did not.
     """
     budget = slide_ceiling(enforce_time, budgets)
-    floor = int(config.harness()["constraints"]["coverage"]
-                .get("min_sub_concepts_per_takeaway", 2))
-    # A session with more takeaways than budget/floor cannot give every section that
-    # floor and still fit the ceiling (8 takeaways x 2 > 14). This course tops out at 6,
-    # but issuing a budget whose parts cannot sum to the whole is exactly the
-    # prompt-says-X-gate-says-not-X trap the deterministic gates exist to avoid, so drop
-    # to 1: sub-concepts are allowed to share a slide, and the instruction says so.
-    if floor * max(1, cur.key_takeaways_count) > budget:
-        floor = 1
+    plan = slide_plan(cur, enforce_time=enforce_time, budgets=budgets)
+    n = len(plan)
+    floor = section_floor(n, budget)
     left = max(1, sections_left)
-    base, extra = divmod(max(budget - max(slides_used, 0), 0), left)
-    return max(floor, base + (1 if extra else 0))
+    remaining = max(budget - max(slides_used, 0), 0)
+    if left <= 1 or not plan:
+        return max(floor, remaining)
+    idx = takeaway_index if takeaway_index is not None else (n - left)
+    idx = idx if 0 <= idx < n else max(0, min(n - 1, n - left))
+    reserve = floor * (left - 1)               # the floor every later section is owed
+    return max(floor, min(plan[idx], max(remaining - reserve, floor)))
 
 
 def takeaway_instruction(course: str, cur: Session, idx: int, *, slides_used: int = 0,
@@ -876,7 +994,8 @@ def takeaway_instruction(course: str, cur: Session, idx: int, *, slides_used: in
         sections_left = max(1, cur.key_takeaways_count - idx)
     allowance = chunk_slide_allowance(cur, slides_used=slides_used,
                                      sections_left=sections_left,
-                                     enforce_time=enforce_time, budgets=budgets)
+                                     enforce_time=enforce_time, budgets=budgets,
+                                     takeaway_index=idx)
     budget = slide_ceiling(enforce_time, budgets)
     # A slide allowance on its own is only half a budget: the section can obey it and
     # still write twice as much per slide as the recording ceiling allows, which is how a

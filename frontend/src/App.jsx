@@ -2057,10 +2057,35 @@ export default function App() {
               </div>
               {fbErr && <div className="alert error"><pre>{fbErr}</pre></div>}
               {fbDone && (
-                <div className="alert ok">
-                  <b>{fbDone.merged ? 'Folded into an existing rule.' : 'Learned.'}</b>
+                <div className={`alert ${fbDone.rule?.one_off ? 'warn' : 'ok'}`}>
+                  <b>{fbDone.rule?.one_off
+                      ? 'Noted for this document only.'
+                      : fbDone.merged ? 'Folded into an existing rule.' : 'Learned.'}</b>
                   <div className="learnedtext">“{fbDone.rule?.text}”</div>
-                  {fbDone.rule?.hits > 1 && (
+                  {/* A ONE-OFF is stored and injected nowhere, and that judgement is made
+                      from one sentence. Saying so here is what makes it correctable: a
+                      standing preference wrongly marked would otherwise just quietly
+                      stop being applied. */}
+                  {fbDone.rule?.one_off && (
+                    <div className="hint" style={{ marginTop: 4 }}>
+                      It reads as a correction to this document rather than a standing
+                      preference, so it is <b>not</b> being applied to future sessions.
+                      If that is wrong, open <b>Agent rules</b> and choose
+                      “Keep it standing”.
+                    </div>
+                  )}
+                  {/* GAP 3: the count has always been kept and never mentioned, so the
+                      action it implies depended on noticing a badge on another screen. */}
+                  {fbDone.suggest_promote && (
+                    <div className="hint" style={{ marginTop: 6 }}>
+                      You have now asked for this <b>{fbDone.rule?.hits}×</b>. Worth making
+                      it a course skill under <b>Agent rules</b> — a skill gets a
+                      pass / partial / fail verdict on every document and is repaired when
+                      it is missed. A learned rule gets neither.
+                    </div>
+                  )}
+                  {!fbDone.suggest_promote && !fbDone.rule?.one_off
+                    && fbDone.rule?.hits > 1 && (
                     <div className="hint" style={{ marginTop: 4 }}>
                       Raised {fbDone.rule.hits}× — flagged to the model as a repeated miss.
                     </div>
@@ -4728,11 +4753,33 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
       + 'being applied as a rule straight away, so it is never counted twice.')) return
     setBusy(i)
     api.promoteLearnedRule(i, target)
-      .then(() => {
+      .then((d) => {
         onChanged && onChanged()
-        alert('Added as a draft reviewer skill. Open Skills to approve it — until then '
-              + 'this instruction is not being applied at all.')
+        // SAY WHICH HAPPENED. Related corrections are gathered into ONE reviewer skill
+        // rather than a card each, so the second promotion adds a line to a draft that
+        // is already open. Without saying so, the user goes to Skills expecting a new
+        // card, finds the count unchanged, and reasonably concludes nothing happened.
+        alert(d?.grouped
+          ? `Added as instruction ${d.lines} of the reviewer skill this course is `
+            + 'already gathering — related corrections belong under one heading, in '
+            + 'order, and take ONE approval rather than one each.\n\n'
+            + 'Open Skills to approve the group. Until then none of its lines is '
+            + 'being applied.'
+          : 'Added as a draft reviewer skill. Open Skills to approve it — until then '
+            + 'this instruction is not being applied at all.\n\n'
+            + 'Anything else you promote for this course joins the same skill as a '
+            + 'further line, until you approve it.')
       })
+      .catch((e) => alert(e.message)).finally(() => setBusy(null))
+  }
+  function keepStanding(i, text) {
+    if (!window.confirm(
+      `Apply this to every future document in this course?\n\n${text}\n\n`
+      + 'It was judged a correction to one document rather than a standing preference, '
+      + 'so it is currently applied nowhere. This puts it back in force.')) return
+    setBusy(i)
+    api.keepLearnedRuleStanding(i)
+      .then(() => { onChanged && onChanged() })
       .catch((e) => alert(e.message)).finally(() => setBusy(null))
   }
   function migrate() {
@@ -4822,6 +4869,7 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
                     hidden, so it's clear the correction is still in force. */}
                 {r.gated && <span className="chip good" title={`Enforced automatically by ${r.gated}. No longer sent to the model or the judge — the check is exact now.`}>auto-enforced</span>}
                 {r.promoted && <span className="chip good" title="This rule is now a course skill. It is injected through the course brief instead, and checked on every document.">now a skill</span>}
+                {r.one_off && !r.promoted && <span className="chip mid" title="Judged a correction to one document rather than a standing preference, so it is stored but injected nowhere. Asking for the same thing again clears this by itself.">one-off</span>}
                 {/* MAKE IT A SKILL. A learned rule reaches the writer and is never
                     measured — no verdict, nothing in the skill report, no repair when a
                     document ignores it. This is the one move that was missing: promote a
@@ -4833,6 +4881,17 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
                           title="Make this a draft reviewer skill, so it is checked on every document and repaired when it is not followed"
                           onClick={() => promote(i, r)}>
                     <Icon name="skills" size={13} /> make it a skill</button>)}
+                {/* THE ONE-OFF JUDGEMENT, CORRECTABLE. It is made from a single sentence,
+                    and the two ways it can be wrong are not symmetric: a one-off wrongly
+                    kept standing costs a line in the block, while a real preference
+                    wrongly marked stops being applied and says nothing. So the direction
+                    that loses something gets a one-click undo. The other needs none —
+                    asking for the same thing twice clears the mark by itself. */}
+                {r.one_off && !r.promoted && (
+                  <button className="link" disabled={busy === i}
+                          title="Apply this to every future document after all — it is a standing preference, not a correction to one document"
+                          onClick={() => keepStanding(i, r.text)}>
+                    <Icon name="check" size={13} /> keep it standing</button>)}
                 {/* These rules now outrank the style guide, so a badly-generalised one
                     has to be removable — otherwise it is pushed at every session. */}
                 <button className="link" disabled={busy === i}
@@ -4843,6 +4902,10 @@ function LearnedRules({ rules, sessionNo, course, isAdmin, onChanged, standalone
               {r.promoted && <div className="just">Promoted to a course skill — approve it under
                 <b> Skills</b> to put it in force. It is no longer applied as a rule, so
                 until then this instruction is not being applied at all.</div>}
+              {r.one_off && !r.promoted && <div className="just">Judged a correction to
+                ONE document — generalising it left nothing a writer could act on next
+                time — so it is kept as a record and applied nowhere. Ask for the same
+                thing again and it becomes standing by itself.</div>}
               {r.raw && <div className="just">you wrote: “{r.raw}”</div>}
               {r.session_no != null && <div className="just">learned at Session {r.session_no}</div>}
             </div>
