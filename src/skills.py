@@ -1021,7 +1021,11 @@ def _default_model(prompt: str) -> dict:
                 "did — every requirement and every example they wrote survives, however "
                 "long that makes it. Reply with JSON only."),
         user=prompt,
-        model=m.get("judge", m["generator"]), max_tokens=2000, temperature=0.0,
+        # The judge ceiling, not a fixed 2000: the prompt says "drop nothing, however long
+        # that makes it", and a full four-heading brief ran past 2000 tokens — the JSON was
+        # cut off mid-string and every attempt surfaced as "model could not be reached".
+        model=m.get("judge", m["generator"]),
+        max_tokens=int(m.get("judge_max_tokens") or 16000), temperature=0.0,
         label="skills")
     return llm.extract_json(raw)
 
