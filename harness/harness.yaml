@@ -1672,6 +1672,15 @@ model:
   # the judge web-verifies the market_parity and content_recency dimensions against
   # GFG/TutorialsPoint/Scaler and current standards. Set false to save cost/latency.
   enable_web_market_check: true
+  # HOW HARD THE GENERATOR THINKS, per kind of call. Omitted = the model's default
+  # (Sonnet 5 thinks adaptively at full depth). WRITING a chunk keeps the default —
+  # that is where depth pays. A PATCH is a mechanical edit to a document a human
+  # already approved, and full-depth thinking there was measured on a finalize repair:
+  # 281s, 26,844 of 31,158 output tokens spent thinking, $0.42 — against 86s and $0.21
+  # at "low" for the SAME repair plan. Values: low | medium | high.
+  reasoning_effort:
+    repair_patch: low
+    regenerate_patch: low
 
 # ----------------------------------------------------------------------------
 # HARD CONSTRAINTS  (enforced by guardrails — a run FAILS if violated)

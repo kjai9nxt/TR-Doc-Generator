@@ -9,6 +9,7 @@ harness (see its docstring) — no user-facing surface reaches it.
 from __future__ import annotations
 import json
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -395,6 +396,31 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
 # --------------------------------------------------------------------------- #
 # Guided (chunk-by-chunk) mode: assemble approved fragments, then grade + render
 # --------------------------------------------------------------------------- #
+def pin_section_names(doc: dict, cur) -> int:
+    """Name each section after its key takeaway, VERBATIM. Returns how many changed.
+
+    The rule (guardrails: sections_named_after_takeaways) is mechanical — section i's
+    name IS key takeaway i — yet it was left to the model, chunk by chunk. When a chunk
+    shortened or reworded its name, the assembled doc failed the gate, and the repair
+    patch had no way to rename a section: the model reached for `set_fields.sections`,
+    the patch was refused, and finalize fell back to re-drafting the WHOLE document —
+    the slowest call in the pipeline, spent on renaming headings. Code sets it instead.
+
+    Only when there is exactly one section per takeaway; a count mismatch is a real
+    defect the gate should report, not something to paper over by position.
+    """
+    kts = list(getattr(cur, "key_takeaways", None) or [])
+    secs = doc.get("sections") or []
+    if not kts or len(secs) != len(kts):
+        return 0
+    n = 0
+    for sec, kt in zip(secs, kts):
+        if isinstance(sec, dict) and sec.get("name") != kt:
+            sec["name"] = kt
+            n += 1
+    return n
+
+
 def assemble_doc(cur, nxt, opening: dict, sections: list[dict],
                  coverage: list[dict] | None = None) -> dict:
     """Build the full TR-doc JSON from approved guided chunks + deterministic
@@ -416,6 +442,7 @@ def assemble_doc(cur, nxt, opening: dict, sections: list[dict],
         s = dict(sec)
         s["index"] = i
         doc["sections"].append(s)
+    pin_section_names(doc, cur)
 
     # RENUMBER slides 1..N across the whole document, and carry the coverage map's
     # slide references along with them. Each chunk numbers its slides against the
@@ -603,6 +630,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     is_first, is_last = prev is None, nxt is None
 
     def grade(d: dict, rnd: int):
+        t0 = time.monotonic()
         acc, rep, iss, _ = evaluate(d, cur, is_first, is_last, use_judge=use_judge,
                                     enforce_time=enforce_time, budgets=budgets,
                                     course=course, profile=profile)
@@ -612,10 +640,21 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
             f"| {rep['time']['slide_count']} slides "
             f"| ~{rep['pages']['estimated_pages']}p/{rep['pages']['max_pages']} "
             f"| guardrails={'ok' if rep['guardrails']['passed'] else 'FAIL'}"
-            + (f" | rubric={rep.get('judge',{}).get('weighted_total','-')}" if use_judge else ""))
+            + (f" | rubric={rep.get('judge',{}).get('weighted_total','-')}" if use_judge else "")
+            # HOW LONG IT TOOK, measured. "Assembling and grading is slow" could only be
+            # answered by reproducing a run locally, because nothing recorded which step
+            # the minutes went to; now every grade and repair says so in the run's log.
+            + f" | graded in {time.monotonic() - t0:.0f}s")
         return acc, rep, iss
 
-    log("Grading the assembled doc …" + (" (judging quality, ~15s)" if use_judge else ""))
+    # ~1 min, measured: the judge reads the whole document and checks its facts on the
+    # web. The old "~15s" made a normal grade look stuck.
+    # A document assembled before names were pinned (a resumed run, a re-finalize) gets
+    # the same treatment here, so it is not graded on a rule code can simply apply.
+    if pin_section_names(doc, cur):
+        log("Section names set to their key takeaways, verbatim.")
+    log("Grading the assembled doc …" + (" (judging quality, ~1 min)" if use_judge else ""))
+    t_start = time.monotonic()
     accepted, report, issues = grade(doc, 0)
     history = [report]
 
@@ -639,7 +678,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         rnd += 1
         log(f"Repairing {', '.join(over)} — these are properties of the assembled "
             f"document that no single chunk review could see (repair {rnd}/{max_repair}, "
-            f"~1-2 min). Coverage is preserved; ritual and off-agenda material are cut."
+            f"~1-3 min). Coverage is preserved; ritual and off-agenda material are cut."
             + (f" Your {len(standing_notes)} standing instruction(s) apply to this pass "
                f"too." if standing_notes else ""))
         base = (context_builder.build_user_prompt(course, prev, cur, nxt, profile)
@@ -659,6 +698,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         # patcher applies it, so the untouched slides are the same Python objects and
         # cannot drift. A full re-draft stays as the fallback: a patch that will not
         # apply must not silently leave the document unrepaired.
+        t_rep = time.monotonic()
         try:
             patch = generator.repair_patch(doc_json, issues,
                                            enforce_time=enforce_time,
@@ -681,6 +721,9 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
             # the result was right; every label above the first cut was wrong, and the
             # coverage map still cited the numbers that had gone.
             patcher.renumber_doc(doc)
+        # A full re-draft is a new document from the model, names included.
+        pin_section_names(doc, cur)
+        log(f"Repair {rnd} took {time.monotonic() - t_rep:.0f}s.")
         prev_report = report
         accepted, report, issues = grade(doc, rnd)
         # "PASS" and "PARTIAL → REPAIRED" are different facts: the second says the rule
@@ -722,6 +765,7 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     from src import llm
     cost = {"totals": llm.usage_totals(run_id), "calls": llm.usage_records(run_id)}
     c = cost["totals"]
+    log(f"Grading and repair took {time.monotonic() - t_start:.0f}s in total.")
     log(f"DONE. accepted={accepted}  est_minutes={report['time']['estimated_minutes']}  "
         f"cost=${c.get('cost', 0) or 0:.4f} ({c.get('total_tokens', 0)} tokens)")
     # `final` is the report for the doc that was actually RENDERED. Callers must not use

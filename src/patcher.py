@@ -501,6 +501,17 @@ def _renumber_doc(doc: dict) -> dict:
     return remap
 
 
+def _only_renames(value) -> bool:
+    """True when a `set_fields.sections` value carries nothing but section names."""
+    items = value if isinstance(value, list) else (
+        list(value.values()) if isinstance(value, dict) else None)
+    if not items:
+        return False
+    names = {"name", "title", "index", "n", "section", "takeaway"}
+    return all(isinstance(it, (str, dict)) and (isinstance(it, str) or set(it) <= names)
+               for it in items)
+
+
 def apply_doc_patch(doc: dict, patch: dict) -> tuple[dict, dict]:
     """Apply a repair patch to an assembled document. Returns (new_doc, summary).
 
@@ -523,6 +534,15 @@ def apply_doc_patch(doc: dict, patch: dict) -> tuple[dict, dict]:
 
     # --- document-level fields (recap / agenda / coverage_map) ---
     for key, value in (patch.get("set_fields") or {}).items():
+        # A `sections` entry that only RENAMES sections is dropped, not fatal: names are
+        # set from the key takeaways in code (pipeline.pin_section_names), so there is
+        # nothing for it to do — and refusing it threw away every slide edit alongside
+        # it and sent finalize into a full re-draft. Anything more than a rename is still
+        # refused, because it would bypass the per-slide rules below.
+        if key == "sections" and _only_renames(value):
+            fields_set.append("sections (renames ignored — names are set from the "
+                              "key takeaways)")
+            continue
         if key not in _DOC_SETTABLE:
             raise PatchError(
                 f"set_fields may only set {', '.join(_DOC_SETTABLE)} — not {key!r}")

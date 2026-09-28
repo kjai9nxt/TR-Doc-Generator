@@ -352,6 +352,10 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
         # Ask OpenRouter to include the real dollar cost in the response usage.
         "usage": {"include": True},
     }
+    # Per-kind thinking depth (harness model.reasoning_effort) — see the comment there.
+    effort = (config.harness()["model"].get("reasoning_effort") or {}).get(label)
+    if effort:
+        payload["reasoning"] = {"effort": str(effort)}
     last = None
     for attempt in range(retries):
         try:
