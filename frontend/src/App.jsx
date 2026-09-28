@@ -953,13 +953,26 @@ export default function App() {
           clearInterval(guidedPollRef.current); setResult(st.result); rememberGuided(null)
         }
         else if (st.status === 'error') { clearInterval(guidedPollRef.current); setGenErr(st.error) }
+        if (pollMisses) setGenErr(null)   // reconnected — clear the restart notice
         pollMisses = 0
       } catch (e) {
         // Ride out a run of bad answers rather than giving up on the first — and stay
         // quiet about it until it looks like more than a hiccup, so a single 429 does
         // not put a red box over a review that is going perfectly well.
         pollMisses += 1
-        if (e.kind === 'guided_gone' || pollMisses >= 10) {
+        // A 502/503/504, or no answer at all, is the HOST, not the run: on the free plan
+        // the instance restarts (a redeploy, a memory limit, a spin-down) and takes
+        // 30-60s to come back. The run is checkpointed per chunk and the server resumes
+        // generating it on the first status check it answers — so keep asking. Giving
+        // up after 10 misses (15s) stopped listening before the server was back, and the
+        // chunks "never came" although they were being written again.
+        const hostDown = e.kind === 'backend' || [502, 503, 504].includes(e.status)
+        if (hostDown && pollMisses >= 3 && pollMisses < 120) {
+          setGenErr('The server is restarting — reconnecting to your run. Chunks '
+                    + 'already generated are saved and generation carries on once it is '
+                    + 'back (usually under a minute). No need to start again.')
+        }
+        if (e.kind === 'guided_gone' || pollMisses >= (hostDown ? 120 : 10)) {
           handleGuidedError(e, { stopPolling: true })
         }
       }
@@ -969,6 +982,9 @@ export default function App() {
   }
 
   function startGuided() {
+    // Stop listening to any earlier run first. Its interval kept running, so its log
+    // stayed on screen under a NEW run's error and the two read as one.
+    clearInterval(guidedPollRef.current)
     setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setEvalReport(null); setEvalErr(null); setShowCost(true)
     setRegenAll(false); setSplitFor(null); setSplitSlide(''); setSplitErr(null); setFinalizing(false)
     api.guidedStart(sel, true, policy.time_always_enforced,
@@ -2219,6 +2235,9 @@ export default function App() {
           onEdit={(id, text, instructions) => runSkillAction(
             () => api.editSkill(courseName, id, text, instructions),
             'Edited. It is back to draft — an approval is of the words that were approved.')}
+          onPromote={(id) => runSkillAction(
+            () => api.promoteSkill(courseName, id),
+            'Moved to the course skills — it now applies to every session of this course.')}
           onRetire={(id) => runSkillAction(
             () => api.retireSkill(courseName, id),
             'Retired. It is kept on the record, so an old doc can still be explained.')}
@@ -2618,7 +2637,7 @@ function SkillBody({ text, className = 'skilltext', labelFirst = false }) {
  */
 function SkillCard({ s, canEdit, busy, editing, editText,
                      setEditText, editIns, setEditIns, onStartEdit, onCancelEdit,
-                     onSave, onApprove, onRetire, open, onToggle }) {
+                     onSave, onApprove, onRetire, onPromote, open, onToggle }) {
   // OPEN BY DEFAULT ON A DRAFT. The agent is allowed to sharpen a skill and to give it
   // structure the author did not type, so approving one means checking it against what
   // you wrote — and that is exactly the moment a draft is being read. On an approved
@@ -2679,6 +2698,12 @@ function SkillCard({ s, canEdit, busy, editing, editText,
                 {s.status !== 'approved' && (
                   <button className="primary sm" disabled={busy} onClick={onApprove}>
                     <Icon name="check" size={13} />Approve</button>)}
+                {/* A rule written for one session that turns out to hold for all of
+                    them is lifted into the course set here, rather than retyped. */}
+                {s.scope === 'session' && onPromote && (
+                  <button className="ghostbtn sm" disabled={busy} onClick={onPromote}
+                          title="Apply this skill to every session of the course, not just this one">
+                    <Icon name="expand" size={13} />Add to course skills</button>)}
                 <button className="iconbtn" disabled={busy} title="Edit this skill"
                         onClick={onStartEdit}><Icon name="pencil" size={14} /></button>
                 <button className="iconbtn danger" disabled={busy}
@@ -2780,7 +2805,7 @@ function SkillCard({ s, canEdit, busy, editing, editText,
  */
 function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onClearMsg,
                       courses = [], justCreated, onDismissNew, onHelp,
-                      onAdd, onFromRequirements, onImport, onApprove, onEdit, onRetire,
+                      onAdd, onFromRequirements, onImport, onApprove, onEdit, onRetire, onPromote,
                       onAddPrereq, onAddExternalPrereq, onRemovePrereq, job }) {
   const jobRan = useRef(false)
   const [extName, setExtName] = useState('')
@@ -2825,6 +2850,9 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
   }, [job, msg])
   const list = skills?.skills || []
   const canEdit = skills?.can_edit
+  // Prerequisites stay with the course owner (and admins) while skills are open to the
+  // whole team — so the two panels read two different flags.
+  const canEditPrereqs = prereqs?.can_edit
   const approvedCount = list.filter((x) => x.status === 'approved').length
   const draftCount = list.filter((x) => x.status === 'draft').length
   // Which sessions this course has written anything for — the only ones worth offering
@@ -2910,12 +2938,12 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
             <span key={n} className="memberchip">
               {n}
               {kind === 'external' && <span className="mtag" title="taught elsewhere — this agent knows it through its slides">elsewhere</span>}
-              {canEdit && <button className="mx" disabled={busy} title={`Remove ${n}`}
+              {canEditPrereqs && <button className="mx" disabled={busy} title={`Remove ${n}`}
                                   onClick={() => onRemovePrereq(n)}>×</button>}
             </span>
           ))}
         </div>
-        {canEdit && (
+        {canEditPrereqs && (
           <div className="gactions">
             {available.length > 0 && (
               <select defaultValue="" disabled={busy}
@@ -2930,7 +2958,7 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
             </button>
           </div>
         )}
-        {canEdit && extOpen && (
+        {canEditPrereqs && extOpen && (
           <div className="regen">
             <span className="hint">
               A course your learners did somewhere else. This agent knows it only through
@@ -3051,9 +3079,7 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
 
       {!canEdit && (
         <div className="alert warn">
-          Only {skills?.owner || 'an admin'} can change these — working on a course and
-          deciding the rules every document it produces is written under are different
-          things.
+          You can read this course's skills but not change them.
         </div>
       )}
 
@@ -3217,8 +3243,7 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
         <div className="emptystate">
           <span className="eicon"><Icon name="skills" size={20} /></span>
           <b>No skills yet</b>
-          <p>This course is written to the house defaults. Its owner
-             ({skills?.owner || 'an admin'}) decides what it needs beyond them.</p>
+          <p>This course is written to the house defaults.</p>
         </div>
       )}
 
@@ -3286,6 +3311,7 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                              }}
                              onApprove={() => onApprove(s.id)}
                              onRetire={() => onRetire(s.id)}
+                             onPromote={() => onPromote?.(s.id)}
                              open={openIds.has(s.id)} onToggle={() => toggleOpen(s.id)} />
                 ))}
               </section>

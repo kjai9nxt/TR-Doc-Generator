@@ -1100,7 +1100,7 @@ def add_prereq(body: PrereqBody, user: dict = Depends(current_user)):
     """Attach a prerequisite — a course this agent already holds, so its decks are here
     and nothing is uploaded twice."""
     from src import prereqs as prereq_rules
-    course = _require_skill_author(user, body.course)
+    course = _require_prereq_editor(user, body.course)
     src = _require_course(user, body.prereq)
     if src == course:
         raise HTTPException(status_code=400, detail={
@@ -1220,7 +1220,7 @@ def add_external_prereq(body: ExternalPrereqBody, user: dict = Depends(current_u
     Everything downstream is identical to an internal prerequisite: same assumed-knowledge
     block, same judge input, and deliberately NOT in the repetition lookup.
     """
-    course = _require_skill_author(user, body.course)
+    course = _require_prereq_editor(user, body.course)
     name = " ".join((body.name or "").split())
     links = [l.strip() for l in (body.links or []) if l.strip()]
     if not name:
@@ -1275,7 +1275,7 @@ def add_external_prereq(body: ExternalPrereqBody, user: dict = Depends(current_u
 def remove_prereq(course: str, prereq: str, user: dict = Depends(current_user)):
     """Detach a prerequisite. Neither course is otherwise touched."""
     from src import prereqs as prereq_rules
-    course = _require_skill_author(user, course)
+    course = _require_prereq_editor(user, course)
     db.remove_prereq(course, prereq)
     return {"ok": True, "prereqs": db.prereqs(course),
             "report": prereq_rules.coverage_report(course)}
@@ -1283,11 +1283,22 @@ def remove_prereq(course: str, prereq: str, user: dict = Depends(current_user)):
 
 # ---- course skills ---------------------------------------------------------------
 def _require_skill_author(user: dict, course: str) -> str:
-    """Who may change what a course is written under: its owner, or an admin.
+    """Who may write, approve, edit and retire a course's skills: ANYONE who may open it.
 
-    Not every member of a team that shares the course. A skill governs every document
-    that course will ever produce, which is a different power from being able to work on
-    it — the same distinction the team-membership delegation draws.
+    This used to be the owner alone, on the theory that deciding a course's rules is a
+    different power from working on it. In practice the person generating session 14 is
+    the one who knows what session 14 needs, and routing every rule through one owner
+    meant the rest of the team could not shape the documents they were producing. Skills
+    are still drafts until approved, still quote their source, and a retired one stays on
+    the record — the review trail is the safeguard, not a single gatekeeper.
+    """
+    return _require_course(user, course)
+
+
+def _require_prereq_editor(user: dict, course: str) -> str:
+    """Who may change what a course ASSUMES its learners already know: its owner, or an
+    admin. Kept narrower than skills — a prerequisite removes material from every session
+    of the course at once, and nobody asked for it to be opened up.
     """
     course = _require_course(user, course)
     if user.get("is_admin"):
@@ -1296,8 +1307,7 @@ def _require_skill_author(user: dict, course: str) -> str:
     if owner and owner == (user.get("email") or "").lower():
         return course
     raise HTTPException(status_code=403, detail={"message":
-        f"Only {owner or 'an admin'} can change what '{course}' is written under. "
-        f"Working on a course and deciding its rules are different things."})
+        f"Only {owner or 'an admin'} can change the prerequisites of '{course}'."})
 
 
 @app.get("/api/skills")
@@ -1316,8 +1326,9 @@ def list_skills(course: str | None = None, include_retired: bool = False,
                                 session=session),
             "approved": len(db.approved_skills(course, session=session)),
             "categories": list(skill_rules_categories()),
-            "can_edit": bool(user.get("is_admin"))
-                        or (owner or "") == (user.get("email") or "").lower(),
+            # Everyone who can open the course may author its skills — see
+            # _require_skill_author. The owner is still reported, as who created it.
+            "can_edit": True,
             "owner": owner}
 
 
@@ -1492,6 +1503,29 @@ def edit_skill(skill_id: int, body: SkillBody, user: dict = Depends(current_user
     if not db.edit_skill(skill_id, body.text, check=body.check,
                          instructions=body.instructions):
         raise HTTPException(status_code=400, detail={"message": "A skill needs text."})
+    return {"ok": True, "skills": db.skills(c)}
+
+
+@app.post("/api/skills/{skill_id}/promote")
+def promote_skill(skill_id: int, course: str | None = None,
+                  user: dict = Depends(current_user)):
+    """Lift a SESSION skill into the course's own set, so it governs every session.
+
+    The words are unchanged, so an approval stands — but what the skill governs has just
+    grown from one session to all of them, and that is recorded as a new version so the
+    history shows when it widened.
+    """
+    c = _require_skill_author(user, course)
+    row = _skill_row(c, skill_id)
+    if not row:
+        raise HTTPException(status_code=404, detail={
+            "message": "No such skill on this course."})
+    if (row.get("scope") or "course") != "session":
+        raise HTTPException(status_code=400, detail={
+            "message": "That skill already applies to the whole course."})
+    if not db.promote_skill(skill_id):
+        raise HTTPException(status_code=500, detail={
+            "message": "Could not move that skill to the course set — try again."})
     return {"ok": True, "skills": db.skills(c)}
 
 

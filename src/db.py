@@ -1982,6 +1982,18 @@ def approve_skill(skill_id: int, who: str | None) -> bool:
         return False
 
 
+def promote_skill(skill_id: int) -> bool:
+    """Turn a session skill into a course skill. Its words and its approval are kept;
+    the version is bumped because what it governs has widened."""
+    try:
+        _exec("UPDATE course_skills SET scope='course', session_ref=NULL, "
+              "version=version+1, updated_at=? WHERE id=? AND scope='session'",
+              (_now(), int(skill_id)))
+        return True
+    except Exception:
+        return False
+
+
 def retire_skill(skill_id: int, who: str | None) -> bool:
     """Stop a skill applying. The row stays — see the table comment."""
     try:

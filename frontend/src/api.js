@@ -214,6 +214,7 @@ export const api = {
     req(`/skills/${id}/edit`, { method: 'POST',
         body: JSON.stringify({ course, text, instructions }) }),
   retireSkill: (course, id) => req(`/skills/${id}${qs({ course })}`, { method: 'DELETE' }),
+  promoteSkill: (course, id) => req(`/skills/${id}/promote${qs({ course })}`, { method: 'POST' }),
   prereqs: (course) => req(`/prereqs${qs({ course })}`),
   addPrereq: (course, prereq) =>
     req('/prereqs', { method: 'POST', body: JSON.stringify({ course, prereq }) }),
