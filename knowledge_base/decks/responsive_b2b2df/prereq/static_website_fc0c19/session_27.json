@@ -1,0 +1,136 @@
+{
+  "session_no": 27,
+  "source_file": "static website — session 27",
+  "deck_title": "static website — session 27",
+  "n_slides": 18,
+  "summary": "\n    - Slide 2: Setting up VS Code\n    - Slide 3: Setting up Visual Studio Code\n    - Slide 4: IDE\n    - Slide 5: Developing Applications\n    - Slide 6: Developing Applications\n    - Slide 7: IDE\n    - Slide 8: Popular IDEs\n    - Slide 9: Installing VS Code\n    - Slide 10: Installing VS Code\n    - Slide 11: >>>> \n    - Slide 12: Visual Studio Code\n    - Slide 13: Setting up Visual Studio Code\n    - Slide 14: Developing a Static Website in VS Code",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Setting up VS Code",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Setting up Visual Studio Code",
+      "body": "Setting up Visual Studio Code\nVisual Studio Code\nInstallation\nIDE",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "IDE",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Developing Applications",
+      "body": "IDE (Integrated Development Environment)\nAn Integrated Development Environment (IDE) is a software for building applications that makes programming easier",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Developing Applications",
+      "body": "IDE (Integrated Development Environment)\nIDEs allows developers to develop applications  easily and quickly",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "IDE",
+      "body": "Popular IDEs\nVS Code\nPyCharm\nEclipse\nAtom\nIntelliJ IDEA\nTheia",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Popular IDEs",
+      "body": "Visual Studio Code (VS Code)\nVisual Studio Code is a lightweight and powerful \u000bsource code editor that runs on your Desktop,\u000bsupporting different Operating Systems\nVisual Studio Code is a lightweight         and powerful source code editor                  that runs on our Desktop,\u000bsupporting different Operating Systems\nDefinition",
+      "notes": "Note: Installation guide is provided in the cheatsheet. \u000bDo follow the instructions and complete the Visual Studio Code Installation",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Installing VS Code",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Installing VS Code",
+      "body": "Installation Steps on Linux\nOpen https://code.visualstudio.com/ \nDownload .deb file on Desktop\nOpen terminal\nRun sudo dpkg i- file_name\n   Open https://code.visualstudio.com/ \n01   \n   Download .deb file on Desktop\n   Open terminal\n   Run sudo dpkg i- file_name\n02   \n03   \n04",
+      "notes": "Windows Operating System - https://youtu.be/JGsyJI8XG0Y \nUbuntu/Linux Operating System (Watch only for 2 minutes) - https://youtu.be/Y1fei1mzP7Q \nMac Operating System (Watch only for 2 minutes 30 seconds) - https://youtu.be/tCfbi5PF1y0",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": ">>>> ",
+      "body": ">>>> \n>>>> \nFollow the Installation Steps Provided in Reading Material",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Visual Studio Code",
+      "body": "Open Visual Studio Code\nSearch Visual Studio Code \u000bin your applications and open it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Setting up Visual Studio Code",
+      "body": "IDE\nVS Code Installation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Developing a Static Website in VS Code",
+      "body": "",
+      "notes": "In the next session, we’ll start off with performing our first selenium test. \u000b\u000bAs part of the “Automation Testing using Selenium (Part-1)” session. \n\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1qMgEWsWeg7rEZ9fwg3TJOot5Pcf2jciTQueSyAEZYwU/edit"
+}

@@ -1,0 +1,332 @@
+{
+  "session_no": 25,
+  "source_file": "static website — session 25",
+  "deck_title": "static website — session 25",
+  "n_slides": 46,
+  "summary": "\n    - Slide 2: Debugging Using Chrome Dev Tools\n    - Slide 3: Debugging Using Chrome Dev Tools\n    - Slide 4: Build Your Own Static Website\n    - Slide 5: >>>> \n    - Slide 6: Debugging Using Chrome Dev Tools\n    - Slide 7: Example Application\n    - Slide 8: Example Application\n    - Slide 9: Introduction to \u000bBrowser Developer Tools\n    - Slide 10: Debugging\n    - Slide 11: Chrome Dev Tools\n    - Slide 12: Let’s see how to open\n    - Slide 13: Opening Browser Developers Tools\n    - Slide 14: Opening Browser Developers Tools\n    - Slide 15: Browser Developers Tools\n    - Slide 16: Browser Developers Tools\n    - Slide 17: Elements Panel\n    - Slide 18: Browser Developer Tools\n    - Slide 19: Elements Panel\n    - Slide 20: Elements Panel\n    - Slide 21: Elements Panel\n    - Slide 22: Elements Panel\n    - Slide 23: Styles Pane\n    - Slide 24: Styles Pane\n    - Slide 25: Styles Pane\n    - Slide 26: Styles Pane\n    - Slide 27: Styles Pane\n    - Slide 28: Styles Pane\n    - Slide 29: Let's debug our application\u000busing the Elements panel\n    - Slide 30: Example Application\n    - Slide 31: Debugging the Application\n    - Slide 32: Debugging the Application\n    - Slide 33: Debugging the Application\n    - Slide 34: Debugging the Application\n    - Slide 35: Debugging the Application\n    - Slide 36: Debugging Using Chrome Dev Tools\n    - Slide 42: Some of the most useful panels for are:\n    - Slide 43: Recap\n    - Slide 44: Elements Panel\n    - Slide 45: Debugging Using Chrome Dev Tools",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Debugging Using Chrome Dev Tools",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Debugging Using Chrome Dev Tools",
+      "body": "Debugging Using Chrome Dev Tools\nIntroduction to \u000bdifferent Panels\nUnderstanding Elements Panel\nElements panel\nIntroduction to \u000bChrome Dev tools",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Build Your Own Static Website",
+      "body": "What we have learnt so far?\nHTML Elements\nh1, p, img, etc\nAudio\nVideo\nLists, etc\nColors\nBox Model\nPadding\nMargin, etc\ncol, row, container\nCarousel\nEmbed, etc\nborder-radius\nbox-shadow\nbackground-\u000bposition\nbackground-size\nCSS Properties\nBootstrap\nBox Model Properties\nBackground\n Properties\n…many more",
+      "notes": "You've mastered HTML and CSS. You can build stunning static websites that look great... \nmost of the time",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": ">>>> ",
+      "body": ">>>> \n>>>> \nHave you ever encountered\u000ba problem with your website \u000band felt stuck?",
+      "notes": "Like",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Debugging Using Chrome Dev Tools",
+      "body": "Example Application\nImagine, you need to build a simple\u000bapplication that displays the web development languages and its features",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Example Application",
+      "body": "Undesired Output\nText inside a card should be centered,\u000bbut it's left-aligned\nSpace between elements is not as expected\n\t\t\t\t\t      …many more",
+      "notes": "Undesired Output code\u000b\u000bHTML:\u000b<!DOCTYPE html>\n<html lang=\"en\">\n\n<head> </head>\n\n<body>\n    <div class=\"bg-container\">\n        <h1 class=\"heading\">Web Development Languages</h1>\n        <div class=\"lang-cards\">\n            <div class=\"card\">\n                <h3 class=\"language-name\">HTML</h3>\n                <ul class=\"feature-list\">\n                    <li class=\"list-item\">Structure of web pages</li>\n                    <li class=\"list-item\">Semantic markup</li>\n                    <li class=\"list-item\">Cross-platform compatibility</li>\n                    <li class=\"list-item\">Easy to learn and use</li>\n                </ul>\n            </div>\n            <div class=\"card\">\n                <h3 class=\"language-name\">CSS</h3>\n                <ul class=\"feature-list\">\n                    <li class=\"list-item\">Styling and layout</li>\n                    <li class=\"list-item\">Responsive design</li>\n                    <li class=\"list-item\">Customizable appearance</li>\n                    <li class=\"list-item\">Separation of concerns</li>\n                </ul>\n            </div>\n            <div class=\"card\">\n                <h3 class=\"language-name\">JavaScript</h3>\n                <ul class=\"feature-list\">\n                    <li class=\"list-item\">Dynamic interactivity</li>\n                    <li class=\"list-item\">Client-side scripting</li>\n                    <li class=\"list-item\">Asynchronous programming</li>\n                    <li class=\"list-item\">Versatile language</li>\n                </ul>\n            </div>\n            <div class=\"card\">\n                <h3 class=\"language-name\">React</h3>\n                <ul class=\"feature-list\">\n                    <li class=\"list-item\">Component-based architecture</li>\n                    <li class=\"list-item\">Virtual DOM for performance</li>\n                    <li class=\"list-item\">JSX syntax</li>\n                    <li class=\"list-item\">Large ecosystem</li>\n                </ul>\n            </div>\n        </div>\n    </div>\n</body>\n\n</html>\n\u000b\u000bCSS:\u000b@import url(\"https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@400;700&family=Lobster&family=Monoton&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,700&family=Work+Sans:ital,wght@0,400;0,700;1,700&display=swap\");\n\nbody {\n    margin: 0px;\n}\n\n.bg-container {\n    display: flex;\n    align-items: center;\n    flex-direction: column;\n    background-color: #f0f4f8;\n    color: #333;\n    padding: 20px;\n    height: 100vh;\n    font-family: Roboto;\n}\n\n.heading {\n    color: #3498db;\n    margin-bottom: 32px;\n}\n\n.lang-cards {\n    max-width: 1000px;\n    display: flex;\n    flex-wrap: wrap;\n    justify-content: space-around;\n}\n\n.card {\n    background-color: #ffffff;\n    border-radius: 10px;\n    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);\n    padding: 25px;\n    margin: 20px 10px 20px 10px;\n    width: 400px;\n}\n\n.language-name {\n    margin: 0 0 15px 0;\n    color: #3498db;\n    font-size: 24px;\n    text-align: left;\n    border-bottom: 2px solid #3498db;\n    padding-bottom: 40px;\n}\n\n.feature-list {\n    list-style-type: none;\n    padding: 0;\n    margin: 0;\n}\n\n.list-item {\n    margin-bottom: 8px;\n    padding-left: 20px;\n}",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Example Application",
+      "body": "Debugging using Browser Tools\nInstead of going back to your HTML and CSS files to check what's causing the issue                    and fixing it every time, browsers provides tools to debug and fix instantly",
+      "notes": "Debugging is the process of finding & fixing the bugs in the Code",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Introduction to \u000bBrowser Developer Tools",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Debugging",
+      "body": "Browser Developer Tools\nBrowser Developer Tools are tools provided by web browsers that we can use to debug web applications loaded in the browser",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Chrome Dev Tools",
+      "body": "Features\nView the source code (HTML, CSS, JavaScript)\nChange CSS styles\nHide, edit, delete, or duplicate elements \u000bon the page\nReorder elements on the page\n                                                                   and much more...\nView the source code (HTML, CSS, JavaScript)\nChange CSS styles\nHide, edit, delete, or duplicate elements on the page\nManipulate and reorder elements on the page\nand much more...",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Let’s see how to open",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Opening Browser Developers Tools",
+      "body": "Using Chrome Menu (Way - 1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Opening Browser Developers Tools",
+      "body": "Using Chrome Menu (Way - 2/2)\nRight click and select Inspect option",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Browser Developers Tools",
+      "body": "Panels",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Browser Developers Tools",
+      "body": "Panels\nElements Panel\nStyles Pane\nComputed Pane\nConsole\nNetwork\nApplication\n\t\t\tmany more...",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Elements Panel",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Browser Developer Tools",
+      "body": "Elements Panel\nElements Panel lets you view                   or change HTML and Styles applied \nto a single element at a time",
+      "notes": "The Elements panel is where we'll spend most of our time. It allows us to experiment with the HTML structure and the web page's design without changing your code",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Elements Panel",
+      "body": "Changing the \u000bHTML structure\nModifying style \u000bproperties\nInspecting the applied styles in the Styles Pane\nPreview styling changes without changing local code or reloading the page\nFeatures\nKey Features",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Elements Panel",
+      "body": "View HTML\nClick 'select an element icon'       and then click on the element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Elements Panel",
+      "body": "Changing HTML Text Content\nDouble-tap to change the text content",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Elements Panel",
+      "body": "Styles Pane\nStyles Pane shows you all the CSS Rules that are applied to an element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Styles Pane",
+      "body": "Applied Styles",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Styles Pane",
+      "body": "Changing Property Value",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Styles Pane",
+      "body": "Adding Inline Styles\nd\nEdit element.style{} ruleset to set Inline Styles",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Styles Pane",
+      "body": "Box Model of the Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Styles Pane",
+      "body": "Computed Pane\nComputed Pane shows \u000bonly the actual CSS properties\u000bapplied to an element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Styles Pane",
+      "body": "Actual Styles Applied to an Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Let's debug our application\u000busing the Elements panel",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Example Application",
+      "body": "Inspecting the Element\nRight-click on the language name element and select Inspect to check the styles applied",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Debugging the Application",
+      "body": "Checking Styles Paen\nIn the Styles Pane, we can see that text-align: left; and padding: 40px is applied to the element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Debugging the Application",
+      "body": "Updating the Styling - text-align\nLet's update the text-align property to center and see the changes immediately on the page",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Debugging the Application",
+      "body": "Updating the Styling - padding",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Debugging the Application",
+      "body": "Making Changes in Source Code\nNow that we have experimented with the styles in the Elements panel\nLet's update the CSS in source code\u000bto make the change permanent",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Debugging the Application",
+      "body": "Chrome DevTools\nChrome DevTools, especially the Elements panel,allows us to quickly debug                                 and experiment with our web applications, saving us a lot of time and effort",
+      "notes": "And the Elements panel isn't not only just for fixing issues. \n\nWe can also use it to experiment with the design. For example, if we want to see what the header text would look like in a different color, we can check",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Debugging Using Chrome Dev Tools",
+      "body": "Debugging\nBrowser Developer Tools\nElements panel\nStyles pane\nComputed pane",
+      "notes": "So.. le’ts quickly summarize. \n\nAutomation Testing \nSelenium Tool\nComponents of Selenium\nSelenium IDE\nSelenium Grid\nWebDriver\nWe understood that we will be using webdriver. \n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "",
+      "body": "",
+      "notes": "In the next session, we’ll start off with performing our first selenium test. \u000b\u000bAs part of the “Automation Testing using Selenium (Part-1)” session. \n\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Some of the most useful panels for are:",
+      "body": "Some of the most useful panels for are:\nElements Panel:  \nAllows you to view and edit HTML and CSS \u000bfor a single element, using the Styles and Computed panes\nConsole:  \nDisplays JavaScript errors and allows \u000byou to run JavaScript code\nNetwork:  \nShows all network requests made by \u000byour web application",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Recap",
+      "body": "Debugging\nDebugging is the process of \u000bfinding & fixing the bugs in the Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Elements Panel",
+      "body": "View HTML\nClick 'select an element icon'       and then click on the element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Debugging Using Chrome Dev Tools",
+      "body": "Summary\nChrome DevTools is your built-in debugging assistant\nIt helps you inspect and modify \u000bHTML and CSS in real-time\nYou can debug JavaScript errors easily\nIt allows you to test responsiveness across different devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1Ig9lcyHV-wsZVGLcqntnwfKHrCR0099DUk4c7Dez0oM/edit?slide=id.g249263e2ecb_11_100#slide=id.g249263e2ecb_11_100"
+}

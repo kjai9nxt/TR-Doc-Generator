@@ -1,0 +1,176 @@
+{
+  "session_01": {
+    "hash": "",
+    "source_file": "static website \u2014 session 1",
+    "session_no": 1,
+    "n_slides": 42
+  },
+  "session_02": {
+    "hash": "",
+    "source_file": "static website \u2014 session 2",
+    "session_no": 2,
+    "n_slides": 32
+  },
+  "session_03": {
+    "hash": "",
+    "source_file": "static website \u2014 session 3",
+    "session_no": 3,
+    "n_slides": 35
+  },
+  "session_04": {
+    "hash": "",
+    "source_file": "static website \u2014 session 4",
+    "session_no": 4,
+    "n_slides": 32
+  },
+  "session_05": {
+    "hash": "",
+    "source_file": "static website \u2014 session 5",
+    "session_no": 5,
+    "n_slides": 36
+  },
+  "session_06": {
+    "hash": "",
+    "source_file": "static website \u2014 session 6",
+    "session_no": 6,
+    "n_slides": 45
+  },
+  "session_07": {
+    "hash": "",
+    "source_file": "static website \u2014 session 7",
+    "session_no": 7,
+    "n_slides": 54
+  },
+  "session_08": {
+    "hash": "",
+    "source_file": "static website \u2014 session 8",
+    "session_no": 8,
+    "n_slides": 67
+  },
+  "session_09": {
+    "hash": "",
+    "source_file": "static website \u2014 session 9",
+    "session_no": 9,
+    "n_slides": 46
+  },
+  "session_10": {
+    "hash": "",
+    "source_file": "static website \u2014 session 10",
+    "session_no": 10,
+    "n_slides": 55
+  },
+  "session_11": {
+    "hash": "",
+    "source_file": "static website \u2014 session 11",
+    "session_no": 11,
+    "n_slides": 40
+  },
+  "session_12": {
+    "hash": "",
+    "source_file": "static website \u2014 session 12",
+    "session_no": 12,
+    "n_slides": 33
+  },
+  "session_13": {
+    "hash": "",
+    "source_file": "static website \u2014 session 13",
+    "session_no": 13,
+    "n_slides": 69
+  },
+  "session_14": {
+    "hash": "",
+    "source_file": "static website \u2014 session 14",
+    "session_no": 14,
+    "n_slides": 29
+  },
+  "session_15": {
+    "hash": "",
+    "source_file": "static website \u2014 session 15",
+    "session_no": 15,
+    "n_slides": 27
+  },
+  "session_16": {
+    "hash": "",
+    "source_file": "static website \u2014 session 16",
+    "session_no": 16,
+    "n_slides": 81
+  },
+  "session_17": {
+    "hash": "",
+    "source_file": "static website \u2014 session 17",
+    "session_no": 17,
+    "n_slides": 51
+  },
+  "session_18": {
+    "hash": "",
+    "source_file": "static website \u2014 session 18",
+    "session_no": 18,
+    "n_slides": 45
+  },
+  "session_19": {
+    "hash": "",
+    "source_file": "static website \u2014 session 19",
+    "session_no": 19,
+    "n_slides": 36
+  },
+  "session_20": {
+    "hash": "",
+    "source_file": "static website \u2014 session 20",
+    "session_no": 20,
+    "n_slides": 48
+  },
+  "session_21": {
+    "hash": "",
+    "source_file": "static website \u2014 session 21",
+    "session_no": 21,
+    "n_slides": 69
+  },
+  "session_22": {
+    "hash": "",
+    "source_file": "static website \u2014 session 22",
+    "session_no": 22,
+    "n_slides": 75
+  },
+  "session_23": {
+    "hash": "",
+    "source_file": "static website \u2014 session 23",
+    "session_no": 23,
+    "n_slides": 112
+  },
+  "session_24": {
+    "hash": "",
+    "source_file": "static website \u2014 session 24",
+    "session_no": 24,
+    "n_slides": 39
+  },
+  "session_25": {
+    "hash": "",
+    "source_file": "static website \u2014 session 25",
+    "session_no": 25,
+    "n_slides": 46
+  },
+  "session_26": {
+    "hash": "",
+    "source_file": "static website \u2014 session 26",
+    "session_no": 26,
+    "n_slides": 39
+  },
+  "session_27": {
+    "hash": "",
+    "source_file": "static website \u2014 session 27",
+    "session_no": 27,
+    "n_slides": 18
+  },
+  "session_28": {
+    "hash": "",
+    "source_file": "static website \u2014 session 28",
+    "session_no": 28,
+    "n_slides": 36
+  },
+  "session_29": {
+    "hash": "",
+    "source_file": "static website \u2014 session 29",
+    "session_no": 29,
+    "n_slides": 91
+  }
+}

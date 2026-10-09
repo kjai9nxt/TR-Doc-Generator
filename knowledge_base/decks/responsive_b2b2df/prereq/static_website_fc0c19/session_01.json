@@ -1,0 +1,304 @@
+{
+  "session_no": 1,
+  "source_file": "static website — session 1",
+  "deck_title": "static website — session 1",
+  "n_slides": 42,
+  "summary": "\n    - Slide 2: Introduction to Generative AI in Frontend Development\n    - Slide 3: Frontend\n    - Slide 4: Frontend\n    - Slide 5: Let’s discover How AI is reshaping Frontend Development\n    - Slide 6: Generative AI in Frontend Development\n    - Slide 7: Introduction to Gen AI in Frontend Development\n    - Slide 8: What is a Static Website?\n    - Slide 9: Generative AI in Frontend Development\n    - Slide 10: Static Website\n    - Slide 11: Static Website\n    - Slide 12: Static Website Examples\n    - Slide 13: Static Website Examples\n    - Slide 14: Static Website Examples\n    - Slide 15: Can anyone think of a website \u000byou visited that might be \u000ba static website?\n    - Slide 16: Building a Static Website \u000bwith Gen AI\n    - Slide 17: Gen AI\n    - Slide 18: Building a Static Website with Gen AI\n    - Slide 19: Building a Static Website with Gen AI\n    - Slide 20: Building a Static Website with Gen AI\n    - Slide 21: Building a Static Website with Gen AI\n    - Slide 22: Building a Static Website with Gen AI\n    - Slide 23: Building a Static Website with Gen AI\n    - Slide 24: Tools for Accelerated Learning\n    - Slide 25: Code Playground\n    - Slide 26: Code Playground\n    - Slide 27: Is the output of the \u000bAI-generated code the same as the given design?\n    - Slide 28: Gen AI\n    - Slide 29: Building a Static Website with Gen AI\n    - Slide 30: Building a Static Website with Gen AI\n    - Slide 31: Analyzing and Refining \u000bthe Output\n    - Slide 32: Building a Static Website with Gen AI\n    - Slide 33: Building a Static Website with Gen AI\n    - Slide 34: >>>> \n    - Slide 35: Anyone Having Technical Expertise\n    - Slide 36: Building a Static Website with Gen AI\n    - Slide 37: Technical Knowledge\n    - Slide 38: Technical Knowledge\n    - Slide 39: Introduction to GenAI in Frontend Development\n    - Slide 40: Your First Frontend Project",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Hello everyone, Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to Generative AI in Frontend Development",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Frontend",
+      "body": "Journey\nResponsive Website\nDynamic Website\nStatic Website\nReact Application",
+      "notes": "Welcome to the Journey of Application Development.\nIn an Application, we have frontend and backend right! In both frontend and backend, you will be learning multiple programming languages and technologies.\nLets focus on frontend first, In this journey, we will focus on 1 step at a time, Slowly, we will able to build bigger applications on your own. First,we will be building static websites and master them, later responsive, dynamic, react…\nBut don’t worry if you're unsure about what static, responsive, and dynamic websites mean right now. In the upcoming sessions, we’ll dive into each type and explain everything in detail.\nWe not only just learn building these websites in each step, we will be building with genai in each step.",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Frontend",
+      "body": "Journey\nStatic Website\nDynamic Website\nResponsive Website\nReact Application",
+      "notes": "It's the buzzing word all over right! We are seeing it everywhere.\nNot just the trend apart, it has a lot of huge possibilities in almost every industry - like agriculture, education, health care, manufacturing, etc.\nSimilarly, it has a lot of potential in web application development.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Let’s discover How AI is reshaping Frontend Development",
+      "body": "Let’s discover How AI is reshaping Frontend Development",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Generative AI in Frontend Development",
+      "body": "Have you ever wanted to create \u000byour own website but thought \u000bit might be too complicated?\n?\nQuestion",
+      "notes": "Let's start with a question - How many of you wanted to build a website, but thought its too complicated?\n\nMany of us right!\n\nNow, let's build a website without any technical knowledge right now with genai. This makes the agenda for our today’s session",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Introduction to Gen AI in Frontend Development",
+      "body": "Introduction to Gen AI in Frontend Development\nBuilding a Static Website using Gen AI\nImportance of Learning Web Technologies",
+      "notes": "In this session, we will building a website, that is a static website, which is in the first step of our frontend development journey, \n\nand later, we also see how learning frontend technologies is important and helpful for us in frontend development.\n\nAt first, Lets see what a static website mean?",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "What is a Static Website?",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Generative AI in Frontend Development",
+      "body": "Static Website\nA website that contains fixed content, It displays the same information to every visitor",
+      "notes": "It is a website that contains fixed content - which means, for any user on any device, the same content will be shown and the content will be shown on the same way.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Static Website",
+      "body": "Fixed Content in different devices\nDesktop\nTablet\nMobile",
+      "notes": "That means, the content and the images of the website should be the same in all the devices.\n\nWhat does this mean in practice? \n\nIt means that the text, the photos in your website don't change whether someone is viewing it on a large monitor, a tablet, or a smartphone.\n\nAs a result, the appearance of the website may not look not good on all devices",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Static Website",
+      "body": "Technologies",
+      "notes": "These kind of websites are typically developed using HTML and CSS technologies",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Static Website Examples",
+      "body": "Portfolio Websites",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Static Website Examples",
+      "body": "Business Websites",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Static Website Examples",
+      "body": "Business Websites",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Can anyone think of a website \u000byou visited that might be \u000ba static website?",
+      "body": "Can anyone think of a website \u000byou visited that might be \u000ba static website?",
+      "notes": "I think so many of you visits so many websites in a day.\n\nCan anyone think of a website you visited that might be a static website?",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Building a Static Website \u000bwith Gen AI",
+      "body": "",
+      "notes": "Let’s Build  Static website with Gen AI",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Gen AI",
+      "body": "Tools\netc…\nGPT\nhttps://chatgpt.com/  \nGemini\nhttps://gemini.google.com/ \nLLAMA\nhttps://www.meta.ai/ \nClaude\nhttps://claude.ai/\nDeepSeek\nhttps://chat.deepseek.com/\ngrok\nhttps://grok.com/",
+      "notes": "For using GenAI, we have multiple tools available, which are simple and easy to use.\nSome of the tools are - gpt, gemini, llama, claude, etc. which many of you might already aware of and using.\nFor the people who don’t know, no need to worry, it's very simple and easy to use.\nWe will pick one - chat gpt and build an application using this.\nBut which application we need to build? Let’s take 1 reference that means any 1 design.\nDon’t have references? No worry, you can pick any application you like, and lets build a small part of it to get started.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Developing a Website\nWriting code based on the design file\nValidating the application's user interface and functionality\nDelivering the application\u000bto users\nCreating a Design file that defines the user interface of the application\nDevelop\nTest\nDesign\nDeploy\n>\n<\n>\n<",
+      "notes": "Even in application development, the same process follows - first here as well, you will be given a reference for building websites.\u000b\u000bHere, if you see, first designers will create a design file (a reference) for you to build websites. Later you develop an application. Once after you develop an application, we test it whether its working well or not. If it's working well, we will deliver this to users.\nThis is the typical process generally followed in any application development.\n\nSo, now we have the design file",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Design File / Mockup\nA reference for \u000bbuilding a website",
+      "notes": "This is the reference we picked for building a website.\n\nAs said, you can take out any application you liked, and screenshot a small part of it, if you want to try out with the other file.\n\nNow, we have the reference ready. Next step is developing a website. \u000b\nFor this, we will be using chatgpt (a gen ai tool).",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Chat GPT\nLet’s use GPT4o to create static website\n<Developer Name>",
+      "notes": "Even with chatgpt, it just not read our minds, and develop the website.\n\nWe need to give it the instructions on what to build, how to build right!\n\nThese instructions are generally called as a prompt. You will be provided with a sample prompt for this, to get started.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Prompt\nAct as a skilled front-end web developer specializing in creating perfect static websites from design mockups. Build a static website with HTML and CSS code that replicates the provided design mockup with 100% accuracy by following the below guidelines:\nGuidelines:\nDesign the static website to match the provided mockup exactly in terms of layout, structure, and appearance.\nUse valid image links from Unsplash that best fit the design elements.\nMatch the colors, fonts, styles, spacing, borders, and shadows as shown in the mockup.\nUse the provided icons and ensure they are styled and placed correctly.",
+      "notes": "You can take this as reference and update it according to your needs.\nFeel free to update and improvise this. You can write your own prompt according to your specific idea for a website, whether it's a portfolio, a blog, or something else entirely. \nThe more descriptive and clear you are, the better the AI can understand your goal and generate relevant content.\nWriting Prompts is also a very important skill. You can learn all about this in a separate course.\n\nBut now, lets try to execute this prompt in chatgpt",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Executing the Prompt\nCreate a chat gpt account                         and execute the prompt:  https://chatgpt.com/",
+      "notes": "Create a GPT account\nCopy the image from here by opening it in the new tab -https://res.cloudinary.com/dkeugqbi7/image/upload/v1750401874/Screenshot_from_2025-06-20_12-00-45_y9d4pg.jpg\u000bCopy the prompt given",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Building a Static Website with Gen AI",
+      "body": "View Output - Code Playground",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Tools for Accelerated Learning",
+      "body": "Code Playground",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Code Playground",
+      "body": "Adding HTML and CSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Code Playground",
+      "body": "Run the Code\nLet’s run the HTML and CSS provided by GPT in our code playground",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Is the output of the \u000bAI-generated code the same as the given design?",
+      "body": "Is the output of the \u000bAI-generated code the same as the given design?",
+      "notes": "Check the output of the AI-generated code and compare it with the given design mockup.\nThe output is similar to the given design, but it doesn't match the expectations exactly. There are so many differences, such as in the borders, icons, and styling elements\nNote down the differences where the output isn't as expected.\n\nNow let’s use some other AI tools also to compare the outputs\nThere are also other AI tools available. Let’s try generating the website using prompts in those tools as well",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Gen AI",
+      "body": "Other tools\nGemini\nhttps://gemini.google.com/ \nLLAMA\nhttps://www.meta.ai/ \nClaude\nhttps://claude.ai/\ndeepseek\nhttps://chat.deepseek.com/\ngrok\nhttps://grok.com/\netc…",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Executing Prompt in Claude",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Executing Prompt in Gemini",
+      "notes": "We have used various AI tools for generating code, but the output from these tools isn't fully aligning with our expected design.\nLet's analyze the outputs from each tool in comparison to the expected design, identifying areas where the results don't match our expectations",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Analyzing and Refining \u000bthe Output",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Building a Static Website with Gen AI",
+      "body": "However, there are some improvements to be done\nComparing Outputs\nmany more…\nSpacing                      and Alignments\nImage Adjustment\nColors and Stylings \nImage and Text Sizes",
+      "notes": "When comparing the outputs , there are so many improvements need to be done in the generate AI code design, like spaces, alignments ...",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Building a Static Website with Gen AI",
+      "body": "AI Generated Websites\n.h-center {\n  text-align: center;\n}\nCSS",
+      "notes": "Not only these, we can’t guarantee the output generated by AI is correct and as expected.\n\nLets see some of the AI generated Websites. Here, the view is not looking good as some icons are missed, images and some stylings are not looks good.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": ">>>> ",
+      "body": ">>>> \n>>>> \nWho do you think can make \nthe best use of these AI tools \nfor web development?",
+      "notes": "So With this simple website, we are getting some of the issues right! But when you are a web developer, you will be working on entirely new website or you can work on 5-10 years old website, where your code will be in 1000s of lines, in more than hundreds, 1000s of files.\n\nJust assume, what happens if we use genai without technical knowledge, just think of what it leads to. We will be stuck with the issues, we don’t know what to resolve, what to update, etc.\n\nEven with GenAI, you are the decision maker, you need to ask what to be created, how it can be created if its not getting the correct output, what to correct in AI response, etc.\u000b\nSo Who do you think can make the best use of these AI tools for web development?",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Anyone Having Technical Expertise",
+      "body": "",
+      "notes": "Yes, people who have technical knowledge. For websites, it is HTML , CSS, and JS. These are the strong foundations.\n\nMay be without technical knowledge, you can build small to medium applications, with few bugs but in order to maintain for longer time and add more functionalities to it, you should have strong technical expertise. This is generally how the web application development actually is..\n\nThe strong expertise in these foundations is really needed because",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Building a Static Website with Gen AI",
+      "body": "Technical Expertise\nHelps in refining AI output\nAllows to get clear understanding                                     of requirements\nAllows to make \u000badjustments to match \u000bexact design needs\n…many more",
+      "notes": "Technical knowledge allows us to make precise adjustments to match exact design needs. \nHaving that technical background also helps immensely in refining AI output. When the AI gives you code, you can quickly identify what's good, what needs tweaking, and how to improve it. You're not just accepting what it gives you; you're actively collaborating with it.\nFinally, technical knowledge allows for clearly expressing your requirements. The better you understand the web technologies, the better you can give your needs to the AI in your prompts, leading to far more accurate and usable results.\nUltimately, these AI tools are powerful accelerators. They empower those with technical knowledge to work faster, smarter, and build more web applications.They don't replace expertise; they amplify it.\nWithout understanding the basics, you're limited to what the AI thinks you want. With knowledge, you can guide it, correct it, and push its boundaries to create exactly what you want. You move from being a consumer of AI output to a masterful director.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Technical Knowledge",
+      "body": "Learning\nMaster the Fundamentals - Core Programming Concepts, Problem Solving & Debugging, etc \nPractice hands-on with minimal AI support",
+      "notes": "So, lets conclude..\n\nAs a full-stack development learner, your primary focus should be on practical coding skills. AI tools like ChatGPT are helpful, but remember: AI should assist, not replace your learning process.\n\n 1. Master the Basics First\n\nStart by getting a solid understanding of HTML, CSS. Before turning to AI, learn how these core technologies work. AI tools are tempting because they offer instant solutions, but without mastering the fundamentals, you won’t fully understand or adapt AI-generated code.\n\nWhy this matters: A strong foundation in the basics allows you to work independently and understand the code generated by AI, making it easier to apply or modify it effectively.\n\n 2. Focus on Hands-on Practice, Use AI for Support\n\nWrite your own code by building projects. Use AI to assist with repetitive tasks like boilerplate code or to debug issues. But the bulk of the work — coding the logic and building the features — should be done by you.\n\nWhy this works: Active practice is where you’ll truly develop your skills. AI can help with small challenges but writing code on your own is where you grow as a developer.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Technical Knowledge",
+      "body": "Learning\nUse AI for Guidance, Not for Solutions\nUnderstand AI generated Code\nDouble-Check AI generated Code",
+      "notes": "3. Solve Problems Yourself First, Then Use AI\n\nWhen you face a challenge, try solving it on your own first. Once you’ve made an attempt, then use AI to verify or suggest improvements.\n\nWhy this works: The struggle in problem-solving strengthens your understanding. AI is a tool to check your solution, not to bypass the process. When AI provides suggestions, focus on improving your skills instead of relying on it for the answer.\n\n 4. Understand the Code AI Provides\n\nAI might generate code for you, but don’t just copy-paste it. Make sure you understand the logic and flow of the code.\n\nWhy this matters: Understanding AI-generated code ensures that you can modify and debug it when needed. You’ll learn more by asking questions like: *Why was this approach used? How does it work with my project?*\n\n 5. Double-Check AI Code\n\nAlways review and validate AI-generated code. Don’t trust it blindly, and ensure it follows best practices.\n\nWhy this matters: AI can make mistakes or suggest suboptimal solutions. By double-checking the code, you can ensure it meets the specific needs of your project and follows best practices.\n\n\nSo,\n\nUse AI is a Tool to Enhance, Not Replace, Your Learning\n\nUse AI wisely by focusing on self-learning and practical coding.\n\nBy combining hands-on practice with AI support, you’ll become a confident full-stack developer, ready to solve real-world problems.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Introduction to GenAI in Frontend Development",
+      "body": "Building Static Website using Gen AI\nImportance of Learning web technologies",
+      "notes": "So.. let's quickly summarize. \n\n\nExcited to start your journey? Let's learn and use Gen AI where needed.\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Your First Frontend Project",
+      "body": "",
+      "notes": "In the next session, we’ll start off with your First Frontend Project in Your Frontend journey\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1ww5QaA-wTMp-fROmnWqd_6uSrTvxhLsgRvAkult08Gc/edit?usp=sharing"
+}

@@ -1,0 +1,199 @@
+{
+  "session_no": 15,
+  "source_file": "static website — session 15",
+  "deck_title": "static website — session 15",
+  "n_slides": 27,
+  "summary": "\n    - Slide 2: A Note on\n    - Slide 3: Recap\n    - Slide 4: Versions\n    - Slide 5: Introduction\n    - Slide 6: Versions\n    - Slide 7: Versions\n    - Slide 8: Versions\n    - Slide 9: Do I need to learn \n    - Slide 10: Bootstrap\n    - Slide 11: Bootstrap\n    - Slide 12: Bootstrap\n    - Slide 13: Using\n    - Slide 14: Method 1 - Using URL\n    - Slide 15: Method 2 - Checking Version (Desktop View)\n    - Slide 16: Mobile View\n    - Slide 17: Method 2 - Checking Version (Desktop View)\n    - Slide 18: Mobile View\n    - Slide 19: Desktop View\n    - Slide 20: Desktop View\n    - Slide 21: Desktop View\n    - Slide 22: Mobile View\n    - Slide 23: Desktop View\n    - Slide 25: Favourite Place Detailed View Section",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "A Note on",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Approach to Develop a Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Versions",
+      "body": "Versions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Introduction",
+      "body": "Versions\nVersions are used to keep track of different improvements in a piece of software",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Versions",
+      "body": "Android Versions",
+      "notes": "Based on the year you bought mobile and how often you update your software you will be a having a software in your mobile. And these software will be updating continuously",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Versions",
+      "body": "iOS versions\niOS 1\niOS 2\niOS 3\niOS 15\niOS 16\n    many more...\n…",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Versions",
+      "body": "Bootstrap Versions\nJuly 19 2022\nAugust\n2017\nv5.2.0\nDec 7 2020\nAug 4 2020\nAugust\n2017\nv4.5.1\nv5.3.1\nv5.0.0\nApril 12 2023\nv5.3.0\n…\nJuly 19 2023",
+      "notes": "There are also new versions came between 4.5.1 to 5.0.0\n\nWe added only some of the versions",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Do I need to learn ",
+      "body": "Do I need to learn \neverything from scratch \u000bwhen version changes?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Bootstrap",
+      "body": "Versions\nIt’s not the concepts that change \u000bonly class names and syntax \u000bmost of the time",
+      "notes": "Only syntaxes and class names changes but not the and so if you have good knowledge in HTML and CSS",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Bootstrap",
+      "body": "Versions\nWe use v4.5.2",
+      "notes": "Only syntaxes and class names changes but not the and so if you have good knowledge in HTML and CSS",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Bootstrap",
+      "body": "CDN\n<!DOCTYPE html>\n  <html>\n    <head>\n      <link rel=\"stylesheet\"\n            href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\"     \n            integrity=\"sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z\"   \n            crossorigin=\"anonymous\" />\n      <script...></script>\n   \t <script...></script>\n      <script...></script>\n    </head>\n    <body>\n      ...\n    </body>\n  </html>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Using",
+      "body": "Using\nBootstrap 4.5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Method 1 - Using URL",
+      "body": "getbootstrap.com/docs/4.5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Method 2 - Checking Version (Desktop View)",
+      "body": "getbootstrap.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Mobile View",
+      "body": "getbootstrap.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Method 2 - Checking Version (Desktop View)",
+      "body": "Documents",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Mobile View",
+      "body": "Documents",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Desktop View",
+      "body": "Selecting Version",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Desktop View",
+      "body": "Selecting Version",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Desktop View",
+      "body": "Selecting Version",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Mobile View",
+      "body": "Selecting Version",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Desktop View",
+      "body": "Bootstrap 4.5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Favourite Place Detailed View Section",
+      "body": "Favourite Place Detailed View Section\nNext Session",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/14HNmic-eclFmZxiCdQZuqVf4iwhMf4rCFNv-JBTBY6Q/edit#slide=id.g2f4c1b84bc5_0_0"
+}

@@ -1,0 +1,367 @@
+{
+  "session_no": 17,
+  "source_file": "static website — session 17",
+  "deck_title": "static website — session 17",
+  "n_slides": 51,
+  "summary": "\n    - Slide 2: Website Integration\n    - Slide 3: Recap\n    - Slide 4: Agenda for Today’s Session\n    - Slide 5: Static Website\n    - Slide 6: CCBP UI Kit\n    - Slide 7: User Interface or Code Snippets\n    - Slide 8: Website Integration\n    - Slide 9: CCBP UI Kit\n    - Slide 10: CCBP UI Kit\n    - Slide 11: Display Utility\n    - Slide 12: HTML\n    - Slide 13: HTML\n    - Slide 14: HTML onclick Attribute\n    - Slide 15: CCBP UI Kit - Display Utility\n    - Slide 16: Try it in the Code Playground\n    - Slide 17: Let’s Integrate \n    - Slide 18: Tourism Website\n    - Slide 19: Step 1\n    - Slide 20: Step 2\n    - Slide 21: Step 2\n    - Slide 22: Step 3\n    - Slide 23: Step 3\n    - Slide 24: Step 4\n    - Slide 25: Step 4\n    - Slide 26: How to Display Home Section, \n    - Slide 27: Tourism Website\n    - Slide 28: Step 1\n    - Slide 29: Step 2\n    - Slide 30: Step 2\n    - Slide 31: How to Display Detailed View Section\n    - Slide 32: Tourism Website\n    - Slide 33: Step 1\n    - Slide 34: Step 2\n    - Slide 35: Step 3\n    - Slide 36: Step 3\n    - Slide 37: How to Display Favourite Places Section when we are in Detailed View Section?\n    - Slide 38: Static Website\n    - Slide 39: Static Website\n    - Slide 40: Display Detailed View Section when we are in Favourite Places Section\n    - Slide 41: Adding Onclick Attribute to the Button\n    - Slide 42: Quiz Time!\n    - Slide 43: Website Integration\n    - Slide 45: Website Integration | Part 2\n    - Slide 48: Session\n    - Slide 49: Agenda",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Website Integration",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Favourite Place Detailed View Section\nBootstrap\nCarousel\nEmbed Video\nYoutube Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda for Today’s Session",
+      "body": "Website Integration\nCCBP UI Kit\nDisplay Utility\nHTML Attributes\nonclick Attribute\nid Attribute",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Static Website",
+      "body": "Tourism Website Integration\nHome Section\nFavourite Places\n Section\nTaj Mahal \nDetailed View Section",
+      "notes": "Demo\n\nIntegration is the \nprocess of combining different parts and make it one as a whole",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "CCBP UI Kit",
+      "body": "CCBP UI Kit",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "User Interface or Code Snippets",
+      "body": "CCBP UI Kit\nCollection of reusable code snippets\nsimilar to the Bootstrap specially designed for CCBP trainings",
+      "notes": "Reusable library\n\nWe will see how to build these kind of libraries",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Website Integration",
+      "body": "<!DOCTYPE html>\n<html>\n  <head>\n    ...\n  </head>\n  <body>\n    ...\n    <script \n      type=\"text/javascript\"\n      src=\"https://assets.ccbp.in/frontend/static-website/ccbp-ui-kit.js\">\n    </script>\n  </body>\n</html>\nAdding CCBP UI Kit to the Web Page\nHTML\nNote: Script Code should be placed just before body end tag",
+      "notes": "Navigation Utils \n\n<script\n type=\"text/javascript\"\n src=\"https://assets.ccbp.in/frontend/static-website/ccbp-ui-kit.js\"\n></script>",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "CCBP UI Kit",
+      "body": "Display Utility\nReusable code snippet \u000bto display or hide Section Containers based on user actions",
+      "notes": "Reusable library\nWe will see how to build these kind of libraries",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "CCBP UI Kit",
+      "body": "Display Utility\n<div id=\"section1\" >\n  <p> This is Section One </p>\n  <button class=\"btn btn-primary\" onclick=\"display('section2')\" >\n    Go to Section 2\n  </button>\n</div>\n<div id=\"section2\" >\n  <p>This is Section Two</p>\n  <button class=\"btn btn-primary\" onclick=\"display('section3')\" >\n    Go to Section 3\n  </button>\n</div>\n<div id=\"section3\" >\n  <p>This is Section Three</p>\n  <button class=\"btn btn-primary\" onclick=\"display('section1')\" >\n    Go to Section 1\n  </button>\n</div>\nHTML",
+      "notes": "Already prefilled in the code environment",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Display Utility",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "HTML",
+      "body": "The id Attribute\nHTML id Attribute is used to uniquely identify the HTML Elements\nThe value for the id Attribute should be unique across the HTML document\n<div id=\"container1\">\n  ...\n</div>\nAttribute Name\nAttribute Value\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "HTML",
+      "body": "The onclick Attribute\n<button class=\"btn btn-primary\" onclick=\"display('SECTION ID')\">\n  Go to Section 3\n</button>\nThe onclick event occurs when \u000bthe user clicks on an HTML Element\nHTML",
+      "notes": "The JavaScript onclick function is designed to execute code \u000bwhen users interact with the HTML elements",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "HTML onclick Attribute",
+      "body": "Single/Double Quotes?\n onclick =\"display('SECTION ID')\">",
+      "notes": "The Attribute value which we provide to onclick should be enclosed in double quotes and the value inside the brackets of display() should be enclosed in single quotes",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "CCBP UI Kit - Display Utility",
+      "body": "Specifying unique id \nThe id which we specify to any section should always contain its prefix as section*\nsection1\nsectionAB\nSection1 \nsection AB",
+      "notes": "To use ccbp navigation utils you need to specify id with prefix screen-*\n\nSection with capital letter and spaces are not allowed as id value",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Try it in the Code Playground",
+      "body": "Try it in the Code Playground\nclose",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Let’s Integrate ",
+      "body": "Let’s Integrate \nThe First Two Sections\nHome Section\nFavourite Places Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Tourism Website",
+      "body": "Let’s Integrate the first two Sections\nSteps:\nChange id’s of Section Containers appropriately\nAdd HTML code of Home Section and \u000bcorresponding  CSS styles.\nAdd HTML code of Favourite Places Section and \u000bcorresponding  CSS styles\nAdd onclick attribute to the button in the \nHome Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Step 1",
+      "body": "Change ids of Section Containers\n<div id=\"sectionHome\">\n</div>\n<div id=\"sectionFavouritePlaces\">\n  ...\n</div>\n<div id=\"sectionTajMahalDetailedView\">\n  ...\n</div>\n<div id=\"section1\">\n</div>\n<div id=\"section2\">\n  ...\n</div>\n<div id=\"section3\">\n...\n</div>\nHTML\nHTML",
+      "notes": "<div id=\"sectionHome\"></div>\n<div id=\"sectionFavouritePlaces\"></div>\n<div id=\"sectionTajMahalDetailedView\"></div>",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Step 2",
+      "body": "Adding Home Section Code to Display Utility\n<div id=\"sectionHome\">\n  <div class=\"bg-container d-flex flex-column justify-content-end\">\n    ...\n  </div>\n</div>\n<div id=\"sectionFavouritePlaces\">\n  ...\n</div>\n<div id=\"sectionTajMahalDetailedView\">\n...\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Step 2",
+      "body": "Adding CSS styles for Home Section\n.bg-container {\n  background-image: url(\"Image Url\");\n  height: 100vh;\n  background-size: cover;\n}\n...\n...\n.paragraph {\n  font-family: \"Roboto\";\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Step 3",
+      "body": "Adding Favourite Places Section code to Display Utility\n<div id=\"sectionHome\">\n  ...\n</div>\n<div id=\"sectionFavouritePlaces\">\n  <div class=\"favourite-places-bg-container\">\n    ...\n  </div>\n</div>\n<div id=\"sectionTajMahalDetailedView\">\n  ...\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Step 3",
+      "body": "Adding CSS styles for Favourite Places Section\n.favourite-places-bg-container {\n  background-image: url(\"Image Url\");\n  height: 100vh;\n  background-size: cover;\n}\n...\n...\n.favourite-place-card-text-container {\n  margin: 15px;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Step 4",
+      "body": "Add Onclick Attribute to \nthe Button in Home Section\n<div id=\"sectionHome\">\n  <div class=\"bg-container d-flex flex-column justify-content-end\">\n    ...\n    <button class=\"button\" onclick=\"display('sectionFavouritePlaces')\" >\n      Get Started\n    </button>\n </div>\n <div id=\"sectionFavouritePlaces\">...</div>\n <div id=\"sectionTajMahalDetailedView\">...</div>\n</div>\nHTML",
+      "notes": "<button class=\"button\" onclick=\"display('sectionFavouritePlaces')\"></button>",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Step 4",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "How to Display Home Section, ",
+      "body": "How to Display Home Section, \nwhen we are in \nFavourite Places Section?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Tourism Website",
+      "body": "Steps\nAdd a button in Favourite places Section \nAdd onclick attribute to the button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Step 1",
+      "body": "Add a Button in Favourite Places Section\n<div id=\"sectionHome\">\n  ...\n</div>\n<div id=\"sectionFavouritePlaces\">\n  <div class=\"favourite-places-bg-container\">\n    ...\n    <button class=\"btn btn-dark\">back</button>\n  </div> \n</div>\n<div id=\"sectionTajMahalDetailedView\">...</div>\nHTML",
+      "notes": "<button class=\"btn btn-dark\">back</button>",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Step 2",
+      "body": "Add Onclick Attribute to the Button\n<div id=\"sectionHome\">...</div>\n  <div id=\"sectionFavouritePlaces\">\n    <div class=\"favourite-places-bg-container\">\n      ...\n      <button class=\"btn btn-dark\" onclick=\"display('sectionHome')\" >\n        back\n      </button>\n   </div>\n</div>\n<div id=\"sectionTajMahalDetailedView\">...</div>\nHTML",
+      "notes": "<button class=\"btn btn-dark\" onclick=\"display('sectionHome')\">back</button>",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Step 2",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "How to Display Detailed View Section",
+      "body": "How to Display Detailed View Section\n when we click on The Taj Mahal Card?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Tourism Website",
+      "body": "Display Detailed View Section\nSteps:\nAdd detailed View Section code to the \u000bSection Container\nAdd corresponding styles to CSS file\nAdd onclick attribute to the Taj Mahal Card in the Favourite Places Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Step 1",
+      "body": "Add Detailed View Section Code\n<div id=\"sectionHome\">...</div>\n<div id=\"sectionFavouritePlaces\">...</div>\n<div id=\"sectionTajMahalDetailedView\">\n  <div class=\"detailed-view-bg-container\">\n    ... \n  </div>\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Step 2",
+      "body": "Add CSS\n.bg-container {\n  background-image: url(\"Image Url\");\n  height: 100vh;\n  background-size: cover;\n}\n...\n...\n.detailed-view-card-text-container {\n  padding: 15px;\n}\n...\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Step 3",
+      "body": "Add Onclick Attribute\n<div id=\"sectionHome\">...</div>\n<div id=\"sectionFavouritePlaces\">\n  ...\n  <div\n    class=\"favourite-place-card-container d-flex\"\n    onclick=\"display('sectionTajMahalDetailedView')\">\n    ...\n  </div>\n</div>\n<div id=\"sectionTajMahalDetailedView\">...</div>\nHTML",
+      "notes": "<div\n class=\"favourite-place-card-container d-flex flex-row\"\n onclick=\"display('sectionTajMahalDetailedView')\"\n></div>",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Step 3",
+      "body": "Output",
+      "notes": "We have three sections available. We have to display one section and hide other sections. After clicking Get Started button we have to show second section and hide remaining sections\nShow the DEMO page",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "How to Display Favourite Places Section when we are in Detailed View Section?",
+      "body": "How to Display Favourite Places Section when we are in Detailed View Section?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Static Website",
+      "body": "Display Favourite Places Section\nAdd a button in Detailed View Section and provide onclick attribute to it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Static Website",
+      "body": "Add a Button in Detailed View Section\n<div id=\"sectionHome\">\n  ...\n</div>\n<div id=\"sectionFavouritePlaces\">\n  ...\n</div>\n<div id=\"sectionTajMahalDetailedView\">\n  <div class=\"detailed-view-bg-container\">\n    ...\n    <button class=\"btn btn-dark\"> back </button>\n  </div>\n</div>\nHTML",
+      "notes": "<button class=\"btn btn-dark\">back</button>",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Display Detailed View Section when we are in Favourite Places Section",
+      "body": "Providing Onclick Attribute to the Button\n<div id=\"sectionHome\">\n    ...\n</div>\n<div id=\"sectionFavouritePlaces\">\n    ...\n</div>\n<div id=\"sectionTajMahalDetailedView\">\n  <div class=\"detailed-view-bg-container\">\n    ...\n    <button class=\"btn btn-dark\" onclick=\"display('sectionFavouritePlaces')\">\n      back\n    </button>\n  </div>\n</div>\nHTML",
+      "notes": "<button\n class=\"btn btn-dark\"\n onclick=\"display('sectionFavouritePlaces')\"\n>back</button>",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Adding Onclick Attribute to the Button",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Website Integration",
+      "body": "Key Takeaways \nHTML Attributes\nId Attribute\nonclick Attribute\nCCBP UI Kit\nDisplay Utility",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Website Integration | Part 2",
+      "body": "",
+      "notes": "In the next session, we’ll start off with performing our first selenium test. \u000b\u000bAs part of the “Automation Testing using Selenium (Part-1)” session. \n\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Session",
+      "body": "Code Snippets\nInitial Code Snippet (Display Utility):\nhttps://codepen.io/varakumarj/pen/eYzvBLX?editors=1101 \nHome Section Code Snippet:\nhttps://codepen.io/varakumarj/pen/yLJMgwY?editors=1100 \nFavourite Places Section:\nhttps://codepen.io/varakumarj/pen/YzWZNgL?editors=1100 \nTaj Mahal Detailed View Section\nhttps://codepen.io/varakumarj/pen/LYZWxve?editors=1100",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Agenda",
+      "body": "Tourism Website Integration\nCCBP UI Kit\nDisplay Utility\nHTML Attributes\nonclick Attribute\nid Attribute",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1IVcwdCrlTqauS-EGk-6NzN4fIBynOEnkOYLRTFQ-rQc/edit#slide=id.g2f4be7f241a_0_0"
+}

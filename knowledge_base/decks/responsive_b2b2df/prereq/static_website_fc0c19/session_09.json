@@ -1,0 +1,332 @@
+{
+  "session_no": 9,
+  "source_file": "static website — session 9",
+  "deck_title": "static website — session 9",
+  "n_slides": 46,
+  "summary": "\n    - Slide 2: Introduction to\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Agenda\n    - Slide 6: Agenda\n    - Slide 7: Backgrounds\n    - Slide 8: Backgrounds\n    - Slide 9: Backgrounds\n    - Slide 10: HTML & CSS Syntax\n    - Slide 11: Styling a Button\n    - Slide 12: Button Styles\n    - Slide 13: Let’s Add Background Color \n    - Slide 14: Color Representation\n    - Slide 15: CSS\n    - Slide 16: CSS\n    - Slide 17: Color Representation\n    - Slide 18: Color picker\n    - Slide 19: Colors\n    - Slide 20: Button Styles\n    - Slide 21: Button Styles\n    - Slide 22: Quiz Time!\n    - Slide 23: How Can We Get Rounded Corners \n    - Slide 24: CSS Box Model\n    - Slide 25: CSS Box Model\n    - Slide 26: Border\n    - Slide 27: Button Styles\n    - Slide 28: How to Achieve the Button \u000bwithout a Border? \n    - Slide 29: Border\n    - Slide 30: Button Styles\n    - Slide 31: How to get \n    - Slide 32: Border\n    - Slide 33: Card Styles\n    - Slide 34: How to get Spacing inside the Card?\n    - Slide 35: CSS Box Properties\n    - Slide 36: Card Styles\n    - Slide 37: CSS Box Properties\n    - Slide 38: CSS Box Properties\n    - Slide 39: Card Styles\n    - Slide 40: Quiz Time!\n    - Slide 41: Introduction to CSS Box Model | Part 2\n    - Slide 42: Coding Practices\n    - Slide 43: Coding Practices\n    - Slide 44: Introduction to Bootstrap\n    - Slide 45: THANK YOU\n    - Slide 46: ALL THE BEST",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to CSS Box Model\nIntroduction to Box Model\nBox Properties\nheight\nwidth",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Backgrounds\nBackgrounds\nbackground-image\nbackground-size\nViewport\nViewport Height(vh)\nViewport Width(vw)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Introduction to CSS Box Model | Part 2\nBackgrounds\nBox Properties\nAdding Background Image\n to the Background Container\nBorder \nPadding\nStyling a Card\nStyling a Button\nAdding Spaces",
+      "notes": "We will refer to yesterday’s class. These will get covered again in today’s class",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Agenda",
+      "body": "What we are going to achieve\nCard\nBackground Container",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Backgrounds",
+      "body": "Background Image\nBackground Container",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Backgrounds",
+      "body": "Adding Background Image to a Container",
+      "notes": "https://assets.ccbp.in/frontend/static-website/ocean-bg.jpg",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Backgrounds",
+      "body": "Adding Background Color to the Card\nCard",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "HTML & CSS Syntax",
+      "body": "Adding Background Color to the Card",
+      "notes": "Reason why “card” container is wrapped with “bg-container”\nIf we look at the output image, we can see that the Tourism card is on the \"background image,\n\" which is why we put the card container inside the \"bg-container.\"",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Styling a Button",
+      "body": "Styling a Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Button Styles",
+      "body": "Adding Height & Width to the Button\n<button class=\"button\" >\n  Get Started\n</button>\nHTML\n.button {\n  height: 36px;\n  width: 138px;\n}\nCSS\n~138px\n~36px",
+      "notes": "By default contents of button will have text align property.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Let’s Add Background Color ",
+      "body": "Let’s Add Background Color \nto the Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Color Representation",
+      "body": "Color Names\norange\ngreen\nred\nblue\nColor Name",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "CSS",
+      "body": "Colors\nHow you will name these colors?",
+      "notes": "By default contents of button will have text align property.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "CSS",
+      "body": "Colors\nColor can be represented in multiple ways\nColor names\nHex Code\nHSL\nRGB \n           many more...",
+      "notes": "By default contents of button will have text align property.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Color Representation",
+      "body": "Hex Code\n#020028\n#121078\n#0b0c65\n#04003b\n#080051\n#14158d\n#1900a0\n#2c00f2\n#2800dd\n#1f00b6\n#2300c8\n#2f00fd\n#3900fd\n#7668fc\n#6651fc\n#4511fc\n#5336fc\n#8a7efd\n#9c94fd\n#eceafe\n#d6d5fe\n#b0aafd\n#c4c0ff\n#ffffff\n.button {\n  background-color: #25b1cc;\n}\nCSS",
+      "notes": "By default contents of button will have text align property.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Color picker",
+      "body": "Pick a Color using Hex Code\nYou can choose among\u000b16,777,216 \nColors \u000bUsing Hex Codes\nThe Hex Code for the color blue is #0000ff",
+      "notes": "We have 16,777,216 hex code colors\n\nWe may not able to keep name for every color available. \nOnly few colors will have name and other colors we have to select hexadecimal representation\n\nYou will be provided more details in the cheatsheet",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Colors",
+      "body": "Values\norange\ngreen\nred\nblue\n#ffa500\n#0000ff\n#008000\n#ff0000\n#012d36\n#25b1cc\nColor Name\nHex Code",
+      "notes": "2nd column is called hex code\n\nAll colors may not contain color names",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Button Styles",
+      "body": "Adding Background Color to the Button\n.button {\n  height: 36px;\n  width: 138px;\n  background-color: #25b1cc;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Button Styles",
+      "body": "Adding Color to the Button Text\n.button {\n  height: 36px;\n  width: 138px;\n  background-color: #25b1cc;\n  color: white;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "How Can We Get Rounded Corners ",
+      "body": "How Can We Get Rounded Corners \nfor the Button?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "CSS Box Model",
+      "body": "Properties\nEach rectangular box has different properties\nContent\nheight\nwidth\nborder\npadding\nmargin\nheight\nwidth \nborder\npadding\nmargin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "CSS Box Model",
+      "body": "Border Properties\nContent\nborder\nBox Model Border related Properties\nborder-radius\nborder-width\nborder-style \nborder-color",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Border",
+      "body": "Border Radius\nborder-radius: 5px;\nborder-radius: 12px;\nborder-radius: 25px;",
+      "notes": "Border Radius\nhttps://css-tricks.com/almanac/properties/b/border-radius/",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Button Styles",
+      "body": "Adding Border Radius\n.button {\n  height: 36px;\n  width: 138px;\n  background-color: #25b1cc;\n  color: white;\n  border-radius: 20px;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "How to Achieve the Button \u000bwithout a Border? ",
+      "body": "How to Achieve the Button \u000bwithout a Border?",
+      "notes": "There is a black color line around the button. We call it as a border. How to achieve the button without a border.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Border",
+      "body": "Border Width\nborder-width: 0px;\nborder-width: 2px;\nborder-width: 4px;\nborder-width: 6px;",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Button Styles",
+      "body": "Removing Border from the Button\n.button {\n  height: 36px;\n  width: 138px;\n  background-color: #25b1cc;\n  color: white;\n  border-radius: 20px;\n  border-width: 0px;\n}\nCSS\nBy default, HTML Buttons come with borders in the browsers",
+      "notes": "If we remove borders we can’t get box for that element when we inspect and see. Reason we removed border for it.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "How to get ",
+      "body": "How to get \nRounded Corners\nfor the Card?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Border",
+      "body": "Border Radius to Corners\nborder-top-left-radius: 25px;\nborder-top-right-radius: 25px;\nborder-bottom-left-radius: 25px;\nborder-bottom-right-radius: 25px;",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Card Styles",
+      "body": "Getting Rounded Corners for the Card\n.card {\n  text-align: center;\n  background-color: white;\n  border-top-left-radius: 25px;\n  border-top-right-radius: 25px;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "How to get Spacing inside the Card?",
+      "body": "How to get Spacing inside the Card?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "CSS Box Properties",
+      "body": "Padding\nWe can get spacing \u000baround element’s content by \u000busing CSS Box Model \u000bpadding property\nContent\nheight\nwidth\nborder\npadding\nmargin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Card Styles",
+      "body": "Applying Padding to Card\nContent\n5px\n5px\n5px\n5px\n.card {\n  text-align: center;             \n  background-color: white;\n  padding: 5px;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "CSS Box Properties",
+      "body": "Padding\npadding: 5px;\npadding: 30px;\npadding: 50px;",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "CSS Box Properties",
+      "body": "Padding\npadding: 5px;\npadding: 30px;\npadding: 50px;",
+      "notes": "Plan your trip wherever you want to go, start traveling and create a bag full of memories.\n\nIf we increase the padding value automatically text inside the card will compress and height of the card increases.",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Card Styles",
+      "body": "Applying Padding to Card",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Introduction to CSS Box Model | Part 2",
+      "body": "Key Takeaways \nBox Properties\nBorder\nborder-width\nborder-radius\nPadding\nColor Representation\nStyling a Button\nStyling a Card",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Coding Practices",
+      "body": "",
+      "notes": "We'll provide a list of coding practises based on what you've learnt so far.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Coding Practices",
+      "body": "Coding Practices\n  Practice Hands-on Coding Regularly\nReach out in Discussions Portal \u000bfor any queries",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Introduction to Bootstrap",
+      "body": "Introduction to Bootstrap",
+      "notes": "Next session will be quite an interesting one.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "THANK YOU",
+      "body": "THANK YOU",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "ALL THE BEST",
+      "body": "ALL THE BEST",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1NqixRMgHL3gGcqpo27lTGI4D7JXx7znPIapeOLsrmBA/edit#slide=id.g2f4c08d788c_0_192"
+}

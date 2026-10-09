@@ -1,0 +1,213 @@
+{
+  "session_no": 14,
+  "source_file": "static website — session 14",
+  "deck_title": "static website — session 14",
+  "n_slides": 29,
+  "summary": "\n    - Slide 2: Approach to Develop a Layout\n    - Slide 3: Recap\n    - Slide 4: Approach to \u000bDevelop a Layout\n    - Slide 5: Diwali Page\n    - Slide 6: Diwali Page\n    - Slide 7: Diwali Page\n    - Slide 8: Let’s Build \n    - Slide 9: Adding Bootstrap to \u000bthe Web page\n    - Slide 10: Diwali Top Section\n    - Slide 11: Diwali Top Section\n    - Slide 12: Let’s add \n    - Slide 13: Quiz Time!\n    - Slide 14: Let’s add Diwali Card Item\n    - Slide 15: Diwali Bottom Section\n    - Slide 16: How to Achieve Alignment\n    - Slide 17: Diwali Bottom Section\n    - Slide 18: Diwali Bottom Section\n    - Slide 19: Reusability\n    - Slide 20: Diwali Section\n    - Slide 21: How to Add a Button?\n    - Slide 22: Button\n    - Slide 23: How to Align the Button Horizontally in the Center?\n    - Slide 24: Quiz Time!\n    - Slide 26: A Note on Bootstrap Versions\n    - Slide 29: Next Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Approach to Develop a Layout",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Favourite Places Section\nHTML Image\nsrc Attribute\nVoid Elements vs \u000bNormal Elements Syntax\nProviding Multiple Attributes \u000bto HTML Elements\nCSS Box Properties\nmargin",
+      "notes": "Did you publish your website?",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Approach to \u000bDevelop a Layout",
+      "body": "Approach to \u000bDevelop a Layout\nOn Demand Session",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Diwali Page",
+      "body": "Approach to Develop a Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Diwali Page",
+      "body": "Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Diwali Page",
+      "body": "Breaking Down into Parts",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Let’s Build ",
+      "body": "Let’s Build \nDiwali Top Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Adding Bootstrap to \u000bthe Web page",
+      "body": "Adding Bootstrap to \u000bthe Web page",
+      "notes": "https://learning.ccbp.in/\n> Project \nGet this from Introduction to Bootstrap | Cheat Sheet\n> 3.1 How to use Bootstrap?\n\nBootstrap CDN:",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Diwali Top Section",
+      "body": "Background Image\nBackground Properties\nbackground-image\nbackground-size\nbackground-color\nBox Properties\nheight(vh vs px)\nwidth\nmargin\npadding\nborder",
+      "notes": "<div class=\"diwali-top-section\">\n\n</div>\n\n.diwali-top-section{\n background-image: url(\"https://assets.ccbp.in/frontend/static-website/diwali-bg.png\");\n background-size: cover;\n height: 30vh;\n}",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Diwali Top Section",
+      "body": "Heading\nText Properties\ncolor\nfont-size\nfont-family\nfont-weight\nfont-style\ntext-decoration\ntext-align\nBox Properties\nheight\nwidth\nmargin\npadding\nborder",
+      "notes": "<h1 class=\"diwali-top-section-heading\">Celebrate Diwali with your friends</h1>\n\n.diwali-top-section-heading {\n color: white;\n font-family: \"Caveat\";\n font-size: 36px;\n width: 200px;\n padding: 20px;\n}\n\nhttps://learning.ccbp.in/\n> Project \nGet this from Introduction to CSS | Part 3 | Cheat Sheet\nFont Family",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Let’s add ",
+      "body": "Let’s add \nDiwali Bottom Section \u000bContainer",
+      "notes": "<div class=\"diwali-bottom-section\">\n\n</div>\n\n.diwali-bottom-section {\n  background-color: #e6f6ff;\n}\n\nWe are not able to see because we are not yet added any elements inside. \nGive height if you want to see now and remove. \n\nLets height be defined by the elements inside...",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Let’s add Diwali Card Item",
+      "body": "Let’s add Diwali Card Item",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Diwali Bottom Section",
+      "body": "Diwali Card Item\nText Properties\ncolor\nfont-size\nfont-family\nfont-weight\nfont-style\ntext-decoration\ntext-align\nBox Properties\nheight\nwidth\nmargin\npadding\nborder\nborder-radius\nborder-width\nBackground Properties\nbackground-image\nbackground-size\nbackground-color",
+      "notes": "<div class=\"diwali-card-item\">\n <img\n   src=\"https://assets.ccbp.in/frontend/static-website/lamp-img.png\"\n   class=\"diwali-card-image\"\n />\n <h1 class=\"diwali-card-name\">Diwali Air Balloon</h1>\n <p class=\"diwali-card-price\">Rs 369</p>\n</div>\n\n.diwali-bottom-section {\n  background-color: #e6f6ff;\n  padding: 15px;\n}\n.diwali-card-item {\n text-align: center;\n background-color: white;\n margin: 15px;\n padding: 16px;\n border-radius: 9px;\n width:140px;\n}\n.diwali-card-image {\n height: 64px;\n width: 64px;\n}\n.diwali-card-name {\n font-family: \"Roboto\";\n font-weight: normal;\n font-size: 12px;\n color: #616e7c;\n}\n.diwali-card-price {\n font-family: \"Roboto\";\n font-weight: bold;\n font-size: 16px;\n color: #323f4b;\n}",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "How to Achieve Alignment",
+      "body": "How to Achieve Alignment\n of Card Items",
+      "notes": "Copy paste the card items",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Diwali Bottom Section",
+      "body": "Breaking Down into Rows",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Diwali Bottom Section",
+      "body": "Aligning Card Items in the Row\nBox Properties\nheight\nwidth\nmargin\npadding\nborder\nborder-radius\nborder-width\nBootstrap Flexbox class names\nd-flex\nflex-row\nflex-column\njustify-content-start\njustify-content-center\njustify-content-end",
+      "notes": "<div class=\"d-flex flex-row justify-content-center\">\n <div class=\"diwali-card-item\">\n   <img\n     src=\"https://assets.ccbp.in/frontend/static-website/lamp-img.png\"\n     class=\"diwali-card-image\"\n   />\n   <h1 class=\"diwali-card-name\">Diwali Air Balloon</h1>\n   <p class=\"diwali-card-price\">Rs 369</p>\n </div>\n\n <div class=\"diwali-card-item\">\n   <img\n     src=\"https://assets.ccbp.in/frontend/static-website/diya-img.png\"\n     class=\"diwali-card-image\"\n   />\n   <h1 class=\"diwali-card-name\">Diwali - Lamp</h1>\n   <p class=\"diwali-card-price\">Rs 50</p>\n </div>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Reusability",
+      "body": "Adding Multiple Rows",
+      "notes": "<div class=\"d-flex flex-row justify-content-center\">\n <div class=\"diwali-card-item\">\n   <img\n     src=\"https://assets.ccbp.in/frontend/static-website/lamp-img.png\"\n     class=\"diwali-card-image\"\n   />\n   <h1 class=\"diwali-card-name\">Diwali Air Balloon</h1>\n   <p class=\"diwali-card-price\">Rs 369</p>\n </div>\n\n <div class=\"diwali-card-item\">\n   <img\n     src=\"https://assets.ccbp.in/frontend/static-website/diya-img.png\"\n     class=\"diwali-card-image\"\n   />\n   <h1 class=\"diwali-card-name\">Diwali - Lamp</h1>\n   <p class=\"diwali-card-price\">Rs 50</p>\n </div>\n</div>\n<div class=\"d-flex flex-row justify-content-center\">\n <div class=\"diwali-card-item\">\n   <img\n     src=\"https://assets.ccbp.in/frontend/static-website/firework-img.png\"\n     class=\"diwali-card-image\"\n   />\n   <h1 class=\"diwali-card-name\">Sparklers</h1>\n   <p class=\"diwali-card-price\">Rs 150</p>\n </div>\n\n <div class=\"diwali-card-item\">\n   <img\n     src=\"https://assets.ccbp.in/frontend/static-website/firecracker-img.png\"\n     class=\"diwali-card-image\"\n   />\n   <h1 class=\"diwali-card-name\">Fire Cracker</h1>\n   <p class=\"diwali-card-price\">Rs 560</p>\n </div>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Diwali Section",
+      "body": "Image URLs\nhttps://assets.ccbp.in/frontend/static-website/lamp-img.png\nhttps://assets.ccbp.in/frontend/static-website/diya-img.png\nhttps://assets.ccbp.in/frontend/static-website/firework-img.png\nhttps://assets.ccbp.in/frontend/static-website/firecracker-img.png",
+      "notes": "https://assets.ccbp.in/frontend/static-website/lamp-img.png\nhttps://assets.ccbp.in/frontend/static-website/diya-img.png\nhttps://assets.ccbp.in/frontend/static-website/firework-img.png\nhttps://assets.ccbp.in/frontend/static-website/firecracker-img.png",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "How to Add a Button?",
+      "body": "How to Add a Button?",
+      "notes": "<button class=\"btn btn-primary\">View More</button>\n\nbtn btn-primary are bootstrap class names.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Button",
+      "body": "Adding a Button\nBootstrap Button Class Names\nbtn\nbtn btn-primary\nbtn btn-secondary\nbtn btn-success\nbtn btn-danger\nbtn btn-warning\nbtn btn-info",
+      "notes": "<button class=\"btn btn-primary\">View More</button>\n\nbtn btn-primary are bootstrap class names.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "How to Align the Button Horizontally in the Center?",
+      "body": "How to Align the Button Horizontally in the Center?",
+      "notes": ".diwali-bottom-section {\n  background-color: #e6f6ff;\n  padding: 15px;\n  text-align: center;\n}\n\n\nPresenter can refer to the cheatsheet for the code",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "A Note on Bootstrap Versions",
+      "body": "A Note on Bootstrap Versions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Next Session",
+      "body": "Favourite Places \nDetailed View Section",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1ar_xJBwaSgd2fD14zqPZoefFADj2878X5pYklAj442o/edit#slide=id.g281774e86dc_0_192"
+}

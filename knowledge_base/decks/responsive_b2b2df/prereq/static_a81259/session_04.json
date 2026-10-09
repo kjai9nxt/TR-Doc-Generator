@@ -1,0 +1,234 @@
+{
+  "session_no": 4,
+  "source_file": "static — session 4",
+  "deck_title": "static — session 4",
+  "n_slides": 32,
+  "summary": "\n    - Slide 2: Leveraging Gen AI for accelerated learning\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: In what different scenarios do you think you can leverage AI for learning?\n    - Slide 6: Leveraging Gen AI for Accelerated Learning\n    - Slide 7: Leveraging Gen AI for Accelerated learning\n    - Slide 8: Gen AI\n    - Slide 9: Leveraging Gen AI for Accelerated Learning\n    - Slide 10: Learning a Concept\n    - Slide 11: Leveraging Gen AI for Accelerated Learning\n    - Slide 12: Clarifying a Concept\n    - Slide 13: Clarifying a Concept\n    - Slide 14: Leveraging Gen AI for Accelerated Learning\n    - Slide 15: Testing your Knowledge\n    - Slide 16: Testing your Knowledge\n    - Slide 17: Leveraging Gen AI for Accelerated Learning\n    - Slide 18: Understanding Code\n    - Slide 19: Leveraging Gen AI for Accelerated Learning\n    - Slide 20: Getting Insights Into The Code\n    - Slide 21: Leveraging Gen AI for Accelerated Learning\n    - Slide 22: AI Tools\n    - Slide 23: Perplexity\n    - Slide 24: AI Tools\n    - Slide 25: NotebookLM\n    - Slide 26: Leveraging Gen AI for Accelerated learning\n    - Slide 27: Leveraging Gen AI for Accelerated learning\n    - Slide 28: Leveraging Gen AI for accelerated learning",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Leveraging Gen AI for accelerated learning",
+      "body": "",
+      "notes": "Today, we're going to talk about something incredibly exciting: how Generative AI can accelerate your learning journey, especially when it comes to building static websites with HTML and CSS.",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to HTML\nHTML Element <tag> Content </tag>\nIn place of Content, we can place other HTML Element(s), \u000band so on",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "HTML Elements\nMain Heading <h1>\nParagraph <p>\nButton <button>\nIntroduction to HTML",
+      "notes": "So far, you've learned about HTML elements and some basic concepts. In the upcoming sessions, you'll explore many more topics.\nIn this session, let’s see how we can use gen ai in our learning, to improve our understanding of concepts, to get more clarity, more practice, etc. so that we can become the fullstack developers with strong technical expertise.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "In what different scenarios do you think you can leverage AI for learning?",
+      "body": "In what different scenarios do you think you can leverage AI for learning?\n?",
+      "notes": "So far, you've learned about HTML elements and some basic concepts. In the upcoming sessions, you'll explore many more topics.\nIn this session, let’s see how we can use gen ai in our learning, to improve our understanding of concepts, to get more clarity, more practice, etc. so that we can become the fullstack developers with strong technical expertise.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Leveraging Gen AI for Accelerated Learning",
+      "body": "Leveraging Gen AI for Accelerated Learning\nAI Tools\nLearning\u000ba Concept\nClarifying\u000ba concept\nUnderstanding \u000bCode\nTesting Your Knowledge\nPerplexity\u000bNotebookLM",
+      "notes": "Today’s Agenda is:\n\nWe’ll see how we can leverage gen ai for learning, especially for better understanding and clarity that too in faster way. \n\nFor this, we can see some of the example use cases in our learning, like while learning a concept - how we can use genai. While clarifying a concept, (like you have some doubts, how to ask them, how to check your understanding), testing your knowledge, understanding code.\n\nThese are only some of the scenarios where we can use gen ai in our learning. You can take this as a reference for you to use gen ai in different scenarios …",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Leveraging Gen AI for Accelerated learning",
+      "body": "AI-Powered Learning\nThink of AI as a learning partner that’s available 24/7",
+      "notes": "We can think of ..",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Gen AI",
+      "body": "Leveraging Gen AI for Accelerated Learning\nTesting your Knowledge\nLearning a Concept\nClarifying a Concept\nUnderstanding Code\n… many more",
+      "notes": "As said, let's explore each of the scenario and how we can use genai in each of them.\n\nFirst, learning a concept",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Leveraging Gen AI for Accelerated Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nDoubts Clarification\nFoundational Understanding\nLearning a Concept\nTesting your Knowledge\nLearning a Concept\nClarifying a Concept\nUnderstanding Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Learning a Concept",
+      "body": "Prompt\n.h-center {\n  text-align: center;\n}\nCSS\nAct as if you are an expert with 20 years of experience in developing static websites with HTML & CSS. Break down the core principles of {Topic name} in a way that a complete beginner can understand. Use simple analogies, step-by-step logic, and simplify everything                                           as if I were 5 years old.",
+      "notes": "We can use this, whenever you find a tougher concept or any confused ones.\n\nWith this prompt, we can learn the concept in very simpler and easier to understand way. \n\n\nThis prompt is given to you for reference. You can improvise it according to your needs and scenarios. Inspire how the prompt is being written.\n\n\nLets try this out, like for example - just we have learnt about HTML paragraph element right! Lets try this once..\n\n<show the output and explain>\n\nYou can also add to include more examples, as well in this prompt, or anything which is easier for you to understand a concept.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Leveraging Gen AI for Accelerated Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nDoubts Clarification\nFoundational Understanding\nClarifying a Concept\nTesting your Knowledge\nLearning a Concept\nClarifying a Concept\nUnderstanding Code",
+      "notes": "Clarifying a concept - You can use this prompt",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Clarifying a Concept",
+      "body": "Prompt\nAct as if you are an expert with 20 years of experience in developing static websites with HTML & CSS. I am learning about {Topic name}. I am specifically confused about {doubt}. Please clarify this specific point for me and break down the explanation into smaller, easier-to-understand parts. Use simple analogies, real-world examples to simplify the concept and simplify everything as if I were 5 years old.",
+      "notes": "If you have doubts while learning a concept related to static Website and need immediate clarification, GenAI can provide quick answers.\nAnd also Even if you're hesitant to ask questions, feel free to use AI to resolve your doubts and gain clarity.\n\nFor Example:  You are having doubt having how to write multiple paragraph elements? Like p1, p2 or just p. You can ask it.\nLets try this out..\n\nIf you see, its providing us detailed explanation of our doubt. \nBut some of us might prefer asking questions to check our understanding and to get more clarity right!",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Clarifying a Concept",
+      "body": "Prompt\nLet’s dive into learning Static Website HTML/CSS, a {Topic name} I am really curious about! I would like you to ask me questions to help me explore and understand this subject better. We will work together to build a solid foundation, and you will provide feedback to help me identify any misconceptions or gaps in my understanding—kind of like using the Feynman technique.\nFeel free to ask specific questions that challenge my understanding of HTML and CSS. It doesn’t matter if I can’t answer them right away; my goal is to learn and improve more and more.                     Let’s begin!",
+      "notes": "You can use this prompt for that. It asks questions on a specific concept in different ways to deepen your understanding and also helps you to identify the gaps in your understanding.\n\u000bLets try the paragraph element again here..\n\nSimilarly, you can change the prompt, add your preferences in learning, so that you can understand, clear your doubts in a better way.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Leveraging Gen AI for Accelerated Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nDoubts Clarification\nFoundational Understanding\nTesting your Knowledge\nTesting your Knowledge\nLearning a Concept\nClarifying a Concept\nUnderstanding Code",
+      "notes": "Now you have understood the concept. But you want to test yourself, whether your understanding is correct and your knowledge is sufficient enough.\nFor this, we are already giving MCQs and coding questions to you in learning portal right!\nYou might understand well and resolve all your doubts, your practised mcqs and coding questions. You are strong on it.\nBut sometimes, you find out that a concept is interesting to you, and want to know it further. What you need to do? You need to learn by yourself.\nThis is the essential skill for any developer. You will learn new things daily once you become a developer as well. Let's improve this skill further.\n\u000bIn those cases, Testing your knowledge is very important. Lets see, how we can test our knowledge with genai..",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Testing your Knowledge",
+      "body": "Prompt\nI just finished learning about {Topic name}. Could you create a comprehensive quiz to test my understanding of this concept by following these guidelines:\n- Present each question one at a time, in sequential order.\n- Wait for my response after each question before moving to the next one.\n- Provide immediate feedback after each answer, including detailed explanations and reasoning behind the correct answer.\n- Track my progress throughout the quiz and let me know how I am doing at each step.\n- If I get an answer wrong, kindly provide hints or further resources to help me                                    understand the concept better.",
+      "notes": "You can use this prompt for that.\nLet's test our understanding on a button element now with MCQs.\n\n- - -\n\nSometimes, the GPT might not give you the correct output. Because it doesn’t know about you, your background, your current knowledge.\nAlso, it depends on how well we are giving the instructions right!\n\nRight now, let see the the questions that are relevant to us, for the questions which contains newer concepts, you can ignore them.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Testing your Knowledge",
+      "body": "Prompt\nYou are an HTML and CSS tutor for school and first-year engineering students. Your goal is to ask one coding question on static website at a time based on the provided concepts.\u000bConcepts : {Topic name}\u000bGuidelines:\u000b- Ask one detailed question at a time based only on the concepts explicitly mentioned.\u000b- Do not introduce any new concepts or elements unless it has explicitly included.\u000b- Increase the difficulty of the question using variations but do not introduce new concepts.\u000b- Whenever a layout-based question is asked, provide a clear layout outline \u000b  (diagram or text).\u000b- Evaluate the answered code based on correctness, structure, \u000b   and sticking to the concept.\u000b- Provide constructive feedback and improvements.\u000b- Only proceed to the next question once i answered the question correctly and\u000b   with sufficient understanding.",
+      "notes": "Similarly for coding Questions, \n\nYou can use this prompt to test your coding knowledge\u000b\u000bLet's ask it to give some coding questions on heading (h1), paragraph (p), button elements",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Leveraging Gen AI for Accelerated Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nDoubts Clarification\nFoundational Understanding\nUnderstanding Code\nTesting your Knowledge\nLearning Concept\nClarifying a Concept\nUnderstanding Code",
+      "notes": "You can also use ai to make you understand the code.\n\nSometimes, if the code is not clear, you can ask genai.\n\nThis is also very important skill every developer need. Because once you become a developer, you work in a group, there, you might need to understand the code written by others, and add on top of it..\n\nSo, understanding the code is really important for correct and better output.\n\nTo understand any confusing code, you can ask genai like this..",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Understanding Code",
+      "body": "Prompt\nAct as an experienced teacher explaining a piece of code to a school student who has just learned the basics of HTML for creating static websites. First, explain what the given code does in simple terms. Then, break down the code into individual steps, explaining each step. Make sure the explanation is easy to understand and beginner-friendly\ncode:\n\"\"\"\n\"\"\"",
+      "notes": "Code:\n“””\n<!DOCTYPE html>\u000b<html>\u000b  <head> </head>\u000b  <body>\u000b    <h1>My first heading</h1>\u000b    <button><h1>Click here</h1></button>\u000b  </body>\u000b</html>\n“””\n\nApart from this, think of different scenarios where we can use genai to improve our learning.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Leveraging Gen AI for Accelerated Learning",
+      "body": "Tips\nAnalogies\nExamples\nApproaches\nReview Understanding\nTweak Code\nReview Code\n…many more",
+      "notes": "Some of the scenarios you can think of and improve your learning are..\n\nMaybe while learning a concept - you can ask for more analogies, examples for you to understand well.\n\nMaybe you have written a code, not sure of whether it is the right way or the only way - you can ask ai to review your code, and ask other ways to get this output, or better way to follow.\n\nOr asking to improve the code or make this website more beautiful and engaging, like that.\n\nSimilarly, you can also review your understanding..\n\nAnd also 1 more thing to improve your understanding is to tweak the code. \n\nAs discussed earlier, tweaking code is a very good practice while learning. It helps us to understand how each element works right!\u000b\u000bSo, whenever a code is present, or we do handson in a session, try out the different ways, like adding more elements, changing colors, etc.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Getting Insights Into The Code",
+      "body": "Tweaking The Code\nMaking small changes in the code to understand the software behaviour\nEx: changing colors, images, texts, etc\nhttps://codepen.io/HarryJ23/pen/RNPvLXp",
+      "notes": "For example, if we have this code,\n\nLets change ..\n\nhttps://codepen.io/HarryJ23/pen/RNPvLXp (copy paste the code in it in our learning portal and show)\n\nTweaking:\nChange the bg Image\t\nhttps://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat_static/niat_coding_questionsrachel-park-hrlvr2ZlUNk-unsplash%201.png\nChange the alignment of “Cricketer” and “Worry less” paragraphs to right and “Ms Dhoni” text to Left\nChange the text Cricketer to Quote\nAdd 1 more paragraph element below the “Worry less” Quote\nChange color of .card class black to blue, green, navy \n\nTweaking is very important to understand the behaviour of each element. \n\nOnce you understand its behaviour, it saves a lot of time, while you are building websites, and also while debugging, understanding the code, etc.\n\nEven if the code is given by ai, understand it, tweak it.\n\nSo, lets summarise..\n\nWe have seen different scenarios where we can leverage gen ai for learning, and also some of the examples for you how to improve them further. You can also think of the different scenarios where we can use gen ai.\n\nBut we need to use it effectively.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Leveraging Gen AI for Accelerated Learning",
+      "body": "AI Tools\nPerplexity AI\nNoteBookLM\nYouLearn\nstudypal",
+      "notes": "Yes they are…\nFor learning, comprehensive study, and managing huge amounts of information, we have a dedicated, specialized tools.\nTools:\u000bhttps://www.perplexity.ai/\nhttps://notebooklm.google/: \u000b\u000bhttps://app.youlearn.ai/\nhttps://www.getstudypal.com/",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "AI Tools",
+      "body": "Perplexity\nPerplexity is a free AI-powered answer engine that provides accurate, trusted, and real-time answers to any question",
+      "notes": "It's not just about answering questions; it's about empowering you to do more—whether you're looking to summarize content, explore new topics, or even get a little creative.\n\nhttps://www.perplexity.ai/: Open and show the sections",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Perplexity",
+      "body": "Key Features\nDirect, Contextual Answers\nSource Citations for Trust and Deeper Learning\nReal-Time, Up-to-Date Information\nFollow-up Questions for Deeper Understanding\nSOURCE",
+      "notes": "Answering questions: From basic facts to tough questions—and get answers from up-to-date sources. Create code, summarize articles, or emails—all in one place.\nExploring topics in depth: Perplexity Pro Search feature provides a guided Al search experience, allowing you to explore topics in depth and learn new things.\nOrganizing your Library: Organize your Threads in Perplexity Spaces by project or topic. Invite contributors and easily switch privacy settings.\nInteracting with your data: Ask questions about your files and search the web, all without leaving the platform. Get a complete project view in one space.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "AI Tools",
+      "body": "NotebookLM\nNotebookLM is an experimental AI-first notebook developed by Google",
+      "notes": "https://notebooklm.google/: Open and show the sections\n\nNotebookLM is an experimental AI-first notebook developed by Google. It uses the documents you upload to train a specialized AI. \nThe AI in that notebook then becomes an expert on your documents, giving you an invaluable resource, specific to your needs. \nEven if you give 300-page book and you will get back study guides, summaries, and even a podcast of all the information.\n\nThe main purpose is to help you engage with your specific learning materials.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "NotebookLM",
+      "body": "Key Features\nCreates Mind maps\nAnswers from \u000buploaded sources\nCreates Podcasts\nAnalyse multiple content formats\nProvides Citations\nCreates Study Guides, etc",
+      "notes": "Gives answers from what you upload:  \n- You can give NotebookLM your notes, documents, or videos and It reads them and gives you answers when you ask questions.\nCreates mind maps\n- It shows ideas in the form of a map, where everything is connected. And This helps you understand big topics in a simple way.\nUnderstands different types of content\n- It can read PDFs, Google Docs, YouTube videos, and even web links and You don’t need to copy everything — just upload, and it understands.\nCreates podcasts\n- It can turn your notes into small audio stories or talks and You can listen and learn instead of reading everything.\nMakes study guides\n- It picks out the important points from your content. and You get a short and easy guide to revise or learn from.\u000b\nProvides citations\n- When it gives an answer, it tells you exactly where it got the information from. So you can check and trust what it says.\n\n\nLet’s see how to use NotebookLM for the scenarios we discussed above:\n<Give the cheatsheet content or reading material>\nLearning a Concept: Use summarization , create study guides\nClarifying a concept: provides Citations and more info\nTesting knowledge : directly get the MCQs with the given FAQ feature\nUnderstanding code: give a prompt so that it will explains you clearly",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Leveraging Gen AI for Accelerated learning",
+      "body": "AI-Powered Learning\nAI tools can help you write code faster, but they should not replace your understanding",
+      "notes": "We need to use gen ai effectively such that it improves your technical understanding and skills as a developer.\n\nAs said earlier, Technical understanding is really essential for us as a developer, to add more functionality to the existing code, and to work on multiple files of code, etc right!\u000b\u000bAnd also, like some of the skills, which we discussed, understanding code, self learning, problem solving, etc - which are essential for you as a developer.\n\nLets use gen ai to improve the technical understanding and to improve the skills. But not to just complete it. It will be of no use for us. Its also in our hands, to use this effectively, whether to improve our learning, to replace learning.\n\nLets always use it to improve our learning like we discussed earlier in few scenarios.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Leveraging Gen AI for Accelerated learning",
+      "body": "AI-Powered Learning\nTo truly master web development, \u000byou need to understand its core concepts, logic, and the creativity involved in problem-solving",
+      "notes": "So, to conclude …",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Leveraging Gen AI for accelerated learning",
+      "body": "Learning a Concept\nClarifying a Concept\nTesting your Knowledge\nUnderstanding Code\nAI Tools\nPerplexity\nNotebookLM",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1QjeM8Kl2fAfUDMvk0KGAs3Gyw3VVmhk0xb9C-LL8vJA/edit?usp=sharing"
+}

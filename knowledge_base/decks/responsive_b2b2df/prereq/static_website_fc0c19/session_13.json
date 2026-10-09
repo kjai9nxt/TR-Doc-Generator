@@ -1,0 +1,493 @@
+{
+  "session_no": 13,
+  "source_file": "static website — session 13",
+  "deck_title": "static website — session 13",
+  "n_slides": 69,
+  "summary": "\n    - Slide 2: Favourite Places Section\n    - Slide 3: Recap\n    - Slide 4: Agenda\n    - Slide 5: Agenda\n    - Slide 6: Example - Static Website\n    - Slide 7: Static Website\n    - Slide 8: Favourite Places Section\n    - Slide 9: Favourite Places Section\n    - Slide 10: Favourite Places Section\n    - Slide 11: Backgrounds\n    - Slide 12: Adding the Favourite Places \n    - Slide 13: Favourite Places Section\n    - Slide 14: Favourite Places Section\n    - Slide 15: Adding Padding \n    - Slide 16: Favourite Places Section\n    - Slide 17: Adding a Favourite Place Card\n    - Slide 18: Favourite Places Section\n    - Slide 19: Favourite Places Section\n    - Slide 20: Favourite Places Section\n    - Slide 21: Favourite Places Section\n    - Slide 22: Favourite Places Section\n    - Slide 23: Favourite Places Section\n    - Slide 24: Card Heading and Description\n    - Slide 25: Favourite Places Section\n    - Slide 26: Favourite Places Section\n    - Slide 27: Adding padding to the Favourite Place Card\n    - Slide 28: Try it in the Code Playground\n    - Slide 29: Adding an Image to the Card\n    - Slide 30: How to add an\n    - Slide 31: Images\n    - Slide 32: Syntax\n    - Slide 33: Images\n    - Slide 34: Syntax\n    - Slide 35: HTML Images\n    - Slide 36: Adding Image to the Card\n    - Slide 37: Adding \n    - Slide 38: Syntax\n    - Slide 39: Syntax\n    - Slide 40: HTML Image Element\n    - Slide 41: Adding Height and Width to the Image\n    - Slide 42: Quiz Time!\n    - Slide 43: Try it in the Code Playground\n    - Slide 44: Aligning Elements side by side\n    - Slide 45: Favourite Place Card\n    - Slide 46: Using Bootstrap Flexbox\n    - Slide 47: Step 1\n    - Slide 48: Step 2\n    - Slide 49: Step 2\n    - Slide 50: Try it in the Code Playground\n    - Slide 51: How to add multiple Cards \n    - Slide 52: Favourite Places Section\n    - Slide 53: Favourite Places Section\n    - Slide 54: Adding Multiple Cards\n    - Slide 55: Favourite Places Section\n    - Slide 56: Adding Multiple Cards\n    - Slide 57: How to get \n    - Slide 58: CSS Box Model\n    - Slide 59: CSS Box Properties\n    - Slide 60: Card Styles\n    - Slide 61: Favourite Places Section\n    - Slide 62: Try it in the Code Playground\n    - Slide 63: Quiz Time!\n    - Slide 64: Favourite Places Section\n    - Slide 66: Next Session\n    - Slide 67: Important Tip",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Favourite Places Section",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to Bootstrap\nLayout\nMethods to Design Layout\nFlexbox\nFlexbox Properties\nFlex Container\nFlex Direction\nJustify Content\nBootstrap \nFlexbox Class Names",
+      "notes": "Did you publish your website?",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "Favourite Places Section\nHTML Images\nsrc Attribute\nVoid Elements\nBox Properties\nmargin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Favourite Places Section\nHTML Images\nsrc Attribute\nVoid Elements\nBox Properties\nmargin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Example - Static Website",
+      "body": "Tourism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Static Website",
+      "body": "Favourite Places Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Favourite Places Section",
+      "body": "Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Favourite Places Section",
+      "body": "Breaking down into small parts \nImage\nHeading\nText Container\nParagraph\nBackground Container\nHeading\nCard Container",
+      "notes": "Breaking down into small parts\nPick one small part\nWrite the code\nTest your output\nThen, go to the next part \u000band repeat the same",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Favourite Places Section",
+      "body": "Adding Background Container",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Backgrounds",
+      "body": "Adding Background Container\n.favourite-places-bg-container {\n  background-image: url(\"https://assets.ccbp.in/frontend/static-website/tower-bg.png\");\n  height: 100vh;\n  background-size: cover;\n}\n<body>\n  <div class=\"favourite-places-bg-container\" >\n  </div>\n</body>\nHTML\nCSS",
+      "notes": "html\n<div class=\"favourite-places-bg-container\" >\n</div>\n\ncss\n.favourite-places-bg-container {\n background-image: url(\"https://assets.ccbp.in/frontend/static-website/tower-bg.png\");\n height: 100vh;\n background-size: cover;\n}",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Adding the Favourite Places ",
+      "body": "Adding the Favourite Places \nSection Heading",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Favourite Places Section",
+      "body": "Adding the Favourite Places Section Heading\n<div class=\"favourite-places-bg-container\">\n  <h1 class=\"favourite-places-heading\">\n    Favourite Places\n  </h1>\n</div>\n.favourite-places-heading {\n  color: white;\u000b  font-size: 28px;\n  font-family: 'Roboto';\n  font-weight: bold;\n}\nHTML\nCSS",
+      "notes": "html \n<h1 class=\"favourite-places-heading\">\n  Favourite Places\n</h1>\n\ncss\n.favourite-places-heading {\n color: white;\n font-size: 28px;\n font-family: 'Roboto';\n font-weight: bold;\n}",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Favourite Places Section",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Adding Padding ",
+      "body": "Adding Padding \nto the \nFavourite Places \nSection Heading",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Favourite Places Section",
+      "body": "Adding Padding to the \u000bFavourite Places Section Heading\n.favourite-places-heading {\n  color: white;\u000b  font-size: 28px;\n  font-family: 'Roboto';\n  font-weight: bold;\n  padding: 24px;\n}\nCSS",
+      "notes": "css\n.favourite-places-heading {\n color: white;\n font-size: 28px;\n font-family: 'Roboto';\n font-weight: bold;\n padding: 24px;\n}",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Adding a Favourite Place Card",
+      "body": "Adding a Favourite Place Card",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Favourite Places Section",
+      "body": "Adding a Favourite Place Card \nImage\nHeading\nText Container\nParagraph",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Favourite Places Section",
+      "body": "Adding a Favourite Place Card",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Favourite Places Section",
+      "body": "Adding a Favourite Place Card Container\n<div class=\"favourite-places-bg-container\">\n  <h1 class=\"favourite-places-heading\">\n    Favourite Places\n  </h1>\n  <div class=\"favourite-place-card-container\">\n  </div>\n</div>\n.favourite-place-card-container {\n  background-color: white;\n  border-radius: 8px;\n}\nCard Container\nHTML\nCSS",
+      "notes": "html \n<div class=\"favourite-place-card-container\" >\n</div>\n\ncss\n.favourite-place-card-container {\n   background-color: white;\n   border-radius: 8px;\n}",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Favourite Places Section",
+      "body": "Adding a Favourite Place Card\nText Container \n<div class=\"favourite-places-bg-container\">\n  <h1 class=\"favourite-places-heading\">\n    Favourite Places\n  </h1>\n  <div class=\"favourite-place-card-container\">\n\t<div>\n  \t</div>\n  </div>\n</div>\nHTML\nText Container",
+      "notes": "html \n<div>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Favourite Places Section",
+      "body": "Adding a Card Heading \n...\n<div class=\"favourite-place-card-container\">\n  <div>\n    <h1 class=\"favourite-place-card-heading\">\n      Taj Mahal\n    </h1>\n  </div>\n</div>\n...\nHTML\n.favourite-place-card-heading {\n  color: #0f0e46;   \n  font-family: 'Roboto';\n  font-weight: bold;\n  font-size: 23px;\n }\nCSS",
+      "notes": "html \n<h1 class=\"favourite-place-card-heading\">\n  Taj Mahal\n</h1>\n\n css\n.favourite-place-card-heading {\n   color: #0f0e46;  \n   font-family: 'Roboto';\n   font-weight: bold;\n   font-size: 23px;\n}",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Favourite Places Section",
+      "body": "Adding a Card Description\n...\n<div>\n  <h1 class=\"favourite-place-card-heading\">\n    Taj Mahal\n  </h1>\n  <p class=\"favourite-place-card-description\">\n    If there was just ...\n  </p>\n</div>\n...\nHTML\n.favourite-place-card-description {\n   font-family: 'Roboto';\n   font-size: 13px;\n   color: #6c6b70;\n}\nCSS",
+      "notes": "html \n<p class=\"favourite-place-card-description\">\n  If there was just one symbol to represent all of India, It would be the Taj Mahal\n</p>\n\ncss\n.favourite-place-card-description {\n   font-family: 'Roboto';\n   font-size: 13px;\n   color: #6c6b70;\n}",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Card Heading and Description",
+      "body": "Output",
+      "notes": "There is no space inside the card and it looks so congested. So let’s add padding to the Card.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Favourite Places Section",
+      "body": "Adding Padding to the Card",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Favourite Places Section",
+      "body": "Adding padding to the \nFavourite Place Card \n.favourite-place-card-container {\n  background-color: white;\n  border-radius: 8px;\n  padding: 16px;\n}\nCSS",
+      "notes": "css\n.favourite-place-card-container {\n   background-color: white;\n   border-radius: 8px;\n   padding:16px;\n}",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Adding padding to the Favourite Place Card",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Try it in the Code Playground",
+      "body": "Try it in the Code Playground",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Adding an Image to the Card",
+      "body": "Adding an Image to the Card",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "How to add an",
+      "body": "How to add an\nImage in HTML?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Images",
+      "body": "Ways to add Images in Website\nHTML Image\nCSS Background Image\nUse HTML Image to add an image \u000bwhen there are no content or elements \u000bto add on top of the Image.",
+      "notes": "HTML Image\nRelated to the content – not a design element\nCSS Background Image\nPurely used to design – not part of the content\n\nUse an <img> tag if it is content related and not just being used as a design element, while background image has nothing to do with the content and is purely a design element.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Syntax",
+      "body": "HTML Image Element\n<img src  =  “IMAGE URL” />\nImage Element\nAttribute value\nAttribute name\nStart tag",
+      "notes": "HTML Image element has No Content, No End Tag.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Images",
+      "body": "The HTML elements that only have \u000ba start tag and do not contain content or end tag are called as Void Elements\nVoid Elements\n <tag />\nVoid Element\nStart tag",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Syntax",
+      "body": "Normal vs Void Elements\n <tag> Content </tag>\nNormal Element\nContent\nStart tag\nEnd tag\n <tag />\nVoid Element\nStart tag",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "HTML Images",
+      "body": "Adding Image to the Card\n<div class=\"favourite-place-card-container\">\n  <div>  \n     ...\n  </div>\n  <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\" />\n</div>\nHTML",
+      "notes": "html\n<img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\" />",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Adding Image to the Card",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Adding ",
+      "body": "Adding \nHeight and Width to an Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Syntax",
+      "body": "Providing Multiple Attributes\nto the HTML Element\nWe can give multiple attributes separated by the space for HTML Element\n<tag attribute  =  “value”  attribute2 = “value2” />\nElement\nAttribute value\nAttribute name\nStart tag\nAttribute value\nAttribute name\nSpace",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Syntax",
+      "body": "Providing Multiple Attributes\nto the HTML Image Element\n<img src  =  “IMAGE URL” class = “image” />\nElement\nAttribute value\nAttribute name\nStart tag\nAttribute value\nAttribute name\nWe can give multiple attributes separated by the space for HTML Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "HTML Image Element",
+      "body": "Adding Height and Width to the Image\n.favourite-place-card-image {\n  width: 80px;\n  height: 100px;\n}\n<img src=\"IMAGE_URL\" class=\"favourite-place-card-image\" />\nHTML\nCSS",
+      "notes": "html\n\n<img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n     class=\"favourite-place-card-image\" />\n\ncss \n\n.favourite-place-card-image {\n   width: 80px;\n   height: 100px;\n }",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Adding Height and Width to the Image",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Try it in the Code Playground",
+      "body": "Try it in the Code Playground",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Aligning Elements side by side",
+      "body": "Aligning Elements side by side",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Favourite Place Card",
+      "body": "Aligning Elements side by side\nCard Text Container \u000bshould be left aligned and image should be right aligned",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Using Bootstrap Flexbox",
+      "body": "Aligning Elements side by side\nSteps:\nMake Card Container as a Flex Container\nSpecify the Direction\nBootstrap Flexbox Class names helps us to arrange Text Container and Image Horizontally",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Step 1",
+      "body": "Defining Flexbox Container\n<div class=\"favourite-place-card-container d-flex \">\n  <div>\n    <h1 class=\"favourite-place-card-heading\">\n      Taj Mahal\n    </h1>\n    <p class=\"favourite-place-card-description\">\n      If there was just one symbol to represent\n      all of India, It would be the Taj Mahal\n    </p>\n  </div>\n  <img src=\"IMAGE_URL\" class=\"favourite-place-card-image\" />\n</div>\nHTML",
+      "notes": "html \n\n  <div class=\"favourite-place-card-container d-flex\" >\n     <div>\n       <h1 class=\"favourite-place-card-heading\">\n           Taj Mahal\n         </h1>\n         <p class=\"favourite-place-card-description\">\n           If there was just one symbol to represent all of India, It would be the Taj Mahal\n         </p>             \n     </div>  \n     <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n          class=\"favourite-place-card-image\" />  \n  </div>",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Step 2",
+      "body": "Specifying Direction\n<div class=\"favourite-place-card-container d-flex flex-row \">\n  <div>\n    <h1 class=\"favourite-place-card-heading\">\n      Taj Mahal\n    </h1>\n    <p class=\"favourite-place-card-description\">\n      If there was just one symbol to represent\n      all of India, It would be the Taj Mahal\n    </p>\n  </div>\n  <img src=\"IMAGE_URL\" class=\"favourite-place-card-image\" />\n</div>\nHTML",
+      "notes": "By default the flex direction is row.\n\nhtml \n\n<div class=\"favourite-place-card-container d-flex flex-row\" >\n     <div>\n       <h1 class=\"favourite-place-card-heading\">\n           Taj Mahal\n         </h1>\n         <p class=\"favourite-place-card-description\">\n           If there was just one symbol to represent all of India, It would be the Taj Mahal\n         </p>             \n     </div>  \n     <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n          class=\"favourite-place-card-image\" />  \n</div>",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Step 2",
+      "body": "Output",
+      "notes": "By default the flex direction is row",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Try it in the Code Playground",
+      "body": "Try it in the Code Playground",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "How to add multiple Cards ",
+      "body": "How to add multiple Cards \ninside Background Container?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Favourite Places Section",
+      "body": "Favourite Places Code Snippet\n<div class=\"favourite-places-bg-container\" >\n  <h1 class=\"favourite-places-heading\" >\n    Favourite Places\n  </h1>\n  <div class=\"favourite-place-card-container d-flex flex-row\" >\n    ...\n  </div>\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Favourite Places Section",
+      "body": "Adding Multiple Cards\n<div class=\"favourite-places-bg-container\" >\n  <h1 class=\"favourite-places-heading\" >\n    Favourite Places\n  </h1>\n  <div class=\"favourite-place-card-container d-flex flex-row\">\n    ...\n  </div>\n  <div class=\"favourite-place-card-container d-flex flex-row\">\n    ...\n  </div>\n  <div class=\"favourite-place-card-container d-flex flex-row\">\n    ...\n  </div>\n</div>\nHTML",
+      "notes": "Copy paste two times card \n\nhtml \n\n<div class=\"favourite-place-card-container d-flex flex-row\" >\n       <div>\n         <h1 class=\"favourite-place-card-heading\">\n             Taj Mahal\n           </h1>\n           <p class=\"favourite-place-card-description\">\n             If there was just one symbol to represent all of India, it would be the Taj Mahal\n           </p>            \n       </div> \n       <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n            class=\"favourite-place-card-image\" /> \n  </div>\n \n  <div class=\"favourite-place-card-container d-flex flex-row\" >\n       <div>\n         <h1 class=\"favourite-place-card-heading\">\n             Taj Mahal\n           </h1>\n           <p class=\"favourite-place-card-description\">\n             If there was just one symbol to represent all of India, it would be the Taj Mahal\n           </p>            \n       </div> \n       <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n            class=\"favourite-place-card-image\" /> \n  </div>\n \n  <div class=\"favourite-place-card-container d-flex flex-row\" >\n       <div>\n         <h1 class=\"favourite-place-card-heading\">\n             Taj Mahal\n           </h1>\n           <p class=\"favourite-place-card-description\">\n             If there was just one symbol to represent all of India, it would be the Taj Mahal\n           </p>            \n       </div> \n       <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n            class=\"favourite-place-card-image\" /> \n  </div>\n \n  <div class=\"favourite-place-card-container d-flex flex-row\" >\n       <div>\n         <h1 class=\"favourite-place-card-heading\">\n             Taj Mahal\n           </h1>\n           <p class=\"favourite-place-card-description\">\n             If there was just one symbol to represent all of India, it would be the Taj Mahal\n           </p>            \n       </div> \n       <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n            class=\"favourite-place-card-image\" /> \n  </div>",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Adding Multiple Cards",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Favourite Places Section",
+      "body": "Favourite Places Card Code Snippet\n<div class=\"favourite-place-card-container d-flex flex-row\">\n  <div>\n    <h1 class=\"favourite-place-card-heading\">\n      Taj Mahal\n    </h1>\n    <p class=\"favourite-place-card-description\">\n      If there was just one symbol to represent\n      all of India, It would be the Taj Mahal\n    </p>\n  </div>\n  <img src= \"IMAGE_URL\" class=\"favourite-place-card-image\" />\n</div>\nHTML",
+      "notes": "What is the common part in every card. Just text and Image right? Change the corresponding sections and copy paste the code\n\n\n<div class=\"favourite-place-card-container d-flex flex-row\" >\n    <div>\n   <h1 class=\"favourite-place-card-heading\">\n       Taj Mahal\n   </h1>\n   <p class=\"favourite-place-card-description\">\n       If there was just one symbol to represent all of India, It would be the Taj Mahal\n   </p>\n   </div>\n   <img src=\"https://assets.ccbp.in/frontend/static-website/tajmahal-img.png\"\n   class=\"favourite-place-card-image\"/>\n</div>\n\n\n<div class=\"favourite-place-card-container d-flex flex-row\" >\n   <div>\n   <h1 class=\"favourite-place-card-heading\">\n       Golden Temple\n   </h1>\n   <p class=\"favourite-place-card-description\">\n       Amritsar is world-famous for the beautiful and highly revered Golden Temple\n   </p>\n   </div>\n   <img src=\"https://assets.ccbp.in/frontend/static-website/golden-temple-img.png\"\n   class=\"favourite-place-card-image\"/>\n</div>\n\n\n<div class=\"favourite-place-card-container d-flex flex-row\" >\n   <div>\n   <h1 class=\"favourite-place-card-heading\">\n       Mysore Palace\n   </h1>\n   <p class=\"favourite-place-card-description\">\n   The Mysore Palace is a historical palace and the royal residence at Mysore .\n   </p>\n   </div>\n   <img src=\"https://assets.ccbp.in/frontend/static-website/mysore-palace-img.png\"\n   class=\"favourite-place-card-image\"/>\n</div>\n\n\n<div class=\"favourite-place-card-container d-flex flex-row\" >\n   <div>\n   <h1 class=\"favourite-place-card-heading\">\n       Varanasi Temple\n   </h1>\n   <p class=\"favourite-place-card-description\">\n       Varanasi Temple is most famous Hindu temples dedicated to Lord Shiva\n   </p>\n   </div>\n   <img src=\"https://assets.ccbp.in/frontend/static-website/varanasi-temple-img.png\"\n   class=\"favourite-place-card-image\"/>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Adding Multiple Cards",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "How to get ",
+      "body": "How to get \nSpacing Between the Cards",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "CSS Box Model",
+      "body": "Properties\nEach rectangular box has different properties:\nContent\nheight\nwidth\nborder\npadding\nmargin\nheight\nwidth \nmargin\nborder\npadding",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "CSS Box Properties",
+      "body": "Margin\nContent\nmargin\nWe can get spacing between \u000btwo elements by using \u000bCSS Box Property margin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Card Styles",
+      "body": "Applying Margin to Card Container\nContent\n15px\n15px\n15px\n15px\n.favourite-place-card-container {\n  background-color: white;\n  border-radius: 8px;\n  padding: 16px;\n  margin: 15px;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Favourite Places Section",
+      "body": "Adding Spacing between the Cards\n.favourite-place-card-container {\n  background-color: white;\n  border-radius: 8px;\n  padding: 16px;\n  margin: 15px;\n}\nCSS",
+      "notes": "CSS\n.favourite-place-card-container {\n   background-color: white;\n   border-radius: 8px;\n   padding:16px;\n   margin: 15px;\n}",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Try it in the Code Playground",
+      "body": "Try it in the Code Playground",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Favourite Places Section",
+      "body": "Key Takeaways \nHTML Image\nsrc Attribute\nVoid Elements vs \nNormal Elements Syntax\nProviding Multiple Attributes \nto HTML Elements\nCSS Box Properties\nmargin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Next Session",
+      "body": "Approach to Develop a Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Important Tip",
+      "body": "Important Tip\nReach out in Discussion Portal for any queries\u000b\u000bBefore posting a query, \u000blook into pinned discussions \u000bbelow the session",
+      "notes": "It will give more perspectives and accelerates your learning",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1NN6Y3pHxAb95D65yBBJldCN2LCw7d1Xz56juNN4Zsqo/edit#slide=id.g2f4c214d8d8_0_192"
+}

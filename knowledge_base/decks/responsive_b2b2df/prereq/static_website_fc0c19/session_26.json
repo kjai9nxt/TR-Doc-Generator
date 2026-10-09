@@ -1,0 +1,283 @@
+{
+  "session_no": 26,
+  "source_file": "static website — session 26",
+  "deck_title": "static website — session 26",
+  "n_slides": 39,
+  "summary": "\n    - Slide 2: Introduction to\u000bOnline Code Editors\n    - Slide 3: Introduction\n    - Slide 4: Online Code Editors\n    - Slide 5: Online Code Editors\n    - Slide 6: Online Code Editors\n    - Slide 7: Online Code Editors - CodeSandbox\n    - Slide 8: Online Code Editors - CodeSandbox\n    - Slide 9: Online Code Editors - CodeSandbox\n    - Slide 10: Online Code Editors - CodeSandbox\n    - Slide 11: Online Code Editors - CodeSandbox\n    - Slide 12: Creating new HTML & CSS CodeSandbox\n    - Slide 13: CodeSandbox\n    - Slide 14: CodeSandbox\n    - Slide 15: HTML & CSS Project\n    - Slide 16: HTML & CSS Project\n    - Slide 17: CodeSandbox - HTML & CSS Project\n    - Slide 18: Online Code Editors\n    - Slide 19: CodePen\n    - Slide 20: CodePen\n    - Slide 21: CodePen\n    - Slide 22: CodePen\n    - Slide 23: Creating a new Pen\n    - Slide 24: CodePen\n    - Slide 25: Codepen\n    - Slide 26: Online Code Editors\n    - Slide 27: Online Code Editors\n    - Slide 28: Online Code Editors\n    - Slide 33: Features\n    - Slide 34: Popular Online Code Editors\n    - Slide 35: CodeSandbox\n    - Slide 37: Topic 2\n    - Slide 38: CodePen",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to\u000bOnline Code Editors",
+      "body": "",
+      "notes": "You already know how we use the Code Playground on our website, right? It’s a place where we can quickly write and test our code without installing anything.\u000b\nOnline Code Editors are works the same way.",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Introduction",
+      "body": "Online Code Editors\nOnline code editors/cloud based editors \u000bare a web-based tools for developers to write, edit, and test code in their browsers",
+      "notes": "During the interviews, interviewer will ask you to run and test the code in the Online Code Editors . Why ?",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Online Code Editors",
+      "body": "Features\nEasy Accessibility\nNo setup/configuration is required\nEasy for collaboration with other developers \nProvides starter templates\nNo setup/configuration is required\nProvides starter templates\nEasy Accessibility\nEasy for collaboration with other developers\n2\n4\n3\n1",
+      "notes": "Due to this, you find that in interviews, most of the interviewers asked to write code in online code editors",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Online Code Editors",
+      "body": "Popular Online Code Editors\n   …many more\nCodepen\nJsFiddle\nStackBlitz\nCodeSandbox",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Online Code Editors",
+      "body": "Popular Online Code Editors\n   …many more\nCodepen\nJsFiddle\nStackBlitz\nCodeSandbox",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Online Code Editors - CodeSandbox",
+      "body": "Opening CodeSandbox",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Online Code Editors - CodeSandbox",
+      "body": "Sign in to CodeSandbox",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Online Code Editors - CodeSandbox",
+      "body": "CodeSandbox Home Page",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Online Code Editors - CodeSandbox",
+      "body": "Creating new HTML & CSS CodeSandbox\nYou can create a new sandbox using one of the built-in starter templates",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Online Code Editors - CodeSandbox",
+      "body": "Creating new HTML & CSS CodeSandbox",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Creating new HTML & CSS CodeSandbox",
+      "body": "Selecting Visibility\nWe can select the visibility \u000bof our code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "CodeSandbox",
+      "body": "HTML & CSS Project",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "CodeSandbox",
+      "body": "Click on Preview",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "HTML & CSS Project",
+      "body": "Checking Preview",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "HTML & CSS Project",
+      "body": "Using Chrome Dev Tools",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "CodeSandbox - HTML & CSS Project",
+      "body": "Sharing Your Website",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Online Code Editors",
+      "body": "Popular Online Code Editors\n   …many more\nCodepen\nJsFiddle\nStackBlitz\nCodeSandbox",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "CodePen",
+      "body": "Home Page",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "CodePen",
+      "body": "Sign Up",
+      "notes": "sign up using your e-mail id, Facebook, Twitter, or GitHub account.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "CodePen",
+      "body": "CodePen",
+      "notes": "sign up using your e-mail id, Facebook, Twitter, or GitHub account.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "CodePen",
+      "body": "Creating a new Pen",
+      "notes": "sign up using your e-mail id, Facebook, Twitter, or GitHub account.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Creating a new Pen",
+      "body": "Code Panels - HTML, CSS & JS",
+      "notes": "sign up using your e-mail id, Facebook, Twitter, or GitHub account.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "CodePen",
+      "body": "Writing Sample HTML & CSS Code",
+      "notes": "sign up using your e-mail id, Facebook, Twitter, or GitHub account.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Codepen",
+      "body": "Checking the Preview\nCodepen will automatically update the preview",
+      "notes": "sign up using your e-mail id, Facebook, Twitter, or GitHub account.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Online Code Editors",
+      "body": "Projects\nYou can use some of the Codepen/                   Code sandbox projects for inspiration                and learn from the different front-end web developers and designers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Online Code Editors",
+      "body": "Projects\nTry out the different                     online code playgrounds",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Online Code Editors",
+      "body": "Online Code Editors\nCode Sandbox\nCodepen",
+      "notes": "So.. le’ts quickly summarize. \n\nAutomation Testing \nSelenium Tool\nComponents of Selenium\nSelenium IDE\nSelenium Grid\nWebDriver\nWe understood that we will be using webdriver. \n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Features",
+      "body": "Features\nNo setup/configuration is required\nProvides starter templates\nEasy Accessibility\nEasy for collaboration with other developers\n2\n4\n3\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Popular Online Code Editors",
+      "body": "Popular Online Code Editors\n   …many more\nStackBlitz\nJsFiddle\nCodeSandbox\nCodepen",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "CodeSandbox",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Topic 2",
+      "body": "Topic 2\nSub-topic\nTopic 3\nSub-topic\nSub-Topic\nTopic 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "CodePen",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "",
+      "body": "",
+      "notes": "In the next session, we’ll start off with performing our first selenium test. \u000b\u000bAs part of the “Automation Testing using Selenium (Part-1)” session. \n\n\n\nNXT",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1Ws3u-6RjBP4s9ZpWZC7e6tz33OCR7MMQolgUgZckIRc/edit"
+}

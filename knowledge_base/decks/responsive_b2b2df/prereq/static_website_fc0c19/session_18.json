@@ -1,0 +1,325 @@
+{
+  "session_no": 18,
+  "source_file": "static website — session 18",
+  "deck_title": "static website — session 18",
+  "n_slides": 45,
+  "summary": "\n    - Slide 2: Website Integration\n    - Slide 3: Recap\n    - Slide 4: Agenda for Today’s Session\n    - Slide 5: Agenda\n    - Slide 6: Static Website\n    - Slide 7: How to add Golden Temple \u000bDetailed View Section?\n    - Slide 8: Tourism Website\n    - Slide 9: Step 1\n    - Slide 10: Step 2\n    - Slide 11: Step 3\n    - Slide 12: Bootstrap\n    - Slide 13: Bootstrap\n    - Slide 14: Bootstrap\n    - Slide 15: Bootstrap\n    - Slide 16: Try it in Code Playground\n    - Slide 17: How to Achieve This?\n    - Slide 18: HTML Lists\n    - Slide 19: HTML\n    - Slide 20: Lists\n    - Slide 21: HTML Lists\n    - Slide 22: HTML Lists\n    - Slide 23: HTML Lists\n    - Slide 24: HTML Lists\n    - Slide 25: Styling Unordered Lists\n    - Slide 26: Styling Unordered Lists\n    - Slide 27: Styling\n    - Slide 28: HTML Lists\n    - Slide 29: HTML Lists\n    - Slide 30: HTML Lists\n    - Slide 31: HTML Lists\n    - Slide 32: Styling Ordered Lists\n    - Slide 33: HTML Lists\n    - Slide 34: Styling\n    - Slide 35: Quiz Time!\n    - Slide 36: Website Integration | Part 2\n    - Slide 38: Coding Practices\n    - Slide 39: Important Tip\n    - Slide 41: Next Session\n    - Slide 44: Session\n    - Slide 45: Website: Behind The Scenes",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Website Integration",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Tourism Website Integration\nCCBP UI Kit\nDisplay Utility\nHTML Attributes\nId Attribute\nonclick Attribute",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda for Today’s Session",
+      "body": "Website Integration | Part 2\nBootstrap\nCSS Properties\nAdding Multiple Carousels\nlist-style-type\nHTML Lists\nUnordered List\nOrdered List",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Website Integration | Part 2\nBootstrap\nCSS Properties\nAdding Multiple Carousels\nlist-style-type\nHTML Lists\nUnordered List\nOrdered List",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Static Website",
+      "body": "Tourism Website Integration\nHome Section\nFavourite Places\n Section\nTaj Mahal \nDetailed View Section",
+      "notes": "Demo\n\nIntegration is the \nprocess of combining different parts and make it one as a whole",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "How to add Golden Temple \u000bDetailed View Section?",
+      "body": "How to add Golden Temple \u000bDetailed View Section?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Tourism Website",
+      "body": "Golden Temple Detailed View Section\nSteps:\nAdd a Section Container with a unique id\nAdd the Golden Temple Detailed View Section code to the Section Container\nAdd onclick attribute to the Golden Temple Card",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Step 1",
+      "body": "Adding Section Container with Unique Id\n<div id=\"sectionHome\"> ... </div>\n<div id=\"sectionFavouritePlaces\"> ... </div>\n<div id=\"sectionTajMahalDetailedView\"> ... </div>\n<div id=\"sectionGoldenTempleDetailedView\">\n</div>\nHTML",
+      "notes": "Upto yesterday’s code is available in the session code playground...\n\n<div id=\"sectionGoldenTempleDetailedView\">\n</div>",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Step 2",
+      "body": "Adding Golden Temple Detailed View Section Code\n<div id=\"sectionHome\"> ... </div>\n<div id=\"sectionFavouritePlaces\"> ... </div>\n<div id=\"sectionTajMahalDetailedView\"> ... </div>\n<div id=\"sectionGoldenTempleDetailedView\">\n  <div class=\"detailed-view-bg-container\">\n    ...\n  </div>\n</div>\nHTML",
+      "notes": "Golden temple code is provided in the cheatsheet...",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Step 3",
+      "body": "Adding onclick attribute to the Golden Temple Card\n<div id=\"sectionHome\"> ... </div>\n<div id=\"sectionFavouritePlaces\">\n  ...\n  <div class=\"favourite-place-card-container d-flex\"\n    onclick=\"display('sectionGoldenTempleDetailedView')\">\n    ...\n  </div>\n  ...\n</div>\n<div id=\"sectionTajMahalDetailedView\"> ... </div>\n<div id=\"sectionGoldenTempleDetailedView\"> ... </div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Bootstrap",
+      "body": "Carousels\nCarousel works\nCarousel might not work as expected",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Bootstrap",
+      "body": "Default Carousel Code\n<div id=\"carouselExampleIndicators\" ...>\n  <ol class=\"carousel-indicators\">\n    <li data-target=\"#carouselExampleIndicators\" ...></li>\n    <li data-target=\"#carouselExampleIndicators\" ...></li>\n    <li data-target=\"#carouselExampleIndicators\"...></li>\n  </ol>...\n  <a class=\"carousel-control-prev\"  \n      href=\"#carouselExampleIndicators\"  \n     role=\"button\" data-slide=\"prev\">\n    ...\n  </a>\n</div>\nHTML",
+      "notes": "While adding new carousel you need to change the id of the carousel else the carousel controls won’t work",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Bootstrap",
+      "body": "Unique Carousel id\n<div id=\"carouselExampleIndicators\"\n      class=\"carousel slide\"   \n      data-ride=\"carousel\">\n  ...\n</div>\nThe ids of the HTML Elements should be unique\nProvide unique Id \u000bfor each Carousel Container\nHTML",
+      "notes": "While adding new carousel you need to change the id of the carousel else the carousel controls won’t work\n\nTo use multiple Carousels in a same HTML document we have to provide unique Id to the each Carousel.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Bootstrap",
+      "body": "Specifying Unique id\n<div id=\"goldenTempleCarousel\" class=\"carousel slide\" data-ride=\"carousel\">\n  <ol class=\"carousel-indicators\">\n    <li data-target=\"#goldenTempleCarousel\" data-slide-to=\"0\"    \n      class=\"active\"></li>\n    <li data-target=\"#goldenTempleCarousel\" data-slide-to=\"1\"></li>\n    <li data-target=\"#goldenTempleCarousel\" data-slide-to=\"2\"></li>\n  </ol>\n  ...\n  <a class=\"carousel-control-prev\" href=\"#goldenTempleCarousel\"  \n    role=\"button\" data-slide=\"prev\">\n    ...\n  </a>\n  <a class=\"carousel-control-next\" href=\"#goldenTempleCarousel\" role=\"button\"   \n    data-slide=\"next\">\n    ...\n  </a>\n</div>\nHTML",
+      "notes": "While adding new carousel you need to change the id of the carousel else the carousel controls won’t work\nIDs are already changed and provided\nWarning: Don’t remove hash...",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Try it in Code Playground",
+      "body": "Try it in Code Playground\nclose",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "How to Achieve This?",
+      "body": "How to Achieve This?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "HTML Lists",
+      "body": "HTML Lists",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "HTML",
+      "body": "Lists\nList is a way to group related pieces of information, so that they are easy to \nread and understand\nE.g. Shopping list, To-do list",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Lists",
+      "body": "Lists\nThere are mainly two types of lists available in HTML\nList item\nList item\nList item\nList item\nList item\nList item\nUnordered List\nOrdered List",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "HTML Lists",
+      "body": "Unordered List\nPainting\nReading Books\nPlaying Guitar",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "HTML Lists",
+      "body": "Unordered List\nUnordered list starts with <ul> tag \u000b\u000b<ul> tag wraps around \u000ball the list items \nEach list item starts with the <li> tag\n<ul>\n  <li> list item </li>\n  <li> list item </li>\n  <li> list item </li>\n</ul>\nHTML",
+      "notes": "Ul is container for all the li items\n\nul → unordered list\nli→ list item",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "HTML Lists",
+      "body": "Unordered List\n<ul class=\"detailed-view-card-description\">\n  <li> Jallianwala Bagh </li>\n  <li> Wagah Border </li>\n  <li> Harike Wetland </li>\n  <li> Bathinda Fort </li>\n</ul>\nHTML",
+      "notes": "Added same description styles to list as well to get same font-size, color etc...\n\n<ul class=\"detailed-view-card-description\">\n <li>Jallianwala Bagh</li>\n <li>Wagah Border</li>\n <li>Harike Wetland</li>\n <li>Bathinda Fort</li>\n</ul>",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "HTML Lists",
+      "body": "Unordered List\nBy default, \u000bList Items in unordered Lists are marked with bullets\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Styling Unordered Lists",
+      "body": "Styling Unordered Lists",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Styling Unordered Lists",
+      "body": "Syntax\n.unordered-list {\n  list-style-type: circle;\u000b}\n<ul class=\"detailed-view-card-description unordered-list\">\n   <li> Jallianwala Bagh </li>\n   <li> Wagah Border </li>\n   <li> Harike Wetland </li>\n   <li> Bathinda Fort </li>\n</ul>\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort\nHTML\nHTML",
+      "notes": ".unordered-list {\n list-style-type: circle;\n}\n\n<ul class=\"detailed-view-card-description unordered-list\">\n <li>Jallianwala Bagh</li>\n <li>Wagah Border</li>\n <li>Harike Wetland</li>\n <li>Bathinda Fort</li>\n</ul>",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Styling",
+      "body": "Unordered List\nlist-style-type: square\nlist-style-type: disc\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort\nlist-style-type: none\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "HTML Lists",
+      "body": "Ordered List\nHTML\nCSS\nJavaScript",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "HTML Lists",
+      "body": "Ordered List\nOrdered list starts with <ol> tag \u000b\u000b<ol> tag wraps around \u000ball the list items \nEach list item starts with the <li> tag\n<ol>\n  <li> list item </li>\n  <li> list item </li>\n  <li> list item </li>\n</ol>\nHTML",
+      "notes": "ol is container for all the li items\n\nol → unordered list\nli→ list item",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "HTML Lists",
+      "body": "Ordered List\n<ol class=\"detailed-view-card-description\">\n   <li> Jallianwala Bagh </li>\n   <li> Wagah Border </li>\n   <li> Harike Wetland </li>\n   <li> Bathinda Fort </li>\n</ol>\nHTML",
+      "notes": "<ol class=\"detailed-view-card-description\">\n <li>Jallianwala Bagh</li>\n <li>Wagah Border</li>\n <li>Harike Wetland</li>\n <li>Bathinda Fort</li>\n</ol>",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "HTML Lists",
+      "body": "Ordered List\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort\nBy default, \u000bList Items in ordered Lists \u000bare marked with numbers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Styling Ordered Lists",
+      "body": "Styling Ordered Lists",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "HTML Lists",
+      "body": "Ordered List\n.ordered-list {\n  list-style-type: upper-alpha;\u000b}\n<ol class=\"detailed-view-card-description ordered-list\">\n   <li> Jallianwala Bagh </li>\n   <li> Wagah Border </li>\n   <li> Harike Wetland </li>\n   <li> Bathinda Fort </li>\n</ol>\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort\nHTML\nHTML",
+      "notes": ".ordered-list {\n list-style-type: upper-alpha;\n}\n\n<ol class=\"detailed-view-card-description ordered-list\">\n <li>Jallianwala Bagh</li>\n <li>Wagah Border</li>\n <li>Harike Wetland</li>\n <li>Bathinda Fort</li>\n</ol>",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Styling",
+      "body": "Ordered List\nlist-style-type: lower-roman;\nlist-style-type: lower-alpha;\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort\nJallianwala Bagh\nWagah Border\nHarike Wetland\nBathinda Fort",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Website Integration | Part 2",
+      "body": "Key Takeaways\nAdding Multiple Carousels\nusing Bootstrap\nHTML Lists\nOrdered Lists\nUnordered Lists\nStyling Lists using CSS\nlist-style-type",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Coding Practices",
+      "body": "Coding Practices\n  Practice Hands-on Coding Regularly\nReach out in Discussions Portal \u000bfor any queries",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Important Tip",
+      "body": "Important Tip\nCompare your solution in coding practices \u000bwith the solution provided in the platform \u000band improvise it \nIt will accelerate your learning",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Next Session",
+      "body": "Website: Behind The Scenes\nAmazon Route 53\nAmazon CloudFront\nAmazon S3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Session",
+      "body": "Code Snippets\nPrefilled and Initial Code Snippet to Start Session\nhttps://codepen.io/varakumarj/pen/zYBZgNz?editors=1000 \nGolden Temple Code Snippet - Without Default Bootstrap Provided ID\nhttps://codepen.io/varakumarj/pen/ExymxOg?editors=1100 \nGolden Temple Code Snippet - With New ID\nhttps://codepen.io/varakumarj/pen/WNxpVXQ?editors=1100 \nCode Snippet After Integration with Golden Temple Code Snippet\nhttps://codepen.io/varakumarj/pen/ExyWqwb?editors=1100 \nFinal Code Snippet with Lists\nhttps://codepen.io/varakumarj/pen/GRqWVQa?editors=1100",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Website: Behind The Scenes",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1P7_iQzTLKDPDwuutCSY7mbmEAiw3Kp3R1l3ZLkTWoxk/edit#slide=id.g2f4c15e7717_0_0"
+}

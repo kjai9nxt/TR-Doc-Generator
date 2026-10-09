@@ -1,0 +1,577 @@
+{
+  "session_no": 16,
+  "source_file": "static website — session 16",
+  "deck_title": "static website — session 16",
+  "n_slides": 81,
+  "summary": "\n    - Slide 2: Favourite Place\n    - Slide 3: Recap\n    - Slide 4: Agenda\n    - Slide 5: Agenda for Today’s Session\n    - Slide 6: Example - Static Website\n    - Slide 7: Agenda\n    - Slide 8: Detailed View Section\n    - Slide 9: Detailed View Section\n    - Slide 10: Detailed View Section\n    - Slide 11: Detailed View Section\n    - Slide 12: Adding a\n    - Slide 13: Detailed View Section\n    - Slide 14: Detailed View Section\n    - Slide 15: How to Add a Carousel?\n    - Slide 16: Desktop View\n    - Slide 17: Desktop View\n    - Slide 18: Mobile View\n    - Slide 19: Desktop View\n    - Slide 20: Mobile View\n    - Slide 21: Desktop View\n    - Slide 22: Mobile View\n    - Slide 23: Desktop View\n    - Slide 24: Mobile View\n    - Slide 25: Desktop View\n    - Slide 26: Mobile View\n    - Slide 27: Desktop View\n    - Slide 28: Mobile View\n    - Slide 29: Bootstrap\n    - Slide 30: Detailed View Section\n    - Slide 31: Detailed View Section\n    - Slide 32: Detailed View Section\n    - Slide 33: Adding Carousel to the Detailed View Card Container\n    - Slide 34: Detailed View Section\n    - Slide 35: Detailed View Section\n    - Slide 36: Detailed View Section\n    - Slide 37: Adding Detailed View Card Heading\n    - Slide 38: Detailed View Section\n    - Slide 39: Adding Detailed View Card Description\n    - Slide 40: How to get Spacing inside\n    - Slide 41: Detailed View Section\n    - Slide 42: Adding Padding to the Card Text Container\n    - Slide 43: How to get\n    - Slide 44: Detailed View Section\n    - Slide 45: Adding Video in \u000bPlace of Carousel\n    - Slide 46: Detailed View Section\n    - Slide 47: Desktop View\n    - Slide 48: Mobile View\n    - Slide 49: Desktop View\n    - Slide 50: Mobile View\n    - Slide 51: Desktop View\n    - Slide 52: Mobile View\n    - Slide 53: Desktop View\n    - Slide 54: Mobile View\n    - Slide 55: Desktop View\n    - Slide 56: Mobile View\n    - Slide 57: Desktop View\n    - Slide 58: Mobile View\n    - Slide 59: Bootstrap\n    - Slide 60: Detailed View Section\n    - Slide 61: Adding a Youtube Video\n    - Slide 62: Adding Taj Mahal Video\n    - Slide 63: Desktop View\n    - Slide 64: Mobile View\n    - Slide 65: Desktop View\n    - Slide 66: Mobile View\n    - Slide 67: Desktop View\n    - Slide 68: Mobile View\n    - Slide 69: Desktop View\n    - Slide 70: Desktop View\n    - Slide 71: Mobile View\n    - Slide 72: Mobile View\n    - Slide 73: Detailed View Section\n    - Slide 74: Detailed View Section\n    - Slide 75: Quiz Time!\n    - Slide 76: Favourite Place Detailed View Section\n    - Slide 78: Website Integration",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Favourite Place",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "A Note on Bootstrap Versions\nJuly 19 2022\nAugust\n2017\nv5.2.0\nDec 7 2020\nAug 4 2020\nAugust\n2017\nv4.5.1\nv5.3.1\nv5.0.0\nApril 12 2023\nv5.3.0\n…\nJuly 19 2023",
+      "notes": "There are also new versions came between 4.5.1 to 5.0.0\n\nWe added only some of the versions",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "Favourite Place Detailed View Section \nBootstrap Components\nCarousel\nBootstrap Utilities\nEmbedding \u000ba YouTube Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda for Today’s Session",
+      "body": "Favourite Place Detailed View Section \nBootstrap Components\nCarousel\nBootstrap Utilities\nEmbedding \u000ba YouTube Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Example - Static Website",
+      "body": "Tourism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Agenda",
+      "body": "Favourite Place Detailed View Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Detailed View Section",
+      "body": "Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Detailed View Section",
+      "body": "Breaking Down into Small Parts \nHeading\nCard Container\nBackground Container\nHeading\nParagraph\nCarousel\nText Container",
+      "notes": "Breaking down into small parts\nPick one small part\nWrite the code\nTest your output\nThen, go to the next part \u000band repeat the same",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Detailed View Section",
+      "body": "Adding Background Image and Heading\nSimilar to the Favourite Places Section",
+      "notes": "Up to here, prefilled code is provided in the session playground.\n<div class=\"detailed-view-bg-container\">\n\n</div>",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Detailed View Section",
+      "body": "Initial Code\n<div class=\"detailed-view-bg-container\">\n  <h1 class=\"detailed-view-heading\">\n    Detailed View\n  </h1>\n  Your code goes here\n</div>\n.detailed-view-heading {\n  color: white;\u000b  font-size: 22px;\n  font-family: \"Roboto\";\n  font-weight: bold;\n  padding: 24px;\n}\n.detailed-view-bg-container {\n  background-image: url(\"Image URL\");\n  background-size: cover;  \n  height: 100vh;\n}\nHTML\nCSS",
+      "notes": "https://assets.ccbp.in/frontend/static-website/sea-bg.png",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Adding a",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Detailed View Section",
+      "body": "Adding a Detailed View Card \nHeading\nParagraph\nCarousel\nCard Container\nText Container",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Detailed View Section",
+      "body": "Adding a Detailed View Card Container\n<div class=\"detailed-view-bg-container\" >\n  <h1 class=\"detailed-view-heading\" >\n    Detailed View\n  </h1>\n  <div class=\"detailed-view-card-container\" >\n  </div>\n</div>\n.detailed-view-card-container {\n  background-color: white;\n  border-bottom-right-radius: 8px;\n  border-bottom-left-radius: 8px;\n}\nHTML\nCSS",
+      "notes": "<div class=\"detailed-view-card-container\"></div>\n\n.detailed-view-card-container {\n background-color: white;\n border-bottom-right-radius: 8px;\n border-bottom-left-radius: 8px;\n}",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "How to Add a Carousel?",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Desktop View",
+      "body": "getbootstrap.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Desktop View",
+      "body": "Home",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Mobile View",
+      "body": "Home",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Desktop View",
+      "body": "Click on Documentation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Mobile View",
+      "body": "Click on Documentation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Desktop View",
+      "body": "Click on Components",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Mobile View",
+      "body": "Click on Components",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Desktop View",
+      "body": "Click on Carousel",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Mobile View",
+      "body": "Click on Carousel",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Desktop View",
+      "body": "With Indicators",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Mobile View",
+      "body": "With Indicators",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Desktop View",
+      "body": "Copy Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Mobile View",
+      "body": "Copy Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Bootstrap",
+      "body": "Carousel Code\n<div id=\"carouselExampleIndicators\" class=\"carousel slide\"  \n     data-ride=\"carousel\">\n  <ol class=\"carousel-indicators\">\n    <li data-target=\"#carouselExampleIndicators\" data-slide-to=\"0\" \n        class=\"active\"></li>\n    <li data-target=\"#carouselExampleIndicators\"  \n        data-slide-to=\"1\"></li>\n    <li data-target=\"#carouselExampleIndicators\" \n        data-slide-to=\"2\"></li>\n  </ol>\n  <div class=\"carousel-inner\">\n    <div class=\"carousel-item active\">\n      <img src=\"...\" class=\"d-block w-100\" alt=\"...\">\n    </div>...\n    <a class=\"carousel-control-next\" \n       href=\"#carouselExampleIndicators\" role=\"button\" \n       data-slide=\"next\">\n      <span class=\"carousel-control-next-icon\"...></span>\n      <span class=\"sr-only\">Next</span>\n    </a>\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Detailed View Section",
+      "body": "Adding Carousel to the \nDetailed View Card Container\n...\n  <div class=\"detailed-view-card-container\">\n    <div id=\"carouselExampleIndicators\" class=\"carousel slide\" data-ride=\"carousel\">\n      ...     \n    </div>\n  </div>\n...\nHTML",
+      "notes": "<div id=\"carouselExampleIndicators\" class=\"carousel slide\" data-ride=\"carousel\">\n  <ol class=\"carousel-indicators\">\n    <li data-target=\"#carouselExampleIndicators\" data-slide-to=\"0\" class=\"active\"></li>\n    <li data-target=\"#carouselExampleIndicators\" data-slide-to=\"1\"></li>\n    <li data-target=\"#carouselExampleIndicators\" data-slide-to=\"2\"></li>\n  </ol>\n  <div class=\"carousel-inner\">\n    <div class=\"carousel-item active\">\n      <img src=\"...\" class=\"d-block w-100\" alt=\"...\">\n    </div>\n    <div class=\"carousel-item\">\n      <img src=\"...\" class=\"d-block w-100\" alt=\"...\">\n    </div>\n    <div class=\"carousel-item\">\n      <img src=\"...\" class=\"d-block w-100\" alt=\"...\">\n    </div>\n  </div>\n  <a class=\"carousel-control-prev\" href=\"#carouselExampleIndicators\" role=\"button\" data-slide=\"prev\">\n    <span class=\"carousel-control-prev-icon\" aria-hidden=\"true\"></span>\n    <span class=\"sr-only\">Previous</span>\n  </a>\n  <a class=\"carousel-control-next\" href=\"#carouselExampleIndicators\" role=\"button\" data-slide=\"next\">\n    <span class=\"carousel-control-next-icon\" aria-hidden=\"true\"></span>\n    <span class=\"sr-only\">Next</span>\n  </a>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Detailed View Section",
+      "body": "Adding Carousel Image Sources\n<div id=\"carouselExampleIndicators\" \u000b     class=\"carousel slide\" data-ride=\"carousel\">\n ...\n   <div class=\"carousel-item active\">\n     <img src= \"...\" class=\"d-block w-100\" alt=\"...\">\n   </div>\n   <div class=\"carousel-item\">\n     <img src= \"...\" class=\"d-block w-100\" alt=\"...\">\n   </div>\n   <div class=\"carousel-item\">\n     <img src= \"...\" class=\"d-block w-100\" alt=\"...\">\n   </div>\n </div>\n ...\n </div>\nHTML",
+      "notes": "https://assets.ccbp.in/frontend/static-website/tajmahal-c1-img.png \nhttps://assets.ccbp.in/frontend/static-website/tajmahal-c2-img.png \nhttps://assets.ccbp.in/frontend/static-website/tajmahal-c3-img.png",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Detailed View Section",
+      "body": "Carousel Image URLs\nhttps://assets.ccbp.in/frontend/static-website/tajmahal-c1-img.png \nhttps://assets.ccbp.in/frontend/static-website/tajmahal-c2-img.png \nhttps://assets.ccbp.in/frontend/static-website/tajmahal-c3-img.png",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Adding Carousel to the Detailed View Card Container",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Detailed View Section",
+      "body": "Adding Detailed View Card Text Container\nHeading\nParagraph\nText Container",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Detailed View Section",
+      "body": "Adding Detailed View Card Text Container\n...\n<div class=\"detailed-view-card-container\">\n  ...\n  <div>\n  </div>\n</div>\n...\nHTML",
+      "notes": "<div>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Detailed View Section",
+      "body": "Adding Detailed View Card Heading\n...\n  <div class=\"detailed-view-card-container\">\n  ...\n    <div>\n      <h1 class=\"detailed-view-card-heading\">\n        Taj Mahal\n      </h1>\n    </div>\n  </div>\n...\n.detailed-view-card-heading {\n  color: #0f0e46;   \n  font-family: \"Roboto\";\n  font-weight: bold;\n  font-size: 23px;\n }\nHTML\nCSS",
+      "notes": "<h1 class=\"detailed-view-card-heading\">Taj Mahal</h1>\n\n.detailed-view-card-heading {\n color: #0f0e46;\n font-family: \"Roboto\";\n font-weight: bold;\n font-size: 23px;\n}",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Adding Detailed View Card Heading",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Detailed View Section",
+      "body": "Adding Detailed View Card Description\n...\n  <div>\n    <h1 class=\"detailed-view-card-heading\">\n      Taj Mahal\n    </h1>\n    <p class=\"detailed-view-card-description\">\n      The Taj Mahal is ...\n    </p>\n  </div>\n...\n.detailed-view-card-description {\n   font-family: 'Roboto';\n   font-size: 13px;\n   color: #6c6b70;\n}\nHTML\nCSS",
+      "notes": "<p class=\"detailed-view-card-description\">\n The Taj Mahal is considered to be the greatest architectural achievement in\n the whole range of Indo-Islamic architecture. Its recognised architectonic\n beauty has a rhythmic combination of solids and voids, concave and convex and\n light shadow; such as arches and domes further increases the aesthetic aspect.\n Not a piece of architecture, as other buildings are, but the proud passions of\n an emperor’s love wrought in living stones.\n</p>\n\n.detailed-view-card-description {\n font-family: \"Roboto\";\n font-size: 13px;\n color: #6c6b70;\n}",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Adding Detailed View Card Description",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "How to get Spacing inside",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Detailed View Section",
+      "body": "Adding Padding to the Card Text Container\n...\n<div class=\"detailed-view-card-text-container\">\n  <h1 class=\"detailed-view-card-heading\">\n    Taj Mahal\n  </h1>\n  <p class=\"detailed-view-card-description\">\n    The Taj Mahal is ...\n  </p>\n</div>\n...\n.detailed-view-card-text-container {\n  padding: 16px;\n}\nHTML\nCSS",
+      "notes": "<div class=\"detailed-view-card-text-container\">\n <h1 class=\"detailed-view-card-heading\">Taj Mahal</h1>\n <p class=\"detailed-view-card-description\">\n   The Taj Mahal is considered to be the greatest architectural achievement in\n   the whole range of Indo-Islamic architecture. Its recognised architectonic\n   beauty has a rhythmic combination of solids and voids, concave and convex\n   and light shadow; such as arches and domes further increases the aesthetic\n   aspect. Not a piece of architecture, as other buildings are, but the proud\n   passions of an emperor’s love wrought in living stones.\n </p>\n</div>\n\n\n.detailed-view-card-text-container {\n padding: 16px;\n}",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Adding Padding to the Card Text Container",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "How to get",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Detailed View Section",
+      "body": "Adding Spacing Around the Card\n.detailed-view-card-container {\n  background-color: white;\n  border-bottom-right-radius: 8px;\n  border-bottom-left-radius: 8px;\n  margin: 24px;\n}\nCSS",
+      "notes": "CSS\n.detailed-view-card-container {\n background-color: white;\n border-bottom-right-radius: 8px;\n border-bottom-left-radius: 8px;\n margin: 24px;\n}",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Adding Video in \u000bPlace of Carousel",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Detailed View Section",
+      "body": "getbootstrap.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Desktop View",
+      "body": "Home",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Mobile View",
+      "body": "Home",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Desktop View",
+      "body": "Click on Documentation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Mobile View",
+      "body": "Click on Documentation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Desktop View",
+      "body": "Click on Utilities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Mobile View",
+      "body": "Click on Utilities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Desktop View",
+      "body": "Click on Embed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Mobile View",
+      "body": "Click on Embed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Desktop View",
+      "body": "Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Mobile View",
+      "body": "Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Desktop View",
+      "body": "Copy Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Mobile View",
+      "body": "Copy Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Bootstrap",
+      "body": "YouTube Embed Code\n<div class=\"embed-responsive embed-responsive-16by9\">\n  <iframe class=\"embed-responsive-item\"    \n    src=\"https://www.youtube.com/embed/zpOULjyy-n8?rel=0\" allowfullscreen></iframe>\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Detailed View Section",
+      "body": "Adding a YouTube Video\n<div class=\"detailed-view-card-container\" >\n  <div class=\"embed-responsive embed-responsive-16by9\">\n    <iframe class=\"embed-responsive-item\"    \n        src=\"https://www.youtube.com/embed/zpOULjyy-n8?rel=0\" allowfullscreen></iframe>\n  </div>\n  <div class=\"detailed-view-card-text-container\">\n     ...\n  </div>\n</div>\nHTML",
+      "notes": "Remove Carousal and add Youtube embed code\n\n<div class=\"embed-responsive embed-responsive-16by9\">\n <iframe\n   class=\"embed-responsive-item\"\n   src=\"https://www.youtube.com/embed/zpOULjyy-n8?rel=0\"\n   allowfullscreen\n ></iframe>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Adding a Youtube Video",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Adding Taj Mahal Video",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Desktop View",
+      "body": "youtube.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Mobile View",
+      "body": "YouTube Application",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Desktop View",
+      "body": "Search for the Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Mobile View",
+      "body": "Search for the Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Desktop View",
+      "body": "Select the Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Mobile View",
+      "body": "Select the Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Desktop View",
+      "body": "YouTube Video URL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Desktop View",
+      "body": "Copy Video ID",
+      "notes": "Copy the text which is after v=",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Mobile View",
+      "body": "Click on Share and Select Messages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Mobile View",
+      "body": "Copy Video ID",
+      "notes": "Copy the text which is after backslash /",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Detailed View Section",
+      "body": "Replace YouTube Video ID\n<div class=\"detailed-view-card-container\" >\n  <div class=\"embed-responsive embed-responsive-16by9\">\n    <iframe class=\"embed-responsive-item\"    \n        src=\"https://www.youtube.com/embed/zpOULjyy-n8?rel=0\" allowfullscreen></iframe>\n  </div>\n  <div class=\"detailed-view-card-text-container\">\n    ...\n  </div>\n</div>\nHTML",
+      "notes": "Very careful while placing the id. \nWe need to place before ?   ---  Don’t remove question mark. We should place after embed/\n\n<div class=\"embed-responsive embed-responsive-16by9\">\n <iframe\n   class=\"embed-responsive-item\"\n   src=\"https://www.youtube.com/embed/49HTIoCccDY?rel=0\"\n   allowfullscreen\n ></iframe>\n</div>",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Detailed View Section",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Favourite Place Detailed View Section",
+      "body": "Key Takeaways\nBootstrap\nCarousel\nEmbed Video\nYoutube Video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "",
+      "body": "",
+      "notes": "In the next session, we’ll start off with performing our first selenium test. \u000b\u000bAs part of the “Automation Testing using Selenium (Part-1)” session. \n\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "Website Integration",
+      "body": "",
+      "notes": "In the next session, we’ll start off with performing our first selenium test. \u000b\u000bAs part of the “Automation Testing using Selenium (Part-1)” session. \n\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 81,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1TUVNryGaknmQtJgiEPBaa3CHY_HQ9TfQpuCSpj3LQic/edit#slide=id.g2f4ba8c9158_1_0"
+}

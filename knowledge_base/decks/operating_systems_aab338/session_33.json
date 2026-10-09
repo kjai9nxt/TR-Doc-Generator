@@ -1,0 +1,539 @@
+{
+  "session_no": 33,
+  "source_file": "RAID & Storage Management",
+  "deck_title": "RAID & Storage Management",
+  "n_slides": 54,
+  "summary": "\n    - Slide 2: Session 33 : RAID & Storage Management\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Secondary Storage Management: Managing secondary storage\n    - Slide 6: Secondary Storage Management\n    - Slide 7: Heading: Storage Management Layers\n    - Slide 8: Heading: Volumes And Monitoring\n    - Slide 9: Heading: Volumes And Monitoring\n    - Slide 10: RAID Concept\n    - Slide 11: Heading: Single Disk Limits\n    - Slide 12: Heading: RAID Defined\n    - Slide 13: Heading: RAID Defined\n    - Slide 14: RAID Levels - I\n    - Slide 15: Heading: RAID Levels\n    - Slide 16: Heading: RAID 0 Striping\n    - Slide 17: Heading: RAID 0 Striping\n    - Slide 18: Heading: RAID 0 Striping\n    - Slide 19: Heading: RAID 0 Striping\n    - Slide 20: Heading: RAID 0 Performance\n    - Slide 21: Heading: RAID 1 Mirroring\n    - Slide 22: Heading: RAID 1 Mirroring\n    - Slide 23: Heading: RAID 1 Mirroring\n    - Slide 24: Heading: RAID 1 Mirroring\n    - Slide 25: Heading: RAID 1 Trade-offs\n    - Slide 26: Heading: RAID 0 Vs 1\n    - Slide 27: RAID Levels - II\n    - Slide 28: Heading: Parity And Nested RAID\n    - Slide 29: Heading: RAID 5 Parity\n    - Slide 30: Heading: RAID 5 Parity\n    - Slide 31: Heading: RAID 5 Parity\n    - Slide 32: Heading: RAID 5 Parity\n    - Slide 33: Heading: Parity Calculation Trace\n    - Slide 34: Heading: RAID 6 Dual Parity\n    - Slide 35: Heading: RAID 6 Dual Parity\n    - Slide 36: Heading: RAID 6 Dual Parity\n    - Slide 37: Heading: RAID 10 Nested\n    - Slide 38: Heading: RAID 10 Nested\n    - Slide 39: Heading: RAID 10 Nested\n    - Slide 40: Heading: Comparing Three Levels\n    - Slide 41: Trade-offs & Reliability\n    - Slide 42: Heading: Trade-off Dimensions\n    - Slide 43: Heading: RAID Levels Compared\n    - Slide 44: Heading: Rebuild Risk\n    - Slide 45: Heading: Rebuild Risk\n    - Slide 46: Heading: RAID Vs Backup\n    - Slide 47: Heading: RAID Vs Backup\n    - Slide 48: Heading: Choosing RAID Level\n    - Slide 49: Heading: Section Summary\n    - Slide 52: OS Security & Protection",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Session 33 : RAID & Storage Management",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Secondary Storage Management: Managing secondary storage",
+      "body": "Secondary Storage Management: Managing secondary storage\nRAID Concept: Motivation for RAID\nRAID Levels - I: RAID 0 (striping) & RAID 1 (mirroring)\nRAID Levels - II: RAID 5 (distributed parity) & RAID 6; RAID 10 (nested)\nTrade-offs & Reliability: Performance, redundancy & cost; Storage reliability & data protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Secondary Storage Management",
+      "body": "Secondary Storage Management",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Heading: Storage Management Layers",
+      "body": "Subheading: From Device To File\nContent:\nSecondary storage management coordinates physical devices, media and logical layers so data stays available, fast and reliable.\nDevices: raw disks, SSDs, tapes accessed via controllers\nMedia: sector geometry mapped to logical block addresses\nPartition/volume layer: fixed regions with mount points\nArray layer: JBOD concatenates capacity, spanning extends one volume\nFile system layer: naming, allocation, directories sit above",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Heading: Volumes And Monitoring",
+      "body": "Subheading: Pooling And Tracking Health\nContent:\nA logical volume manager pools physical disks into resizable volumes, while ongoing monitoring tracks health and capacity before problems occur.\nPVs pool into a VG, then sliced into LVs\nOnline resize and point-in-time snapshots without reformatting\nSMART firmware metrics predict drive failure before loss\nCapacity, throughput and IOPS thresholds trigger alerts early",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Heading: Volumes And Monitoring",
+      "body": "Subheading: Analogy\nAnalogy:\nA common water tank fed by several borewells lets pipes of any needed size draw from one pool — just as an LVM pools multiple physical disks into a volume group from which logical volumes of any size are carved.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "RAID Concept",
+      "body": "RAID Concept",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Heading: Single Disk Limits",
+      "body": "Subheading: Three Bottlenecks\nContent:\nA single disk hits a ceiling on how much it can hold, how fast it can be read, and how long it survives before failing.\nCapacity ceiling: largest single disk still bounds total storage\nPerformance ceiling: one disk gives one head's IOPS and throughput\nReliability risk: any single disk is one point of failure\nPlain concatenation (JBOD) adds only capacity, not speed or safety",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Heading: RAID Defined",
+      "body": "Subheading: Striping Plus Redundancy\nContent:\nRAID combines several physical disks into one logical unit managed by a controller, so the array as a whole decides capacity, speed and survivability.\nOriginal 1987 term: Redundant Array of Inexpensive Disks (legacy)\nCurrent usage: Redundant Array of Independent Disks\nProposed by Patterson, Katz, Gibson, UC Berkeley (1987)\nTwo core techniques: striping for parallel speed, redundancy for fault tolerance\nRedundancy trades away capacity that pure striping would keep",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Heading: RAID Defined",
+      "body": "Subheading: Analogy\nAnalogy:\nA single bowler bowling every over tires out, and if injured leaves the team exposed; a team spreads overs across bowlers and keeps cover ready — just as RAID spreads data across disks and keeps redundant copies so one disk failing does not stop play.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "RAID Levels - I",
+      "body": "RAID Levels - I",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Heading: RAID Levels",
+      "body": "Subheading: Five Standard Types\nContent:\nRAID levels are standard classifications defining how disks combine for performance, redundancy or both, ranging from pure striping to parity-based and nested designs.\nRAID 0 uses full raw capacity, zero fault tolerance\nRAID 1 mirrors data across disks\nRAID 5 stripes with distributed parity\nRAID 6 stripes with dual parity\nRAID 10 nests striping over mirroring",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Heading: RAID 0 Striping",
+      "body": "Subheading: Data Split Across Disks\nContent:\nRAID 0 divides a file into fixed-size stripe units and writes them across N disks in turn, so one request is served by several disks together.\nStripe unit size fixed at array setup\nData distributed round-robin across all disks\nNo parity or duplicate copy stored\nMinimum two disks required to stripe",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Heading: RAID 0 Striping",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Heading: RAID 0 Striping",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Heading: RAID 0 Striping",
+      "body": "Subheading: Analogy\nAnalogy:\nTwo friends split one heavy shopping list and each carry half the bags home together — just as RAID 0 splits one file across disks so both work in parallel.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Heading: RAID 0 Performance",
+      "body": "Subheading: Speed Versus Risk\nContent:\nSplitting one request across N disks lets all of them read or write simultaneously, so throughput scales upward — but losing any single disk destroys the whole stripe set.\nUsable capacity = sum of all disk capacities\nFour-disk array approaches near 4x single-disk IOPS\nFailure probability rises with more disks, not falls\nBest for scratch space, caches, video editing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Heading: RAID 1 Mirroring",
+      "body": "Subheading: Duplicate Copies Kept\nContent:\nRAID 1 keeps an identical copy of every stripe unit on a second disk, so a single drive failure leaves an untouched mirror still serving data.\nMirror set may include more than two disks for extra redundancy\nReads can be served from either mirror, boosting throughput\nFailed disk replaced and resynced by direct copy, no parity math",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Heading: RAID 1 Mirroring",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Heading: RAID 1 Mirroring",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Heading: RAID 1 Mirroring",
+      "body": "Subheading: Analogy\nAnalogy:\nA bank keeps a signed cheque copy locked in two separate vaults so one vault's loss never loses the record — just as RAID 1 keeps identical mirrored copies on separate disks.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Heading: RAID 1 Trade-offs",
+      "body": "Subheading: Cost Versus Protection\nContent:\nMirroring survives a single-disk failure without any data loss, but the protection is paid for in halved capacity and duplicated write traffic.\nUsable capacity = total raw capacity divided by mirror count\nWrite speed limited to one disk, not parallel\nRead speed can approach N times via split reads\nRebuild time depends on disk size, not stripe count",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Heading: RAID 0 Vs 1",
+      "body": "Subheading: Striping Vs Mirroring\nContent:\nStriping and mirroring sit at opposite ends of the RAID trade-off — one maximises speed and raw capacity, the other maximises protection.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "RAID 0",
+            "RAID 1"
+          ],
+          [
+            "Redundancy",
+            "None",
+            "Full duplicate copy"
+          ],
+          [
+            "Usable capacity",
+            "N × disk size",
+            "(N/2) × disk size"
+          ],
+          [
+            "Read speed",
+            "High, parallel access",
+            "High, split across mirrors"
+          ],
+          [
+            "Write speed",
+            "High, parallel access",
+            "Limited to one disk"
+          ],
+          [
+            "Fault tolerance",
+            "Any disk failure is fatal",
+            "Survives one disk failure"
+          ],
+          [
+            "Typical use",
+            "Scratch, caching, editing",
+            "Critical, uptime-sensitive data"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 27,
+      "title": "RAID Levels - II",
+      "body": "RAID Levels - II",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Heading: Parity And Nested RAID",
+      "body": "Subheading: Beyond Stripe Mirror\nContent:\nRAID 0 and RAID 1 sit at extremes of speed-only or safety-only; three further levels blend striping and redundancy in different ratios.\nRAID 5: single distributed parity, tolerates one disk failure\nRAID 6: dual distributed parity, tolerates two disk failures\nRAID 10: mirrored pairs striped together, no parity math\nAll three balance capacity, speed and rebuild cost differently",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Heading: RAID 5 Parity",
+      "body": "Subheading: Distributed Across Disks\nContent:\nRAID 5 stripes data across disks like RAID 0 but adds a parity stripe unit, computed by XOR, rotated across every disk.\nParity rotates disk to disk, no single parity drive\nAny one disk failure recoverable via XOR reconstruction\nCapacity = (n−1) × disk size, one disk reserved\nMinimum 3 disks required",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Heading: RAID 5 Parity",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Heading: RAID 5 Parity",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Heading: RAID 5 Parity",
+      "body": "Subheading: Analogy\nAnalogy:\nA study group keeps one cross-check note summarising everyone else's pages; a lost notebook is rebuilt from the rest plus that note — exactly as RAID 5 recomputes a failed disk from parity on the remaining disks.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Heading: Parity Calculation Trace",
+      "body": "Subheading: XOR Reconstruction\nContent:\nThree data stripe units and their parity show how XOR both protects the array and rebuilds a failed disk.\nParity P = D0 XOR D1 XOR D2 (=0000)\nDisk1 fails: recompute D1 = D0 XOR D2 XOR P = 1100\nWrite penalty: read old data + parity, XOR, write back (4 I/Os)\nFull rebuild reads every surviving disk before array is safe again",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Disk",
+            "Stripe Unit",
+            "Value (binary)"
+          ],
+          [
+            "Disk0",
+            "D0",
+            "1010"
+          ],
+          [
+            "Disk1",
+            "D1",
+            "1100"
+          ],
+          [
+            "Disk2",
+            "D2",
+            "0110"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 34,
+      "title": "Heading: RAID 6 Dual Parity",
+      "body": "Subheading: Two Disk Tolerance\nContent:\nRAID 6 adds a second, independently computed parity stripe unit so the array survives two simultaneous disk failures.\nSecond parity (Q) uses Reed–Solomon coding, not plain XOR\nTolerates any two disk failures without data loss\nMinimum 4 disks required\nRebuild reads more data, so slower and costlier than RAID 5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Heading: RAID 6 Dual Parity",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Heading: RAID 6 Dual Parity",
+      "body": "Subheading: Analogy\nAnalogy:\nA hospital ward keeps both mains power and two independent backup generators on standby, so equipment keeps running even if two separate power failures strike at once — exactly as RAID 6 keeps two independent parity values so data survives any two simultaneous disk failures.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Heading: RAID 10 Nested",
+      "body": "Subheading: Mirror Then Stripe\nContent:\nRAID 10 mirrors pairs of disks first, then stripes data across those mirrored pairs, combining redundancy with speed.\nEach mirrored pair tolerates one failure within that pair\nNo parity computation, so no write penalty\nMinimum 4 disks, usable capacity is exactly half\nFastest rebuild: simple copy from surviving mirror",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Heading: RAID 10 Nested",
+      "body": "Subheading: Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Heading: RAID 10 Nested",
+      "body": "Subheading: Analogy\nAnalogy:\nTwo pairs of identical twins split a trekking route between the pairs; within each pair, either twin finishes the stretch if the other falls ill — exactly as RAID 10 mirrors data within each pair while striping work across pairs.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Heading: Comparing Three Levels",
+      "body": "Subheading: Cost Versus Resilience\nContent:\nChoosing among RAID 5, 6 and 10 balances how much capacity is sacrificed against how many failures the array can absorb.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "RAID 5",
+            "RAID 6",
+            "RAID 10"
+          ],
+          [
+            "Min disks",
+            "3",
+            "4",
+            "4"
+          ],
+          [
+            "Fault tolerance",
+            "1 disk",
+            "2 disks",
+            "1 per mirror pair"
+          ],
+          [
+            "Usable capacity",
+            "(n−1)/n",
+            "(n−2)/n",
+            "n/2"
+          ],
+          [
+            "Write penalty",
+            "Moderate (1 parity)",
+            "High (2 parities)",
+            "None (mirror copy)"
+          ],
+          [
+            "Rebuild speed",
+            "Slow, array-wide read",
+            "Slower, array-wide read",
+            "Fast, single copy"
+          ],
+          [
+            "Typical use",
+            "File/app servers",
+            "Large-capacity arrays",
+            "Databases, high I/O"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 41,
+      "title": "Trade-offs & Reliability",
+      "body": "Trade-offs & Reliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Heading: Trade-off Dimensions",
+      "body": "Subheading: Performance Cost Redundancy\nContent:\nEvery RAID level trades three resources against each other: read/write speed, fault tolerance, and usable capacity — no level wins on all three.\nPerformance: throughput and IOPS for reads/writes\nRedundancy: how many disk failures survive\nCost: usable capacity lost to parity/mirroring\nReliability: rebuild time and failure risk\nData protection: guarding against corruption, not just loss",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Heading: RAID Levels Compared",
+      "body": "Subheading: Performance Cost Snapshot\nContent:\nPlacing RAID 0, 1, 5, 6 and 10 side by side shows the direct trade-off between usable capacity and survivable failures.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "RAID",
+            "Min Disks",
+            "Usable Capacity",
+            "Fault Tolerance",
+            "Write Performance"
+          ],
+          [
+            "RAID 0",
+            "2",
+            "100% of raw",
+            "None",
+            "Highest, no overhead"
+          ],
+          [
+            "RAID 1",
+            "2",
+            "50%",
+            "1 disk",
+            "Moderate, duplicate writes"
+          ],
+          [
+            "RAID 5",
+            "3",
+            "(n-1)/n",
+            "1 disk",
+            "Write penalty, parity update"
+          ],
+          [
+            "RAID 6",
+            "4",
+            "(n-2)/n",
+            "2 disks",
+            "Lower, dual parity update"
+          ],
+          [
+            "RAID 10",
+            "4",
+            "50%",
+            "1 per mirror pair",
+            "High, no parity math"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 44,
+      "title": "Heading: Rebuild Risk",
+      "body": "Subheading: MTBF And Rebuild Window\nContent:\nRedundancy survives one failure, but rebuilding a large array after a disk swap is itself a fragile, time-consuming window.\nMTBF: average operating hours between disk failures\nRebuild time grows with drive capacity and array size\nSecond failure during rebuild loses data on RAID 5\nUnrecoverable read errors during rebuild threaten large arrays\nHot spare: idle disk that starts rebuild automatically",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Heading: Rebuild Risk",
+      "body": "Subheading: Analogy\nAnalogy:\nA single security guard covers an entire housing society gate while a second guard is still travelling to join duty, leaving the gate unchecked until the replacement arrives — exactly as an array runs unprotected during its rebuild window until a hot spare finishes copying.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Heading: RAID Vs Backup",
+      "body": "Subheading: Redundancy Not Recovery\nContent:\nRAID replicates every write instantly across disks, so it protects against hardware failure but cannot undo deletion, corruption, or ransomware.\nController or firmware fault corrupts every disk alike\nSilent data corruption (bit rot) can go undetected\nScrubbing: periodic read-verify pass catches corruption early\nChecksum/parity mismatches flag silent errors before spread\nOff-site or offline backup remains the recovery layer RAID lacks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Heading: RAID Vs Backup",
+      "body": "Subheading: Analogy\nAnalogy:\nPhotocopying a page the instant it gets torn only produces two torn copies — exactly as RAID duplicates data faithfully, damage included, which is why a separate backup is still needed.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Heading: Choosing RAID Level",
+      "body": "Subheading: Matching Use To Level\nContent:\nPicking a RAID level means matching its performance-cost-redundancy profile to what the workload must survive and how fast it must run.\nRAID 0: scratch or temp data, speed only, no protection\nRAID 1: OS/boot drives, small critical volumes\nRAID 5: read-heavy file/application servers, moderate budget\nRAID 6: large-capacity archives needing two-failure survival\nRAID 10: databases needing speed and fast rebuild",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Heading: Section Summary",
+      "body": "Subheading: Balancing Five Factors\nContent:\nNo RAID level is universally best; each of the five levels sits at a different point on the performance-cost-redundancy-reliability spectrum.\nMore redundancy always costs usable capacity\nHigher fault tolerance often costs write performance\nRebuild risk grows with drive size, not RAID level alone\nBackup stays mandatory regardless of RAID level chosen",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "OS Security & Protection",
+      "body": "OS Security & Protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1XIqYZzSpkd_AYLlzsp_yU1cNtrqgwLLW82993tqG4Is/edit?slide=id.g3f7578d1a7b_0_1027#slide=id.g3f7578d1a7b_0_1027"
+}

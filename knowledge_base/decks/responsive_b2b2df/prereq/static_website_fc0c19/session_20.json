@@ -1,0 +1,346 @@
+{
+  "session_no": 20,
+  "source_file": "static website — session 20",
+  "deck_title": "static website — session 20",
+  "n_slides": 48,
+  "summary": "\n    - Slide 2: HTML Hyperlinks\n    - Slide 3: Recap\n    - Slide 4: Agenda\n    - Slide 5: Agenda for Today’s Session\n    - Slide 6: HTML Elements\n    - Slide 7: What happens when we click on a Link in Google Search Results?\n    - Slide 8: HTML Hyperlink\n    - Slide 9: How to add a \n    - Slide 10: Syntax\n    - Slide 11: HTML Hyperlink\n    - Slide 12: Adding Hyperlink using Anchor Element\n    - Slide 13: How to Make a Link\n    - Slide 14: HTML Hyperlink\n    - Slide 15: HTML Hyperlink\n    - Slide 16: Opening Link in a new Tab\n    - Slide 17: Using Hyperlinks \u000bto Navigate within \u000bthe Same HTML document\n    - Slide 18: Adding Hyperlink\n    - Slide 19: Adding Hyperlink\n    - Slide 20: Let’s add a Link to \n    - Slide 21: Example Code Snippet\n    - Slide 22: HTML Hyperlink\n    - Slide 23: Navigation from profile to bio\n    - Slide 24: Navigation from profile to bio\n    - Slide 25: Navigation from profile to bio\n    - Slide 26: Quiz Time!\n    - Slide 27: How to use \n    - Slide 28: HTML Hyperlink\n    - Slide 29: HTML Hyperlink\n    - Slide 30: HTML Hyperlink\n    - Slide 31: Let’s see few most commonly \n    - Slide 32: Let’s write a Poem...\n    - Slide 33: HTML Elements\n    - Slide 34: HTML Elements\n    - Slide 35:       HTML Line Break Element\n    - Slide 36: HTML ELements\n    - Slide 37: HTML Elements\n    - Slide 38: How to add a Horizontal Line? \n    - Slide 39:       HTML Horizontal Rule Element\n    - Slide 40: HTML Elements\n    - Slide 41: HTML Elements\n    - Slide 42: Quiz Time!\n    - Slide 43: HTML Hyperlinks\n    - Slide 46: On-Demand Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "HTML Hyperlinks",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Website: Behind The Scenes\nRoute 53\nS3\nCloudFront\nInternet\nIP Address\nAmazon Web Services\nRoute 53\nCloudFront\nS3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "HTML Hyperlinks\nAnchor Element\nHTML Void Elements\ntarget Attribute\nhref Attribute\nHorizontal Rule\nLine Break \nHTML Elements as Hyperlinks\nImage as Hyperlink",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda for Today’s Session",
+      "body": "HTML Hyperlinks\nAnchor Element\nHTML Void Elements\ntarget Attribute\nhref Attribute\nHorizontal Rule\nLine Break \nHTML Elements as Hyperlinks\nImage as Hyperlink",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "HTML Elements",
+      "body": "HTML Hyperlinks\nHyperlinks are used to navigate \u000bto other web resources or to \u000ba specific element with in the HTML document \nHyperlinks, are also called “links”",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "What happens when we click on a Link in Google Search Results?",
+      "body": "What happens when we click on a Link in Google Search Results?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "HTML Hyperlink",
+      "body": "Navigating to Another Website",
+      "notes": "We move to the corresponding page",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "How to add a ",
+      "body": "How to add a \nHyperlink in HTML?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Syntax",
+      "body": "HTML Anchor Element\n<a href = “URL”> Content </a>\nAnchor Element\nAttribute Value\nAttribute Name \nEnd Tag\nStart Tag\nContent",
+      "notes": "We can add hyperlink using HTML Anchor Element",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "HTML Hyperlink",
+      "body": "Using Anchor Element\n<a href=\"https://learning.ccbp.in/\">\n  NxtWave Learning Platform\n</a>\nHTML",
+      "notes": "<a href=\"https://learning.ccbp.in/\">\n  CCBP 4.0\n</a>",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Adding Hyperlink using Anchor Element",
+      "body": "Output\nNxtWave Learning Platform",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "How to Make a Link",
+      "body": "How to Make a Link\nOpen in a New Tab?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "HTML Hyperlink",
+      "body": "target Attribute\nThe target Attribute \u000bspecifies where to open \u000bthe linked web resource",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "HTML Hyperlink",
+      "body": "Opening Link in a New Tab\n<a href=\"https://learning.ccbp.in/\" target=\"_blank\">\n  CCBP 4.0\n</a>\nHTML",
+      "notes": "<a href=\"https://learning.ccbp.in/\" target=\"_blank\">\n  CCBP 4.0\n</a>\n\n\nIt wll open in new tab/ new window depending on which web browser they are using and how they configured that browser\n\n\tSo now, attributes, that is, additional information is always provided in the START Tag. \n\t\n\tWe HAVE to write in the Start tag. \n\t\tAttrbute = syntax name of the Attribute. \n\t\tValue is what you can set.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Opening Link in a new Tab",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Using Hyperlinks \u000bto Navigate within \u000bthe Same HTML document",
+      "body": "Using Hyperlinks \u000bto Navigate within \u000bthe Same HTML document",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Adding Hyperlink",
+      "body": "Navigate within the Same HTML document\nProvide the id of the \u000bsection which you want to \u000blink to the href attribute\n<a href=\"URL#SectionId\">Section</a>",
+      "notes": "We have to provide id of the section with # as a prefix",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Adding Hyperlink",
+      "body": "<a href=\" #SectionId \">Section</a>\n<a href=\"URL#SectionId\">Section</a>\nNavigate within the Same HTML document",
+      "notes": "We have to provide id of the section with # as a prefix\n\nIf we are some page then we no need to provide url. Simply we can provide section ID...",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Let’s add a Link to ",
+      "body": "Let’s add a Link to \nNavigate from \nProfile Section to Bio Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Example Code Snippet",
+      "body": "Code for Three Sections\n<div class=\"profile\">\n  ...\n</div>\n<div class=\"awards\">\n  ...\n</div>\n<div class=\"bio\">\n  ...\n</div>\n.profile {\n  padding: 30px;\n  text-align: center;\n  background-color: #ffffff;\n  height: 70vh;\n}\n...\n...\n.heading {\n  font-size: 24px;\n}\nHTML\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "HTML Hyperlink",
+      "body": "Navigation from Profile to Bio\nSteps:\nAdding id to the bio Section\nAdding hyperlink in the profile Section  \u000band providing bio Section id as href Attribute value",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Navigation from profile to bio",
+      "body": "Adding id to the Bio Section \n<div class=\"profile\">\n  ...\n</div>\n<div class=\"awards\">\n  ...\n</div>\n<div class=\"bio\" id=\"bioSection\">\n  ...\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Navigation from profile to bio",
+      "body": "Adding Hyperlink to the Profile Section\n<div class=\"profile\">\n  ...\n  <a href=\"#bioSection\">Bio</a>\n</div>\n<div class=\"awards\">\n  ...\n</div>\n<div class=\"bio\" id=\"bioSection\">\n  ...\n</div>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Navigation from profile to bio",
+      "body": "Output",
+      "notes": "Explain difference btw display utility and hyperlink",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "How to use ",
+      "body": "How to use \nHTML Image as a Link?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "HTML Hyperlink",
+      "body": "Using HTML Image as a Link\n<a href=\"https://learning.ccbp.in/\">\n  <img src=\"IMAGE_URl\" />\n</a>\nHTML",
+      "notes": "Replace bio link with Image\n<a href=\"https://learning.ccbp.in/\">\n  <img src=\"https://d1tgh8fmlzexmh.cloudfront.net/ccbp-static-website/learn-technologies-img.png\" />\n</a>",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "HTML Hyperlink",
+      "body": "Using HTML Image as a Link\n<a href=\"https://learning.ccbp.in/\">\n  <img src=\"IMAGE_URl\" />\n</a>\nHTML",
+      "notes": "Replace bio link with Image\n<a href=\"https://learning.ccbp.in/\">\n  <img src=\"https://assets.ccbp.in/frontend/static-website/learn-technologies-img.png\" />\n</a>",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "HTML Hyperlink",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Let’s see few most commonly ",
+      "body": "Let’s see few most commonly \nused HTML Void Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Let’s write a Poem...",
+      "body": "Let’s write a Poem...\nTwinkle Twinkle Little Star\nTwinkle, twinkle, little star,\nHow I wonder what you are!\nUp above the world so high,\nLike a diamond in the sky.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "HTML Elements",
+      "body": "Adding a Poem\n<h1 class=\"heading\">\n  Twinkle Twinkle Little Star\n</h1>\n<p> \n  Twinkle, twinkle, little star,\n  How I wonder what you are! \n  Up above the world so high, \n  Like a diamond in the sky. \n</p>\n.heading{\n  font-size: 24px;\n  font-weight: bold;\n}\nCSS\nHTML",
+      "notes": "<h1 class=\"heading\">\n  Twinkle Twinkle Little Star\n</h1>\n<p>\n  Twinkle, twinkle, little star, How I wonder what you are! Up above the world\n  so high, Like a diamond in the sky.\n</p>\n\n\n.heading {\n  font-size: 24px;\n  font-weight: bold;\n}",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "HTML Elements",
+      "body": "Adding a Poem\nTwinkle Twinkle Little Star\nTwinkle, twinkle, little star, How I wonder what you are! Up above the world so high, Like a diamond in the sky.",
+      "notes": "Do we need to write four paragraph elements? Any other way?",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "      HTML Line Break Element",
+      "body": "HTML Line Break Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "HTML ELements",
+      "body": "The Line Break Element \nThe br element helps \u000bto break the text and \u000bcontinue it in the next line\nIt is a Void Element  \n<br />",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "HTML Elements",
+      "body": "Using Line Break Element\n<h1 class=\"heading\">\n  Twinkle Twinkle Little Star\n</h1>\n<p> \n  Twinkle, twinkle, little star, <br />\n  How I wonder what you are! <br />\n  Up above the world so high, <br />\n  Like a diamond in the sky. \n</p>\nTwinkle Twinkle Little Star\nTwinkle, twinkle, little star,\nHow I wonder what you are!\nUp above the world so high,\nLike a diamond in the sky.\nHTML",
+      "notes": "<h1 class=\"heading\">\n  Twinkle Twinkle Little Star\n</h1>\n<p>\n  Twinkle, twinkle, little star, <br />\n  How I wonder what you are! <br />\n  Up above the world so high, <br />\n  Like a diamond in the sky.\n</p>",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "How to add a Horizontal Line? ",
+      "body": "How to add a Horizontal Line? \nTwinkle Twinkle Little Star\nTwinkle, twinkle, little star,\nHow I wonder what you are!\nUp above the world so high,\nLike a diamond in the sky.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "      HTML Horizontal Rule Element",
+      "body": "HTML Horizontal Rule Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "HTML Elements",
+      "body": "The Horizontal Rule Element \nThe hr element \u000binserts a horizontal line and \u000bhelps to separate the content\nIt is a Void Element  \n <hr />",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "HTML Elements",
+      "body": "The Horizontal Rule Element \n<h1 class=\"heading\">\n  Twinkle Twinkle Little Star\n</h1> \n<hr />\n<p> \n  Twinkle, twinkle, little star, <br />\n  How I wonder what you are! <br />\n  Up above the world so high, <br />\n  Like a diamond in the sky. \n</p>\n<hr />\nTwinkle Twinkle Little Star\nTwinkle, twinkle, little star,\nHow I wonder what you are!\nUp above the world so high,\nLike a diamond in the sky.\nHTML",
+      "notes": "<h1 class=\"heading\">\n  Twinkle Twinkle Little Star\n</h1>\n<hr />\n<p>\n  Twinkle, twinkle, little star, <br />\n  How I wonder what you are! <br />\n  Up above the world so high, <br />\n  Like a diamond in the sky.\n</p>\n<hr />",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "HTML Hyperlinks",
+      "body": "Key Takeaways \nHTML Anchor Element\nhref Attribute\ntarget attribute\nUsing HTML Image as Link\nHTML Void Elements\nbr Element\nhr Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "On-Demand Session",
+      "body": "On-Demand Session",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1s152LvxIDd_F6wsivWm3SQWpG2thf-yRfEN0Fp2nPbE/edit#slide=id.g2f4bdb77d60_0_23"
+}

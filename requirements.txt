@@ -14,3 +14,4 @@ google-auth>=2.28.0
 libsql-experimental>=0.0.37
 pypdf>=4.0            # Web Slides decks uploaded as PDF (src/webslides.py)
 Pillow>=10.0           # screenshots attached to skills (src/skill_images.py)
+python-multipart>=0.0.9  # multipart form parsing for the file-upload routes in server.py (skill images, Web Slides decks)

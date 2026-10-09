@@ -1,0 +1,388 @@
+{
+  "session_no": 7,
+  "source_file": "static — session 7",
+  "deck_title": "static — session 7",
+  "n_slides": 54,
+  "summary": "\n    - Slide 2: Introduction to CSS\n    - Slide 3: Agenda\n    - Slide 4: What we have achieved so far\n    - Slide 5: What to achieve\n    - Slide 6: CSS Ruleset\n    - Slide 7: First Step\n    - Slide 8: Applying All At Once in a container\n    - Slide 9: All At Once\n    - Slide 10: Save and Publish Code Snippets \u000bTo Your Own Website\n    - Slide 11: Desktop View - Code Playground\n    - Slide 12: Mobile View - Code Playground\n    - Slide 13: Desktop View - Code Playground\n    - Slide 14: Mobile View - Code Playground\n    - Slide 15: Desktop View - Code Playground\n    - Slide 16: Mobile View\n    - Slide 17: Desktop View\n    - Slide 18: Mobile View\n    - Slide 19: Desktop View\n    - Slide 20: Mobile View\n    - Slide 21: Desktop View\n    - Slide 22: Mobile View\n    - Slide 23: Desktop View - Code Playground\n    - Slide 24: Mobile View - Code Playground\n    - Slide 25: Desktop View - Code Playground\n    - Slide 26: Mobile View - Code Playground\n    - Slide 27: Desktop View - Code Playground\n    - Slide 28: Desktop View - Code Playground\n    - Slide 29: Mobile View - Code Playground\n    - Slide 30: Desktop View - Code Playground\n    - Slide 31: Mobile View - Code Playground\n    - Slide 32: Desktop View - Code Playground\n    - Slide 33: Mobile View - Code Playground\n    - Slide 34: Your Website URL\n    - Slide 35: Your Website URL\n    - Slide 36: Your Website URL\n    - Slide 37: Professional Websites\n    - Slide 38: Quiz Time!\n    - Slide 39: Now, let’s look at more ways \u000bto style your text!\n    - Slide 40: What Differences Do You See?\n    - Slide 41: Font\n    - Slide 42: CSS Font Family\n    - Slide 43: Font\n    - Slide 44: Font Size\n    - Slide 45: Font\n    - Slide 46: Font\n    - Slide 47: Font\n    - Slide 48: CSS Ruleset - Font\n    - Slide 49: Quiz Time!\n    - Slide 50: Introduction to CSS | Part 3\n    - Slide 52: Next Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to CSS",
+      "body": "",
+      "notes": "Strong foundations are important\nIf you become strong here, in the next stages you will understand things at just one glance. To get that speed, you have to spend time here. It is more important to understand things systematically. \n\nMany people rush here and complicate things in the later stages. But, we will develop you in such a way that as we go ahead, you will become more powerful.",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Agenda",
+      "body": "Introduction to CSS | Part 3\nMultiple CSS Properties\nText\nApplying all at once\ntext-decoration\nfont-weight\nfont-style\nfont-family\nfont-size\nYour Own Website\nSave\nPublish",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "What we have achieved so far",
+      "body": "Different CSS Properties\ntext-align\nbackground-color\ncolor",
+      "notes": "Horizontally centered the text in the elements using text-align property,\napplied color to main heading and paragraph using color property and\napplied background color to container element using background-color property",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "What to achieve",
+      "body": "How to Apply All At Once",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "CSS Ruleset",
+      "body": "To Center Elements in Container (div)\n.card {\n  background-color: lightblue;\n  text-align: center;\n}\nCSS",
+      "notes": "We learned that we can add multiple properties in a ruleset.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "First Step",
+      "body": "CSS Ruleset\n.card {\n  background-color: lightblue;\n  text-align: center;\n}\n.main-heading {\n  color: blue;\n}\n.paragraph {\n  color: grey;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Applying All At Once in a container",
+      "body": "Combining HTML and CSS \n<body>\n  <div class=\"card\">\n    <h1 class=\"main-heading\"> Tourism </h1>\n    <p class=\"paragraph\">\n      Plan your trip.\n</p>\n    <button> Get Started </button>\n  </div>\n</body>\nHTML",
+      "notes": "You might have seen an IMPORT statement in the CSS file.. For now keep it and don’t delete it. Will discuss later point of time.\n\n<body>\n  <div class=\"card\">\n    <h1 class=\"main-heading\"> Tourism </h1>\n    <p class=\"paragraph\">\n      Plan your trip.\n</p>\n    <button> Get Started </button>\n  </div>\n</body>\n\n\n.card {\n  background-color: lightblue;\n  text-align: center;\n}\n\n.main-heading {\n  color: blue;\n}\n\n.paragraph {\n  color: grey;\n}",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "All At Once",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Save and Publish Code Snippets \u000bTo Your Own Website",
+      "body": "Save and Publish Code Snippets \u000bTo Your Own Website",
+      "notes": "-- Motivation -- \nYou have your OWN website\nShare it with everyone. !",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Desktop View - Code Playground",
+      "body": "Save Your Code Snippet",
+      "notes": "Code Snippet -- Piece of Code",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Mobile View - Code Playground",
+      "body": "Save Your Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Desktop View - Code Playground",
+      "body": "Name Your Code Snippet",
+      "notes": "Tourism Website - Follow same name for now",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Mobile View - Code Playground",
+      "body": "Name Your Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Desktop View - Code Playground",
+      "body": "Access Your Saved Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Mobile View",
+      "body": "Access Your Saved Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Desktop View",
+      "body": "View Your Saved Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Mobile View",
+      "body": "View Your Saved Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Desktop View",
+      "body": "View Your Saved Code Snippets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Mobile View",
+      "body": "View Your Saved Code Snippets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Desktop View",
+      "body": "You Can Delete Code Snippets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Mobile View",
+      "body": "You Can Delete Code Snippets",
+      "notes": "You can delete code snippets if you not needed any more",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Desktop View - Code Playground",
+      "body": "Download Your Saved Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Mobile View - Code Playground",
+      "body": "Download Your Saved Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Desktop View - Code Playground",
+      "body": "Publish",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Mobile View - Code Playground",
+      "body": "Publish",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Desktop View - Code Playground",
+      "body": "Set Your Website URL\n.niat.tech",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Desktop View - Code Playground",
+      "body": "Set Your Website URL\n.niat.tech\nrahul",
+      "notes": "You can publish multiple websites using multiple domain names",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Mobile View - Code Playground",
+      "body": "Set Your Website URL\nrahul",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Desktop View - Code Playground",
+      "body": "Choose Another Website URL\nThis URL is already taken. Choose another one.\n.niat.tech",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Mobile View - Code Playground",
+      "body": "Choose Another Website URL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Desktop View - Code Playground",
+      "body": "Get Your Website URL\nrahul\nrahul.niat.tech",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Mobile View - Code Playground",
+      "body": "Get Your Website URL\nrahul.niat.tech",
+      "notes": "And share with your friends, family circles - Only option available in the mobile",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Your Website URL",
+      "body": "Share Your Website\nShare this URL with your friends and family!\nrahul.niat.tech",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Your Website URL",
+      "body": "Opening Your Own Website\nOpen the browser \u000band enter the URL \nrahul.niat.tech",
+      "notes": "Browser - understands the code and displays the website",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Your Website URL",
+      "body": "Share Your Own Website\nShare this URL with your friends and family!\nrahul.niat.tech",
+      "notes": "Browser - understands the code and displays the website",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Professional Websites",
+      "body": "Professional Websites\nYou are on your way to build \u000bProfessional Websites!",
+      "notes": "We’re learning in the same pattern as advanced software developer. \n\nThe html that you learn in schools   \n\nBest practices - accelerated learning.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Now, let’s look at more ways \u000bto style your text!",
+      "body": "Now, let’s look at more ways \u000bto style your text!",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "What Differences Do You See?",
+      "body": "What Differences Do You See?",
+      "notes": "Different companies - own styles of writing text - Give them their own name - font family. \n\nIf we like, we use the font family by using its name.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Font",
+      "body": "Font Family\nTOURISM\nTOURISM\nTOURISM\nTOURISM\nfont-family: “Roboto”;\nfont-family: “Caveat”;\nfont-family: “Monoton”;\nfont-family: “Lobster”;",
+      "notes": "Different companies - own styles of writing text - Give them their own name - font family. \n\nIf we like, we use the font family by using its name.",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "CSS Font Family",
+      "body": "Cheat Sheet\nFor the list of all \u000bFont Families available\nrefer to cheat sheet \u000bin the advanced portal",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Font",
+      "body": "Font Size\nfont-size: 14px;\nfont-size: 22px;\nfont-size: 28px;\nfont-size: 40px;\nTOURISM\nTOURISM\nTOURISM\nTOURISM",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Font Size",
+      "body": "Pixel - A Unit of Measurement\nMeasuring length\nUnit - Meters, Centimeters\nMeasuring font size\nUnit - pixels (px)",
+      "notes": "Px - short form of pixel",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Font",
+      "body": "Font Style\nfont-style: normal;\nfont-style: italic;",
+      "notes": "Almost all font families may having font-weight bold. Very few may not.",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Font",
+      "body": "Font Weight\nfont-weight: normal;\nfont-weight: bold;\nTOURISM\nTOURISM",
+      "notes": "Almost all font families may having font-weight bold. Very few may not.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Font",
+      "body": "Text Decoration \ntext-decoration: underline;\ntext-decoration: overline;\nTOURISM\nTOURISM\ntext-decoration: line-through;",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "CSS Ruleset - Font",
+      "body": "Applying all Font Properties\n.main-heading { \n  color: blue;\n  font-family: “Roboto”;\n  font-size: 36px;\n  font-style: italic;\n  font-weight: bold;\n  text-decoration: underline;\n}\nTOURISM\nCSS",
+      "notes": ".main-heading {\n  font-family: \"Lobster\";\n  font-family: \"Caveat\";\n  font-family: \"Monoton\";\n  font-family: \"Open Sans\";\n  font-family: \"Roboto\";\n}\n\nWhile opening CSS tab in code playground explain The first line (import statement) in CSS code playground helps you to use different font-families in your website.",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Introduction to CSS | Part 3",
+      "body": "Key Takeaways \nApply All CSS Properties At Once\nSave & Publish your own website\nText Properties\nfont-family\nfont-size\nfont-style\nfont-weight\ntext-decoration",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Next Session",
+      "body": "",
+      "notes": "Next session will be quite an interesting one.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/17TmSobDeTe6Up8jGBe-mOq_J-RosD_0BtAgUUIh-BY8/edit#slide=id.g2f4bb56aaa9_0_185"
+}

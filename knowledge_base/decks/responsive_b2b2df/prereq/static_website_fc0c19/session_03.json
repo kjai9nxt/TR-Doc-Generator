@@ -1,0 +1,255 @@
+{
+  "session_no": 3,
+  "source_file": "static website — session 3",
+  "deck_title": "static website — session 3",
+  "n_slides": 35,
+  "summary": "\n    - Slide 2: Introduction to HTML\n    - Slide 3: Recap\n    - Slide 4: Agenda\n    - Slide 5: Example - Static Website\n    - Slide 6: Fundamental in Programming\n    - Slide 7: Compatibility\n    - Slide 8: Code Playground\n    - Slide 9: Code Playground\n    - Slide 10: Code Playground\n    - Slide 11: Syntax\n    - Slide 12: HTML\n    - Slide 13: How to add \n    - Slide 14: Syntax\n    - Slide 15: Syntax\n    - Slide 16: HTML Element\n    - Slide 17: HTML Element\n    - Slide 18: HTML Element\n    - Slide 19: HTML Element\n    - Slide 20: Which of the following is the start tag of\n    - Slide 21: Fill the blank with appropriate syntax\n    - Slide 22: Quiz Time!\n    - Slide 23: How to add \n    - Slide 24: HTML Element\n    - Slide 25: HTML Element\n    - Slide 26:      Which of the following is \n    - Slide 27: HTML Element\n    - Slide 28: HTML Element\n    - Slide 29: HTML Element\n    - Slide 30: Quiz Time!\n    - Slide 31: Introduction to HTML\n    - Slide 33: Next Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to HTML",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Software Development Fundamentals \nAn Introduction\nBrowser & URL - Must to open any website \nSyntax - Rules of the Language \nA small part of programming\nBug & Debugging - Making your code work \nOne of the important parts of programming\nTweaking Code - Getting insights into code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "HTML Syntax - Introduction\nMain Heading\nButton\nh1 Element\nbutton Element\nParagraph\np Element",
+      "notes": "At every stage, you will get comfortable. Because of that, your speed of learning will increase.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Example - Static Website",
+      "body": "Tourism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Fundamental in Programming",
+      "body": "Breaking down into small parts\nPick one small part\nWrite the code\nTest your output\nThen, go to the next part \u000band repeat the same\nImage\nHeading\nParagraph\nButton",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Compatibility",
+      "body": "< 1% of you may face an issue\nIf you are facing any issues \u000bto view or access the features \u000bprovided during the session,\n \u000bkindly check your device and \u000bsoftware compatibility\nGoogle Chrome (Recommended)\nBe up to date with software versions",
+      "notes": "For example use google chrome \u000b\nCheck and update your softwares",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Code Playground",
+      "body": "Desktop Preview",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Code Playground",
+      "body": "Mobile Preview",
+      "notes": "To write code and complete the project we need Code playground.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Code Playground",
+      "body": "Mobile Preview",
+      "notes": "To write code and complete the project we need Code playground.\nDon’t worry about the code here. We’re showing how to open and where to write",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Syntax",
+      "body": "HTML Basic Structure\n<!DOCTYPE html>\n<html>\n  <head></head>\n  <body>\n    Your code goes here\n  </body>\n</html>\nHTML",
+      "notes": "The entire code is written in between <body> </body>\n\nThe head element contains metadata(some information about the document). It is not going to display in browser\n\nThe body element contains all the contents of the HTML document, such as headings, links, images etc which is going display in the browser",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "HTML",
+      "body": "HTML\nHTML Stands for \nHyper\nText\nMarkup\nLanguage",
+      "notes": "The entire code is written in between <body> </body>\n\nThe head element contains metadata(some information about the document). It is not going to display in browser\n\nThe body element contains all the contents of the HTML document, such as headings, links, images etc which is going display in the browser",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "How to add ",
+      "body": "How to add \nHeading in HTML",
+      "notes": "From our hero section let’s take small part (Heading) and add it first",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Syntax",
+      "body": "HTML Element\n<tag>   Content (Text)    </tag>\nElement\nContent\nStart tag\nEnd tag",
+      "notes": "Accept the names as it is. And immediately to become powerful software engineer as early as possible\nVery important for your accelerated learning. \u000b\nHTML element syntax will contain start tag, end tag and content - together is called HTML element.\n\nHTML tags are the hidden keywords within a web page that define how your web browser must format and display the content.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Syntax",
+      "body": "HTML Element\n<tag>        Elements       </tag>\nElement\nContent\nStart tag\nEnd tag",
+      "notes": "Will discuss in detail later. There are tags in HTML. We will write those tags there. \n\nHTML element syntax will contain start tag, end tag and content - together is called HTML element.\n\nHTML tags are the hidden keywords within a web page that define how your web browser must format and display the content.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "HTML Element",
+      "body": "Main Heading\nImage\nMain Heading\nParagraph\nButton",
+      "notes": "This is Code Playground Jr\u000bAs we go ahead, there will be Jr and Sr",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "HTML Element",
+      "body": "Main Heading\nMain Heading",
+      "notes": "This is Code Playground Jr\u000bAs we go ahead, there will be Jr and Sr",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "HTML Element",
+      "body": "<h1> Tourism </h1>\nElement\nContent\nStart tag\nEnd tag\nMain Heading",
+      "notes": "Presenter can refer to the cheatsheet for the code\n\nThe tag for main heading is h1. So we write h1 in place of tag\nAlmost all the HTML Elements will having the the same syntax\n\nWhy ‘h1’? Why not ‘h’  because if we see any document there are different levels of headings. So to define them specifically HTML defines 6 levels of headings\n\nCan we write 2, 3, 4 instead?\n\nYes, Ofcourse.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "HTML Element",
+      "body": "Adding Main Heading\n<body>\n  <h1>Tourism</h1>\n</body>\nHTML",
+      "notes": "MCQ -Click on show answer. Explain the question and answer later\n\n\nWhich of the following is the start tag of the HTML heading element?\n<h1>\n<h>\n<heading>\n<head>\n\nFill the blank with appropriate syntax\n<h1>Tourism<___>\n|h1\nh1\n//h1\n/h1",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Which of the following is the start tag of",
+      "body": "Which of the following is the start tag of\nthe HTML heading element?\nA: <h1>                 B: <h>\nC: <heading>     D: <head>",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Fill the blank with appropriate syntax",
+      "body": "Fill the blank with appropriate syntax\n<h1>Tourism<___>\nA: |h1                 B: h1\nC: //h1                D: /h1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "How to add ",
+      "body": "How to add \nParagraph in HTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "HTML Element",
+      "body": "Paragraph\n<p> Plan your trip wherever you want to go  </p>\nElement\nContent\nStart tag\nEnd tag",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "HTML Element",
+      "body": "Adding Paragraph To The Previous Code\n<body>\n  <h1>Tourism</h1>\n  <p>\n    Plan your trip wherever\n    you want to go\n  </p>\n</body>\nHTML",
+      "notes": "If you add two paragraph elements you will get two paragraphs in the output  - Write and show them\u000b\u000bWhich of the following is the paragraph element? \n\n<paragraph>You progress the nation follows</paragraph>\n<p>You progress the nation follows</p>\n<p1>You progress the nation follows</p1>\n<para>You progress the nation follows</para>",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "     Which of the following is ",
+      "body": "Which of the following is \n     the paragraph element?\n<paragraph>You progress the nation \u000bfollows</paragraph>\n<p>You progress the nation follows</p>\n<p1>You progress the nation follows</p1>\n<para>You progress the nation follows</para>",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "HTML Element",
+      "body": "Button\nLet’s Add\u000bA Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "HTML Element",
+      "body": "<button> Get Started </button>\nElement\nButton text\nStart tag\nEnd tag\nButton",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "HTML Element",
+      "body": "Adding Button\n<body>\n   <h1> Tourism </h1>\n   <p>\nPlan your trip wherever \nyou want to go\n</p>\n   <button> Get Started </button>\n</body>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Introduction to HTML",
+      "body": "Key Takeaways \nHTML Syntax \nHTML Basic Structure\nHTML Elements\nHeading\nParagraph\nButton",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Next Session",
+      "body": "Leveraging Gen AI for \u000baccelerated learning",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1WUYo5MgMJll7nWoeNYReFG2a69aTgfwlEyJ68Dpk3Ko/edit#slide=id.g2818bb5e862_0_2321"
+}

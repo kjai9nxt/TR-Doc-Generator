@@ -1,0 +1,325 @@
+{
+  "session_no": 6,
+  "source_file": "static — session 6",
+  "deck_title": "static — session 6",
+  "n_slides": 45,
+  "summary": "\n    - Slide 2: Introduction to CSS\n    - Slide 3: Recap\n    - Slide 4: Agenda\n    - Slide 5: Recap - Adjusting the Style\n    - Slide 6: Recap - Syntax\n    - Slide 7: Recap - Syntax\n    - Slide 8: How to Center the \n    - Slide 9: Recap - Syntax\n    - Slide 10: Recap - Syntax\n    - Slide 11: Recap - Syntax\n    - Slide 12: Recap - Syntax\n    - Slide 13: Recap - Syntax\n    - Slide 14: Recap - Syntax\n    - Slide 15: Recap - Syntax\n    - Slide 16: Recap - Alignment\n    - Slide 17: Let’s Add Color to the Text \n    - Slide 18: HTML Element\n    - Slide 19: CSS Syntax\n    - Slide 20: Syntax\n    - Slide 21: Syntax\n    - Slide 22: Applying color to Main Heading\n    - Slide 23: Combining CSS with HTML\n    - Slide 24: Applying color to Main Heading\n    - Slide 25: Syntax\n    - Slide 26: Syntax\n    - Slide 27: Syntax\n    - Slide 28: Applying color to Paragraph\n    - Slide 29: Combining CSS with HTML\n    - Slide 30: Quiz Time!\n    - Slide 31: A Separate Class will be taken on \n    - Slide 32: Let’s Add a Background Color \n    - Slide 33: Syntax\n    - Slide 34: Styling Div\n    - Slide 35: Styling Div\n    - Slide 36: Quiz Time!\n    - Slide 37: Introduction to CSS | Part 2\n    - Slide 38: Announcement\u000bAdvanced Practice Sessions\n    - Slide 39: Advanced Practice Sessions\n    - Slide 40: Advanced Practice Sessions\n    - Slide 43: Next Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to CSS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to CSS\nCSS Syntax\nRuleset\nSelector\nProperty\nValue\nContainer Element (div)\nCombining HTML & CSS\nClass Attribute",
+      "notes": "Assignment\nWhenever you’re in doubt, rewatch the video, and play around with the code. \nRuleset = selector name → Flower Brace { → Property: Value; → Closing flower brace.",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "Introduction to CSS | Part 2 \nRecap\nContainer\nRuleset\nAttribute\nText\ncolor\nBackgrounds\nbackground-color",
+      "notes": "We will refer to yesterday’s class. These will get covered again in today’s class",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Recap - Adjusting the Style",
+      "body": "Wrapping \n<body>\n  <h1>Tourism</h1>\n  <p>\n    Plan your trip wherever \n    you want to go\n  </p>\n  <button>Get Started</button>\n</body>\nHTML\nMain Heading, Paragraph & Button \n        - All The Elements \u000b          At Once!\nWe use Container Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Recap - Syntax",
+      "body": "Container Element - div\n<div>  Other Elements </div>\nElement\nContent\nStart tag\nEnd tag",
+      "notes": "All the elements that you want to use the container for - Main Heading, Paragraph and Button\n\n\tHTML Container Element ki use chese tag - div",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Recap - Syntax",
+      "body": "Adding Div\n<body>\n  <div>\n    <h1>Tourism</h1>\n    <p>\n      Plan your trip wherever \n      you want to go\n    </p>\n    <button>Get Started</button>\n  </div>\n</body>\nHTML\nStandard Practices \n**Indent",
+      "notes": "Indent - Practice\nSomething that must be followed. \n\nCorrect practices from the beginning. Practice all the things we say, there will be many advantages. Will save a lot of time while debugging. Person who codes well doesn’t become a great programmers\n\nUSE TAB to GIVE AN INDENT. \n\nWrap the given heading, paragraph and button elements inside the div element.\n\n<h1>Zero Prerequisites</h1>\n<p>No previous coding experience required. It doesn’t matter which branch or GPA you have.</p>\n<button>Get Started</button>",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "How to Center the ",
+      "body": "How to Center the \nHeading, Paragraph, & Button \nElements Horizontally?",
+      "notes": "Talk about both images. All 3 elements should come to the center. \u000b\nWe are adjusting the “Style”. We use CSS when we want to work on the style.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Recap - Syntax",
+      "body": "CSS - Cascading Style Sheets\n  property1: value1;\n  property2: value2;\nselector\n  }\t\n{\nA CSS File will be created.\nIt is a list of RuleSets.\nEach Ruleset looks like:\nRuleset",
+      "notes": "HTML - Tag  / CSS - Selector_Name\n\nAnd that CSS File can contain a list of RuleSets.\n\n\nCurly Braces\nColon after property - two dots\nSemicolon after Value - dot and comma\n\nAccept the syntax.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Recap - Syntax",
+      "body": "CSS Ruleset - To Center Elements\n.h-center {\n  text-align: center;\n}\nPROPERTY\nVALUE\nSELECTOR",
+      "notes": "Here we write the name (any name can be given) preceded by a dot and within the braces we have a property `text-align` and it’s value `center`.\n\nH - Horizontal V - Vertical is standard.\n\nWe have many types of selectors. We are going to learn one type of selectors today.\n\nShow in Playground\n\n.h-center\nIndent. -- Explicitly mention. \nTime saving\nCode Readable. \nBest practice. \nOpening Flower brace\nWriting the rule\nProperty - We’re aligning the text\ntext-align:\nNext we need to define WHERE the text should be\nCenter;\nClose the curly brace",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Recap - Syntax",
+      "body": "Combining HTML & CSS\n<body>\n  <h1>Tourism</h1>\n  ...\n</body>\nHTML\n.h-center {\n  text-align: center;\n}\nCSS",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\nWith CSS, we are planning to center the HTML container elements.  \n\t\nBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Recap - Syntax",
+      "body": "HTML Attribute\n<tag attribute = “value” > \nAttribute Value\nSyntax Name of the Attribute \nStart Tag\nElement",
+      "notes": "So now, attributes, that is, additional information is always provided in the START Tag. \n\t\nWe HAVE to write in the Start tag. \nAttrbute = syntax name of the Attribute. \nValue is what you can set. \n\nWe take the help of attribute to combine HTML & CSS.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Recap - Syntax",
+      "body": "Combining HTML & CSS\nAttribute Name  \nAttribute Value",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\n\tWith CSS, we are planning to center the HTML container elements.  \n\t\n\tBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Recap - Syntax",
+      "body": "Combining HTML & CSS\nAttribute Name - class\nAttribute Value  - h-center",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\n\tWith CSS, we are planning to center the HTML container elements.  \n\t\n\tBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Recap - Syntax",
+      "body": "Class Attribute - div\n<div class = “h-center” > \nAttribute Value\nSyntax Name of the Attribute \nStart Tag\nElement - Container",
+      "notes": "Additional Information about “Style” - So ‘CSS’ -> Class\n\nDOT - Address again. \n\nIn HTML - NO DOT. \n\nIn CSS - DOT.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Recap - Alignment",
+      "body": "Horizontal Center\n<body>\n  <div class=\"h-center\" >\n    <h1>Tourism</h1>\n    <p>\n      Plan your trip wherever \n      you want to go\n    </p>\n    <button>Get Started</button>\n  </div>\n</body>\nHTML\n* Refer",
+      "notes": "For CSS text-align property we can assign left, right, center values\nWe can just refer to the things",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Let’s Add Color to the Text ",
+      "body": "Let’s Add Color to the Text",
+      "notes": "When you are building the website professionally, always use CSS\nYou can change color directly with HTML too, but it is a childish approach.  \n\nWe will be building complicated websites in the future, it’s always better to use CSS for styling.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "HTML Element",
+      "body": "<body>\n  <div>\n    <h1>Tourism</h1>\n    <p>\n      Plan your trip wherever \n      you want to go\n    </p>\n    <button>Get Started</button>\n  </div>\n</body>\nCode\nStandard Practices \n**Indent\nHTML",
+      "notes": "Reiterate that we’re going with the previous code\n\u000bIndent - Practice\nCorrect practices from the beginning. Practice all the things we say, there will be many advantages. Will save a lot of time while debugging. Person who codes well doesn’t become a great programmers\n\nWrap the given heading, paragraph and button elements inside the div element.\n\n<h1>Zero Prerequisites</h1>\n<p>No previous coding experience required. It doesn’t matter which branch or GPA you have.</p>\n<button>Get Started</button>",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "CSS Syntax",
+      "body": "Applying Color to Main Heading\n.main-heading { \n  color: blue;\n}\nPROPERTY\nVALUE\nSELECTOR\nBlue =",
+      "notes": "Spelling of color\n\nDon’t bother about color of the code",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Syntax",
+      "body": "Combining HTML & CSS\nAttribute Name \nAttribute Value",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\nWith CSS, we are planning to center the HTML container elements.  \n\t\nBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Syntax",
+      "body": "Combining HTML & CSS\nAttribute Name - class\nAttribute Value  - main-heading",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\nWith CSS, we are planning to center the HTML container elements.  \n\t\nBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Applying color to Main Heading",
+      "body": "Combining CSS with HTML\n<body>\n  <div>\n    <h1 class=\"main-heading\">Tourism</h1>\n  </div>\n</body>\nHTML",
+      "notes": "Naming should be easy to understand and use. \n\nDiv - best practice. Standard Methods\n\nCSS - Style. Professional approach. You’ll be able to do big projects with ease. \n\nRight from day 1, we are teaching you best practices.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Combining CSS with HTML",
+      "body": "Applying color to Main Heading",
+      "notes": "Not center aligned. We are just changing colour. We will do everything at the end",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Applying color to Main Heading",
+      "body": "Styling with HTML\n<body>\n  <div>\n    <h1 style=\"color: blue;\">Tourism</h1>\n  </div>\n</body>\nHTML",
+      "notes": "This is not a standard method. Use only if it is emergency.\n\nWhen you are building the website professionally, always use CSS\nYou can change color directly with HTML too, but it is a childish approach. \u000b\nWe will be building complicated websites in the future, it’s always better to use CSS for styling.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Syntax",
+      "body": "Applying Color to Paragraph\n.paragraph { \n\tcolor: grey;\n}\nSELECTOR\nPROPERTY\nVALUE\n         Grey  =",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Syntax",
+      "body": "Combining HTML & CSS\nAttribute Name  \nAttribute Value",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\nwith CSS, we are planning to center the HTML container elements.  \n\nBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Syntax",
+      "body": "Combining HTML & CSS\nAttribute Name - class\nAttribute Value  - paragraph",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\nwith CSS, we are planning to center the HTML container elements.  \n\nBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Applying color to Paragraph",
+      "body": "Combining CSS with HTML\n<body>\n  <div>\n    <p class=\"paragraph\"> \n      Plan your trip wherever you   \n      want to go, start traveling and \n      create a bag full of memories.\n    </p>\n  </div>\n</body>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Combining CSS with HTML",
+      "body": "Applying color to Paragraph",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "A Separate Class will be taken on ",
+      "body": "A Separate Class will be taken on \nStyling a Button",
+      "notes": "Button - styling methods are different. \nIf you try to apply center alignment directly to the button element, it wouldn’t work. \u000bWe will learn about them in later stages. \nVery Happy that you all experimented - It’s a good practice - You get to know more.\n\nRepeat Feedback. \n\nWhen you are building the website professionally, always use CSS\nYou can change color directly with HTML too, but it is a childish approach. We will be building complicated websites in the future, it’s always better to use CSS for styling.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Let’s Add a Background Color ",
+      "body": "Let’s Add a Background Color",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Syntax",
+      "body": "CSS - Background Color \n.card {\nbackground-color: lightblue;\n}\nLight Blue =",
+      "notes": "Here we write the class name preceded by a dot and within the braces we have a property `background-color` and it’s value `color code`.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Styling Div",
+      "body": "Background Color for Container (div)\n<body>\n  <div class=\"card\" >\n    <h1>Tourism</h1>\n    <p> \n      Plan your trip wherever you want to go, start    \n      traveling and create a bag full of memories.\n    </p>\n    <button> Get Started </button>\n  </div>\n</body>\nHTML",
+      "notes": "Remove main heading, paragraph and button - what is left is the background.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Styling Div",
+      "body": "Background Color for Container (div)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Introduction to CSS | Part 2",
+      "body": "Key Takeaways\nCSS Properties\nText\ncolor\nBackground\nbackground-color",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Announcement\u000bAdvanced Practice Sessions",
+      "body": "",
+      "notes": "Until you get everything right. This is Practice, \nLater you will be able to test yourself.\nMore features will be introduced systematically. From Monday, this will be open only for paid customers.\n\nYou can keep some wrong answers",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Advanced Practice Sessions",
+      "body": "Desktop View",
+      "notes": "2 practice sets are available",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Advanced Practice Sessions",
+      "body": "Mobile View",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Next Session",
+      "body": "Introduction to CSS \n| Part 3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/10VfAG1d3-4TmIYK8xci5R8pwqo5-JuzhWuPd_ARdCm8/edit#slide=id.g2f4b2fe0fd7_0_185"
+}

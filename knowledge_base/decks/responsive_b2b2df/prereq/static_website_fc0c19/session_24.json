@@ -1,0 +1,283 @@
+{
+  "session_no": 24,
+  "source_file": "static website — session 24",
+  "deck_title": "static website — session 24",
+  "n_slides": 39,
+  "summary": "\n    - Slide 2: Introduction to Industry Readiness\n    - Slide 3: Your Journey\n    - Slide 4: Applying Concepts\n    - Slide 5: Industry\n    - Slide 6: Industry Challenges\n    - Slide 7: Industry Readiness\n    - Slide 8: The Core Concepts remain same, but familiarise the tools and practices\n    - Slide 9: 1.\n    - Slide 10: Debugging Using\n    - Slide 15: Topic 3\n    - Slide 16: Your Journey\n    - Slide 17: Industry Challenges\n    - Slide 18: Industry Challenges\n    - Slide 19: Industry Challenges\n    - Slide 20: Industry\n    - Slide 21: Industry Challenges\n    - Slide 22: Industry Challenges\n    - Slide 23: Industry Challenges\n    - Slide 24: Industry Challenges\n    - Slide 25: Industry Readiness\n    - Slide 26: The Core Concepts remain same, but familiarise the tools and practices\n    - Slide 28: Industry Readiness\n    - Slide 29: Industry Challenges\n    - Slide 30: Industry Readiness\n    - Slide 31: Familiarise Tools & Practices\n    - Slide 32: Topics to be Covered\n    - Slide 35: Quiz Time!\n    - Slide 36: Title\n    - Slide 37: Title",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to Industry Readiness",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Your Journey",
+      "body": "Projects so far in Static Website\nTodolist\nFood Page\nCricketer Page\nDiwali Page\nConference Page",
+      "notes": "Till now in your journey , you all learnt the concepts and HTML/CSS and created so many static websites",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Applying Concepts",
+      "body": "Applying Concepts\nYour Journey\nOnce you are good at applying the concepts, you are more than halfway to becoming a developer",
+      "notes": "Becoming a developer is like learning a Cycle. First you need to know about parts - pedal,brakes, handle. But just knowing them is not enough \nYou need to start to ride the cycle slowly. So even you are slowly riding the cycle - it means you are already in a way of becoming a good rider\n\nLike that only - Learning concepts is not enough to become a developer. You need to apply that concept to solve coding questions and real problems\nSo once you are applying that concepts to solve problems – that means you are already more than halfway to become a developer    \n\nAnd also while going forward, you need to work on applications that are similar to real-world projects\n\n\n\nhttps://www.freepik.com/free-vector/hand-drawn-roadmap-infographic-with-character_15858008.htm#query=Road%20map%20illlustration&position=11&from_view=search&track=ais",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Industry",
+      "body": "Industry\nYour Journey\nJob Interviews\nCoding Challenges",
+      "notes": "In the next, When you are ready the Industry , you need to give interviews for getting into any company .\n\n\nSo in that Job interviews, Do you think solving it is same as you are solving coding Questions in our Curriculum or portal?\n\nNot at all. \n\nBecause there are some challenges which are not as same as solving the coding questions",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey",
+      "notes": "Because \n\nThey will ask you to solve the coding questions or real-world problem in different code playgrounds, but not in our codeplayground\nThey will ask you to build some projects by your own\nOr they will give you some project and asks to debug it",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Industry Readiness",
+      "body": "Industry Readiness\nBridges the gap and make you ready for the industry",
+      "notes": "You need to ready for the Industry Challenges\n\nNeed to bridge that gap between Solving coding question to solving real-world projects",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "The Core Concepts remain same, but familiarise the tools and practices",
+      "body": "The Core Concepts remain same, but familiarise the tools and practices\n“\n“\nThe Core Concepts remain same, but familiarise the tools and practices",
+      "notes": "Don't worry that, the concepts will change.\n\n\nThe concepts will remain same , but you need to familiarise some tools /practices to build projects by applying the concepts that you have learnt in our curriculum.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "1.",
+      "body": "1.\n2.\n3.\nDebugging using Developer Tools\nDifferent Code Playgrounds\nVS Code\n4.\nGenerating URLs for your images\nTopics to be Covered\n… many more",
+      "notes": "So these are some Tools/practices we will see in further…",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Debugging Using",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Topic 3",
+      "body": "Topic 3\nTopic 2\nSub-topic\nSub-Topic\nTopic 1\nSub-Topic",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Your Journey",
+      "body": "Projects so far in Static Website",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey\nIn job interviews or coding challenges, you might Code in VS Code or different code playgrounds\n   …many more\nCodepen\nJsFiddle\nStackBlitz\nCodeSandbox",
+      "notes": "In job interviews or coding challenges, you might\nThe concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey\nIn job interviews or coding challenges, you might       code in VS Code or different code playgrounds\nCode Playgrounds\nBuild projects on your own\n       Debug Larger Projects",
+      "notes": "In job interviews or coding challenges, you might\nThe concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey\nJsFiddle\nStackBlitz\n   …many more",
+      "notes": "In job interviews or coding challenges, you might\nThe concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Industry",
+      "body": "Industry\nYour Journey\nJob Interviews\nCoding Challenges",
+      "notes": "The concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey\nCodeSandbox\nCodepen\nVS Code\n   …many more\nCode in VS Code or different code playgrounds",
+      "notes": "In job interviews or coding challenges, you might\nThe concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey\nBuild projects on your own\n       Debug Larger Projects",
+      "notes": "The concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey\nIn job interviews or coding challenges, you might\nDebug Larger Projects",
+      "notes": "The concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey\nIn job interviews or coding challenges, you might\nCode in VS Code or different code playgrounds\nBuild projects on your own\nDebug Larger Projects\n…many more",
+      "notes": "The concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Industry Readiness",
+      "body": "Industry Readiness\nBridges the gap and make you ready for the industry",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "The Core Concepts remain same, but familiarise the tools and practices",
+      "body": "The Core Concepts remain same, but familiarise the tools and practices\n“\n“",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Industry Readiness",
+      "body": "Industry Readiness\nTopics to be Covered\nDebugging using Developer Tools\nDifferent Code Playgrounds\nVS Code\nGenerating URLs for your images\n                                                      …many more",
+      "notes": "And Once you are good at applying the concepts, you're more than halfway to becoming a developer.\u000bGoing forward you'll work on applications that are similar to real-world projects.\n\n\n\n\n\n\nhttps://www.freepik.com/free-vector/hand-drawn-roadmap-infographic-with-character_15858008.htm#query=Road%20map%20illlustration&position=11&from_view=search&track=ais",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Industry Challenges",
+      "body": "Industry Challenges\nYour Journey",
+      "notes": "In job interviews or coding challenges, you might\nThe concepts you learnt in curriculum might not be sufficient to do these projects.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Industry Readiness",
+      "body": "Industry Readiness\nTopics to be Covered\nDebugging using Developer Tools\nDifferent Code Playgrounds\nVS Code\nGenerating URLs for your images",
+      "notes": "And Once you are good at applying the concepts, you're more than halfway to becoming a developer.\u000bGoing forward you'll work on applications that are similar to real-world projects.\n\n\n\n\n\n\nhttps://www.freepik.com/free-vector/hand-drawn-roadmap-infographic-with-character_15858008.htm#query=Road%20map%20illlustration&position=11&from_view=search&track=ais",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Familiarise Tools & Practices",
+      "body": "Familiarise Tools & Practices\nYour Journey\nThe Core Concepts remain same, but familiarise the tools and practices",
+      "notes": "But one thing you need to remember - There are no new concepts you are learning, you just need to familiarise the tools and practices",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Topics to be Covered",
+      "body": "Introduction to React & JSX\nComponents and Props\nLists and Keys\nState and Events\nHandling Side Effects\nRouting using react-router\nAuthentication & Context\nReact JS",
+      "notes": "And to give you an overview of what all different things we’ll learn in React JS… \nFirst, we’ll get to understand what this ReactJS is and what’s JSX\nThen we’ll learn about the components and Props concepts. \nList and keys\nState and class components. \n\nWe’ll also talk about the react lifecycle methods,\nHow to route using react-router and authentication as well. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Title",
+      "body": "Topic 1\nSub-Topic 1\nSub-Topic 2\nTopic 2\nSub-Topic 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Title",
+      "body": "Topic 1\nSub-Topic 1\nSub-Topic 2\nTopic 2\nSub-Topic 1\nKey Takeaways (PART 1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1PXwnHiS1uBoSogAkH5NIiFzgDbuOTaGHyXb7eNrxajI/edit?slide=id.g3699d4f6dc0_0_154#slide=id.g3699d4f6dc0_0_154"
+}

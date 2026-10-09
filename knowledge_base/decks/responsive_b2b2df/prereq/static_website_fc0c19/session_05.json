@@ -1,0 +1,262 @@
+{
+  "session_no": 5,
+  "source_file": "static website — session 5",
+  "deck_title": "static website — session 5",
+  "n_slides": 36,
+  "summary": "\n    - Slide 2: Introduction to CSS\n    - Slide 3: Recap\n    - Slide 4: Compatibility\n    - Slide 5: Compatibility\n    - Slide 6: Agenda\n    - Slide 7: How to Center the \n    - Slide 8: Example - Tourism Website\n    - Slide 9: Purpose\n    - Slide 10: Syntax\n    - Slide 11: Syntax\n    - Slide 12: Syntax\n    - Slide 13: Quiz Time!\n    - Slide 14: Syntax\n    - Slide 15: With the help of Attribute,\n    - Slide 16: HTML\n    - Slide 17: Syntax\n    - Slide 18: Syntax\n    - Slide 19: Syntax\n    - Slide 20: Syntax\n    - Slide 21: Syntax\n    - Slide 22: Adjusting the Style\n    - Slide 23: Definition\n    - Slide 24: Definition\n    - Slide 25: Real World Example\n    - Slide 26: Syntax\n    - Slide 27: HTML Element\n    - Slide 28: Let's use CSS \u000bto Center the Elements \u000bin the Container Horizontally\n    - Slide 29: Syntax - Class Attribute\n    - Slide 30: Alignment\n    - Slide 31: HTML Element\n    - Slide 32: Quiz Time!\n    - Slide 33: Introduction to CSS\n    - Slide 34: Next Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to CSS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Leveraging Gen AI for accelerated learning\nLearning a Concept\nClarifying a Concept\nTesting your Knowledge\nUnderstanding Code\nAI Tools\nPerplexity\nNotebookLM",
+      "notes": "How do the end tags look like?",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Compatibility",
+      "body": "< 1% of you may face an issue\nBe up to date with software versions\n99%+ of you won’t face any issues\nIf at all you face an issue, it will be\nbecause of device and software compatibility",
+      "notes": "For example use google chrome \u000b\nCheck and update your softwares",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Compatibility",
+      "body": "Source: gs.statcounter\nGoogle Chrome is a Must\n~ 89.1 %\nBrowser Market Share in India",
+      "notes": "Code Playground is available below the video. \nYou can simply click on the video to pause/play it, work through the Code Playground and come back to the video.\n\nhttps://gs.statcounter.com/browser-market-share\n\nRemember, the Feedback option is also provided there. All the feedback you share is definitely looked at and taken care of. . \n\t\nWe've already planned a lot of things. \t\nBut don't let that stop you. Help us give you the best experience. We will take care of them.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Agenda",
+      "body": "Introduction to CSS\nCSS Syntax\nCombining HTML & CSS\nRuleset\nSelector\nProperty, Value\nContainer Element (div)\nClass Attribute\nCSS Properties \ntext-align",
+      "notes": "Disclaimer: \nThis session is very conceptual \nAs it is conceptual the video, The duration might be little more than usual \nAs it is very conceptual it’s very important that you learn everything properly so , we can’t break the concepts and explain \nIn terms of Static website, this session is extremely important conceptually. \nAccelerated learning - if you strongly understand the concepts. \nSo don’t worry, if the time extends 5-10mins. \nAlso, it’s not ideally possible to split this topic in terms of the concepts being addressed. So don’t worry if the time extends a bit. \nAnd because you’re learning this topic for the first time,we might come across a few new terms. For now, just accept them as they are. And going forward, you’ll be working with them and practicing things. Then these things will feel pretty simple. \nThis session will address all the things listed in an extremely clear manner. Understanding these will help you learn the rest of the concepts in an accelerated manner.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "How to Center the ",
+      "body": "How to Center the \nHeading, Paragraph, & Button \nElements Horizontally?",
+      "notes": "Talk about both images. All 3 elements should come to the center. \u000b\nWe are adjusting the “Style”. We use CSS when we want to work on the style.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Example - Tourism Website",
+      "body": "Parts of The Section\nImage\nMain Heading\nParagraph\nButton",
+      "notes": "In this hero section we got to know about how to write \nMain heading\nParagraph\nButton\nWe are focusing on the bottom part \nLet’s talk about the The fundamental building block of an HTML (next slide)",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Purpose",
+      "body": "CSS - Cascading Style Sheets\nThe main purpose of CSS :\nTo Style Web Pages",
+      "notes": "HTML - Tag  / CSS - Selector_Name\n\nAnd that CSS File can contain a list of RuleSets.\n\nCurly Braces\nColon after property - two dots\nSemicolon after Value - dot and comma\n\nRule = property1: value1;\n\nAccept the syntax.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Syntax",
+      "body": "CSS - Cascading Style Sheets\n  property1: value1;\n  property2: value2;\nselector\n  }\t\n{\nA CSS File will be created.\nIt is a list of RuleSets.\nEach Ruleset looks like:\nRuleset",
+      "notes": "HTML - Tag  / CSS - Selector_Name\n\nAnd that CSS File can contain a list of RuleSets.\n\nCurly Braces\nColon after property - two dots\nSemicolon after Value - dot and comma\n\nRule = property1: value1;\n\nAccept the syntax.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Syntax",
+      "body": "Selector - Name\nFirst, decide a suitable name \u000bfor the selector and use it\nEx: h-center\n      horizontal-center\n      horizontal\n      center\u000b      horizontal_center\u000b      HorizontalCenter, etc.",
+      "notes": "Here we write the name (any name can be given) preceded by a dot and within the braces we have a property `text-align` and it’s value `center`.\n\nH - Horizontal V - Vertical is standard.\n\nWe have many types of selectors. We are going to learn one type of selectors today.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Syntax",
+      "body": "CSS Ruleset - To Center Elements\n.h-center {\n  text-align: center;\n}\nPROPERTY\nVALUE\nSELECTOR",
+      "notes": "Here we write the name (any name can be given) preceded by a dot and within the braces we have a property `text-align` and it’s value `center`.\n\nH - Horizontal V - Vertical is standard.\n\nWe have many types of selectors. We are going to learn one type of selectors today.\n\nShow in Playground\n\n.h-center\nIndent. -- Explicitly mention. \nTime saving\nCode Readable. \nBest practice. \nOpening Flower brace\nWriting the rule\nProperty - We’re aligning the text\ntext-align:\nNext we need to define WHERE the text should be\nCenter;\nClose the curly brace",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Syntax",
+      "body": "Combining HTML & CSS\n<body>\n  <h1>Tourism</h1>\n  ...\n</body>\nHTML\n.h-center {\n  text-align: center;\n}\nCSS",
+      "notes": "So, we already have the HTML code where we added all the HTML elements. \n\t\nWith CSS, we are planning to center the HTML container elements.  \n\t\nBut the question is how do we combine them?",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "With the help of Attribute,",
+      "body": "With the help of Attribute,\nwe can combine HTML and CSS",
+      "notes": "With the help of Attributes,\nwe can apply CSS to HTML Element(s)",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "HTML",
+      "body": "Attribute\nAttributes provide \u000badditional information about \u000bthe HTML element\nEx: Color, Text Size, Shape, \u000bUnderlines, etc.",
+      "notes": "WHen we don't mention anything, the HTML is displayed as default. \n\t\nBut when we give an additional information, we see the content the way we want.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Syntax",
+      "body": "HTML Element\n    <tag>    Content (Text)   </tag>\nElement\nContent\nStart tag\nEnd tag",
+      "notes": "Accept the names as it is. And immediately to become powerful software engineer as early as possible\nVery important for your accelerated learning. \u000b\nHTML element syntax will contain start tag, end tag and content - together is called HTML element.\n\nHTML tags are the hidden keywords within a web page that define how your web browser must format and display the content.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Syntax",
+      "body": "HTML Attribute\n<tag attribute = “value” > Content </tag>\nElement\nAttribute Value\nSyntax Name of the Attribute \nEnd Tag\nStart Tag\nContent",
+      "notes": "So now, attributes, that is, additional information is always provided in the START Tag. \n\t\nWe HAVE to write in the Start tag. \nAttribute = syntax name of the Attribute. \nValue is what you can set.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Syntax",
+      "body": "Attribute - In Each Element\n<h1> Tourism </h1>\nElement - Main Heading\nEnd Tag\nContent\nStart tag",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Syntax",
+      "body": "Class Attribute - In Each Element\n<h1 class = “h-center” > Tourism </h1>\nElement - Main Heading\nAttribute Value\nSyntax Name of the Attribute \nEnd Tag\nStart Tag\nContent",
+      "notes": "Additional Information about “Style” - So ‘CSS’ -> Class\n\nDOT - Address again. \n\nIn HTML - NO DOT. \n\nIn CSS - DOT. \n\nShow Demo -- show each element being centered.\n\nHere we are providing style(that we wrote in CSS) as additional information to HTML element h1, fo that we use class attribute \n\nSo, ikkada HTML element ki additional information annadi style gurinchi cheptunnam kabatti, Class annadi vadatamu",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Syntax",
+      "body": "Class Attribute\nMake sure the class name used in the HTML and the Selector name in CSS must be the same, then only the styling will be applied correctly",
+      "notes": "Additional Information about “Style” - So ‘CSS’ -> Class\n\nDOT - Address again. \n\nIn HTML - NO DOT. \n\nIn CSS - DOT. \n\nShow Demo -- show each element being centered.\n\nHere we are providing style(that we wrote in CSS) as additional information to HTML element h1, fo that we use class attribute \n\nSo, ikkada HTML element ki additional information annadi style gurinchi cheptunnam kabatti, Class annadi vadatamu",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Adjusting the Style",
+      "body": "<body>\n  <h1>Tourism</h1>\n  <p>\n    Plan your trip wherever \n    you want to go\n  </p>\n  <button>Get Started</button>\n</body>\nHTML\nAll The Elements At Once\nMain Heading, \u000bParagraph & Button \n- All at Once!",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Definition",
+      "body": "Wrapping \nGrouping all the \u000brequired elements \u000bat one place \n<body>\n  <h1>Tourism</h1>\n  <p>\n    Plan your trip wherever \n    you want to go\n  </p>\n  <button>Get Started</button>\n</body>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Definition",
+      "body": "Container\nTo wrap all the \u000brequired elements \u000bat one place, \u000bwe use \u000bcontainer element\n<body>\n  <h1>Tourism</h1>\n  <p>\n    Plan your trip wherever \n    you want to go\n  </p>\n  <button>Get Started</button>\n</body>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Real World Example",
+      "body": "Container",
+      "notes": "If we want to move 10 boxes from A to B. \n\tWe don't move them one by one right!\n\t\n\tWe just put them in a truck and them transport them. \n\t\n\tSimilarly in this case.\n\nIf we try carrying 10 boxes at a time it will be difficult right, we can put all the 10 boxes to one container and we can move them easily compare to moving 10 boxes. Similarly \n\nInstead of giving same class to both h and p elements we wrap them in a container element div and give class to it",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Syntax",
+      "body": "Container Element - div\n<div>  Other Elements </div>\nElement\nContent\nStart tag\nEnd tag",
+      "notes": "All the elements that you want to use the container for - Main Heading, Paragraph and Button\n\n\tHTML Container Element ki use chese tag - div",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "HTML Element",
+      "body": "Adding Div\n<body>\n  <div>\n    <h1>Tourism</h1>\n    <p>\n      Plan your trip wherever \n      you want to go\n    </p>\n    <button>Get Started</button>\n  </div>\n</body>\nHTML",
+      "notes": "Indent - Practice\nSomething that must be followed. \n\nCorrect practices from the beginning. Practice all the things we say, there will be many advantages. Will save a lot of time while debugging. Person who codes well doesn’t become a great programmers\n\nUSE TAB to GIVE AN INDENT. \n\nWrap the given heading, paragraph and button elements inside the div element.\n\n<h1>Zero Prerequisites</h1>\n<p>No previous coding experience required. It doesn’t matter which branch or GPA you have.</p>\n<button>Get Started</button>",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Let's use CSS \u000bto Center the Elements \u000bin the Container Horizontally",
+      "body": "Let's use CSS \u000bto Center the Elements \u000bin the Container Horizontally",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Syntax - Class Attribute",
+      "body": "For All The Elements in The Container\n<div class = “h-center” > Content </div>\nElement\nAttribute Value\nSyntax Name of the Attribute \nEnd Tag\nStart Tag\nContent",
+      "notes": "Additional Information about “Style” - So ‘CSS’ -> Class\n\nRemove h-center for h1 and put to div\n\nRemember, ‘\nAttribute = Extra information for the element. ‘\nAlways in the START Tag \nikkada HTML element ki additional information annadi style gurinchi cheptunnam kabatti, Class annadi vadatamu. \n\nTo combine the css that we have written in CSS file to the HTML element we use class attribute",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Alignment",
+      "body": "Horizontal Center\n<body>\n  <div class=\"h-center\" >\n    <h1>Tourism</h1>\n    <p>\n      Plan your trip wherever \n      you want to go\n    </p>\n    <button>Get Started</button>\n  </div>\n</body>\n* Refer\nHTML",
+      "notes": "For CSS text-align property we can assign left, right, center values\nWe can just refer to the things",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "HTML Element",
+      "body": "<body>\n  <div>\n    <h1>Tourism</h1>\n    <p>\n      Plan your trip wherever \n      you want to go\n    </p>\n    <button>Get Started</button>\n  </div>\n</body>\nStandard Practices \n**Indent\nAdding Div\nHTML",
+      "notes": "Indent - Practice\nCorrect practices from the beginning. Practice all the things we say, there will be many advantages. Will save a lot of time while debugging. Person who codes well doesn’t become a great programmers\n\nWrap the given heading, paragraph and button elements inside the div element.\n\n<h1>Zero Prerequisites</h1>\n<p>No previous coding experience required. It doesn’t matter which branch or GPA you have.</p>\n<button>Get Started</button>",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Introduction to CSS",
+      "body": "Key Takeaways \nCSS Syntax\nRuleset\nSelector\nProperty\nValue\nContainer Element (div)\nCombining HTML & CSS\nClass Attribute",
+      "notes": "Assignment\nWhenever you’re in doubt, rewatch the video, and play around with the code. \nRuleset = selector name → Flower Brace { → Property: Value; → Closing flower brace.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Next Session",
+      "body": "Introduction to CSS \n| Part 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/10pO3Rg1AKlP0Pa5AfwmiFJOchMVUQIVYtorvCzZYU_E/edit#slide=id.g2f4b8fe6d29_0_90"
+}

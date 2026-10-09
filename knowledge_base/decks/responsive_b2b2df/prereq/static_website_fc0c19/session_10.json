@@ -1,0 +1,395 @@
+{
+  "session_no": 10,
+  "source_file": "static website — session 10",
+  "deck_title": "static website — session 10",
+  "n_slides": 55,
+  "summary": "\n    - Slide 2: Coding Platform Walk Through\n    - Slide 3: Agenda\n    - Slide 4: Desktop View\n    - Slide 5: Mobile View\n    - Slide 6: Desktop View\n    - Slide 7: Mobile View\n    - Slide 8: Desktop View\n    - Slide 9: Desktop View\n    - Slide 10: Mobile View\n    - Slide 11: Desktop View\n    - Slide 12: Desktop View\n    - Slide 13: Mobile View\n    - Slide 14: Desktop View\n    - Slide 15: Mobile View\n    - Slide 16: Desktop View\n    - Slide 17: Mobile View\n    - Slide 18: Desktop View\n    - Slide 19: Mobile View\n    - Slide 20: Desktop View\n    - Slide 21: Mobile View\n    - Slide 22: Desktop View\n    - Slide 23: Mobile View\n    - Slide 24: Desktop View\n    - Slide 25: Mobile View\n    - Slide 26: Desktop View\n    - Slide 27: Mobile View\n    - Slide 28: Desktop View\n    - Slide 29: Mobile View\n    - Slide 30: Desktop View\n    - Slide 31: Mobile View\n    - Slide 32: Desktop View\n    - Slide 33: Mobile View\n    - Slide 34: Desktop View\n    - Slide 35: Desktop View\n    - Slide 36: Mobile View\n    - Slide 37: Desktop View\n    - Slide 38: Desktop View\n    - Slide 39: Mobile View\n    - Slide 40: Desktop View\n    - Slide 41: Mobile View\n    - Slide 42: Desktop View\n    - Slide 43: Mobile View\n    - Slide 44: Desktop View\n    - Slide 45: Mobile View\n    - Slide 46: Desktop View\n    - Slide 47: Desktop View\n    - Slide 48: Desktop View\n    - Slide 49: Mobile View\n    - Slide 50: Coding Platform Walk Through\n    - Slide 53: Introduction to Bootstrap",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Coding Platform Walk Through",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Agenda",
+      "body": "Web Coding Practice Platform Walkthrough\nIntroduction\nSubmitting Code\nCoding Practice\nTest Cases Passed or Failed\nRunning Test Cases\nWriting Code\nHTML\nCSS\nSave\nRun Code\nSolution\nHTML\nCSS\nDiscuss\nUsing Discussion Portal",
+      "notes": "You need to apply once you learnt. We will give you coding practice assignments. Based on the concepts you learnt you can build.",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Desktop View",
+      "body": "Coding Practice",
+      "notes": "The questions in the assignment that you need to solve will be listed here. The current one is beginner. \n\nGoing forward, you’ll get assignments. \n\nApply your learning. Get things done!",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Mobile View",
+      "body": "Coding Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Desktop View",
+      "body": "Question",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Mobile View",
+      "body": "Question",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Desktop View",
+      "body": "Test Cases Passed Before Practice",
+      "notes": "Code correct ga rasara ledha ani test cheyadaniki",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Desktop View",
+      "body": "Test Cases Passed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Mobile View",
+      "body": "Test Cases Passed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Desktop View",
+      "body": "Score Before Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Desktop View",
+      "body": "Score Before Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Mobile View",
+      "body": "Score",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Desktop View",
+      "body": "Status",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Mobile View",
+      "body": "Status",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Desktop View",
+      "body": "Open Coding Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Mobile View",
+      "body": "Open Coding Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Desktop View",
+      "body": "Description",
+      "notes": "Background image, button - we can build using the ones we have covered so far.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Mobile View",
+      "body": "Description",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Desktop View",
+      "body": "Code - HTML",
+      "notes": "Try to achieve to the design as closest as possible\nButton is a exploratory thing. We can give\nheight\nwidth\nbackground-color\ncolor\nCheck cheat Sheet if we face any problem",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Mobile View",
+      "body": "Code - HTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Desktop View",
+      "body": "Code - CSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Mobile View",
+      "body": "Code - CSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Desktop View",
+      "body": "Save Your Code",
+      "notes": "We have to say here that save will not ask for the file name to enter as such in code playground \n\nTry to achieve as it is. As much as possible try to build close.\n\nDifference between the code playground and coding practice",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Mobile View",
+      "body": "Save Your Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Desktop View",
+      "body": "Run Code to Preview the Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Mobile View",
+      "body": "Run Code to Preview the Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Desktop View",
+      "body": "Reset the Code to Default",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Mobile View",
+      "body": "Reset the Code to Default",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Desktop View",
+      "body": "Submit Your Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Mobile View",
+      "body": "Submit Your Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Desktop View",
+      "body": "Test Case Results",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Mobile View",
+      "body": "Test Case Results",
+      "notes": "Scroll to view the Test Results",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Desktop View",
+      "body": "View Description",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Desktop View",
+      "body": "Description",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Mobile View",
+      "body": "View Description",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Desktop View",
+      "body": "Screen Adjustment",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Desktop View",
+      "body": "Solution Locked",
+      "notes": "You also need to try. Straight away looking into solutions is not correct",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Mobile View",
+      "body": "Solution Locked",
+      "notes": "Solution will be unlocked after the specified time\n\nTO see the solution click on SHOW SOLUTION",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Desktop View",
+      "body": "Solution - HTML",
+      "notes": "After looking into solution try it out on your own. Don’t copy as it is.",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Mobile View",
+      "body": "Solution - HTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Desktop View",
+      "body": "Solution - CSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Mobile View",
+      "body": "Solution - CSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Desktop View",
+      "body": "Discuss - View Existing Threads",
+      "notes": "instructions . Post accordingly.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Mobile View",
+      "body": "Discuss - View Existing Threads",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Desktop View",
+      "body": "Discuss - New Thread",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Desktop View",
+      "body": "Discuss - New Thread Title & Description",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Desktop View",
+      "body": "Discuss - Attached Code",
+      "notes": "Check the Attach my code box. So that your code will be attached to the Discussion thread \n\nWe can easily resolve your query",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Mobile View",
+      "body": "Discuss - New Thread Title & Description",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Coding Platform Walk Through",
+      "body": "Key Takeaways\nCoding Practice\nDescription\nWriting Code\nSubmitting Code\nSolution\nDiscuss",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Introduction to Bootstrap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1JFHWR-GdAZLCe4WAu7YwCMAjSYg_3appfiLbZVVZIcc/edit#slide=id.g2f4b228b5e9_0_192"
+}

@@ -1,0 +1,647 @@
+{
+  "session_no": 29,
+  "source_file": "static website — session 29",
+  "deck_title": "static website — session 29",
+  "n_slides": 91,
+  "summary": "\n    - Slide 2: Generating URLs  For Your Images\n    - Slide 3: Agenda for Today’s Session\n    - Slide 4: Generating URLs \u000bFor Your Images\n    - Slide 5: Desktop View\n    - Slide 6: Mobile View\n    - Slide 7: Desktop View\n    - Slide 8: Mobile View\n    - Slide 9: Desktop View\n    - Slide 10: Desktop View\n    - Slide 11: Mobile View\n    - Slide 12: Desktop View\n    - Slide 13: Mobile View\n    - Slide 14: Desktop View\n    - Slide 15: Mobile View\n    - Slide 16: Desktop View\n    - Slide 17: Desktop View\n    - Slide 18: Mobile View\n    - Slide 19: Desktop View\n    - Slide 20: Mobile View\n    - Slide 21: Desktop View\n    - Slide 22: Desktop View\n    - Slide 23: Mobile View\n    - Slide 24: Desktop View\n    - Slide 25: Mobile View\n    - Slide 26: Desktop View\n    - Slide 27: Desktop View\n    - Slide 28: Desktop View\n    - Slide 29: Desktop View\n    - Slide 30: Desktop View\n    - Slide 31: Mobile View\n    - Slide 32: Mobile View\n    - Slide 33: Mobile View\n    - Slide 34: Desktop View\n    - Slide 35: Mobile View\n    - Slide 36: Desktop View\n    - Slide 37: Mobile View\n    - Slide 38: Generated URL for Image\n    - Slide 39: Generating URLs  For Your Images\n    - Slide 41: Assignments\n    - Slide 42: Deploy your Coding Practices and Assignments and share them on LinkedIn or other\n    - Slide 45: Developing Static Websites \n    - Slide 46: IDE\n    - Slide 47: Developing Applications\n    - Slide 48: Developing Applications\n    - Slide 49: IDE\n    - Slide 50: Developing Static Websites On Your Computer\n    - Slide 51: Developing Static Websites On Your Computer\n    - Slide 52: Developing Static Websites On Your Computer\n    - Slide 53: Developing Static Websites On Your Computer\n    - Slide 54: Open static website folder\n    - Slide 55: Open static website folder\n    - Slide 56: Visual Studio Code\n    - Slide 57: Creating HTML Document\n    - Slide 58: Creating HTML Document\n    - Slide 59: Creating HTML Document\n    - Slide 60: Creating HTML Document\n    - Slide 61: Creating Style Sheet\n    - Slide 62: Creating Style Sheet\n    - Slide 63: Creating Style Sheet\n    - Slide 64: Creating Style Sheet\n    - Slide 65: HTML Document\n    - Slide 66: Style Sheet\n    - Slide 67: Saving HTML and CSS Files\n    - Slide 68: Saving HTML and CSS Files\n    - Slide 69: View Output\n    - Slide 70: View Output\n    - Slide 71: View Output\n    - Slide 72: Why CSS styles did not apply?\n    - Slide 73: HTML\n    - Slide 74: Linking HTML and CSS Files\n    - Slide 75: Linking HTML and CSS Files\n    - Slide 76: Quiz Time!\n    - Slide 77: Desktop View\n    - Slide 78: Mobile View\n    - Slide 79: Mobile View\n    - Slide 80: Desktop View\n    - Slide 81: Desktop View\n    - Slide 82: Mobile View\n    - Slide 83: Desktop View\n    - Slide 84: Desktop View\n    - Slide 85: Mobile View\n    - Slide 86: Desktop View\n    - Slide 87: Desktop View\n    - Slide 88: Mobile View\n    - Slide 89: Recap\n    - Slide 90: Recap\n    - Slide 91: Agenda",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Generating URLs  For Your Images",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Agenda for Today’s Session",
+      "body": "Generating URLs  For Your Images\nGenerating URLs \nFor Your Images\nUsing Cloudinary\nDeveloping Static Websites On Your Computer\nUsing Visual Studio Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Generating URLs \u000bFor Your Images",
+      "body": "Generating URLs \u000bFor Your Images",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Desktop View",
+      "body": "Open Cloudinary.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Mobile View",
+      "body": "Open Cloudinary.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Desktop View",
+      "body": "Click on Get Started Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Mobile View",
+      "body": "Click on Get Started Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Desktop View",
+      "body": "Click on  Sign Up Form",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Desktop View",
+      "body": "Fill the Sign Up Form",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Mobile View",
+      "body": "Fill the Sign Up Form",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Desktop View",
+      "body": "Fill the Form and Click on Get Started Now",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Mobile View",
+      "body": "Fill the Form and Click on Get Started Now",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Desktop View",
+      "body": "Mail Verification",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Mobile View",
+      "body": "Mail Verification",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Desktop View",
+      "body": "Click on Verify Email",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Desktop View",
+      "body": "Log in to your account",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Mobile View",
+      "body": "Log in to your account",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Desktop View",
+      "body": "Click on Continue Later Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Mobile View",
+      "body": "Click on Continue Later Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Desktop View",
+      "body": "Dashboard",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Desktop View",
+      "body": "Dashboard",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Mobile View",
+      "body": "Dashboard",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Desktop View",
+      "body": "Click on Assets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Mobile View",
+      "body": "Click on Assets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Desktop View",
+      "body": "Click on Assets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Desktop View",
+      "body": "Click on Upload",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Desktop View",
+      "body": "Click on Browse",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Desktop View",
+      "body": "Select the Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Desktop View",
+      "body": "Uploaded...",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Mobile View",
+      "body": "Uploading From Phone",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Mobile View",
+      "body": "Select the Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Mobile View",
+      "body": "Uploaded...",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Desktop View",
+      "body": "Click on Options and Copy URL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Mobile View",
+      "body": "Click on Image Menu and Copy URL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Desktop View",
+      "body": "Paste URL in New Tab",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Mobile View",
+      "body": "Paste URL in New Tab",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Generated URL for Image",
+      "body": "Add URL in Image Element\n<img src=\" https://res.cloudinary.com/dzbjxiyvy/image/upload/v1604334989/mysore-palace_ey4ede.png \" />\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Generating URLs  For Your Images",
+      "body": "Key Takeaways\nGenerating URLs For Your Images\nUsing Cloudinary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Assignments",
+      "body": "Assignments\n  Hands-on Assignments\nReach out in Discussions Portal \u000bfor any queries",
+      "notes": "We'll provide a list of coding assignments based on what you've learnt so far.Finish those assignments in your free time",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Deploy your Coding Practices and Assignments and share them on LinkedIn or other",
+      "body": "Deploy your Coding Practices and Assignments and share them on LinkedIn or other social media platforms to showcase your skills\nImportant Tip",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Developing Static Websites ",
+      "body": "Developing Static Websites \nOn Your Computer",
+      "notes": "In Desktop Devices Only...",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "IDE",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Developing Applications",
+      "body": "IDE (Integrated Development Environment)\nAn Integrated Development Environment (IDE) is a software for building applications that makes programming easier.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Developing Applications",
+      "body": "IDE (Integrated Development Environment) \nIDEs allows developers to develop applications  easily and quickly",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "IDE",
+      "body": "Popular IDEs\nVS Code\nPyCharm\nEclipse\nAtom\nIntelliJ IDEA\nTheia",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Developing Static Websites On Your Computer",
+      "body": "Install Visual Studio Code\nVisual Studio Code is \u000ba lightweight and powerful \u000bsource code editor \u000bwhich runs on your Desktop\nNote: Installation guide is provided in the cheatsheet. \u000bDo follow the instructions and complete the Visual Studio Code Installation",
+      "notes": "https://www.youtube.com/watch?v=JGsyJI8XG0Y&ab_channel=LearningLad",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Developing Static Websites On Your Computer",
+      "body": "Folder\nFolders are used to store \u000band organize files",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Developing Static Websites On Your Computer",
+      "body": "Create a Folder on Desktop \nFolder Name \nstatic website",
+      "notes": "Create static website folder\n\nYou can choose your own folder name",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Developing Static Websites On Your Computer",
+      "body": "Open Visual Studio Code \nSearch Visual Studio Code in your applications and open it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Open static website folder",
+      "body": "Click on File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Open static website folder",
+      "body": "Click on Open Folder Option",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Visual Studio Code",
+      "body": "Select The Folder",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Creating HTML Document",
+      "body": "Right Click on Static Website Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Creating HTML Document",
+      "body": "Click on New File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Creating HTML Document",
+      "body": "HTML File\nTo create HTML document \u000bon our Computer,\u000bwe use .html as \u000bthe file extension\ntourism.html",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Creating HTML Document",
+      "body": "Add .html file \nFile Name \ntourism.html",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Creating Style Sheet",
+      "body": "Right Click on Static Website Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Creating Style Sheet",
+      "body": "Click on New File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Creating Style Sheet",
+      "body": "CSS File\nTo create CSS file on our Computer, we use .css as the file extension\ntourism.css",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Creating Style Sheet",
+      "body": "Add .css file\nFile Name\ntourism.css",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "HTML Document",
+      "body": "Adding HTML Code",
+      "notes": "<!DOCTYPE html>\n<html>\n\n<head> </head>\n\n<body>\n   <h1 class=\"heading\">Tourism</h1>\n</body>\n\n</html>",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Style Sheet",
+      "body": "Adding CSS Code",
+      "notes": ".heading {\n   color: blue;\n}",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Saving HTML and CSS Files",
+      "body": "Click on File Option\nWe have to save both HTML and CSS files to save the code we written",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Saving HTML and CSS Files",
+      "body": "Click on Save All Option",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "View Output",
+      "body": "Right Click on .html File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "View Output",
+      "body": "Click on Copy Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "View Output",
+      "body": "Open Chrome and Paste Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Why CSS styles did not apply?",
+      "body": "Why CSS styles did not apply?\n.heading {\n   color: blue;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "HTML",
+      "body": "Link Element\n<link rel=\"stylesheet\" href=\"tourism.css\">",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Linking HTML and CSS Files",
+      "body": "Add Link Element in Head Element and Save the File\nSave the file whenever you make any changes to your code",
+      "notes": "Save the file whenever you made changes to your code",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Linking HTML and CSS Files",
+      "body": "Reload the Page in Chrome",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Desktop View",
+      "body": "Sign In",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "Mobile View",
+      "body": "Sign In",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "Mobile View",
+      "body": "Log in to your account",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "Desktop View",
+      "body": "Click on Sign In",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 81,
+      "title": "Desktop View",
+      "body": "Click on Media Option",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 82,
+      "title": "Mobile View",
+      "body": "Click on Media Option",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 83,
+      "title": "Desktop View",
+      "body": "Click on Upload Button",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 84,
+      "title": "Desktop View",
+      "body": "Click on Options Menu",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 85,
+      "title": "Mobile View",
+      "body": "Click on Copy URL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 86,
+      "title": "Desktop View",
+      "body": "Click on Copy URL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 87,
+      "title": "Desktop View",
+      "body": "Fill the Sign Up Form",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 88,
+      "title": "Mobile View",
+      "body": "Fill the Sign Up Form",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 89,
+      "title": "Recap",
+      "body": "HTML Hyperlinks\nHTML Anchor Element\nhref Attribute\ntarget Attribute\nNavigate within the same \u000bHTML document\nUsing HTML Image as Link",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 90,
+      "title": "Recap",
+      "body": "HTML Void Elements\nHTML Void Elements\nbr Element\nhr Element\nTwinkle Twinkle Little Star\nTwinkle, twinkle, little star,\nHow I wonder what you are!\nUp above the world so high,\nLike a diamond in the sky.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 91,
+      "title": "Agenda",
+      "body": "On-Demand Session\nGenerating URLs \nFor Your Images\nUsing Cloudinary\nDeveloping Static Websites On Your Computer\nUsing Visual Studio Code",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/12OlHHOK8-OrFdQcOPKLU3yjAE2AHPXyza3tYkTvpweA/edit?slide=id.g2f4c16113a4_0_0#slide=id.g2f4c16113a4_0_0"
+}

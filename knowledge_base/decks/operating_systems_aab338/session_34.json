@@ -1,0 +1,615 @@
+{
+  "session_no": 34,
+  "source_file": "OS Security & Protection",
+  "deck_title": "OS Security & Protection",
+  "n_slides": 59,
+  "summary": "\n    - Slide 2: OS Security & Protection\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Security Threats\n    - Slide 6: Protection vs Security\n    - Slide 7: Two Related Scopes\n    - Slide 8: Physical threats\n    - Slide 9: Separating Policy Mechanism\n    - Slide 10: Separating Policy Mechanism\n    - Slide 11: Analogy\n    - Slide 12: Why Protection Exists?\n    - Slide 13: Goals\n    - Slide 14: Relationship Summarised\n    - Slide 15: Access Control\n    - Slide 16: Subjects Objects Operations\n    - Slide 17: Rows Columns Rights\n    - Slide 18: Rows Columns Rights\n    - Slide 19: Analogy\n    - Slide 20: Three Domains Example\n    - Slide 21: Three Domains Example\n    - Slide 22: Four Storage Techniques\n    - Slide 23: Four Storage Techniques\n    - Slide 24: Trade-offs Compared\n    - Slide 25: Security Threats\n    - Slide 26: Categories And Traits\n    - Slide 27: Categories And Traits\n    - Slide 28: Host-Dependent Infection\n    - Slide 29: Analogy\n    - Slide 30: Self-Replicating Spread\n    - Slide 31: Analogy\n    - Slide 32: Disguised Malicious Code\n    - Slide 33: Threats Compared\n    - Slide 34: Ransomware, spyware and rootkits combine the classic triad's mechanisms with a s\n    - Slide 35: Quiz Time!\n    - Slide 36: Vulnerabilities\n    - Slide 37: Two Exploit Classes\n    - Slide 38: Buffer overflow happens when a program writes more data into a fixed-size buffer\n    - Slide 39: Analogy\n    - Slide 40: Overwriting Return Address\n    - Slide 41: Overwriting Return Address\n    - Slide 42: Privilege escalation exploits a flaw to obtain permissions beyond what was legit\n    - Slide 43: Analogy\n    - Slide 44: Defense Techniques Compared\n    - Slide 45: Defenses\n    - Slide 46: Malware, overflow and privilege escalation are countered by three complementary \n    - Slide 47: Passwords Biometrics MFA\n    - Slide 48: Authentication proves a claimed identity using one or more independent factors b\n    - Slide 49: Analogy\n    - Slide 50: Encryption transforms readable plaintext into unreadable ciphertext using a key,\n    - Slide 51: Symmetric\n    - Slide 52: Algorithms And Use Cases\n    - Slide 53: Defense In Depth\n    - Slide 54: Defense In Depth\n    - Slide 55: Quiz Time!\n    - Slide 56: OS Security & Protection\n    - Slide 57: OS Security & Protection",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "OS Security & Protection",
+      "body": "OS Security & Protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "RAID & Storage Management\nSecondary Storage Management\nManaging secondary storage\nRAID Concept\nMotivation for RAID\nRAID Levels - I\nRAID 0 (striping) & RAID 1 (mirroring)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "RAID & Storage Management\nRAID Levels - II\nRAID 5 (distributed parity) & RAID 6\nRAID 10 (nested)\nTrade-offs & Reliability\nPerformance, redundancy & cost\nStorage reliability & data protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Security Threats",
+      "body": "Security Threats\nAccess Control\nDistinction & goals of protection\nAccess control & the access matrix\nProtection vs Security\nDefenses\nVulnerabilities\nMalware, worms & trojans\nBuffer overflow & privilege escalation\nAuthentication, encryption & best practices\nOS Security & Protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Protection vs Security",
+      "body": "Protection vs Security",
+      "notes": "Next we will be learning about the Protection vs Security",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Two Related Scopes",
+      "body": "Two Related Scopes\nProtection And Security\nProtection is the mechanism controlling which process or user may access which resource\nSecurity is the wider goal of defending the whole system against threats, internal and external",
+      "notes": "Protection and security are related, but they are not the same.\nProtection controls who can access what in the system. \u000bFor example, whether a user is allowed to open a particular file.\nSecurity is broader & protects the entire system from threats, like unauthorized access, malware, or attacks.\nSo, simply: Protection controls access, while security protects the overall system.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Physical threats",
+      "body": "Physical threats\nNetwork threats\nHuman threats\nOS-level protection\nTwo Related Scopes\nProtection And Security",
+      "notes": "Security threats can come from different sources, so the system needs protection at multiple levels.\u000b1 Physical threats include theft, fire, or disasters that can damage hardware or cause data loss.\u000b2 Network threats include intrusion, packet sniffing, and unauthorized remote access.\u000b3 Human threats include social engineering and misuse by authorized users.\u000b4 OS-level protection ensures that users and processes can access only the resources they are permitted to use.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Separating Policy Mechanism",
+      "body": "Separating Policy Mechanism\nProtection Mechanism\nProtection supplies the enforcement machinery for access rules\npolicy is the separate decision of what those rules should be",
+      "notes": "Here, we separate policy from mechanism.\nPolicy decides what should be allowed — for example, an administrator \u000bmay decide that only certain users can access a file.\nMechanism is how the OS enforces that decision through kernel-enforced checks. \u000bThese mechanisms are fixed and reusable for different policies.\nSo, policy is the decision, while mechanism is the enforcement.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Separating Policy Mechanism",
+      "body": "Separating Policy Mechanism\nProtection Mechanism\nSame mechanism serves many different policies\nPolicy can change without redesigning enforcement code",
+      "notes": "The same mechanism can be used for different policies.\nFor example, the OS permission-checking mechanism can enforce different access rules.\nSo, if the policy changes, we don't need to redesign the enforcement mechanism.\nSimply: the mechanism stays the same, while the policy can change.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Analogy",
+      "body": "Analogy\nProtection Mechanism",
+      "notes": "Think of traffic signals at a busy intersection. The signal system is the mechanism \u000bbecause it controls when vehicles can move. The timing rules set by traffic authorities are the policy.\nSimilarly, an OS protection mechanism enforces whatever access rules are defined by the policy.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Why Protection Exists?",
+      "body": "Why Protection Exists?\nGoals Of Protection\nProtection exists to keep shared systems reliable, not only to lock things down – misuse can be malicious or purely accidental",
+      "notes": "Protection makes sure that every process can access only the resources it is authorised to use.\u000b For example, one process should not be able to read or modify another process’s private memory.\u000bProtection also helps prevent damage caused by accidental mistakes, not just malicious actions.\u000b By giving a process limited permissions, a bug in that process is less likely to affect other parts of the system.\u000bThis follows the least privilege principle: a process should receive only the permissions it needs to perform its task.\u000bProtection can also help identify problems when different system components interact incorrectly. \u000bOverall, protection helps keep the system isolated, reliable, and safer when something goes wrong.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Goals",
+      "body": "Goals\nSecurity Defined\nSecurity is the discipline of defending a system against threats, using protection as one tool alongside authentication, encryption and monitoring",
+      "notes": "Security is about protecting the whole system from threats. Although ,\u000bProtection controls access, while security combines that with things like authentication, \u000bencryption, and monitoring to defend the system\nA simple way to understand security is through these four goals.\u000b1 Prevent unauthorised disclosure of data\n2 Prevent unauthorised modification of data\n3 Keep legitimate access working under attack\n4 Trace actions back to a responsible entity",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Relationship Summarised",
+      "body": "Relationship Summarised\nProtection Vs Security\nProtection is one pillar inside the larger security effort; sound protection is necessary for security but never sufficient on its own",
+      "notes": "Refer to reading material",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Protection",
+            "Security"
+          ],
+          [
+            "Scope",
+            "Internal, within the OS",
+            "System-wide, includes external threats"
+          ],
+          [
+            "Focus",
+            "Who can access what",
+            "Confidentiality, integrity, availability"
+          ],
+          [
+            "Mechanism",
+            "Access checks, permissions",
+            "Protection plus authentication, encryption, monitoring"
+          ],
+          [
+            "Goal",
+            "Enforce policy correctly",
+            "Defend against every threat source"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Access Control",
+      "body": "Access Control",
+      "notes": "Now we will be learning about the Access Control",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Subjects Objects Operations",
+      "body": "Subjects Objects Operations\nAccess Control Basics\nEvery protection policy reduces to three elements: who is asking, what they want to do, and on which resource",
+      "notes": "Access control can be understood using three simple questions: who is asking, what do they want to do,\u000bThe OS uses these three elements to decide whether the requested action should be allowed or denied.\u000b and what resource are they trying to access?\u000b1 Process or user requesting access\n2 Resource being protected – file, device, memory segment\n3 Action requested – read, write, execute, switch\n4 Formal model recording every allowed combination",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Rows Columns Rights",
+      "body": "Rows Columns Rights\nAccess Matrix Model\n1. Rows\n2. Columns\n3. Cells\nThe access matrix places every domain against every object, with each cell holding the operations that domain may perform on that object",
+      "notes": "An access matrix is simply a table that shows who can do what to which resource.\nThe rows represent the subjects or domains, such as different users or processes.\nThe columns represent the objects, such as files or devices\nFinally, each cell contains the allowed operations, like read, write, or execute.\nSo, to check permission, we find the subject’s row and the object’s column, and then look at the rights in that cell.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Rows Columns Rights",
+      "body": "Rows Columns Rights\nAccess Matrix Model\n4. Switch\n5. Matrix",
+      "notes": "A switch means that the system can change from one protection domain to another. \u000bFor example, a process may switch from one domain to another when it needs a different set of permissions.\nThe matrix is the complete table that records all the permissions between domains and objects.\u000bSo, the main idea is: the matrix records the rights, while the switch allows \u000bmovement between protection domains when permitted.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Analogy",
+      "body": "Analogy\nAccess Matrix Model",
+      "notes": "Think of a hotel keycard system. A guest is like a subject, and a room is like an object. \u000bThe keycard defines which rooms the guest can access. Similarly, an OS access matrix \u000bdefines which operations a subject can perform on each object.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Three Domains Example",
+      "body": "Three Domains Example\nWorked Matrix Trace\nA three-process matrix over two files and a printer shows how a real protection state is recorded in the model discussed above",
+      "notes": "Here we have a simple example of an access matrix with three domains or processes.\nThe matrix records which process can access which resource, such as two files and a printer.\nFor example, one process might have read and write permission on File 1, \u000bwhile another process may only have read permission.\nThe printer can also have its own permission, such as print.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Three Domains Example",
+      "body": "Three Domains Example\nWorked Matrix Trace\nHas zero rights on /etc/shadow – explicit denial by absence\nEmpty cell means no implicit access, unlike file-permission defaults\nCan switch into PID 5820 – controlled privilege narrowing",
+      "notes": "Let’s trace this matrix with three different processes.\nPID 4312 is the owner, so it has read and write access to both files. \u000bIt can also switch to PID 5820, which means it can move into that controlled privilege domain.\nPID 5820 has more limited permissions. It can read /etc/shadow, \u000bbut it cannot access the reports document. It can also print using the printer.\nPID 6603 is the guest. It can only read the reports document and has no access to the other resources.\nNotice that an empty cell means no access. The process does not automatically \u000bget permission just because the resource exists.\nSo this matrix gives us a precise picture of what each process is allowed to do with each resource.",
+      "tables": [
+        [
+          [
+            "Domain",
+            "/etc/shadow",
+            "/home/reports.docx",
+            "/dev/lp0"
+          ],
+          [
+            "PID 4312 (Owner)",
+            "read, write",
+            "read, write",
+            "switch to PID 5820"
+          ],
+          [
+            "PID 5820 (Group)",
+            "read",
+            "–",
+            "print"
+          ],
+          [
+            "PID 6603 (Guest)",
+            "–",
+            "read",
+            "–"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Four Storage Techniques",
+      "body": "Four Storage Techniques\nMatrix Implementation\nStoring the full sparse matrix wastes space, so operating systems keep only the non-empty cells using one of four techniques",
+      "notes": "An access matrix can become very large, and most of its cells are usually empty. \u000bSo storing the entire matrix would waste space.\nInstead, operating systems use different ways to store only the permissions that actually exist.\nA global table stores entries as domain, object, and rights.\u000bIt is simple, but searching through many entries can be slow.\nAn ACL, or Access Control List, stores the permissions with the object itself.\nIn other words, we look at a file and ask, ‘Who is allowed to access this file, and what can they do?",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Four Storage Techniques",
+      "body": "Four Storage Techniques\nMatrix Implementation\nStoring the full sparse matrix wastes space, so operating systems keep only the non-empty cells using one of four techniques",
+      "notes": "Two more ways to implement the access matrix are capability lists and lock-key mechanisms.\nWith a capability list, we store the permissions with the domain. \u000bSo we ask: ‘What resources can this process access, and what can it do with them?’\nFor example, a process might have: File A — read/write, File B — read, Printer — print.\nWith lock-key, the object has a lock and the domain has a matching key. \u000bAccess is allowed only when the key matches the lock.\nSo remember the difference: ACL focuses on the object — who can access me? \u000bCapability list focuses on the domain — what can I access?",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Trade-offs Compared",
+      "body": "Trade-offs Compared\nACL Vs Capability\nAccess-control lists and capability lists slice the same matrix differently, trading revocation ease against transfer flexibility",
+      "notes": "Here we are comparing ACL and capability lists. Both represent the same permissions,\u000b but they look at them from different sides.\nWith an ACL, permissions are stored with the object. So we ask: ‘Who can access this file?’ \u000bIt is also easier to revoke access because we simply remove the user from the file’s list.\nWith a capability list, permissions are stored with the domain. So we ask: ‘What can this process access?’ \u000bCapabilities are easier to pass or delegate to another process.\nSo the main trade-off is: ACLs make revoking access easier, while capability lists make transferring access easier",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "ACL",
+            "Capability List"
+          ],
+          [
+            "Stored with",
+            "Object",
+            "Domain"
+          ],
+          [
+            "Answers",
+            "Who can access this object",
+            "What can this domain access"
+          ],
+          [
+            "Revocation",
+            "Easy – edit list at object",
+            "Hard - capability may be copied"
+          ],
+          [
+            "Delegation",
+            "Difficult",
+            "Easy - pass the capability"
+          ],
+          [
+            "Real-world use",
+            "Unix/NTFS file permissions",
+            "Capability-based kernels, token systems"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "Security Threats",
+      "body": "Security Threats",
+      "notes": "Next we will be learning about the Security Threads",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Categories And Traits",
+      "body": "Categories And Traits\nMalware Overview\nMalware is software deliberately designed to damage, disrupt or gain unauthorised access to a system. Categories differ mainly in host-dependency and self-replication",
+      "notes": "Malware means software that is intentionally created to harm a system\u000b or gain access without permission.\nThere are different types of malware, and an important difference is whether \u000bit needs another program to spread or can spread by itself.\nA virus attaches itself to a legitimate file or program and spreads when that infected file is executed.\nA worm does not need to attach to another program. It can replicate and spread on its own, often through a network.\nA Trojan looks like legitimate or useful software, but once the user runs it, it performs malicious actions.\nSo, the easy way to remember them is: virus attaches, \u000bworm spreads by itself, Trojan disguises itself.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Categories And Traits",
+      "body": "Categories And Traits\nMalware Overview\nMalware is software deliberately designed to damage, disrupt or gain unauthorised access to a system. Categories differ mainly in host-dependency and self-replication",
+      "notes": "Now let’s look at three more types of malware.\nRansomware blocks access to files or systems, usually by encrypting the data, \u000band demands payment to restore access.\nSpyware secretly monitors the user or system and collects information,\u000b such as browsing activity or sensitive data.\nA rootkit is designed to hide malicious activity and maintain unauthorised access to the system. \u000bIt can operate at a very low level, making it difficult to detect.",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Host-Dependent Infection",
+      "body": "Host-Dependent Infection\nVirus Mechanism\nDormant phase\nPropagation\nTriggering\nPayload\n1\n2\n3\n4\nA virus is code that attaches itself to a legitimate executable or document and activates only when that host file runs",
+      "notes": "Here we can see how a virus infects a host file.\nFirst is the dormant phase—the virus is attached to a legitimate file but is not active yet.\nNext is propagation. When the infected file is shared or copied, \u000bthe virus can spread to other files or systems.\nThen comes triggering. A particular condition, such as opening the\u000binfected file or reaching a specific date, causes the virus to activate.\nFinally, the payload is the actual malicious action—for example, \u000bdamaging files or disrupting the system.\nSo the simple flow is: stay hidden → spread → get triggered → perform the malicious action.",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Analogy",
+      "body": "Analogy\nVirus Mechanism",
+      "notes": "Think of a seed attached to a plant. The seed stays with the plant until it is carried to another place,\u000b where it can grow and spread. Similarly, a computer virus attaches\u000b to a host file and spreads when that file is executed",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Self-Replicating Spread",
+      "body": "Self-Replicating Spread\nA worm is a standalone program that replicates itself and spreads across networks without attaching to a host file or needing user execution\nWorm Propagation",
+      "notes": "Unlike a virus, a worm is a standalone program, so it does not need to attach itself to another file.\nA worm can find vulnerable systems through a network and spread automatically, \u000bwithout waiting for the user to open a file.\nBecause it can replicate quickly, it may consume a lot of network bandwidth and system resources.\nOnce it reaches a system, it can also carry a payload, such as installing a backdoor or ransomware.\nSo the main difference to remember is: a virus needs a host file, but a worm can spread independently.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Analogy",
+      "body": "Analogy\nWorm Propagation",
+      "notes": "A wildfire jumps from tree to tree on its own once it starts, \u000bneeding no one to carry the flame — just as a worm spreads across a network without any user action.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Disguised Malicious Code",
+      "body": "Disguised Malicious Code\nTrojan Payloads\nA trojan is malware disguised as legitimate or useful software, relying on the user to install it voluntarily; it does not self-replicate\nRemote Access Trojan (RAT)\nBackdoor trojan\nKeylogger trojan\nDropper trojan",
+      "notes": "A Trojan is malware that pretends to be legitimate or useful software.\u000b It usually depends on the user installing or running it, and unlike a worm, it does not self-replicate.\u000bDifferent Trojan types perform different malicious actions. A Remote Access Trojan (RAT) provides unauthorised remote access to the system.\u000b A Backdoor Trojan secretly provides unauthorised access to the system.\u000b A Keylogger Trojan records keystrokes and can capture sensitive information.\u000b A Dropper Trojan installs or delivers other malware onto the system.\u000bSo remember: a Trojan disguises itself, the user runs it, and then it performs its malicious action.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Threats Compared",
+      "body": "Threats Compared\nVirus Worm Trojan\nThe three classic malware types differ chiefly in host-dependency, replication ability and how they gain entry into a system",
+      "notes": "Let’s compare these three malware types based on the key traits shown here.\nA virus needs a host file and self-replicates through infected files.\u000b It usually requires the user to run that infected file.\nA worm does not need a host file. It self-replicates automatically, \u000bspreading through network vulnerabilities without user action.\nA Trojan does not need a host file because the malware itself is disguised as legitimate software.\u000b It does not self-replicate and usually depends on the user installing it through social engineering.\nSo the key difference is: virus spreads through infected files, worm spreads through network vulnerabilities, \u000band Trojan gets in by disguising itself",
+      "tables": [
+        [
+          [
+            "Trait",
+            "Virus",
+            "Worm",
+            "Trojan"
+          ],
+          [
+            "Needs host file",
+            "Yes",
+            "No",
+            "No (self is disguise)"
+          ],
+          [
+            "Self-replicates",
+            "Yes",
+            "Yes",
+            "No"
+          ],
+          [
+            "Needs user action",
+            "Yes (run host)",
+            "No",
+            "Yes (install it)"
+          ],
+          [
+            "Spreads via",
+            "Infected files",
+            "Network vulnerabilities",
+            "Social engineering"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 34,
+      "title": "Ransomware, spyware and rootkits combine the classic triad's mechanisms with a s",
+      "body": "Ransomware, spyware and rootkits combine the classic triad's mechanisms with a specific payload goal, and real incidents show the scale of resulting damage\nImpact And Examples\nMalware In Practice",
+      "notes": "Here we can see how these types of malware appear in real attacks.\nRansomware may arrive through a Trojan and then spread through the network like a worm.\nSpyware is often hidden inside a Trojan installer and is used to secretly collect information.\nRootkits work at a deeper level by modifying kernel structures so the malware can hide from detection.\nSome well-known examples include the Morris worm from 1988 and the Zeus banking Trojan from 2007.\nSo, different malware types can also combine their techniques to make an attack more effective.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Vulnerabilities",
+      "body": "Vulnerabilities",
+      "notes": "Next we will be learning about the Vulnerabilities.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Two Exploit Classes",
+      "body": "Two Exploit Classes\nVulnerabilities Landscape\nA vulnerability is a weakness a threat exploits to break through the protection boundaries a system defines",
+      "notes": "A vulnerability is a weakness that an attacker can use to break through the system’s protection.\nThere are four examples shown here.\nA buffer overflow happens when more data is put into a memory buffer than it can hold.\nPrivilege escalation means an attacker gains permissions higher than they should have.\nVertical escalation is moving from a lower-privileged user to a higher-privileged user, such as an administrator.\nHorizontal escalation means accessing another user’s resources while staying at roughly the same privilege level.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Buffer overflow happens when a program writes more data into a fixed-size buffer",
+      "body": "Buffer overflow happens when a program writes more data into a fixed-size buffer than it can hold, overwriting adjacent memory\nStack Overwrite Flaw\nBuffer Overflow",
+      "notes": "Buffer overflow happens when a program puts more data into a fixed-size memory area than it can hold.\nA common cause is unchecked input, where the program does not properly check how much data it receives.\nOn the stack, extra data can overwrite nearby information, including the saved return address.\nIf that return address is changed, the program may jump to an unintended location. \u000bThe result can be anything from a simple crash to unauthorised code execution.\nSo the key idea is: too much input → memory gets overwritten → program behaviour can be changed",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Analogy",
+      "body": "Analogy\nBuffer Overflow",
+      "notes": "Imagine a glass filled to the top. If you keep pouring, the extra water spills into the nearby area and may disturb other things.\u000bSimilarly, when a program writes more data than a buffer can hold, the extra data can overwrite nearby memory, \u000bincluding important information such as the return address, potentially causing the program to crash or behave unexpectedly.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Overwriting Return Address",
+      "body": "Overwriting Return Address\nStack Smashing Trace\nA concrete stack layout shows how an oversized input overwrites the saved return address with an attacker-chosen value \nControl transfers to 0x7ffee050 on function return, executing the attacker's injected code instead of the caller",
+      "notes": "Here we can see what happens when a buffer overflow overwrites the saved return address.\nNormally, when a function finishes, the return address tells the program where to go back.\nIf oversized input overwrites that address with an attacker-chosen value, the program can be redirected somewhere else.\nIn this example, the return address is changed to 0x7ffee050, \u000bso when the function returns, control goes to that location instead of returning normally.\nThe key idea is: overwrite the return address → change where the program continues execution",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Overwriting Return Address",
+      "body": "Overwriting Return Address\nStack Smashing Trace",
+      "notes": "Let’s look at the stack before and after the overflow.\nBefore the overflow, the buffer at 0x7ffee010 contains the input, the saved frame pointer \u000bis at 0x7ffee020, and the return address at 0x7ffee028 tells the program where to return.\nAfter the overflow, the extra input fills the buffer and overwrites the nearby values. \u000bMost importantly, the return address changes from 0x00401234 to 0x7ffee050.\nSo when the function returns, the program uses this new address instead of the original one, \u000bchanging where execution continues.\nThe important takeaway is: the overflow doesn't just affect the buffer—\nit can overwrite important control information stored next to it.",
+      "tables": [
+        [
+          [
+            "Stack Address",
+            "Before Overflow",
+            "After Overflow"
+          ],
+          [
+            "0x7ffee010",
+            "char buf[16] – input start",
+            "input data + NOP sled + shellcode"
+          ],
+          [
+            "0x7ffee020",
+            "saved frame pointer",
+            "overwritten with padding bytes"
+          ],
+          [
+            "0x7ffee028",
+            "return address 0x00401234",
+            "overwritten with 0x7ffee050"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 42,
+      "title": "Privilege escalation exploits a flaw to obtain permissions beyond what was legit",
+      "body": "Privilege escalation exploits a flaw to obtain permissions beyond what was legitimately granted, often the end goal of a buffer overflow exploit\nGaining Higher Rights\nPrivilege Escalation",
+      "notes": "Privilege escalation means gaining permissions that the user or process was not originally supposed to have.\u000bFor example, an attacker may exploit a buffer overflow to make a compromised process run with the owner’s higher privileges.\u000bAnother example is misusing a setuid or setgid program, which runs with the owner’s permissions.\u000bAn attacker could also exploit an unpatched kernel or service vulnerability to gain higher privileges.\u000bFinally, in a horizontal escalation, the attacker stays at a similar privilege level but \u000bgains access to another user’s data, such as through stolen credentials.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Analogy",
+      "body": "Analogy\nPrivilege Escalation",
+      "notes": "Imagine an employee has a keycard that allows access only to the ground floor. \u000bIf a flaw lets that keycard open the executive suite, the employee has gained access they were never authorised to have.\u000bSimilarly, privilege escalation happens when an attacker exploits a weakness to gain permissions beyond their original access.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Defense Techniques Compared",
+      "body": "Defense Techniques Compared\nMitigating Both Flaws\nBuffer overflow and privilege escalation are stopped by different layers of defence, from compiler-level checks to strict privilege design",
+      "notes": "Here we are comparing the defenses for the two vulnerabilities.\nFor buffer overflow, defenses include stack canaries, ASLR, DEP/NX, and bounds-checked functions.\u000b These mainly protect memory and prevent unintended code execution.\nFor privilege escalation, we use least privilege, timely patching, sandboxing, and audit logging. \u000bThese reduce the permissions an attacker can gain and help detect or contain misuse.\nSo the key point is that different layers provide different defenses—\u000bfrom checks in how software handles memory to careful design of user and process privileges",
+      "tables": [
+        [
+          [
+            "Vulnerability",
+            "Key Mitigations"
+          ],
+          [
+            "Buffer overflow",
+            "Stack canaries, ASLR, DEP/NX bit, bounds-checked functions"
+          ],
+          [
+            "Privilege escalation",
+            "Least-privilege principle, timely patching, sandboxing, audit logging"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 45,
+      "title": "Defenses",
+      "body": "Defenses",
+      "notes": "Next we will be learning about the Defenses",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Malware, overflow and privilege escalation are countered by three complementary ",
+      "body": "Malware, overflow and privilege escalation are countered by three complementary defense layers, not one silver bullet\nAuth Encryption Practices\nDefense Layers",
+      "notes": "Here we use three layers of defense. Authentication checks who the user is, \u000bencryption protects the data, and security best practices reduce possible attack points. \u000bThe key idea is that these layers work together rather than relying on just one defense\nHere point to note is : Here, the main point is that malware, buffer overflows, and \u000bprivilege escalation need multiple defenses. Authentication, encryption, and good security practices\u000b each protect a different layer. So there is no single security measure that can stop every type of attack.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Passwords Biometrics MFA",
+      "body": "Passwords Biometrics MFA\nAuthentication Factors\nAuthentication proves a claimed identity using one or more independent factors before access is granted",
+      "notes": "Authentication is about proving a claimed identity before access is granted. \u000bIt can use one or more independent factors.\nThe three factors shown here are: knowledge, such as a password; possession, \u000bsuch as having a phone or security device; and inherence, meaning something you are, such as a fingerprint.",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Authentication proves a claimed identity using one or more independent factors b",
+      "body": "Authentication proves a claimed identity using one or more independent factors before access is granted\nPasswords Biometrics MFA\nAuthentication Factors\nWeakness\nMFA",
+      "notes": "Authentication can have weaknesses if we depend on only one factor, such as a password.\u000b If that factor is compromised, the attacker may gain access. MFA reduces this weakness by\u000b combining multiple independent factors, so compromising one factor alone is not enough to get access",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Analogy",
+      "body": "Analogy\nAuthentication Factors",
+      "notes": "A bank locker needs the customer's key AND the banker's key together, from two different people \u000b—> exactly as multi-factor authentication needs two different factor categories together, not two of the same kind.",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Encryption transforms readable plaintext into unreadable ciphertext using a key,",
+      "body": "Encryption transforms readable plaintext into unreadable ciphertext using a key, protecting data at rest and in transit\nSymmetric Vs Asymmetric\nEncryption Fundamentals",
+      "notes": "Encryption protects data by converting readable plaintext into unreadable ciphertext using a key.\u000bWith symmetric encryption, the same shared key is used to encrypt and decrypt the data, such as AES.\u000b The challenge is securely sharing that key.\u000bWith asymmetric encryption, a public key is used for encryption, while the private key is used for decryption. \u000bIt can also support digital signatures, which help verify who sent the data and confirm that it was not modified.\u000bSo, the main difference is how the keys are used and managed.",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Symmetric",
+      "body": "Symmetric\nAsymmetric\nAnalogy\nEncryption Fundamentals",
+      "notes": "Sharing one house key with a trusted neighbour is symmetric encryption;\u000b dropping a letter into a public mailbox that only the owner's private key can open is asymmetric — \u000bjust as one shared key locks and unlocks in symmetric encryption, while a public key locks\u000b and a distinct private key unlocks in asymmetric encryption.",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Algorithms And Use Cases",
+      "body": "Algorithms And Use Cases\nSymmetric Vs Asymmetric\nSpeed and key-management needs decide which approach applies where; most real systems use both together",
+      "notes": "Here we compare the two approaches. Symmetric encryption uses one shared key,\u000b so it is faster and has low overhead. AES is a common example, and it is mainly used for bulk data encryption.\nAsymmetric encryption uses a public and private key pair. It is slower and more compute-heavy, \u000bbut the public key can be shared openly. RSA and ECC are common examples, \u000band it is useful for key exchange and digital signatures.\nIn practice, systems often use both together—asymmetric encryption for securely establishing keys, \u000band symmetric encryption for the actual data.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Symmetric",
+            "Asymmetric"
+          ],
+          [
+            "Keys used",
+            "Single shared key",
+            "Public and private key pair"
+          ],
+          [
+            "Speed",
+            "Fast, low overhead",
+            "Slower, compute-heavy"
+          ],
+          [
+            "Common algorithms",
+            "AES",
+            "RSA, ECC"
+          ],
+          [
+            "Key distribution",
+            "Hard to share safely",
+            "Public key shared openly"
+          ],
+          [
+            "Typical use",
+            "Bulk data encryption",
+            "Key exchange, digital signatures"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 53,
+      "title": "Defense In Depth",
+      "body": "Defense In Depth\nSecurity Best Practices\nNo single mechanism stops every threat, so systems layer independent controls so one failure does not expose everything",
+      "notes": "Defense in depth means we do not depend on one security mechanism.\u000b We use multiple independent controls, so if one fails, the others still provide protection.\nRegular patching fixes known vulnerabilities, including buffer-overflow and privilege-escalation bugs.\u000b We also encrypt data both at rest and in transit, while keeping encryption keys separate from the data.\nFinally, strong authentication and MFA should be used especially for privileged accounts, \u000bbecause compromising these accounts can give an attacker much greater access",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Defense In Depth",
+      "body": "Defense In Depth\nSecurity Best Practices\nNo single mechanism stops every threat, so systems layer independent controls so one failure does not expose everything",
+      "notes": "Logging and monitoring are important because prevention is not always enough. \u000bIf someone tries to access something they should not, logs can help detect that activity and identify policy violations.\u000bWe should also disable services we do not use. This reduces the attack surface by\u000b removing unnecessary services that could be targeted by attackers.",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "OS Security & Protection",
+      "body": "Protection vs Security\nDistinction & goals of protection\nAccess Control\nAccess control & the access matrix\nSecurity Threats\nMalware, worms & trojans",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "OS Security & Protection",
+      "body": "Vulnerabilities\nBuffer overflow & privilege escalation\nDefenses\nAuthentication, encryption & best practices",
+      "notes": "And that brings us to the end of our Operating Systems journey. Look how far you've come —\u000b from what a process is, through scheduling, synchronization, and memory, all the way to file systems, storage, and I/O\u000b Every one of those pieces is working together right now on the device in front of you.\nMore than the topics, I hope you're leaving with a way of thinking — \u000basking who gets a resource, when, and how to keep it fair, fast, and safe.\nKeep the curiosity alive.",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "",
+      "body": "",
+      "notes": "Thank you for your energy and attention throughout the course;",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "",
+      "body": "",
+      "notes": "All the best, keep learning and Keep growing",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1eTGTlrs13-TxF2D2YDaBf65_fE1qXZArBtHBbgSAsVM/edit?slide=id.g3f9ac36c23f_0_1031#slide=id.g3f9ac36c23f_0_1031"
+}

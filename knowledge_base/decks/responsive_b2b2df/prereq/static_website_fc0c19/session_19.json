@@ -1,0 +1,262 @@
+{
+  "session_no": 19,
+  "source_file": "static website — session 19",
+  "deck_title": "static website — session 19",
+  "n_slides": 36,
+  "summary": "\n    - Slide 2: Website\n    - Slide 3: Recap\n    - Slide 4: Agenda for Today’s Session\n    - Slide 5: Agenda\n    - Slide 6: What is Internet?\n    - Slide 7: Connecting devices\n    - Slide 8: Connecting devices\n    - Slide 9: How to Identify Each Device \n    - Slide 10: Connecting devices\n    - Slide 11: Connecting devices\n    - Slide 12: What happens when we type\n    - Slide 13: Browser\n    - Slide 14: Browser\n    - Slide 15: Browser\n    - Slide 16: DNS\n    - Slide 17: Quiz Time!\n    - Slide 18: Amazon\n    - Slide 19: DNS\n    - Slide 20: Website\n    - Slide 21: Amazon Web Services\n    - Slide 22: Amazon Web Services\n    - Slide 23: Concepts \u000bWe Learnt Till Now\n    - Slide 24: HTML\n    - Slide 25: HTML\n    - Slide 26: CSS\n    - Slide 27: CSS\n    - Slide 28: CSS\n    - Slide 29: Bootstrap\n    - Slide 30: Reusability\n    - Slide 31: Quiz Time!\n    - Slide 32: Website: Behind The Scenes\n    - Slide 34: HTML Hyperlinks",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Website",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Website Integration | Part 2\nAdding Multiple Carousels\nusing Bootstrap\nHTML Lists\nOrdered Lists\nUnordered Lists\nStyling Lists using CSS\nlist-style-type",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda for Today’s Session",
+      "body": "Website: Behind The Scenes\nInternet\nIP Address\nAWS\nRoute 53\nS3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Website: Behind The Scenes\nInternet\nIP Address\nAWS\nRoute 53\nS3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "What is Internet?",
+      "body": "What is Internet?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Connecting devices",
+      "body": "Internet\nThe Internet is \u000ba public global network \u000bof billions of computers \nand devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Connecting devices",
+      "body": "Billions of Devices\n~ 22 billion devices \u000bare connected to the Internet world-wide",
+      "notes": "35 billion → 3500 Crores…\n\nhttps://findstack.com/internet-of-things-statistics/ \n\nhttps://www.statista.com/statistics/1101442/iot-number-of-connected-devices-worldwide/#:~:text=The%20total%20installed%20base%20of,that%20are%20expected%20in%202021",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "How to Identify Each Device ",
+      "body": "How to Identify Each Device \nConnected to the Internet?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Connecting devices",
+      "body": "IP Address\nA unique address given to each device connected to the Internet that helps to communicate with remaining devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Connecting devices",
+      "body": "IP Address\n172.16.254.1\n14/97 Alphonse Street, \u000bSouth Canada",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "What happens when we type",
+      "body": "What happens when we type\n varakumar.ccbp.tech?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Browser",
+      "body": "Website URL\nChrome\nSafari\nFirefox",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Browser",
+      "body": "Domain\n     varakumar. ccbp . tech\nDomain(name)\nTop Level Domain\nSub Domain\nwww.google.com\nwww.amazon.in\nlearning.ccbp.in",
+      "notes": "This is the name that users type when we want to reach to our website",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Browser",
+      "body": "Domain",
+      "notes": "This is the name that users type when we want to reach to our website",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "DNS",
+      "body": "Domain Name System\nThe Domain Name System (DNS) \u000bis the phonebook of the Internet\nDNS translates domain names to \u000bIP addresses so browsers can load Internet resources",
+      "notes": "Humans access information online through domain names, like nytimes.com or espn.com.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Amazon",
+      "body": "Route 53\nAmazon Route 53 is \u000ba highly available and scalable \u000bcloud Domain Name System (DNS) \u000bweb service",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "DNS",
+      "body": "Mapping\nAmazon Route 53\nvarakumar.ccbp.tech\n13.249.43.67",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Website",
+      "body": "Behind the Scenes\nRoute 53\nCloudFront\nvarakumar.ccbp.tech\n13.249.43.67\n13.249.43.67\nS3\nRequest\nWeb Resources\nServer\nStorage\nDNS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Amazon Web Services",
+      "body": "Simple Storage Service(S3)\nWhen we click on publish button, \u000bthe website gets updated in the storage, automatically \nAmazon S3",
+      "notes": "Amazon S3 allows you to store and get back any amount of data,",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Amazon Web Services",
+      "body": "Everyone has their \u000bown dedicated folder \u000bin Amazon S3 \u000bto maintain their website\nSimple Storage Service(S3)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Concepts \u000bWe Learnt Till Now",
+      "body": "Concepts \u000bWe Learnt Till Now",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "HTML",
+      "body": "Elements\nHeading - h1 \nParagraph - p\nButton - button\nContainer - div\nImage - img\nsrc Attribute\nHTML Lists\nUnordered List - ul\nOrdered List - ol\nList Item - li",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "HTML",
+      "body": "Attributes\nclass\nid\nonclick",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "CSS",
+      "body": "Text Properties\ncolor\nfont-size\nfont-family\nfont -weight\nfont-style\ntext-decoration\ntext-align",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "CSS",
+      "body": "Background Properties\nbackground-color\nbackground-image\nbackground-size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "CSS",
+      "body": "Box Properties\nborder-radius\nborder-top-left-radius\nborder-top-right-radius\nborder-bottom-left-radius\nborder-bottom-right-radius\nheight\nwidth\nmargin\npadding\nborder\nborder-radius\nborder-width",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Bootstrap",
+      "body": "Flexbox Class Names\nd-flex\nflex-row\nflex-column\njustify-content-start\njustify-content-center\njustify-content-end",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Reusability",
+      "body": "Components & Utilities\nBootstrap\nButtons\nCarousel\nVideo Embed\nYoutube Video\nCCBP UI Kit\nDisplay Utility",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Website: Behind The Scenes",
+      "body": "Key Takeaways \nInternet\nIP Address\nDNS Server\nAmazon Web Services\nRoute 53\nS3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "HTML Hyperlinks",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1oTX-JkT19xTLBU7g4wiIqYVoQVoyFZe515tCATcvHbc/edit"
+}

@@ -1,0 +1,535 @@
+{
+  "session_no": 22,
+  "source_file": "static website — session 22",
+  "deck_title": "static website — session 22",
+  "n_slides": 75,
+  "summary": "\n    - Slide 2: HTML Semantic Elements\n    - Slide 3: HTML Semantic Elements\n    - Slide 4: Semantic Elements\n    - Slide 5: HTML\n    - Slide 6: HTML Semantic Elements\n    - Slide 7: HTML Semantic Elements\n    - Slide 8: HTML\n    - Slide 9: Example\n    - Slide 10: Let's see some of the frequently used\u000bSemantic Elements and their purposes\n    - Slide 11: HTML\n    - Slide 12: HTML\n    - Slide 13: header\n    - Slide 14: header\n    - Slide 15: Let's take a\n    - Slide 16: ...\n    - Slide 17: ...\n    - Slide 18: header\n    - Slide 19: The <header> element represents the top portion of the webpage, article, etc\n    - Slide 20: On top of the document, we have \u000ba logo and a set of navigation links\n    - Slide 21: <div>\n    - Slide 22: header\n    - Slide 23: The <nav> element represents \u000ba section of navigation links \n    - Slide 24: Elements Structure\n    - Slide 25: ...\n    - Slide 26: header\n    - Slide 27: The <article> element represents the \u000bself-contained content of a web page \n    - Slide 28: Elements Structure\n    - Slide 29: ...\n    - Slide 30: header\n    - Slide 31: The <section> element represents the \u000bsubpart of a web page\n    - Slide 32: Elements Structure\n    - Slide 33: ...\n    - Slide 34: header\n    - Slide 35: The <aside> element represents the content that is of less importance\n    - Slide 36: Elements Structure\n    - Slide 37: ...\n    - Slide 38: header\n    - Slide 39: The <footer> element represents the bottom portion of the document, card etc\n    - Slide 40: Elements Structure\n    - Slide 41: Blog Example\n    - Slide 42: Blog Example\n    - Slide 43: Semantic vs Non-semantic elements\n    - Slide 44: Semantic vs Non-semantic elements\n    - Slide 45: Using Semantic Elements\n    - Slide 46: Using Semantic Elements\n    - Slide 47: HTML Semantic Elements \n    - Slide 48: HTML Semantic Elements \n    - Slide 49: mark Element\n    - Slide 50: Using mark Element\n    - Slide 51: HTML Semantic Elements \n    - Slide 52: figure & figcaption \n    - Slide 53: Syntax\n    - Slide 54: Using figure & figcaption elements\n    - Slide 55: HTML Semantic Elements \n    - Slide 56: details & summary Element\n    - Slide 57: Syntax\n    - Slide 58: What to achieve?\n    - Slide 59: Using details and summary Elements \n    - Slide 60: HTML Semantic Elements \n    - Slide 61: header\n    - Slide 62: Other Semantic Elements\n    - Slide 63: Advantages of \u000bHTML Semantic Elements\n    - Slide 64: Advantages of Semantic Elements\n    - Slide 65: Improves SEO Ranking\n    - Slide 66: Improves Accessibility\n    - Slide 67: Improves Accessibility\n    - Slide 68: HTML Elements\n    - Slide 69: More HTML Elements\n    - Slide 70: >>>> \n    - Slide 71: HTML Semantic Elements",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "HTML Semantic Elements",
+      "body": "",
+      "notes": "→ In today’s session we will see about HTML Semantic elements",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "HTML Semantic Elements",
+      "body": "HTML Semantic Elements\nHTML Elements\nNon-semantic Elements &\nSemantic Elements\nSemantic Elements\nHTML5 Semantic Elements\nheader, nav, article etc.",
+      "notes": "In this session we will be seeing\n\n→ What are Semantic and Non-semantic elements\n\n→ And in Semantic elements we will see some of the commonly used Semantic elements like header, nav, article etc",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Semantic Elements",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "HTML",
+      "body": "Semantic Elements\n        Semantics = Meaning of a piece of code\nHTML Semantic elements are those elements that clearly describe their meaning to both browser and the developer",
+      "notes": "→ Just by seeing at the code (with elements) the developer should able to understand what’s its purpose\n\n→ Meanwhile when browser executes our code and shows output even it should understand what that element will do",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "HTML Semantic Elements",
+      "body": "Examples - h1 Element\n<h1>Artificial Intelligence</h1>\nThe <h1> element is a semantic element, it represents \u000ba “top-level heading” within a webpage",
+      "notes": "→ By seeing the h1 element we can easily understand that it is the top-level heading in the page\n\n→ Similarly by seeing the h2 element we can understand that it is the second-level heading in the page\n\n→ By seeing h3 element we can understand that it is the third-level heading in the page",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "HTML Semantic Elements",
+      "body": "Examples - img Element\nThe <img> element is a semantic element, it represents an “image” within a webpage \n<img src=\"AI-IMAGE-URL\" alt=\"ai-image\" />",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "HTML",
+      "body": "Non-semantic Elements\nThe HTML elements which don't have any \u000bmeaning are called Non-semantic elements\nNon-semantic elements examples\n<div> element\n<span> element",
+      "notes": "→ These elements neither convey meaning nor say about the content they contains\n\n→ Examples of Non-semantic elements div and span",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Example",
+      "body": "Adding Top Level Heading to the page\nUsing Semantic Elements\n<h1>\n  Artificial Intelligence\n</h1>\nEasy to identify that it is a \u000btop-level heading\nUsing Non-semantic Elements\n<div>\n  Artificial Intelligence\n</div>\nHard to identify whether it is a top-level heading, paragraph, etc",
+      "notes": "Let’s consider a scenario where you need to add top level heading of the page\n\nLet’s do the same thing using h1 element and div element\n\nWith h1 → Both the browser and developer can easily understand what the element can do\n\nWith div → Both the browser and developer cannot understand what element represent",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Let's see some of the frequently used\u000bSemantic Elements and their purposes",
+      "body": "",
+      "notes": "→ Lets see some of the frequently used Semantic elements while developing applications",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "HTML",
+      "body": "Semantic Elements\nThere are around \n100+ Semantic Elements",
+      "notes": "→ In total there are around 100 Semantic elements",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "HTML",
+      "body": "Semantic Elements\nWe are already using many semantic elements in our day-to-day development\nh1\np\nimg\na\nli\nul\nol\nh2\nul\nol\nli\nh1 - h6\nimg\np",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\n...many more\nApart from that, there are many semantic elements \u000bthat were recently added in HTML5\nmark\nfigure\nfigcaption\ndetails\nsummary\nHTML Semantic Elements \nNewly added Elements",
+      "notes": "HTML5 → latest version of HTML \n\nRead out atleast few names in the list\n\n\nNow lets learn about some of the most important Semantic elements that were newly added",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\n...many more\nmark\nfigure\nfigcaption\ndetails\nsummary\nThe majority of these elements are added to make the layout of the page more meaningful\n\u000bThese elements are known as Sectioning Elements\nHTML Semantic Elements \nNewly added Elements",
+      "notes": "→ For example in a web page we will be having header footer navbar etc right we can use these sectioning elements \n\nWe can use these elements to build them more meaningfully",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Let's take a",
+      "body": "",
+      "notes": "Now let’s take a simple blog example to learn and understand about Sectioning elements",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "...",
+      "body": "...\n<div>\n  <div class=\"nav-bar\">...</div>\n  <div class=\"blog-content-container\">...</div>\n  <div class=\"ads-container\">...</div>\n  <div class=\"footer d-flex ...\">...</div>\n</div>\n...\nHTML\nBlog Example\nInitial Code",
+      "notes": "Presenters should go through the code and explain the code\n\n→ Show header, navigation links, blog-content, ads footer",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "...",
+      "body": "...\n.nav-item {\n  font-family: \"Roboto\";\n}\n.blog-content-container {\n  padding: 20px;\n}\n.content-container {\n  width: 100%;\n  padding: 10px;\n}\n...\nCSS\nBlog Example\nInitial Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\nHTML Semantic Elements \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "The <header> element represents the top portion of the webpage, article, etc",
+      "body": "The <header> element represents the top portion of the webpage, article, etc\n<header> Content </header>\nSectioning Elements \nheader Element",
+      "notes": "→ We will see what is an article in the next part of the session",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "On top of the document, we have \u000ba logo and a set of navigation links",
+      "body": "On top of the document, we have \u000ba logo and a set of navigation links\nElements Structure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "<div>",
+      "body": "<div>\n  <div class=\"nav-header\">\n    <img src=\"...\" class=\"brand-logo\">\n    <div class=\"nav-links-container\">\n      <a ...>Home</a>\n      ...\n    </div>\n  </div>\n  ...\n</div>\nHTML\n<div>\n  <header class=\"nav-header\">\n    <img src=\"...\" class=\"brand-logo\">\n    <div class=\"nav-links-container\">\n      <a ...>Home</a>\n      ...\n    </div>\n  </header>\n  ...\n</div>\nHTML\nTo represent the top portion of the document, \u000bwe can use header element instead of div element\n  <div class=\"nav-bar d-flex ...\">    \n  </div>    \n  <header class=\"nav-bar ...\">    \n  </header>    \nBlog Example\nUsing header Element",
+      "notes": "→ Wrap the logo and set of navigational links with the header element instead of div",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\nHTML Semantic Elements \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "The <nav> element represents \u000ba section of navigation links ",
+      "body": "The <nav> element represents \u000ba section of navigation links \nwithin the webpage\n<nav> Content </nav>\nnav Element \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Elements Structure",
+      "body": "Elements Structure\nOn top of the document, we have \u000ba section of navigation links",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "...",
+      "body": "...\n<header class=\"nav-bar ...\">\n  <img src=\"...\" class=\"brand-logo\" />\n  <div class=\"nav-menu\">\n    <a ...>Home</a>\n    <a ...>About Us</a>\n    <a ...>Contact Us</a>\n  </div>\n</header>\n...\nHTML\nTo represent the section of navigation links, \u000bwe can use the nav element instead of div element\n...\n<header class=\"nav-bar ...\">\n  <img src=\"...\" class=\"brand-logo\" />\n  <div class=\"nav-menu\">\n    <a ...>Home</a>\n    <a ...>About Us</a>\n    <a ...>Contact Us</a>\n  </div>\n</header>\n...\nHTML\n  <div class=\"nav-links-container\">    \n  </div>    \n  <nav class=\"nav-links-container\">    \n  </nav>    \nBlog Example\nUsing nav Element",
+      "notes": "→ Use nav element to wrap the set of navigation links instead of div element",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\nHTML Semantic Elements \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "The <article> element represents the \u000bself-contained content of a web page ",
+      "body": "The <article> element represents the \u000bself-contained content of a web page \nExamples: \nBlog post, newspaper article, etc \n<article> Content </article>\narticle Element \nSectioning Elements",
+      "notes": "Self-contained content : if a content can exist independently and even can be reusable then we use article element to represent it",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Elements Structure",
+      "body": "Elements Structure\nEven without the header and footer, \u000bAI related content exists independently, \u000band can be reusable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "...",
+      "body": "...\n<header class=\"...\">...</header>\n <div class=\"blog-content-container\">\n  ...\n </div>\n<div class=\"ads-container\">...</div>\n<div class=\"footer\">...</div>\n...\nHTML\nTo represent the self-contained content, \u000bwe can use the article element instead of div element\n<div class=\"blog-content-container\">\n...\n<header class=\"...\">...</header>\n <article class=\"blog-content-container\">\n  ...\n </article>\n<div class=\"ads-container\">...</div>\n<div class=\"footer\">...</div>\n...\nHTML\n<div/>\n<article class=\"blog-content-container\">\n<article/>\nBlog Example\nUsing article Element",
+      "notes": "→ Wrap all the blog content with article element instead of div",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\nHTML Semantic Elements \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "The <section> element represents the \u000bsubpart of a web page",
+      "body": "The <section> element represents the \u000bsubpart of a web page\nGenerally, it contains content related \u000bto same topic, theme etc\n<section> Content </section>\nsection Element \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Elements Structure",
+      "body": "Elements Structure\nHere, the entire AI-related article content can be divided into subparts where each subpart is a section",
+      "notes": "→ 3 sub parts are related content because they constitute information about AI (info related to the same topic)",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "...",
+      "body": "...\n<div class=\"...\">\n  <article class=\"...\">\n    <div >...</div>\n    <div >...</div>\n    <div >...</div>\n  </article>\n  <div class=\"ads-container\">...</div>\n</div>\n...\nHTML\nTo represent the AI related article content subparts, \u000bwe can use the section element instead of div element\n...\n<div class=\"...\">\n  <article class=\"...\">\n    <section >...</section>\n    <section >...</section>\n    <section >...</section>\n  </article>\n  <div class=\"ads-container\">...</div>\n</div>\n...\nHTML\nBlog Example\nUsing section Element\n    <section>...</section>\n    <section>...</section>\n    <section>...</section>\n    <div>...</div>\n    <div>...</div>\n    <div>...</div>",
+      "notes": "→ Wrap each subpart with a section element",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\nHTML Semantic Elements \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "The <aside> element represents the content that is of less importance",
+      "body": "The <aside> element represents the content that is of less importance\nGenerally aside element is used in sidebars, call-out boxes, etc\n<aside> Content </aside>\nHTML Semantic Elements \naside Element",
+      "notes": "a portion of a document whose content is only indirectly related to the document's main content\u000b\u000bhttps://html.com/tags/aside/",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Elements Structure",
+      "body": "Elements Structure\nHere, the ads displayed are of less importance compared to the AI related content",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "...",
+      "body": "...\n<div>...\n  <article class=\"...\">\n    <section ...\"></section>\n    <section ...\"></section>\n    <section ...\"></section>\n  </article>\n  <div class=\"ads-container\"></div>\n</div>\n...\nHTML\nTo represent the less important content, \u000bwe can use the aside element instead of div element\n  <div class=\"ads-container\"></div>\n...\n<div>...\n  <article class=\"...\">\n    <section ...\"></section>\n    <section ...\"></section>\n    <section ...\"></section>\n  </article>\n  <nav class=\"ads-container\"></nav>\n</div>\n...\nHTML\n  <aside class=\"ads-container\"></aside>\nBlog Example\nUsing aside Element",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\nHTML Semantic Elements \nSectioning Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "The <footer> element represents the bottom portion of the document, card etc",
+      "body": "The <footer> element represents the bottom portion of the document, card etc\nIn general, it contains copyright related info, contact details, logos, etc\n<footer> Content </footer>\nHTML Semantic Elements \nfooter Element",
+      "notes": "Copyright → legal rights of the owner",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Elements Structure",
+      "body": "Elements Structure\nHere, the bottom portion contains a logo and copyright related information",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Blog Example",
+      "body": "Blog Example\nUsing footer Element\nTo represent the bottom portion of the document, \u000bwe can use the footer element instead of div element\n...\n<header class=\"...\">...</header>\n<div ...>\n  <article ...>...</article>\n  ...\n</div>\n<div class=\"footer\">...</div>\n...\nHTML\n...\n<header class=\"...\">...</header>\n<div ...>\n  <article ...>...</article>\n  ...\n</div>\n<footer class=\"footer\">...</footer>\n...\nHTML\n<div class=\"footer ...\">...</div>\n<footer class=\"footer ...\">...</footer>",
+      "notes": "→ Wrap all the links with the nav element",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Blog Example",
+      "body": "Blog Example\nCode with Semantic Elements\n...\n  <header class=\"nav-bar ...\">...</header>\n  <article class=\"blog-content-container\">\n    <section >...</section>\n    <section class=\"section\">...</section>\n    <section class=\"section\">...</section>\n  </article>\n  <aside class=\"ads-container\">...</aside>\n  <footer class=\"blog-footer\">...</footer>\n...\nHTML",
+      "notes": "So if we observe the code\n\n→ We have a header\n\n→ We have an article and within it we have sections\n\n→ We have footer",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Semantic vs Non-semantic elements",
+      "body": "Semantic vs Non-semantic elements\nLayout\n   <header>\n<aside>\n<article>\n<nav>\n<footer>\n<section>\n<section>\n   <div>\n<div>\n<div>\n<div>\n<div>\n<div>\n<div>",
+      "notes": "→ Left side we have different elements like header nav article etc\n\n→ In right side we only have divs",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Semantic vs Non-semantic elements",
+      "body": "Semantic vs Non-semantic elements\nLayout\n   <header>\n<article>\n<nav>\n<footer>\n<section>\n<section>\n   <div>\n<div>\n<div>\n<div>\n<div>\n<div>\n<div>\n<aside>\n   <div>\n<div>\n<div>\n<div>\n<div>\n<div>\n<div>",
+      "notes": "→ Left side we have different elements like header nav article etc\n\n→ In right side we only have divs",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Using Semantic Elements",
+      "body": "Using Semantic Elements\nLayout\nWith Semantic elements, \nWe can structure the code properly, making it more readable and easier to maintain\n   <header>\n<article>\n<nav>\n<footer>\n<section>\n<section>\n<aside>",
+      "notes": "Structure the code → In the top we will be having the header and in the middle we have article and aside element at the bottom we have a footer \n\nMore readable → Easier to read and understand what element is and what it contains\n\nEasier to maintain → For example all the content inside the article is self-contained so it can be moved to anywhere easily",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Using Semantic Elements",
+      "body": "Using Semantic Elements\nLayout\nThere is no fixed rule about using Semantic Elements, they can be used interchangeably\nThe single most important thing is:\u000bbeing consistent across the web page\n   <header>\n<article>\n<nav>\n<footer>\n<section>\n<section>\n<aside>",
+      "notes": "Sometime in the place of article we can use section\n\nIn place of section we use article \n\nThis implementation is quite flexible \n\nBut be consistent use them across the web page in a similar way",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "HTML Semantic Elements ",
+      "body": "HTML Semantic Elements \nNewly added Elements\nheader\nnav\narticle\nsection\naside\nfooter\nmark\nfigure\nfigcaption\ndetails\nsummary\nApart from these sectioning elements, there \u000bare semantic elements for other purposes like highlighting text, writing captions for images, etc",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "HTML Semantic Elements ",
+      "body": "HTML Semantic Elements \nOther Semantic Elements\nmark\nfigure\nfigcaption\ndetails\nsummary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "mark Element",
+      "body": "mark Element\nOther Semantic Elements \nThe <mark> element is used to highlight specific part of the text\n<mark> Content </mark>",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Using mark Element",
+      "body": "Using mark Element\nHighlighting the text\n...\n<section>\n  <h1 class=\"section-heading\">Introduction...</h1>\n  <p class=\"section-content\">\n    Artificial intelligence is the simulation of\n    <mark>human intelligence</mark> processes ...\n  </p>\n  <div class=\"...\">...</div>\n</section>\n...\nHTML",
+      "notes": "→ Let’s use mark element to highlight the text",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "HTML Semantic Elements ",
+      "body": "HTML Semantic Elements \nOther Semantic Elements\nmark\nfigure\nfigcaption\ndetails\nsummary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "figure & figcaption ",
+      "body": "figure & figcaption \nOther Semantic Elements \nThe <figure> element represents a self-contained content like images, code snippets, etc\nThe <figcaption> element allows us to add a caption for the above content",
+      "notes": "→ self-contained refers to the elements that do not depend on other elements and can exist independently\n\nhttps://developer.mozilla.org/en-US/docs/Web/HTML/Element/figure\nhttps://stackoverflow.com/questions/37828046/what-is-the-purpose-of-the-figure-tag-in-html",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Syntax",
+      "body": "Syntax\nfigure & figcaption\n<figure>\n  Content\n  <figcaption>Caption text</figcaption>\n</figure>\nContent can be an image, \u000bcode snippet, etc",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Using figure & figcaption elements",
+      "body": "Using figure & figcaption elements\nDisplaying the image and its corresponding caption\n...\n<section class=\"section\">\n  ...\n  <div class=\"d-flex ...\">\n    <figure class=\"text-center\">\n      <img src=\"IMAGE_URL\" class=\"ai-image\" />\n      <figcaption>Fig.1 - AI Robot</figcaption>\n    </figure>\n  </div>\n</section>\n...\nHTML",
+      "notes": "→ Let’s consider the same example",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "HTML Semantic Elements ",
+      "body": "HTML Semantic Elements \nOther Semantic Elements\nmark\nfigure\nfigcaption\ndetails\nsummary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "details & summary Element",
+      "body": "details & summary Element\nOther Semantic Elements \nThe <details> element represents the additional content which the user can open and close when required\nThe <summary> element represents a visible heading for the content",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Syntax",
+      "body": "Syntax\ndetails & summary Element\n<details>\n  <summary>heading text</summary>\n  Content\n</details>",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "What to achieve?",
+      "body": "What to achieve?\nProvide additional reference links for the users\nBlog Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Using details and summary Elements ",
+      "body": "Using details and summary Elements \nAdditional Reference Links\n<article class=\"blog-content-container\">\n  ...\n  <section>\n    <details>\n      <summary class=\"section-heading\">Read More</summary>\n      <ul>\n        <li class=\"list-item\"><a ...>Wikipedia</a></li>\n        <li class=\"list-item\"><a ...>stanford.edu</a></li>\n        <li class=\"list-item\"><a ...>harvard.edu</a></li>\n      </ul>\n    </details>\n  </section>\n...\n</article>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "HTML Semantic Elements ",
+      "body": "HTML Semantic Elements \nOther Semantic Elements\nmark\nfigure\nfigcaption\ndetails\nsummary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "header",
+      "body": "header\nnav\narticle\nsection\naside\nfooter\n...many more\nmark\nfigure\nfigcaption\ndetails\nsummary\nThe majority of these elements are added to make the layout of the page more meaningful\n\u000bThese elements are known as Sectioning Elements\nWhat we have seen so far\nSectioning Semantic Elements",
+      "notes": "→ In this newly added Semantic elements we have a category called Sectioning elements \n\n→ Mention that elements highlighted with orange color are sectioning elements\n\n→ For example in a web page we will be having header footer navbar etc right \n\n→ Using these sectioning elements we can represent them and help browsers and developers to understand them easily",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Other Semantic Elements",
+      "body": "Other Semantic Elements\nheader\nnav\narticle\nsection\naside\nfooter\nmark\nfigure\nfigcaption\ndetails\nsummary\nApart from these sectioning elements, there \u000bare semantic elements for other purposes like highlighting text, writing captions for images, etc   \nWhat we have seen so far",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Advantages of \u000bHTML Semantic Elements",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Advantages of Semantic Elements",
+      "body": "Advantages of Semantic Elements\nStructured Code\n...\n  <header class=\"nav-bar\">...</header>\n  <article class=\"blog-content-container\">\n    <section class=\"section\">...</section>\n    <section class=\"section\">...</section>\n    <section class=\"section\">...</section>\n  </article>\n  <aside class=\"ads-container\">...</aside>\n  <footer class=\"blog-footer\">...</footer>\n...\nHTML\nCode will be structured, readable and easier to maintain",
+      "notes": "Structured → Top header, in the middle article and aside and at the bottom footer there is proper structure\n\nReadable → Elements names itself convey what content they contain and their purpose\n\nMaintain → Code is properly organised and can be reusable",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Improves SEO Ranking",
+      "body": "Improves SEO Ranking\nAdvantages of Semantic Elements\nUsage of semantic elements helps browser bots to understand your content better, which in turn makes our web page appear in top results",
+      "notes": "Usage of semantic elements helps browser bots alike Googlebot and Bingbot to understand your content better, which in turn makes our web page appear in top results",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Improves Accessibility",
+      "body": "Improves Accessibility\nAdvantages of Semantic Elements\nCorrect usage of Semantic Elements helps \u000bScreen readers to read and communicate \u000bcontent more accurately",
+      "notes": "→ Image should be improved\n\nScreen readers → Assistive technology for blind and visually impaired people that read out the website content and help them \n\n\n\nScreen readers are an assistive technology used primarily by people who are blind. As you may guess, screen readers read out loud the text on the screen, but they also give contextual clues about every element in the UI and the actions available. In doing so, they empower people who are blind or have low vision to use technology with the same amount of independence as anyone else",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Improves Accessibility",
+      "body": "Improves Accessibility\nUsing Semantic Elements helps users to access and navigate in the site with the help of keyboard\nAdvantages of Semantic Elements",
+      "notes": "→ Open google and tryout",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "HTML Elements",
+      "body": "More HTML Elements\n…many more\n<picture>\n<canvas>\n<source>\n<svg> \n<meter>\n<iframe>\n<table>\n<td>\n<th>\n<textarea>",
+      "notes": "There are many HTML elements, each with a different purpose For example…",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "More HTML Elements",
+      "body": "References\nhttps://developer.mozilla.org/en-US/docs/Web/HTML/Element\nhttps://developer.mozilla.org/en-US/docs/Web/CSS/Reference \nhttps://www.w3schools.com/TAGS/default.asp\nhttps://www.w3schools.com/cssref/index.php\nIf you get stuck while working on a project\nyou can refer to the resources below",
+      "notes": "Convey to students: If you get stuck while working on a project or during a fortnight quiz, you can refer to the resources below\n\nThese are only some of the references. You can explore on the web to learn and implement any new concept",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": ">>>> ",
+      "body": ">>>> \n>>>> \nExplore the resources and \ntry out different HTML Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "HTML Semantic Elements",
+      "body": "HTML Semantic Elements\nKey Takeaways \nHTML\nSemantic Elements\nNon-semantic Elements\nSemantic Elements\nSectioning Elements\nOther Elements\n(mark, figure, figcaption, etc)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1cYAifZQT48LI6zGbDbQMlQsXT4JQRYG2-MvSu4MU87E/edit#slide=id.g29c7a026e5c_0_65"
+}

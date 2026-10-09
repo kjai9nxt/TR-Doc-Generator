@@ -1,0 +1,290 @@
+{
+  "session_no": 11,
+  "source_file": "static website — session 11",
+  "deck_title": "static website — session 11",
+  "n_slides": 40,
+  "summary": "\n    - Slide 2: Introduction to Bootstrap\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Agenda\n    - Slide 6: Agenda\n    - Slide 7: Reusability\n    - Slide 8: Reusability\n    - Slide 9: Reusability\n    - Slide 10: How to apply different colors \u000bto the buttons?\n    - Slide 11: Syntax\n    - Slide 12: Providing Multiple Names to the Class Attribute Value\n    - Slide 13: Reusability\n    - Slide 14: Quiz Time!\n    - Slide 15: Introduction to Bootstrap\n    - Slide 16: Introduction to Bootstrap\n    - Slide 17: Bootstrap\n    - Slide 18: Bootstrap\n    - Slide 19: Bootstrap\n    - Slide 20: Introduction to Bootstrap\n    - Slide 21: Introduction to Bootstrap\n    - Slide 22: Introduction to Bootstrap\n    - Slide 23: Introduction to Bootstrap\n    - Slide 24: Predefined Styles in Bootstrap\n    - Slide 25: Predefined Styles in Bootstrap\n    - Slide 26: Bootstrap\n    - Slide 27: Bootstrap\n    - Slide 28: Bootstrap\n    - Slide 29: Bootstrap\n    - Slide 30: Bootstrap\n    - Slide 31: Bootstrap\n    - Slide 32: Bootstrap\n    - Slide 33: Bootstrap\n    - Slide 34: Bootstrap\n    - Slide 35: Quiz Time!\n    - Slide 36: Introduction to Bootstrap\n    - Slide 38: Introduction to Bootstrap ",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to Bootstrap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to CSS Box Model | Part 2\nContent\nheight\nwidth\nborder\npadding\nmargin\nBox Properties\nBorder\nPadding\nColor Representation\nColor Names\nHex Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Introduction to CSS Box Model | Part 2\nStyling a Button\nheight & width\nbackground-color\nborder-radius\nborder-width\nStyling a Card\nborder-top-left-radius\nborder-top-right-radius",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Introduction to Bootstrap\nReusability\nBootstrap Class names\nCSS Rulesets\nMultiple Class Names\nButtons\nBootstrap\nIntroduction",
+      "notes": "Writing CSS rulesets in an efficient way",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Agenda",
+      "body": "Introduction to Bootstrap\nReusability\nBootstrap Class names\nCSS Rulesets\nMultiple Class Names\nButtons\nBootstrap\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Reusability",
+      "body": "Reusability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Reusability",
+      "body": "Reusing the CSS Ruleset\n<button class=\"button\">\n  Get Started \n</button>\n<button class=\"button\"> \n  Visit Now \n</button>\nHTML\n.button {\n  height: 36px;\n  width: 138px;\n  border-width: 0px;\n  border-radius: 10px;\n}\nCSS",
+      "notes": "Address this as an example. \n\nWrite once. Use many times!",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Reusability",
+      "body": "Reusing the Code Snippets\nBenefits\nEfficiency\nFast\nLow Cost\nConsistency\nEasier Testing \nand many more...",
+      "notes": "Important thing in software development\n\nShorter development time\nFewer development risks\nMaintainability\n\nUsing already the ones developed\nCost will also reduce\nNo of developers will reduce\nAll buttons will look similar - user experience",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "How to apply different colors \u000bto the buttons?",
+      "body": "How to apply different colors \u000bto the buttons?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Syntax",
+      "body": "Providing Multiple Names to the \nClass Attribute Value\n<tag class = “name1 name2 name3 name4 ...”> \nIn general, we call these names as class names\nWe can provide multiple names to the Class Attribute value\nAttribute Value",
+      "notes": "We take the help of attribute to combine HTML & CSS. \n\t\nSo now, attributes, that is, additional information is always provided in the START Tag. \n\t\n\tWe HAVE to write in the Start tag. \n\t\tAttribute = syntax name of the Attribute. \n\t\tValue is what you can set. \n\nClassnames are case sensitive\n\nWe can ask hotspots, questions about class name",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Providing Multiple Names to the Class Attribute Value",
+      "body": "Example\n<button class=\"button button-green\">\n  Get Started\n</button>\nHTML\n.button {\n  height: 36px;\n  width: 138px;\n  border-width: 0px;\n  border-radius: 10px;\n}\n.button-green {\n  background-color: #8cc63f;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Reusability",
+      "body": "Providing Multiple Names to the\nClass Attribute value\n<button class=\"button button-green\">\n  Get Started\n</button>\n<button class=\"button button-orange\">\n  Visit Now\n</button>\nHTML\n.button-green {\n  background-color: #8cc63f;\n}\n.button-orange {\n  background-color: #f7931e;\n}\nCSS",
+      "notes": "Here, you will get buttons side by side. \nParagraphs/headings won’t come in side by side. \u000b\u000bYou will learn more about this in the upcoming sessions",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Introduction to Bootstrap",
+      "body": "Introduction to Bootstrap",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Introduction to Bootstrap",
+      "body": "What is Bootstrap?\nBootstrap is a large collection of predefined reusable Code Snippets written in HTML, CSS, and Javascript \nExample: Buttons, Cards, etc.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Bootstrap",
+      "body": "Buttons",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Bootstrap",
+      "body": "Cards",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Bootstrap",
+      "body": "Carousels",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Introduction to Bootstrap",
+      "body": "Why Bootstrap?\nCreated by X(Twitter)\nCurrently used by companies like \nX(Twitter), LinkedIn, Spotify, Udemy many more…\nMore than 20 million websites built using Bootstrap\nX(Twitter)\nSource: stackshare, builtwith",
+      "notes": "To optimize the efforts of different people\nMore value for company\nAlready existent usage\n2 crore websites\nCompanies like Twitter, LinkedIn Spotify, Udemy many more…\nSpaceX, Alibaba.com, Snapchat, Accenture, Coursera\n\nCurrently used by 42,887 companies",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Introduction to Bootstrap",
+      "body": "How to use BootStrap?\nTo use the code snippets \u000bprovided by Bootstrap,\u000bwe need to add a piece of code \u000bwithin the head element. \nWe call them BootstrapCDN\n<!DOCTYPE html>\n<html>\n  <head>\n  \t...\n  </head>\n  <body></body>\n</html>\nHTML",
+      "notes": "Don’t make any changes\nAlready loaded in the code play ground below\nCopy paste in main code playground\nNote: Already BootstrapCDN is included in the code playground below the video.\n \n\nYou can Move to main playground if you want to use bootstrap in main playground",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Introduction to Bootstrap",
+      "body": "Including Bootstrap in the \nHTML Document \n<head>\n   <link\n     rel=\"stylesheet\"\n     href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\"\n     integrity=\"sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z\"\n     crossorigin=\"anonymous\"\n   />\n   <script\n     src=\"https://code.jquery.com/jquery-3.5.1.slim.min.js\"\n     integrity=\"sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj\"\n     crossorigin=\"anonymous\"\n   ></script>\n   <script\n     src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js\"\n     integrity=\"sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN\"\n     crossorigin=\"anonymous\"\n   ></script>\n   <script\n     src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js\"\n     integrity=\"sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV\"\n     crossorigin=\"anonymous\"\n   ></script>\n</head>",
+      "notes": "Already it is there in there in your playground. Whenever you want to use bootstrap you should have this piece of code in your head element",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Introduction to Bootstrap",
+      "body": "Bootstrap Class Names\nBootstrap provides us with various predefined class names which we can use for class attribute values \u000bto add styling to our website easily",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Predefined Styles in Bootstrap",
+      "body": "Buttons using Bootstrap\n<button class=\" btn \"> \n  Get Started \n</button>\nHTML",
+      "notes": "Btn is shortform for button. Bootstrap uses shorthand names",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Predefined Styles in Bootstrap",
+      "body": "Buttons using Bootstrap\n<button class=\" btn btn-primary \" > \n  Get Started \n</button>\nHTML",
+      "notes": "Btn is shortform for button. Bootstrap uses shorthand names",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Bootstrap",
+      "body": "Bootstrap Rulesets\n.btn {\n  font-size: 16px;\n  border-radius: 5px;\n  height: 36px;\n  width: 138px;\n  border-width: 0px;\n}\n.btn-primary {\n  color: white;\n  background-color: blue;\n}\nCSS\nCSS\n+\n=",
+      "notes": "Bootstrap will provide us Rulesets. We just to need to use these class names and style our HTML Elements",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Bootstrap",
+      "body": "Buttons \nbtn btn-primary\nbtn btn-secondary\nbtn btn-success\nbtn btn-danger",
+      "notes": "Will provide you more buttons in the cheetsheet\n\n\nAsk how may class names are here?",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Bootstrap",
+      "body": "Predefined Class Names\nactive\naffix\nalert\nalert-danger\nalert-dismissible\nalert-link\nalert-success\nbadge\nbg-danger\nbg-info\nbg-primary\nbg-success\nbg-warning\nbtn\ncaption\ncaret\ncarousel\ncollapse\ncard\ncard-body\ndisabled\ndivider\nNote: Don’t use predefined bootstrap class names in CSS Rulesets\nmany more...",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Bootstrap",
+      "body": "Our Code\n<body>\n  <div class=\"bg-container\">\n    <div class=\"card\">\n      <h1 class=\"main-heading\">Tourism</h1>\n      <p class=\"paragraph\">\n        Plan your trip.\n      </p>\n      <button class=\"button\"> Get Started </button>\n    </div>\n  </div>\n</body>\nHTML",
+      "notes": "In <head> element bootstrap code is included. They is a conflict between predefined bootstrap class names and user defined classnames\nUn desired behaviour",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Bootstrap",
+      "body": "Why did the output change?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Bootstrap",
+      "body": "Why did the output change?\ncard is a predefined \u000bbootstrap class name.\nUsing predefined\u000bBootstrap class names \nmay give unexpected results.\n.card {\n  text-align: center;\n  background-color: white;\n  border-top-left-radius: 25px;\n  border-top-right-radius: 25px;\n  padding: 5px;\n}\nCSS",
+      "notes": "Note: In today’s class we included bootstrap to our environment. So card behaviour is changed now.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Bootstrap",
+      "body": "Changing Card Class Name\n.card {\n  text-align: center;\n  background-color: white;\n  border-top-left-radius: 25px;\n  border-top-right-radius: 25px;\n  padding: 5px;\n}\n.tourism-card {\n  text-align: center;\n  background-color: white;\n  border-top-left-radius: 25px;\n  border-top-right-radius: 25px;\n  padding: 5px;\n}\nCSS\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Bootstrap",
+      "body": "Bootstrap with our Code\n<body>\n  <div class=\"bg-container\">\n    <div class=\"tourism-card\">\n  <h1 class=\"main-heading\">Tourism</h1>\n      <p class=\"paragraph\">\n        Plan your trip.\n      </p>\n      <button class=\"button\"> Get Started </button>\n    </div>\n  </div>\n</body>\nHTML",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Bootstrap",
+      "body": "Output of the Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Introduction to Bootstrap",
+      "body": "Reusability of CSS Rulesets\nProviding Multiple Class Names to HTML Elements\nIntroduction to Bootstrap\nWhat is Bootstrap?\nWhy Bootstrap?\nBootstrap Class Names\nButton Class Names\nKey Takeaways",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Introduction to Bootstrap ",
+      "body": "Introduction to Bootstrap \n| Part 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1djPlCRlTgAuAkWqjVeFuSuWApnOSoD4h_fKfaxyHlck/edit#slide=id.g2f4aa3ab344_0_385"
+}

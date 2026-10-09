@@ -1,0 +1,794 @@
+{
+  "session_no": 23,
+  "source_file": "static website — session 23",
+  "deck_title": "static website — session 23",
+  "n_slides": 112,
+  "summary": "\n    - Slide 2: Leveraging Gen AI \u000bfor Debugging & Building\n    - Slide 3: >>>> \n    - Slide 4: Introduction\n    - Slide 5: Debugging\n    - Slide 6: Debugging\n    - Slide 7: Debugging\n    - Slide 8: Debugging\n    - Slide 9: Leveraging Gen AI for debugging\n    - Slide 10: Leveraging Gen AI for debugging\n    - Slide 11: Code Debugging using Gen AI\n    - Slide 12: Code Debugging using Gen AI\n    - Slide 13: Understanding Errors\n    - Slide 14: Code Debugging using Gen AI\n    - Slide 15: Code Debugging using Gen AI\n    - Slide 16: Fixing Code with Errors\n    - Slide 17: Leveraging Gen AI for debugging\n    - Slide 18: Leveraging Gen AI for debugging\n    - Slide 19: Leveraging Gen AI for debugging\n    - Slide 20: Leveraging Gen AI for debugging\n    - Slide 21: Leveraging Gen AI for Debugging\n    - Slide 22: Tweaking the Code\n    - Slide 23: Tweaking the code\n    - Slide 24: Tweaking the Code\n    - Slide 25: .h-center {\n    - Slide 26: Build a Static Website using GenAI\n    - Slide 27: Build a Static Website using Gen AI\n    - Slide 28: Build a Static Website using Gen AI\n    - Slide 29: Build a Static Website using Gen AI\n    - Slide 30: Build a Static Website using Gen AI\n    - Slide 31: Build a Static Website using Gen AI\n    - Slide 32: Build a Static Website using Gen AI\n    - Slide 33: Build a Static Website using Gen AI\n    - Slide 34: Build a Static Website using Gen AI\n    - Slide 35: GenAI for presenting websites in Interviews\n    - Slide 36: Build Variants using Gen AI\n    - Slide 37: Build Variants using Gen AI\n    - Slide 38: Build Variants using Gen AI\n    - Slide 39: Leveraging Gen AI for Debugging & Building\n    - Slide 44: Understanding Errors\n    - Slide 45: Understanding Errors\n    - Slide 46: Understanding Errors\n    - Slide 47: Introduction\n    - Slide 48: What's one Python concept you've found challenging to grasp?\n    - Slide 50: Leveraging Gen AI for Enhanced Learning\n    - Slide 51: Leveraging Gen AI for Enhanced Learning\n    - Slide 52: Code Explanation\n    - Slide 53: Code Explanation\n    - Slide 54: Code Explanation\n    - Slide 55: Code Explanation\n    - Slide 56: Leveraging Gen AI for Enhanced Learning\n    - Slide 57: Leveraging Gen AI for Enhanced Learning\n    - Slide 58: Generating Code\n    - Slide 59: Generating Code\n    - Slide 60: Example - 1\n    - Slide 61: Generating Code\n    - Slide 62: Generating Code\n    - Slide 63: Generative AI for Accelerated Learning\n    - Slide 64: Leveraging Gen AI for Enhanced Learning\n    - Slide 65: Leveraging Gen AI for Enhanced Learning\n    - Slide 66: Leveraging Gen AI for Enhanced Learning\n    - Slide 67: Code Explanation\n    - Slide 68: Code Explanation\n    - Slide 69: Code Explanation\n    - Slide 70: Code Explanation\n    - Slide 71: Example - 1\n    - Slide 72: Leveraging Gen AI for Enhanced Learning\n    - Slide 73: >>>> \n    - Slide 74: Understanding Errors\n    - Slide 75: Understanding Errors\n    - Slide 76: Understanding Errors\n    - Slide 77: Understanding Errors\n    - Slide 78: Example - 1\n    - Slide 79: Leveraging Gen AI for debugging\n    - Slide 80: Leveraging Gen AI for debugging\n    - Slide 81: Leveraging Gen AI for debugging\n    - Slide 82: Leveraging Gen AI for debugging\n    - Slide 83: Debugging\n    - Slide 84: Leveraging Gen AI for debugging\n    - Slide 85: Debugging\n    - Slide 86: Debugging\n    - Slide 87: Debugging\n    - Slide 88: Debugging\n    - Slide 89: Debugging\n    - Slide 90: Debugging\n    - Slide 91: Leveraging Gen AI for debugging\n    - Slide 92: .h-center {\n    - Slide 93: Leveraging Gen AI for debugging\n    - Slide 94: Leveraging Gen AI for debugging\n    - Slide 95: Leveraging Gen AI for debugging\n    - Slide 96: Understanding and Fixing Errors\n    - Slide 97: Python using Gen AI | Part 2\n    - Slide 98: Leveraging Gen AI for debugging\n    - Slide 99: Leveraging Gen AI for Debugging\n    - Slide 100: Leveraging Gen AI for debugging\n    - Slide 101: Debugging\n    - Slide 102: Debugging\n    - Slide 103: Debugging\n    - Slide 104: Debugging\n    - Slide 105: Debugging\n    - Slide 106: Debugging\n    - Slide 107: Debugging\n    - Slide 108: Debugging\n    - Slide 109: Debugging\n    - Slide 110: Debugging\n    - Slide 111: Debugging\n    - Slide 112: Debugging",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Leveraging Gen AI \u000bfor Debugging & Building",
+      "body": "",
+      "notes": "Today, we're going to talk about: \n\nhow Generative AI can accelerate your debugging journey, especially when it comes to building static websites with HTML and CSS.",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": ">>>> ",
+      "body": ">>>> \n>>>> \nHave you ever encountered\u000ba problem with your website \u000band felt stuck?",
+      "notes": "Till now you all learnt some HTML,CSS concepts and solved so many coding problems right, So when you solving these coding problems having u ever faced like not getting correct output as you expected?\nEven after you are trying for so many times, you will get errors or sometimes didn’t get the expected output .\nDon’t worry - it happens to everyone! Whether you’re just learning to code or you’ve been doing it for years, sometimes things just don’t work.\nBut That was totally normal, Even the best coders and the experiences developers get stuck sometimes with the code.",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Introduction",
+      "body": "Debugging\nDebugging is the process of finding\nand fixing the bugs in the Code",
+      "notes": "If you getting an error or the output is not what you want, then what will you do?\nYou will change the code and test the code, until you get the correct result. Right?\n\nThis process is only called as debugging.\n\nIt is the process of finding the bugs and fixing the bugs in our code and Checking it is working or not.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Debugging",
+      "body": "Importance of Debugging\n.h-center {\n  text-align: center;\n}\nCSS\nDebugging is an essential skill         for every developer",
+      "notes": "Debugging the code is very important skill for every developer.\nEven Some companies conducts debug competitions, where people try to find and fix bugs in their apps or websites.\nWhy do they do this?\nBecause, when people find bugs and fix them, the app or website becomes better and works perfectly.\u000b So, these companies reward people who find bugs because their goal is to make sure there are no bugs in the final product!\nThat’s why !! Whether you're building something simple or complex application, or Whether you are a beginner or an experienced Developer,\n Debugging is a very important skill for any developer to make sure their website works fine without any bugs.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Debugging",
+      "body": "Debugging Process\nUnderstanding the Code\nIdentifying \u000bthe issue\nResolving the Issue\n1\n2\n3",
+      "notes": "For Debugging, there is a process to follow for better results\n\nHere it is the process\n\nFirst - Understand the code\nThen - Identify what is the causing the issue\nThen finally - resolve that issue accordingly \n\nAlways focus on the code first — understand the root cause of the bug, and then work on fixing it.\nThis is crucial because when you're working on a project as part of a team, you'll often deal with code written by other developers.\u000b Or you might be maintaining an old application developed years ago – in such cases, Gen AI won’t have enough context about that 1000 lines of code.\nThat’s why it’s important to you only first understand the existing code thoroughly — only then will you be able to debug and resolve issues effectively.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Debugging",
+      "body": "Example\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nGenerated Design\nExpected Design",
+      "notes": "Here we have the Expected design in the right side and the design generated by us in the Left design.\n\nIs the generated design is same as the expected design?\n\nThere are so many unexpected things right…\n\u000b\nNeed to debug those issues",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Debugging",
+      "body": "Leveraging Gen AI for debugging\nAlways try to spend time on debugging the code from errors messages\nIf it is taking too long for debugging the error\nLet's see how Generative AI can enhance the ability to debug",
+      "notes": "As said earlier, Technical understanding is really essential for us as a developer, to add more functionality to the existing code, and to work on multiple files of code, etc right!\u000b\u000bAnd also, like some of the skills, which we discussed, understanding code, self learning, problem solving, etc - which are essential for you as a developer.\n\nLets use gen ai to improve the technical understanding and to improve the skills. But not to just complete it. It will be of no use for us\n\n\nIf the code is large and understanding the code ot  identifying the issue is taking more time than expected, you can use Gen AI to help understand the code, identify the problem, and suggest solutions.\n\n\u000b\u000bLet’s See How Gen AI helps to debug",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "",
+      "notes": "While it’s essential to learn and practice debugging techniques, AI tools like GenAI can help accelerate the debugging process. \n\nBy using GenAI effectively, we can solve issues more efficiently, but still maintain a deep understanding of the code and the solutions",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Code Debugging using Gen AI\nCode Debugging using Gen AI \nFixing Code with Errors\nUnderstanding Errors",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Code Debugging using Gen AI",
+      "body": "Understanding Errors\nCode Debugging using Gen AI \nUnderstanding Errors\nFixing Code with Errors",
+      "notes": "First while debugging we need to understand the errors first ,",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Code Debugging using Gen AI",
+      "body": "Understanding Errors\nWhen you encounter an error, don't just ask AI to fix it. Instead, use it to understand what went wrong",
+      "notes": "When you see an error, don't just ask AI to fix it.  Instead, try to figure out what went wrong. \n\nLook at the error message, think about what you were trying to do, and see if you can find out why it happened. \n\nThis helps you learn and understand better, so you can fix problems on your own next time! AI can help, but solving the problem yourself makes you smarter",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Understanding Errors",
+      "body": "Prompt\nI encountered an error while building Static Website with HTML/CSS. Can you explain what the error means, why it might occur, and any relevant HTML/CSS concepts involved, without providing a fix?\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]",
+      "notes": "Now, what you see on the screen is a sample prompt of Debugging Errors in your code.\n\u000bExplain  the issue and code given in the below:\u000b\u000b“””\n<!DOCTYPE html>\n<html>\n\n<head>\n    <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\" integrity=\"sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z\" crossorigin=\"anonymous\">\n    <script src=\"https://code.jquery.com/jquery-3.5.1.slim.min.js\" integrity=\"sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj\" crossorigin=\"anonymous\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js\" integrity=\"sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN\" crossorigin=\"anonymous\"></script>\n    <script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js\" integrity=\"sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV\" crossorigin=\"anonymous\"></script>\n</head>\n\n<body>\n    <div class=\"cricketer-top-section\">\n        <div>\n            <h1 class=\"cricketer-name\">K.L. Rahul</h1>\n            <p class=\"cricketer-description\">Kannur Lokesh Rahul (born 18 April 1992), commonly known as KL Rahul, is an Indian international cricketer who plays...more</p>\n        </div>\n        <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img1.png\" />\n    </div>\n    <div class=\"cricketer-bottom-section\">\n        <h1 class=\"sub-heading\">IPL Records</h1>\n        <div class=\"cricketer-ipl-records-card d-flex flex-row\">\n            <div class=\"cricketer-ipl-records-text-container\">\n                <h1 class=\"cricketer-ipl-records-card-heading\">KXIP vs RCB</h1>\n                <p class=\"cricketer-ipl-records-description\">He scored an unbeaten 132 off just 69 balls against Royal Challengers Bangalore... more</p>\n            </div>\n            <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img2.png\" />\n        </div>\n        <h1 class=\"sub-heading\">Videos</h1>\n        <div class=\"d-flex flex-row\">\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img3.png\" />\n                <p class=\"cricketer-video-description\">KL Rahul hits 337 for Karnataka</p>\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img4.png\" />\n                <p class=\"cricketer-video-description\">Incredible Innings by KL Rahul</p>\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img5.png\" />\n                <p class=\"cricketer-video-description\">Single-handed win by KL Rahul</p>\n        </div>\n        <div class=\"text-center\">\n            <button class=\"btn btn-primary\">View more</button>\n        </div>\n    </div>\n</body>\n\n</html>\n\n\n“””\u000b\u000b“””\u000b@import url(\"https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@400;700&family=Lobster&family=Monoton&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,700&family=Work+Sans:ital,wght@0,400;0,700;1,700&display=swap\");\n\n.cricketer-top-section {\n  background-color: #fb4e71;\n  padding: 15px;\n}\n\n.cricketer-name {\n  color: #ffffff;\n  font-family: \"Roboto\";\n  font-size: 28px;\n  font-weight: bold;\n}\n\n.cricketer-description {\n  color: #ffffff;\n  font-family: \"Roboto\";\n  font-size: 14px;\n}\n\n.cricketer-bottom-section {\n  background-color: #e6f6ff;\n  height: 500px;\n  padding: 10px;\n}\n\n.sub-heading {\n  color: #323f4b;\n  font-family: \"Roboto\";\n  font-size: 16px;\n  font-weight: bold;\n  padding: 8px;\n}\n\n.cricketer-ipl-records-card {\n  background-color: #ffffff;\n  border-radius: 12px;\n  margin: 5px;\n}\n\n.cricketer-ipl-records-text-container {\n  padding: 8px;\n}\n\n.cricketer-ipl-records-card-heading {\n  color: #323f4b;\n  font-family: \"Roboto\";\n  font-size: 14px;\n  font-weight: 500;\n}\n\n.cricketer-ipl-records-description {\n  color: #888888;\n  font-family: \"Roboto\";\n  font-size: 14px;\n}\n\n.cricketer-video-text-container {\n  width: 96px;\n  margin: 5px;\n}\n\n.cricketer-video-description {\n  font-family: \"Roboto\";\n  font-size: 12px;\n}\n\u000b“””",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Code Debugging using Gen AI",
+      "body": "Fixing Code with Errors\nLeveraging Gen AI for Enhanced Learning\nUnderstanding Errors\nFixing Code with Errors\nCode Debugging using Gen AI \nUnderstanding Errors\nFixing Code with Errors",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Code Debugging using Gen AI",
+      "body": "Fixing Code with Errors\nIf it is taking too long to fix the error\nLet's see how AI can help you fix your code",
+      "notes": "If it's taking too long to fix an error in your code, \n\nUse Gen AI for fixing by explaining , AI can help you by looking at the problem and suggesting ways to fix it faster",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Fixing Code with Errors",
+      "body": "Prompt\nI encountered an issue while building Static Website with HTML/CSS. I would like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes.\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]",
+      "notes": "Now, what you see on the screen is a sample prompt of Fixing Errors in your code.\u000b\u000bTake one issue  from the below code and explain the issue :\u000b\u000b“””\n<!DOCTYPE html>\n<html>\n\n<head>\n    <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\" integrity=\"sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z\" crossorigin=\"anonymous\">\n    <script src=\"https://code.jquery.com/jquery-3.5.1.slim.min.js\" integrity=\"sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj\" crossorigin=\"anonymous\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js\" integrity=\"sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN\" crossorigin=\"anonymous\"></script>\n    <script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js\" integrity=\"sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV\" crossorigin=\"anonymous\"></script>\n</head>\n\n<body>\n    <div class=\"cricketer-top-section\">\n        <div>\n            <h1 class=\"cricketer-name\">K.L. Rahul</h1>\n            <p class=\"cricketer-description\">Kannur Lokesh Rahul (born 18 April 1992), commonly known as KL Rahul, is an Indian international cricketer who plays...more</p>\n        </div>\n        <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img1.png\" />\n    </div>\n    <div class=\"cricketer-bottom-section\">\n        <h1 class=\"sub-heading\">IPL Records</h1>\n        <div class=\"cricketer-ipl-records-card d-flex flex-row\">\n            <div class=\"cricketer-ipl-records-text-container\">\n                <h1 class=\"cricketer-ipl-records-card-heading\">KXIP vs RCB</h1>\n                <p class=\"cricketer-ipl-records-description\">He scored an unbeaten 132 off just 69 balls against Royal Challengers Bangalore... more</p>\n            </div>\n            <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img2.png\" />\n        </div>\n        <h1 class=\"sub-heading\">Videos</h1>\n        <div class=\"d-flex flex-row\">\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img3.png\" />\n                <p class=\"cricketer-video-description\">KL Rahul hits 337 for Karnataka</p>\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img4.png\" />\n                <p class=\"cricketer-video-description\">Incredible Innings by KL Rahul</p>\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img5.png\" />\n                <p class=\"cricketer-video-description\">Single-handed win by KL Rahul</p>\n        </div>\n        <div class=\"text-center\">\n            <button class=\"btn btn-primary\">View more</button>\n        </div>\n    </div>\n</body>\n\n</html>\n\n\n“””\u000b\u000b“””\u000b@import url(\"https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@400;700&family=Lobster&family=Monoton&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,700&family=Work+Sans:ital,wght@0,400;0,700;1,700&display=swap\");\n\n.cricketer-top-section {\n  background-color: #fb4e71;\n  padding: 15px;\n}\n\n.cricketer-name {\n  color: #ffffff;\n  font-family: \"Roboto\";\n  font-size: 28px;\n  font-weight: bold;\n}\n\n.cricketer-description {\n  color: #ffffff;\n  font-family: \"Roboto\";\n  font-size: 14px;\n}\n\n.cricketer-bottom-section {\n  background-color: #e6f6ff;\n  height: 500px;\n  padding: 10px;\n}\n\n.sub-heading {\n  color: #323f4b;\n  font-family: \"Roboto\";\n  font-size: 16px;\n  font-weight: bold;\n  padding: 8px;\n}\n\n.cricketer-ipl-records-card {\n  background-color: #ffffff;\n  border-radius: 12px;\n  margin: 5px;\n}\n\n.cricketer-ipl-records-text-container {\n  padding: 8px;\n}\n\n.cricketer-ipl-records-card-heading {\n  color: #323f4b;\n  font-family: \"Roboto\";\n  font-size: 14px;\n  font-weight: 500;\n}\n\n.cricketer-ipl-records-description {\n  color: #888888;\n  font-family: \"Roboto\";\n  font-size: 14px;\n}\n\n.cricketer-video-text-container {\n  width: 96px;\n  margin: 5px;\n}\n\n.cricketer-video-description {\n  font-family: \"Roboto\";\n  font-size: 12px;\n}\n\u000b“””",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Generated Websites\n.h-center {\n  text-align: center;\n}\nCSS\nGenerated Design\nExpected Design",
+      "notes": "The left one is the expected design that we need to build .\n\nWIth generating the code, You are the output the which are not as expected\u000b\u000bSo , Use Debugging prompts and fix the errors",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nCSS\n1\n1\nStart by Debugging Manually\n2\n2\nUse GenAI for Suggestions \n3\n3\nUnderstand the AI Responses\n2\n4\nLearn from AI Responses\n3\n5\nPractice Regularly",
+      "notes": "Follow this process to debug and practice regularly\n\n Let’s see an example\n\nIn a code, the layout of the design is not as expected .\n\n- First start to debug manually – understand the code and identify the issue.\n\n- If you are not able to identify what’s causing the issue and if it is taking more time  , then Ask GEn AI for suggestions\n   First use Gen AI to identify the issue not directly fixing – then also if it is taking time for you to fix – then use Gen AI to fix the code\n\n- Understand the code given by the AI - Don’t just copy and paste the fixes.Take time to understand the reasoning behind the solution and apply it to future problems\n\n- Learn from that AI responses , What’s causing the issue and how it is resolved\n\n- And practice these regularly,  so that from the next time you can only debug this type of bugs at fast without Gen AI",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Note\nThe goal of using Gen AI in debugging is to enhance problem-solving skills, not just fix errors quickly\nFocus on understanding the root cause of bugs to become more self-sufficient as a developer",
+      "notes": "Ultimately, the goal is to use Generative AI to enhance your problem-solving skills, not just to copy and paste code.\nAlways focus on the code first — understand the root cause of the bug, and then work on fixing it.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Note\nUse AI as a supportive tool to analyze, explain, and guide us \nthrough debugging",
+      "notes": "When you encounter an error in your code, don’t rush to ask AI for a fix right away.\u000bInstead, take a moment to understand what went wrong. Identify the cause of the mistake, learn from it, and try fixing it on your own.\nThis habit will help you grow into a more confident and capable programmer, one who can solve problems independently.\u000b The more you practice this approach, the better you'll become at debugging and finding solutions without relying on constant help.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Leveraging Gen AI for Debugging",
+      "body": "Tips\nReview Code\nMaking small changes in the code to understand \u000bthe software behaviour\nEx: changing colors, images, texts, etc\nTweak Code",
+      "notes": "When you're working with code, making small changes can help you understand how the software works and how it behaves. \n\nBy doing this, you see how the website or app behaves when you make those small changes. It helps you learn what each part of the code does and how it affects the whole program.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Tweaking the Code",
+      "body": "Different Layouts\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]",
+      "notes": "When you're working with code, making small changes can help you understand how the software works and how it behaves\u000b\u000bFor example : Look at these 4 different layouts \n\nThese all 4 are different way of designs by just tweaking the code.\u000b\u000bSo if you want to practice of different layouts or designs like this , u can Use Gen AI for giving you the ideas to tweak the code",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Tweaking the code",
+      "body": "Different Ways of Design\nUse Generative AI to describe new ways a design could look. This will help you to learn and practice much faster",
+      "notes": "We give AI our first design – maybe a picture or just a description. Then, we ask the AI to imagine and describe new ways that design could look.\nBy using this AI helper, you can learn faster because it gives you different examples to explore, and you can try new things without worrying about making mistakes",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Tweaking the Code",
+      "body": "Prompt\nAct as a experienced web designer. I'll provide you with a basic webpage layout, and your task is to come up with 5-6 different design ideas with detailed blueprint to focus on practicing Flexbox principles to explore different layout possibilities quickly. For each design, change the layout by experimenting with different arrangements like aligning elements vertically, horizontally, or wrapping them into multiple rows or columns. Keep the content the same, but adjust the positioning and alignment of elements. Don’t provide the code, allowing me to implement these ideas on my own hands-on learning.\nDesign:\n[Add your design image here]",
+      "notes": "Here is the prompt to get different ways of design ideas of one design for tweaking the code\u000b\u000bUse design link: https://res.cloudinary.com/dkeugqbi7/image/upload/v1751541362/Screenshot_from_2025-06-25_14-37-24_mwbcvh.png",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": ".h-center {",
+      "body": ".h-center {\n  text-align: center;\n}\nCSS\nUse Gen AI and Debug the code\n“\n“",
+      "notes": "By using AI effectively and focusing on learning, you can debug more efficiently while continuing to grow as a developer.\n\n The ultimate goal is to ensure that you understand the solution and can apply that knowledge to any future debugging challenges.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Build a Static Website using GenAI",
+      "body": "",
+      "notes": "So, Now In this session\n\nyou we will learn How to build your Own Static Website using Gen AI",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Build a Static Website using Gen AI",
+      "body": "Design File / Mockup",
+      "notes": "This is probably the most common situation you'll face in the real world.\n\nImagine someone comes to you and says, 'I want a website that looks exactly like this design.' They show you a picture of a mobile portfolio website, just like the one you see on the screen.\n\nThis is actually the easiest scenario because you have a clear target. You know exactly what the final result should look like.\n\nHere's what we'll do:\n\nWe'll give the design image to AI and ask it to create the code",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Build a Static Website using Gen AI",
+      "body": "Prompt\nAct as a skilled front-end web developer specializing in creating perfect static websites from design mockups. Build a static website that replicates the provided design mockup with 100% accuracy\u000bby following the below guidelines:\nGuidelines:\nDesign the static website to match the provided mockup exactly in terms of layout, structure, and appearance.\nUse valid image links from Unsplash that best fit the design elements.\nMatch the colors, fonts, styles, spacing, borders, and shadows as shown in the mockup.\nUse the provided icons and ensure they are styled and placed correctly.",
+      "notes": "Now, what you see on the screen is a sample prompt. This is just an example of working with Generative AI is that you can truly customize it to your needs.\nFeel free to adapt this. You can write your own prompt according to your specific idea for a website, whether it's a portfolio, a blog, or something else entirely. \nThe more descriptive and clear you are, the better the AI can understand your goal and generate relevant content.\n\n\nImage link: https://res.cloudinary.com/dkeugqbi7/image/upload/v1752734267/undefined_3_x5fcyh.png\u000bhttps://res.cloudinary.com/dkeugqbi7/image/upload/v1752734349/undefined_4_rovw7e.png",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Build a Static Website using Gen AI",
+      "body": "Ask Follow Up Questions\nThe quality of your questions shapes the quality of output \nUse the valid image URLs from unsplash\nUse the same fonts and border radiuses as in reference",
+      "notes": "So what will you do now?\n\nIf the design is not as expected, Then ask the right questions to get the expected design\n\nBecause it’s depends on the way of you are asking the questions to AI.\n\nTo ask better follow-up questions, the first thing we need to do is fully understand the code and get a clear idea of how it works.\nThe quality of the questions you ask AI affects the quality of the answers you get. If you ask clear and specific questions, AI can give you better, more helpful answers.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Build a Static Website using Gen AI",
+      "body": "When Output Isn't as Expected\nGen AI\nTechnical Knowledge\n+\nDEBUG",
+      "notes": "We’ve already learned the basics of static websites, including HTML and CSS, which gives us a solid foundation. This knowledge helps us understand the code better and see how everything fits together.\nRemember the prompts we learned earlier? We can use those to improve and fix the website when needed. Let’s quickly review what we covered in the last session about using AI for debugging.\nIf something in the code doesn’t make sense, don’t hesitate to ask AI to explain it in simple terms. With the technical knowledge we've built up, we’ll be able to figure out which parts of the code should stay and which ones need to be changed, instead of just copying and pasting blindly.\nSo these two skills \u000b - technical understanding \u000b - ability to use AI\nMake us well-prepared to build our websites.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Build a Static Website using Gen AI",
+      "body": "Tips\nBreak down a single big prompt into smaller prompts, each focusing on a specific part                    of the design",
+      "notes": "When you're building a website from a design, the first crucial step is to plan effectively. \n\nFirst Start by analyzing the overall design layout.\n\nThe key tip here is to break down the given design layout into smaller and manageable components. \n\nWe have to break it down first — then build it step by step.\nOne small part at a time makes it easy\n\n\nOnce you've identified these individual components, you can then structure your prompts accordingly into smaller and focused sections.",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Build a Static Website using Gen AI",
+      "body": "Planning",
+      "notes": "Let’s look at this example:\nThe first step is Planning – plan the design effectively.\nStart by planning the layouts carefully, decide how each part of the website should be arranged and looks organized.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Build a Static Website using Gen AI",
+      "body": "Breaking Down into Parts",
+      "notes": "Next step, According to the design, Break down into small and easily manageable parts\n\nOnce we have the overall design planned, the next step is to divide it into smaller sections\n\nBy focusing on one part at a time, it becomes much easier to work on the website and make changes if needed. This approach helps keep everything organized and ensures that we don’t miss any details.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Build a Static Website using Gen AI",
+      "body": "Breaking Down into Parts \nPlan before using Gen AI\nEnsures better prompts, smarter follow-up questions,                                                 and easier-to-debug outputs",
+      "notes": "In this way, Breakdown the design in your prompts will lead to more simple and effective AI-generated results.\n\nBefore using Gen AI, it's important to plan what you want to ask. \u000b\u000bThis helps you create better questions to get the expected output. Think of it like preparing for a game. If you know the rules and your goal, you'll play better and have more fun.\n\n\n—\n\nOkayy Till now, we saw How to build an application from a design using Gen AI\n\nBut What if there is no design to build a Website?",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "GenAI for presenting websites in Interviews",
+      "body": "",
+      "notes": "Until now, you've been building websites based on mockup designs or rough sketches of your ideas. But in interviews, you need to show your projects to highlight your skills.\nTo make your projects unique and stand out, try to present more unique designs. \nOne way to do this is by creating different versions of an existing design. This means you take the same basic design and change things like colors, layout, or features.\nMaking different versions of your design shows that you are creative, which will impress interviewers and help you stand out. It shows you can come up with new ideas and solve problems in different ways.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Build Variants using Gen AI",
+      "body": "Variants\n<Developer Name>\nDifferent unique versions of an existing mockup design",
+      "notes": "Variants mean creating different, unique versions of a design using an existing mockup.\u000b\u000b Instead of starting from scratch, you take the original design and make changes to things like colors, layout, or features to create new versions.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Build Variants using Gen AI",
+      "body": "Variants\n<Developer Name>\nDesign\nVariant 1\nVariant 2",
+      "notes": "2 Variants are generated from the given design\u000b\u000bSo Variants are nothing but the different versions of the given design with the same structure and Appearances.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Build Variants using Gen AI",
+      "body": "Sample Prompt\nAct as a skilled front-end web developer specializing in creating pixel-perfect static websites. \u000bYou need to transform a provided design mockup into a fully functional static website using only HTML and CSS. Build a static website that replicates the provided mockup design exactly by following the                             below guidelines\nGuidelines:\n- Design a static website as a creative variant of the provided mockup with significant visual and structural differences\n- Use valid image links from Unsplash that best fit the design elements\n- Create different colors, spacing, borders, and shadows that align with the given                                    variant concept\n- Use appropriate icons that match your variant theme. Ensure they are styled appropriately                                     and are placed correctly on the page",
+      "notes": "You can take this as reference and update it according to your ideas.\u000b\u000bImage link: https://res.cloudinary.com/dkeugqbi7/image/upload/v1751544270/Screenshot_from_2025-07-03_17-34-17_wzn8yi.png",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Leveraging Gen AI for Debugging & Building",
+      "body": "Leveraging GEN AI for debugging\nUnderstanding the Errors\nFixing code with Errors\nTweaking the code\nBuilding a Static Website using Gen AI\nBuilding Variants using Gen AI",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Understanding Errors",
+      "body": "Example - 1\nI encountered an error while running my Python code. Can you explain what it means and why it might occur, without providing the fix?\nnum = input()\nif(num%2==0):\n   print(\"Even\")\nelse:\n   print(\"Odd\")\nCode\nTypeError: not all arguments converted during string formatting\nError",
+      "notes": "By asking for an explanation rather than a solution, you're developing your debugging skills.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Understanding Errors",
+      "body": "Prompt\nI encountered an error while running my Python code. Can you explain what it means and why it might occur, without providing the fix?\n.h-center {\n  text-align: center;\n}\nCSS\nCode:\n[Your code here]\nError:\n[Error message here]\nPrompt",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Understanding Errors",
+      "body": "Example - 1\nI encountered an error while running my Python code. Can you explain what it means and why it might occur, without providing the fix?\nPrompt\nCode:\nnum = input()\nif(num%2==0):\n    print(\"Even\")\nelse:\n    print(\"Odd\")\nError:\nTypeError: not all arguments converted during string formatting",
+      "notes": "By asking for an explanation rather than a solution, you're developing your debugging skills.",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Introduction",
+      "body": "",
+      "notes": "Before we dive into our topic, let's start with a quick question:",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "What's one Python concept you've found challenging to grasp?",
+      "body": "What's one Python concept you've found challenging to grasp?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nFixing Code with Errors\nUnderstanding Errors\nCode Explanation\nGenerating Code\nQuiz Generation\nCode Explanation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Code Explanation\nSometimes, you might come across complex code that you need help understanding That's where this prompt comes in handy!",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Code Explanation",
+      "body": "Prompt\nExplain what the given code does and then simplify/break down the given code in python into steps, and explain each step in simple terms to a school kid in India who has just learned python\nPrompt\nsolution code:\n\"\"\"\n\"\"\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Code Explanation",
+      "body": "Prompt\nExplain what the given code does and then simplify/break down the given code in python into steps, and explain each step in simple terms to a school kid in India who has just learned python\nsolution code:\n\"\"\"\n\"\"\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Code Explanation",
+      "body": "Prompt\nExplain what the given code does and then simplify/break down the given code in python into steps, and explain each step in simple terms to a school kid in India who has just learned python\nsolution code:\n\"\"\"\nnumber_of_inputs = int(input())\ncounter = 0\nsum = 0\nwhile counter < number_of_inputs:\n   number = int(input())\n   sum = (sum + number)\n   counter = (counter + 1)\nprint(sum)\n\"\"\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Code Explanation",
+      "body": "Example - 1\nExplain what the given code does and then simplify/break down the given code in python into steps, and explain each step in simple terms to a school kid in India who has just learned python\nPrompt\nsolution code:\n\"\"\"\nnumber_of_inputs = int(input())\ncounter = 0\nsum = 0\nwhile counter < number_of_inputs:\n   number = int(input())\n   sum = (sum + number)\n   counter = (counter + 1)\nprint(sum)\n\"\"\"",
+      "notes": "This prompt is excellent for breaking down complex code into simple, understandable steps.",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nFixing Code with Errors\nUnderstanding Errors\nCode Explanation\nGenerating Code\nQuiz Generation\nGenerating Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Generating Code\nSometimes, you might need help writing code from scratch\nAI can assist with that too!",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Generating Code",
+      "body": "Example - 1\nPrompt\nCan you provide a Python code that calculates the factors of a number entered by the user?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Generating Code",
+      "body": "Prompt\nCan you provide a Python code that calculates the factors of a number entered by the user?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Example - 1",
+      "body": "Sample Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Generating Code",
+      "body": "Prompt\nPrompt\nCan you provide a [python/JS/C] code that [describe the task]?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Generating Code",
+      "body": "Prompt\nCan you provide a [python/JS/C] code that [describe the task]?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Generative AI for Accelerated Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nUnderstanding & Fixing Errors\nCode Explanation\nLeveraging Gen AI",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nUnderstanding & Fixing Errors\nCode Explanation\nUnderstanding & Fixing Errors",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Leveraging Gen AI for Enhanced Learning\nUnderstanding Errors\nCode Explanation\nCode Explanation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Code Explanation\nSometimes, you might come across complex code that you need help understanding That's where this prompt comes in handy!",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Code Explanation",
+      "body": "Prompt\nExplain what the given code does and then simplify/break down the given code individual steps, and explain each step in simple terms to a school kid in India who has just learned HTML and CSS.\nPrompt\nsolution code:\n\"\"\"\n\"\"\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Code Explanation",
+      "body": "Prompt\nExplain what the given code does and then simplify/break down the given code individual steps, and explain each step in simple terms to a school kid in India who has just learned HTML and CSS\nsolution code:\n\"\"\"\n\"\"\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Code Explanation",
+      "body": "Prompt\nExplain what the given code does and then simplify/break down the given code individual steps, and explain each step in simple terms to a school kid in India who has just learned HTML and CSS\nsolution code:\n\"\"\"\n\"\"\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Code Explanation",
+      "body": "Example - 1\nExplain what the given code does and then simplify/break down the given code individual steps, and explain each step in simple terms to a school kid in India who has just learned HTML and CSS.\nPrompt\nsolution code:\n\"\"\"\n\"\"\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Example - 1",
+      "body": "Sample Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Leveraging Gen AI for Enhanced Learning",
+      "body": "Understanding & Fixing Errors\nWhen you encounter an error, don't just ask AI to fix it. Instead, use it to understand what went wrong",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": ">>>> ",
+      "body": ">>>> \n>>>> \nHow do you think you can use Gen AI to improve your coding skills?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Understanding Errors",
+      "body": "Prompt\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Understanding Errors",
+      "body": "Prompt\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Understanding Errors",
+      "body": "Prompt\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Understanding Errors",
+      "body": "Example - 1\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "Example - 1",
+      "body": "Sample Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "AI Generated Websites\n.h-center {\n  text-align: center;\n}\nCSS\nAI Generated O/p\nExpected Output",
+      "notes": "Here are some AI-generated websites, but they don't match the expected design.\nEven though these websites were created by AI, they still have some issues and errors in the code.\nSince they aren't looking as expected, So We learnt how AI can help us debug these errors.\nSo Use Gen AI to troubleshoot and fix these issues to get the desired output",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Generated Websites\n.h-center {\n  text-align: center;\n}\nCSS",
+      "notes": "Here are some of the generated Websites, but these Websites are not looking like a good Websites.\u000b\u000bThere are not looking as expected , as they are having some errors and Some Issues. So Let’s see How AI will help to Debug these errors\n\nLet’s Debug these Websites to get the expected Output by using Gen AI",
+      "tables": []
+    },
+    {
+      "n": 81,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Understanding Debugging in HTML & CSS\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nLayout Issues\nHTML Structure Problems\nIncorrect CSS Selectors\nMost common issues",
+      "notes": "Let’s start by identifying the most common issues you may encounter when debugging HTML and CSS:\nLayout Issues: Elements not aligning properly, or content displaying incorrectly.\nHTML Structure Problems: Missing or improperly placed tags causing layout breaks or rendering errors.\nIncorrect CSS Selectors : Styles not working because of typos or mismatched class/ID names.\nAs a developer, it’s essential to develop the habit of manually investigating these issues. \nThis means analyzing your code, checking for mistakes, and troubleshooting based on your understanding of HTML and CSS.",
+      "tables": []
+    },
+    {
+      "n": 82,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nHave you ever faced any issues while creating a website ?",
+      "notes": "When working with HTML and CSS, errors in code can lead to frustrating layout issues, broken designs, or content that doesn't display properly. \nIt involves understanding the problem in-depth, identifying the root cause, and applying the right fix.",
+      "tables": []
+    },
+    {
+      "n": 83,
+      "title": "Debugging",
+      "body": "Understanding the Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nThe last menu item (\"Contact\") is cut off\nThe \"Explore Menu\" button is too close to the text above\nThe logo and brand name (\"TechCafe\") and the menu items are too close together \nThe last menu item (\"Contact\") is cut off\nThe \"Explore Menu\" button is too close to the text above\nThe logo and brand name (\"TechCafe\") and the menu items are too close together \n2\n3\n1",
+      "notes": "The first issue is : The first thing we can see is… the top menu looks broken.\nIf we look closely, the last item — ‘Contact’ — is getting cut off.\nThat’s a clear sign that the page is too wide for the screen\n\nSecond is : “Now let’s look at the section that says ‘Where Coffee Meets Code’ and the button below it.\nThe button feels too close to the text above it, right?\nIt makes the page feel crowded or rushed\n\nThird is: “Finally, check the very top — where we see the logo and the brand name ‘TechCafe’.\u000b Everything looks arranged into a single row.\nOn small screens, this can look messy.",
+      "tables": []
+    },
+    {
+      "n": 84,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nHow can we solve this issue?",
+      "notes": "When working with HTML and CSS, errors in code can lead to frustrating layout issues, broken designs, or content that doesn't display properly. \nIt involves understanding the problem in-depth, identifying the root cause, and applying the right fix.",
+      "tables": []
+    },
+    {
+      "n": 85,
+      "title": "Debugging",
+      "body": "Understanding the Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nThe last menu item (\"Contact\") is cut off\nThe \"Explore Menu\" button is too close to the text above\nThe logo and brand name (\"TechCafe\") and the menu items are too close together \nThe last menu item (\"Contact\") is cut off\nThe \"Explore Menu\" button is too close to the text above\nThe logo and brand name (\"TechCafe\") and the menu items are too close together \n2\n3\n1",
+      "notes": "The first issue is : The first thing we can see is… the top menu looks broken.\nIf we look closely, the last item — ‘Contact’ — is getting cut off.\nThat’s a clear sign that the page is too wide for the screen\n\nSecond is : “Now let’s look at the section that says ‘Where Coffee Meets Code’ and the button below it.\nThe button feels too close to the text above it, right?\nIt makes the page feel crowded or rushed\n\nThird is: “Finally, check the very top — where we see the logo and the brand name ‘TechCafe’.\u000b Everything looks arranged into a single row.\nOn small screens, this can look messy.",
+      "tables": []
+    },
+    {
+      "n": 86,
+      "title": "Debugging",
+      "body": "Understanding the Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nThe last menu item (\"Contact\") is cut off\nThe \"Explore Menu\" button is too close to the text above\nThe logo and brand name (\"TechCafe\") and the menu items are too close together \nThe last menu item (\"Contact\") is cut off\nThe \"Explore Menu\" button is too close to the text above\nThe logo and brand name (\"TechCafe\") and the menu items are too close together \n2\n3\n1",
+      "notes": "The first issue is : The first thing we can see is… the top menu looks broken.\nIf we look closely, the last item — ‘Contact’ — is getting cut off.\nThat’s a clear sign that the page is too wide for the screen\n\nSecond is : “Now let’s look at the section that says ‘Where Coffee Meets Code’ and the button below it.\nThe button feels too close to the text above it, right?\nIt makes the page feel crowded or rushed\n\nThird is: “Finally, check the very top — where we see the logo and the brand name ‘TechCafe’.\u000b Everything looks arranged into a single row.\nOn small screens, this can look messy.",
+      "tables": []
+    },
+    {
+      "n": 87,
+      "title": "Debugging",
+      "body": "Identifying the Cause of Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nIdentify the cause the Issue:\nMenu items are not adjusting to small screen\nNot enough space between text and button\nAll items are in one row, without spacing or wrapping\nMenu items are not adjusting to small screen\nNot enough space between text and button\nAll items are in one row, without spacing or wrapping\n2\n3\n1",
+      "notes": "So, why is the menu going outside?\nIt’s likely because the menu items are too wide and the page doesn’t know how to adjust on a small screen.\n\nWhy is the button feeling very close and not looking good?\nProbably because there’s no space added between the text and the button.\n\nWhy does the top look so tight?\nBecause the logo, brand name, and all the menu items are trying to fit in one single line",
+      "tables": []
+    },
+    {
+      "n": 88,
+      "title": "Debugging",
+      "body": "Identifying the Cause of Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nMenu items are not adjusting to small screen\nNot enough space between text and button\nAll items are in one row, without spacing or wrapping\n2\n3\n1",
+      "notes": "So, why is the menu going outside?\nIt’s likely because the menu items are too wide and the page doesn’t know how to adjust on a small screen.\n\nWhy is the button feeling very close and not looking good?\nProbably because there’s no space added between the text and the button.\n\nWhy does the top look so tight?\nBecause the logo, brand name, and all the menu items are trying to fit in one single line",
+      "tables": []
+    },
+    {
+      "n": 89,
+      "title": "Debugging",
+      "body": "Identifying the Cause of Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nMenu items are not adjusting to small screen\nNot enough space between text and button\nAll items are in one row, without spacing or wrapping\n2\n3\n1",
+      "notes": "So, why is the menu going outside?\nIt’s likely because the menu items are too wide and the page doesn’t know how to adjust on a small screen.\n\nWhy is the button feeling very close and not looking good?\nProbably because there’s no space added between the text and the button.\n\nWhy does the top look so tight?\nBecause the logo, brand name, and all the menu items are trying to fit in one single line",
+      "tables": []
+    },
+    {
+      "n": 90,
+      "title": "Debugging",
+      "body": "Resolving the Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nResolve the Issue\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 91,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nUnexpected Output\u000b\nTime-Consuming Debugging\u000b\nMore Focus on Fixing Errors\u000b\nSlower Progress in Development\nTime-Consuming Debugging\nMore Focus on Fixing Errors\nSlower Progress in Development",
+      "notes": "Let’s talk about some common problems we face when debugging code.\nHowever, debugging can often be a time-consuming and complex task, especially when the codebase grows larger.Because of : \nFirst, unexpected output—sometimes, the code doesn’t work the way we expect, and it’s hard to figure out why.\nThen, debugging takes a lot of time. Instead of moving forward with our project, we end up spending too much time fixing errors.\nThis means we end up focusing more on fixing mistakes rather than writing new code, which can be frustrating.\nAnd because of all this, progress is slower. We’re stuck fixing issues instead of moving ahead with our work.\nBut now, we’ll see how Generative AI can help solve these problems and make debugging much easier!",
+      "tables": []
+    },
+    {
+      "n": 92,
+      "title": ".h-center {",
+      "body": ".h-center {\n  text-align: center;\n}\nCSS\nTry the Prompts and Debug the code",
+      "notes": "By using AI effectively and focusing on learning, you can debug more efficiently while continuing to grow as a developer.\n\n The ultimate goal is to ensure that you understand the solution and can apply that knowledge to any future debugging challenges.",
+      "tables": []
+    },
+    {
+      "n": 93,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nUnexpected Output\u000b\nTime-Consuming Debugging\u000b\nMore Focus on Fixing Errors\u000b\nSlower Progress in Development\nTaking more than expected time to identify the issue, How to accelerate this?",
+      "notes": "Let’s talk about some common problems we face when debugging code.\nHowever, debugging can often be a time-consuming and complex task, especially when the codebase grows larger.Because of : \nFirst, unexpected output—sometimes, the code doesn’t work the way we expect, and it’s hard to figure out why.\nThen, debugging takes a lot of time. Instead of moving forward with our project, we end up spending too much time fixing errors.\nThis means we end up focusing more on fixing mistakes rather than writing new code, which can be frustrating.\nAnd because of all this, progress is slower. We’re stuck fixing issues instead of moving ahead with our work.\nBut now, we’ll see how Generative AI can help solve these problems and make debugging much easier!",
+      "tables": []
+    },
+    {
+      "n": 94,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nDebugging is the process of finding and fixing errors or bugs in the code.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 95,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Leveraging Gen AI for debugging\nUnderstanding and Fixing Errors",
+      "notes": "Before we dive into our topic, let's start with a quick question:",
+      "tables": []
+    },
+    {
+      "n": 96,
+      "title": "Understanding and Fixing Errors",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 97,
+      "title": "Python using Gen AI | Part 2",
+      "body": "Code Debugging using Gen AI\nDebugging is an essential skill for every developer\nLet's explore how Generative AI can enhance your ability to solve problems, understand code, and debug independently",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 98,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nCSS\nUnderstand the Solution\nLearn from AI Responses\nPractice Regularly\nStart by Debugging Manually\nUse GenAI for Suggestions \nUnderstand the Solution\nLearn from AI Responses\nPractice Regularly\n2\n3\n4\n5\n1",
+      "notes": "While GenAI can be incredibly helpful, it’s important to use it effectively to enhance your debugging skills. Here are some best practices:\nStart by Debugging Manually: Before turning to GenAI, attempt to debug the issue yourself. This builds your debugging skills and understanding of the problem.\nUse GenAI for Suggestions: If you are stuck, use GenAI to identify potential fixes. However, always try to understand why the solution works.\nUnderstand the Solution: Don’t just copy and paste the fixes suggested by GenAI. Take time to understand the reasoning behind the solution and apply it to future problems.\nLearn from AI Responses: Use AI suggestions as learning tools. If GenAI suggests a change, look into why that change works and how it applies to your code.\nPractice Regularly: Debugging is a skill that improves with practice. Use GenAI as a tool to help you solve problems faster, but continue practicing and learning the manual debugging process.",
+      "tables": []
+    },
+    {
+      "n": 99,
+      "title": "Leveraging Gen AI for Debugging",
+      "body": "Tips\nReview Code\nTweak Code\nMaking small changes \u000bin the code to understand \u000bthe software behaviour\nEx: changing colors, images, texts, etc.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 100,
+      "title": "Leveraging Gen AI for debugging",
+      "body": "Debugging\n.h-center {\n  text-align: center;\n}\nCSS\nUnderstand the Solution\nLearn from AI Responses\nPractice Regularly\nStart by Debugging Manually\nUnderstand the \nAI Responses\nUse GenAI for Suggestions\nLearn from AI Responses\n03\n04\n05\n01\n02",
+      "notes": "While GenAI can be incredibly helpful, it’s important to use it effectively to enhance your debugging skills. Here are some best practices:\nStart by Debugging Manually: Before turning to GenAI, attempt to debug the issue yourself. This builds your debugging skills and understanding of the problem.\nUse GenAI for Suggestions: If you are stuck, use GenAI to identify potential fixes. However, always try to understand why the solution works.\nUnderstand the Solution: Don’t just copy and paste the fixes suggested by GenAI. Take time to understand the reasoning behind the solution and apply it to future problems.\nLearn from AI Responses: Use AI suggestions as learning tools. If GenAI suggests a change, look into why that change works and how it applies to your code.\nPractice Regularly: Debugging is a skill that improves with practice. Use GenAI as a tool to help you solve problems faster, but continue practicing and learning the manual debugging process.",
+      "tables": []
+    },
+    {
+      "n": 101,
+      "title": "Debugging",
+      "body": "Understanding the Code\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nUnderstanding the Code\nIdentifying \u000bthe issue\nResolving the Issue\n1\n2\n3",
+      "notes": "While debugging, First we need to understand the code\n\n\nThe Generated design code: ( Copy this in our code playground)\u000b“””\n<!DOCTYPE html>\n<html>\n\n<head>\n    <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\" integrity=\"sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z\" crossorigin=\"anonymous\">\n    <script src=\"https://code.jquery.com/jquery-3.5.1.slim.min.js\" integrity=\"sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj\" crossorigin=\"anonymous\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js\" integrity=\"sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN\" crossorigin=\"anonymous\"></script>\n    <script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js\" integrity=\"sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV\" crossorigin=\"anonymous\"></script>\n</head>\n\n<body>\n    <div class=\"cricketer-top-section\">\n        <div>\n            <h1 class=\"cricketer-name\">K.L. Rahul</h1>\n            <p class=\"cricketer-description\">Kannur Lokesh Rahul (born 18 April 1992), commonly known as KL Rahul, is an Indian international cricketer who plays...more</p>\n        </div>\n        <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img1.png\" />\n    </div>\n    <div class=\"cricketer-bottom-section\">\n        <h1 class=\"sub-heading\">IPL Records</h1>\n        <div class=\"cricketer-ipl-records-card d-flex flex-row\">\n            <div class=\"cricketer-ipl-records-text-container\">\n                <h1 class=\"cricketer-ipl-records-card-heading\">KXIP vs RCB</h1>\n                <p class=\"cricketer-ipl-records-description\">He scored an unbeaten 132 off just 69 balls against Royal Challengers Bangalore... more</p>\n            </div>\n            <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img2.png\" />\n        </div>\n        <h1 class=\"sub-heading\">Videos</h1>\n        <div class=\"d-flex flex-row\">\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img3.png\" />\n                <p class=\"cricketer-video-description\">KL Rahul hits 337 for Karnataka</p>\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img4.png\" />\n                <p class=\"cricketer-video-description\">Incredible Innings by KL Rahul</p>\n                <img src=\"https://d2clawv67efefq.cloudfront.net/ccbp-static-website/klrahul-img5.png\" />\n                <p class=\"cricketer-video-description\">Single-handed win by KL Rahul</p>\n        </div>\n        <div class=\"text-center\">\n            <button class=\"btn btn-primary\">View more</button>\n        </div>\n    </div>\n</body>\n\n</html>\n\n\n“””\u000b\u000b“””\u000b@import url(\"https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@400;700&family=Lobster&family=Monoton&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,700&family=Work+Sans:ital,wght@0,400;0,700;1,700&display=swap\");\n\n.cricketer-top-section {\n  background-color: #fb4e71;\n  padding: 15px;\n}\n\n.cricketer-name {\n  color: #ffffff;\n  font-family: \"Roboto\";\n  font-size: 28px;\n  font-weight: bold;\n}\n\n.cricketer-description {\n  color: #ffffff;\n  font-family: \"Roboto\";\n  font-size: 14px;\n}\n\n.cricketer-bottom-section {\n  background-color: #e6f6ff;\n  height: 500px;\n  padding: 10px;\n}\n\n.sub-heading {\n  color: #323f4b;\n  font-family: \"Roboto\";\n  font-size: 16px;\n  font-weight: bold;\n  padding: 8px;\n}\n\n.cricketer-ipl-records-card {\n  background-color: #ffffff;\n  border-radius: 12px;\n  margin: 5px;\n}\n\n.cricketer-ipl-records-text-container {\n  padding: 8px;\n}\n\n.cricketer-ipl-records-card-heading {\n  color: #323f4b;\n  font-family: \"Roboto\";\n  font-size: 14px;\n  font-weight: 500;\n}\n\n.cricketer-ipl-records-description {\n  color: #888888;\n  font-family: \"Roboto\";\n  font-size: 14px;\n}\n\n.cricketer-video-text-container {\n  width: 96px;\n  margin: 5px;\n}\n\n.cricketer-video-description {\n  font-family: \"Roboto\";\n  font-size: 12px;\n}\n\u000b“””",
+      "tables": []
+    },
+    {
+      "n": 102,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  <div class=\"cricketer-top-section\">\n    <div>\n      <h1 class=\"cricketer-name\">K.L.Rahul</h1>\n      <p class=\"cricketer-description\">...</p>\n    </div>\n    <img src=\"klrahul-img1.png\" />\n  </div>\n  ...\n</body> ...\nHTML\nUnderstanding the Code",
+      "notes": "< show this section of code in the output>\n\nIn this code, there is a <div> container with the class cricketer-top-section:\n\nInside it, there is another container that includes a heading, a paragraph, and an image of KL Rahul.\n\n\n\n<Show the output>",
+      "tables": []
+    },
+    {
+      "n": 103,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  ...\n  <div class=\"cricketer-ipl-records-card d-flex\">\n   <div class=\"cricketer-ipl-records-text-container\">\n     <p class=\"...\">KXIP VS RCB</p>\n     <p class=\"...\">He scored...</p>\n    </div>\n    <img src=\"klrahul-img2.png\" />\n  </div>\n  ...\n</body> ...\nHTML\nUnderstanding the Code",
+      "notes": "<Show this section of the code>\n\nIn this code, there is a <div> container with the class cricketer-ipl-records-card  which has d-flex , that means…It is flex container and the direction by default is row , right!\n\nSo the child elements are aligned in a row :  one div container and image element accordingly\n\n<Show them the output accordingly>",
+      "tables": []
+    },
+    {
+      "n": 104,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  <div class=\"d-flex flex-row\">\n    <img src=\"klrahul-img3.png\" />\n    <p class=\"...\">KL Rahul ...</p>\n    <img src=\"klrahul-img4.png\" />\n    <p class=\"...\">KL Rahul...</p>\n    <img src=\"klrahul-img5.png\" />\n    <p class=\"...\">Single-handed ...</p>\n  </div>\n  ...\n</body> ...\nUnderstanding the Code\nHTML",
+      "notes": "In this code one flex container and it’s direction is row\n\nInside that all elements are aligned in a row accordingly.\n\n\nSo with this, we all understood the code written for generated design",
+      "tables": []
+    },
+    {
+      "n": 105,
+      "title": "Debugging",
+      "body": "Identifying the Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nUnderstanding the Code\nIdentifying \u000bthe issue\nResolving the Issue\n1\n2\n3",
+      "notes": "Next, we need to identify the issue that cause us unexpected design",
+      "tables": []
+    },
+    {
+      "n": 106,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  <div class=\"cricketer-top-section\">\n    <div>\n      <h1 class=\"...\">K.L. Rahul</h1>\n      <p class=\"cricketer-description\">...</p>\n    </div>\n    <img src=\"klrahul-img1.png\" />\n  </div>\n  ...\n</body> ...\nIdentifying the Issue\nflex-item\nflex-item\nflex-container\nHTML\nMissing flex-container class",
+      "notes": "Compare the expected output and code written for generated design\u000b\u000bIn the Expected Design :  The entire card is set as a flex container with two flex items in the same row. \u000b\u000bHowever, in the code, the flex-container class (d-flex) is missing",
+      "tables": []
+    },
+    {
+      "n": 107,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  ...\n  <div class=\"cricketer-ipl-records-card d-flex\">\n   <div class=\"...\">\n     <p class=\"...\">KXIP VS RCB</p>\n     <p class=\"...\">He scored...</p>\n    </div>\n    <img src=\"...klrahul-img2.png\" />\n  </div>\n  ...\n</body> ...\nIdentifying the Issue\nHTML\nflex-item\nIncorrect order of flex items\nflex-item",
+      "notes": "Compare the expected output and code written for generated design\n\nIn the Expected Design :  The card is designed as a flex container with two flex items in the same row, where the image should appear first, followed by the description.\u000b\u000b However, in the code, the image is placed second, causing the order to be incorrect",
+      "tables": []
+    },
+    {
+      "n": 108,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  <div class=\"d-flex flex-row\">\n    <img src=\"klrahul-img3.png\" />\n    <p class=\"...\">KL Rahul ...</p>\n    <img src=\"klrahul-img4.png\" />\n    <p class=\"...\">Incredible...</p>\n    <img src=\"klrahul-img5.png\" />\n    <p class=\"...\">Single-handed ...</p>\n  </div>\n  ...\n</body> ...\nIdentifying the Issue\nHTML\nflex-item\nflex-item\nflex-item\nflex-container\nMissing individual div containers                     to flex-items",
+      "notes": "Compare\n\nIn the Expected Design : The entire card is set as a flex container, with three flex items arranged in the same row. \n\nHowever, in the code, the flex-container class (d-flex) is defined, but the flex items are not correctly set up.\n\n The issue is that the content for each flex item was not placed inside individual <div> containers.",
+      "tables": []
+    },
+    {
+      "n": 109,
+      "title": "Debugging",
+      "body": "Resolving the Issue\n.h-center {\n  text-align: center;\n}\nI encountered an issue while coding in HTML/CSS. I'd like you to analyze the code, explain what might be causing the issue, and discuss why it's happening. Provide any prerequisites or fundamental concepts that would help in understanding the problem and walk me through the underlying reasons, and provide guidance on how to resolve it with the necessary fixes\nCSS\nPrompt\nCode:\n[Your code here]\nIssue:\n[Describe the unexpected behavior]\nUnderstanding the Code\nIdentifying \u000bthe issue\nResolving the Issue\n1\n2\n3",
+      "notes": "So , now we already identified what are the issues\u000b\u000b\u000bLet’s resolve the issues",
+      "tables": []
+    },
+    {
+      "n": 110,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  <div class=\"cricketer-top-section d-flex flex-row\">\n    <div>\n      <h1 class=\"cricketer-name\">K.L. Rahul</h1>\n      <p class=\"cricketer-description\">...</p>\n    </div>\n    <img src=\"klrahul-img1.png\" />\n  </div>\n  ...\n</body> ...\nResolving the Issue\nAdded flex container and flex-direction\nAdd flex container \nHTML",
+      "notes": "As we are discussed the d-flex class is missed in this code\n\nAdd the flex container class to it and the direction is row ( even if you didn’t mention the flex-row, the default direction will be row only)",
+      "tables": []
+    },
+    {
+      "n": 111,
+      "title": "Debugging",
+      "body": "<!DOCTYPE html>\n...\n<body>\n  ...\n  <div class=\"... d-flex\">\n   <img src=\"klrahul-img2.png\" />\n   <div class=\"...\">\n     <p class=\"...\">KXIP VS RCB</p>\n     <p class=\"...\">He scored...</p>\n    </div>\n  </div>\n  ...\n</body> ...\nResolving the Issue\nChange the order\nHTML",
+      "notes": "We identified the issue that the order of the flex items are not in correct order.\n\nSo, just changing the order if image and container is enough to resolve this issue",
+      "tables": []
+    },
+    {
+      "n": 112,
+      "title": "Debugging",
+      "body": "Resolving the Issue\n<!DOCTYPE html>\n...\n<body>\n  <div class=\"d-flex flex-row\">\n    <div>\n<img src=\"klrahul-img3.png\" />\n<p class=\"...\">KL Rahul ...</p>\n    </div>\n    <div>\n<img src=\"klrahul-img4.png\" />\n<p class=\"...\">KL Rahul...</p>\n    </div>\n    <div>...</div>\n  ...\n</body> ...\nAdd Div containers to each flex item\nHTML",
+      "notes": "The issue identifies here is : Missed the individual containers for the each flex-item\n\nSo Add div containers to the each flex item to get the expected output accordingly…",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/122ZiahGHmaceLWW9FWWfRjEYBcdIxHJnE-bl318GCxY/edit?usp=sharing"
+}

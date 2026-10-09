@@ -1,0 +1,493 @@
+{
+  "session_no": 21,
+  "source_file": "static website — session 21",
+  "deck_title": "static website — session 21",
+  "n_slides": 69,
+  "summary": "\n    - Slide 2: Introduction to HTML5\n    - Slide 3: Introduction to HTML5\n    - Slide 4: Versions\n    - Slide 5: Introduction\n    - Slide 6: Versions\n    - Slide 7: Versions\n    - Slide 8: Versions\n    - Slide 9: Versions\n    - Slide 10: Features of HTML5\n    - Slide 11: Introduction to HTML5\n    - Slide 12: Features of HTML5\n    - Slide 13: Features of HTML5\n    - Slide 14: Features of HTML5\n    - Slide 15: Semantic vs Non-semantic elements\n    - Slide 16: Features of HTML5\n    - Slide 17: Features of HTML5\n    - Slide 18: Features of HTML5\n    - Slide 19: HTML Multimedia\n    - Slide 20: HTML\n    - Slide 21: Multimedia elements are of different types and allows us to add multimedia conte\n    - Slide 22: video\n    - Slide 23: video Element\n    - Slide 24: The video element allows us to add a video to the webpage\n    - Slide 25: \u000b<video src=\"VIDEO_URL\">\n    - Slide 26: Let’s add a video to our Webpage\n    - Slide 27: <body>\u000b  <div>\n    - Slide 28: <div>\n    - Slide 29: Video element provides various attributes for \u000bcontrolling the video, such as pl\n    - Slide 30: The controls attribute allows us to add controls to the video like play/pause, v\n    - Slide 31: muted attribute allows us to play the video without volume\n    - Slide 32: autoplay attribute allows us to play the video automatically when the page opens\n    - Slide 33: ...\n    - Slide 34: Using these attributes we can specify the height and width of the video\n    - Slide 35: With height and width Attributes\n    - Slide 36: Videos are available in different formats like .MP4, .WEBM, .OGG, .AVI, .FLV, et\n    - Slide 37: Google Chrome does not support .flv format\n    - Slide 38: Some browsers like Google Chrome may not support all the video formats\n    - Slide 39: Using the video element, we can also specify multiple video formats\n    - Slide 40: Instead of providing a single URL in the src attribute, we can specify multiple \n    - Slide 41: \u000b<video ...>\n    - Slide 42: ...\n    - Slide 43: Output\n    - Slide 44: video\n    - Slide 45: audio Element\n    - Slide 46: The Audio element allows us to add audio content to the webpage\n    - Slide 47: \u000b<audio src=\"AUDIO_URL\">\n    - Slide 48: The audio element provides various attributes \u000bfor controlling the audio, like p\n    - Slide 49: Let’s add a sample podcast\n    - Slide 50: <body>\u000b  <div>\n    - Slide 51: Audio URL : https://s3.ap-south-1/....mp3 \n    - Slide 52: Without the controls attribute, the audio content won’t be visible \n    - Slide 53: ...\n    - Slide 54: autoplay attribute allows us to play the audio automatically when the page opens\n    - Slide 55: Similar to videos, audio is of different formats and some browsers may not suppo\n    - Slide 56: ...\n    - Slide 57: Similar to video element, we can also specify multiple audio formats for audio e\n    - Slide 58: \u000b<audio ...>\n    - Slide 59: ...\u000b<audio src=\"...element1_w9uc9w.wma\" controls ...>\n    - Slide 60: audio Element with Multiple audio Formats\n    - Slide 61: Introduction to HTML5\n    - Slide 64: Features of HTML5\n    - Slide 65: Versions\n    - Slide 66: Features of HTML5\n    - Slide 67: Features of HTML5\n    - Slide 68: picture Element\n    - Slide 69: ...",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to HTML5",
+      "body": "",
+      "notes": "In this session, we will talk about a brief introduction to HTML5.",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Introduction to HTML5",
+      "body": "Introduction to HTML5\nHTML Multimedia\nFeatures\nAudio, Video \nHTML5",
+      "notes": "Coming to the agenda… we’ll first Look at HTML5 and get to understand it’s new features. \n\nTHen, we’ll move into the HTML multimedia part… where we will understand what multimedia is, how we can add an audio or video to our application or web page. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Versions",
+      "body": "",
+      "notes": "But first… let’s talk about the concept of VERSIONs.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Introduction",
+      "body": "Introduction\nVersions\nVersions are used to keep track of different improvements in a piece \u000bof software",
+      "notes": "Now… in general, whenever we talk about software… \nWe know that there will always be new improvements in whichever software we use. \nSo… these improvements are released to the public as a new “version” of the software. \n\nIn simple terms… \nVersions are used to keep track of different improvements in a piece \u000bof software",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Versions",
+      "body": "Versions\nAndroid Versions\n... \nAndroid 8.0\nAndroid 9.0\nAndroid 10.0\nAndroid 11.0\nAndroid 15.0\nAndroid 14.0\nAndroid 13.0\nAndroid 12.0",
+      "notes": "Let’s take an example to understand this better. \n\nIf you’re a mobile phone user… there are chances that you may be using an Android-based mobile phone. Some people may use iOS too… \n\nBased on the year you bought your mobile phone and how frequently you update it… you will be a having a different version of the Android OS on your mobile. \nAndroid 8, 9, 10.0, 11.0, and most recently Version 14 and 15. \n\nThis basically means… the software is getting multiple improvements and the corresponding updates, are packaged into a new version… \n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Versions",
+      "body": "HTML\nSimilarly, HTML has evolved over time \u000bwith optimisations, and addition of \u000bnew features",
+      "notes": "Similarly, HTML has evolved over time \u000bwith optimisations, and addition of \u000bnew features",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Versions",
+      "body": "HTML\nHTML1.0\nHTML2\nHTML3.2\nHTML4.01\nHTML5\n1995\n1997\n1997\n2014\n1993",
+      "notes": "Starting from HTML 1.0 in 1993, html2 in 1995, \n\n3.2 in 1997 and so on…",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Versions",
+      "body": "HTML5\nHTML5 is the latest version of HTML that simplifies and \u000benhances the development of web applications\nHTML1.0\nHTML2\nHTML3.2\nHTML4.01\nHTML5\n1995\n1997\n1997\n2014\n1993",
+      "notes": "The latest version is HTML 5 \nAnd it was released in 2014. \n\nThis version of HTML has introduced various new functionalities and features that simplifies and enhanxes the development of web applications.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Features of HTML5",
+      "body": "",
+      "notes": "With all that said…. Let’s take a look at some of the features of HTML5.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Introduction to HTML5",
+      "body": "Features of HTML5\nMultimedia (audio & video) support\nIntroduction of Semantic Elements\nGeographical location\nNew input types support\n…more",
+      "notes": "So… since its release… HTML5 has introduced various new features like \nMultimedia support, \nSemantic Elements \nGeolocation features, etc. \nSupport for new input types and much more. \n\nMoreover, HTML5 is fully supported by all modern browsers.\n\nLet’s take a look at these features briefly",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Features of HTML5",
+      "body": "Multimedia Support\nHTML5 introduced native multimedia support with the <audio> and <video> tags",
+      "notes": "Starting with Multimedia support. \n\nMultimedia, in simple terms… is anything that you can see or hear on a webpage. \n\nAnd HTML5 introduced native multimedia support with the <audio> and <video> tags",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Features of HTML5",
+      "body": "Video & Audio Support",
+      "notes": "That is… you can easily add a video or an audio in your webpage.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Features of HTML5",
+      "body": "Semantic elements\nHTML5 introduced semantic elements such as <header>, <footer>, and <nav>, which enhances web page structure \u000band accessibility\n<header>\n<nav>\n<footer>\n<section>\n<article>\n<aside>",
+      "notes": "Similarly… \nHTML5 introduced semantic elements such as <header>, <footer>, and <nav>, which enhances web page structure \u000band accessibility",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Semantic vs Non-semantic elements",
+      "body": "Semantic vs Non-semantic elements\nLayout\n   <header>\n<aside>\n<article>\n<nav>\n<footer>\n<section>\n<section>\n   <div>\n<div>\n<div>\n<div>\n<div>\n<div>\n<div>",
+      "notes": "And when you use Semantic elements… the readability, and layouting of the web page gets much better. In simple terms… Semantic elements  enhances web page structure \nand accessibility\n\nFor example… on the left side, we have a semantic-elements based structure. \nAnd on the right, we only have div elements, which represent containers. \n\nFrom an accessibility and readability perspective, it’s really easy for us to understand the structure on the left side. We can easily point out what’s the header part, what’s the body section, where’s the footer, etc. \n\nWe’ll learn more about semantic elements in later sessions.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Features of HTML5",
+      "body": "Location Support\nEnables websites to access user’s geographical location via geolocation API",
+      "notes": "Moving on… \n\nHTML5 also provides a Location support feature. \n\nThis basically enables Enables websites to access a user’s geographical location via a geolocation API. \n\nFor example: when we search for weather forecast on google, google automatically detects our city and provides you with forecast\n\nHere… API = application programming interface, and it acts like an intermediary between two applications, that is… it allows two applications to talk to each other. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Features of HTML5",
+      "body": "New Input Types\n<input type=\"type\">\nHTML\ndate\nweek\nmonth\ntime\nrange\nfile\npassword\nurl\nemail\nsearch\n...many more",
+      "notes": "Similarly… HTML5 has also introduced a lot of new input types… \nLike Date, week, month, range, url, email, etc.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Features of HTML5",
+      "body": "Examples\nrange\ntime\ndate\nfile",
+      "notes": "Here are a few examples…\n\nRange is a slider bar. Date and time can now be selected via UI and there’s a file input type where you can upload a file too. \n\nThese were a few features. There are a lot more. \n\nBut…",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "HTML Multimedia",
+      "body": "",
+      "notes": "For the scope of this session, let’s go deeper into the HTML Multimedia feature and see how to add an audio and video to our webpage.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "HTML",
+      "body": "Multimedia\nAnything that you hear or see on a webpage (like music videos, animations, etc) \ncomes under multimedia",
+      "notes": "Now… whenever you hear the word multimedia, just think of it like this. \nAnything that you see or hear on a webpage can be considered multimedia -\nFor example, audio, videos music, animations etc.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Multimedia elements are of different types and allows us to add multimedia conte",
+      "body": "Multimedia elements are of different types and allows us to add multimedia content like audio, video, etc to the webpage\nHTML Multimedia\nElements",
+      "notes": "And to add multimedia, we need to use Multimedia elements",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "video",
+      "body": "video\naudio\ntrack\nembed\n...many more\nHTML\nMedia Elements",
+      "notes": "These are of different types and allows us to add multimedia content like audio, video, etc to the webpage\n\nLet’s look at them one by one.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "video Element",
+      "body": "",
+      "notes": "Starting off, with the video element.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "The video element allows us to add a video to the webpage",
+      "body": "The video element allows us to add a video to the webpage\nMedia Elements\nvideo Element",
+      "notes": "The video element allows us to add video to the webpage",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "\u000b<video src=\"VIDEO_URL\">",
+      "body": "<video src=\"VIDEO_URL\">\n  The video element is not supported\n</video>\nsrc is used to specify the video’s URL\nIf a browser does not support the \u000bvideo element, text will be displayed\nUsing video Element\nSyntax\nSometimes, it also displays a blank page",
+      "notes": "And this is how the syntax is. \nOpening and closing tags \nWe mention the video to be shown using the SRC attribute and the corresponding URL. \n\nAnd then there will also be a placeholder text → basically… if some browser doesn’t support the video element, this text will be shown. \nFor example,  something like The video element is not supported",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Let’s add a video to our Webpage",
+      "body": "",
+      "notes": "Now… let’s go ahead and add a sample video to our page.",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "<body>\u000b  <div>",
+      "body": "<body>\u000b  <div>\n    <h1 class=\"heading\">Big Buck Bunny Video</h1>\n  </div>\n</body>\n... \n.heading {\n  font-family: \"Roboto\";\n  ... \n}\n...\nCSS\nHTML\nvideo Example\nInitial Code",
+      "notes": "And here we have the initial code. \n\nA H1 element that says big Buck Bunny  → and the corresponding styling is also available for you. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHTML\n\n<!DOCTYPE html>\n<html>\n  <head> </head>\n    <body>\n      <div class=\"heading-and-video-container\">\n        <h1 class=\"heading\">Big Buck Bunny Video</h1>\n      </div>\n    </body>\n</html>\n\nCSS:\n\n@import url('https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@400;700&family=Lobster&family=Monoton&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,700&family=Work+Sans:ital,wght@0,400;0,700;1,700&display=swap');\n\n.heading-and-video-container {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n.heading{\n    font-family: Roboto;\n    color: #3e3153;\n}",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "<div>",
+      "body": "<div>\n  ...\u000b  <div class=\"d-flex justify-content-center\">\n    <video src=\"VIDEO_URL\">\n      The video element is not supported\n    </video>\n  <div>\n</div>\nHTML\nVideo URL :  https://s3.ap-south-1./.../big_buck_bunny_crujfx.mp4 \nvideo Element\nAdding Video to the Webpage",
+      "notes": "Now… Let’s see how we can add a add a Video element into this., \n\nAll we will have to do is, add the opening and closing tags, the source url and the text to be shown if the video doesn’t play. \n\nThe URL will be available for you in the cheatsheet. \n\nDEMO. \n\nGo to Code Playground\n<video src=\"https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/static-website/big_buck_bunny_crujfx.mp4\">\nThe video element is not supported\n</video>\n\nSHOW OUTPUT. \nBut now… we’ve added the video, but we don’t see any way for us to PLAY or do anything with it. \n\nLet’s get back.. And understand how we can enable that. \n\nBACK TO PPT>",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Video element provides various attributes for \u000bcontrolling the video, such as pl",
+      "body": "Video element provides various attributes for \u000bcontrolling the video, such as playing/pausing, \u000bchanging volume, etc\ncontrols\nmuted\nautoplay\n...many more\nheight\nwidth\nvideo Element\nAttributes for various purposes",
+      "notes": "Now… for us to be able to interact with the video element, there are various attributes. \n\nThese attributes help us in CONTROLLING the video → playing/pausing, changing the volume, etc. \n\nFor example - controle, muted, autoplay etc. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "The controls attribute allows us to add controls to the video like play/pause, v",
+      "body": "The controls attribute allows us to add controls to the video like play/pause, volume, etc\n...\n<video src=\"VIDEO_URL\" controls  >\n  ...\n</video>\n...\nHTML\nHTML\nvideo Element Attributes\ncontrols",
+      "notes": "Now… when we want the controls to be shown, we can use the Controls attribute.",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "muted attribute allows us to play the video without volume",
+      "body": "muted attribute allows us to play the video without volume\n...\n<video src=\"VIDEO_URL\" controls muted  >\n  ...\n</video>\n...\nHTML\nHTML\nmuted \nvideo Element Attributes",
+      "notes": "And to play the video without having its volume, we can use the muted attribute. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "autoplay attribute allows us to play the video automatically when the page opens",
+      "body": "autoplay attribute allows us to play the video automatically when the page opens or reloads  \n...\n<video src=\"VIDEO_URL\" controls muted   autoplay>\n  ...\n</video>\n...\nHTML\nautoplay \nvideo Element Attributes",
+      "notes": "Similarly… you might have seen in certain websites, that when you load the page, the video plays automatically. \nThis can be enabled by using the autoplay attribute. \n\nIn simple terms… the autoplay attribute allows us to play the video automatically when the page opens or reloads  \n\nSo… let’s try the things we’ve discussed till now. \n\nDEMO\nCode Playground\nNow… to see the interactive controls, we can simply add the controls attribute. \n<video src=\"VIDEO_URL\" controls>\n\nSimilarly, if we want the video to be muted by default, when the page loads, we can add the muted attribute. \n<video src=\"VIDEO_URL\" controls muted>\n\nAnd finally… if we want the video to automatically start playing when the page loads, we can use the  autoplay attribute. \n<video src=\"VIDEO_URL\" controls muted autoplay>\n\nBack to PPT.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "...",
+      "body": "...\n<video src=\"...\" controls muted autoplay >\n  ...\n</video>\n...\nHTML\nIn some browsers, autoplay is not allowed without the muted attribute\nNote\nvideo Element autoplay Attribute",
+      "notes": "Now… there’s an important thing that we need to remember with the autoplay attribute here. \n\nSOME browsers, don’t allow using the autoplay attribute without the muted attribute. \n\nTHat is… you won’t be able to mention and apply the autoplay attribute, if you haven’t added the muted attribute. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Using these attributes we can specify the height and width of the video",
+      "body": "Using these attributes we can specify the height and width of the video\n...\n<video src=\"...\" controls muted autoplay height=\"270\" width=\"450\"  >\n  ...\n</video>\n...\nHTML\nvideo Element\nheight and width Attributes",
+      "notes": "Moving on… we can also specify the height and width of the video using the height and width attributes. \n\nShow demo: \n<video src=\"...\" controls muted autoplay height=\"270\" width=\"450\"  >\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "With height and width Attributes",
+      "body": "With height and width Attributes\nWithout height and width Attributes\nheight: 270px;\nwidth: 450px;\nheight and width Attributes\nOutput",
+      "notes": "So, this is the output we saw.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Videos are available in different formats like .MP4, .WEBM, .OGG, .AVI, .FLV, et",
+      "body": "Videos are available in different formats like .MP4, .WEBM, .OGG, .AVI, .FLV, etc\nIn some cases, browsers may not support the videos of particular format\nVideos\nVideos and their Formats",
+      "notes": "Now… if you think about it… \nA video can be in ANY number of formats. like .MP4, .WEBM, .OGG, .AVI, .FLV, etc\n\nAnd in certain cases, all browsers may not support all formats. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Google Chrome does not support .flv format",
+      "body": "Google Chrome does not support .flv format\nSafari does not support .ogg format  \nBrowsers and their Unsupported Video Formats\nExamples\nOGG\nFLV",
+      "notes": "For example, Google chrom doesn’t support flv format anymore. \n\nSimilarly the Safari browser, doesn’t support .ogg format. \u000b\u000bNXT",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Some browsers like Google Chrome may not support all the video formats",
+      "body": "Some browsers like Google Chrome may not support all the video formats\n\u000b<video src=\"..._buck_bunny.flv\" ...>\n ...\n</video>\nHTML\nProviding Unsupported Video Format\nBrowser",
+      "notes": "For example… let’s say we have a link with the FLV version of the video. \nhttps://res.cloudinary.com/droircny8/video/upload/v1648201236/big_buck_bunny_crujfx.flv \n\nLet’s see how our browser behaves.\nGo to Code playground\nUpdate source. \nShow no video.\n\nwhen they encounter an unsupported video format. Instead, they may just display a blank area or an error message indicating that the video cannot be played.\n\nThis behavior is due to how browsers handle unsupported video formats. When a browser encounters a video format that it does not support, it typically fails to load the video entirely, which may result in the fallback content not being displayed as expected.\n\nBack to PPT. \n\nSo… we’ve understood that some browsers only support SOME of the formats. \nthe question is, how do we tackle this situation?",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Using the video element, we can also specify multiple video formats",
+      "body": "Using the video element, we can also specify multiple video formats\nThe browser automatically selects the first \u000bsupported format\nvideo Element\nHandling Unsupported Video Formats",
+      "notes": "So… using the video element… we can also specify multiple video formats\nThe browser automatically selects the first  supported format",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Instead of providing a single URL in the src attribute, we can specify multiple ",
+      "body": "Instead of providing a single URL in the src attribute, we can specify multiple URLs with different formats using the source element\n\u000b<video ...>\n  <source .../>\n  <source .../>\n  ...\n</video>\nHandling Unsupported Video Formats\nUsing source Element",
+      "notes": "To achieve that… \nInstead of providing a single URL in the src attribute, we can specify multiple URLs with different formats using the source element",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "\u000b<video ...>",
+      "body": "<video ...>\n  <source src=\"VIDEO_URL\" .../>\n  <source src=\"VIDEO_URL\" .../>\n  ...\n</video>\nUnlike the srcset attribute, we will provide the video URL to src attribute\nsource Element Attributes\nsrc",
+      "notes": "However… unlike the srcset attribute, we will be using the SRC attribute. Inside the SOURCE ELEMENT",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "...",
+      "body": "...\n<video src=\"..._buck_bunny_crujfx.flv\" controls ...>\n <source src=\"..._buck_bunny_crujfx.flv\" />\n <source src=\"..._buck_bunny_crujfx.mp4\" />\n ...\n</video>\n...\nHTML\nvideo Element\nAdding videos of different formats",
+      "notes": "SHOW DEMO: \n\nREMOVE THE VIDEO SRC and ADD NEW SOURCE ELEMENTS> \n\n<video controls muted autoplay>\n <source src=\"https://res.cloudinary.com/droircny8/video/upload/v1648201236/big_buck_bunny_crujfx.flv\"/>\n <source src=\"https://res.cloudinary.com/droircny8/video/upload/v1648201236/big_buck_bunny_crujfx.mp4\" />\n ...\n</video>\n\nMention: So… as you can see, whichever format works, the browser will take it and play it.",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Output",
+      "body": "Output\nsource Element",
+      "notes": "And here’s the output.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "video",
+      "body": "video\naudio\ntrack\nembed\n...many more\nHTML Elements\nMedia Elements for Various Purposes",
+      "notes": "So till now, we’ve understood about the video element, let's take a look at the audio element now.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "audio Element",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "The Audio element allows us to add audio content to the webpage",
+      "body": "The Audio element allows us to add audio content to the webpage\nMedia Elements\naudio Element",
+      "notes": "The HTML5 audio element allows us to add the audio content on to the webpage. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "\u000b<audio src=\"AUDIO_URL\">",
+      "body": "<audio src=\"AUDIO_URL\">\n  The audio element is not supported\n</audio>\nsrc is used to specify the audio’s URL\nIf a browser does not support the \u000baudio element, this text will be displayed\naudio Element\nSyntax",
+      "notes": "And the syntax is similar to the video element. \n\nAudio opening and closing tags. \nSrc attribute for the url\nAnd placeholder text → which will be displayed if the audio element is not supported by a browser. \n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "The audio element provides various attributes \u000bfor controlling the audio, like p",
+      "body": "The audio element provides various attributes \u000bfor controlling the audio, like playing/ pausing, \nchanging volume, etc\ncontrols\nmuted\nautoplay\n...many more\nloop\npreload\naudio Element\nAttributes for various purposes",
+      "notes": "The audio element also provides various attributes \nfor controlling the audio, like playing/ pausing, \nchanging volume, etc",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Let’s add a sample podcast",
+      "body": "",
+      "notes": "Let’s add a sample podcast audio to our webpage. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "<body>\u000b  <div>",
+      "body": "<body>\u000b  <div>\n    <h1 class=\"heading\">ML Podcast</h1>\n    ... \n  </div>\n<body>\n... \n.heading {\n  font-family: \"Roboto\";\n  ... \n}\n...\nCSS\nHTML\nMachine Learning Podcast\nInitial Code",
+      "notes": "The initial code will be available for our reference. \n\nNXT\n\n\n\n\n\n\n\n\n\n<!DOCTYPE html>\n<html>\n  <head> </head>\n    <body>\n      <div class=\"heading-and-audio-container\">\n        <h1 class=\"heading\">ML Podcast</h1>\n      </div>\n    </body>\n</html>\n\n@import url('https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@400;700&family=Lobster&family=Monoton&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,700&family=Work+Sans:ital,wght@0,400;0,700;1,700&display=swap');\n\n.heading-and-audio-container {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n.heading{\n    font-family: Roboto;\n    color: #3e3153;\n}",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Audio URL : https://s3.ap-south-1/....mp3 ",
+      "body": "Audio URL : https://s3.ap-south-1/....mp3 \nAdding Machine Learning Podcast\nUsing audio Element\n<div>\n  ...\u000b  <div class=\"d-flex justify-content-center\">\n    <audio src=\"AUDIO_URL\" controls>\n      The audio element is not supported\n    </audio>\n  <div>\n</div>\nHTML",
+      "notes": "And as usual, to add the audio element, this is how we’ll add \n<audio src=\"https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/static-website/Y2Mate.is_-_Machine_Learning_-_CS50_Podcast_Ep._6-mEdIQbOL8dY-48k-1652191004322_rtg545.mp3\" controls>\n  The audio element is not supported\n</audio>\n\nSHOW DEMO. \nMENTION: We don’t see anything in our webpage. BUT we’re able to play the audio in a separate tab. \n\nBack to PPT. \n\nNXT\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<!DOCTYPE html>\n<html>\n  <head> </head>\n    <body>\n      <div class=\"heading-and-audio-container\">\n        <h1 class=\"heading\">ML Podcast</h1>\n          <audio src=\"https://res.cloudinary.com/droircny8/video/upload/v1652191167/Y2Mate.is_-_Machine_Learning_-_CS50_Podcast_Ep._6-mEdIQbOL8dY-48k-1652191004322_rtg545.mp3\" >\n             The audio element is not supported\n          </audio>\n      </div>\n    </body>\n</html>",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Without the controls attribute, the audio content won’t be visible ",
+      "body": "Without the controls attribute, the audio content won’t be visible \n...\n<audio src=\"AUDIO_URL\"... controls>\n  ...\n</audio>\n...\nHTML\nUsing audio Element\nWithout controls Attribute",
+      "notes": "And as we have observed… \nWithout the controls attribute, the audio content won’t be visible",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "...",
+      "body": "...\n<audio src=\"AUDIO_URL\" controls muted >\n  ...\n</audio>\n...\nHTML\nmuted attribute allows us to play the audio without volume\nAudio Element\nAdding muted Attribute",
+      "notes": "Similarly… to play the audio without volume enabled by default, we will need to use the muted attribute. \n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "autoplay attribute allows us to play the audio automatically when the page opens",
+      "body": "autoplay attribute allows us to play the audio automatically when the page opens or reloads\n...\n<audio src=\"AUDIO_URL\" ... autoplay >\n  ...\n</audio>\n...\nHTML\naudio Element\nAdding autoplay Attribute",
+      "notes": "And when the page loads, if we want the audio to start playing by default, we can simply use the autoplay attribute. \n\nLet’s give all o this a try. \n<audio src=\"Audio_URL\" controls muted autoplay>\n\nSHOW OUTPUT → back to ppt. \n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Similar to videos, audio is of different formats and some browsers may not suppo",
+      "body": "Similar to videos, audio is of different formats and some browsers may not support audio of a particular format\nFor Example: \nGoogle Chrome does not support .caf, .wma formats\nSafari does not support .ogg format  \nAudios\nAudios and their Formats",
+      "notes": "Similar to videos, audio is of different formats and some browsers may not support audio of a particular format\n\nFor Example: \nGoogle Chrome does not support .caf or the .wma formats\nSafari does not support .ogg format",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "...",
+      "body": "...\n<audio src=\"...element1_w9uc9w.wma\" >\n...\n</audio>\n...\nHTML\nBrowser\nProviding Unsupported Audio Format",
+      "notes": "https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/static-website/audio-elements1.wma \n\nThat is… when you give an unsupported audio format, \nThat is… if your browser doesn’t support it… you won’t be able to interact with the audio file. \n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Similar to video element, we can also specify multiple audio formats for audio e",
+      "body": "Similar to video element, we can also specify multiple audio formats for audio element\nThe browser automatically selects the first \u000bsupported format\naudio Element\nHandling Unsupported Audio Formats",
+      "notes": "TO handle situations like these… \nSimilar to video element, we can also specify multiple audio formats for audio element\n\nThe browser automatically selects the first \u000bsupported format",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "\u000b<audio ...>",
+      "body": "<audio ...>\n  <source src=\"AUIDO_URL\" .../>\n  <source src=\"AUDIO_URL\" .../>\n  ...\n</audio>\nThe audio URLs should be specified in the src attributes\nsource Element Attributes\nsrc",
+      "notes": "This is done using the <source> element. \n\nLet’s try this out: \n...\u000b<audio controls muted autoplay>\n  <source src=\"https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/static-website/audio-elements1.wma\" />\n  <source src=\"https://res.cloudinary.com/droircny8/video/upload/v1652191167/Y2Mate.is_-_Machine_Learning_-_CS50_Podcast_Ep._6-mEdIQbOL8dY-48k-1652191004322_rtg545.mp3\" />\n ...\n</audio>\n\nSo… whichever version of the audio is supported, it will be played. \n\n\nBack to ppt.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "...\u000b<audio src=\"...element1_w9uc9w.wma\" controls ...>",
+      "body": "...\u000b<audio src=\"...element1_w9uc9w.wma\" controls ...>\n  <source src=\"...element1_w9uc9w.wma\" />\n  <source src=\"...MP3_700KB_ykpgzr.mp3\" />\n ...\n</audio>\n...\nHTML\naudio Element\nMultiple Audio Formats",
+      "notes": "https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/static-website/audio-elements1.wma \n\nSo… this is how we did it.",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "audio Element with Multiple audio Formats",
+      "body": "audio Element with Multiple audio Formats\nOutput",
+      "notes": "And here’s the output.",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Introduction to HTML5",
+      "body": "Introduction to HTML5\nFeatures of HTML5\nHTML Multimedia\nvideo Element\naudio Element",
+      "notes": "To quickly recap… \n\nIntroduction to HTML5\nFeatures of HTML5\nHTML Multimedia\nvideo Element\naudio Element",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Features of HTML5",
+      "body": "Graphical Support\nHTML5 introduces native support for graphical content with the <canvas> and <svg> elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Versions",
+      "body": "Versions\nAndroid Versions\n...",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Features of HTML5",
+      "body": "Semantic v/s Non-Semantic Elements\n<div id=\"header\">\n<div id=\"navbar\">\n<div id=\"footer\">\n<p \n  id=\"article\">\n<p \n  id=\"article\">\n<div\n  id=\"menu”>\n<header>\n<nav>\n<footer>\n<section>\n<article>\n<aside>",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Features of HTML5",
+      "body": "Semantic v/s Non-Semantic Elements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "picture Element",
+      "body": "picture Element\nWe use srcset attribute to specify the image URL\nvideo Element\nWe use src attribute to specify the video URL\n<picture>\n  <source srcset=\"IMAGE_URL\" .../>\n  <source srcset=\"IMAGE_URL\" .../> ...\n  <img class=\"cat-image\" src=\"...\" ../>\n</picture>\n\u000b<video controls muted autoplay>\n  <source src=\"VIDEO_URL\" .../>\n  <source src=\"VIDEO_URL\" .../>\n  ...\n</video>\npicture Element vs video Element\nsource Element",
+      "notes": "Now… when we compare the picture vs video elements… \n\nThe structure is almost similar. \nHowever… the fundamental difference is that we use the srcset attribute to specify the image URL, whereas, we use the src attribute for the video element. \n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "...",
+      "body": "...\n<video src=\"...\" controls muted autoplay >\n  ...\n</video>\n...\nHTML\nVideo must contain controls or autoplay attributes to be visible on the webpage",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1fGl5W7kr_ZK3p5dtTxpcNOrpgcxY8tzoIEmDjIlkkfw/edit#slide=id.g249263e2ecb_11_100"
+}

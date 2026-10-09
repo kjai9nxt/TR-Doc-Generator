@@ -1,0 +1,479 @@
+{
+  "session_no": 8,
+  "source_file": "static website — session 8",
+  "deck_title": "static website — session 8",
+  "n_slides": 67,
+  "summary": "\n    - Slide 2: Introduction to\n    - Slide 3: Recap\n    - Slide 4: Recap\n    - Slide 5: Agenda\n    - Slide 6: Today’s Agenda\n    - Slide 7: Introduction to CSS Box Model\n    - Slide 8: Introduction\n    - Slide 9: Introduction\n    - Slide 10: Desktop View - Code Playground\n    - Slide 11: Desktop View - Code Playground\n    - Slide 12: Desktop View - Code Playground\n    - Slide 13: Mobile View - Code Playground\n    - Slide 14: Mobile View - Code Playground\n    - Slide 15: CSS Box Model\n    - Slide 16: CSS Box Model\n    - Slide 17: CSS Box Model\n    - Slide 18: CSS Box Model\n    - Slide 19: CSS Ruleset\n    - Slide 20: Applying Height to Container Element (div)\n    - Slide 21: CSS Box Model\n    - Slide 22: CSS Ruleset\n    - Slide 23: Applying Width to Container Element (div)\n    - Slide 24: Background Image\n    - Slide 25: Styling\n    - Slide 26: Styling\n    - Slide 27: CSS Syntax\n    - Slide 28: Browser\n    - Slide 29: CSS Syntax\n    - Slide 30: CSS Ruleset\n    - Slide 31: Background Image\n    - Slide 32: Quiz Time!\n    - Slide 33: How to make the background image \n    - Slide 34: Backgrounds\n    - Slide 35: Backgrounds\n    - Slide 36: Backgrounds\n    - Slide 37: Backgrounds\n    - Slide 38: Backgrounds\n    - Slide 39: Backgrounds\n    - Slide 40: Backgrounds\n    - Slide 41: Backgrounds\n    - Slide 42: Backgrounds\n    - Slide 43: Backgrounds\n    - Slide 44: CSS Syntax\n    - Slide 45: Backgrounds\n    - Slide 46: Backgrounds\n    - Slide 47: How to Get \n    - Slide 48: Getting URL of an Image\n    - Slide 49: Desktop View\n    - Slide 50: Mobile View\n    - Slide 51: Desktop View\n    - Slide 52: Mobile View\n    - Slide 53: Desktop View\n    - Slide 54: Mobile View\n    - Slide 55: Desktop View\n    - Slide 56: Mobile View\n    - Slide 57: Desktop View\n    - Slide 58: Desktop View\n    - Slide 59: Example\n    - Slide 60: Example\n    - Slide 61: Quiz Time!\n    - Slide 62: Introduction to CSS Box Model\n    - Slide 63: Introduction to CSS Box Model\n    - Slide 65: Next Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to CSS | Part 3\nApply All CSS Properties At Once\ntext-align\ncolor\nbackground-color\nSave & Publish your own website",
+      "notes": "A lot of people are doing many experiments we have looked into them\n\u000bHTML:\u000b<!DOCTYPE html>\n<html>\n  <head></head>\n  <body>\n    <div class=\"card\">\n      <h1 class=\"main-heading\">Tourism</h1>\n      <p class=\"paragraph\">Plan your trip wherever you want to go</p>\n      <button>Get Started</button>\n    </div>\n  </body>\n</html>\n\u000b\nCSS: \n.card {\n  background-color: lightblue;\n  text-align: center;\n}\n\n.main-heading {\n  color: blue;\n}\n\n.paragraph {\n  color: grey;\n}",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Recap",
+      "body": "Introduction to CSS | Part 3\n.main-heading { \n  color: blue;\n  font-family: “Roboto”;\n  font-size: 36px;\n  font-style: italic;\n  font-weight: bold;\n  text-decoration: underline;\n}\nTOURISM\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Introduction to CSS Box Model\nBox Model\nBackgrounds\nIntroduction\nbackground-size\nbackground-image\nBox Properties\nheight\nwidth",
+      "notes": "We will refer to yesterday’s class. These will get covered again in today’s class",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Today’s Agenda",
+      "body": "What we are going to achieve\nBackground Image",
+      "notes": "Plan your trip - increase font size",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Introduction to CSS Box Model",
+      "body": "Introduction to CSS Box Model",
+      "notes": "For background image",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Introduction",
+      "body": "CSS Box model\nEvery HTML element on a  \u000bweb page is a rectangular box",
+      "notes": "The CSS Box Model is like a way of imagining every element on a webpage as a box.\n\nEvery Element in HTML is a rectangular box but instead of calling them boxes we call them HTML Elements\nAny website you look at is nothing but rectangular boxes arranged next to, on top of, below and nested within each other.\n\nBy default very html will take a box shape",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Introduction",
+      "body": "CSS Box model\nIf we want curved corners, \u000bwe use CSS",
+      "notes": "Every Element in HTML is a rectangular box but instead of calling them boxes we call them HTML Elements\nAny website you look at is nothing but rectangular boxes arranged next to, on top of, below and nested within each other.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Desktop View - Code Playground",
+      "body": "Inspect - Click on Settings",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Desktop View - Code Playground",
+      "body": "Inspect",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Desktop View - Code Playground",
+      "body": "Inspect",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Mobile View - Code Playground",
+      "body": "Click on Settings",
+      "notes": "Note: when we apply borders card will appear bigger due to margins. \nWIll get to know them in next sessions",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Mobile View - Code Playground",
+      "body": "Inspect",
+      "notes": "Note: when we apply borders card will appear bigger due to margins. \nWIll get to know them in next sessions",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "CSS Box Model",
+      "body": "Box Properties\nEach rectangular box has \u000bdifferent properties:\nheight\nwidth \nmargin\nborder\npadding\nContent\nheight\nwidth\nborder\npadding\nmargin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "CSS Box Model",
+      "body": "Box Properties\nEach rectangular box has \u000bdifferent properties:\nheight\nwidth \nmargin\nborder\npadding\nContent\nheight\nwidth\nborder\npadding\nmargin",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "CSS Box Model",
+      "body": "Height & Width Properties\nContent\nheight\nwidth\nLet’s see\nheight\nwidth",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "CSS Box Model",
+      "body": "Applying Height to Container Element (div)\n~250px\n~500px\n~115px",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "CSS Ruleset",
+      "body": "Height\n.card {\n  background-color: lightblue;\n  text-align: center;\n  height: 250px; \n}\nCSS",
+      "notes": "We use the pixel to for height and width",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Applying Height to Container Element (div)",
+      "body": "Output of the Code Snippet\n250px",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "CSS Box Model",
+      "body": "Applying Width to Container Element (div)\n250px\n~400px",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "CSS Ruleset",
+      "body": "Width\n.card {\n  background-color: lightblue;\n  text-align: center;\n  height: 250px; \n  width: 250px; \n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Applying Width to Container Element (div)",
+      "body": "Output of the Code Snippet\n250px",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Background Image",
+      "body": "Background Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Styling",
+      "body": "Background Image\nLet’s add \u000bBackground Image instead of \u000bBackground Color",
+      "notes": "Let's step ahead and add a Background Image in the place of Background Color to the container.\u000b\nLet’s make background more attractive by adding image in the place of color.\n\u000bLet’s add Image to the Background in the place of color.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Styling",
+      "body": "Removing Background Color of Container \n.card {\n  background-color: lightblue;\n  text-align: center;\n  height: 250px; \n  width: 250px; \n}\n  background-color: lightblue;\nCSS\n.card {\n  text-align: center;\n  height: 250px; \n  width: 250px; \n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "CSS Syntax",
+      "body": "Adding Background Image\n.card {\n  background-image: url(\"IMAGE URL\");\n  ...\n}\nPROPERTY\nVALUE",
+      "notes": "We can add Background Image by using background-image property. \nFor adding a Background Image we need to specify the image url.\nWhile providing value to the background-image property we place url word and next to that we place image url enclosed with in brackets.\n\n\nhttps://d2clawv67efefq.cloudfront.net/ccbp-static-website/ocean.jpg",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Browser",
+      "body": "Getting Image URL",
+      "notes": "https://assets.ccbp.in/frontend/static-website/ocean-bg.jpg",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "CSS Syntax",
+      "body": "Adding Background Image URL\n.card {\n  background-image: url(\"https://assets.ccbp.in/frontend/static-website/ocean-bg.jpg\");\n  ...\n}\nPROPERTY\nVALUE",
+      "notes": "https://assets.ccbp.in/frontend/static-website/ocean-bg.jpg\n\nWe can add Background Image by using background-image property. \nFor adding a Background Image we need to specify the image url.\nWhile providing value to the background-image property we place url word and next to that we place image url enclosed with in brackets.",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "CSS Ruleset",
+      "body": "Background Image\n.card {\n  background-image: url(\"https://assets.ccbp.in/frontend/static-website/ocean-bg.jpg\");\n  text-align: center;\n  height: 250px; \n  width: 250px; \n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Background Image",
+      "body": "Output of the Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "How to make the background image ",
+      "body": "How to make the background image \nfill the complete height and width \nof the screen?",
+      "notes": "Next session will be quite an interesting one.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Backgrounds",
+      "body": "Devices with Various Screen Dimensions",
+      "notes": "Every device will be of different dimensions (width, height) etc. So it’s not possible for us to define height to see our image full screen in all the devices. \u000bSo, we can use viewport height (100vh)\u000bThe browser's viewport is the area of the window in which web content can be seen.",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Backgrounds",
+      "body": "Viewport\nThe browser's viewport is the area of the window in which web content can be seen.",
+      "notes": "Every device will be of different dimensions (width, height) etc. So it’s not possible for us to define height to see our image full screen in all the devices. \u000bSo, we can use viewport height (100vh)\u000bThe browser's viewport is the area of the window in which web content can be seen.",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Backgrounds",
+      "body": "Viewport Height\nViewport Height is based on the height of \u000bthe user's visible area of a web page (viewport).",
+      "notes": "Every device will be of different dimensions (width, height) etc. So it’s not possible for us to define height to see our image full screen in all the devices. \u000bSo, we can use viewport height (100vh)\u000bThe browser's viewport is the area of the window in which web content can be seen.",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Backgrounds",
+      "body": "Viewport Height (vh)\n100vh = 100% of the viewport height\n50vh = 50% of the viewport height",
+      "notes": "Every device will be of different dimensions (width, height) etc. So it’s not possible for us to define height to see our image full screen in all the devices. \u000bSo, we can use viewport height (100vh)\u000bThe browser's viewport is the area of the window in which web content can be seen.",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Backgrounds",
+      "body": "Viewport Width (vw)\n100vw = 100% of the viewport width\n50vw = 50% of the viewport width\n100vw\n50vw",
+      "notes": "We will learn about vw later",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Backgrounds",
+      "body": "Applying Viewport Height (100vh)\n.card {\n  background-image: url(\"https://assets.ccbp.in/frontend/static-website/ocean-bg.jpg\");\n  text-align: center;\n  height: 100vh; \n  width: 250px; \n}\nCSS",
+      "notes": "And remove height to get full width\n\nIf we don’t specify width, it takes the default width.",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Backgrounds",
+      "body": "Repeating Vertically \nImage is small \nSo, background image is repeating vertically",
+      "notes": "Now, we see that the background is getting repeated. \u000bSo, what do we do, so that the background doesn’t get repeated? \nWe have another property background-size: cover;",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Backgrounds",
+      "body": "Repeating Vertically\nVertically \nrepeating",
+      "notes": "Now, we see that the background is getting repeated. \u000bSo, what do we do, so that the background doesn’t get repeated? \nWe have another property background-size: cover;",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Backgrounds",
+      "body": "Repeating Horizontally\nIn some devices \nbackground image may repeat horizontally\nHorizontally repeating",
+      "notes": "Now, we see that the background is getting repeated. \u000bSo, what do we do, so that the background doesn’t get repeated? \nWe have another property background-size: cover;",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Backgrounds",
+      "body": "How to address these issues?",
+      "notes": "Now, we see that the background is getting repeated. \u000bSo, what do we do, so that the background doesn’t get repeated? \nWe have another property background-size: cover;\n\n\nIn most of the cases is covered with background-size: cover but not completely. Some images still be cropped because of aspect ratio.",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "CSS Syntax",
+      "body": "Background Size\n.card {\nbackground-size: cover;\n...\n}\nPROPERTY\nVALUE",
+      "notes": "This is one of the approach\n\nWe can add Background Image by using background-image property. \nFor adding a Background Image we need to specify the image url.\nWhile providing value to the background-image property we place url word and next to that we place image url enclosed with in brackets.\n\nIt makes the background image big enough to fully cover the element (like a div or the whole page).\u000b\nThe image will scale up or down so that no empty space is left.\u000b\nSome parts of the image may get cropped (cut off) if the proportions don’t match the element.",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Backgrounds",
+      "body": "Applying Background Size\n.card {\n  background-image: url(\"https://assets.ccbp.in/frontend/static-website/ocean-bg.jpg\");\n  text-align: center;\n  height: 100vh; \n  background-size: cover; \n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Backgrounds",
+      "body": "Applying Background Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "How to Get ",
+      "body": "How to Get \nImage URL from the Internet?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Getting URL of an Image",
+      "body": "Open unsplash.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Desktop View",
+      "body": "Unsplash",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Mobile View",
+      "body": "Unsplash",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Desktop View",
+      "body": "Search for Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Mobile View",
+      "body": "Search for Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Desktop View",
+      "body": "Choose an Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Mobile View",
+      "body": "Choose an Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Desktop View",
+      "body": "Right Click on the Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Mobile View",
+      "body": "Long Press on the Image",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Desktop View",
+      "body": "Select Open Image in New Tab Option",
+      "notes": "People are confusing between image URL and Website URL address this clearly \u000b\u000bTo copy the image right click on image and select open image in new tab option\n\nCopy the image URL",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Desktop View",
+      "body": "Copy your Image URL",
+      "notes": "For copy Ctrl+C",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Example",
+      "body": "Adding Background Image\n.card {\n  background-image: url(\"https://images.unsplash.com/photo-1518837695005...\");\n  text-align: center;\n  height: 100vh; \n  background-size: cover; \n}\nCSS",
+      "notes": "https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Example",
+      "body": "Output of the Code Snippet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Introduction to CSS Box Model",
+      "body": "Key Takeaways \nIntroduction to Box Model\nBox Properties\nheight\nwidth",
+      "notes": "Introduction to Box Model \nEvery HTML element is a rectangle box \nTo style the rectangle box we use height, width, margin (space outside the rectangle box), padding(space around the content)",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Introduction to CSS Box Model",
+      "body": "Key Takeaways \nBackgrounds\nbackground-image\nbackground-size\nViewport\nViewport Height(vh)\nViewport Width(vw)",
+      "notes": "Introduction to Box Model \nEvery HTML element is a rectangle box \nTo style the rectangle box we use height, width, margin (space outside the rectangle box), padding(space around the content)",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Next Session",
+      "body": "",
+      "notes": "Next session will be quite an interesting one.",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1NMR5c4_7zSzoxQ8csb_8bAAGPKiaIZOvZgox5XqtxdM/edit?usp=sharing"
+}

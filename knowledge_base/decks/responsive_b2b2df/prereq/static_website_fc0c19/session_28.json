@@ -1,0 +1,262 @@
+{
+  "session_no": 28,
+  "source_file": "static website — session 28",
+  "deck_title": "static website — session 28",
+  "n_slides": 36,
+  "summary": "\n    - Slide 2: Developing a Static Website in VS Code\n    - Slide 3: Setting up VS Code\n    - Slide 4: Developing a Static Website in VS Code\n    - Slide 5: Recap\n    - Slide 6: Developing Static Website\n    - Slide 7: Using VS Code\n    - Slide 8: Developing Static Websites on your Computer\n    - Slide 9: Open static website folder\n    - Slide 10: Open static website folder\n    - Slide 11: Visual Studio Code\n    - Slide 12: Creating HTML Document\n    - Slide 13: Creating HTML Document\n    - Slide 14: Creating HTML Document\n    - Slide 15: Creating HTML Document\n    - Slide 16: Creating Style Sheet\n    - Slide 17: Creating Style Sheet\n    - Slide 18: Creating Style Sheet\n    - Slide 19: Creating Style Sheet\n    - Slide 20: HTML Document\n    - Slide 21: Style Sheet\n    - Slide 22: Saving HTML and CSS Files\n    - Slide 23: Saving HTML and CSS Files\n    - Slide 24: View Output\n    - Slide 25: View Output\n    - Slide 26: View Output\n    - Slide 27: Why CSS styles did not apply?\n    - Slide 28: HTML\n    - Slide 29: Linking HTML and CSS Files\n    - Slide 30: Linking HTML and CSS Files\n    - Slide 31: Developing a Static Website in VS Code",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Developing a Static Website in VS Code",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Setting up VS Code",
+      "body": "Setting up VS Code\nIDE\nVS Code Installation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Developing a Static Website in VS Code",
+      "body": "Developing a Static Website in VS Code\nCreating HTML and CSS files\nLinking HTML and CSS files\nDeveloping a Static Website in VS Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Recap",
+      "body": "VS Code\nNote: Installation guide is provided in the cheatsheet. \u000bDo follow the instructions and complete the Visual Studio Code Installation\nVisual Studio Code is a lightweight         and powerful source code editor                  that runs on our Desktop,\u000bsupporting different Operating Systems\nDefinition",
+      "notes": "Note: Installation guide is provided in the cheatsheet. \u000bDo follow the instructions and complete the Visual Studio Code Installation",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Developing Static Website",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Using VS Code",
+      "body": "Building Static Website\nFolders are used to store \u000band organize files",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Developing Static Websites on your Computer",
+      "body": "Creating Folder on Desktop\nFolder Name \nstatic website",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Open static website folder",
+      "body": "Click on a File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Open static website folder",
+      "body": "Click on Open Folder Option",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Visual Studio Code",
+      "body": "Select The Folder",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Creating HTML Document",
+      "body": "Right Click on Static Website Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Creating HTML Document",
+      "body": "Click on a New File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Creating HTML Document",
+      "body": "HTML File\nTo create HTML document \u000bon our Computer,\u000bwe use .html as the file extension\ntourism.html",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Creating HTML Document",
+      "body": "Add .html file \nFile Name \ntourism.html",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Creating Style Sheet",
+      "body": "Right Click on Static Website Section",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Creating Style Sheet",
+      "body": "Click on New File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Creating Style Sheet",
+      "body": "CSS File\nTo create CSS file on our Computer, we use .css as the file extension\ntourism.css",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Creating Style Sheet",
+      "body": "Add .css file\nFile Name\ntourism.css",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "HTML Document",
+      "body": "Adding HTML Code",
+      "notes": "<!DOCTYPE html>\n<html>\n\n<head> </head>\n\n<body>\n   <h1 class=\"heading\">Tourism</h1>\n</body>\n\n</html>",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Style Sheet",
+      "body": "Adding CSS Code",
+      "notes": ".heading {\n   color: blue;\n}",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Saving HTML and CSS Files",
+      "body": "Click on File Option\nWe have to save both HTML and CSS files to save the code we written",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Saving HTML and CSS Files",
+      "body": "Click on Save All Option",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "View Output",
+      "body": "Right Click on .html File",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "View Output",
+      "body": "Click on Copy Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "View Output",
+      "body": "Open Chrome and Paste Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Why CSS styles did not apply?",
+      "body": "Why CSS styles did not apply?\n.heading {\n   color: blue;\n}\nCSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "HTML",
+      "body": "Link Element\n<link rel=\"stylesheet\" href=\"tourism.css\">",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Linking HTML and CSS Files",
+      "body": "Add Link Element in Head Element and Save the File\nSave the file whenever you make any changes to your code",
+      "notes": "Save the file whenever you made changes to your code",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Linking HTML and CSS Files",
+      "body": "Reload the Page in Chrome",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Developing a Static Website in VS Code",
+      "body": "Developing a Static Website in VS Code\nCreating HTML and CSS files\nLinking HTML and CSS files",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "",
+      "body": "",
+      "notes": "And finally… \n\nYour feedback is really important to us. \nWe have an entire team here to go through your feedback and work on making your entire learning experience in a much better way. \nYou can submit your feedback by clicking on the submit feedback button below this video.",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "",
+      "body": "",
+      "notes": "In the next session, we’ll start off with performing our first selenium test. \u000b\u000bAs part of the “Automation Testing using Selenium (Part-1)” session. \n\n\n\nNXT",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1WxA9n7zPzKg7tqojOVjmjrHONrrL9uCyLqdcXB7wdCg/edit?slide=id.g249263e2ecb_11_100#slide=id.g249263e2ecb_11_100"
+}

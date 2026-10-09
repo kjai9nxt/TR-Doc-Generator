@@ -1,0 +1,241 @@
+{
+  "session_no": 12,
+  "source_file": "static website — session 12",
+  "deck_title": "static website — session 12",
+  "n_slides": 33,
+  "summary": "\n    - Slide 2: Introduction to Bootstrap\n    - Slide 3: Recap\n    - Slide 4: Agenda\n    - Slide 5: Agenda\n    - Slide 6: Layout\n    - Slide 7: CSS\n    - Slide 8: Examples\n    - Slide 9: Examples\n    - Slide 10: Layout\n    - Slide 11: CSS\n    - Slide 12: CSS\n    - Slide 13: Flexbox Properties\n    - Slide 14: Flexbox Properties\n    - Slide 15: Flex Properties\n    - Slide 16: Flex Properties\n    - Slide 17: Let’s Arrange The Card to \n    - Slide 18: Using Bootstrap Flexbox\n    - Slide 19: Bootstrap\n    - Slide 20: Step 1\n    - Slide 21: Quiz Time!\n    - Slide 22: Step 2\n    - Slide 23: Step 2\n    - Slide 24: Step 3\n    - Slide 25: Step 3\n    - Slide 26: Step 3\n    - Slide 27: Step 3\n    - Slide 28: Quiz Time!\n    - Slide 29: Introduction to Bootstrap | Part 2\n    - Slide 31: Next Session",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "Welcome to the session.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to Bootstrap",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Recap",
+      "body": "Introduction to Bootstrap\nReusability \nCSS Rulesets\nMultiple Class Names\nBootstrap \nWhat is Bootstrap?\nWhy Bootstrap?\nHow to include Bootstrap?\nBootstrap Class Names\nButton Class Names",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "Introduction to Bootstrap | Part 2\nLayout\nMethods to \nDesign the Layout\nFlexbox\nFlex Container\nFlex Direction\nJustifying Content",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "What We Are Going to Achieve\nBottom of the Background Container\nTop of the Background Container\nBackground Container\nBackground Container",
+      "notes": "Arranging card top, middle, bottom is a part of layouting. Lets see what is layout?",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Layout",
+      "body": "Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "CSS",
+      "body": "Layout\nA Layout is a pattern by which we structure the information and arrange the elements \u000bon the web page",
+      "notes": "https://colibriwp.com/blog/website-layout-design-ideas/#:~:text=A%20website%20layout%20is%20a,a%20website%20front%20and%20center.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Examples",
+      "body": "Youtube Layout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Examples",
+      "body": "Facebook Layout",
+      "notes": "Layouting is very important. \u000b\nFirst plan the layout then the code.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Layout",
+      "body": "Methods to Design A Layout\nMainly,  there are two methods that help to design the layout of the webpage\nFlexbox\nCSS Grid \u000b(Advanced & Fast growing )",
+      "notes": "If we compare CSS Grid and Flexbox, CSS Grid is more powerful but it has got less browser support. \nSo we use Flexbox",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "CSS",
+      "body": "Flexbox\nFlexbox is a layout method that helps to arrange the HTML elements in \u000brows (horizontally) or columns (vertically)",
+      "notes": "It provides for a better arrangement of all of the page elements that behave in a predictable mode.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "CSS",
+      "body": "Flexbox Properties\nThere are many properties in Flexbox that help to design a website layout\nFlexbox Container\nDirection\nJustify Content\nAlign Items\nAlign Self\nWrap\nOrder\nAlign Content\n                                    many more...",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Flexbox Properties",
+      "body": "Flexbox Container\nDefine Flexbox Container \u000bfor the Container\nAll HTML elements that are\u000binside Flexbox Container \u000bare called Flex items\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlexbox Container",
+      "notes": "Further properties applied only if we defined as a flex container. \n\nNote: Wrapping elements in the Flex Container is mandatory to apply other flex properties \nBootstrap provides us classes to make our work easy\n\nIn HTML and CSS - Bootstrap on way\nAmong bootstrap - Flex is one way",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Flexbox Properties",
+      "body": "Flex Direction \nThe Flex Direction specifies \u000bthe direction in which the Flex items should be arranged \u000bwithin the Flexbox Container\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nRow\nColumn",
+      "notes": "A FlexBox layout has a direction in which child elements are laid out. The default direction is Row and rows are laid out horizontally in reading direction. This defines the main axis. The cross axis in this case is vertical.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Flex Properties",
+      "body": "Justify Content\nJustify content defines the alignment \u000bof flex items along the flex direction\nFlex\u000bItem\nExample: For the flex direction in rows\njustify-content-start\njustify-content-center\njustify-content-end\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Flex Properties",
+      "body": "Justify Content\nExample: For the flex direction in columns\njustify-content-start\njustify-content-center\njustify-content-end\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem\nFlex\u000bItem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Let’s Arrange The Card to ",
+      "body": "Let’s Arrange The Card to \nThe Bottom of The Container",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Using Bootstrap Flexbox",
+      "body": "Moving Card to Bottom\nSteps:\nDefining Background Container \u000bas a Flex Container\nSpecify the Direction in which \u000bwe move the card\nMove the Card to the bottom \u000bof the Container",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Bootstrap",
+      "body": "Flexbox Class Names\nBootstrap provides us \u000breusable class names that help \u000bto design the layout using Flexbox",
+      "notes": "Bootstrap provides us classes to make our work easy\n\nIn HTML and CSS - Bootstrap on way\nAmong bootstrap - Flex is one way",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Step 1",
+      "body": "Defining the Background Container \nAs a Flex Container\n<body>\n  <div class=\"bg-container d-flex \">\n    <div class=\"tourism-card\">\n      <h1 class=\"main-heading\">Tourism</h1>\n      <p class=\"paragraph\">\n        Plan your trip.\n      </p>\n      <button class=\"button\"> Get Started </button>\n    </div>\n  </div>\n</body>\nd-flex is the \u000bclass name to define flexbox container\nHTML",
+      "notes": "Flex Container\n\nFlex Items\nHere the flex item is tourism card we should move it to the bottom, in order to move the flex-item to the bottom of the container  \napply flex properties to the Container",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Step 2",
+      "body": "Specifying Direction\nNeed to specify the direction \nNeed to move the card vertically (column)\u000b\u000bClass name to add: flex-column\nflex-column",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Step 2",
+      "body": "Specifying Direction\n<body>\n  <div class=\"bg-container d-flex flex-column \">\n    <div class=\"tourism-card\">\n      <h1 class=\"main-heading\">Tourism</h1>\n      <p class=\"paragraph\">\n        Plan your trip.\n      </p>\n      <button class=\"button\"> Get Started </button>\n    </div>\n  </div>\n</body>\nHTML\nflex-column",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Step 3",
+      "body": "Justify Content\njustify-content-start\njustify-content-center\njustify-content-end",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Step 3",
+      "body": "Moving Card to the Bottom\nNeed to the move card \u000bto the bottom of the container\nClass name to add: justify-content-end\njustify-content-end",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Step 3",
+      "body": "Moving Card to the Bottom\n<body>\n  <div class=\"bg-container d-flex flex-column justify-content-end \">\n    <div class=\"tourism-card\">\n      <h1 class=\"main-heading\">Tourism</h1>\n      <p class=\"paragraph\">\n        Plan your trip.\n      </p>\n      <button class=\"button\"> Get Started </button>\n    </div>\n  </div>\n</body>\nHTML",
+      "notes": "The bg-container is a Flex Container and we need to move the items inside the container to the bottom. \n\nFlex Items\nHere the tourism card is a flex item and we should move it to the bottom, in order to move the flex-item to the bottom of the container  \napply flex properties to the Container",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Step 3",
+      "body": "Output",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Introduction to Bootstrap | Part 2",
+      "body": "Key Takeaways \nLayout\nMethods to Control Layout\nFlexbox\nFlexbox Properties\nFlex Container\nFlex Direction\nJustify Content",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Next Session",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1ahgw_Ok9ETkgu20wZIEmJqr0djynsXuegqvS9DP-7UM/edit#slide=id.g2f4bbcaa415_0_489"
+}
