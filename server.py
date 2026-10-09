@@ -21,7 +21,7 @@ import threading
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -192,6 +192,9 @@ class CurriculumRow(BaseModel):
     # marks that row's deck as pending; the same link changes nothing, so saving a row
     # never re-downloads a deck.
     ppt_link: str | None = None
+    # The uploaded Web Slides deck, by name. None = leave it; "" = detach it. A file is
+    # ATTACHED only by the upload endpoint, which is what extracts it.
+    deck_file: str | None = None
 
 
 class CurriculumSaveBody(BaseModel):
@@ -268,6 +271,14 @@ class CourseSettingsBody(BaseModel):
     max_slides: int | None = None
 
 
+class SlidesModeBody(BaseModel):
+    course: str | None = None
+    # "google" — a Google Slides link per session, fetched by the agent; "web" — Web
+    # Slides, downloaded by the author and uploaded as a file. Per course, and the
+    # course may still mix the two session by session (a course that switched tools).
+    slides_mode: str
+
+
 
 class SessionSettingsBody(BaseModel):
     session_no: int
@@ -293,6 +304,7 @@ class SyncBody(BaseModel):
     details_link: str | None = None
     course_type: str | None = None         # "semester" | "interview"
     course_name: str | None = None         # grouping label for runs/teams
+    slides_mode: str | None = None         # "google" | "web" — see SlidesModeBody
 
 
 # use_judge / enforce_time are kept on the wire for backwards compatibility with any
@@ -551,6 +563,10 @@ def do_sync(body: SyncBody, user: dict = Depends(current_user)):
     # Persist the course type + course name chosen at connect time so generation
     # (context_builder) can use them later.
     app_settings.save(course_type=body.course_type, course_name=body.course_name)
+    # The teaching tool is PER COURSE, unlike course_type above: one instance holds
+    # Google Slides courses and Web Slides courses side by side.
+    if body.slides_mode:
+        db.set_slides_mode(course, body.slides_mode)
     job_id = uuid.uuid4().hex[:12]
     with _lock:
         JOBS[job_id] = {"status": "running", "logs": [], "result": None,
@@ -718,7 +734,8 @@ def bootstrap(course: str | None = None, user: dict = Depends(current_user)):
             "rows": rows,
             "imported_from": sync.last_link(),
             "pending": sum(1 for r in rows
-                           if (r.get("ppt_link") or "") and not r["extracted"]),
+                           if db.deck_source(r) and not r["extracted"]),
+            "slides_mode": db.slides_mode(course),
         },
         "sessions": _session_list(course, rows),
         "budget": {"settings": db.course_settings(course) or {},
@@ -856,6 +873,7 @@ def list_courses(user: dict = Depends(current_user)):
 class SelectCourseBody(BaseModel):
     course: str
     course_type: str | None = None
+    slides_mode: str | None = None
 
 
 @app.post("/api/courses/select")
@@ -880,8 +898,11 @@ def select_course(body: SelectCourseBody, user: dict = Depends(current_user)):
     _require_course(user, course)
     _claim_course(user, course)
     app_settings.save(course_name=course, course_type=body.course_type)
+    if body.slides_mode:
+        db.set_slides_mode(course, body.slides_mode)
     return {"course": course, **_curriculum_reply(course),
-            "imported_from": sync.last_link()}
+            "imported_from": sync.last_link(),
+            "slides_mode": db.slides_mode(course)}
 
 
 def _require_course_owner(user: dict, course: str) -> str:
@@ -1053,6 +1074,20 @@ def save_course_settings(body: CourseSettingsBody, user: dict = Depends(current_
     course = _require_course(user, body.course)
     db.set_course_settings(course, max_pages=body.max_pages, max_slides=body.max_slides)
     return {"ok": True, "effective": budget_rules.for_session(course)}
+
+
+@app.post("/api/course-slides-mode")
+def save_slides_mode(body: SlidesModeBody, user: dict = Depends(current_user)):
+    """Which teaching tool this course's decks come from — Google Slides links or Web
+    Slides uploads. Changing it relabels the curriculum's deck column and picks the
+    default way a row takes its deck; rows already holding the other kind keep it."""
+    course = _require_course(user, body.course)
+    if (body.slides_mode or "").strip().lower() not in db.SLIDES_MODES:
+        raise HTTPException(status_code=400, detail={"message":
+            "slides_mode must be 'google' (Google Slides links) or 'web' (Web Slides files)."})
+    _claim_course(user, course)
+    db.set_slides_mode(course, body.slides_mode)
+    return {"ok": True, "slides_mode": db.slides_mode(course)}
 
 
 @app.post("/api/session-settings")
@@ -1506,7 +1541,85 @@ def edit_skill(skill_id: int, body: SkillBody, user: dict = Depends(current_user
     return {"ok": True, "skills": db.skills(c)}
 
 
+# ---- screenshots attached to a skill (src/skill_images.py) ----------------------------
+class SkillImageCaptionBody(BaseModel):
+    course: str | None = None
+    caption: str = ""
+
+
+@app.post("/api/skills/{skill_id}/images")
+async def add_skill_images(skill_id: int, files: list[UploadFile] = File(...),
+                           course: str | None = Form(None),
+                           captions: str | None = Form(None),
+                           user: dict = Depends(current_user)):
+    """Attach one or more screenshots to a skill. They will be placed in every document
+    the skill governs — see src/skill_images.py. `captions` is an optional JSON list,
+    one per file, in order; a file without one is captioned by its name until edited."""
+    from src import skill_images
+    c = _require_skill_author(user, course)
+    if not _skill_row(c, skill_id):
+        raise HTTPException(status_code=404, detail={"message": "No such skill on this course."})
+    try:
+        caps = json.loads(captions) if captions else []
+        caps = caps if isinstance(caps, list) else []
+    except Exception:
+        caps = []
+    added, refused = [], []
+    for i, f in enumerate(files or []):
+        name = Path(f.filename or "image").name
+        try:
+            data = await f.read()
+            blob, mime, w, h = skill_images.normalise(data, name)
+        except ValueError as e:
+            refused.append(str(e))
+            continue
+        cap = str(caps[i]).strip() if i < len(caps) and caps[i] else ""
+        iid = db.add_skill_image(c, skill_id, key=skill_images.new_key(), filename=name,
+                                 mime=mime, caption=cap or Path(name).stem,
+                                 width=w, height=h, data_b64=skill_images.encode(blob),
+                                 created_by=user.get("email"))
+        if iid:
+            added.append(iid)
+        else:
+            refused.append(f"'{name}' could not be stored.")
+    if not added and refused:
+        raise HTTPException(status_code=400, detail={"message": " ".join(refused)})
+    return {"ok": True, "added": added, "refused": refused, "skills": db.skills(c)}
+
+
+@app.post("/api/skills/{skill_id}/images/{image_id}/caption")
+def caption_skill_image(skill_id: int, image_id: int, body: SkillImageCaptionBody,
+                        user: dict = Depends(current_user)):
+    c = _require_skill_author(user, body.course)
+    if not db.set_skill_image_caption(c, image_id, body.caption):
+        raise HTTPException(status_code=404, detail={"message": "No such image."})
+    return {"ok": True, "skills": db.skills(c)}
+
+
+@app.delete("/api/skills/{skill_id}/images/{image_id}")
+def delete_skill_image(skill_id: int, image_id: int, course: str | None = None,
+                       user: dict = Depends(current_user)):
+    c = _require_skill_author(user, course)
+    db.delete_skill_image(c, image_id)
+    return {"ok": True, "skills": db.skills(c)}
+
+
+@app.get("/api/skill-images/{key}")
+def serve_skill_image(key: str):
+    """The image itself, by its unguessable key. No bearer check, deliberately: the
+    review pane and the Markdown preview reach it through a plain <img src>, which
+    carries no header. The key is 96 random bits, so the URL is the credential."""
+    from src import skill_images
+    im = db.skill_image_by_key(key.rsplit(".", 1)[0])
+    if not im or not im.get("data_b64"):
+        raise HTTPException(status_code=404, detail={"message": "No such image."})
+    return Response(content=skill_images.decode(im["data_b64"]),
+                    media_type=im.get("mime") or "image/png",
+                    headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
+
 @app.post("/api/skills/{skill_id}/promote")
+
 def promote_skill(skill_id: int, course: str | None = None,
                   user: dict = Depends(current_user)):
     """Lift a SESSION skill into the course's own set, so it governs every session.
@@ -1594,7 +1707,8 @@ def get_curriculum(course: str | None = None, user: dict = Depends(current_user)
     return {"course": course, "rows": rows,
             "imported_from": sync.last_link(),
             "pending": sum(1 for r in rows
-                           if (r.get("ppt_link") or "") and not r["extracted"])}
+                           if db.deck_source(r) and not r["extracted"]),
+            "slides_mode": db.slides_mode(course)}
 
 
 @app.post("/api/curriculum")
@@ -1611,7 +1725,7 @@ def save_curriculum(body: CurriculumSaveBody, course: str | None = None,
             course, row.session_no, topic=row.topic or "",
             session_name=row.session_name or "",
             key_takeaways=row.key_takeaways or [],
-            ppt_link=row.ppt_link)
+            ppt_link=row.ppt_link, deck_file=row.deck_file)
         # Only when the caller actually sent one — a row saved from the table carries
         # no budget fields, and writing None over an existing override would silently
         # discard it every time the curriculum was saved.
@@ -1744,6 +1858,31 @@ def _run_ingest(job_id: str, force: bool, sessions: list[int] | None,
             JOBS[job_id].update(status="error", error=str(e), error_kind="read")
 
 
+@app.post("/api/curriculum/{session_no}/deck-file")
+async def upload_deck_file(session_no: int, file: UploadFile = File(...),
+                           course: str | None = Form(None),
+                           user: dict = Depends(current_user)):
+    """Attach a Web Slides deck to a session by uploading the downloaded file.
+
+    The upload path's equivalent of pasting a Google Slides link and pressing "Fetch
+    new decks", in one step: the file is extracted here and now (there is nothing to
+    fetch later), the row records the file's name and content hash, and the session
+    becomes course memory exactly as a fetched deck does. Accepts .pptx, .pdf and .html
+    — see src/webslides.py for how each is read.
+    """
+    course = _require_course(user, course)
+    _claim_course(user, course)
+    data = await file.read()
+    try:
+        result = sync.ingest_upload(course, session_no, file.filename or "deck", data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail={"message": str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"message":
+            f"The deck could not be read: {e}"})
+    return {"ok": True, "upload": result, **_curriculum_reply(course)}
+
+
 @app.post("/api/curriculum/ingest")
 def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)):
     """Fetch the decks this course still needs — and only those."""
@@ -1797,8 +1936,9 @@ def _session_list(course: str | None = None, rows: list[dict] | None = None):
         have = pptx_ingest.deck_session_numbers(course)
         return [{"number": s.number, "name": s.name, "takeaways": s.key_takeaways}
                 for s in cached if s.number not in have]
-    have_decks = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
+    have_decks = {r["session_no"] for r in rows if db.deck_source(r)}
     return [{"number": r["session_no"], "name": r.get("session_name", ""),
+
              "takeaways": r.get("key_takeaways", [])}
             for r in rows if r["session_no"] not in have_decks]
 

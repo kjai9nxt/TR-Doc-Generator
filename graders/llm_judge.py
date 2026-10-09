@@ -121,7 +121,17 @@ except Exception:                                    # pragma: no cover
 
 def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None = None,
           enforce_time: bool = True, course: str | None = None,
-          profile: dict | None = None) -> dict:
+          profile: dict | None = None, web_check: bool | None = None) -> dict:
+    """Score the document against the rubric.
+
+    web_check=False drops the live web pass (the ":online" model variant) for THIS call
+    only. It is the single most expensive thing finalize does — the judge is asked to
+    search for every RFC number, port, bit-width and version in the document, and then
+    for the topic's coverage on three reference sites, all serially inside one
+    completion — so a finalize that grades three times paid for it three times. The
+    caller turns it off on a repair regrade whose defect was not a factual one; see
+    pipeline.finalize, which carries the web-graded dimensions forward rather than
+    letting them be re-scored blind."""
     h = config.harness()
     m = h["model"]
     judge_model = m["judge"]
@@ -153,7 +163,8 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     # Live web check for market_parity + content_recency: OpenRouter's ":online"
     # variant gives the judge web search (uses the existing OpenRouter key). Only
     # meaningful for the openrouter provider.
-    if m.get("enable_web_market_check") and m.get("provider", "openrouter").lower() == "openrouter":
+    if (m.get("enable_web_market_check") and web_check is not False
+            and m.get("provider", "openrouter").lower() == "openrouter"):
         if not judge_model.endswith(":online"):
             judge_model = judge_model + ":online"
         web_note = (
@@ -171,7 +182,19 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
             "(b) MARKET PARITY / RECENCY: confirm the topic's mainstream coverage on "
             "GeeksforGeeks, TutorialsPoint and Scaler, and the CURRENT standards/versions. "
             "Penalise anything missing versus mainstream references, and any "
-            "deprecated/superseded info presented as current. Note what you verified.")
+            "deprecated/superseded info presented as current. Note what you verified.\n"
+            # A BUDGET, because this is the slowest thing the pipeline does. ":online" on
+            # an Anthropic model is native agentic search: the model searches, reads,
+            # searches again, and the whole grade waits on it serially. Unbounded, it
+            # would look up every number in a twenty-slide document — and the twentieth
+            # lookup confirms a port number nobody was going to get wrong. Spend the
+            # budget where being wrong would actually cost a recorded session.
+            "(c) BUDGET: about 8 searches in total, and no more than 12. Rank the "
+            "document's specifics by what it would cost to teach them wrong, spend the "
+            "searches from the top of that list, and stop. Do NOT look up a value you "
+            "are already confident of, and do not re-search the same fact twice. A "
+            "specific you did not check is simply not mentioned — never raise a blocking "
+            "issue about a value you did not actually verify.")
     # Depth mode (40-min limit off): the doc is INTENDED to be fuller — richer bullets
     # and tables, more thorough sub-concept treatment. Judge clarity/filler, not brevity.
     # Note what depth mode does NOT buy: the page ceiling holds in every mode, and the
@@ -614,6 +637,11 @@ Grade now. Return only the contract JSON."""
     # Stored per run, so an old result stays self-describing after the rubric changes.
     gates = {**config.harness().get("gates", {}), **((profile or {}).get("gates") or {})}
     result["weights"] = scored
+    # Whether the live web pass actually ran on THIS grade. Carried on the result because
+    # a regrade without it has not re-verified the document's facts or its coverage
+    # against the reference sites, and the caller has to be able to tell the difference
+    # rather than assume every grade was made the same way. See carry_web_dimensions.
+    result["web_checked"] = bool(web_note)
     result["gates"] = {
         "min_total": gates.get("rubric_min_total"),
         "min_per_dimension": gates.get("rubric_min_per_dimension"),
@@ -668,3 +696,51 @@ def passes_gates(judge_result: dict, profile: dict | None = None) -> tuple[bool,
                            f"< {gates['rubric_min_per_dimension']}.")
     reasons += [f"Blocking: {b}" for b in judge_result.get("blocking_issues", [])]
     return len(reasons) == 0, reasons
+
+
+# Dimensions the grade can only be made on with live search behind it: the facts the
+# judge is asked to verify, and the two that are defined against what the rest of the
+# internet currently teaches.
+WEB_DIMENSIONS = ("technical_accuracy", "content_recency", "market_parity")
+
+
+def carry_web_dimensions(new: dict, old: dict,
+                         dimensions=WEB_DIMENSIONS) -> list[str]:
+    """Copy the web-graded dimensions from an earlier grade onto a later one, in place.
+
+    A repair patch fired by a course-brief, length or guardrail defect changes wording
+    and slide count; it does not change what RFC 793 says, nor how GeeksforGeeks covers
+    the topic. Re-running the web pass to re-derive those three scores is the slowest
+    thing in finalize, so the regrade is run WITHOUT it — and these dimensions would
+    then be scored blind, from the judge's own memory, on a document that had just been
+    edited. That is not a cheaper version of the same grade, it is a different and worse
+    one, and it can hand the repaired draft a lower total than the draft it fixed, so
+    `best` ships the unrepaired document.
+
+    So they are not re-scored at all: the verified verdict stands, and the total is
+    recomputed over it. Returns the dimensions actually carried, for the log.
+    """
+    if not isinstance(old, dict) or not isinstance(new, dict):
+        return []
+    moved = []
+    for did in dimensions:
+        prev = (old.get("scores") or {}).get(did)
+        if isinstance(prev, dict) and prev.get("score") is not None:
+            # The note is added once, not once per round: over two repairs the same
+            # justification was otherwise stamped twice with the same sentence.
+            _just = str(prev.get("justification") or "").strip()
+            if not prev.get("carried_from_web_grade"):
+                _just = (_just + " [carried from the web-verified grade of an earlier "
+                                 "round; the repair did not touch what this dimension "
+                                 "measures]").strip()
+            new.setdefault("scores", {})[did] = {
+                **prev, "carried_from_web_grade": True, "justification": _just}
+            moved.append(did)
+    if moved:
+        weights = new.get("weights") or {}
+        tot_w = sum(weights.values())
+        if tot_w:
+            acc = sum((_score_of(new, d) / 5.0) * w for d, w in weights.items())
+            new["weighted_total"] = round(acc / tot_w * 100, 1)
+        new["carried_dimensions"] = moved
+    return moved

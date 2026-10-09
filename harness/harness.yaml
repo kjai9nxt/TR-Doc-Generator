@@ -2339,6 +2339,13 @@ sheet_templates:
     # The column holding each session's Google Slides deck. Blank for a session whose
     # deck does not exist yet — that is a session still needing a TR doc, not an error.
     ppt_link_column: "PPT Links"
+    # THE OTHER TEACHING TOOL. A course taught from Web Slides has no link the agent can
+    # fetch: the author downloads each deck and uploads the file in the app. Its sheet
+    # carries this column INSTEAD of "PPT Links" (exactly one of the two must be
+    # present); a cell holds the deck file's name, or anything non-blank, for a session
+    # already recorded, and is blank for one still needing a TR doc.
+    web_slides_column: "Web Slides"
+
   guide_file: "harness/sheet_templates.md"
 
 # ----------------------------------------------------------------------------

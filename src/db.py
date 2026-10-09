@@ -244,6 +244,17 @@ _SCHEMA = [
          created_by TEXT, created_at TEXT,
          approved_by TEXT, approved_at TEXT, updated_at TEXT)""",
     "CREATE INDEX IF NOT EXISTS idx_course_skills_course ON course_skills(course)",
+    # SCREENSHOTS ATTACHED TO A SKILL, to be placed in the document — see
+    # src/skill_images.py. Stored as base64 text (down-scaled first) so they survive an
+    # ephemeral disk like everything else that matters. `key` is the unguessable handle
+    # the image is served under, so the review pane's <img> needs no bearer token.
+    """CREATE TABLE IF NOT EXISTS skill_images (
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         skill_id INTEGER NOT NULL, course TEXT NOT NULL, key TEXT UNIQUE,
+         filename TEXT, mime TEXT, caption TEXT, width INTEGER, height INTEGER,
+         bytes INTEGER, data_b64 TEXT, created_by TEXT, created_at TEXT)""",
+    "CREATE INDEX IF NOT EXISTS idx_skill_images_skill ON skill_images(skill_id)",
+    "CREATE INDEX IF NOT EXISTS idx_skill_images_course ON skill_images(course)",
     # PREREQUISITE COURSES — what the learner already knows before session 1.
     #
     # "Already taught" used to mean earlier sessions of THIS course, so a React course
@@ -347,6 +358,14 @@ _RUNS_ADDED_COLUMNS = [
 _CURRICULUM_ADDED_COLUMNS = [
     ("max_pages", "INTEGER"),
     ("max_slides", "INTEGER"),
+    # WHERE A SESSION'S DECK CAME FROM. A course used to be taught from Google Slides
+    # only, so `ppt_link` was the deck. Some courses are now taught from Web Slides,
+    # which have no link the agent can fetch — the author downloads the deck and
+    # uploads the file. `deck_kind` is "google" (ppt_link holds the deck) or "web"
+    # (`deck_file` names the uploaded file); a course may mix the two, session by
+    # session, because a course can switch tools part-way through.
+    ("deck_kind", "TEXT"),
+    ("deck_file", "TEXT"),
 ]
 
 
@@ -407,11 +426,21 @@ _SKILLS_ADDED_COLUMNS = [
 ]
 
 
+# The teaching tool a course's decks come from, chosen when the course is created:
+# "google" (a Google Slides link per session, fetched by the agent) or "web" (Web
+# Slides, downloaded by the author and uploaded as a file). NULL means google, which
+# is what every course was before the choice existed.
+_COURSE_SETTINGS_ADDED_COLUMNS = [
+    ("slides_mode", "TEXT"),
+]
+
+
 def _add_missing_columns(conn) -> list[str]:
     """Bring existing tables up to date. Idempotent."""
     added = []
     for table, cols in (("runs", _RUNS_ADDED_COLUMNS),
                         ("curriculum", _CURRICULUM_ADDED_COLUMNS),
+                        ("course_settings", _COURSE_SETTINGS_ADDED_COLUMNS),
                         ("teams", _TEAMS_ADDED_COLUMNS),
                         ("course_prereqs", _PREREQS_ADDED_COLUMNS),
                         ("course_skills", _SKILLS_ADDED_COLUMNS)):
@@ -1427,13 +1456,64 @@ def _row_to_session(r: dict) -> dict:
         "session_name": r.get("session_name") or "",
         "key_takeaways": [t for t in (r.get("key_takeaways") or "").split("\n") if t.strip()],
         "ppt_link": r.get("ppt_link") or "",
+        "deck_kind": deck_kind(r),
+        "deck_file": r.get("deck_file") or "",
         "deck_hash": r.get("deck_hash") or "",
-        "deck_status": r.get("deck_status") or ("linked" if (r.get("ppt_link") or "") else "none"),
+        "deck_status": r.get("deck_status") or ("linked" if deck_source(r) else "none"),
         # Per-session budget overrides; None means "inherit the course's".
         "max_pages": r.get("max_pages"),
         "max_slides": r.get("max_slides"),
         "updated_at": r.get("updated_at"),
     }
+
+
+SLIDES_MODES = ("google", "web")
+
+
+def deck_source(r: dict) -> str:
+    """What this row's deck is: the Google Slides link, or the uploaded file's name.
+
+    The ONE predicate for "this session has a deck". It used to be `ppt_link` non-empty
+    in six places; a session whose deck arrived as an uploaded file has no link, and
+    every one of those places would have called it a session still needing a doc.
+    """
+    return (r.get("ppt_link") or "").strip() or (r.get("deck_file") or "").strip()
+
+
+def deck_kind(r: dict) -> str:
+    """"google" or "web" for a row. Derived from what the row holds when the column is
+    blank, because every row written before the column existed is a Google one."""
+    k = (r.get("deck_kind") or "").strip().lower()
+    if k in SLIDES_MODES:
+        return k
+    return "web" if (r.get("deck_file") or "").strip() and not (r.get("ppt_link") or "").strip() else "google"
+
+
+def slides_mode(course: str) -> str:
+    """The course's teaching tool: "google" (default) or "web"."""
+    try:
+        rows = _query("SELECT slides_mode FROM course_settings WHERE course=?", (course,))
+    except Exception:
+        return "google"
+    m = ((rows[0].get("slides_mode") if rows else "") or "").strip().lower()
+    return m if m in SLIDES_MODES else "google"
+
+
+def set_slides_mode(course: str, mode: str | None) -> bool:
+    """Record the course's teaching tool. Touches ONLY that column — the budgets on the
+    same row are somebody else's setting and must survive a change of tool."""
+    mode = (mode or "").strip().lower()
+    if mode not in SLIDES_MODES:
+        return False
+    try:
+        _exec("""INSERT INTO course_settings (course, slides_mode, updated_at)
+                 VALUES (?,?,?)
+                 ON CONFLICT(course) DO UPDATE SET
+                   slides_mode=excluded.slides_mode, updated_at=excluded.updated_at""",
+              (course, mode, _now()))
+        return True
+    except Exception:
+        return False
 
 
 def curriculum(course: str) -> list[dict]:
@@ -1449,8 +1529,8 @@ def curriculum(course: str) -> list[dict]:
 def course_settings(course: str) -> dict:
     """A course's own page/slide budgets, or {} when it uses the harness defaults."""
     try:
-        rows = _query("SELECT max_pages, max_slides FROM course_settings WHERE course=?",
-                      (course,))
+        rows = _query("SELECT max_pages, max_slides, slides_mode FROM course_settings "
+                      "WHERE course=?", (course,))
     except Exception:
         return {}
     return rows[0] if rows else {}
@@ -1798,6 +1878,7 @@ def skills(course: str, *, include_retired: bool = False, session=None) -> list[
         rows = [_shape_skill(r) for r in _query(q, ((course or "").strip(),))]
     except Exception:
         return []
+    _attach_images(course, rows)
     return _for_session(rows, session) if session not in (None, "") else rows
 
 
@@ -1829,7 +1910,95 @@ def approved_skills(course: str, *, session=None) -> list[dict]:
             "ORDER BY id", ((course or "").strip(),))]
     except Exception:
         return []
+    _attach_images(course, rows)
     return _for_session(rows, session)
+
+
+# --------------------------------------------------------------------------- #
+# skill images — screenshots that must appear in the document (src/skill_images.py)
+# --------------------------------------------------------------------------- #
+_IMG_COLS = "id, skill_id, course, key, filename, mime, caption, width, height, bytes, created_by, created_at"
+
+
+def _attach_images(course: str, rows: list[dict]) -> None:
+    """`images` on every skill row: ONE query for the course, never one per skill.
+    Metadata only — the bytes are fetched by key when a renderer needs them."""
+    for r in rows:
+        r["images"] = []
+    if not rows:
+        return
+    try:
+        imgs = _query(f"SELECT {_IMG_COLS} FROM skill_images WHERE course=? ORDER BY id",
+                      ((course or "").strip(),))
+    except Exception:
+        return
+    by_skill = {r["id"]: r for r in rows}
+    for im in imgs:
+        sk = by_skill.get(im.get("skill_id"))
+        if sk is not None:
+            sk["images"].append(dict(im))
+
+
+def add_skill_image(course: str, skill_id: int, *, key: str, filename: str, mime: str,
+                    caption: str, width: int, height: int, data_b64: str,
+                    created_by: str | None) -> int | None:
+    try:
+        return _exec("""INSERT INTO skill_images (skill_id, course, key, filename, mime,
+                          caption, width, height, bytes, data_b64, created_by, created_at)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+                     (int(skill_id), (course or "").strip(), key, filename, mime,
+                      (caption or "").strip(), int(width), int(height),
+                      len(data_b64 or "") * 3 // 4, data_b64, created_by, _now()))
+    except Exception:
+        return None
+
+
+def skill_image(image_id: int) -> dict | None:
+    """One image WITH its bytes (base64), for a renderer."""
+    try:
+        rows = _query("SELECT * FROM skill_images WHERE id=?", (int(image_id),))
+    except Exception:
+        return None
+    return rows[0] if rows else None
+
+
+def skill_image_by_key(key: str) -> dict | None:
+    try:
+        rows = _query("SELECT * FROM skill_images WHERE key=?", ((key or "").strip(),))
+    except Exception:
+        return None
+    return rows[0] if rows else None
+
+
+def set_skill_image_caption(course: str, image_id: int, caption: str) -> bool:
+    try:
+        _exec("UPDATE skill_images SET caption=? WHERE id=? AND course=?",
+              ((caption or "").strip(), int(image_id), (course or "").strip()))
+        return True
+    except Exception:
+        return False
+
+
+def delete_skill_image(course: str, image_id: int) -> bool:
+    try:
+        _exec("DELETE FROM skill_images WHERE id=? AND course=?",
+              (int(image_id), (course or "").strip()))
+        return True
+    except Exception:
+        return False
+
+
+def skill_images_for_run(course: str, session=None) -> list[dict]:
+    """Every image the APPROVED skills governing this session carry, each tagged with
+    the skill it belongs to — the list the writer is briefed on and the document is
+    reconciled against."""
+    out = []
+    for sk in approved_skills(course, session=session):
+        for im in sk.get("images") or []:
+            out.append({**im, "skill_text": sk.get("text") or "",
+                        "session_ref": sk.get("session_ref")})
+    return out
+
 
 
 def add_skill(course: str, text: str, *, kind: str = "style", source: str = "user",
@@ -2154,37 +2323,75 @@ def curriculum_courses() -> list[str]:
 
 def curriculum_upsert(course: str, session_no: int, *, topic: str = "",
                       session_name: str = "", key_takeaways=None,
-                      ppt_link: str | None = None) -> bool:
+                      ppt_link: str | None = None,
+                      deck_file: str | None = None) -> bool:
     """Insert or update one session.
 
     `ppt_link=None` leaves the existing link (and its deck_hash) alone — an edit to a
     takeaway must not look like a deck change. Passing a DIFFERENT link clears
     deck_hash, which is what marks the deck as needing ingestion; passing the SAME link
     keeps it, so saving the row again does not re-download anything.
+
+    `deck_file` works the same way for an uploaded Web Slides deck: None keeps it, ""
+    detaches it. A link and a file are the two ways a session can hold a deck; giving a
+    row a NEW link replaces its file (the link is what the agent can fetch again), and a
+    file arrives only through curriculum_set_deck_file, which is what extraction calls.
+    A file named here without an extraction (the sheet import's "Web Slides" column) is
+    recorded as PENDING: the session counts as taught, and the row waits for the upload.
     """
     kt = key_takeaways or []
     if isinstance(kt, str):
         kt = [l for l in kt.split("\n") if l.strip()]
     kt_text = "\n".join(str(x).strip() for x in kt if str(x).strip())
     try:
-        prev = _query("SELECT ppt_link, deck_hash FROM curriculum "
+        prev = _query("SELECT ppt_link, deck_hash, deck_file, deck_kind FROM curriculum "
                       "WHERE course=? AND session_no=?", (course, int(session_no)))
         old_link = (prev[0].get("ppt_link") if prev else "") or ""
         old_hash = (prev[0].get("deck_hash") if prev else "") or ""
+        old_file = (prev[0].get("deck_file") if prev else "") or ""
         link = old_link if ppt_link is None else (ppt_link or "").strip()
-        keep_hash = old_hash if link and link == old_link else ""
-        status = "none" if not link else ("extracted" if keep_hash else "pending")
+        file = old_file if deck_file is None else (deck_file or "").strip()
+        if link and link != old_link:
+            file = ""                       # a new link supersedes an uploaded file
+        if link:
+            kind, keep_hash = "google", (old_hash if link == old_link else "")
+        elif file:
+            # The hash belongs to the extracted upload; a file merely NAMED by the sheet
+            # (or renamed) has not been read, so it must not inherit one.
+            kind, keep_hash = "web", (old_hash if file == old_file and not old_link else "")
+        else:
+            kind, keep_hash = "", ""
+        status = "none" if not (link or file) else ("extracted" if keep_hash else "pending")
         _exec("""INSERT INTO curriculum
                    (course, session_no, topic, session_name, key_takeaways, ppt_link,
-                    deck_hash, deck_status, updated_at)
-                 VALUES (?,?,?,?,?,?,?,?,?)
+                    deck_hash, deck_status, deck_kind, deck_file, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?)
                  ON CONFLICT(course, session_no) DO UPDATE SET
                    topic=excluded.topic, session_name=excluded.session_name,
                    key_takeaways=excluded.key_takeaways, ppt_link=excluded.ppt_link,
                    deck_hash=excluded.deck_hash, deck_status=excluded.deck_status,
+                   deck_kind=excluded.deck_kind, deck_file=excluded.deck_file,
                    updated_at=excluded.updated_at""",
               (course, int(session_no), topic or "", session_name or "", kt_text,
-               link, keep_hash, status, _now()))
+               link, keep_hash, status, kind, file, _now()))
+        return True
+    except Exception:
+        return False
+
+
+def curriculum_set_deck_file(course: str, session_no: int, filename: str,
+                             deck_hash: str) -> bool:
+    """An uploaded Web Slides deck has been extracted for this session.
+
+    The file replaces whatever the row held: the link is cleared, because the deck the
+    agent now holds is the file, and a stale link would make "Fetch new decks" overwrite
+    the upload with an older Google export.
+    """
+    try:
+        _exec("""UPDATE curriculum SET deck_file=?, deck_kind='web', ppt_link='',
+                   deck_hash=?, deck_status='extracted', updated_at=?
+                 WHERE course=? AND session_no=?""",
+              ((filename or "").strip(), deck_hash or "", _now(), course, int(session_no)))
         return True
     except Exception:
         return False
@@ -2342,7 +2549,12 @@ def curriculum_import(course: str, rows: list[dict], *, replace: bool = False) -
         curriculum_upsert(course, no, topic=r.get("topic", ""),
                           session_name=r.get("session_name", ""),
                           key_takeaways=r.get("key_takeaways") or [],
-                          ppt_link=r.get("ppt_link", ""))
+                          ppt_link=r.get("ppt_link", ""),
+                          # The sheet names a Web Slides file (or says nothing about
+                          # one); an upload already extracted survives a re-import only
+                          # if the sheet still names the same file or has no such column.
+                          deck_file=r.get("deck_file"))
+
     removed = 0
     if replace:
         for no in before:

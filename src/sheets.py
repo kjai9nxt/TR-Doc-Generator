@@ -90,16 +90,50 @@ def fetch_raw(link: str, timeout: int = 30) -> tuple[list[str], list[dict], str]
     return headers, rows, url
 
 
+def deck_columns(template_key: str = "course_structure") -> dict[str, str]:
+    """The deck column each teaching tool uses: {"google": "PPT Links", "web": "Web Slides"}.
+
+    A sheet carries exactly ONE of them, and which one says how the course's decks
+    arrive — a Google Slides link the agent fetches, or a Web Slides file the author
+    downloads and uploads, in which case the cell holds the file's name (or nothing).
+    """
+    tpl = config.harness()["sheet_templates"][template_key]
+    return {"google": tpl.get("ppt_link_column", "PPT Links"),
+            "web": tpl.get("web_slides_column", "Web Slides")}
+
+
+def deck_column_present(headers: list[str], template_key: str = "course_structure") -> str | None:
+    """Which teaching tool's deck column this sheet has — "google", "web", or None."""
+    found = {_norm(h) for h in headers if h.strip()}
+    for mode, col in deck_columns(template_key).items():
+        if _norm(col) in found:
+            return mode
+    return None
+
+
 def validate(headers: list[str], template_key: str) -> None:
     tpl = config.harness()["sheet_templates"][template_key]
-    required = tpl["required_columns"]
+    required = list(tpl["required_columns"])
     label = tpl["label"]
     found_norm = {_norm(h) for h in headers if h.strip()}
-    req_norm = {_norm(c) for c in required}
+    # THE DECK COLUMN IS ONE OF TWO. "PPT Links" for a course taught from Google Slides,
+    # "Web Slides" for one taught from Web Slides. Exactly one must be present: with
+    # neither there is no way to tell a recorded session from one still needing a doc,
+    # and with both there is no way to tell which the author meant.
+    cols = deck_columns(template_key)
+    alternates = {_norm(c) for c in cols.values()}
+    required = [c for c in required if _norm(c) not in alternates]
+    req_norm = {_norm(c) for c in required} | alternates
     missing = [c for c in required if _norm(c) not in found_norm]
+    present = [c for c in cols.values() if _norm(c) in found_norm]
+    if not present:
+        missing.append(" or ".join(f"'{c}'" for c in cols.values()))
     extra = [h for h in headers if h.strip() and _norm(h) not in req_norm]
+    if len(present) > 1:
+        extra.append(f"both {' and '.join(present)} — keep only the one this course uses")
     if missing or extra:
         raise TemplateError(label, missing, extra, headers)
+
 
 
 def load_sheet(link: str, template_key: str) -> SheetData:

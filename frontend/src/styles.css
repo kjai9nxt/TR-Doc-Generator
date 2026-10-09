@@ -1765,3 +1765,28 @@ summary:hover::before { border-left-color: var(--accent); }
   .dnabox .dnafield { display: inline-block; width: calc(50% - 7px); vertical-align: top; }
   .dnabox .dnafield:nth-child(even) { margin-right: 12px; }
 }
+
+/* THE DECK CELL takes a link OR an uploaded Web Slides file, per row (CurriculumDashboard.deckCell). */
+.sheetlike .deckcell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sheetlike .deckcell textarea { width: 100%; font-size: 11.5px; word-break: break-all; }
+.deckfile { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.deckname { font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            max-width: 100%; }
+.deckname.muted { opacity: .55; }
+.upbtn { cursor: pointer; position: relative; overflow: hidden; }
+.upbtn input[type="file"] { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.upbtn.disabled { opacity: .5; pointer-events: none; }
+.kindswitch { background: none; border: 0; padding: 0; font-size: 10.5px; opacity: .6;
+              cursor: pointer; text-align: left; color: inherit; }
+.kindswitch:hover { opacity: 1; text-decoration: underline; }
+
+/* SCREENSHOTS ON A SKILL CARD (SkillCard.shots) — thumbnails with an editable caption. */
+.shots { display: flex; flex-wrap: wrap; gap: 10px; margin: 2px 0 12px; }
+.shot { position: relative; margin: 0; width: 220px; max-width: 100%; display: flex;
+        flex-direction: column; gap: 4px; }
+.shot img { width: 100%; height: 130px; object-fit: contain; border: 1px solid var(--line2, #333);
+            border-radius: 6px; background: rgba(127,127,127,.08); }
+.shot .shotcap { font-size: 11.5px; width: 100%; }
+.shot figcaption { font-size: 11.5px; opacity: .8; }
+.shot .shotdel { position: absolute; top: 4px; right: 4px; }
+.shothint { flex-basis: 100%; }

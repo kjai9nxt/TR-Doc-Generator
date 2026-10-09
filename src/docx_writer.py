@@ -6,7 +6,28 @@ from pathlib import Path
 
 import docx as docxlib
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt
+from docx.shared import Pt, Inches
+
+
+def _image_bytes(ref) -> tuple[bytes, dict] | None:
+    """The attached screenshot an image block names, or None when it is gone."""
+    try:
+        from . import db, skill_images
+        im = db.skill_image(int(ref))
+        if not im or not im.get("data_b64"):
+            return None
+        return skill_images.decode(im["data_b64"]), im
+    except Exception:
+        return None
+
+
+def _image_url(ref) -> str | None:
+    try:
+        from . import db
+        im = db.skill_image(int(ref))
+    except Exception:
+        return None
+    return f"/api/skill-images/{im['key']}" if im and im.get("key") else None
 
 BREAKER = "---------------------------------------"
 
@@ -105,6 +126,28 @@ def _render_content(doc, blocks):
                 if not isinstance(w, dict) or not str(w.get("text") or "").strip():
                     continue
                 _list_item(doc, f"{_walk_label(w)} — {str(w['text']).strip()}")
+        elif t == "image":
+            # A screenshot the course owner attached to the brief (src/skill_images.py):
+            # the picture, then its caption in italics. An image that no longer exists
+            # leaves the caption so the reader knows what was meant to be here.
+            got = _image_bytes(block.get("ref"))
+            caption = str(block.get("caption") or "").strip()
+            if got:
+                data, meta = got
+                try:
+                    import io as _io
+                    doc.add_picture(_io.BytesIO(data), width=Inches(6.0))
+                    doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                except Exception:
+                    doc.add_paragraph(f"[image could not be rendered: {caption}]")
+            else:
+                doc.add_paragraph(f"[missing image: {caption}]")
+            if caption:
+                para = doc.add_paragraph()
+                para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run = para.add_run(caption)
+                run.italic = True
+                run.font.size = Pt(9.5)
         elif t == "table":
             cols = block.get("columns", [])
             rows = block.get("rows", [])
@@ -199,9 +242,15 @@ def _content_blocks(content) -> list[str]:
                     if isinstance(w, dict) and str(w.get("text") or "").strip()]
             if walk:
                 out.append("\n".join(walk))
+        elif bt == "image":
+            caption = str(block.get("caption") or "").strip()
+            url = _image_url(block.get("ref"))
+            out.append(f"![{caption}]({url})\n\n*{caption}*" if url
+                       else f"*[missing image: {caption}]*")
         elif bt == "table":
             cols = block.get("columns", [])
             tbl = ["| " + " | ".join(cols) + " |",
+
                    "| " + " | ".join(["---"] * len(cols)) + " |"]
             tbl += ["| " + " | ".join(str(c) for c in row) + " |"
                     for row in block.get("rows", [])]

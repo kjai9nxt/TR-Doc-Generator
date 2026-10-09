@@ -118,8 +118,17 @@ def import_sheet(course_link: str, course: str | None = None, *,
 
     emit("Reading the Course Curriculum Structure sheet…")
     sheet = sheets.load_sheet(course_link, "course_structure")
-    ppt_col = config.harness()["sheet_templates"]["course_structure"].get(
-        "ppt_link_column", "PPT Links")
+    cols = sheets.deck_columns("course_structure")
+    # WHICH TOOL THIS SHEET IS FOR. "PPT Links" carries Google Slides links the agent
+    # fetches; "Web Slides" names decks the author uploads as files. The column present
+    # decides how each row's deck is recorded — and a course may have been created
+    # under one tool and re-imported under the other, so the sheet wins over the
+    # course's setting for the rows it carries.
+    mode = sheets.deck_column_present(sheet.headers, "course_structure") or "google"
+    emit("Deck column: " + (f"'{cols['google']}' — Google Slides links, fetched by the agent."
+                            if mode == "google" else
+                            f"'{cols['web']}' — Web Slides, uploaded as files in the "
+                            f"curriculum table."))
 
     rows = []
     for row in sheet.rows:
@@ -128,13 +137,27 @@ def import_sheet(course_link: str, course: str | None = None, *,
             number = int(float(no_raw))
         except (ValueError, TypeError):
             continue
-        rows.append({
+        rec = {
             "session_no": number,
             "topic": _col(row, "Topic Name"),
             "session_name": _col(row, "Session Name"),
             "key_takeaways": _split_takeaways(_col(row, "Key Takeaways")),
-            "ppt_link": _col(row, ppt_col),
-        })
+        }
+        if mode == "google":
+            rec["ppt_link"] = _col(row, cols["google"])
+        else:
+            # A named file is recorded as a deck awaiting upload; a BLANK cell says
+            # nothing (None keeps whatever the row holds) rather than detaching an
+            # upload — the sheet cannot carry the file, so it cannot be the authority
+            # on whether one has arrived.
+            named = (_col(row, cols["web"]) or "").strip()
+            # And the LINK is left alone too: a course that switched tools part-way
+            # keeps its earlier sessions' Google decks, which this sheet knows nothing
+            # about. Each sheet shape speaks only for its own kind of deck.
+            rec["ppt_link"] = None
+            rec["deck_file"] = named or None
+
+        rows.append(rec)
     res = db.curriculum_import(course, rows, replace=replace)
     emit(f"Imported {len(rows)} session(s) into the agent: "
          f"{res['added']} added, {res['updated']} updated"
@@ -172,7 +195,7 @@ def prune_orphan_decks(course: str | None = None) -> list[int]:
     rows = db.curriculum(course)
     if not rows:
         return []
-    linked = {r["session_no"] for r in rows if (r.get("ppt_link") or "").strip()}
+    linked = {r["session_no"] for r in rows if db.deck_source(r)}
     known = {r["session_no"] for r in rows}
     cleared = []
     # THIS course's decks only. Globbing the whole store meant a row edited in one
@@ -409,7 +432,43 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
     return res
 
 
+def ingest_upload(course: str, session_no: int, filename: str, data: bytes) -> dict:
+    """Extract an uploaded Web Slides deck for one session and record it on the row.
+
+    The upload path's equivalent of one `_fetch` in ingest_decks: extract, write through
+    the store (which mirrors it to the cloud DB at once), mark the row. The file itself
+    is not kept — only its text is ever used, and the row's content hash is enough to
+    tell a re-upload of the same download from a new one.
+    """
+    from . import db, webslides
+    rows = {r["session_no"]: r for r in db.curriculum(course)}
+    row = rows.get(int(session_no))
+    if row is None:
+        raise ValueError(f"Session {session_no} is not in this course's curriculum.")
+    name = webslides.safe_name(filename)
+    chash, deck = webslides.extract_upload(name, data, int(session_no),
+                                           row.get("session_name") or "")
+    pptx_ingest.put_deck(course, int(session_no), deck)
+    db.curriculum_set_deck_file(course, int(session_no), name, chash)
+    write_course_cache(course)
+    try:
+        from . import session_memory
+        session_memory.prune(course,
+                            recorded_sessions=pptx_ingest.deck_session_numbers(course))
+    except Exception:
+        pass
+    try:
+        rep = pptx_ingest.completeness_report(course)
+        issues = [d["issues"] for d in rep["decks"]
+                  if d.get("session_no") == int(session_no) and not d["ok"]]
+    except Exception:
+        issues = []
+    return {"session_no": int(session_no), "file": name, "n_slides": deck.get("n_slides"),
+            "warnings": [i for grp in issues for i in grp]}
+
+
 def _extraction_report(res: SyncResult, course: str) -> None:
+
     try:
         rep = pptx_ingest.completeness_report(course)
         for d in rep["decks"]:

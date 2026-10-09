@@ -30,6 +30,32 @@ Exactly these five columns (in any order):
 - **PPT Links** — the Google **Slides** link for that session's deck, on the same row
   as the session. The deck itself must also be link-viewable.
 
+### A course taught from Web Slides
+Pick **Web Slides** as the mode of teaching when the course is created (or later, in
+Settings). Its sheet carries a **Web Slides** column *instead of* **PPT Links** —
+exactly one of the two must be present:
+
+| Topic Name | Session | Session Name | Key Takeaways | Web Slides |
+|------------|---------|--------------|---------------|------------|
+| Transport Layer Basics | 9 | Introduction to Transport Layer | … | session-09.pptx |
+| Transport Layer Basics | 10 | Understanding TCP and UDP | … | *(blank — not recorded yet)* |
+
+- A Web Slides deck has no link the agent can fetch. Put the deck's file name (any
+  non-blank text will do) in the cell for a recorded session, and leave it blank for a
+  session still needing a TR doc.
+- After the import, open the curriculum table and **Upload** each recorded session's
+  downloaded deck (`.pptx`, `.pdf` or `.html`). It is extracted on the spot, exactly as
+  a Google deck is after "Fetch new decks".
+- Re-importing a Web Slides sheet never detaches a deck already uploaded, and never
+  touches a Google link a session still holds.
+
+### A course that switched tools part-way
+Decks are recorded **per session**, so a course can hold both kinds: sessions taught
+from Google Slides keep their links, and sessions taught from Web Slides take uploads.
+Every row's deck cell has a small *switch* to take the other kind. The course-level
+mode only names the column and sets the default for new rows.
+
+
 ### About the PPT Links column
 - **Leave it blank for a session that has not been recorded yet.** A blank is not an
   error: sessions *with* a deck are treated as already taught (they become the agent's
@@ -44,7 +70,8 @@ Exactly these five columns (in any order):
 ## Common reasons the sheet is discarded
 - A required column is **missing** or **misspelled** (e.g. `Sessions` instead of
   `Session`, or `PPT Link` instead of `PPT Links`).
-- An **extra** column is present that is not in the template.
+- An **extra** column is present that is not in the template, or **both** `PPT Links`
+  and `Web Slides` are present — keep only the one this course uses.
 - The link is **not shared** ("Anyone with the link → Viewer") so the agent cannot
   read it.
 

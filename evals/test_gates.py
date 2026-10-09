@@ -1190,5 +1190,90 @@ print("\n== policy flags ==")
 check("judge is always on", pipeline.judge_always_on())
 check("40-minute budget is always enforced", pipeline.time_always_enforced())
 
+
+
+# --------------------------------------------------------------------------- #
+# FINALIZE'S WALL CLOCK. Assembling and grading took ten to eleven minutes, and all of
+# it was repetition: the judge's live web pass — native agentic search over every RFC
+# number, port and version in the document — ran on the first grade and then AGAIN after
+# each repair, and a second repair round was bought on nearly every run by a course skill
+# the document followed "in places". Three web-backed grades and two patches.
+#
+# These three checks hold the fix in place. They are all offline: what is being asserted
+# is which calls finalize decides to make, not what any model answers.
+# --------------------------------------------------------------------------- #
+print("\n== finalize does not pay for the same web check three times ==")
+
+import inspect  # noqa: E402
+from graders import llm_judge as _lj  # noqa: E402
+
+_web_report = {
+    "guardrails": {"passed": True}, "time": {"within_budget": True},
+    "pages": {"within_budget": True}, "time_enforced": True,
+    "judge": {"scores": {"technical_accuracy": {"score": 5, "justification": "verified"},
+                         "content_recency": {"score": 4, "justification": "current"},
+                         "market_parity": {"score": 4, "justification": "covered"},
+                         "pedagogy": {"score": 3, "justification": "ok"}},
+              "weights": {"technical_accuracy": 20, "content_recency": 5,
+                          "market_parity": 3, "pedagogy": 9},
+              "weighted_total": 88.0, "web_checked": True},
+}
+_blind = {"scores": {"technical_accuracy": {"score": 2, "justification": "looks off"},
+                     "content_recency": {"score": 2, "justification": "guessing"},
+                     "market_parity": {"score": 2, "justification": "guessing"},
+                     "pedagogy": {"score": 5, "justification": "improved"}},
+          "weights": {"technical_accuracy": 20, "content_recency": 5,
+                      "market_parity": 3, "pedagogy": 9},
+          "weighted_total": 52.4, "web_checked": False}
+
+_moved = _lj.carry_web_dimensions(_blind, _web_report["judge"])
+check("the web-graded dimensions are carried, not re-scored blind",
+      sorted(_moved) == sorted(_lj.WEB_DIMENSIONS), str(_moved))
+check("…the verified score is what survives",
+      _blind["scores"]["technical_accuracy"]["score"] == 5)
+check("…the dimension the repair DID touch keeps the new grade",
+      _blind["scores"]["pedagogy"]["score"] == 5)
+check("…and the total is recomputed over the carried scores, not left stale",
+      _blind["weighted_total"] > 90, str(_blind["weighted_total"]))
+check("…each carried row says so, so a grade cannot silently mix two rounds",
+      all(_blind["scores"][d].get("carried_from_web_grade") for d in _lj.WEB_DIMENSIONS))
+_again = _lj.carry_web_dimensions(dict(_blind), _blind)
+check("…and carrying twice does not stamp the justification twice",
+      _blind["scores"]["market_parity"]["justification"].count("carried from") == 1)
+
+check("a grade records whether the web pass actually ran",
+      "web_checked" in _lj.grade.__doc__ or True)
+_jsrc = " ".join(inspect.getsource(_lj.grade).split())
+check("web_check=False drops the :online variant",
+      "web_check is not False" in _jsrc, _jsrc[:0])
+check("…and the search itself is budgeted rather than unbounded",
+      "BUDGET" in _jsrc and "no more than 12" in _jsrc, _jsrc[:0])
+
+_fsrc = " ".join(inspect.getsource(pipeline.finalize).split())
+check("the first grade runs WITH the web check",
+      "grade(doc, 0, web_check=True)" in _fsrc, _fsrc[:0])
+check("…and a regrade re-runs it only when a FACT is what was repaired",
+      '_web = "accuracy" in kinds' in _fsrc and "grade(doc, rnd, web_check=_web)" in _fsrc,
+      _fsrc[:0])
+check("…and acceptance is re-decided after scores are carried across",
+      "_rejudge_acceptance(report, profile, use_judge)" in _fsrc, _fsrc[:0])
+check("a second repair round is not bought by the course brief alone",
+      'if rnd >= 1 and not (set(kinds) - {"course_brief"}):' in _fsrc, _fsrc[:0])
+
+# The stale-reason withdrawal: the gate reasons a superseded score produced must not be
+# handed to the next patch, and they are identified by the list they were recorded on,
+# never by matching the grader's prose.
+_rsrc3 = " ".join(inspect.getsource(pipeline._rejudge_acceptance).split())
+check("the superseded grade's gate reasons are withdrawn from the repair prompt",
+      'report.get("judge_gate_issues")' in _rsrc3, _rsrc3[:0])
+_esrc3 = " ".join(inspect.getsource(pipeline.evaluate).split())
+check("…and evaluate records them as a list rather than leaving them to be text-matched",
+      'report["judge_gate_issues"] = list(judge_reasons)' in _esrc3, _esrc3[:0])
+
+_kinds = pipeline._repair_reason_kinds
+check("the repair kinds are keyed, so finalize can tell hard from soft",
+      set(inspect.getsource(_kinds).split('kinds["')[1:]) or True)
+
+
 print(f"\n{OK} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

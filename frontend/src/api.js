@@ -149,8 +149,13 @@ export const api = {
   status: () => req('/status'),
   templateGuide: () => req('/template-guide'),
   // ONE sheet: the curriculum, whose "PPT Links" column carries each session's deck.
-  sync: (course_link, course_type, course_name) =>
-    req('/sync', { method: 'POST', body: JSON.stringify({ course_link, course_type, course_name }) }),
+  // …or a "Web Slides" column instead, for a course taught from Web Slides — whose decks
+  // arrive as uploaded files (uploadDeckFile) rather than links. slides_mode says which.
+  sync: (course_link, course_type, course_name, slides_mode) =>
+    req('/sync', { method: 'POST',
+                   body: JSON.stringify({ course_link, course_type, course_name, slides_mode }) }),
+  saveSlidesMode: (course, slides_mode) =>
+    req('/course-slides-mode', { method: 'POST', body: JSON.stringify({ course, slides_mode }) }),
   sessions: (course) => req(`/sessions${qs({ course })}`),
 
   // Courses this person may work on — their teams' courses. A course one member
@@ -183,8 +188,9 @@ export const api = {
   deleteCourse: (course, detach_teams = false) =>
     req(`/courses${qs({ course, detach_teams: detach_teams ? 'true' : undefined })}`,
         { method: 'DELETE' }),
-  selectCourse: (course, course_type) =>
-    req('/courses/select', { method: 'POST', body: JSON.stringify({ course, course_type }) }),
+  selectCourse: (course, course_type, slides_mode) =>
+    req('/courses/select', { method: 'POST',
+                             body: JSON.stringify({ course, course_type, slides_mode }) }),
 
   // The agent's own curriculum — the source of truth once a course has been imported.
   // The sheet is an import format; everything after that happens here. The course is
@@ -213,7 +219,38 @@ export const api = {
   editSkill: (course, id, text, instructions) =>
     req(`/skills/${id}/edit`, { method: 'POST',
         body: JSON.stringify({ course, text, instructions }) }),
-  retireSkill: (course, id) => req(`/skills/${id}${qs({ course })}`, { method: 'DELETE' }),
+  // SCREENSHOTS attached to a skill — placed in every TR doc the skill governs
+  // (src/skill_images.py). Multipart, like uploadDeckFile, so req()'s JSON header is
+  // bypassed and the browser sets the boundary.
+  uploadSkillImages: async (course, id, files) => {
+    await freshToken()
+    const fd = new FormData()
+    for (const f of files) fd.append('files', f, f.name)
+    if (course) fd.append('course', course)
+    let res
+    try {
+      res = await fetch(`/api/skills/${id}/images`, {
+        method: 'POST', body: fd,
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      })
+    } catch (e) {
+      throw new Error('Cannot reach the backend API to upload the screenshots.')
+    }
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      const detail = data.detail || data
+      throw new Error((typeof detail === 'string' ? detail : detail.message)
+        || `Upload failed (HTTP ${res.status}).`)
+    }
+    return data
+  },
+  captionSkillImage: (course, id, image_id, caption) =>
+    req(`/skills/${id}/images/${image_id}/caption`,
+        { method: 'POST', body: JSON.stringify({ course, caption }) }),
+  deleteSkillImage: (course, id, image_id) =>
+    req(`/skills/${id}/images/${image_id}${qs({ course })}`, { method: 'DELETE' }),
+  retireSkill: (course, id) =>
+ req(`/skills/${id}${qs({ course })}`, { method: 'DELETE' }),
   promoteSkill: (course, id) => req(`/skills/${id}/promote${qs({ course })}`, { method: 'POST' }),
   prereqs: (course) => req(`/prereqs${qs({ course })}`),
   addPrereq: (course, prereq) =>
@@ -249,6 +286,32 @@ export const api = {
                                 body: JSON.stringify({ at_session_no, course }) }),
   deleteCurriculumRow: (session_no, course) =>
     req(`/curriculum/${session_no}${qs({ course })}`, { method: 'DELETE' }),
+  // A Web Slides deck, uploaded as the file the author downloaded (.pptx, .pdf or
+  // .html). Multipart, so it bypasses req()'s JSON content type: the browser sets the
+  // boundary itself. Extracted on the spot — the reply is the refreshed curriculum.
+  uploadDeckFile: async (course, session_no, file) => {
+    await freshToken()
+    const fd = new FormData()
+    fd.append('file', file, file.name)
+    if (course) fd.append('course', course)
+    let res
+    try {
+      res = await fetch(`/api/curriculum/${session_no}/deck-file`, {
+        method: 'POST', body: fd,
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      })
+    } catch (e) {
+      throw new Error('Cannot reach the backend API to upload the deck.')
+    }
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      const detail = data.detail || data
+      throw new Error((typeof detail === 'string' ? detail : detail.message)
+        || `Upload failed (HTTP ${res.status}).`)
+    }
+    return data
+  },
+
   // Fetches ONLY decks that are new or whose link changed. force=true re-checks decks
   // whose link is unchanged — the only way to pick up an edit to the slides themselves.
   ingestDecks: (force = false, sessions = null, course = undefined) =>

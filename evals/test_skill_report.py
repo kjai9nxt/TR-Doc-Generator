@@ -823,9 +823,14 @@ print("\n== a broken or loose rule now triggers the REPAIR pass ==")
 # was accepted and never looked at, because the repair loop was gated on `not accepted`.
 check("the brief is a configured repair trigger",
       _cfg.harness()["gates"]["guided_repair_on"].get("course_brief") is True)
-_rsrc = " ".join(inspect.getsource(_pipe._repair_reasons).split())
-check("…and _repair_reasons reads the report to raise it",
+# _repair_reason_kinds is where the four triggers are decided; _repair_reasons is now
+# the flattening of it. finalize needs them apart to tell a course-brief round (worth one
+# pass, and no re-run of the judge's web search) from a hard one.
+_rsrc = " ".join(inspect.getsource(_pipe._repair_reason_kinds).split())
+check("…and the repair triggers read the report to raise it",
       "skill_report" in _rsrc and "repairable" in _rsrc, _rsrc[:0])
+check("…and _repair_reasons is exactly that list, flattened",
+      "_repair_reason_kinds" in " ".join(inspect.getsource(_pipe._repair_reasons).split()))
 _fsrc2 = " ".join(inspect.getsource(_pipe.finalize).split())
 # Matched on the LOOP STATEMENT, not on the phrase: the comment above it explains what
 # it replaced, so searching for "not accepted" anywhere in the source found my own prose.

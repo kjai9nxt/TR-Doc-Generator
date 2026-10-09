@@ -416,7 +416,19 @@ def block(course: str, session=None, compact: bool = False, refs: bool = False) 
             out += ["", f"### {cat.upper()}"]
             for s in batch:
                 _render(s, out, ref_of.get(s.get("id")))
+    # THE SCREENSHOTS the approved skills carry. Unlike every line above, these are
+    # meant to appear IN the document — as image blocks — so they are briefed apart from
+    # the "never print it" rules, after them.
+    try:
+        from . import skill_images as _imgs
+        images = [{**im, "skill_text": s.get("text") or "", "session_ref": s.get("session_ref")}
+                  for t, _, _ in _TIERS for s in (tiers.get(t) or [])
+                  for im in (s.get("images") or [])]
+        out += _imgs.brief(images, compact=compact)
+    except Exception:
+        pass
     return "\n".join(out) + "\n"
+
 
 
 # --------------------------------------------------------------------------- #

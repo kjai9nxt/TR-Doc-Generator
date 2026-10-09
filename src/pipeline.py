@@ -57,7 +57,8 @@ def _score_key(accepted: bool, report: dict) -> tuple:
 
 def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bool,
              enforce_time: bool = True, budgets: dict | None = None,
-             course: str | None = None, profile: dict | None = None):
+             course: str | None = None, profile: dict | None = None,
+             web_check: bool | None = None):
     """Run all graders/guardrails on a draft. Returns (accepted, report, issues).
 
     enforce_time=False keeps the recording-time estimate in the report but stops it
@@ -128,11 +129,17 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
         # press the button again and the grade is re-asked.
         try:
             jr = llm_judge.grade(doc, session, te, page_estimate=pe,
-                                 enforce_time=enforce_time, course=course, profile=profile)
+                                 enforce_time=enforce_time, course=course, profile=profile,
+                                 web_check=web_check)
             report["judge"] = jr
             rubric_total = jr.get("weighted_total", 0)
             judge_ok, judge_reasons = llm_judge.passes_gates(jr, profile)
             issues += judge_reasons
+            # Recorded as its own list, not just merged into `issues`. When a later round
+            # carries a web-verified dimension across, the gate reasons derived from the
+            # score it replaces have to be withdrawn — and finding them again by matching
+            # their text would mean parsing prose the grader is free to reword.
+            report["judge_gate_issues"] = list(judge_reasons)
         except Exception as e:
             # `evaluate` has no logger of its own — it is called from several places —
             # so the failure travels on the report, which every caller already reads.
@@ -275,6 +282,8 @@ def run(session_no: int, *, use_judge: bool = True, course_file=None, do_sync: b
 
     log("Generating draft 1 … (this LLM step takes ~1-2 minutes)")
     doc = generator.generate(user_prompt, course=course, session=cur.number)
+    for note in _reconcile_images(doc, course, cur.number):
+        log(note)
 
     max_rounds = config.harness()["gates"]["max_revision_rounds"]
     history = []
@@ -504,6 +513,48 @@ def assemble_doc(cur, nxt, opening: dict, sections: list[dict],
     return doc
 
 
+def _rejudge_acceptance(report: dict, profile: dict | None,
+                        use_judge: bool) -> tuple[bool, list[str]]:
+    """Re-decide acceptance after a grade's scores were edited, and say why.
+
+    `evaluate` computes `accepted` from the judge result it just received, so carrying a
+    dimension across from an earlier round leaves that boolean describing a grade that no
+    longer exists — a document could be rejected for a technical_accuracy the blind
+    regrade invented, or accepted on one the web pass had actually failed. Every input is
+    already on the report, so all four gates are simply re-read from it.
+    """
+    gr_ok = bool(report.get("guardrails", {}).get("passed", True))
+    te = report.get("time") or {}
+    time_ok = bool(te.get("within_budget", True)) or not report.get("time_enforced", True)
+    page_gate = config.harness()["gates"].get("pages_within_budget", True)
+    page_ok = bool((report.get("pages") or {}).get("within_budget", True)) or not page_gate
+    judge_ok, reasons = True, []
+    if use_judge and report.get("judge"):
+        judge_ok, reasons = llm_judge.passes_gates(report["judge"], profile)
+    # Withdraw the gate reasons the superseded scores produced. They are handed to the
+    # repair prompt, so leaving them would have the next patch chase a technical_accuracy
+    # deduction that the web-verified score it now carries never made.
+    _stale = set(report.get("judge_gate_issues") or [])
+    if _stale:
+        report["issues"] = [i for i in (report.get("issues") or []) if i not in _stale]
+    report["judge_gate_issues"] = list(reasons)
+    new = gr_ok and time_ok and page_ok and judge_ok
+    report["accepted"] = new
+    # De-duplicated: `evaluate` already put the blind grade's gate reasons on the report,
+    # and the carried dimensions usually reproduce most of them word for word.
+    _have = list(report.get("issues") or [])
+    reasons = [r for r in reasons if r not in _have]
+    report["issues"] = _have + reasons
+    try:
+        from graders import verdict as _verdict
+        report["verdict"] = _verdict.build(report)
+    except Exception:
+        pass
+    # The ISSUE LIST, not just the new reasons: it is what the next repair pass is handed,
+    # and it has had stale entries withdrawn as well as fresh ones added.
+    return new, report["issues"]
+
+
 def _repair_reasons(doc: dict, report: dict) -> list[str]:
     """Why the assembled guided doc must be repaired — or [] to leave it alone.
 
@@ -522,13 +573,32 @@ def _repair_reasons(doc: dict, report: dict) -> list[str]:
 
     Everything else the human approved chunk by chunk, and their judgement stands.
     """
+    return [r for rs in _repair_reason_kinds(doc, report).values() for r in rs]
+
+
+def _repair_reason_kinds(doc: dict, report: dict) -> dict[str, list[str]]:
+    """The same admissible reasons, KEPT APART BY KIND rather than flattened to prose.
+
+    finalize needs the kind and not just the sentence, for two decisions it could not
+    make from a list of strings:
+
+      · whether the regrade after the patch needs the judge's live web pass — it does
+        only for `accuracy`, and that pass is the slowest call in the whole pipeline;
+      · whether a SECOND repair round is worth buying. `course_brief` fires on a skill
+        the document follows "in places", which is the commonest of the four and the one
+        a single patch usually settles; left ungated it bought a second patch and a third
+        full grade on almost every finalize.
+    """
     cfg = config.harness()["gates"].get("guided_repair_on") or {}
-    reasons = []
+    kinds: dict[str, list[str]] = {}
     if cfg.get("length", True):
-        reasons += _too_long(doc, report)
+        long = _too_long(doc, report)
+        if long:
+            kinds["length"] = long
     if cfg.get("guardrails", False) and not report.get("guardrails", {}).get("passed", True):
         n = len(report.get("guardrails", {}).get("failures") or [])
-        reasons.append(f"{n} structural guardrail failure(s) on the assembled document")
+        kinds["guardrails"] = [
+            f"{n} structural guardrail failure(s) on the assembled document"]
     if cfg.get("course_brief", False):
         try:
             from graders import skill_report as _sr
@@ -540,16 +610,16 @@ def _repair_reasons(doc: dict, report: dict) -> list[str]:
             n_p = len(bad) - n_f
             parts = ([f"{n_f} not followed"] if n_f else []) + \
                     ([f"{n_p} followed only in places"] if n_p else [])
-            reasons.append(f"{len(bad)} of this course's own skills "
-                           f"({', '.join(parts)})")
+            kinds["course_brief"] = [f"{len(bad)} of this course's own skills "
+                                     f"({', '.join(parts)})"]
     if cfg.get("technical_accuracy", False):
         bar = config.harness()["gates"].get("rubric_min_per_dimension", 4)
         score = ((report.get("judge") or {}).get("scores") or {}).get(
             "technical_accuracy") or {}
         got = score.get("score")
         if isinstance(got, (int, float)) and got < bar:
-            reasons.append(f"technical accuracy scored {got}/5 (needs {bar})")
-    return reasons
+            kinds["accuracy"] = [f"technical accuracy scored {got}/5 (needs {bar})"]
+    return kinds
 
 
 def _too_long(doc: dict, report: dict) -> list[str]:
@@ -576,7 +646,22 @@ def _too_long(doc: dict, report: dict) -> list[str]:
     return over
 
 
+def _reconcile_images(doc: dict, course: str | None, session_no) -> list[str]:
+    """Every attached screenshot in the document once (src/skill_images). Never fatal."""
+    if not course:
+        return []
+    try:
+        from . import db, skill_images
+        images = db.skill_images_for_run(course, session=session_no)
+        if not images:
+            return []
+        return skill_images.reconcile(doc, images)
+    except Exception as e:
+        return [f"⚠ attached screenshots not reconciled: {e}"]
+
+
 def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
+
              enforce_time: bool = True, on_event=None, run_id: str | None = None,
              budgets: dict | None = None,
              standing_notes: list | None = None,
@@ -629,11 +714,11 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     profile = _profiles.for_course(course)
     is_first, is_last = prev is None, nxt is None
 
-    def grade(d: dict, rnd: int):
+    def grade(d: dict, rnd: int, web_check: bool | None = None):
         t0 = time.monotonic()
         acc, rep, iss, _ = evaluate(d, cur, is_first, is_last, use_judge=use_judge,
                                     enforce_time=enforce_time, budgets=budgets,
-                                    course=course, profile=profile)
+                                    course=course, profile=profile, web_check=web_check)
         rep["round"] = rnd
         log(f"accepted={acc} | est={rep['time']['estimated_minutes']}min"
             f"{'' if enforce_time else ' (40-min limit OFF — not graded on time)'} "
@@ -653,9 +738,15 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     # the same treatment here, so it is not graded on a rule code can simply apply.
     if pin_section_names(doc, cur):
         log("Section names set to their key takeaways, verbatim.")
-    log("Grading the assembled doc …" + (" (judging quality, ~1 min)" if use_judge else ""))
+    # The screenshots the brief carries have to be IN the document, whatever the writer
+    # did with them — see src/skill_images.reconcile. Before grading, so the judge and
+    # the page estimate see the document that will be rendered.
+    for note in _reconcile_images(doc, course, cur.number):
+        log(note)
+    log("Grading the assembled doc …" + (" (judging quality and checking its facts on "
+                                        "the web, ~1-3 min)" if use_judge else ""))
     t_start = time.monotonic()
-    accepted, report, issues = grade(doc, 0)
+    accepted, report, issues = grade(doc, 0, web_check=True)
     history = [report]
 
     # --- REPAIR. Bounded, and only for defects a chunk review could not have caught:
@@ -672,8 +763,21 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
     # this changes no existing verdict — it just stops "accepted" from meaning "nothing
     # left worth fixing". `best` still refuses to ship a repair that scored worse.
     while rnd < max_repair:
-        over = _repair_reasons(doc, report)
+        kinds = _repair_reason_kinds(doc, report)
+        over = [r for rs in kinds.values() for r in rs]
         if not over:
+            break
+        # A SECOND round has to be bought by a HARD defect. `course_brief` fires whenever
+        # a course skill is followed only in places, which is the commonest of the four
+        # reasons and the one a single patch usually settles — so left ungated it bought
+        # a second patch AND a third full web-backed grade on nearly every finalize, for
+        # a row the reviewer can read and judge for themselves. That is most of why
+        # finalize took ten minutes rather than four. One pass at it, then it stands.
+        if rnd >= 1 and not (set(kinds) - {"course_brief"}):
+            log(f"Not repairing again: the only thing left is {over[0]}, which repair "
+                f"{rnd} already had a pass at. The skill report says which rows stand — "
+                f"they are rules about style, not defects the document has to be held "
+                f"back for.")
             break
         rnd += 1
         log(f"Repairing {', '.join(over)} — these are properties of the assembled "
@@ -725,7 +829,23 @@ def finalize(session_no: int, doc: dict, *, use_judge: bool = True,
         pin_section_names(doc, cur)
         log(f"Repair {rnd} took {time.monotonic() - t_rep:.0f}s.")
         prev_report = report
-        accepted, report, issues = grade(doc, rnd)
+        # THE WEB PASS IS NOT RE-RUN unless a FACT is what we are repairing. Searching
+        # the document's RFC numbers, ports, bit-widths and versions, and then its
+        # coverage on three reference sites, is the slowest call in the pipeline, and a
+        # patch that trims length or applies a course skill has not changed any of it.
+        # The verified scores are carried across instead of being re-derived blind —
+        # see llm_judge.carry_web_dimensions for why re-scoring them without the search
+        # is worse than not re-scoring them at all.
+        _web = "accuracy" in kinds
+        accepted, report, issues = grade(doc, rnd, web_check=_web)
+        if not _web:
+            _carried = llm_judge.carry_web_dimensions(report.get("judge") or {},
+                                                      prev_report.get("judge") or {})
+            if _carried:
+                log(f"Kept the web-verified scores for {', '.join(_carried)} from the "
+                    f"first grade — this repair did not touch what they measure, and "
+                    f"re-searching the whole document for them is the slowest step here.")
+                accepted, issues = _rejudge_acceptance(report, profile, use_judge)
         # "PASS" and "PARTIAL → REPAIRED" are different facts: the second says the rule
         # did not land at generation time and had to be corrected, which is the signal
         # that the rule needs rewording. Only the final state survived before.

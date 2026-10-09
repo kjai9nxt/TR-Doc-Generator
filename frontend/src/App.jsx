@@ -28,6 +28,11 @@ export default function App() {
   // ONE sheet: the curriculum, whose "PPT Links" column carries each session's deck.
   const [courseLink, setCourseLink] = useState('')
   const [courseType, setCourseType] = useState('semester')
+  // THE TEACHING TOOL, per course: 'google' — a Google Slides link per session that the
+  // agent fetches; 'web' — Web Slides, which the author downloads and uploads as a file.
+  // It names the deck column ("PPT Links" / "Web Slides") and picks how a row takes its
+  // deck by default; a course that switched tools part-way keeps both kinds, row by row.
+  const [slidesMode, setSlidesMode] = useState('google')
   const [courseName, setCourseName] = useState('Computer Networks')
   const [syncing, setSyncing] = useState(false)
   const [syncOut, setSyncOut] = useState(null)
@@ -175,6 +180,7 @@ export default function App() {
     setTab('curriculum')
     setNewCourse(true); setShowImport(true)
     setCourseName(''); setCourseLink(''); setSyncErr(null); setSyncOut(null); setSyncLogs([])
+    setSlidesMode('google')
     // …and clear the course currently on screen. Only the NAME was being cleared, so
     // the previous course's curriculum stayed on display underneath the create form —
     // as if the new course already had 34 sessions in it.
@@ -486,7 +492,26 @@ export default function App() {
       session_name: r.session_name || '',
       key_takeaways: (r.key_takeaways || []).filter((l) => String(l).trim()),
       ppt_link: r.ppt_link ?? null,
+      // The uploaded Web Slides deck's name travels with the row so an edit to a
+      // takeaway keeps it; '' is how "Detach" clears it.
+      deck_file: r.deck_file ?? null,
     }))
+  }
+  // A Web Slides deck for one session: the downloaded file, extracted on upload. The
+  // reply is the refreshed curriculum, exactly as a save returns it.
+  const [curUploading, setCurUploading] = useState(null)
+  function uploadDeckFile(r, file) {
+    if (!file) return
+    setCurUploading(Number(r.session_no)); setCurLogs([])
+    api.uploadDeckFile(courseName || undefined, Number(r.session_no), file)
+      .then((d) => {
+        applyCurriculumReply(d)
+        const u = d.upload || {}
+        setCurLogs([`✓ Session ${u.session_no}: read ${u.n_slides ?? '?'} slide(s) from ${u.file}`,
+                    ...(u.warnings || []).map((w) => `⚠ ${w}`)])
+      })
+      .catch((e) => setCurLogs([`Upload failed — ${e.message}`]))
+      .finally(() => setCurUploading(null))
   }
 
   // EVERY curriculum-mutating reply lands here. The table and the Generate dropdown are
@@ -745,6 +770,7 @@ export default function App() {
       }
       if (b.status?.saved_links?.course) setCourseLink(b.status.saved_links.course)
       if (b.status?.settings?.course_type) setCourseType(b.status.settings.course_type)
+      setSlidesMode(b.curriculum?.slides_mode || 'google')
       setCourseName(b.course || '')
       setCourses(b.courses || [])
       setMyTeams(b.workspaces?.teams || [])
@@ -853,7 +879,7 @@ export default function App() {
 
   function doSync() {
     setSyncing(true); setSyncErr(null); setSyncOut(null); setSyncLogs([])
-    api.sync(courseLink, courseType, courseName).then(({ job_id }) => {
+    api.sync(courseLink, courseType, courseName, slidesMode).then(({ job_id }) => {
       syncPollRef.current = setInterval(async () => {
         try {
           const job = await api.job(job_id)
@@ -1426,6 +1452,7 @@ export default function App() {
           onInsert={insertCurriculumRow}
           saving={curSaving} ingesting={curIngesting} dirty={curDirty}
           pending={curPending} logs={curLogs}
+          slidesMode={slidesMode} onUpload={uploadDeckFile} uploading={curUploading}
           budget={budget} onBudget={saveBudget}
           teams={myTeams} sharing={sharing} onShare={shareCourseWithTeam}
         />
@@ -1474,6 +1501,19 @@ export default function App() {
             </select>
             <span className="hint">Both help clear interviews; semester goes deeper on theory.</span>
           </div>
+          <div className="settingcol">
+            <label>Mode of teaching</label>
+            <select value={slidesMode} onChange={(e) => setSlidesMode(e.target.value)}>
+              <option value="google">Google Slides — paste a link per session</option>
+              <option value="web">Web Slides — upload the downloaded file per session</option>
+            </select>
+            <span className="hint">
+              {slidesMode === 'web'
+                ? 'The sheet carries a “Web Slides” column; decks are uploaded in the curriculum table.'
+                : 'The sheet carries a “PPT Links” column; the agent fetches each deck from its link.'}
+              {' '}Can be changed later in Settings, and a course may mix both.
+            </span>
+          </div>
         </div>
         {/* The sheet is an IMPORT FORMAT, not a dependency: it seeds the course and is
             then out of the loop. */}
@@ -1481,9 +1521,16 @@ export default function App() {
         <input value={courseLink} onChange={(e) => setCourseLink(e.target.value)}
                placeholder="https://docs.google.com/spreadsheets/d/.../edit" />
         <span className="hint">
-          One sheet, shared as “Anyone with the link → Viewer”. Its <b>PPT Links</b> column
-          holds each recorded session's Google Slides deck — leave that cell blank for a
-          session not recorded yet.
+          {slidesMode === 'web' ? (
+            <>One sheet, shared as “Anyone with the link → Viewer”. Its <b>Web Slides</b> column
+            names each recorded session's deck file (any text will do) — leave that cell blank
+            for a session not recorded yet. The files themselves are uploaded row by row in the
+            curriculum table after the import.</>
+          ) : (
+            <>One sheet, shared as “Anyone with the link → Viewer”. Its <b>PPT Links</b> column
+            holds each recorded session's Google Slides deck — leave that cell blank for a
+            session not recorded yet.</>
+          )}
         </span>
         <div className="curactions">
           <button className="primary" disabled={!courseLink || !courseName || syncing} onClick={doSync}>
@@ -1990,7 +2037,19 @@ export default function App() {
                       {!allApproved && !finalizing && <div className="hint">Approve every chunk to enable creating the final doc.</div>}
                     </>
                   )}
-                  {guidedAssembling && <Busy label="Assembling & grading the full doc…" />}
+                  {/* THE RUN LOG, not just a spinner. Finalize grades the assembled
+                      doc, may repair it once, and re-grades — several minutes of real
+                      work that the backend already narrates line by line (pipeline.
+                      finalize logs every grade, every repair and how long each took).
+                      Showing only a spinner for that made a working run look hung, and
+                      the one question it left — "what is it doing?" — had its answer
+                      already written and thrown away. */}
+                  {guidedAssembling && (
+                    <>
+                      <Busy label="Assembling & grading the full doc…" />
+                      <pre className="logs">{(guided.logs || []).join('\n') || 'Working…'}</pre>
+                    </>
+                  )}
                 </div>
               )}
             </>
@@ -2238,6 +2297,15 @@ export default function App() {
           onPromote={(id) => runSkillAction(
             () => api.promoteSkill(courseName, id),
             'Moved to the course skills — it now applies to every session of this course.')}
+          onAttachImages={(id, files) => runSkillAction(
+            () => api.uploadSkillImages(courseName, id, files),
+            'Screenshots attached. Give each a caption saying what it shows — the writer places '
+            + 'it on the matching slide of every TR doc this skill governs, once the skill is approved.')}
+          onCaptionImage={(id, imageId, caption) => runSkillAction(
+            () => api.captionSkillImage(courseName, id, imageId, caption), 'Caption saved.')}
+          onRemoveImage={(id, imageId) => runSkillAction(
+            () => api.deleteSkillImage(courseName, id, imageId), 'Screenshot removed.')}
+
           onRetire={(id) => runSkillAction(
             () => api.retireSkill(courseName, id),
             'Retired. It is kept on the record, so an old doc can still be explained.')}
@@ -2266,7 +2334,9 @@ export default function App() {
           deleting={deleting}
                         rows={curRows} onSession={saveSessionBudget}
                         courseType={courseType}
-                        onCourseType={(v) => { setCourseType(v); api.selectCourse(courseName, v).catch(() => {}) }} />
+                        onCourseType={(v) => { setCourseType(v); api.selectCourse(courseName, v).catch(() => {}) }}
+                        slidesMode={slidesMode}
+                        onSlidesMode={(v) => { setSlidesMode(v); api.saveSlidesMode(courseName, v).catch(() => {}) }} />
       )}
 
       {/* rules defaults to [] — LearnedRules filters the list on render, so passing the
@@ -2637,7 +2707,13 @@ function SkillBody({ text, className = 'skilltext', labelFirst = false }) {
  */
 function SkillCard({ s, canEdit, busy, editing, editText,
                      setEditText, editIns, setEditIns, onStartEdit, onCancelEdit,
-                     onSave, onApprove, onRetire, onPromote, open, onToggle }) {
+                     onSave, onApprove, onRetire, onPromote, open, onToggle,
+                     onAttach, onCaption, onRemoveImage }) {
+  // SCREENSHOTS the skill carries. Unlike its lines, these go INTO the document: the
+  // writer is told to place each one on the slide it illustrates, and anything it
+  // forgets is placed for it before the doc is graded (src/skill_images.py).
+  const shots = s.images || []
+  const [capDraft, setCapDraft] = useState({})
   // OPEN BY DEFAULT ON A DRAFT. The agent is allowed to sharpen a skill and to give it
   // structure the author did not type, so approving one means checking it against what
   // you wrote — and that is exactly the moment a draft is being read. On an approved
@@ -2651,7 +2727,7 @@ function SkillCard({ s, canEdit, busy, editing, editText,
   const body = String(s.text || '').split('\n')
   const name = body[0] || ''
   const rest = body.slice(1).join('\n').trim()
-  const hasMore = !!rest || lines.length > 0
+  const hasMore = !!rest || lines.length > 0 || (s.images || []).length > 0
   // The file's size, in the unit that means something here.
   const size = lines.length
     ? `${lines.length} instruction${lines.length === 1 ? '' : 's'}`
@@ -2704,6 +2780,14 @@ function SkillCard({ s, canEdit, busy, editing, editText,
                   <button className="ghostbtn sm" disabled={busy} onClick={onPromote}
                           title="Apply this skill to every session of the course, not just this one">
                     <Icon name="expand" size={13} />Add to course skills</button>)}
+                <label className={`ghostbtn sm upbtn ${busy ? 'disabled' : ''}`}
+                       title="Attach screenshots (PNG/JPEG) that must appear in every TR doc this skill governs. Open the card to caption or remove them.">
+                  <Icon name="image" size={13} />
+                  {shots.length ? `Screenshots (${shots.length})` : 'Attach screenshots'}
+                  <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple
+                         disabled={busy}
+                         onChange={(e) => { const fs = Array.from(e.target.files || []); e.target.value = ''; if (fs.length) onAttach?.(fs) }} />
+                </label>
                 <button className="iconbtn" disabled={busy} title="Edit this skill"
                         onClick={onStartEdit}><Icon name="pencil" size={14} /></button>
                 <button className="iconbtn danger" disabled={busy}
@@ -2717,6 +2801,35 @@ function SkillCard({ s, canEdit, busy, editing, editText,
 
       {shown && (
         <div className="filebody">
+          {shots.length > 0 && (
+            <div className="shots">
+              {shots.map((im) => (
+                <figure key={im.id} className="shot">
+                  <img src={`/api/skill-images/${im.key}`} alt={im.caption || im.filename}
+                       loading="lazy" />
+                  {canEdit ? (
+                    <input className="shotcap" value={capDraft[im.id] ?? (im.caption || '')}
+                           placeholder="Caption — what the learner is looking at"
+                           title="The caption is what the writer reads to decide where this goes, and what prints under the picture."
+                           onChange={(e) => setCapDraft({ ...capDraft, [im.id]: e.target.value })}
+                           onBlur={() => {
+                             const v = capDraft[im.id]
+                             if (v != null && v.trim() !== (im.caption || '').trim()) onCaption?.(im.id, v)
+                           }} />
+                  ) : <figcaption>{im.caption}</figcaption>}
+                  {canEdit && (
+                    <button className="iconbtn danger shotdel" disabled={busy}
+                            title="Remove this screenshot"
+                            onClick={() => onRemoveImage?.(im.id)}><Icon name="x" size={12} /></button>
+                  )}
+                </figure>
+              ))}
+              <span className="hint shothint">
+                Placed in the TR doc on the slide each caption best matches, once the skill is
+                approved.
+              </span>
+            </div>
+          )}
           {editing ? (
             <>
               {/* Auto-sized, because a skill can be a paragraph and its points and a
@@ -2806,6 +2919,7 @@ function SkillCard({ s, canEdit, busy, editing, editText,
 function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onClearMsg,
                       courses = [], justCreated, onDismissNew, onHelp,
                       onAdd, onFromRequirements, onImport, onApprove, onEdit, onRetire, onPromote,
+                      onAttachImages, onCaptionImage, onRemoveImage,
                       onAddPrereq, onAddExternalPrereq, onRemovePrereq, job }) {
   const jobRan = useRef(false)
   const [extName, setExtName] = useState('')
@@ -3312,6 +3426,9 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                              onApprove={() => onApprove(s.id)}
                              onRetire={() => onRetire(s.id)}
                              onPromote={() => onPromote?.(s.id)}
+                             onAttach={(files) => { setOpenIds((v) => new Set(v).add(s.id)); onAttachImages?.(s.id, files) }}
+                             onCaption={(imageId, caption) => onCaptionImage?.(s.id, imageId, caption)}
+                             onRemoveImage={(imageId) => onRemoveImage?.(s.id, imageId)}
                              open={openIds.has(s.id)} onToggle={() => toggleOpen(s.id)} />
                 ))}
               </section>
@@ -3344,6 +3461,7 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
 
 
 function CourseSettings({ course, budget, onChange, courseType, onCourseType,
+                         slidesMode = 'google', onSlidesMode,
                          rows = [], onSession,
                          canDelete, sharedWith = [], onAskDelete, onDelete,
                          deleteAsk, onCancelDelete, deleting }) {
@@ -3361,6 +3479,17 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
         <option value="interview">Interview-targeted</option>
       </select>
       <span className="hint">Both aim at clearing interviews; semester goes deeper on theory.</span>
+
+      <label>Mode of teaching</label>
+      <select value={slidesMode} onChange={(e) => onSlidesMode?.(e.target.value)}>
+        <option value="google">Google Slides — paste a link per session</option>
+        <option value="web">Web Slides — upload the downloaded file per session</option>
+      </select>
+      <span className="hint">
+        Names the curriculum's deck column (“PPT Links” or “Web Slides”) and sets how a new
+        row takes its deck. Sessions already holding the other kind keep it — a course that
+        moved from Google Slides to Web Slides part-way keeps every deck it had.
+      </span>
 
       <label>Document length for every session in this course</label>
       <div className="setrowpair">
@@ -3838,10 +3967,20 @@ function TemplateSidePanel({ markdown, onClose }) {
 function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert, onIngest,
                                saving, ingesting, dirty, pending,
                                logs, teams = [], sharing, onShare,
-                               budget, onBudget }) {
+                               budget, onBudget,
+                               slidesMode = 'google', onUpload, uploading = null }) {
   function edit(i, field, value) {
     setRows((rs) => rs.map((r, k) => (k === i ? { ...r, [field]: value, _dirty: true } : r)))
   }
+  // HOW EACH ROW TAKES ITS DECK. The course's mode is the default; a row that already
+  // holds the other kind shows that kind, and a row can be switched by hand — this is
+  // what lets a course that moved from Google Slides to Web Slides at session 12 keep
+  // sessions 1–11 as links and take 12 onwards as uploads.
+  const rowKind = (r) => r._kind
+    || (r.deck_file && !r.ppt_link ? 'web' : (r.ppt_link ? 'google' : slidesMode))
+  const setKind = (i, kind) =>
+    setRows((rs) => rs.map((r, k) => (k === i ? { ...r, _kind: kind } : r)))
+  const deckLabel = slidesMode === 'web' ? 'Web Slides' : 'PPT link'
   // Insert a blank session AT a position — end of the list, or between any two rows.
   // The only add button used to be at the top, so adding a session to a 34-row course
   // meant scrolling back up every time.
@@ -3872,17 +4011,62 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
     return [...seen.entries()].filter(([, n]) => n > 1).map(([no]) => no)
   })()
   const deckChip = (r) => {
-    if (!r.ppt_link) return <span className="chip">no deck</span>
+    if (!r.ppt_link && !r.deck_file) return <span className="chip">no deck</span>
     if (r.extracted) return <span className="chip good" title="Already extracted — syncing will not download it again">extracted</span>
+    if (r.deck_file && !r.ppt_link) {
+      return <span className="chip mid" title="The sheet names this file; upload it to extract the deck">awaiting upload</span>
+    }
     return <span className="chip mid" title="Will be fetched by 'Fetch new decks'">pending</span>
+  }
+  // The deck cell: a link box, or an upload button with the file's name. Which one is
+  // the row's kind (see rowKind); the tiny switch underneath flips it for this row only.
+  const deckCell = (r, i) => {
+    const kind = rowKind(r)
+    const other = kind === 'web' ? 'google' : 'web'
+    const busy = uploading === Number(r.session_no)
+    return (
+      <div className="c-ppt deckcell">
+        {kind === 'web' ? (
+          <div className="deckfile">
+            {r.deck_file
+              ? <span className="deckname" title={r.deck_file}>{r.deck_file}</span>
+              : <span className="deckname muted">no file yet</span>}
+            <label className={`ghostbtn tiny upbtn ${busy ? 'disabled' : ''}`}
+                   title="Upload the Web Slides download for this session (.pptx, .pdf or .html). It is extracted at once.">
+              <Icon name="plus" size={11} /> {busy ? 'Reading…' : (r.deck_file ? 'Replace' : 'Upload')}
+              <input type="file" accept=".pptx,.pdf,.html,.htm" disabled={busy || !onUpload}
+                     onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) onUpload?.(r, f) }} />
+            </label>
+            {r.deck_file && (
+              <button className="ghostbtn tiny" title="Detach this deck — the session goes back to needing a TR doc (takes effect on Save)"
+                      onClick={() => edit(i, 'deck_file', '')}>Detach</button>
+            )}
+          </div>
+        ) : (
+          <textarea rows={2} value={r.ppt_link || ''}
+                    placeholder="https://docs.google.com/presentation/d/…"
+                    title="The deck for this session, if it has been recorded. Blank means the session still needs a TR doc. Changing this link is the only thing that makes the agent download a deck again."
+                    onChange={(e) => edit(i, 'ppt_link', e.target.value)} />
+        )}
+        <button className="kindswitch" type="button"
+                title={other === 'web' ? 'This session was taught from Web Slides — upload its file instead'
+                                       : 'This session was taught from Google Slides — paste its link instead'}
+                onClick={() => setKind(i, other)}>
+          {kind === 'web' ? 'Web Slides' : 'Google Slides'} · switch
+        </button>
+      </div>
+    )
   }
   return (
     <section className="card">
       <h2><span className="hicon"><Icon name="curriculum" /></span> Curriculum — {course}</h2>
       <p className="hint">
         This is the agent's own copy of the course. Edit a session, add a new one, or
-        paste a deck link and press <b>Save</b>. Decks are downloaded <b>once per link</b>,
-        so saving an edit never re-fetches anything.
+        {slidesMode === 'web'
+          ? <> upload a session's Web Slides file — it is extracted on the spot — and press <b>Save</b> for the rest.</>
+          : <> paste a deck link and press <b>Save</b>. Decks are downloaded <b>once per link</b>,
+            so saving an edit never re-fetches anything.</>}
+        {' '}Any row can take the other kind of deck (see the switch under its deck cell).
       </p>
 
       <div className="curactions">
@@ -3938,7 +4122,7 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
           <span className="c-topic">Topic name</span>
           <span className="c-name">Session name</span>
           <span className="c-kt">Key takeaways — one per line</span>
-          <span className="c-ppt">PPT link</span>
+          <span className="c-ppt">{deckLabel}</span>
           <span className="c-deck">Deck</span>
           <span className="c-act" />
         </div>
@@ -3962,10 +4146,7 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
                       placeholder={'1. Topic: sub-topic; sub-topic\n2. Topic: sub-topic'}
                       title="Each line becomes an agenda item, a section and a Key Takeaway verbatim. Everything after the colon is a promise the session must teach."
                       onChange={(e) => edit(i, 'key_takeaways', e.target.value.split('\n'))} />
-            <textarea className="c-ppt" rows={2} value={r.ppt_link || ''}
-                      placeholder="https://docs.google.com/presentation/d/…"
-                      title="The deck for this session, if it has been recorded. Blank means the session still needs a TR doc. Changing this link is the only thing that makes the agent download a deck again."
-                      onChange={(e) => edit(i, 'ppt_link', e.target.value)} />
+            {deckCell(r, i)}
             {/* Per-session budget overrides are NOT here. Two more columns took the
                 row to nine cells against a seven-column grid, so Deck and ✕ wrapped onto
                 a line of their own and the sheet stopped reading as a sheet. They are a
@@ -4002,8 +4183,9 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
       <span className="hint">
         Each takeaway line becomes an agenda item, a section and a Key Takeaway
         <b> verbatim</b>; everything after the colon is treated as a promise the session
-        must teach. A blank PPT link means the session still needs a TR doc.
+        must teach. A session with no deck — no link and no uploaded file — still needs a TR doc.
       </span>
+
     </section>
   )
 }
