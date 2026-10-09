@@ -642,6 +642,15 @@ body::before {
 .cmpfoot .primary, .cmpfoot .cmpselect { margin-top: 0; flex: none; }
 .cmpselect { width: auto; min-width: 250px; }
 
+/* SCREENSHOTS IN THE COMPOSER — same thumbnails as on a card (.shots), picked before
+   the skill exists. */
+.cmpshots { margin-top: 16px; }
+.cmpshotshead { display: flex; align-items: center; justify-content: space-between;
+                gap: 12px; flex-wrap: wrap; }
+.cmpshotshead > label:first-child { margin-top: 0; }
+.cmpshots .shots { margin-top: 8px; }
+.cmpshots > .hint { margin-top: 4px; }
+
 /* ---------- "How skills work", in the docked reference panel ---------- */
 .helpbody h4 { margin: 18px 0 6px; font-size: 12px; font-weight: 700;
                letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }

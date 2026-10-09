@@ -1522,15 +1522,27 @@ def articulate(text: str, model=None) -> dict | None:
 def store_drafts(course: str, drafts: list[dict], *, created_by: str | None = None,
                  scope: str = "course", session_ref=None) -> int:
     """Store path-B drafts. They need approving like any other skill."""
+    return len(store_drafts_ids(course, drafts, created_by=created_by,
+                                scope=scope, session_ref=session_ref))
+
+
+def store_drafts_ids(course: str, drafts: list[dict], *, created_by: str | None = None,
+                     scope: str = "course", session_ref=None) -> list[int]:
+    """store_drafts, returning the ids of the rows it made, in the drafts' order.
+
+    The composer attaches screenshots chosen WHILE WRITING to the skills that come out
+    of it, and it cannot do that without knowing which rows those were — a count says
+    how many, not which."""
     from . import db
-    n = 0
+    ids: list[int] = []
     for d in drafts or []:
-        if db.add_skill(course, d.get("text", ""), kind=d.get("kind") or "style",
-                        source="requirements", created_by=created_by,
-                        check=d.get("check"), source_quote=d.get("source_quote"),
-                        source_quotes=d.get("source_quotes"),
-                        category=d.get("category"),
-                        instructions=d.get("instructions"),
-                        scope=scope, session_ref=session_ref):
-            n += 1
-    return n
+        sid = db.add_skill(course, d.get("text", ""), kind=d.get("kind") or "style",
+                           source="requirements", created_by=created_by,
+                           check=d.get("check"), source_quote=d.get("source_quote"),
+                           source_quotes=d.get("source_quotes"),
+                           category=d.get("category"),
+                           instructions=d.get("instructions"),
+                           scope=scope, session_ref=session_ref)
+        if sid:
+            ids.append(sid)
+    return ids

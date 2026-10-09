@@ -470,13 +470,39 @@ export default function App() {
     return fn().then((r) => {
       if (r?.skills) setSkillState((st) => ({ ...(st || {}), ...r }))
       if (r?.prereqs || r?.report) setPrereqState((st) => ({ ...(st || {}), ...r }))
-      setSkillMsg({ ok: true, text: note })
+      setSkillMsg({ ok: true, text: typeof note === 'function' ? note(r) : note })
       if (refetch === 'all') refreshCourseRules()
       else if (refetch === 'prereqs') refreshPrereqs()
       else if (refetch === 'skills') refreshSkills()
       return true
     }).catch((e) => { setSkillMsg({ ok: false, text: e.message }); return false })
       .finally(() => setSkillBusy(false))
+  }
+  // SCREENSHOTS CHOSEN IN THE COMPOSER go up right after the skill they belong to is
+  // created — one request to make the skill, one to attach the pictures, and the author
+  // sees a single action. "From my notes" drafts one skill per category, so the pictures
+  // go on the examples-and-visuals draft when there is one, else on the first; they can
+  // be moved by removing and re-attaching on the card. The skill is NOT undone when an
+  // upload fails: the words are already stored and the card has its own Attach button.
+  async function attachComposerImages(r, ids, images) {
+    const files = (images || []).filter((im) => im?.file)
+    if (!files.length || !r || !(ids || []).length) return r
+    const byId = new Map((r.skills || []).map((s) => [s.id, s]))
+    const target = ids.find((id) => byId.get(id)?.category === 'examples_visuals') ?? ids[0]
+    try {
+      const up = await api.uploadSkillImages(courseName, target,
+        files.map((im) => im.file), files.map((im) => (im.caption || '').trim()))
+      return { ...r, ...up, imagesAttached: (up.added || []).length, imageTarget: target }
+    } catch (e) {
+      return { ...r, imageError: e.message }
+    }
+  }
+  const withImageNote = (images, note) => (r) => {
+    if (!(images || []).length) return note
+    if (r?.imageError) return `${note} The screenshots were NOT attached: ${r.imageError} — use “Attach screenshots” on the card.`
+    const n = r?.imagesAttached || 0
+    const refused = (r?.refused || []).length ? ` ${r.refused.join(' ')}` : ''
+    return `${note} ${n} screenshot${n === 1 ? '' : 's'} attached — they go into the TR doc once the skill is approved.${refused}`
   }
   // Ask on sign-in and after each finished doc — a run that just completed must drop
   // off the list, and one abandoned earlier must appear on it.
@@ -2277,14 +2303,18 @@ export default function App() {
           onClearMsg={() => setSkillMsg(null)}
           courses={courses} justCreated={justCreated}
           onDismissNew={() => setJustCreated(null)}
-          onAdd={(text, where) => runSkillAction(
-            () => api.addSkill(courseName, text, null, where),
-            'Written up as a draft — check it against your own words below, edit it if it '
-            + 'says more or less than you meant, and approve it when it is right. '
-            + 'It does not affect anything until you do.')}
-          onFromRequirements={(text, where) => runSkillAction(
-            () => api.skillsFromRequirements(courseName, text, where),
-            'Drafted from your requirements. Approve the ones you want — each shows the words it came from.')}
+          onAdd={(text, where, images) => runSkillAction(
+            () => api.addSkill(courseName, text, null, where)
+              .then((r) => attachComposerImages(r, [r.id], images)),
+            withImageNote(images,
+              'Written up as a draft — check it against your own words below, edit it if it '
+              + 'says more or less than you meant, and approve it when it is right. '
+              + 'It does not affect anything until you do.'))}
+          onFromRequirements={(text, where, images) => runSkillAction(
+            () => api.skillsFromRequirements(courseName, text, where)
+              .then((r) => attachComposerImages(r, r.ids || [], images)),
+            withImageNote(images,
+              'Drafted from your requirements. Approve the ones you want — each shows the words it came from.'))}
           onImport={(from) => runSkillAction(
             () => api.importSkills(courseName, from),
             `Imported from ${from} as drafts. They apply once approved here.`)}
@@ -2940,6 +2970,17 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
   const [cat, setCat] = useState('')
   const [scope, setScope] = useState('course')
   const [sessionNo, setSessionNo] = useState('')
+  // SCREENSHOTS PICKED WHILE WRITING, with a preview and a caption each. They are sent
+  // with the skill — not after it is approved, which is when they were first asked for
+  // and which made no sense to anyone writing the skill around them.
+  const [pendingShots, setPendingShots] = useState([])
+  const addPendingShots = (files) => setPendingShots((v) => [...v, ...files.map((file) => ({
+    key: `${file.name}-${file.size}-${file.lastModified}-${Math.random().toString(36).slice(2, 7)}`,
+    file, url: URL.createObjectURL(file), caption: '' }))])
+  const dropPendingShot = (key) => setPendingShots((v) => {
+    const gone = v.find((im) => im.key === key); if (gone) URL.revokeObjectURL(gone.url)
+    return v.filter((im) => im.key !== key) })
+  const clearPendingShots = () => setPendingShots((v) => { v.forEach((im) => URL.revokeObjectURL(im.url)); return [] })
   // Which session's brief the list is showing. '' = all of them.
   const [seeSession, setSeeSession] = useState('')
   // WHICH FILES ARE OPEN. Held here rather than inside each card so that "open all" is
@@ -3284,6 +3325,48 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
               </div>
             )}
 
+            {mode !== 'import' && (
+              <div className="cmpshots">
+                <div className="cmpshotshead">
+                  <label>Screenshots{pendingShots.length ? ` (${pendingShots.length})` : ''}</label>
+                  <label className={`ghostbtn sm upbtn ${busy ? 'disabled' : ''}`}
+                         title="PNG, JPEG, WebP or GIF. They go into every TR doc this skill governs, on the slide each caption best matches.">
+                    <Icon name="image" size={13} />Attach screenshots
+                    <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple
+                           disabled={busy}
+                           onChange={(e) => { const fs = Array.from(e.target.files || []); e.target.value = ''; if (fs.length) addPendingShots(fs) }} />
+                  </label>
+                </div>
+                {pendingShots.length > 0 ? (
+                  <div className="shots">
+                    {pendingShots.map((im) => (
+                      <figure key={im.key} className="shot">
+                        <img src={im.url} alt={im.file.name} />
+                        <input className="shotcap" value={im.caption}
+                               placeholder="Caption — what the learner is looking at"
+                               title="The caption is what the writer reads to decide where this goes, and what prints under the picture."
+                               onChange={(e) => setPendingShots((v) => v.map((x) =>
+                                 x.key === im.key ? { ...x, caption: e.target.value } : x))} />
+                        <button className="iconbtn danger shotdel" disabled={busy}
+                                title="Remove this screenshot"
+                                onClick={() => dropPendingShot(im.key)}><Icon name="x" size={12} /></button>
+                      </figure>
+                    ))}
+                    <span className="hint shothint">
+                      Uploaded with the skill. {mode === 'requirements'
+                        ? 'They are attached to the examples-and-visuals draft when there is one, else to the first draft. '
+                        : ''}You can add or remove screenshots on the card at any time afterwards.
+                    </span>
+                  </div>
+                ) : (
+                  <span className="hint tight">
+                    Optional — pictures that must appear in the TR doc, such as a screen the
+                    learner has to see. Add them now, or later on the skill's card.
+                  </span>
+                )}
+              </div>
+            )}
+
             {mode === 'write' && (
               <>
                 <label>The skill</label>
@@ -3303,8 +3386,8 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                   <button className="primary sm"
                           disabled={busy || !text.trim()
                                     || (scope === 'session' && !sessionNo)}
-                          onClick={() => Promise.resolve(onAdd(text, whereNow()))
-                            .then((ok) => { if (ok !== false) setText('') })}>
+                          onClick={() => Promise.resolve(onAdd(text, whereNow(), pendingShots))
+                            .then((ok) => { if (ok !== false) { setText(''); clearPendingShots() } })}>
                     {busy ? 'Writing it up…' : 'Add as draft'}
                   </button>
                 </div>
@@ -3325,8 +3408,8 @@ function CourseRules({ view = 'skills', course, skills, prereqs, busy, msg, onCl
                   <button className="primary sm"
                           disabled={busy || !reqs.trim()
                                     || (scope === 'session' && !sessionNo)}
-                          onClick={() => Promise.resolve(onFromRequirements(reqs, whereNow()))
-                            .then((ok) => { if (ok !== false) setReqs('') })}>
+                          onClick={() => Promise.resolve(onFromRequirements(reqs, whereNow(), pendingShots))
+                            .then((ok) => { if (ok !== false) { setReqs(''); clearPendingShots() } })}>
                     {busy ? 'Drafting…' : 'Draft skills from this'}
                   </button>
                 </div>

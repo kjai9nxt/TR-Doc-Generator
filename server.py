@@ -1494,9 +1494,11 @@ def skills_from_requirements(body: SkillFromRequirementsBody,
             "sentences — each draft has to quote the words it came from, so anything "
             "the model could not trace back to your text is discarded."})
     scope, session_ref = _skill_scope(body.scope, body.session, user, course)
-    skill_rules.store_drafts(course, drafts, created_by=user.get("email"),
-                             scope=scope, session_ref=session_ref)
-    return {"ok": True, "drafts": len(drafts),
+    ids = skill_rules.store_drafts_ids(course, drafts, created_by=user.get("email"),
+                                       scope=scope, session_ref=session_ref)
+    # `ids` so screenshots picked in the composer can be attached to what was just
+    # drafted — the UI puts them on the examples-and-visuals draft when there is one.
+    return {"ok": True, "drafts": len(ids), "ids": ids,
             "skills": db.skills(course)}
 
 

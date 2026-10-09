@@ -222,11 +222,14 @@ export const api = {
   // SCREENSHOTS attached to a skill — placed in every TR doc the skill governs
   // (src/skill_images.py). Multipart, like uploadDeckFile, so req()'s JSON header is
   // bypassed and the browser sets the boundary.
-  uploadSkillImages: async (course, id, files) => {
+  // `captions`, when given, is one string per file in the same order — the composer
+  // lets you caption a screenshot before the skill it belongs to exists.
+  uploadSkillImages: async (course, id, files, captions = null) => {
     await freshToken()
     const fd = new FormData()
     for (const f of files) fd.append('files', f, f.name)
     if (course) fd.append('course', course)
+    if (captions && captions.length) fd.append('captions', JSON.stringify(captions))
     let res
     try {
       res = await fetch(`/api/skills/${id}/images`, {
