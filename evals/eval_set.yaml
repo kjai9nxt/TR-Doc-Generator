@@ -50,6 +50,11 @@ golden:
     # into four thematic sections — the same vintage as its non-verbatim agenda above.
     - "must carry key takeaway"
     - "section(s) for 7 key takeaways"
+    # 1.63: the Practical Hands-On section and the 5-28 word bullet range. The golden
+    # was written before either (it has no exercise and one 31-word bullet); both gates
+    # have positive tests in evals/test_gates.py.
+    - "Missing the PRACTICAL HANDS-ON section"
+    - "that is a paragraph"
 
 # Live generation cases — exercise the full pipeline on real sessions.
 generate_cases:

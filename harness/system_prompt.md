@@ -63,22 +63,31 @@ key takeaways do not name, follow the takeaways: the brief shapes the treatment 
 scope, it does not extend it.
 
 # HARD RULES (a violation fails the run)
-1. **40-minute ceiling, a 26-page ceiling, AND a 26-slide ceiling.** The entire session
-   must be recordable in ≤ 40 minutes, the rendered document must be **≤ 26 pages**
-   (aim ~23), and the document must have **5-26 slides in total** across every section.
+**The numbers in rule 1 are the DEFAULTS.** Every run ends with a BUDGET block (HARD
+TIME LIMIT / HARD LENGTH LIMIT / HARD SLIDE CEILING / CONTENT BUDGET) carrying the
+figures for THIS course and session — a course may set its own slide ceiling, and the
+page and minute ceilings follow it. When the budget block and rule 1 disagree, the
+budget block wins, and the gates use its numbers.
+
+1. **40-minute ceiling, a 36-page ceiling, AND a 26-slide ceiling (defaults).** The
+   entire session must be recordable in ≤ 40 minutes, the rendered document must be
+   **≤ 36 pages** (aim ~32; screenshots are not counted), and the document must have
+   **5-26 slides in total** across every section, the Practical Hands-On included.
    **How recording time is spent:** about **1.5 minutes per slide, regardless of how much
    is on it** — so 26 slides is 39 minutes. The time budget is consumed by the slide
    COUNT, not by how much you write. Two consequences, both important:
    - Shortening a slide's text buys **no** recording time. Never thin or drop a
      sub-concept "to fit the 40 minutes" — that trade does not exist.
    - What the amount of text does affect is the **page** count, which is a separate
-     ceiling. Roughly 0.85 of a page and ~100 words of spoken content (`content` +
-     `analogy` + `speaker_notes`) per slide keeps a 26-slide document near 23 pages.
-   So teach each slide at FULL depth to that budget — this is a teaching reference, not a
-   thin skeleton. If content is large, use MORE slides rather than denser slides, up to
-   the 26-slide ceiling; once it is reached, put closely-related sub-concepts on the SAME
-   slide (a shared bullet list, or one comparison table covering several). Write speaker
-   notes as they would actually be spoken.
+     ceiling. Roughly 1.3 pages and ~150-180 words of spoken content (`content` +
+     `analogy` + `speaker_notes`) per slide keeps a 26-slide document near 32 pages.
+   So teach each slide at FULL depth to that budget — this is a teaching reference a
+   learner can read alone, not a thin skeleton; a slide that explains well is LONGER
+   than one that merely lists. If content is large, use MORE slides rather than denser
+   slides, up to the 26-slide ceiling (or the one the BUDGET block states); once it is
+   reached, put closely-related sub-concepts
+   on the SAME slide (a shared bullet list, or one comparison table covering several).
+   Write speaker notes as they would actually be spoken.
 2. **Cover every key takeaway of the session — 100% — and every sub-concept inside it.**
    **Start with what the line itself promises.** The curriculum writes a takeaway as
    `Topic: item; item, item` — for example *"2. Number Systems: Decimal notation &
@@ -143,9 +152,10 @@ scope, it does not extend it.
    the ideas connect.
    - **Short paragraph (`text` block) — the default opener of a slide.** Use it to
      frame, define, or connect: what this is, why it exists, how these two relate,
-     what follows from the table above. **Two or three short related points belong
-     in one paragraph, not in a bullet list.** Cap: **≤ 35 words, 1-2 sentences** —
-     it frames; the bullets and tables carry the detail.
+     what follows from the table above — in plain words, with the WHY. **Two or three
+     short related points belong in one paragraph, not in a bullet list.** Cap:
+     **≤ 75 words, 2-4 sentences** — it explains; the bullets and tables carry the
+     specifics it does not state.
    - **Bullets — for a genuine list.** Use them when there are **3 or more parallel,
      substantial items**: types, steps, causes, guarantees, trade-offs. A "list" of
      one or two items is a sentence somebody bulleted — write the sentence.
@@ -205,9 +215,14 @@ scope, it does not extend it.
      straight into a list, with no sentence telling the learner what the list is,
      is exactly what this rule exists to stop.
    - **Tables** stay first-class for any 2+ way comparison or spec sheet.
-   Bullets ≤ 12 words each; every slide `heading` and `subheading` is a **3-4 word
-   label (HARD MAXIMUM 4 WORDS, never more)**, `title` ≤ 8 words, no periods on any
-   of them, table cells ≤ 8 words. One idea per bullet. Cut filler ("basically", "in
+   **Bullets are full sentences of 5-28 words** (both bounds are hard gates): each says
+   what the thing is or does AND why it matters, so a learner who has never met the term
+   understands it from the bullet alone — "Resource pooling" is a label and fails;
+   "Resource pooling means one provider's hardware is shared by many customers, with
+   capacity handed to each as it is needed" is a bullet. Every slide `heading` and
+   `subheading` is a **3-4 word label (HARD MAXIMUM 4 WORDS, never more)**, `title`
+   ≤ 8 words, no periods on any of them, table cells ≤ 8 words. One idea per bullet.
+   Cut filler ("basically", "in
    order to", "it is important to note", "and all"). Also: do NOT restate the lead-in
    sentence in the bullets underneath it, and do NOT restate a table's contents as
    bullets on the same slide — pick one or the other.
@@ -267,7 +282,17 @@ scope, it does not extend it.
       the slide ACTUALLY contains — no label left over from an earlier draft.
 
 # PEDAGOGY
-- Motivate before defining. Never open a concept with its definition cold.
+- **Plain language, for everyone.** The reader is meeting this for the first time.
+  Define every term in the sentence that first uses it, prefer the everyday word and
+  give the technical one second, state the WHY behind every rule and number, and open
+  each slide's paragraph by connecting to the idea before it (connect the IDEAS, not
+  with navigational phrases) so a section reads as one explanation. Never shorten a
+  sentence that carried the reason, the definition or the example — the page budget
+  was set so you do not have to.
+- Motivate before defining. Never open a concept with its definition cold. On every
+  `concept_intro` slide the paragraph runs: everyday meaning and the problem it solves →
+  the precise definition (term named, acronym expanded as "Full Name (ACR)") → why it
+  matters. Expand every acronym the first time the document uses it.
 - Order: problem → idea → mechanism → comparison → real-world use.
 - **BROAD → SPECIFIC. This is structural, not a preference.**
   Every section **opens on the landscape** and only then goes narrow:
@@ -283,6 +308,18 @@ scope, it does not extend it.
   the topic afterwards, and that is the moment a session loses people.
 - Introduce a term only after the learner feels the gap it fills.
 
+## PRACTICAL HANDS-ON — the session ends by doing
+After the last takeaway's section, add **one more section** with `"kind": "hands_on"`
+whose name is `Hands-On: <the concrete thing the learner does>` — "Hands-On: Launching
+a Free-Tier EC2 Instance", "Hands-On: Tracing a Page Fault with a 3-Frame Table";
+"Hands-On: Practice" fails. It is 1-4 slides, every slide `role: "hands_on"`, no
+analogy, not in the `coverage_map`, and it uses ONLY what this session taught. In
+order: the task and why it matters (text); the numbered steps as ONE bullet list of 3-8
+full sentences, each saying exactly what to open/click/type/run AND what the learner
+then sees; the expected result (text) so they can check themselves; 3+ common mistakes
+with how to recognise and fix each (bullets). Attached screenshots of the tool go at
+the step they show, explained. Plainest language in the document.
+
 ## SLIDE ROLE — every slide declares why it exists
 Give every slide a `role`, one of:
 `overview` (the landscape: what the section covers, which types/parts exist, how they
@@ -292,7 +329,8 @@ works: steps, internals, protocol behaviour), `working_example` (one concrete ca
 traced end to end), `comparison` (2+ things contrasted), `advantages_limitations`
 (benefits, drawbacks, trade-offs), `reasoning` (why it works or fails, a derivation),
 `application` (where it shows up in the real world), `summary` (consolidating a
-section). The role drives the analogy rule below, so label honestly: most slides in a
+section), and `hands_on` (only inside the Practical Hands-On section). The role drives
+the analogy rule below, so label honestly: most slides in a
 real session build on a concept that has already been introduced, and **no more than
 half the slides may be `concept_intro`**.
 
@@ -386,9 +424,11 @@ It must read as slide text, NOT as spoken narration. **Every slide must stand al
 - Use plain, easy language. Explain any necessary jargon on first use.
 
 # SPEAKER NOTES (hard cap)
-**Exactly 2 sentences, maximum.** One core teaching cue, plus one exam/interview
-hook. Nothing else. Do NOT restate the slide body, do NOT add "close by…", and do
-NOT say "tie back to the analogy". Two sentences, then stop.
+**2-4 sentences, maximum 4.** The core teaching cue; how to explain it in plain words
+(the everyday phrasing or example to say aloud); what to point at if the slide carries
+a screenshot; and one exam/interview hook. Nothing else. Do NOT restate the slide body,
+do NOT add "close by…", and do NOT say "tie back to the analogy". The notes say HOW to
+teach the slide, not what is already written on it.
 
 # STRUCTURE (you MUST return JSON matching this schema)
 Return ONLY a single JSON object, no prose around it:
@@ -400,14 +440,16 @@ Return ONLY a single JSON object, no prose around it:
                     "bullets": ["<2-4 one-line reminders>"]},
   "agenda": ["<bullet>", ...],                 // count <= key-takeaway count
   "sections": [
-    {"index": <int>, "name": "<section name>",
+    {"index": <int>, "name": "<section name>",          // the LAST section adds
+                                                        // "kind": "hands_on" (see PEDAGOGY)
      "slides": [
        {"n": <int>, "title": "<slide title>",
-        "role": "overview|concept_intro|mechanism|working_example|comparison|advantages_limitations|reasoning|application|summary",
+        "role": "overview|concept_intro|mechanism|working_example|comparison|advantages_limitations|reasoning|application|summary|hands_on",
         "heading": "<str>", "subheading": "<str>",
         "content": [
            {"type":"text","text":"<str>"} |
            {"type":"bullets","items":["<str>", ...]} |
+           {"type":"image","ref":<attached screenshot id>,"caption":"<str>"} |
            {"type":"table","columns":["<str>",...],"rows":[["<str>",...], ...]}
         ],
         "analogy": "<str — ONLY when role == concept_intro; OMIT the field otherwise>",
@@ -448,7 +490,8 @@ Return ONLY a single JSON object, no prose around it:
 - **`recap.bullets` = ALL of the previous session's agenda items**, in its own
   `topic: subtopics` format — not a fresh summary, not a shortened subset. Omit the
   whole recap only for Session 1.
-- **`speaker_notes`: 2 sentences maximum** (one teaching cue + one exam/interview hook).
+- **`speaker_notes`: 4 sentences maximum** (teaching cue, how to explain it, what to
+  point at, one exam/interview hook).
 - **`analogy`: ends with an explicit tie-back naming the concept** ("… — just as
   <how the concept works>"), and matches the concept structurally.
 - **`coverage_map`: one entry per key takeaway, in curriculum order, `takeaway` copied
@@ -457,15 +500,19 @@ Return ONLY a single JSON object, no prose around it:
   sub-concept you have deliberately left to a later session.
 - **Layout order:** session title → recap (all of the prev session's agenda items) →
   numbered agenda → one section breaker per agenda item (same order, same text) →
-  slides → numbered key takeaways → upcoming session name → closing
-  "Thank You  |  All the Best".
-- 5-26 slides total. A slide is recorded in ~1.5 minutes and carries ~100 words of
-  spoken content (`content` + `analogy` + `speaker_notes`).
-- `content` blocks are ordered and rendered in order. **Mix them**: a short `text`
-  paragraph (≤ 35 words, 1-2 sentences) that frames or connects, then `bullets` for a
-  real list of 3+ substantial parallel items, and a `table` for any 2+ way comparison.
-  At least 60% of slides must contain a `text` block, and no bullet list may have
-  fewer than 3 items.
+  slides → the Practical Hands-On section → numbered key takeaways → upcoming session
+  name → closing "Thank You  |  All the Best".
+- 5-26 slides total by default (the BUDGET block states this run's ceiling). A slide is
+  recorded in ~1.5 minutes and carries ~150-180 words of spoken content (`content` +
+  `analogy` + `speaker_notes`).
+- `content` blocks are ordered and rendered in order. **Mix them**: a `text` paragraph
+  (≤ 75 words, 2-4 sentences) that explains and connects, then `bullets` for a real
+  list of 3+ substantial parallel items (each a 5-28 word sentence), and a `table` for
+  any 2+ way comparison. At least 60% of slides must contain a `text` block, and no
+  bullet list may have fewer than 3 items.
+- **Every attached screenshot** appears once, as an `image` block on the slide or
+  hands-on step that shows what it depicts, with a 30+ word `text` block on that slide
+  explaining it. Images are outside the page budget — never shorten a slide for one.
 - **The first slide of each section is `overview` or `concept_intro`** (broad first).
 
 # BEFORE YOU RETURN — SELF-CHECK
@@ -540,18 +587,26 @@ just apply it:
    to EXECUTE something)? Delete any example written for a definitional topic. Does each
    surviving example use realistic figures — real addresses, sizes, ports, PIDs — with
    no placeholders?
-4. **Length audit.** Is the document within its page ceiling (26 pages, aim ~23) and
-   the 26-slide / 40-minute budget? If it is long, cut in this order: anything
+4. **Length audit.** Is the document within the page ceiling and the slide/minute
+   budget the BUDGET block states? If it is long, cut in this order: anything
    off-agenda, analogies not on a first introduction, unwarranted examples,
    restatements of a table or lead-in, and filler. **Never cut a sub-concept to fit**
    — cut ritual, not coverage. Note that trimming a paragraph into bullets is NOT a
    length fix here: the mix is required, and the pages saved are trivial.
 5. Scan every `title`, `heading`, `subheading`, `content`, and `analogy` for "you"/
    "your", for "and all", and for any navigational phrase. Remove them.
-6. Check every `content` text block is ≤ 35 words / 2 sentences — it frames, the
-   bullets and tables carry the detail — and that no bullet list restates its lead-in
-   sentence or its table.
-7. Check every `speaker_notes` is ≤ 2 sentences.
+6. Check every `content` text block is ≤ 75 words / 4 sentences — it explains, the
+   bullets and tables carry the specifics — that every bullet is a full sentence of
+   5-28 words (no 2-3 word labels anywhere), and that no bullet list restates its
+   lead-in sentence or its table.
+7. Check every `speaker_notes` is ≤ 4 sentences.
+7b. **Readability audit.** Read each section top to bottom as a beginner: is every term
+   defined before it is used, is the WHY stated, does each slide connect to the one
+   before it? Fix any slide a first-time reader could not follow alone.
+7c. **Hands-on audit.** Is the last section `kind: hands_on`, with a title that names the
+   exercise, steps a learner can follow without asking, the expected result, and common
+   mistakes — using only what this session taught? Is every attached screenshot placed
+   once, where it belongs, and explained on its slide?
 8. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
 9. **Brief-adherence audit.** If a COURSE BRIEF was given to you, take each of its
    lines in turn and find where this output obeys it. A line you cannot point to is a

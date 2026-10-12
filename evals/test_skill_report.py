@@ -314,9 +314,15 @@ check("…and the judge's own number is kept, so the disagreement is visible",
       _brief_dim.get("judge_said") == 5, str(_brief_dim))
 check("…and the justification names the rule",
       LINES in _brief_dim.get("justification", ""), _brief_dim.get("justification"))
-# 6 of 100 weighted: 5/5 everywhere else and 3/5 here loses (2/5)*6 = 2.4 points.
+# The brief weight W sits ON TOP of the 100 house points: 5/5 everywhere else and 3/5
+# here gives (100 + 0.6 W) / (100 + W) * 100 — derived from the rubric, not hardcoded,
+# so re-weighting the dimension (6 -> 12 in 1.64) does not silently break this.
+import yaml as _yaml
+_W = {d["id"]: d["weight"] for d in _yaml.safe_load(
+    (ROOT / "rubrics" / "tr_doc_rubric.yaml").read_text())["dimensions"]}["course_brief_adherence"]
+_expect = (100 + 0.6 * _W) / (100 + _W) * 100
 check("the weighted total reflects the derived score, not the judge's",
-      abs(jr["weighted_total"] - 97.6) < 0.2, str(jr["weighted_total"]))
+      abs(jr["weighted_total"] - _expect) < 0.2, f"{jr['weighted_total']} vs {_expect:.2f}")
 check("a course with no brief still has the dimension dropped and renormalised",
       "course_brief_adherence" not in ((judge.grade.__doc__ or "") + "x") or True)
 

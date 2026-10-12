@@ -50,6 +50,31 @@ deterministic and lets graders inspect fields directly.
           "speaker_notes": "..."
         }
       ]
+    },
+    {                                          // LAST section: the practical exercise
+      "index": 5,
+      "kind": "hands_on",                      // marks it as practice, not a takeaway
+      "name": "Hands-On: Tracing an SCTP Association Setup in Wireshark",
+      "slides": [
+        {
+          "n": 19,
+          "title": "Capture and Read the Four-Way Handshake",
+          "role": "hands_on",                  // every slide in this section
+          "heading": "Capture the Handshake",
+          "subheading": "Wireshark Walkthrough",
+          "content": [
+            {"type": "text", "text": "<the task, why it matters, what is needed>"},
+            {"type": "bullets", "items": ["1. Open Wireshark and … — the … list appears.",
+                                           "2. …", "3. …"]},
+            {"type": "image", "ref": 12, "caption": "<what the learner is looking at>"},
+            {"type": "text", "text": "<40-90 words explaining the screenshot>"},
+            {"type": "text", "text": "<the expected result, so the learner can check>"},
+            {"type": "bullets", "items": ["<common mistake and how to fix it>", "…", "…"]}
+          ],
+          "visual_guidance": "...",
+          "speaker_notes": "..."
+        }
+      ]
     }
   ],
   "coverage_map": [                           // planning artifact — NOT rendered
@@ -83,9 +108,38 @@ gated on the share of slides that do (`constraints.content.min_slides_with_text_
 Code without explanation is not teaching, and the gate says so.
 
 
+### The `image` block (attached screenshots)
+
+`{"type": "image", "ref": <id>, "caption": "..."}` places a screenshot the course owner
+attached to the brief (the ids are listed under ATTACHED SCREENSHOTS). Rules, all gated:
+each attached image appears **exactly once**; it goes on the slide (or hands-on step)
+that shows what it depicts; and the **same slide carries a `text` block of 30+ words
+explaining it** — which screen this is, what each labelled part means, what to notice.
+Images are **outside the page budget**: never shorten a slide's teaching text to fit one.
+
+### The Practical Hands-On section
+
+The document's **last section** is one practical exercise: `"kind": "hands_on"`, name
+`Hands-On: <the concrete thing the learner does>` (at least 3 words after the prefix —
+"Hands-On: Practice" fails), 1-4 slides, every slide `role: "hands_on"`, no analogy, not
+in the coverage map and not counted as a takeaway section. It carries, in order: the task
+and why it matters (text), the numbered steps as ONE bullet list of 3-8 full sentences
+each saying what to do and what appears, the expected result (text), and 3+ common
+mistakes with their fix (bullets). It may use only what the session taught. Rendered as
+`------ PRACTICAL HANDS-ON: <title> ------`.
+
 `role` is one of `overview`, `concept_intro`, `mechanism`, `working_example`,
-`comparison`, `advantages_limitations`, `reasoning`, `application`, `summary`. Like
+`comparison`, `advantages_limitations`, `reasoning`, `application`, `summary`, and
+`hands_on` (only inside the hands-on section). Like
 `coverage_map`, it is a planning field: the renderer ignores it, so it costs no pages.
+
+**A `concept_intro` paragraph follows one recipe**, so a first-time reader is never
+handed a definition cold: (1) the idea in everyday words — what it is and the problem
+it solves, as a friend would say it; (2) the precise definition, with the term named and
+any acronym expanded as `Full Name (ACR)`; (3) why it matters — what goes wrong without
+it, or where the learner will meet it. Three to four sentences; the bullets then carry
+the parts, steps or kinds. The same order holds for `speaker_notes` on that slide: say
+the everyday version first, then the exact term.
 
 `overview` is the **broad** slide that opens a section — what the topic is and which
 types/kinds/parts it has, named together before any one of them is taught. **The first
@@ -121,9 +175,11 @@ The breaker uses the same dash-wrapped form as the golden doc:
 4. **One section breaker per agenda item** — each agenda item gets its own section,
    in the same order as the agenda.
 5. **Slides** under each section — every slide carries all six fields (below).
-6. **Key Takeaways** of the current session.
-7. **Next session name** — `Upcoming Session : {name}` (omit/null on the final session).
-8. **Closing** — centered `Thank You  |  All the Best`.
+6. **Practical Hands-On** — one more section (`kind: hands_on`), the exercise that
+   closes the session, with a title naming what the learner does.
+7. **Key Takeaways** of the current session.
+8. **Next session name** — `Upcoming Session : {name}` (omit/null on the final session).
+9. **Closing** — centered `Thank You  |  All the Best`.
 
 ## Required per-slide fields
 `role`, `heading`, `subheading`, `content`, `visual_guidance`, `speaker_notes` are
@@ -137,9 +193,11 @@ analogy on a first introduction and a present one anywhere else are hard failure
 more than half the slides may be `concept_intro`.
 
 ## Length ceiling
-The rendered document must be **≤ 26 pages** (target ~23), estimated deterministically
-from this layout by `graders/page_grader.py`, and independently recordable in
-≤ 40 minutes — which at ~1.5 minutes per slide means **≤ 26 slides**. Over either ceiling
+The rendered document must be within the page ceiling the BUDGET block states
+(**36 pages by default, target ~32**; images excluded), estimated deterministically
+from this layout by `graders/page_grader.py`, and independently recordable within the
+stated minutes (40 by default) — which at ~1.5 minutes per slide means **≤ 26 slides** by
+default (a course may set more, and its minute and page budgets grow with it). Over either ceiling
 is a hard failure. Recording time is spent by the slide COUNT, so trimming text buys none
 of it; trim only to fit PAGES, and when trimming cut ritual (unneeded analogies,
 unwarranted examples, restatement, filler) — never a sub-concept.
@@ -167,14 +225,16 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 
 ## Per-slide content rules
 - **Mix prose and bullets — a document of nothing but bullets is a defect.**
-  - `content` text blocks (short paragraphs): **≤ 35 words, 1-2 sentences.** They
-    frame, define or connect — what this is, why it exists, how it relates to what
-    came before. Two or three short related points belong here as a sentence, not as
-    a bullet list. Anything longer is a hard failure, in every mode including depth
-    mode: the paragraph frames, the bullets and tables carry the detail.
+  - `content` text blocks (short paragraphs): **≤ 75 words, 2-4 sentences.** They
+    EXPLAIN in plain language — what this is, why it exists, how it works in one
+    breath, how it connects to the slide before. Two or three short related points
+    belong here as sentences, not as a bullet list. Longer than that is a hard failure
+    in every mode: the paragraph explains, the bullets and tables carry the specifics.
   - `bullets`: **minimum 3 items**, parallel and substantial (types, steps, causes,
-    guarantees, trade-offs), each ≤ 12 words. A one- or two-item list is a sentence
-    somebody bulleted — write the sentence.
+    guarantees, trade-offs), **each a full sentence of 5-28 words** that says what the
+    thing is or does and why it matters. A 2-3 word bullet is a label and a hard
+    failure; a 30-word bullet is a paragraph and a hard failure. A one- or two-item
+    list is a sentence somebody bulleted — write the sentence.
   - **At least 60% of slides must contain a `text` block.** A slide that opens
     straight into a list, with nothing saying what the list is, fails this.
 - **No redundancy on a slide — and this means PARAPHRASE, not just verbatim.** The
@@ -187,7 +247,8 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
   thing twice. The same holds for a table and the bullets beside it, and for
   `speaker_notes` versus the slide body. One carrier per piece of information —
   the page ceiling is fixed, so a repeated line costs a line of coverage.
-- `speaker_notes`: **≤ 2 sentences** — one teaching cue + one exam/interview hook.
+- `speaker_notes`: **≤ 4 sentences** — the teaching cue, how to explain it in plain
+  words (and what to point at on a screenshot, if there is one), one exam/interview hook.
 - `analogy`: on a `concept_intro` slide only; ends with an explicit tie-back naming the
   concept ("… — just as <how the concept works>"), and matches the concept structurally.
 - A `working_example` slide traces a concrete case step by step using **realistic

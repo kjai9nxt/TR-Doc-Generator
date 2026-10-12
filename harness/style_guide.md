@@ -19,12 +19,45 @@ Tone, density, and voice rules. Calibrated against the golden reference.
 - Indian English spelling and everyday Indian-context analogies (WhatsApp, trains,
   hospital ER, school canteen — as in the golden doc).
 
+## Plain language, full explanations, visible flow (HARD — this is what was missing)
+The reviewer's finding on the generated documents: "the content is getting shortened,
+the flow is not understandable, 2-3 words in a bullet won't work." The document is
+read by someone meeting the topic for the first time, so every slide is written to be
+**understood on its own, by anyone**:
+- **Every term is defined the first time it appears**, in the sentence that uses it —
+  "a hypervisor, the software layer that lets one physical server run several
+  independent virtual machines". Never assume the reader already knows a word the
+  session has not explained.
+- **Say the WHY, not only the WHAT.** For every rule, mechanism or number: why it
+  exists, what goes wrong without it, what it costs. A fact without its reason cannot
+  be reconstructed in an exam or an interview.
+- **Everyday words first, the technical term second.** "the computer pauses the
+  program and looks the page up on disk" before "a major page fault". No sentence a
+  school-leaver could not read aloud.
+- **The flow must be visible.** Each slide's paragraph opens by connecting to the
+  thought before it (without navigational phrases — connect the IDEAS: "Because the
+  hardware is shared, …", "That metering is what makes …"), so the section reads as
+  one explanation and not as a stack of unrelated cards. Within a section: what it is →
+  why it exists → how it works → where it is used → what it costs.
+- **Bullets are sentences that teach, never labels.** A bullet is 5-28 words and says
+  what the thing is or does and why it matters. "Resource pooling" is a heading;
+  "Resource pooling means one provider's hardware is shared by many customers, with
+  capacity handed to each one as it is needed" is a bullet. Both bounds are gated.
+- **Do not shorten to look tidy.** A slide that explains well runs 150-180 words of
+  spoken content; the page budget (36 pages by default) was set for exactly that.
+  Cutting a sentence that carried the reason, the example or the definition is a defect.
+- **Titles say what the slide is about**, in words a learner would use: "Why Cloud
+  Replaced Owning Servers", not "Overview". Every section, slide and hands-on exercise
+  carries a proper, specific title.
+
 ## Length (HARD — two ceilings, and what to cut)
-- The rendered document must be **≤ 26 pages** (aim ~23) *and* recordable in
-  **≤ 40 minutes**. These are different limits and they are consumed differently:
+- The rendered document must be within its **page ceiling (36 by default, aim ~32;
+  screenshots are not counted)** *and* recordable within its **minute ceiling (40 by
+  default)** — the BUDGET block at the end of the prompt states this run's numbers. These
+  are different limits and they are consumed differently:
   recording time goes at **~1.5 minutes per slide whatever is on it** (so 26 slides
   ≈ 39 minutes — the SLIDE COUNT spends the time budget), while the amount of text is
-  what spends the PAGE budget (~0.85 page and ~100 words of spoken content per slide).
+  what spends the PAGE budget (~1.3 pages and ~150-180 words of spoken content per slide).
 - So **trimming a slide's text buys no recording time.** Never thin or drop a
   sub-concept to fit the 40 minutes; that trade does not exist. Cut only to fit PAGES.
 - **The budget belongs to coverage.** When the doc is too long, cut in this order:
@@ -93,17 +126,16 @@ thing twice; rewrite the bullets to carry what the paragraph left out.
 The same rule holds between a table and the bullets beside it, and between
 `speaker_notes` and the slide body — one carrier per piece of information.
 
-## Conciseness (HARD — this is what appears on the slide)
-A TR doc is a SKELETON, not an essay. Every line must be tight enough to read at a
-glance. Enforce these caps:
-- **Bullets: ≤ 12 words each.** One idea per bullet. No sub-clauses, no "and also".
-  If a bullet needs a comma-plus-conjunction, split it into two bullets.
-- **`content` text blocks: ≤ 35 words TOTAL, 1-2 sentences.** Enough to frame the
-  slide, not enough to compete with the bullets under it. This cap holds in depth mode
-  too. It was 55 words over 3 sentences, and a paragraph that long ends up carrying the
-  same detail as the bullets beside it — which is where most paragraph/bullet
-  duplication came from. The paragraph says what this is and why it matters; the
-  bullets and tables carry the steps, values, conditions and trade-offs.
+## Line lengths (HARD — gated both ways)
+A TR doc is a teaching reference the instructor records from and a learner can read
+alone. Every line is complete enough to teach and short enough to read at a glance:
+- **Bullets: 5-28 words each**, one idea per bullet, written as a full sentence. Under
+  5 words is a label and fails; over 28 is a paragraph and fails. If a bullet needs a
+  second idea, make it a second bullet.
+- **`content` text blocks: ≤ 75 words, 2-4 sentences.** Enough to explain — what this
+  is, why it exists, how it works, how it follows from the slide before — and no more.
+  This cap holds in depth mode too. The paragraph explains; the bullets and tables carry
+  the steps, values, conditions and trade-offs it does not state.
 - **No redundancy on a slide.** Do not restate the lead-in sentence in the bullets
   under it, and do not restate a table's contents as bullets on the same slide —
   pick the table or the bullets, never both for the same information.
@@ -121,17 +153,18 @@ glance. Enforce these caps:
   protocol which basically guarantees that data arrives in order."
 
 ## Density (this drives the PAGE budget)
-- A slide is recorded in about **1.5 minutes**. Aim for ~100 words of spoken content
-  (`content` + `analogy` + `speaker_notes`) — that is a full, well-taught slide, not a
+- A slide is recorded in about **1.5 minutes**. Aim for ~150-180 words of spoken
+  content (`content` + `analogy` + `speaker_notes`) — a full, well-explained slide, not a
   thin one. If a slide clearly needs more than that, split it into two slides rather
-  than cramming, up to the 26-slide ceiling.
+  than cramming, up to the slide ceiling.
 - `content` blocks: a short framing paragraph, then bullets or a table for the
   detail. A bullet = one beat; a paragraph = the thread between the beats.
-- `speaker_notes`: **2 sentences, hard maximum** — one core teaching cue plus one
-  exam/interview hook. Nothing else. Do NOT restate the slide body, do NOT write
-  "close by…", do NOT write "tie back to the analogy". A bloated note costs PAGE budget
-  (recording time is paced per slide, not per word), and it buries the one cue that
-  matters.
+- `speaker_notes`: **2-4 sentences, hard maximum 4** — the core teaching cue, how to
+  explain it in plain words (the everyday phrasing or example to say aloud), what to
+  point at if the slide carries a screenshot, and one exam/interview hook. Do NOT
+  restate the slide body, do NOT write "close by…", do NOT write "tie back to the
+  analogy". The notes are what the instructor reads while recording, so they say HOW to
+  teach the slide, not what is already on it.
 - Analogy: **only on a `concept_intro` slide** — see the Analogy placement section
   below. 1-2 sentences. Concrete, everyday, not abstract — and it must
   **correlate, not just illustrate**: end with an explicit tie-back that names the
@@ -287,6 +320,30 @@ afterwards, and that is where a session loses people.
   *i* is the **identical text** to key takeaway *i*, copied from the curriculum —
   not summarised, not re-titled, not a word changed. Bullet count must be `<=` the
   number of key-takeaway lines. No new scope introduced here.
+
+## The Practical Hands-On (the session ends by doing)
+- After the last takeaway's section, **one more section** (`kind: hands_on`) gives the
+  learner something to DO with what was taught: 10-15 minutes, on their own machine or
+  in the course's tool, using only concepts from this session.
+- **The title is the exercise.** "Hands-On: Launching a Free-Tier EC2 Instance",
+  "Hands-On: Tracing a Page Fault with a 3-Frame Table" — never "Hands-On: Practice".
+- It carries, in order: the task and why it matters; the numbered steps as one bullet
+  list (3-8 full sentences, each saying what to open/click/type/run AND what the
+  learner then sees); the expected result so they can check themselves; 3+ common
+  mistakes, each with how to recognise and fix it. Screenshots of the tool go at the
+  step they show, explained.
+- Written in the plainest language in the document: the learner reading this section
+  alone should finish the exercise without asking anyone.
+
+## Screenshots attached to the brief
+- Each attached image appears **once**, on the slide or hands-on step that shows what
+  it depicts (a console screenshot belongs at the step that uses the console, not on the
+  concept slide that mentions the tool).
+- The same slide **explains it** in a text block of 40-90 words right after the image:
+  which screen this is, what each labelled part means, what to click or read, what to
+  notice. Speaker notes say what to point at.
+- Images are outside the page budget. A slide with a screenshot keeps its full
+  teaching text — it is longer than a slide without one, never shorter.
 
 ## What NOT to do
 - No filler ("In this slide we will see...", "and all", "basically"). Get to the substance.

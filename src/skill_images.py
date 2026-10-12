@@ -87,27 +87,56 @@ def caption_of(img: dict) -> str:
 # the prompt
 # --------------------------------------------------------------------------- #
 def brief(images: list[dict], compact: bool = False) -> list[str]:
-    """The lines the writer reads about the attached images. Empty when none."""
+    """The lines the writer reads about the attached images. Empty when none.
+
+    Two things the first version did not say, and the reviewer noticed both: WHERE a
+    picture belongs is decided by what it SHOWS (a console screenshot belongs at the
+    hands-on step that uses that console, not on the concept slide that mentions the
+    tool), and a picture that is not EXPLAINED is decoration — the slide has to walk the
+    learner through it. And images cost no page budget, so they are never a reason to
+    shorten the teaching text around them.
+    """
     if not images:
         return []
-    out = ["", "## ATTACHED SCREENSHOTS — every one of these MUST appear in the document"]
+    out = ["", "## ATTACHED SCREENSHOTS — each one placed ONCE, where it belongs, and EXPLAINED"]
     if not compact:
         out += [
-            "The course owner attached these images to the brief. Place EACH ONE, "
-            "EXACTLY ONCE, as a content block on the slide whose content it illustrates:",
+            "The course owner attached these pictures to the brief. Each MUST appear in the "
+            "document exactly once, as a content block on the slide it belongs to:",
             '    {"type": "image", "ref": <id>, "caption": "<what the learner is looking at>"}',
-            "The block goes in that slide's `content` list, at the point where the text "
-            "refers to it — after the paragraph or bullets that introduce what it shows. "
-            "Use the id EXACTLY as given below; never invent an id, and never describe an "
-            "image in `visual_guidance` instead of placing it. A caption may be reworded "
-            "to fit the slide, but it must say what the picture shows.",
+            "",
+            "WHERE IT GOES — decided by what the picture SHOWS, not by where its words first "
+            "appear:",
+            "  · a screenshot of a tool, console, dashboard or command being used goes on the "
+            "PRACTICAL HANDS-ON step that performs that action (after that step's text);",
+            "  · a screenshot of a result, error or output goes where that result is "
+            "explained — the expected-result slide of the hands-on, or the mechanism slide "
+            "that produces it;",
+            "  · a diagram or architecture picture goes on the overview / concept slide that "
+            "introduces that structure, after the paragraph that names its parts;",
+            "  · never on a slide that merely mentions the tool in passing, and never two "
+            "images on one slide unless they are two steps of one action.",
+            "",
+            "HOW IT IS EXPLAINED — mandatory, gated. Immediately AFTER the image block, the "
+            "same slide carries a `text` block of 40-90 words, in plain language, that walks "
+            "the learner through the picture: which screen or tool this is, what each "
+            "labelled or highlighted part means, what to click/type/read there, and what to "
+            "notice (the value, the state, the message). Write it for someone who has never "
+            "opened this tool. Then let `speaker_notes` say what to POINT AT while recording.",
+            "",
+            "WHAT IT DOES NOT CHANGE: the slide's own teaching text stays at full depth. "
+            "Images are outside the page budget, so nothing is cut to make room for one; a "
+            "slide with a screenshot is LONGER than one without, not shorter.",
+            "Use the id EXACTLY as given below; never invent an id, never describe an image "
+            "in `visual_guidance` instead of placing it, and reword the caption only so it "
+            "says precisely what the picture shows.",
             "",
         ]
     for im in images:
         who = (im.get("skill_text") or "").strip()
         scope = f" (session {im['session_ref']} only)" if im.get("session_ref") else ""
         out.append(f"- id {im['id']}: “{caption_of(im)}”{scope}"
-                   + (f" — attached to: {who[:120]}" if who else ""))
+                   + (f" — attached to the rule: {who[:160]}" if who else ""))
     return out
 
 
@@ -140,6 +169,13 @@ def _slides(doc: dict):
         for s in sec.get("slides") or []:
             if isinstance(s, dict):
                 yield s
+
+
+def _is_hands_on_slide(doc: dict, slide: dict) -> bool:
+    for sec in doc.get("sections") or []:
+        if str(sec.get("kind") or "").lower() == "hands_on" and slide in (sec.get("slides") or []):
+            return True
+    return str(slide.get("role") or "") == "hands_on"
 
 
 def reconcile(doc: dict, images: list[dict]) -> list[str]:
@@ -184,11 +220,13 @@ def reconcile(doc: dict, images: list[dict]) -> list[str]:
                         f"document has no slides."]
     for im in missing:
         want = _words(caption_of(im), im.get("skill_text"))
-        best, best_n = slides[-1], -1
+        best, best_key = slides[-1], (-1, 0)
         for s in slides:
-            n = len(want & _slide_words(s))
-            if n > best_n:
-                best, best_n = s, n
+            # Word overlap first; on a tie, a hands-on step beats a concept slide,
+            # because an attached screenshot is almost always of the tool in use.
+            key = (len(want & _slide_words(s)), 1 if _is_hands_on_slide(doc, s) else 0)
+            if key > best_key:
+                best, best_key = s, key
         best.setdefault("content", []).append(
             {"type": "image", "ref": int(im["id"]), "caption": caption_of(im)})
         notes.append(f"Placed attached image {im['id']} (“{caption_of(im)}”) on "

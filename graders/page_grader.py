@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src import config  # noqa: E402
-from src.docx_writer import BREAKER  # noqa: E402  (same literal the renderer uses)
+from src.docx_writer import BREAKER, section_heading  # noqa: E402  (same as the renderer)
 
 
 def _layout() -> dict:
@@ -106,6 +106,24 @@ class _Sheet:
             if isinstance(w, dict) and str(w.get("text") or "").strip():
                 self.bullet(f"Lines {w.get('lines', '')} — {w['text']}", bucket)
 
+    def image(self, block: dict, bucket: str):
+        """A screenshot: rendered 6.0in wide, so its height is the width times the
+        aspect ratio (from the stored image when known, 16:9 otherwise), plus the
+        caption line. Counted in its own bucket so the gate can leave it out — see
+        estimate(): a picture must never be what gets a slide's text cut."""
+        ratio = 9 / 16
+        try:
+            from src import db
+            im = db.skill_image(int(block.get("ref")))
+            if im and im.get("width") and im.get("height"):
+                ratio = float(im["height"]) / float(im["width"])
+        except Exception:
+            pass
+        h = self.L["usable_width_pt"] * ratio + self.L["space_after_pt"]
+        if str(block.get("caption") or "").strip():
+            h += self._para_height(str(block.get("caption")), font_pt=9.5)
+        self.add(bucket, h)
+
     def table(self, columns: list, rows: list, bucket: str):
         """A native Word table: one header row plus the data rows. Cell paragraphs
         inherit Normal, so each carries the same 10pt space-after a body paragraph
@@ -161,8 +179,7 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
     # 4. sections and slides
     for sec in doc.get("sections") or []:
         s.spacer("sections")
-        s.heading(f"{BREAKER} SECTION {sec.get('index', '')}: {sec.get('name', '')} "
-                  f"{BREAKER}", 2, "sections")
+        s.heading(section_heading(sec), 2, "sections")
         for sl in sec.get("slides") or []:
             s.heading(f"Slide {sl.get('n', '')}: {sl.get('title', '')}", 3, "slides")
             s.body(_labelled_text("Heading:", sl.get("heading", "")), "slides")
@@ -177,6 +194,8 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
                         s.bullet(str(item), "content")
                 elif btype == "code":
                     s.code(block, "code")
+                elif btype == "image":
+                    s.image(block, "images")
                 elif btype == "table":
                     s.table(block.get("columns") or [], block.get("rows") or [],
                             "tables")
@@ -202,14 +221,22 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
 
     usable = s.L["usable_height_pt"]
     pages = max(1, math.ceil(s.height / usable))
+    # SCREENSHOTS ARE OUTSIDE THE PAGE BUDGET. They are attached by the course owner
+    # and must appear; if they counted, every image would be paid for by cutting the
+    # teaching text around it — the opposite of what attaching one is for. The page
+    # count reported is the honest total; the gate is on the pages the WRITING takes.
+    image_pts = s.breakdown.get("images", 0.0)
+    text_pages = max(1, math.ceil(max(s.height - image_pts, 0.0) / usable))
     max_pages = int((budgets or {}).get("max_pages") or cfg["max"])
     target = int((budgets or {}).get("target_pages") or cfg.get("target", max_pages))
     return {
         "estimated_pages": pages,
+        "text_pages": text_pages,
+        "image_pages": round(image_pts / usable, 2),
         "max_pages": max_pages,
         "target_pages": target,
-        "within_budget": pages <= max_pages,
-        "within_target": pages <= target,
+        "within_budget": text_pages <= max_pages,
+        "within_target": text_pages <= target,
         "total_height_pt": round(s.height, 1),
         "usable_height_pt": usable,
         # Where the pages went — this is what makes an over-budget doc actionable

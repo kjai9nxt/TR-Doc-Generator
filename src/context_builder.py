@@ -431,6 +431,39 @@ def slide_ceiling(enforce_time: bool, budgets: dict | None = None) -> int:
     return int(con.get("max_rich", con["max"]) if not enforce_time else con["max"])
 
 
+def hands_on_cfg() -> dict:
+    return dict(config.harness()["constraints"].get("hands_on") or {})
+
+
+def hands_on_reserve(enforce_time: bool = True, budgets: dict | None = None) -> int:
+    """Slides held back from the takeaway sections for the PRACTICAL HANDS-ON section.
+
+    The hands-on section is written LAST, from what the takeaways taught, so the
+    takeaway sections must be planned around it rather than spending the whole ceiling
+    and leaving it nothing. `plan_slides` from the harness, never more than the ceiling
+    can spare above the document minimum.
+    """
+    cfg = hands_on_cfg()
+    if not cfg.get("enabled", False):
+        return 0
+    ceiling = slide_ceiling(enforce_time, budgets)
+    con = config.harness()["constraints"]["slides"]
+    floor_doc = int((budgets or {}).get("min_slides") or con["min"])
+    want = max(int(cfg.get("min_slides", 1)), min(int(cfg.get("plan_slides", 3)),
+                                                  int(cfg.get("max_slides", 4))))
+    return max(0, min(want, ceiling - floor_doc))
+
+
+def hands_on_allowance(enforce_time: bool = True, budgets: dict | None = None,
+                       slides_used: int = 0) -> int:
+    """How many slides the hands-on chunk may use: what the ceiling still has after
+    the takeaway sections, clamped to the section's own min/max."""
+    cfg = hands_on_cfg()
+    lo, hi = int(cfg.get("min_slides", 1)), int(cfg.get("max_slides", 4))
+    left = slide_ceiling(enforce_time, budgets) - max(int(slides_used), 0)
+    return max(lo, min(hi, left))
+
+
 def content_budget(enforce_time: bool, n_slides: int | None = None,
                    budgets: dict | None = None) -> dict:
     """How much a slide may carry, derived from whichever limit actually binds.
@@ -512,9 +545,12 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool,
              "chunk gets the share stated in its own instruction."
              if guided else
              "Count every slide in every section.")
+    ho = hands_on_reserve(enforce_time, budgets)
+    ho_note = (f" The Practical Hands-On section at the end is INSIDE this ceiling and is "
+               f"planned at {ho} of those slides." if ho else "")
     block = (
         f"\nHARD SLIDE CEILING: the document must have between {con['min']} and {mx} "
-        f"slides IN TOTAL. {scope} More slides than that fails the run, so 'use more "
+        f"slides IN TOTAL. {scope}{ho_note} More slides than that fails the run, so 'use more "
         f"slides rather than denser slides' applies only up to this ceiling: once it is "
         f"reached, the way to fit more sub-concepts is to put two closely-related ones "
         f"on one slide, not to add another slide.\n")
@@ -610,7 +646,12 @@ def time_mode_block(enforce_time: bool, *, guided: bool = False,
     if not enforce_time:
         return "\n" + config.depth_mode() + "\n" + pages
     rec = config.harness()["constraints"]["recording"]
-    mx, mps = rec["max_minutes"], rec.get("minutes_per_slide")
+    # The ceiling THIS run is graded against. A course that raised its slide ceiling has
+    # a longer recording budget to match (src/budgets.py), and the prompt must say the
+    # same number the gate will use.
+    mx = int((budgets or {}).get("max_minutes") or rec["max_minutes"])
+    target = int((budgets or {}).get("target_minutes") or rec["target_minutes"])
+    mps = rec.get("minutes_per_slide")
     # Say HOW the recording time is measured, not just the ceiling. Under the per-slide
     # pacing model it is the slide COUNT that consumes the budget (a slide takes ~1.5
     # minutes to record whatever is on it), so "be concise to save time" is the wrong
@@ -626,7 +667,7 @@ def time_mode_block(enforce_time: bool, *, guided: bool = False,
                f"a sub-concept in the name of the time budget.\n")
     else:
         how = (f"\nHARD TIME LIMIT: the entire session MUST be recordable within {mx} "
-               f"minutes (aim ~{rec['target_minutes']}). Exceeding {mx} minutes fails the "
+               f"minutes (aim ~{target}). Exceeding {mx} minutes fails the "
                f"run.\n")
     if guided:
         how += ("This chunk is one section of that session — keep it proportionate to its "
@@ -708,6 +749,83 @@ not re-titled, not one word changed:
 {agenda_items}
 Word caps do not apply to agenda or recap lines: copy them exactly even if they run long.
 Return ONLY this JSON object."""
+
+
+def hands_on_instruction(course: str, cur: Session, *, slides_used: int = 0,
+                         enforce_time: bool = True,
+                         budgets: dict | None = None) -> str:
+    """The guided chunk that ends the session by DOING — see constraints.hands_on.
+
+    Written after every takeaway section, so it can only draw on what the session
+    actually taught. Its job is a short, followable exercise with a title that says
+    what the learner builds, steps that are full sentences, the result they should
+    see, and the mistakes they will make — in the plainest language in the document.
+    """
+    cfg = hands_on_cfg()
+    allowance = hands_on_allowance(enforce_time, budgets, slides_used)
+    prefix = str(cfg.get("name_prefix") or "Hands-On:")
+    kts = _numbered(list(getattr(cur, "key_takeaways", []) or []))
+    words = ""
+    if enforce_time:
+        cb = content_budget(enforce_time, budgets=budgets)
+        words = (f"WORD BUDGET: about {cb['per_slide_target']} words of spoken content per "
+                 f"slide (content + speaker_notes), ceiling ~{cb['per_slide_max']}. "
+                 f"Screenshots cost no page budget.\n")
+    taught = "\n".join(f"  {k}" for k in kts)
+    return (
+        f"\nSLIDE BUDGET FOR THIS SECTION: between {cfg.get('min_slides', 1)} and "
+        f"{allowance} slide(s). The takeaway sections have used {slides_used} of the "
+        f"document's slides; this section takes what is left, up to its own ceiling.\n"
+        + words
+        + f"""GUIDED MODE — produce ONLY the PRACTICAL HANDS-ON section, as JSON:
+{{
+  "section": {{
+    "kind": "hands_on",
+    "name": "{prefix} <the concrete thing the learner does — at least 3 words>",
+    "slides": [ {{ "n": <int>, "title": "...", "role": "hands_on",
+                   "heading": "...", "subheading": "...",
+                   "content": [ ...ordered blocks per the format spec... ],
+                   "visual_guidance": "...", "speaker_notes": "..." }} ]
+  }}
+}}
+No "coverage" block and no "analogy" field: this section is practice, not a new topic.
+
+WHAT THIS SECTION IS. The session has taught these takeaways:
+{taught}
+Now the learner DOES something with them — one small, concrete exercise they can finish
+on their own machine or in the tool the course uses, in 10-15 minutes, using ONLY what
+the sections above taught. Nothing new is introduced here; if a step would need a
+concept the session did not cover, choose a different exercise.
+
+THE TITLE IS THE EXERCISE. "{prefix} Practice" or "{prefix} Exercise" fails the run.
+Name what gets built or done: "{prefix} Launching a Free-Tier EC2 Instance",
+"{prefix} Tracing a Page Fault with a 3-Frame Table", "{prefix} Building the Login
+Form Component". The breaker line in the document reads
+"PRACTICAL HANDS-ON: <your title>", so write the title as a person would say it.
+
+WHAT THE SLIDES CARRY, in this order (merge onto fewer slides when the budget is small):
+  1. The task and why it matters — a `text` block in plain words: what the learner will
+     build, what it will prove they understood, and what they need before starting
+     (an account, a tool, a file). Role `hands_on`, like every slide here.
+  2. The steps — ONE `bullets` list of 3-8 items, numbered inside the text ("1. Open
+     …", "2. Click …"). Each step is a full sentence that says exactly what to do (what
+     to open, click, type, run) AND what the learner should see when it worked. No step
+     may assume a click that was not named.
+  3. The expected result — a `text` block describing what is on screen (or what the
+     output/number is) when the exercise is complete, so the learner can check
+     themselves. Then a short `bullets` list of 3+ common mistakes, each saying the
+     mistake AND how to recognise and fix it.
+A `table` is welcome where steps have values to fill in (field -> value to enter).
+If the course brief attached SCREENSHOTS of this tool, put each one at the step it
+shows (an image block after that step's text) and explain it per the ATTACHED
+SCREENSHOTS rules — what is on screen, what to click, what to notice.
+`speaker_notes` (2-4 sentences): how to demo this live, where learners stall, and the
+interview angle ("what would you answer if asked why …").
+`visual_guidance`: the screen or diagram to show at that point.
+Plain language throughout: short sentences, everyday words, every term as the session
+defined it. The learner reading this section alone should be able to complete the
+exercise without asking anyone.
+""")
 
 
 def patch_instruction(kind: str, prev_fragment_json: str, reason: str) -> str:
@@ -908,7 +1026,7 @@ def slide_plan(cur: Session, *, enforce_time: bool = True,
     a prior deck introduced may well need more slides rather than fewer. A discount there
     would cut exactly the sections asked to go furthest.
     """
-    budget = slide_ceiling(enforce_time, budgets)
+    budget = slide_ceiling(enforce_time, budgets) - hands_on_reserve(enforce_time, budgets)
     kts = list(getattr(cur, "key_takeaways", []) or [])
     n = len(kts)
     if n <= 0:
@@ -964,7 +1082,7 @@ def chunk_slide_allowance(cur: Session, *, slides_used: int, sections_left: int,
     the behaviour `server._slide_budget_state` documents and depends on, and what makes
     a re-drafted section able to use the room its neighbours did not.
     """
-    budget = slide_ceiling(enforce_time, budgets)
+    budget = slide_ceiling(enforce_time, budgets) - hands_on_reserve(enforce_time, budgets)
     plan = slide_plan(cur, enforce_time=enforce_time, budgets=budgets)
     n = len(plan)
     floor = section_floor(n, budget)
@@ -996,7 +1114,8 @@ def takeaway_instruction(course: str, cur: Session, idx: int, *, slides_used: in
                                      sections_left=sections_left,
                                      enforce_time=enforce_time, budgets=budgets,
                                      takeaway_index=idx)
-    budget = slide_ceiling(enforce_time, budgets)
+    reserve = hands_on_reserve(enforce_time, budgets)
+    budget = slide_ceiling(enforce_time, budgets) - reserve
     # A slide allowance on its own is only half a budget: the section can obey it and
     # still write twice as much per slide as the recording ceiling allows, which is how a
     # doc lands inside the slide gate and outside the time gate.
@@ -1017,7 +1136,10 @@ def takeaway_instruction(course: str, cur: Session, idx: int, *, slides_used: in
     budget_block = (
         f"\nSLIDE BUDGET FOR THIS SECTION: at most {allowance} slide(s).\n"
         + words
-        + f"The whole document is capped at {budget} slides; the other sections have "
+        + f"The takeaway sections together are capped at {budget} slides"
+        + (f" ({reserve} more are reserved for the Practical Hands-On section written "
+           f"after them)" if reserve else "")
+        + f"; the other sections have "
         f"already used {slides_used}, and {sections_left} section(s) — including this "
         f"one — share the {max(budget - slides_used, 0)} that remain. Going over is not "
         f"a stylistic preference: the assembled document is hard-gated on the total, and "

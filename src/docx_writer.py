@@ -35,6 +35,21 @@ BREAKER = "---------------------------------------"
 _ENUMERATED = re.compile(r"^\s*\d+\s*[.)\-:]\s+")
 
 
+def section_heading(sec: dict) -> str:
+    """The breaker line for a section. A takeaway section is `SECTION i: <takeaway>`;
+    the practical hands-on section (kind "hands_on") is `PRACTICAL HANDS-ON: <exercise>`,
+    with the "Hands-On:" prefix the name carries folded into the label."""
+    name = str((sec or {}).get("name") or "")
+    if str((sec or {}).get("kind") or "").lower() == "hands_on":
+        low = name.lower()
+        for pre in ("hands-on:", "hands on:", "hands-on :", "hands on :"):
+            if low.startswith(pre):
+                name = name[len(pre):].strip()
+                break
+        return f"{BREAKER} PRACTICAL HANDS-ON: {name} {BREAKER}"
+    return f"{BREAKER} SECTION {sec.get('index', '')}: {name} {BREAKER}"
+
+
 def _list_item(doc, text: str, style: str = "List Bullet"):
     """Add one list line, with EXACTLY ONE marker in front of it.
 
@@ -189,7 +204,7 @@ def write_docx(doc_json: dict, out_path: Path) -> Path:
 
     for sec in doc_json.get("sections", []):
         d.add_paragraph()
-        d.add_heading(f"{BREAKER} SECTION {sec['index']}: {sec['name']} {BREAKER}", level=2)
+        d.add_heading(section_heading(sec), level=2)
         for s in sec.get("slides", []):
             d.add_heading(f"Slide {s['n']}: {s['title']}", level=3)
             _labelled(d, "Heading:", s.get("heading", ""))
@@ -293,8 +308,7 @@ def chunk_to_markdown(kind: str, fragment: dict) -> str:
             blocks.append(_md_list(fragment["agenda"]))
     else:  # section
         sec = fragment.get("section", fragment)
-        idx = sec.get("index", "")
-        blocks.append(f"## {BREAKER} SECTION {idx}: {sec.get('name','')} {BREAKER}")
+        blocks.append(f"## {section_heading(sec)}")
         for s in sec.get("slides", []):
             blocks += _slide_blocks(s)
     return "\n\n".join(blocks) + "\n"
@@ -321,7 +335,7 @@ def write_markdown(doc_json: dict, out_path: Path) -> Path:
         blocks.append(_md_list(doc_json["agenda"]))
 
     for sec in doc_json.get("sections", []):
-        blocks.append(f"## {BREAKER} SECTION {sec['index']}: {sec['name']} {BREAKER}")
+        blocks.append(f"## {section_heading(sec)}")
         for s in sec.get("slides", []):
             blocks += _slide_blocks(s)
 

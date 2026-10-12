@@ -72,6 +72,30 @@ def _slides(doc: dict) -> list[dict]:
     return [s for sec in doc.get("sections", []) for s in sec.get("slides", [])]
 
 
+def is_hands_on(sec: dict) -> bool:
+    """The PRACTICAL HANDS-ON section (constraints.hands_on): practice, not a takeaway."""
+    return isinstance(sec, dict) and str(sec.get("kind") or "").strip().lower() == "hands_on"
+
+
+def teaching_sections(doc: dict) -> list[dict]:
+    """The sections that teach a key takeaway — every structural rule about "one
+    section per takeaway, named after it, opening broad" is about THESE. The hands-on
+    section has its own gate and is deliberately not one of them."""
+    return [sec for sec in (doc.get("sections") or []) if not is_hands_on(sec)]
+
+
+def hands_on_section(doc: dict) -> dict | None:
+    for sec in doc.get("sections") or []:
+        if is_hands_on(sec):
+            return sec
+    return None
+
+
+def _image_blocks(slide: dict) -> list[dict]:
+    return [b for b in (slide.get("content") or [])
+            if isinstance(b, dict) and b.get("type") == "image"]
+
+
 # --------------------------------------------------------------------------- #
 # Helpers for the content/voice/formatting gates.
 #
@@ -563,7 +587,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
         # the map is a judgement, and it is scored under the pedagogy dimension.
         if role_cfg.get("require_broad_to_specific_opener", False):
             opener_ok = set(role_cfg.get("section_opener_roles", []))
-            for si, sec in enumerate(doc.get("sections") or []):
+            for si, sec in enumerate(teaching_sections(doc)):
                 sec_slides = sec.get("slides") or []
                 if not sec_slides:
                     continue
@@ -664,7 +688,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # both from the takeaway they are meant to police.
     if ag_cfg.get("sections_named_after_takeaways", False):
         src_kt = list(session.key_takeaways)
-        secs = doc.get("sections") or []
+        secs = teaching_sections(doc)
         if secs and len(secs) != len(src_kt):
             fails.append(
                 f"{len(secs)} section(s) for {len(src_kt)} key takeaways — the document "
@@ -1014,7 +1038,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     pad_max = int(pad_cfg.get("max_slides_for_single_point", 0) or 0)
     takeaways = list(getattr(session, "key_takeaways", []) or [])
     if pad_max and takeaways:
-        for i, sec in enumerate(doc.get("sections") or []):
+        for i, sec in enumerate(teaching_sections(doc)):
             if i >= len(takeaways):
                 break
             subs = takeaway_subtopics(takeaways[i])
@@ -1049,8 +1073,159 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"gaps or repeats. Renumber every slide in document order and update "
                 f"the coverage_map references to match.")
 
+    _cat(PROFILE)
+    # --- BULLETS ARE SENTENCES, NOT LABELS --------------------------------------
+    # The reviewer's report: "just 2-3 words in a bullet won't work" — a bullet reading
+    # "Resource pooling" is a heading pretending to be content, and a reader who did
+    # not already know the topic learns nothing from it. Floor and ceiling, both from
+    # the harness: under the floor is a label, over the ceiling is a paragraph that
+    # should have been one. Agenda/recap/takeaway lines are not slides, so the
+    # curriculum's own wording is never held to this.
+    min_bw = int(c_cfg.get("min_words_per_bullet") or 0)
+    max_bw = int(c_cfg.get("max_words_per_bullet") or 0)
+    if min_bw or max_bw:
+        for s in slides:
+            tag = f"Slide {s.get('n', '?')}"
+            for li, items in enumerate(_bullet_lists(s)):
+                for bi, it in enumerate(items):
+                    n = _word_count(it)
+                    if min_bw and n < min_bw:
+                        fails.append(
+                            f"{tag}: bullet {li + 1}.{bi + 1} is only {n} word(s) "
+                            f"(\"{it}\") — a label, not a teaching point. Every bullet is a "
+                            f"full, plain-language sentence of at least {min_bw} words "
+                            f"that says what the thing is or does and why it matters, so "
+                            f"a learner who has never met the term understands it from "
+                            f"the bullet alone.")
+                    elif max_bw and n > max_bw:
+                        fails.append(
+                            f"{tag}: bullet {li + 1}.{bi + 1} is {n} words (max {max_bw}) "
+                            f"— that is a paragraph. Split it into two bullets, or move "
+                            f"the explanation into the slide's text block.")
+
+    _cat(PROFILE)
+    # --- A SCREENSHOT IS EXPLAINED ON THE SLIDE THAT SHOWS IT ------------------
+    # Screenshots attached to the course's skills land here as image blocks
+    # (src/skill_images.py). The reviewer found them dropped onto a slide with nothing
+    # said about them. A picture the document does not explain is decoration: the slide
+    # must carry a `text` block that walks the learner through what is on screen.
+    img_cfg = con.get("images", {})
+    if img_cfg.get("require_explanation", False):
+        need = int(img_cfg.get("min_explanation_words", 30) or 0)
+        for s in slides:
+            imgs = _image_blocks(s)
+            if not imgs:
+                continue
+            longest = max((_word_count(t) for t in _text_blocks(s)), default=0)
+            if longest < need:
+                caps = "; ".join(str(b.get("caption") or "the screenshot")[:60] for b in imgs)
+                fails.append(
+                    f"Slide {s.get('n', '?')} shows a screenshot ({caps}) but does not "
+                    f"explain it: its longest text block is {longest} words (need "
+                    f">= {need}). Add a plain-language `text` block right after the image "
+                    f"that says what the learner is looking at — which screen or tool it "
+                    f"is, what each labelled part means, what to notice, and what happens "
+                    f"next. Keep the slide's other teaching text; images cost no page "
+                    f"budget, so nothing is cut to make room for them.")
+
+    _cat(CURRICULUM)
+    # --- THE PRACTICAL HANDS-ON SECTION ---------------------------------------
+    # The session ends by DOING. One section, kind "hands_on", after the last
+    # takeaway's section, named for the concrete exercise (constraints.hands_on).
+    ho_cfg = con.get("hands_on", {})
+    if ho_cfg.get("enabled", False):
+        ho_secs = [sec for sec in (doc.get("sections") or []) if is_hands_on(sec)]
+        prefix = str(ho_cfg.get("name_prefix") or "Hands-On:")
+        if scope == "doc" and ho_cfg.get("required", False) and not ho_secs:
+            fails.append(
+                f"Missing the PRACTICAL HANDS-ON section. After the last takeaway's "
+                f"section add one more section with \"kind\": \"hands_on\" and a name "
+                f"like \"{prefix} <what the learner builds or does>\", holding "
+                f"{ho_cfg.get('min_slides', 1)}-{ho_cfg.get('max_slides', 4)} slides of "
+                f"role 'hands_on': what the exercise is and why, the numbered steps as "
+                f"full sentences, the expected result, and common mistakes.")
+        if len(ho_secs) > 1:
+            fails.append(f"{len(ho_secs)} hands-on sections — the document has exactly one, "
+                         f"at the end.")
+        for sec in ho_secs[:1]:
+            all_secs = doc.get("sections") or []
+            if scope == "doc" and all_secs and all_secs[-1] is not sec:
+                fails.append("The hands-on section must be the LAST section, after every "
+                             "takeaway's section and before Key Takeaways.")
+            name = str(sec.get("name") or "").strip()
+            if not name.lower().startswith(prefix.lower()):
+                fails.append(f"The hands-on section is named \"{name}\" — its name must "
+                             f"start with \"{prefix}\" followed by the exercise.")
+            rest = name[len(prefix):].strip() if name.lower().startswith(prefix.lower()) else name
+            min_tw = int(ho_cfg.get("min_title_words", 3) or 0)
+            if len(rest.split()) < min_tw:
+                fails.append(
+                    f"The hands-on title \"{name}\" does not say what the learner does. "
+                    f"After \"{prefix}\" name the concrete exercise in at least {min_tw} "
+                    f"words — e.g. \"{prefix} Launching a Free-Tier EC2 Instance\", not "
+                    f"\"{prefix} Practice\".")
+            ho_slides = sec.get("slides") or []
+            lo, hi = int(ho_cfg.get("min_slides", 1)), int(ho_cfg.get("max_slides", 4))
+            if not (lo <= len(ho_slides) <= hi):
+                fails.append(f"The hands-on section has {len(ho_slides)} slide(s); it must "
+                             f"have between {lo} and {hi}.")
+            for sl in ho_slides:
+                r = str(sl.get("role") or "").strip()
+                if r != "hands_on":
+                    fails.append(f"Slide {sl.get('n', '?')} is in the hands-on section but "
+                                 f"has role '{r}' — every slide there is role 'hands_on'.")
+            if ho_cfg.get("require_steps", False) and ho_slides:
+                has_steps = any(len(items) >= 3 for sl in ho_slides
+                                for items in _bullet_lists(sl))
+                if not has_steps:
+                    fails.append(
+                        "The hands-on section has no step list. One of its slides must "
+                        "carry the numbered steps as a bullet list of 3+ items, each a "
+                        "full sentence saying what to do and what the learner sees.")
+
+    _cat(PROFILE)
+    # --- ACRONYMS A LEARNER CANNOT DECODE (warning) -------------------------------
+    # "Make it understandable for all": an acronym that is never expanded anywhere in
+    # the document is a word the learner has to look up. A warning, not a failure —
+    # the course may have expanded it in an earlier session, and the judge weighs that
+    # under clarity_and_language with the prior-deck context in front of it.
+    _ACRO = re.compile(r"\b([A-Z][A-Z0-9]{1,5})s?\b")
+    _COMMON = {"OS", "CPU", "RAM", "ROM", "GPU", "USB", "IO", "I/O", "PC", "ID", "IDS",
+               "URL", "HTTP", "HTTPS", "HTML", "CSS", "JS", "JSON", "API", "SQL", "PDF",
+               "CLI", "GUI", "UI", "UX", "IP", "TCP", "UDP", "DNS", "AWS", "RFC", "ISO",
+               "IEEE", "MB", "GB", "KB", "TB", "MS", "KHZ", "MHZ", "GHZ", "II", "III",
+               "IV", "VS", "AM", "PM", "OK", "FAQ", "PIN", "ATM", "TV", "NIST", "AI",
+               "ML", "IT", "E", "A", "B", "C", "X", "Y", "Z", "N", "US", "UK", "EU"}
+    doc_blob = " ".join(
+        str(x) for s in slides for _, x in _slide_visible_text(s)) + " " + " ".join(
+        str(s.get("speaker_notes") or "") for s in slides) + " " + " ".join(
+        str(a) for a in (doc.get("agenda") or []) + ((doc.get("recap") or {}).get("bullets") or []))
+    first_use: dict[str, object] = {}
+    for s in slides:
+        for _, text in _slide_visible_text(s):
+            for m in _ACRO.finditer(str(text)):
+                a = m.group(1)
+                if a in _COMMON or a.isdigit() or len(a) < 2:
+                    continue
+                first_use.setdefault(a, s.get("n", "?"))
+    undefined = []
+    for a, n in first_use.items():
+        # Expanded somewhere: "Full Name (ACR)", "ACR (Full Name)", "ACR stands for",
+        # "ACR, short for", "ACR is/means <words>"
+        pat = (rf"\(\s*{re.escape(a)}\s*\)|\b{re.escape(a)}\s*\([A-Za-z][^)]{{3,}}\)"
+               rf"|\b{re.escape(a)}\s+(?:stands for|is short for|short for|means|expands to|, short for)")
+        if not re.search(pat, doc_blob):
+            undefined.append(f"{a} (first on slide {n})")
+    if undefined:
+        warns.append(
+            f"{len(undefined)} acronym(s) are used on slides but never expanded anywhere "
+            f"in the document: {', '.join(undefined[:8])}"
+            f"{' …' if len(undefined) > 8 else ''}. Unless an earlier session already "
+            f"taught them, expand each the first time it appears — 'Full Name (ACR)' — "
+            f"so a learner can follow without looking it up.")
+
     _cat(GENERIC)
-    # --- speaker notes: 2 sentences, one cue + one exam hook -------------------
+    # --- speaker notes: one cue, how to explain it, one exam hook -----------------
     max_ns = con.get("speaker_notes", {}).get("max_sentences")
     if max_ns:
         for s in slides:
@@ -1209,7 +1384,10 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # into a checkable claim: the map says slide 9 teaches minor-vs-major faults, so
     # either slide 9 exists or the run fails.
     cov_cfg = con.get("coverage", {})
-    if cov_cfg.get("require_coverage_map", False):
+    # Both coverage gates below are about the takeaway sections. A chunk-scope check of
+    # the hands-on section alone (graders/chunk_check) has none, and must not be failed
+    # for lacking a coverage map it was never asked to write.
+    if cov_cfg.get("require_coverage_map", False) and teaching_sections(doc):
         cmap = doc.get("coverage_map")
         src_kt = list(session.key_takeaways)
         slide_ns = {s.get("n") for s in slides}
@@ -1358,7 +1536,7 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # teaches takeaway i actually mentions each of them, matched on distinctive
     # vocabulary (de-pluralised) across the section's slides AND its coverage entries,
     # so a sub-topic taught under a different wording still counts.
-    if cov_cfg.get("takeaway_subtopics_must_be_taught", False):
+    if cov_cfg.get("takeaway_subtopics_must_be_taught", False) and teaching_sections(doc):
         thresh = float(cov_cfg.get("subtopic_token_match", 0.6))
         src_kt = list(session.key_takeaways)
         by_name = {_norm_line(sec.get("name")): sec for sec in doc.get("sections") or []}

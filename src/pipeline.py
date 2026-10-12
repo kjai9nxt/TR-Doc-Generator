@@ -88,7 +88,7 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
     gr = guardrails.check(doc, session, is_first, is_last, rich=not enforce_time,
                           budgets=budgets, course=course, profile=profile,
                           skills=course_skills)
-    te = time_grader.estimate(doc)
+    te = time_grader.estimate(doc, budgets)
     pe = page_grader.estimate(doc, budgets)
     # time_enforced travels with the report so downstream consumers (draft ranking,
     # the UI, the dashboard) know the estimate is informational on this run.
@@ -419,7 +419,7 @@ def pin_section_names(doc: dict, cur) -> int:
     defect the gate should report, not something to paper over by position.
     """
     kts = list(getattr(cur, "key_takeaways", None) or [])
-    secs = doc.get("sections") or []
+    secs = guardrails.teaching_sections(doc)       # the hands-on section keeps its own name
     if not kts or len(secs) != len(kts):
         return 0
     n = 0

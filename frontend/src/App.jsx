@@ -1893,6 +1893,25 @@ export default function App() {
                            as long as the conversation lasts. Below ~1180px there is not
                            enough width for two readable columns and it stacks. */
                         <div className={`chunkwork${chatIsOpen(i) ? ' split' : ''}`}>
+                          {/* THE COURSE BRIEF, CHECKED ON THIS CHUNK. Each skill was ruled on
+                              against this section right after it was drafted (and a missed
+                              line patched once). A line still missed is named here, with
+                              what the judge saw, while regenerating is still one click. */}
+                          {c.brief_check && (
+                            c.brief_check.missed?.length
+                              ? <div className="alert warn">
+                                  <b>Course brief — {c.brief_check.missed.length} of {c.brief_check.checked} skill(s) not applied in this section.</b>
+                                  <ul>
+                                    {c.brief_check.missed.map((ref) => (
+                                      <li key={ref}><b>[{ref}]</b> {c.brief_check.lines?.[ref]}
+                                        {c.brief_check.verdicts?.[ref]?.evidence
+                                          ? <> — <i>{c.brief_check.verdicts[ref].evidence}</i></> : null}</li>
+                                    ))}
+                                  </ul>
+                                  <span className="hint">Regenerate with a note naming these, or edit, before approving.</span>
+                                </div>
+                              : <span className="hint">Course brief: {c.brief_check.checked} skill(s) checked against this section — all applied.</span>
+                          )}
                           <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{c.markdown}</ReactMarkdown></div>
                           {/* ASK BEFORE YOU DECIDE. Regenerating is the lever for a
                               section you have decided is wrong; this is for the moment
@@ -3594,7 +3613,11 @@ function CourseSettings({ course, budget, onChange, courseType, onCourseType,
       </div>
       <span className="hint">
         Currently applied: <b>{eff.max_pages} pages</b> and <b>{eff.max_slides} slides</b>
+        {eff.max_minutes ? <> — about <b>{eff.max_minutes} min</b> of recording</> : null}
         {eff.source ? ` (${eff.source})` : ''}.
+        {eff.minutes_per_slide
+          ? ` A slide takes about ${eff.minutes_per_slide} min to record, so raising Slides raises the recording budget with it; leave Pages blank and the page ceiling follows the slide count too (${eff.pages_derived_from_slides ? 'as it does now' : 'it is at the default'}).`
+          : ''}
       </span>
 
       {/* PER-SESSION OVERRIDES. A rare adjustment, so it lives here rather than as two

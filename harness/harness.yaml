@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.62"
+  version: "1.64"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1633,6 +1633,33 @@ meta:
               assertions that encoded the OLD rule ('the new row takes a free session
               number, disturbing none of the others') were deleted: they were asserting
               the defect."
+    - "1.63 — FOUR REVIEWER REPORTS. (1) Slide count from Settings now WORKS: the recording
+              ceiling and (unless Pages is set) the page ceiling are DERIVED from the slide
+              ceiling (src/budgets.py: max_minutes = slides x 1.5, pages at the default
+              pages-per-slide rate); time_grader/chunk_check/run_sets/prompt all read them.
+              Before, 30 slides = 45 min against a fixed 40 -> repair pass cut it back, and a
+              fixed 26 pages made every extra slide THINNER. (2) Web Slides .html downloads
+              are built Vite/React bundles (empty DOM, slides as JS objects in the script);
+              webslides._from_bundle reads them -> 60 slides where the DOM reader found 1.
+              (3) Content depth + plain language: caps 35/2 -> 75/4 words/sentences per
+              paragraph, bullets 5-28 words (gated both ways — no more 2-word labels),
+              speaker_notes 2 -> 4 sentences, pages 26 -> 36 to pay for it; style guide /
+              format spec / system prompt rewritten around 'explain, in plain words, in a
+              flow a beginner can follow'. (4) PRACTICAL HANDS-ON section (constraints.
+              hands_on): one titled exercise section after the last takeaway, own guided
+              chunk, role hands_on, 3 slides reserved. (5) Screenshots attached to skills
+              must be placed on the slide/step they show AND explained in a >=30-word text
+              block (constraints.images, gated); images are excluded from the page budget
+              so they never shorten the teaching text."
+    - "1.64 — SKILLS APPLIED WHILE WRITING, LEARNER-FIRST GRADING. (1) gates.chunk_brief_check:
+              every guided section is judged per skill (skills.chunk_brief_check, judge
+              model) right after it is drafted; a missed line is patched before review and
+              the result is stored on the chunk (brief_check) + shown in the review pane.
+              (2) Rubric re-weighted toward what students need: clarity_and_language 4->10,
+              course_brief_adherence 6->12, pedagogy 9->10 (totals are normalised). (3) New
+              guardrail WARNING: acronyms used in slide text and never expanded anywhere in
+              the document. (4) concept_intro paragraph recipe (plain meaning -> precise
+              definition -> why it matters) in format_spec + system prompt."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -1734,8 +1761,18 @@ constraints:
     # have made the page gate reject every document the new slide ceiling permits —
     # the ceiling that binds must be the one that reflects a real limit, and here that
     # is the 40-minute recording budget. Target 23 keeps a revision pass room to work.
-    max: 26                         # HARD ceiling — a longer doc FAILS the run
-    target: 23                      # aim here, so a revision round has room to work
+    # RAISED 26 -> 36 (1.63) with the content caps below. The reviewer found the
+    # documents SHORTENED — two-word bullets, one-line paragraphs, a flow nobody could
+    # follow — and the arithmetic says why: 26 pages across 26 slides left ~110 words a
+    # slide, and the 35-word paragraph / 12-word bullet caps spent most of that on
+    # labels. A slide that actually explains (a 2-4 sentence paragraph, bullets that
+    # are full sentences, notes that say how to teach it) runs ~150-180 words, which
+    # over 26 slides is ~34 pages. The slide count — the recording budget — is
+    # unchanged; the pages are what fuller slides cost, and they are what the
+    # reviewer asked for. When a course sets its own slide ceiling the page ceiling
+    # follows it at this same pages-per-slide rate (src/budgets.py).
+    max: 36                         # HARD ceiling — a longer doc FAILS the run
+    target: 32                      # aim here, so a revision round has room to work
     # MEASURED, not assumed: median words per rendered page across every doc generated
     # so far (111,104,128,117,216,152,136 -> median 122). Used only to turn the page
     # budget into a per-slide WORD figure the model can act on — "keep this slide under
@@ -1820,6 +1857,8 @@ constraints:
       - reasoning               # why it works, why it fails, derivation
       - application             # where it shows up in the real world
       - summary                 # consolidation of what a section established
+      - hands_on                # a step the learner performs in the PRACTICAL HANDS-ON
+                                # section at the end of the document (constraints.hands_on)
     # Guard against the obvious cheat: labelling every slide concept_intro to keep
     # writing analogies. In a real session most slides build on a concept already
     # introduced, so more than half being first-introductions means mislabelling.
@@ -1851,8 +1890,21 @@ constraints:
     # a paragraph competing with the bullets under it for the same job, which is where
     # much of the paragraph/bullet duplication came from in the first place. The
     # paragraph frames; the bullets and tables carry the detail.
-    max_words_per_text_block: 35
-    max_sentences_per_text_block: 2
+    # 1.63: 35/2 -> 75/4. The reviewer's words: "the content is often getting
+    # shortened and the flow is not understandable; just 2-3 words in a bullet won't
+    # work; make the language easy and user-friendly." A 35-word, two-sentence
+    # paragraph can frame a slide; it cannot EXPLAIN one. The paragraph may now be a
+    # short, plain-language explanation (what this is, why it exists, how it works in
+    # one breath); the bullets still carry what it does not say.
+    max_words_per_text_block: 75
+    max_sentences_per_text_block: 4
+    # ---- BULLETS ARE SENTENCES, NOT LABELS (1.63) ---------------------------------
+    # A bullet reading "Resource pooling" teaches nothing; "Resource pooling means one
+    # provider's hardware is shared by many customers, with capacity handed out as
+    # each one needs it" does. Hard floor and hard ceiling, both gated: below the floor
+    # is a label, above the ceiling is a paragraph that should have been one.
+    min_words_per_bullet: 5
+    max_words_per_bullet: 28
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
     # Verbatim cell matches were all the table rule ever caught, and a bullet that
@@ -1892,6 +1944,16 @@ constraints:
     # table. Reported as a warning, not a hard failure: a genuine keyword list (field
     # names, port numbers) is legitimate and the judge can tell the difference.
     short_bullet_words: 4
+  # ---- SCREENSHOTS IN THE DOCUMENT (1.63) ----------------------------------------
+  # A skill can carry screenshots (src/skill_images.py); they land in the document as
+  # image blocks. The reviewer found them dropped onto a slide and left unexplained.
+  # A slide that shows a picture must SAY what the learner is looking at: a `text`
+  # block of at least this many words on the same slide, walking through what is on
+  # screen. Images cost no page budget (page_grader excludes them), so a screenshot
+  # must never be the reason a slide's teaching text is cut.
+  images:
+    require_explanation: true
+    min_explanation_words: 30
   duplication:
     # NOTHING IS TAUGHT TWICE IN ONE DOCUMENT. The per-slide rules above stop a bullet
     # repeating its own paragraph or table; this one stops the same material appearing
@@ -1921,6 +1983,28 @@ constraints:
     # point restated under three titles. Measured against the curriculum line itself —
     # a takeaway that names one sub-topic is one idea, however many slides it was given.
     max_slides_for_single_point: 2
+  # ---- PRACTICAL HANDS-ON — the session ends by DOING (1.63) ----------------------
+  # The reviewer asked for a practical exercise at the end of the agenda, with a proper
+  # title. It is ONE extra section after the last takeaway's section, before Key
+  # Takeaways: `{"kind": "hands_on", "name": "Hands-On: <what the learner builds>"}`.
+  # Its slides carry role `hands_on`, and it is excluded from the one-section-per-
+  # takeaway rule, the coverage map and the broad->specific opener (it is practice,
+  # not a new topic). It spends real slides from the ceiling — `plan_slides` are
+  # reserved for it up front so the takeaway sections are planned around it — and it
+  # is generated as its own guided chunk, after the takeaways, so it can only use what
+  # the session actually taught.
+  hands_on:
+    enabled: true
+    required: true                  # a document without one FAILS (doc scope)
+    min_slides: 1
+    max_slides: 4
+    plan_slides: 3                  # reserved from the slide ceiling for this section
+    name_prefix: "Hands-On:"
+    # "Hands-On: Practice" is not a title. The words after the prefix must name the
+    # concrete thing the learner does: "Hands-On: Launching a Free-Tier EC2 Instance".
+    min_title_words: 3
+    # At least one slide must carry the numbered steps as a bullet list (3+ items).
+    require_steps: true
   numbering:
     # Slides run 1..N with no gaps. Assembly already renumbers (pipeline.assemble), so
     # this is the assertion that it worked: a gap or a repeat here means a regenerated
@@ -1939,8 +2023,11 @@ constraints:
     # forward-looking line is explicitly allowed ("reference them in one line if needed").
     title_match: 0.8
   speaker_notes:
-    # One core teaching cue + one exam/interview hook. Nothing else.
-    max_sentences: 2
+    # 1.63: 2 -> 4. The notes are what the instructor reads while recording, and two
+    # sentences could not carry "how to walk through this slide" plus the exam hook.
+    # One teaching cue, how to explain it in plain words, one exam/interview hook, and
+    # (where a screenshot is on the slide) what to point at. Nothing else.
+    max_sentences: 4
   analogy:
     # WHERE an analogy belongs. An analogy buys ONE thing: it makes an unfamiliar
     # concept graspable the first time it is met. Once the concept is on the table, a
@@ -1956,7 +2043,8 @@ constraints:
     # the four kinds of X" is decoration. The analogy belongs on the slide that first
     # explains a specific one of them.
     banned_on_roles: ["overview", "mechanism", "working_example", "comparison",
-                      "advantages_limitations", "reasoning", "application", "summary"]
+                      "advantages_limitations", "reasoning", "application", "summary",
+                      "hands_on"]
     # An analogy that paints a picture and leaves the mapping implicit is incomplete:
     # it must end by naming the concept it maps onto, and it must match the concept
     # STRUCTURALLY (a cycle needs a circular-dependency scene, not a queue).
@@ -2074,7 +2162,7 @@ constraints:
     # The exceptions are the slides that legitimately serve several sub-concepts at
     # once rather than teaching one: the section's opening landscape, a contrast table,
     # and a consolidating summary.
-    unmapped_slide_roles_allowed: ["overview", "comparison", "summary"]
+    unmapped_slide_roles_allowed: ["overview", "comparison", "summary", "hands_on"]
     # ---- 100% OF EVERY KEY TAKEAWAY -------------------------------------------
     # Everything above measures the doc against the model's OWN list of sub-concepts,
     # so a promise the CURRICULUM made and the model never enumerated was invisible to
@@ -2410,6 +2498,14 @@ gates:
   # only runs when the first did not finish the job. The best draft still wins, so a
   # second pass can never ship something worse than the first.
   guided_length_repair_rounds: 2
+  # THE COURSE BRIEF IS CHECKED PER CHUNK (1.64). Right after a section is drafted, the
+  # judge model rules on every skill against that section alone, and a line the
+  # section missed is patched BEFORE the reviewer reads it — the same per-skill verdict
+  # finalize gives, moved to the moment a fix costs one small patch instead of a repair
+  # pass over approved slides. One judge call per chunk (+ one patch when needed).
+  chunk_brief_check:
+    enabled: true
+    fix_attempts: 1
   # WHAT the repair pass is allowed to fire on. Everything here is either a property of
   # the whole document (invisible to any single chunk review) or a defect that is not a
   # matter of the reviewer's taste at all. Ordinary quality/style opinions are still NOT

@@ -47,7 +47,9 @@ GOLDEN = json.loads((ROOT / "evals/golden/session_15_golden.json").read_text())
 GRAND = ["Agenda has 4 items", "was reworded. Expected", "and key takeaway",
          "agenda item(s) are not numbered", "recap must carry ALL",
          "item(s) (min 3)", "must start BROAD",
-         "must carry key takeaway", "section(s) for 7 key takeaways"]
+         "must carry key takeaway", "section(s) for 7 key takeaways",
+         # 1.63: the hands-on section and the 5-28 word bullet range (golden predates both)
+         "Missing the PRACTICAL HANDS-ON section", "that is a paragraph"]
 
 def gate(doc, needle, *, want=True, label=None):
     """Assert `needle` appears (or not) in the non-grandfathered failures."""
@@ -672,7 +674,14 @@ used, allocs = 0, []
 for i in range(N):
     a = context_builder.chunk_slide_allowance(cur, slides_used=used, sections_left=N - i)
     allocs.append(a); used += a
-check(f"allowances sum to the ceiling ({allocs} = {used})", used == CEIL, str(allocs))
+# 1.63: the takeaway sections share the ceiling MINUS the slides reserved for the
+# Practical Hands-On section, which is written after them (context_builder.hands_on_reserve).
+_RESERVE = context_builder.hands_on_reserve(True)
+check(f"allowances sum to the takeaway budget ({allocs} = {used}, +{_RESERVE} hands-on)",
+      used + _RESERVE == CEIL, str(allocs))
+check("the prompt tells each section that the hands-on slides are reserved",
+      "reserved for the Practical Hands-On" in context_builder.takeaway_instruction(
+          _REPEAT_COURSE, cur, 0, slides_used=0, sections_left=N))
 squeezed = context_builder.chunk_slide_allowance(cur, slides_used=CEIL + 5, sections_left=2)
 floor = config.harness()["constraints"]["coverage"]["min_sub_concepts_per_takeaway"]
 check("an overspent budget squeezes later sections to the floor, not below",
@@ -909,7 +918,7 @@ check("…but the word-count diagnostic still moves with the text",
 check("a slide too dense for its 1.5 minutes is NAMED, not failed",
       fat["dense_slides"] and fat["within_budget"], str(fat["dense_slides"]))
 check("the page ceiling is what a fat doc actually busts",
-      not page_grader.estimate(_doc_of(20, 900))["within_budget"])
+      not page_grader.estimate(_doc_of(CEIL, 1200))["within_budget"])
 # The word_count model must remain selectable — it is the fallback if the pace is retuned.
 check("both pacing models are reachable",
       time_grader.estimate(_doc_of(8))["pacing"] == "per_slide"

@@ -45,7 +45,9 @@ def check(name, cond, extra=""):
 
 sessions = course_loader.load_sessions(ROOT / "Final CN Structure.xlsx")
 _p, CUR, _n = course_loader.neighbours(15, sessions)
-CEIL = CB.slide_ceiling(True)
+# The budget the TAKEAWAY sections share: the document ceiling minus the slides held
+# back for the Practical Hands-On section, which is written after them (1.63).
+CEIL = CB.slide_ceiling(True) - CB.hands_on_reserve(True)
 FLOOR = config.harness()["constraints"]["coverage"]["min_sub_concepts_per_takeaway"]
 
 
@@ -81,8 +83,10 @@ check("a 6-item takeaway outranks a 1-item one", first_heavy[0] > first_heavy[1]
       str(first_heavy))
 check("…and it gets the SAME share whether it is first or last",
       first_heavy[0] == last_heavy[3], f"{first_heavy} vs {last_heavy}")
-check("…while the light ones are equal to each other",
-      len(set(first_heavy[1:])) == 1, str(first_heavy))
+# Equal up to the one slide a largest-remainder split cannot divide: the takeaway
+# budget is the ceiling minus the hands-on reserve, which need not split evenly.
+check("…while the light ones are equal to each other (within the indivisible slide)",
+      max(first_heavy[1:]) - min(first_heavy[1:]) <= 1, str(first_heavy))
 check("…and the heavy one is materially bigger, not bigger by one",
       first_heavy[0] >= first_heavy[1] * 2, str(first_heavy))
 # The specific unfairness the old allocator had: position decided the remainder.
@@ -180,7 +184,8 @@ check("more takeaways than SLIDES shares out what there is, without going negati
 
 print("\n== budgets and depth mode are honoured ==")
 small = CB.slide_plan(CUR, budgets={"max_slides": 10})
-check("a course's own slide ceiling is what gets shared out", sum(small) == 10, str(small))
+check("a course's own slide ceiling is what gets shared out",
+      sum(small) == 10 - CB.hands_on_reserve(True, {"max_slides": 10}), str(small))
 check("…and the weighting still applies inside it",
       small[3] >= small[0], str(small))
 check("an empty curriculum plans nothing rather than dividing by zero",

@@ -2042,6 +2042,10 @@ _GUIDED_PERSIST_KEYS = (
     "status", "session_no", "base_context", "total", "index", "labels", "chunks",
     "regen_index", "use_judge", "enforce_time", "logs", "result", "error",
     "last_error", "user_email", "budgets",
+    # Whether this run has a Practical Hands-On chunk (its last one). Without it a
+    # rehydrated run would read its last index as a takeaway section and ask for a
+    # takeaway the curriculum does not have.
+    "hands_on",
     # WHICH CHUNKS THE REVIEWER HAS TICKED. These lived only in React state, so a reload
     # — or the free host spinning the instance down mid-review, which is exactly the window
     # this checkpoint exists for — threw away every tick and the reviewer had to read and
@@ -2293,6 +2297,20 @@ def _renumber_slides(state: dict) -> list[int]:
     return moved
 
 
+def _hands_on_index(state: dict) -> int | None:
+    """The chunk index of the PRACTICAL HANDS-ON section, or None for a run started
+    before it existed (its `total` is 1 + the takeaways, and it has no such chunk)."""
+    if not state.get("hands_on"):
+        return None
+    return int(state["total"]) - 1
+
+
+def _slides_used_except(state: dict, index: int) -> int:
+    """Slides every chunk OTHER than `index` currently holds (opening holds none)."""
+    return sum(_fragment_slides(c.get("fragment")) for i, c in enumerate(state["chunks"])
+               if i != index and c.get("kind") != "opening")
+
+
 def _slide_budget_state(state: dict, index: int) -> tuple[int, int]:
     """(slides_used, sections_left) for the section chunk at `index`.
 
@@ -2307,7 +2325,9 @@ def _slide_budget_state(state: dict, index: int) -> tuple[int, int]:
             continue
         sections += 1
         used += _fragment_slides(c.get("fragment"))
-    n_takeaways = state["total"] - 1          # chunk 0 is the opening
+    # chunk 0 is the opening; the hands-on chunk (when the run has one) is not a
+    # takeaway section and has its own reserved budget (context_builder.hands_on_reserve)
+    n_takeaways = state["total"] - 1 - (1 if _hands_on_index(state) is not None else 0)
     return used, max(1, n_takeaways - sections)
 
 
@@ -2321,6 +2341,12 @@ def _chunk_spec(state: dict, index: int):
     cur, prev = state["cur"], state["prev"]
     if index == 0:
         return "opening", context_builder.opening_instruction(cur, prev)
+    if index == _hands_on_index(state):
+        return "hands_on", context_builder.hands_on_instruction(
+            state.get("course") or "", cur,
+            slides_used=_slides_used_except(state, index),
+            enforce_time=state.get("enforce_time", True),
+            budgets=state.get("budgets"))
     used, left = _slide_budget_state(state, index)
     return "section", context_builder.takeaway_instruction(
         state.get("course") or "", cur, index - 1, slides_used=used, sections_left=left,
@@ -2330,6 +2356,10 @@ def _chunk_spec(state: dict, index: int):
 
 def _chunk_allowance(state: dict, index: int) -> int:
     """The slide allowance the instruction for `index` states (for the over-budget log)."""
+    if index == _hands_on_index(state):
+        return context_builder.hands_on_allowance(
+            state.get("enforce_time", True), state.get("budgets") or {},
+            _slides_used_except(state, index))
     used, left = _slide_budget_state(state, index)
     # THE INDEX MATTERS, and cannot be derived here. On a RE-DRAFT every other section
     # already exists, so `sections_left` is 1 and would point at the last takeaway rather
@@ -2484,8 +2514,65 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                              f"not be fixed without emptying a list — flagged for you "
                              f"below.")
 
+    # THE COURSE BRIEF, CHECKED NOW — not only at finalize. A section that ignored a
+    # skill used to sit on screen and get approved; the miss surfaced after assembly,
+    # when fixing it meant a repair pass over approved slides. Ask the fast judge for a
+    # per-skill verdict on this chunk alone and patch what it missed before anyone reads it.
+    brief_check: dict | None = None
+    bc_cfg = config.harness()["gates"].get("chunk_brief_check") or {}
+    if index > 0 and bc_cfg.get("enabled", False) and state.get("course"):
+        from src import skills as _skills_mod
+        try:
+            brief_check = _skills_mod.chunk_brief_check(
+                state["course"], state.get("session_no"), fragment)
+        except Exception as e:
+            _guided_log(gid, f"Chunk {index + 1}: brief check skipped ({e}).")
+            brief_check = None
+        if brief_check and brief_check.get("checked"):
+            missed = list(brief_check.get("missed") or [])
+            if not missed:
+                _guided_log(gid, f"Chunk {index + 1}: course brief applied — "
+                                 f"{len(brief_check['verdicts'])} skill(s) checked, none missed.")
+            for attempt in range(int(bc_cfg.get("fix_attempts", 1) or 0)):
+                if not missed:
+                    break
+                _guided_log(gid, f"Chunk {index + 1}: brief line(s) {', '.join(missed)} not "
+                                 f"applied — patching before review.")
+                try:
+                    from src import patcher
+                    patch = generator.generate_patch(
+                        state["base_context"], kind, fragment,
+                        _skills_mod.brief_fix_instruction(brief_check),
+                        course=state.get("course") or None, session=state.get("session_no"))
+                    retry, _scope = patcher.apply(kind, fragment, patch)
+                    again = _skills_mod.chunk_brief_check(
+                        state["course"], state.get("session_no"), retry)
+                except Exception as e:
+                    _guided_log(gid, f"Chunk {index + 1}: brief fix skipped ({e}).")
+                    break
+                if again.get("checked") and len(again.get("missed") or []) <= len(missed):
+                    fragment, brief_check = retry, again
+                    missed = list(again.get("missed") or [])
+                    _guided_log(gid, f"Chunk {index + 1}: after the fix, "
+                                     f"{len(missed)} brief line(s) still missed"
+                                     + (f" ({', '.join(missed)})." if missed else "."))
+                else:
+                    _guided_log(gid, f"Chunk {index + 1}: the brief fix did not improve "
+                                     f"on the draft — keeping the first version.")
+            if missed:
+                _guided_log(gid, f"⚠ Chunk {index + 1}: the course brief line(s) "
+                                 f"{', '.join(missed)} are still not applied — regenerate "
+                                 f"with a note naming them, or edit, before approving: "
+                                 + "; ".join(
+                                     f"[{r}] {brief_check['lines'].get(r, '')[:90]}" for r in missed))
     markdown = docx_writer.chunk_to_markdown(kind, fragment)
-    return {"kind": kind, "fragment": fragment, "markdown": markdown}
+    out = {"kind": kind, "fragment": fragment, "markdown": markdown}
+    if brief_check is not None and brief_check.get("checked"):
+        out["brief_check"] = {"missed": brief_check.get("missed") or [],
+                              "checked": len(brief_check.get("verdicts") or {}),
+                              "verdicts": brief_check.get("verdicts") or {},
+                              "lines": brief_check.get("lines") or {}}
+    return out
 
 
 def _guided_record_cost(gid: str) -> None:
@@ -2578,7 +2665,10 @@ def _guided_gate_note(gid: str, index: int, fragment: dict | None) -> None:
         from graders import chunk_check
         from src import skills as _skills
         course_skills = _skills.applicable(course, session_no) if course else []
-        res = chunk_check.gates(fragment, cur, index - 1, rich=not enforce_time,
+        with _lock:
+            _ho = _hands_on_index(GUIDED.get(gid) or {})
+        res = chunk_check.gates(fragment, cur, (-1 if index == _ho else index - 1),
+                                rich=not enforce_time,
                                 budgets=budgets, course=course, profile=profile,
                                 skills=course_skills)
     except Exception as e:
@@ -3060,7 +3150,8 @@ def _guided_finalize(gid: str):
         # Each takeaway chunk also reports the sub-concepts it covers and the slide
         # teaching each one; assemble_doc folds those into the doc-level coverage_map
         # (remapping slide numbers, since assembly renumbers the document).
-        coverage = [c["fragment"].get("coverage") or {} for c in chunks[1:]]
+        coverage = [c["fragment"].get("coverage") or {} for c in chunks[1:]
+                    if c.get("kind") != "hands_on"]
         doc = pipeline.assemble_doc(cur, nxt, opening, sections, coverage)
         result = pipeline.finalize(session_no, doc, use_judge=use_judge,
                                    enforce_time=enforce_time, run_id=gid,
@@ -3398,6 +3489,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     run_course = _require_course(user, body.course)
     sessions = course_loader.load_sessions(None, course=run_course)
     prev, cur, nxt = course_loader.neighbours(body.session_no, sessions)
+    hands_on_on = bool(context_builder.hands_on_cfg().get("enabled", False))
     labels = ["Opening (recap + agenda)"] + [
         f"Key takeaway {i + 1}: {kt[:70]}" for i, kt in enumerate(cur.key_takeaways)]
     gid = uuid.uuid4().hex[:12]
@@ -3427,7 +3519,9 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
             "session_title": cur.name,
             "prev": prev, "cur": cur, "nxt": nxt,
             "base_context": base_context,
-            "total": 1 + len(cur.key_takeaways), "index": 0, "labels": labels,
+            "total": 1 + len(cur.key_takeaways) + (1 if hands_on_on else 0), "index": 0,
+            "labels": labels + (["Practical Hands-On (the closing exercise)"] if hands_on_on else []),
+            "hands_on": hands_on_on,
             "chunks": [], "regen_index": None, "use_judge": body.use_judge,
             "enforce_time": body.enforce_time, "user_email": user.get("email"),
             "budgets": run_budgets, "course": run_course,

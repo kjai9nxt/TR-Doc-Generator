@@ -56,8 +56,15 @@ def _content_words(content: list[dict]) -> int:
     return total
 
 
-def estimate(doc: dict) -> dict:
+def estimate(doc: dict, budgets: dict | None = None) -> dict:
+    """`budgets` (src.budgets.for_session) carries the recording ceiling THIS document
+    is held to. A course that raises its slide ceiling raises it: 30 slides at 1.5
+    minutes each is 45, and a gate still reading the harness's 40 would send every such
+    document to the repair pass to be cut back down — which is exactly what happened.
+    Omitted, the harness numbers apply."""
     con = config.harness()["constraints"]["recording"]
+    max_min = int((budgets or {}).get("max_minutes") or con["max_minutes"])
+    target_min = int((budgets or {}).get("target_minutes") or con["target_minutes"])
     wpm = con["speaking_words_per_minute"]
     overhead = con["seconds_per_slide_overhead"]
     factor = con.get("elaboration_factor", 3.3)
@@ -115,10 +122,10 @@ def estimate(doc: dict) -> dict:
         "slide_count": len(slides),
         "speaking_minutes": round(speak_min, 1),
         "overhead_minutes": round(overhead_min, 1),
-        "max_minutes": con["max_minutes"],
-        "target_minutes": con["target_minutes"],
-        "within_budget": total_min <= con["max_minutes"],
-        "within_target": total_min <= con["target_minutes"],
+        "max_minutes": max_min,
+        "target_minutes": target_min,
+        "within_budget": total_min <= max_min,
+        "within_target": total_min <= target_min,
         "dense_slides": [p["n"] for p in dense],
         "per_slide": per_slide,
     }

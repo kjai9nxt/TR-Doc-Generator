@@ -84,6 +84,28 @@ def synthetic(fragment: dict, session, takeaway_index: int):
     if sec is None:
         return None, None
     kts = list(getattr(session, "key_takeaways", []) or [])
+    if guardrails.is_hands_on(sec):
+        # THE HANDS-ON CHUNK. It teaches no takeaway, so the wrapper carries the
+        # session's first takeaway as agenda/key_takeaways (the structural gates need
+        # one) and NO teaching section — which switches off the per-takeaway gates
+        # (naming, coverage map, sub-topic completeness) and leaves the hands-on gate,
+        # the per-slide gates and the length checks, which are what a review wants.
+        if not kts:
+            return None, None
+        first = kts[0]
+        item = first if re.match(r"^\s*\d+\s*[.)\-:]", first) else f"1. {first}"
+        one = dict(sec)
+        one["index"] = 1
+        doc = {
+            "session_no": getattr(session, "number", None),
+            "session_title": getattr(session, "name", ""),
+            "recap": None, "agenda": [item], "sections": [one],
+            "key_takeaways": [item], "upcoming_session": None,
+            "closing": "Thank You  |  All the Best", "coverage_map": [],
+        }
+        return doc, replace(session, key_takeaways=[first], prev_key_takeaways=[],
+                            next_key_takeaways=list(
+                                getattr(session, "next_key_takeaways", []) or []))
     if not (0 <= takeaway_index < len(kts)):
         return None, None
     takeaway = kts[takeaway_index]
@@ -167,7 +189,7 @@ def running_length(cur, nxt, fragments: list[dict], *, budgets: dict | None = No
     try:
         doc = pipeline.assemble_doc(cur, nxt, opening, sections, coverage)
         pe = page_grader.estimate(doc, budgets)
-        te = time_grader.estimate(doc)
+        te = time_grader.estimate(doc, budgets)
     except Exception:
         return {}
     done = len(sections)

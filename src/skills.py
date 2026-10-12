@@ -432,6 +432,90 @@ def block(course: str, session=None, compact: bool = False, refs: bool = False) 
 
 
 # --------------------------------------------------------------------------- #
+# the per-chunk brief check — did THIS section apply the course's skills?
+# --------------------------------------------------------------------------- #
+# The brief reaches every generation call twice (system block + end-of-message
+# reminder) and is judged per skill at FINALIZE. That leaves a gap the reviewer sees:
+# a section that ignored a skill sits on screen, gets approved, and the miss only
+# surfaces after the whole document is assembled, when fixing it means a repair pass
+# over approved slides. So the same per-skill verdict is asked for right after a chunk
+# is written — on the fast judge model, against the chunk alone — and a line the
+# section did not apply is fixed by a targeted patch BEFORE the reviewer reads it.
+_CHUNK_BRIEF_SYSTEM = (
+    "You check ONE section of a teaching document against the course's own brief — the "
+    "rules its owner wrote about HOW this course is taught. For EVERY labelled line of "
+    "the brief, first write the CRITERION (what a section that follows it would visibly "
+    "do), then judge this section against it. Return ONLY JSON:\n"
+    '{"brief_verdicts": [{"ref": "S1", "criterion": "...", '
+    '"status": "pass|partial|fail|not_applicable", "evidence": "<quote from the section, '
+    'or what is missing>"}]}\n'
+    "`not_applicable` is for a rule this section has no occasion to apply (a rule about "
+    "code on a section with no code). `fail` is for a rule the section had every "
+    "occasion to apply and did not, or contradicted; `partial` for one applied in some "
+    "places and skipped in others. One entry per label, none invented. Judge the "
+    "behaviour, never whether the rule's words appear."
+)
+
+
+def chunk_brief_check(course: str, session, fragment: dict, *, label: str = "chunk_brief") -> dict:
+    """`{"checked": bool, "verdicts": {ref: {...}}, "missed": [ref], "lines": {ref: text}}`
+    for one guided chunk. `checked` is False when the course has no brief or the call
+    failed — never a silent pass."""
+    import json as _json
+    from . import config as _config, llm as _llm
+    out: dict = {"checked": False, "verdicts": {}, "missed": [], "lines": {}}
+    try:
+        rows = numbered(course, session)
+    except Exception:
+        rows = []
+    if not rows:
+        return out
+    lines = {r["ref"]: " ".join(str(r.get("text") or "").split()) for r in rows}
+    out["lines"] = lines
+    brief = block(course, session, compact=True, refs=True)
+    sec = fragment.get("section", fragment) if isinstance(fragment, dict) else {}
+    try:
+        m = _config.harness()["model"]
+        raw = _llm.complete(
+            system=_CHUNK_BRIEF_SYSTEM,
+            user=("THE COURSE BRIEF (one verdict per [S…] label):\n" + brief
+                  + "\n\nTHE SECTION, as JSON:\n" + _json.dumps(sec, ensure_ascii=False)),
+            model=m["judge"], max_tokens=int(m.get("judge_max_tokens", 8000)),
+            temperature=0.0, label=label)
+        data = _llm.extract_json(raw)
+    except Exception:
+        return out
+    for v in (data or {}).get("brief_verdicts") or []:
+        if not isinstance(v, dict):
+            continue
+        ref = str(v.get("ref") or "").strip().upper()
+        if ref not in lines:
+            continue
+        status = str(v.get("status") or "").strip().lower()
+        if status not in ("pass", "partial", "fail", "not_applicable"):
+            continue
+        out["verdicts"][ref] = {"status": status,
+                                "criterion": str(v.get("criterion") or "").strip()[:300],
+                                "evidence": str(v.get("evidence") or "").strip()[:400]}
+    out["checked"] = bool(out["verdicts"])
+    out["missed"] = [r for r, v in out["verdicts"].items() if v["status"] in ("fail", "partial")]
+    return out
+
+
+def brief_fix_instruction(check: dict) -> str:
+    """The regenerate reason that names each missed line and what the judge saw."""
+    parts = []
+    for ref in check.get("missed") or []:
+        v = (check.get("verdicts") or {}).get(ref) or {}
+        parts.append(f"[{ref}] {check.get('lines', {}).get(ref, '')}\n"
+                     f"    status: {v.get('status')} — {v.get('evidence') or 'not applied'}")
+    return ("APPLY THE COURSE BRIEF. This section did not follow these lines of the "
+            "course's own brief. Rewrite the slides concerned so each line is visibly "
+            "applied in the writing (never printed as content), keeping everything else "
+            "as it is:\n" + "\n".join(parts))
+
+
+# --------------------------------------------------------------------------- #
 # the leak check
 # --------------------------------------------------------------------------- #
 # WHY THIS IS A GATE AND NOT A NOTE IN THE PROMPT. Told "start with the problem, then the

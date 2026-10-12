@@ -1,11 +1,11 @@
 {
   "kind": "offline",
-  "generated_at": "2026-09-30T14:29:32",
+  "generated_at": "2026-10-12T12:30:42",
   "overall_pass": true,
   "extraction": {
     "ok": false,
-    "decks_checked": 32,
-    "decks_with_issues": 9,
+    "decks_checked": 34,
+    "decks_with_issues": 10,
     "decks": [
       {
         "session_no": 1,
@@ -639,6 +639,49 @@
         "issues": [
           "2 interior slide(s) with no title/body/table: [52, 53]"
         ]
+      },
+      {
+        "session_no": 33,
+        "source_file": "RAID & Storage Management",
+        "n_slides": 54,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          50,
+          51,
+          53,
+          54
+        ],
+        "interior_empty_slides": [
+          50,
+          51
+        ],
+        "with_body": 46,
+        "with_notes": 0,
+        "with_tables": 4,
+        "body_coverage": 0.852,
+        "ok": false,
+        "issues": [
+          "2 interior slide(s) with no title/body/table: [50, 51]"
+        ]
+      },
+      {
+        "session_no": 34,
+        "source_file": "OS Security & Protection",
+        "n_slides": 59,
+        "source_slides": null,
+        "empty_slides": [
+          1,
+          58,
+          59
+        ],
+        "interior_empty_slides": [],
+        "with_body": 54,
+        "with_notes": 52,
+        "with_tables": 7,
+        "body_coverage": 0.915,
+        "ok": true,
+        "issues": []
       }
     ]
   },
@@ -666,9 +709,12 @@
       "Section 4 is named \"IntServ, DiffServ & QoS in Switched Networks\" but must carry key takeaway 4 verbatim (it is the agenda item too):\n    expected: Quality of Service (QoS): Parameters - Delay, Jitter, Bandwidth, Loss",
       "Recap has 3 bullet(s) but the previous session had 5 agenda items — the recap must carry ALL of them, verbatim, in its 'topic: subtopics' format.",
       "Slide 1: bullet list 2 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Connection must restart from scratch; Unacceptable in telecom signalling, wher",
-      "Slide 2: bullet list 1 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Multi-Streaming: one association carries; Multi-Homing: both endpoints register mu"
+      "Slide 2: bullet list 1 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Multi-Streaming: one association carries; Multi-Homing: both endpoints register mu",
+      "Slide 2: bullet 1.2 is 31 words (max 28) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block.",
+      "Missing the PRACTICAL HANDS-ON section. After the last takeaway's section add one more section with \"kind\": \"hands_on\" and a name like \"Hands-On: <what the learner builds or does>\", holding 1-4 slides of role 'hands_on': what the exercise is and why, the numbered steps as full sentences, the expected result, and common mistakes."
     ],
     "warnings": [
+      "17 acronym(s) are used on slides but never expanded anywhere in the document: SCTP (first on slide 1), NOT (first on slide 2), INIT (first on slide 2), ACK (first on slide 2), COOKIE (first on slide 2), ECHO (first on slide 2), HOL (first on slide 2), SYN (first on slide 3) …. Unless an earlier session already taught them, expand each the first time it appears — 'Full Name (ACR)' — so a learner can follow without looking it up.",
       "A takeaway names an algorithm (scheduling) and no slide works one through — if the learner is expected to EXECUTE it, it needs a concrete input traced to a computed result."
     ],
     "invariant_failures": [],
@@ -679,7 +725,7 @@
       "slide_count": 8,
       "spoken_words": 3828,
       "estimated_pages": 9,
-      "max_pages": 26,
+      "max_pages": 36,
       "pages_within_budget": true,
       "pages_by_part": {
         "front_matter": 0.53,

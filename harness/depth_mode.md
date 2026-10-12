@@ -11,13 +11,14 @@ on every doc — which produced documents nobody could record and nobody wanted 
 
 ## What still binds in this mode
 
-- **The page ceiling applies unchanged** (`constraints.pages.max` = 26). There is no mode
-  in which the document may run past it. Aim for the target (~23 pages).
+- **The page ceiling applies unchanged** (`constraints.pages.max`, 36 by default — the
+  BUDGET block states the figure for this run). There is no mode in which the document
+  may run past it. Aim for the target.
 - **Slide ceiling unchanged** (`constraints.slides.max_rich` = 26). Depth is not more
   slides for their own sake.
 - `heading` / `subheading` stay 3-4 words, hard maximum 4.
-- A `content` text block stays ≤ 35 words / 1-2 sentences. Depth goes into bullets,
-  tables and better-chosen slides — never into a longer paragraph. A 90-word paragraph
+- A `content` text block stays ≤ 75 words / 2-4 sentences. Depth goes into bullets,
+  tables and better-chosen slides — never into a longer paragraph. A 120-word paragraph
   is a defect in this mode too.
 - **The prose/bullet mix is unchanged**: at least 60% of slides carry a `text` block,
   and no bullet list has fewer than 3 items. Depth never means bulleting more.
@@ -26,7 +27,7 @@ on every doc — which produced documents nobody could record and nobody wanted 
 - **The agenda is still the scope**: every slide maps to a sub-concept in
   `coverage_map`. Depth means covering the takeaways more thoroughly, never widening
   to adjacent topics.
-- `speaker_notes` stay ≤ 2 sentences: one teaching cue plus one exam/interview hook.
+- `speaker_notes` stay ≤ 4 sentences: the teaching cue, how to explain it, the exam hook.
 - **The analogy rule is unchanged and exact:** an analogy on `concept_intro` slides
   only, and no more than half the slides may be `concept_intro`. Depth never means
   more analogies.
@@ -44,10 +45,10 @@ on every doc — which produced documents nobody could record and nobody wanted 
    does not apply and is not graded on this run. Do not mention a time budget. The
    PAGE half of HARD RULE 1 still applies.
 
-2. **Bullets and tables may be fuller.** The style guide's 12-word bullet cap and
-   8-word table-cell cap are lifted: write the bullet the teaching needs. Still no
-   filler and no repetition — a longer bullet must carry more information, not more
-   words.
+2. **Tables may be fuller.** The 8-word table-cell cap is lifted. Bullets keep their
+   5-28 word range (they are gated in every mode): a bullet is a full sentence that
+   explains, never a label. Still no filler and no repetition — a longer line must carry
+   more information, not more words.
 
 3. **Define, then explain (broad → specific).** For each core concept give the precise
    definition first, then translate it into plain language and intuition. Do not settle

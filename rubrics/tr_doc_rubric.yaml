@@ -63,7 +63,8 @@ scale:
 # both already own that ground and a 14th dimension would dilute every weight.
 dimensions:
   - id: technical_accuracy
-    weight: 20
+    # 20 -> 18 (1.64): still the heaviest; two points moved to learner clarity.
+    weight: 18
     question: >
       Is every fact correct AND grounded in the curriculum / known material? This is the
       heaviest dimension because the document is copied onto slides and recorded: a wrong
@@ -125,7 +126,7 @@ dimensions:
       leakage caps at 3 — name the offending slide in `blocking_issues` either way, so
       the repair pass can act on it. [G1,G4,G18]
   - id: pedagogy
-    weight: 9
+    weight: 10
     question: >
       Sound ordering (problem -> idea -> mechanism -> comparison -> use) AND, above all,
       BROAD -> SPECIFIC. The broad->specific rule is structural: each section must open
@@ -136,11 +137,19 @@ dimensions:
       having named the set, caps this at 2 (the deterministic gate only checks the
       opening slide's role, so judge whether the CONTENT really sets the map). Also:
       concepts motivated before defined; terms introduced after the gap is felt; smooth
-      flow with no sudden jumps (nothing used before it is taught). [G12,G17]
+      flow with no sudden jumps (nothing used before it is taught). The session must END
+      with a PRACTICAL HANDS-ON section (kind "hands_on", last section) whose title
+      names the concrete exercise ("Hands-On: Launching a Free-Tier EC2 Instance", never
+      "Hands-On: Practice"), whose steps are full sentences a learner can follow alone,
+      which states the expected result and common mistakes, and which uses ONLY what the
+      session taught. A missing hands-on, a vague title, or steps that skip clicks caps
+      this at 3. [G12,G17]
   - id: recording_time
-    weight: 8
+    weight: 6                      # 8 -> 6 (1.64): the deterministic gate already binds
     question: >
-      Is the session realistically recordable in <= 40 minutes (when the limit is on),
+      Is the session realistically recordable within the `max_minutes` the estimate
+      states (40 by default; a course that raised its slide ceiling has a longer budget
+      to match, and that longer figure is the one to grade against — never 40 by habit),
       based on the deterministic time estimate provided as ground truth? Over budget
       caps at 2. NOTE HOW THE ESTIMATE WORKS: recording is paced at ~1.5 minutes PER
       SLIDE whatever is on the slide, so the budget is spent by the SLIDE COUNT and 26
@@ -152,9 +161,10 @@ dimensions:
       gate. `dense_slides`, if present, lists slides whose narration alone would run well
       past 1.5 minutes — worth a note, not a failure. [G10]
   - id: length_discipline
-    weight: 8
+    weight: 6                      # 8 -> 6 (1.64): the page gate already binds
     question: >
-      Is the document within the 26-page ceiling (target ~23), per the deterministic page
+      Is the document within the page ceiling the estimate states (36 by default, target
+      ~32; images are outside it), per the deterministic page
       estimate given as ground truth — and, more importantly, is its length EARNED? Use
       `pages_by_part` to tell the two apart: length spent on sub-concepts, worked detail
       and comparison tables is earned; length spent on content that is not on the agenda,
@@ -170,7 +180,7 @@ dimensions:
     question: >
       Does slide CONTENT read as tight slide text, not spoken narration — and is it a
       MIX of short paragraphs and bullets rather than wall-to-wall bullets? The mix is a
-      house rule: a short `text` paragraph frames, defines or connects (<= 35 words, 1-2
+      house rule: a short `text` paragraph explains in plain words (<= 75 words, 2-4
       sentences), bullets carry a genuine list of 3+ parallel substantial items (<= 12
       words each), and tables carry any 2+ way comparison. A document that is almost
       entirely bullet lists caps this at 2 — it reads as choppy and loses the connective
@@ -257,12 +267,20 @@ dimensions:
       this at 3 — the learner cannot reproduce a trace whose starting conditions are
       unstated. [G24]
   - id: clarity_and_language
-    weight: 4
+    # 4 -> 10 (1.64): the document is for students meeting the topic for the first time,
+    # and "could a beginner follow this alone?" is the question the reviewer asks first.
+    weight: 10
     question: >
-      Easy to understand on first read? Are speaker notes <= 2 sentences — one teaching
-      cue plus one exam/interview hook, with no restatement of the slide body and no
-      "close by…"? Is jargon explained on first use, and the language plain and concrete?
-      [G11]
+      Could a learner who has never met this topic follow it on first read, slide after
+      slide? PLAIN LANGUAGE is the bar: short everyday sentences, every term defined the
+      first time it appears, the WHY stated and not just the WHAT, and each slide's
+      paragraph connecting to the one before so the FLOW is visible. Bullets must be
+      full sentences that explain (a 2-3 word bullet is a label, not teaching — cap at
+      2 if the deck is built from those). Speaker notes <= 4 sentences: the teaching cue,
+      how to explain it in plain words, the exam/interview hook — no restatement of the
+      slide body. EVERY attached screenshot (image block) must be explained on its own
+      slide in a text block of 30+ words saying what is on screen and what to notice; an
+      unexplained picture caps this at 3. [G11]
   - id: content_recency
     weight: 5
     question: >
@@ -275,7 +293,9 @@ dimensions:
     question: >
       Exact layout IN ORDER: session title; recap = ALL of the previous session's agenda
       items in its "topic: subtopics" format (omitted only for Session 1); agenda; one
-      section breaker PER agenda item in agenda order; key takeaways; upcoming session
+      section breaker PER agenda item in agenda order; then ONE "PRACTICAL HANDS-ON:"
+      section (kind hands_on, excluded from the one-per-agenda-item count and from the
+      coverage_map); key takeaways; upcoming session
       name; closing "Thank You | All the Best". The agenda must be NUMBERED 1..N and each
       item must be the curriculum's key-takeaway line VERBATIM — identical to key takeaway
       i, not summarised or reworded (these lines are exempt from every word cap, so a long
@@ -287,7 +307,7 @@ dimensions:
       copied verbatim. A missing slide field, a missing/invalid coverage_map, or a
       wrong-order/missing section caps this at 2.
   - id: market_parity
-    weight: 3
+    weight: 2
     question: >
       Does depth/accuracy match or exceed Scaler, GeeksforGeeks, TutorialsPoint, and
       standard syllabi for this topic? Nothing important for the topic is missing. [G19]
@@ -315,7 +335,9 @@ dimensions:
   # dimension must reach 4), low enough that a course cannot make its own preferences
   # outweigh technical accuracy.
   - id: course_brief_adherence
-    weight: 6
+    # 6 -> 12 (1.64): the course's own skills are the one input that differs between two
+    # courses on the same syllabus, and the owner wrote them to be followed every time.
+    weight: 12
     question: >
       Does the document follow THIS COURSE'S OWN BRIEF — the instructions its owner
       authored and approved, supplied to you under "THE COURSE'S OWN BRIEF"? Judge only

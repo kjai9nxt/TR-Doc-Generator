@@ -71,6 +71,12 @@ def _wc(text):
 # --------------------------------------------------------------------------- #
 # deterministic checkers -> (score 1-5, detail str)
 # --------------------------------------------------------------------------- #
+# The budgets the document being scored is held to (src.budgets.for_session), set by
+# run_on_doc for the checkers below. Module state rather than a parameter because the
+# checker signature is fixed by the dispatch table; one doc is scored at a time.
+_BUDGETS: dict = {}
+
+
 def _chk_recording_time(doc, session, sset):
     """Score the recording budget from the ACTIVE pacing model, thresholds from config.
 
@@ -79,7 +85,7 @@ def _chk_recording_time(doc, session, sset):
     whether that means thin coverage is what the coverage and chunk_count sets decide —
     scoring it here punished a short syllabus line twice for the same thing.
     """
-    te = time_grader.estimate(doc)
+    te = time_grader.estimate(doc, _BUDGETS or None)
     m, cap = te["estimated_minutes"], te["max_minutes"]
     marginal = cap + 2                     # 40 -> 42: over, but only just
     score = 1 if m > marginal else (3 if m > cap else 5)
@@ -94,16 +100,24 @@ def _chk_recording_time(doc, session, sset):
 
 def _chk_conciseness(doc, session, sset):
     viol = []
+    # The caps are the harness's (constraints.content), so this set and the gate can
+    # never disagree: 1.63 relaxed them so a slide can EXPLAIN, and a set still holding
+    # the old 12-word bullet would have failed every document the gate accepts.
+    c_cfg = config.harness()["constraints"].get("content", {})
+    max_bw = int(c_cfg.get("max_words_per_bullet") or 28)
+    min_bw = int(c_cfg.get("min_words_per_bullet") or 0)
+    max_tw = int(c_cfg.get("max_words_per_text_block") or 75)
     for s in _slides(doc):
         for b in s.get("content", []):
             if b.get("type") == "bullets":
                 for it in b.get("items", []):
-                    if _wc(it) > 12:
-                        viol.append(f"slide {s.get('n')} bullet {_wc(it)}w")
+                    if _wc(it) > max_bw:
+                        viol.append(f"slide {s.get('n')} bullet {_wc(it)}w >{max_bw}w")
+                    elif min_bw and _wc(it) < min_bw:
+                        viol.append(f"slide {s.get('n')} bullet {_wc(it)}w <{min_bw}w (label)")
             elif b.get("type") == "text":
-                for sent in re.split(r"(?<=[.!?])\s+", b.get("text", "")):
-                    if _wc(sent) > 18:
-                        viol.append(f"slide {s.get('n')} sentence {_wc(sent)}w")
+                if _wc(b.get("text", "")) > max_tw:
+                    viol.append(f"slide {s.get('n')} paragraph {_wc(b.get('text', ''))}w >{max_tw}w")
         # heading/subheading are 4-word labels; title keeps the ≤8-word phrase cap.
         # Counted by whitespace (same as guardrails), so a hyphenated label like
         # "Cookie-Based 4-Way Handshake" is 3 words, not 5.
@@ -213,7 +227,7 @@ def _chk_document_structure(doc, session, sset):
     if is_first and doc.get("recap"):
         v.append("recap present on session 1")
     agenda_n = len(doc.get("agenda", []))
-    sec_n = len(doc.get("sections", []))
+    sec_n = len(guardrails.teaching_sections(doc))   # the hands-on section is extra
     if agenda_n != sec_n:
         v.append(f"sections({sec_n}) != agenda items({agenda_n})")
     # `analogy` is NOT in the required set: it is conditional on the slide's role, and
@@ -287,7 +301,7 @@ def _chk_curriculum_extraction(doc, session, sset):
 def _chk_document_length(doc, session, sset):
     """The 16-page ceiling. A doc that came in very SHORT is flagged too: the usual
     cause is dropped coverage, not good editing, and that is the worse failure."""
-    pe = page_grader.estimate(doc)
+    pe = page_grader.estimate(doc, _BUDGETS or None)
     p, cap, target = pe["estimated_pages"], pe["max_pages"], pe["target_pages"]
     if p > cap:
         score = 1
@@ -693,6 +707,13 @@ def run_on_doc(doc: dict, session, *, use_llm: bool = True, enforce_time: bool =
     everyone signed in, so without this a document could be graded against a brief its
     author never wrote, with nothing in the report to say so.
     """
+    global _BUDGETS
+    try:
+        from src import budgets as _budget_rules
+        _BUDGETS = _budget_rules.for_session(course or getattr(session, "course", None),
+                                             getattr(session, "number", None))
+    except Exception:
+        _BUDGETS = {}
     if course and not getattr(session, "course", None):
         try:
             from dataclasses import replace as _replace
