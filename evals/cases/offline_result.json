@@ -1,6 +1,6 @@
 {
   "kind": "offline",
-  "generated_at": "2026-10-12T14:49:23",
+  "generated_at": "2026-10-13T00:13:08",
   "overall_pass": true,
   "extraction": {
     "ok": false,
@@ -710,7 +710,8 @@
       "Recap has 3 bullet(s) but the previous session had 5 agenda items — the recap must carry ALL of them, verbatim, in its 'topic: subtopics' format.",
       "Slide 1: bullet list 2 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Connection must restart from scratch; Unacceptable in telecom signalling, wher",
       "Slide 2: bullet list 1 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Multi-Streaming: one association carries; Multi-Homing: both endpoints register mu",
-      "Slide 2: bullet 1.2 is 31 words (max 28) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block.",
+      "Slide 2: bullet 1.1 is 28 words (max 22) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block.",
+      "Slide 2: bullet 1.2 is 31 words (max 22) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block.",
       "Missing the PRACTICAL HANDS-ON section. After the last takeaway's section add one more section with \"kind\": \"hands_on\" and a name like \"Hands-On: <what the learner builds or does>\", holding 1-4 slides of role 'hands_on': what the exercise is and why, the numbered steps as full sentences, the expected result, and common mistakes."
     ],
     "warnings": [

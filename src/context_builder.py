@@ -436,19 +436,19 @@ def hands_on_cfg() -> dict:
 
 
 _HANDS_ON_WORDS = re.compile(
-    r"hands[\s-]*on|practical|exercise|\blab\b|walk[\s-]*through|demo(?:nstrat)?|"
-    r"do[\s-]*it[\s-]*yourself|activity|try it|assignment|step[\s-]*by[\s-]*step", re.I)
+    r"hands[\s-]*on|practical|exercise|\blab\b|walk[\s-]*through|demo(?:nstrat)?", re.I)
 
 
 def hands_on_wanted(course: str | None, session_no=None) -> dict:
     """Whether THIS session gets a Practical Hands-On section, and why.
 
-    The reviewer's rule: a hands-on exists only where the course's skills ask for one
-    or attach screenshots to be walked through — "unnecessarily we don't want hands-on
-    after every session". So it is decided from the approved skills that govern this
-    session (course-wide and session-scoped alike): a skill whose text talks about a
-    practical / exercise / walkthrough, or any skill carrying an image, switches it on;
-    nothing else does. `{"wanted": bool, "reason": str}`.
+    The reviewer's rule, stated twice: "unnecessarily we don't want hands-on after every
+    session" and "it will be clearly mentioned in the specific skill of that session if
+    the hands-on is required, and the screenshots will be shared as well — then only
+    provide that section, else don't". So BOTH must hold among the approved skills
+    governing this session: a skill whose text asks for a hands-on / practical /
+    exercise / lab / walkthrough / demo, AND screenshots attached to the skills. One
+    without the other is not a request. `{"wanted": bool, "reason": str}`.
     """
     cfg = hands_on_cfg()
     if not cfg.get("enabled", False):
@@ -462,21 +462,31 @@ def hands_on_wanted(course: str | None, session_no=None) -> dict:
         rows = _skills.numbered(course, session_no)
     except Exception:
         rows = []
+    asks, shots = None, []
     for sk in rows:
         n_img = len(sk.get("images") or [])
         if n_img:
-            return {"wanted": True,
-                    "reason": f"skill [{sk.get('ref')}] attaches {n_img} screenshot(s) to walk through"}
-    for sk in rows:
-        text = " ".join([str(sk.get("text") or "")]
-                        + [str(i) for i in (sk.get("instructions") or [])])
-        m = _HANDS_ON_WORDS.search(text)
-        if m:
-            return {"wanted": True,
-                    "reason": f"skill [{sk.get('ref')}] asks for it (“{m.group(0)}”): "
-                              f"{' '.join(str(sk.get('text') or '').split())[:90]}"}
+            shots.append(f"[{sk.get('ref')}] x{n_img}")
+        if asks is None:
+            text = " ".join([str(sk.get("text") or "")]
+                            + [str(i) for i in (sk.get("instructions") or [])])
+            m = _HANDS_ON_WORDS.search(text)
+            if m:
+                asks = (f"skill [{sk.get('ref')}] asks for it (“{m.group(0)}”): "
+                        f"{' '.join(str(sk.get('text') or '').split())[:90]}")
+    if asks and (shots or not cfg.get("requires_screenshots", True)):
+        return {"wanted": True,
+                "reason": asks + (f"; screenshots attached: {', '.join(shots)}" if shots else "")}
+    if asks:
+        return {"wanted": False,
+                "reason": asks + " — but no screenshots are attached to the skills, and a "
+                                 "hands-on needs the screenshots to walk through"}
+    if shots:
+        return {"wanted": False,
+                "reason": f"screenshots are attached ({', '.join(shots)}) but no skill asks "
+                          f"for a hands-on / practical / walkthrough"}
     return {"wanted": False,
-            "reason": "no approved skill asks for a practical or attaches screenshots"}
+            "reason": "no approved skill asks for a hands-on and none attaches screenshots"}
 
 
 def hands_on_reserve(enforce_time: bool = True, budgets: dict | None = None) -> int:

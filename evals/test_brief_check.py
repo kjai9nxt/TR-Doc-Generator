@@ -125,7 +125,7 @@ try:
           "Without multi-streaming" in chunk["fragment"]["section"]["slides"][0]["speaker_notes"])
     logs = "\n".join(server.GUIDED[gid]["logs"]) if isinstance(server.GUIDED[gid]["logs"][0], str) \
         else "\n".join(l.get("msg", str(l)) for l in server.GUIDED[gid]["logs"])
-    check("the log says what was checked and fixed", "not applied — patching" in logs and "still missed" in logs, logs[-300:])
+    check("the log says what was checked and fixed", "not applied — one patch before review" in logs and "still missed" in logs, logs[-300:])
     check("the brief_check field is persisted with the chunk",
           "chunks" in server._GUIDED_PERSIST_KEYS)
     check("the UI reads brief_check from the chunk",

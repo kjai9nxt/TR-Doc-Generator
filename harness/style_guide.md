@@ -39,13 +39,15 @@ read by someone meeting the topic for the first time, so every slide is written 
   hardware is shared, …", "That metering is what makes …"), so the section reads as
   one explanation and not as a stack of unrelated cards. Within a section: what it is →
   why it exists → how it works → where it is used → what it costs.
-- **Bullets are sentences that teach, never labels.** A bullet is 5-28 words and says
+- **Bullets are sentences that teach, never labels.** A bullet is 5-22 words and says
   what the thing is or does and why it matters. "Resource pooling" is a heading;
   "Resource pooling means one provider's hardware is shared by many customers, with
   capacity handed to each one as it is needed" is a bullet. Both bounds are gated.
-- **Do not shorten to look tidy.** A slide that explains well runs 150-180 words of
-  spoken content; the page budget (36 pages by default) was set for exactly that.
-  Cutting a sentence that carried the reason, the example or the definition is a defect.
+- **Concise, not long.** Every sentence earns its place: the fewest words that still
+  carry the whole meaning, in plain language. A paragraph is two or three lines — it
+  frames and explains; it never becomes an essay. Longer only where the topic needs
+  it, not as a habit. Cutting the reason, the example or the definition is a defect;
+  cutting padding is the job.
 - **Titles say what the slide is about**, in words a learner would use: "Why Cloud
   Replaced Owning Servers", not "Overview". Every section, slide and hands-on exercise
   carries a proper, specific title.
@@ -129,11 +131,16 @@ The same rule holds between a table and the bullets beside it, and between
 ## Line lengths (HARD — gated both ways)
 A TR doc is a teaching reference the instructor records from and a learner can read
 alone. Every line is complete enough to teach and short enough to read at a glance:
-- **Bullets: 5-28 words each**, one idea per bullet, written as a full sentence. Under
-  5 words is a label and fails; over 28 is a paragraph and fails. If a bullet needs a
+- **Bullets: 5-22 words each**, one idea per bullet, written as a full sentence. Under
+  5 words is a label and fails; over 22 is a paragraph and fails. If a bullet needs a
   second idea, make it a second bullet.
-- **`content` text blocks: ≤ 75 words, 2-4 sentences.** Enough to explain — what this
-  is, why it exists, how it works, how it follows from the slide before — and no more.
+- **`content` text blocks: 2-3 FULL sentences, about 30-50 words (two or three lines)
+  — the norm. Not a one-liner either: a single clipped sentence does not explain.**
+  Enough to explain — what this is, why it exists, how it follows from the slide
+  before — in the fewest clear words. **Go beyond only where the topic demands it**
+  (a definition that cannot be split, a mechanism with a necessary caveat), up to the
+  hard ceiling of 75 words / 4 sentences — and on at most one paragraph in five across
+  the document. Everywhere else, two or three lines.
   This cap holds in depth mode too. The paragraph explains; the bullets and tables carry
   the steps, values, conditions and trade-offs it does not state.
 - **No redundancy on a slide.** Do not restate the lead-in sentence in the bullets
@@ -153,9 +160,9 @@ alone. Every line is complete enough to teach and short enough to read at a glan
   protocol which basically guarantees that data arrives in order."
 
 ## Density (this drives the PAGE budget)
-- A slide is recorded in about **1.5 minutes**. Aim for ~150-180 words of spoken
-  content (`content` + `analogy` + `speaker_notes`) — a full, well-explained slide, not a
-  thin one. If a slide clearly needs more than that, split it into two slides rather
+- A slide is recorded in about **1.5 minutes**. Aim for ~120-150 words of spoken
+  content (`content` + `analogy` + `speaker_notes`) — a clear, well-explained slide
+  written tightly, neither thin nor padded. If a slide clearly needs more than that, split it into two slides rather
   than cramming, up to the slide ceiling.
 - `content` blocks: a short framing paragraph, then bullets or a table for the
   detail. A bullet = one beat; a paragraph = the thread between the beats.
@@ -322,9 +329,9 @@ afterwards, and that is where a session loses people.
   number of key-takeaway lines. No new scope introduced here.
 
 ## The Practical Hands-On (only where the brief asks for it)
-- Not every session has one. It exists only when a course skill asks for a practical,
-  exercise or walkthrough, or attaches screenshots; the BUDGET block says whether this
-  run has one. Never add one on your own.
+- Not every session has one. It exists only when a skill for that session clearly asks
+  for a hands-on / practical / walkthrough AND screenshots are attached; the BUDGET
+  block says whether this run has one. Never add one on your own.
 - When it exists: after the last takeaway's section, **one more section** (`kind: hands_on`) gives the
   learner something to DO with what was taught: 10-15 minutes, on their own machine or
   in the course's tool, using only concepts from this session.

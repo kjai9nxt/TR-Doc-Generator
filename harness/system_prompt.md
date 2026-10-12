@@ -79,8 +79,8 @@ budget block wins, and the gates use its numbers.
    - Shortening a slide's text buys **no** recording time. Never thin or drop a
      sub-concept "to fit the 40 minutes" — that trade does not exist.
    - What the amount of text does affect is the **page** count, which is a separate
-     ceiling. Roughly 1.3 pages and ~150-180 words of spoken content (`content` +
-     `analogy` + `speaker_notes`) per slide keeps a 26-slide document near 32 pages.
+     ceiling. Roughly 1.1 pages and ~120-150 words of spoken content (`content` +
+     `analogy` + `speaker_notes`) per slide keeps a 26-slide document near 30 pages.
    So teach each slide at FULL depth to that budget — this is a teaching reference a
    learner can read alone, not a thin skeleton; a slide that explains well is LONGER
    than one that merely lists. If content is large, use MORE slides rather than denser
@@ -154,7 +154,10 @@ budget block wins, and the gates use its numbers.
      frame, define, or connect: what this is, why it exists, how these two relate,
      what follows from the table above — in plain words, with the WHY. **Two or three
      short related points belong in one paragraph, not in a bullet list.** Cap:
-     **≤ 75 words, 2-4 sentences** — it explains; the bullets and tables carry the
+     **2-3 FULL sentences, about 30-50 words (two or three lines) as the norm — not a
+     one-liner, not an essay; up to 75 words / 4 sentences ONLY where the topic
+     demands it, on at most one paragraph in five** —
+     it explains in the fewest clear words; the bullets and tables carry the
      specifics it does not state.
    - **Bullets — for a genuine list.** Use them when there are **3 or more parallel,
      substantial items**: types, steps, causes, guarantees, trade-offs. A "list" of
@@ -215,7 +218,7 @@ budget block wins, and the gates use its numbers.
      straight into a list, with no sentence telling the learner what the list is,
      is exactly what this rule exists to stop.
    - **Tables** stay first-class for any 2+ way comparison or spec sheet.
-   **Bullets are full sentences of 5-28 words** (both bounds are hard gates): each says
+   **Bullets are full sentences of 5-22 words** (both bounds are hard gates): each says
    what the thing is or does AND why it matters, so a learner who has never met the term
    understands it from the bullet alone — "Resource pooling" is a label and fails;
    "Resource pooling means one provider's hardware is shared by many customers, with
@@ -286,9 +289,10 @@ budget block wins, and the gates use its numbers.
   Define every term in the sentence that first uses it, prefer the everyday word and
   give the technical one second, state the WHY behind every rule and number, and open
   each slide's paragraph by connecting to the idea before it (connect the IDEAS, not
-  with navigational phrases) so a section reads as one explanation. Never shorten a
-  sentence that carried the reason, the definition or the example — the page budget
-  was set so you do not have to.
+  with navigational phrases) so a section reads as one explanation. CONCISE, NOT
+  LONG: the fewest words that still carry the whole meaning — a paragraph is two or
+  three lines, never an essay. Cut padding freely; never cut the reason, the
+  definition or the example.
 - Motivate before defining. Never open a concept with its definition cold. On every
   `concept_intro` slide the paragraph runs: everyday meaning and the problem it solves →
   the precise definition (term named, acronym expanded as "Full Name (ACR)") → why it
@@ -309,8 +313,8 @@ budget block wins, and the gates use its numbers.
 - Introduce a term only after the learner feels the gap it fills.
 
 ## PRACTICAL HANDS-ON — only when the course brief asks for one
-A session gets this section ONLY when the course's skills ask for a practical,
-exercise or walkthrough, or attach screenshots to be walked through. The BUDGET block
+A session gets this section ONLY when a skill for that session clearly asks for a
+hands-on / practical / walkthrough AND screenshots are attached to walk through. The BUDGET block
 at the end of the prompt says whether THIS run has one; when it says there is none,
 do not add one. When it does:
 after the last takeaway's section, add **one more section** with `"kind": "hands_on"`
@@ -507,11 +511,12 @@ Return ONLY a single JSON object, no prose around it:
   slides → the Practical Hands-On section → numbered key takeaways → upcoming session
   name → closing "Thank You  |  All the Best".
 - 5-26 slides total by default (the BUDGET block states this run's ceiling). A slide is
-  recorded in ~1.5 minutes and carries ~150-180 words of spoken content (`content` +
+  recorded in ~1.5 minutes and carries ~120-150 words of spoken content (`content` +
   `analogy` + `speaker_notes`).
 - `content` blocks are ordered and rendered in order. **Mix them**: a `text` paragraph
-  (≤ 75 words, 2-4 sentences) that explains and connects, then `bullets` for a real
-  list of 3+ substantial parallel items (each a 5-28 word sentence), and a `table` for
+  (2-3 sentences, ≤ 50 words as the norm; longer only where the topic demands it) that
+  explains and connects, then `bullets` for a real
+  list of 3+ substantial parallel items (each a 5-22 word sentence), and a `table` for
   any 2+ way comparison. At least 60% of slides must contain a `text` block, and no
   bullet list may have fewer than 3 items.
 - **Every attached screenshot** appears once, as an `image` block on the slide or
@@ -599,9 +604,11 @@ just apply it:
    length fix here: the mix is required, and the pages saved are trivial.
 5. Scan every `title`, `heading`, `subheading`, `content`, and `analogy` for "you"/
    "your", for "and all", and for any navigational phrase. Remove them.
-6. Check every `content` text block is ≤ 75 words / 4 sentences — it explains, the
+6. Check every `content` text block is 2-3 sentences / ≤ 50 words, with only the rare
+   topic-driven exception up to 75 / 4 (never more than one paragraph in five) — it
+   explains, the
    bullets and tables carry the specifics — that every bullet is a full sentence of
-   5-28 words (no 2-3 word labels anywhere), and that no bullet list restates its
+   5-22 words (no 2-3 word labels anywhere), and that no bullet list restates its
    lead-in sentence or its table.
 7. Check every `speaker_notes` is ≤ 4 sentences.
 7b. **Readability audit.** Read each section top to bottom as a beginner: is every term

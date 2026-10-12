@@ -47,8 +47,8 @@ import yaml                                                                     
 _g = yaml.safe_load((ROOT / "evals" / "eval_set.yaml").read_text())["golden"]
 GOLDEN = json.loads((ROOT / _g["json"]).read_text(encoding="utf-8"))
 
-STEP = ("1. Open the AWS Management Console in a browser and sign in — the service "
-        "search bar appears at the top of the page.")
+STEP = ("1. Open the AWS Management Console in a browser and sign in; the service "
+        "search bar appears at the top.")
 HANDS_ON = {
     "kind": "hands_on",
     "name": "Hands-On: Comparing SCTP and TCP Handshakes in Wireshark",
@@ -164,6 +164,26 @@ d3["sections"][0]["slides"][0]["content"].append(
 check("a 35-word bullet FAILS as a paragraph",
       any("that is a paragraph" in f for f in fails_of(d3)))
 
+print("\n== paragraphs: 2-3 lines as the norm, longer only where the topic needs it ==")
+_c = config.harness()["constraints"]["content"]
+_tgt, _max = int(_c["target_words_per_text_block"]), int(_c["max_words_per_text_block"])
+def _with_paras(doc, n_long, words):
+    d = copy.deepcopy(doc)
+    sl = [s for sec in d["sections"] for s in sec["slides"]]
+    for i, s in enumerate(sl):
+        s["content"] = [b for b in s["content"] if b.get("type") != "text"]
+        w = words if i < n_long else 20
+        s["content"].insert(0, {"type": "text", "text": ("plain " * (w - 1)) + "end."})
+    return d
+base_n = len([1 for sec in GOLDEN["sections"] for s in sec["slides"]])
+one_long = fails_of(_with_paras(GOLDEN, 1, _tgt + 10))
+check("one paragraph past the norm (under the ceiling) is allowed",
+      not any("run past the" in f or "hard max" in f for f in one_long), str([f for f in one_long if "past" in f][:1]))
+many_long = fails_of(_with_paras(GOLDEN, base_n, _tgt + 10))
+check("every paragraph past the norm FAILS the document", any("run past the" in f for f in many_long))
+over_max = fails_of(_with_paras(GOLDEN, 1, _max + 5))
+check("a paragraph over the hard ceiling FAILS on its own", any("hard max" in f for f in over_max))
+
 print("\n== a screenshot must be explained on its slide ==")
 d4 = with_hands_on(GOLDEN)
 d4["sections"][-1]["slides"][0]["content"].insert(
@@ -211,22 +231,32 @@ check("a skill that says nothing about practice does not switch it on",
 _i2 = _db.add_skill(_C, "End with a practical exercise the learner runs in VirtualBox.", kind="style")
 _db.approve_skill(_i2, "t")
 w = CB.hands_on_wanted(_C, 1)
-check("a skill asking for a practical switches it on, naming the skill",
-      w["wanted"] and "practical" in w["reason"].lower(), str(w))
+check("a skill asking for a practical WITHOUT screenshots does not switch it on",
+      not w["wanted"] and "no screenshots" in w["reason"], str(w))
 try:
     _db._exec("DELETE FROM course_skills WHERE course=?", (_C,))
 except Exception:
     pass
 _i3 = _db.add_skill(_C, "Show the console as in the attached pictures.", kind="style"); _db.approve_skill(_i3, "t")
 try:
-    _db.add_skill_image(_C, _i3, key="k" * 24, filename="shot.png", mime="image/png",
+    # A fresh key each run: `key` is UNIQUE and the row outlives the course rows the
+    # test deletes, so a fixed key made the second run insert nothing and fail here.
+    import secrets as _sec
+    _db.add_skill_image(_C, _i3, key=_sec.token_hex(12), filename="shot.png", mime="image/png",
                         caption="console", width=10, height=10, data_b64="AA==", created_by="t")
     w2 = CB.hands_on_wanted(_C, 1)
-    check("a skill carrying a screenshot switches it on", w2["wanted"] and "screenshot" in w2["reason"], str(w2))
+    check("screenshots WITHOUT a skill asking for a hands-on do not switch it on",
+          not w2["wanted"] and "no skill asks" in w2["reason"], str(w2))
+    _i4 = _db.add_skill(_C, "Session 1 ends with a hands-on walkthrough of the VirtualBox install.", kind="style")
+    _db.approve_skill(_i4, "t")
+    w3 = CB.hands_on_wanted(_C, 1)
+    check("a skill that asks AND attached screenshots switch it on",
+          w3["wanted"] and "screenshots attached" in w3["reason"], str(w3))
 except Exception as e:
     print(f"  skip image case ({e})")
 try:
     _db._exec("DELETE FROM course_skills WHERE course=?", (_C,))
+    _db._exec("DELETE FROM skill_images WHERE course=?", (_C,))
 except Exception:
     pass
 no = {"hands_on": False}

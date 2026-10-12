@@ -867,28 +867,64 @@ export default function App() {
   }
   function createGoogleDoc(session_no, run_id, name) {
     if (authCfg?.auth_disabled) {
-      alert('Creating a Google Doc needs Google sign-in. Turn AUTH_DISABLED off and sign in with your @nxtwave.co.in account.')
+      setDlErr('Creating a Google Doc needs Google sign-in. Turn AUTH_DISABLED off and sign in with your @nxtwave.co.in account.')
       return
     }
     if (!authCfg?.client_id || !window.google?.accounts?.oauth2) {
-      alert('Google library not ready — refresh the page and sign in, then try again.')
+      setDlErr('The Google sign-in library has not loaded — refresh the page, sign in, then try again.')
       return
     }
-    setGdocBusy(true)
+    setGdocBusy(true); setDlErr(null)
+    // THE BUTTON USED TO STICK ON "Creating Google Doc…" FOREVER. The Drive token comes
+    // back through Google's consent popup, and only a GRANTED token reached our callback:
+    // a popup the browser blocked, a consent window the user closed, or Google refusing
+    // the scope (an OAuth client without drive.file, an app in "Testing" with the user
+    // not listed) all ended in silence — busy stayed true, nothing was shown, nothing
+    // could be clicked. GIS reports those through `error_callback`; and a watchdog
+    // releases the button if neither callback ever fires.
+    let settled = false
+    const settle = () => { settled = true; clearTimeout(watchdog); setGdocBusy(false) }
+    const watchdog = setTimeout(() => {
+      if (settled) return
+      settle()
+      setDlErr('Google did not answer the Drive permission request within two minutes. '
+               + 'If no Google window appeared, your browser blocked the popup — allow '
+               + 'popups for this site and try again. If it appeared and closed, grant '
+               + 'the Drive permission when asked.')
+    }, 120000)
     try {
       const tc = window.google.accounts.oauth2.initTokenClient({
         client_id: authCfg.client_id,
         scope: 'https://www.googleapis.com/auth/drive.file',
+        // The signed-in account, so the popup does not ask "which account?" first.
+        hint: user?.email || undefined,
         callback: (resp) => {
-          if (!resp || !resp.access_token) { setGdocBusy(false); alert('Google Drive permission was not granted.'); return }
+          if (settled) return
+          if (!resp || !resp.access_token) {
+            settle()
+            setDlErr('Google Drive permission was not granted'
+                     + (resp?.error ? ` (${resp.error}${resp.error_description ? ': ' + resp.error_description : ''})` : '')
+                     + '. Click "Create Google Doc" again and allow access to Drive when asked.')
+            return
+          }
           api.createGdoc(session_no, resp.access_token, run_id, name)
             .then((d) => { setGdoc({ session_no, link: d.link }); if (d.link) window.open(d.link, '_blank', 'noopener') })
-            .catch((e) => alert(e.message))
-            .finally(() => setGdocBusy(false))
+            .catch((e) => setDlErr('Google Drive upload failed: ' + e.message))
+            .finally(settle)
+        },
+        error_callback: (err) => {
+          if (settled) return
+          settle()
+          const kind = err?.type || err?.message || 'unknown'
+          setDlErr(kind === 'popup_closed'
+            ? 'The Google permission window was closed before Drive access was granted. Click "Create Google Doc" again and choose Allow.'
+            : kind === 'popup_failed_to_open'
+              ? 'Your browser blocked the Google permission popup. Allow popups for this site (the icon at the right of the address bar), then try again.'
+              : `Google authorization failed (${kind}). If this keeps happening, the OAuth client in Google Cloud Console needs the Drive scope (drive.file) on its consent screen, and your account must be allowed to use it.`)
         },
       })
       tc.requestAccessToken()
-    } catch (e) { setGdocBusy(false); alert('Could not start Google authorization: ' + e.message) }
+    } catch (e) { settle(); setDlErr('Could not start Google authorization: ' + e.message) }
   }
 
   // The sheet templates live in a side panel, not inline: they are reference material
@@ -2164,7 +2200,7 @@ export default function App() {
           </div>
           {dlErr && (
             <div className="alert error">
-              <b>Could not produce the file.</b>
+              <b>Could not produce the file or the Google Doc.</b>
               <pre>{dlErr}</pre>
               Your document is not lost — use <b>Copy full text</b> above, or the preview
               at the bottom of this page.

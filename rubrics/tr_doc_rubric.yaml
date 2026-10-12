@@ -138,8 +138,8 @@ dimensions:
       opening slide's role, so judge whether the CONTENT really sets the map). Also:
       concepts motivated before defined; terms introduced after the gap is felt; smooth
       flow with no sudden jumps (nothing used before it is taught). WHEN THE RUN INCLUDES
-      ONE (the course's skills asked for a practical or attached screenshots — a
-      document with no such section and no such skill is NOT penalised), the session
+      ONE (a skill for the session asked for a practical AND screenshots were attached —
+      a document with no such section and no such request is NOT penalised), the session
       ENDS with a PRACTICAL HANDS-ON section (kind "hands_on", last section) whose title
       names the concrete exercise ("Hands-On: Launching a Free-Tier EC2 Instance", never
       "Hands-On: Practice"), whose steps are full sentences a learner can follow alone,
@@ -182,9 +182,11 @@ dimensions:
     question: >
       Does slide CONTENT read as tight slide text, not spoken narration — and is it a
       MIX of short paragraphs and bullets rather than wall-to-wall bullets? The mix is a
-      house rule: a short `text` paragraph explains in plain words (<= 75 words, 2-4
-      sentences), bullets carry a genuine list of 3+ parallel substantial items (<= 12
-      words each), and tables carry any 2+ way comparison. A document that is almost
+      house rule: a short `text` paragraph explains in plain words — 2-3 sentences and
+      <= 50 words as the norm, longer (up to 75 words / 4 sentences) ONLY where the
+      topic demands it; a document whose paragraphs run long everywhere caps at 3 —
+      bullets carry a genuine list of 3+ parallel substantial items (full sentences of
+      5-22 words each), and tables carry any 2+ way comparison. A document that is almost
       entirely bullet lists caps this at 2 — it reads as choppy and loses the connective
       reasoning a bullet cannot carry. A one- or two-item bullet list (a sentence that was
       bulleted) caps at 3, as does a slide that opens straight into a list with no

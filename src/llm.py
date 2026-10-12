@@ -305,13 +305,21 @@ def _system_blocks(system: str, system_extra: str = "", cached_context: str = ""
     """
     extra = (system_extra or "").strip()
     ctx = (cached_context or "").strip()
-    if not config.harness()["model"].get("prompt_caching"):
+    m = config.harness()["model"]
+    if not m.get("prompt_caching"):
         return "\n\n".join(x for x in (system, ctx, extra) if x)
-    blocks = [{"type": "text", "text": system,
-               "cache_control": {"type": "ephemeral"}}]
+    # THE CACHE LIFETIME. The default 5-minute TTL expired DURING a chunk's own
+    # generation: a section that thinks for six minutes comes back to a cold cache, so
+    # the patch after it and the next section both re-paid the whole 54k-token prefix
+    # at full price. Measured on run 5c35b90f0b15: 10 of 19 Sonnet calls missed, at
+    # ~$0.12 a miss. A one-hour TTL costs 2x on the write (once) instead of 1.25x and
+    # reads at 0.1x for the rest of the run — which is every call a guided run makes.
+    cc = {"type": "ephemeral"}
+    if str(m.get("cache_ttl") or "").strip() in ("1h",):
+        cc["ttl"] = "1h"
+    blocks = [{"type": "text", "text": system, "cache_control": dict(cc)}]
     if ctx:
-        blocks.append({"type": "text", "text": ctx,
-                       "cache_control": {"type": "ephemeral"}})
+        blocks.append({"type": "text", "text": ctx, "cache_control": dict(cc)})
     if extra:
         blocks.append({"type": "text", "text": extra})
     return blocks

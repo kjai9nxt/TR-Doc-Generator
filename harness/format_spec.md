@@ -119,8 +119,8 @@ Images are **outside the page budget**: never shorten a slide's teaching text to
 
 ### The Practical Hands-On section (only when the brief asks for it)
 
-Present only when the course's skills ask for a practical / exercise / walkthrough or
-attach screenshots — the BUDGET block states whether this run has one. When it does,
+Present only when a skill for the session asks for a hands-on / practical / walkthrough
+AND screenshots are attached — the BUDGET block states whether this run has one. When it does,
 the document's **last section** is one practical exercise: `"kind": "hands_on"`, name
 `Hands-On: <the concrete thing the learner does>` (at least 3 words after the prefix —
 "Hands-On: Practice" fails), 1-4 slides, every slide `role: "hands_on"`, no analogy, not
@@ -139,7 +139,8 @@ mistakes with their fix (bullets). It may use only what the session taught. Rend
 handed a definition cold: (1) the idea in everyday words — what it is and the problem
 it solves, as a friend would say it; (2) the precise definition, with the term named and
 any acronym expanded as `Full Name (ACR)`; (3) why it matters — what goes wrong without
-it, or where the learner will meet it. Three to four sentences; the bullets then carry
+it, or where the learner will meet it. Two or three short sentences, ≤ 50 words as
+the norm (longer only if the concept truly needs it); the bullets then carry
 the parts, steps or kinds. The same order holds for `speaker_notes` on that slide: say
 the everyday version first, then the exact term.
 
@@ -177,8 +178,8 @@ The breaker uses the same dash-wrapped form as the golden doc:
 4. **One section breaker per agenda item** — each agenda item gets its own section,
    in the same order as the agenda.
 5. **Slides** under each section — every slide carries all six fields (below).
-6. **Practical Hands-On** — one more section (`kind: hands_on`) ONLY when the course
-   brief asks for one or attaches screenshots; a title naming what the learner does.
+6. **Practical Hands-On** — one more section (`kind: hands_on`) ONLY when the session's
+   skill asks for one AND screenshots are attached; a title naming what the learner does.
 7. **Key Takeaways** of the current session.
 8. **Next session name** — `Upcoming Session : {name}` (omit/null on the final session).
 9. **Closing** — centered `Thank You  |  All the Best`.
@@ -227,15 +228,17 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 
 ## Per-slide content rules
 - **Mix prose and bullets — a document of nothing but bullets is a defect.**
-  - `content` text blocks (short paragraphs): **≤ 75 words, 2-4 sentences.** They
-    EXPLAIN in plain language — what this is, why it exists, how it works in one
-    breath, how it connects to the slide before. Two or three short related points
-    belong here as sentences, not as a bullet list. Longer than that is a hard failure
-    in every mode: the paragraph explains, the bullets and tables carry the specifics.
+  - `content` text blocks (short paragraphs): **2-3 sentences, ≤ 50 words — two or
+    three lines — as the norm.** They EXPLAIN in plain language — what this is, why
+    it exists, how it connects to the slide before — in as few words as carry the
+    whole meaning. Two or three short related points belong here as sentences, not as
+    a bullet list. A paragraph may run longer ONLY where the topic demands it, up to
+    the hard ceiling of **75 words / 4 sentences**; past that is a hard failure, and so
+    is a document where more than one paragraph in five exceeds the norm.
   - `bullets`: **minimum 3 items**, parallel and substantial (types, steps, causes,
-    guarantees, trade-offs), **each a full sentence of 5-28 words** that says what the
+    guarantees, trade-offs), **each a full sentence of 5-22 words** that says what the
     thing is or does and why it matters. A 2-3 word bullet is a label and a hard
-    failure; a 30-word bullet is a paragraph and a hard failure. A one- or two-item
+    failure; a 25-word bullet is a paragraph and a hard failure. A one- or two-item
     list is a sentence somebody bulleted — write the sentence.
   - **At least 60% of slides must contain a `text` block.** A slide that opens
     straight into a list, with nothing saying what the list is, fails this.

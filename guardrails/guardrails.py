@@ -720,18 +720,42 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     c_cfg = con.get("content", {})
     max_cw = c_cfg.get("max_words_per_text_block")
     max_cs = c_cfg.get("max_sentences_per_text_block")
+    tgt_cw = c_cfg.get("target_words_per_text_block")
+    tgt_cs = c_cfg.get("target_sentences_per_text_block")
+    n_blocks, over_target = 0, []
     for s in slides:
         tag = f"Slide {s.get('n', '?')}"
         for i, t in enumerate(_text_blocks(s)):
-            if max_cw and _word_count(t) > max_cw:
+            n_blocks += 1
+            wc, sc = _word_count(t), _sentence_count(t)
+            if max_cw and wc > max_cw:
                 fails.append(
-                    f"{tag}: content text block {i + 1} is {_word_count(t)} words "
-                    f"(max {max_cw}) — this is slide text, not prose. Keep one framing "
-                    f"sentence and move the detail into bullets or a table.")
-            if max_cs and _sentence_count(t) > max_cs:
+                    f"{tag}: content text block {i + 1} is {wc} words (hard max {max_cw}; "
+                    f"the norm is {tgt_cw or max_cw}) — a paragraph is two or three lines "
+                    f"that explain in the fewest clear words. Move the detail into bullets "
+                    f"or a table.")
+            if max_cs and sc > max_cs:
                 fails.append(
-                    f"{tag}: content text block {i + 1} has {_sentence_count(t)} "
-                    f"sentences (max {max_cs}).")
+                    f"{tag}: content text block {i + 1} has {sc} sentences (max {max_cs}).")
+            elif (tgt_cw and wc > tgt_cw) or (tgt_cs and sc > tgt_cs):
+                over_target.append((wc, s.get("n", "?")))
+    # LONGER ONLY WHERE THE TOPIC DEMANDS IT. A paragraph may run past the norm, up to
+    # the ceiling, for the rare idea that needs the room — but a document in which a
+    # fifth of the paragraphs do so has drifted long everywhere, which is the defect
+    # the reviewer reported. Doc scope only: a share over one section is noise.
+    share = float(c_cfg.get("max_share_over_target") or 0)
+    if share and n_blocks and scope == "doc" and len(over_target) > share * n_blocks:
+        worst = ", ".join(f"slide {n} ({wc}w)" for wc, n in sorted(over_target, reverse=True)[:6])
+        fails.append(
+            f"{len(over_target)} of {n_blocks} paragraphs run past the {tgt_cw}-word / "
+            f"{tgt_cs}-sentence norm (allowed: at most {share:.0%}). Going longer is for "
+            f"the topic that genuinely needs it, not for every slide — tighten the rest "
+            f"to two or three lines that say the same thing in fewer words: {worst}.")
+    elif share and n_blocks and scope == "chunk" and len(over_target) > share * n_blocks:
+        warns.append(
+            f"{len(over_target)} of this section's {n_blocks} paragraphs run past the "
+            f"{tgt_cw}-word norm — fine for a topic that needs it, but the whole document "
+            f"may use that room on at most {share:.0%} of its paragraphs.")
 
     _cat(SKILLS)
     # --- the course's own skills, where they carry a check ------------------------

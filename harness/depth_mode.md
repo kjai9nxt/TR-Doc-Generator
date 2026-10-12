@@ -17,9 +17,9 @@ on every doc — which produced documents nobody could record and nobody wanted 
 - **Slide ceiling unchanged** (`constraints.slides.max_rich` = 26). Depth is not more
   slides for their own sake.
 - `heading` / `subheading` stay 3-4 words, hard maximum 4.
-- A `content` text block stays ≤ 75 words / 2-4 sentences. Depth goes into bullets,
-  tables and better-chosen slides — never into a longer paragraph. A 120-word paragraph
-  is a defect in this mode too.
+- A `content` text block stays 2-3 sentences / ≤ 50 words as the norm, 75 / 4 at most
+  and only where the topic demands it. Depth goes into bullets, tables and
+  better-chosen slides — never into longer paragraphs everywhere.
 - **The prose/bullet mix is unchanged**: at least 60% of slides carry a `text` block,
   and no bullet list has fewer than 3 items. Depth never means bulleting more.
 - **Broad → specific is unchanged**: every section still opens on an `overview` (or
@@ -46,7 +46,7 @@ on every doc — which produced documents nobody could record and nobody wanted 
    PAGE half of HARD RULE 1 still applies.
 
 2. **Tables may be fuller.** The 8-word table-cell cap is lifted. Bullets keep their
-   5-28 word range (they are gated in every mode): a bullet is a full sentence that
+   5-22 word range (they are gated in every mode): a bullet is a full sentence that
    explains, never a label. Still no filler and no repetition — a longer line must carry
    more information, not more words.
 

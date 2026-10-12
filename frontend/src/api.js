@@ -325,21 +325,25 @@ export const api = {
   // Download the .docx via fetch so the auth token is sent (a plain <a href>
   // navigation can't carry the Authorization header, so it would 401).
   // Always pass run_id/name when known: they pin the exact output file.
-  downloadDoc: async (session_no, run_id, name) => {
+  downloadDoc: async (session_no, run_id, name, _retried = false) => {
+    await freshToken()
     const res = await fetch(`/api/download/${session_no}${qs({ run_id, name })}`, {
       headers: { ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
     })
     if (!res.ok) {
       // A 401 means this credential is finished. Try ONE silent renewal and replay the
-    // request before throwing the session away — the token may simply have lapsed while
-    // the page sat open, and the person is still signed in to Google.
-    if (res.status === 401) {
-      if (renew && !opts._retried) {
-        const t = await Promise.resolve(renew()).catch(() => null)
-        if (t) { setAuthToken(t); return req(path, { ...opts, _retried: true }) }
+      // request before throwing the session away — the token may simply have lapsed
+      // while the page sat open, and the person is still signed in to Google.
+      // This block was pasted from req() and still referred to req's `opts`/`path`,
+      // which do not exist here — so an expired token surfaced as the JavaScript error
+      // "opts is not defined" in the result card instead of a quiet renewal.
+      if (res.status === 401) {
+        if (renew && !_retried) {
+          const t = await Promise.resolve(renew()).catch(() => null)
+          if (t) { setAuthToken(t); return api.downloadDoc(session_no, run_id, name, true) }
+        }
+        onUnauthorized()
       }
-      onUnauthorized()
-    }
       const d = await res.json().catch(() => ({}))
       throw new Error((d.detail && (d.detail.message || d.detail)) || `Download failed (HTTP ${res.status})`)
     }

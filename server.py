@@ -2465,106 +2465,100 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
         # for session 12 reaches the writer only if the writer is told it is session 12.
         session=state.get("session_no"))
 
-    hits = _chunk_repetition_hits(fragment)
-    if hits and index > 0:
-        rep_cfg = config.harness()["constraints"].get("repetition", {})
-        attempts = int(rep_cfg.get("auto_fix_attempts", 2))
-        _guided_log(gid, f"Chunk {index + 1}: {len(hits)} bullet(s) repeat their "
-                         f"paragraph — fixing before review.")
-        for attempt in range(attempts):
-            if not hits:
-                break
-            fix = _repetition_fix_instruction(hits)
-            try:
-                # PATCH, don't re-draft. Re-generating the chunk to fix three bullets
-                # cost a full chunk's OUTPUT — measured at 25,143 completion tokens and
-                # $0.27 on one Session 32 repair, more than the chunk it was repairing.
-                # A patch names the slides and replaces their content blocks, so the
-                # output is the few lines being changed. It also cannot disturb the
-                # slides the defect was not about, which a re-draft always could.
-                from src import patcher
-                patch = generator.generate_patch(
-                    state["base_context"], kind, fragment, fix,
-                    course=state.get("course") or None,
-                    session=state.get("session_no"))
-                retry, _scope = patcher.apply(kind, fragment, patch)
-            except Exception as e:
-                _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
-                break
-            retry_hits = _chunk_repetition_hits(retry)
-            # Keep whichever version repeats itself least — including this one when it
-            # ties, since a fresh draft that fixed the same number of defects has at
-            # least been written against the explicit instruction.
-            if len(retry_hits) <= len(hits):
-                fragment, hits = retry, retry_hits
-                _guided_log(gid, f"Chunk {index + 1}: repetition down to {len(hits)} "
-                                 f"after rewrite {attempt + 1}.")
-            else:
-                _guided_log(gid, f"Chunk {index + 1}: rewrite {attempt + 1} was worse "
-                                 f"({len(retry_hits)}) — keeping the better version.")
-        if hits and rep_cfg.get("drop_unfixable_bullets", True):
-            fragment, dropped, kept = _drop_repeating_bullets(fragment, hits)
-            if dropped:
-                _guided_log(gid, f"Chunk {index + 1}: removed {dropped} bullet(s) that "
-                                 f"only restated the paragraph — the paragraph already "
-                                 f"makes those points.")
-            hits = _chunk_repetition_hits(fragment)
-        if hits:
-            _guided_log(gid, f"Chunk {index + 1}: {len(hits)} repeated bullet(s) could "
-                             f"not be fixed without emptying a list — flagged for you "
-                             f"below.")
-
-    # THE COURSE BRIEF, CHECKED NOW — not only at finalize. A section that ignored a
-    # skill used to sit on screen and get approved; the miss surfaced after assembly,
-    # when fixing it meant a repair pass over approved slides. Ask the fast judge for a
-    # per-skill verdict on this chunk alone and patch what it missed before anyone reads it.
-    brief_check: dict | None = None
+    # ONE FIX PASS PER CHUNK. Two defects are found mechanically right after a draft —
+    # bullets that repeat their paragraph, and course-brief lines the section did not
+    # apply — and each used to get its own patch call (up to two for repetition, then
+    # one for the brief, each re-sending the 54k-token prefix). Run 5c35b90f0b15 paid
+    # for 10 patches over 6 sections. Now both findings go into ONE patch instruction,
+    # followed by one cheap re-check of each; a second pass only if the first left
+    # something and the harness allows it.
+    from src import skills as _skills_mod
+    rep_cfg = config.harness()["constraints"].get("repetition", {})
     bc_cfg = config.harness()["gates"].get("chunk_brief_check") or {}
-    if index > 0 and bc_cfg.get("enabled", False) and state.get("course"):
-        from src import skills as _skills_mod
+    patch_on = set(str(x).lower() for x in (bc_cfg.get("patch_on") or ["fail"]))
+    brief_on = bool(index > 0 and bc_cfg.get("enabled", False) and state.get("course"))
+
+    def _brief(frag):
         try:
-            brief_check = _skills_mod.chunk_brief_check(
-                state["course"], state.get("session_no"), fragment)
+            return _skills_mod.chunk_brief_check(state["course"], state.get("session_no"), frag)
         except Exception as e:
             _guided_log(gid, f"Chunk {index + 1}: brief check skipped ({e}).")
-            brief_check = None
-        if brief_check and brief_check.get("checked"):
-            missed = list(brief_check.get("missed") or [])
-            if not missed:
-                _guided_log(gid, f"Chunk {index + 1}: course brief applied — "
-                                 f"{len(brief_check['verdicts'])} skill(s) checked, none missed.")
-            for attempt in range(int(bc_cfg.get("fix_attempts", 1) or 0)):
-                if not missed:
-                    break
-                _guided_log(gid, f"Chunk {index + 1}: brief line(s) {', '.join(missed)} not "
-                                 f"applied — patching before review.")
-                try:
-                    from src import patcher
-                    patch = generator.generate_patch(
-                        state["base_context"], kind, fragment,
-                        _skills_mod.brief_fix_instruction(brief_check),
-                        course=state.get("course") or None, session=state.get("session_no"))
-                    retry, _scope = patcher.apply(kind, fragment, patch)
-                    again = _skills_mod.chunk_brief_check(
-                        state["course"], state.get("session_no"), retry)
-                except Exception as e:
-                    _guided_log(gid, f"Chunk {index + 1}: brief fix skipped ({e}).")
-                    break
-                if again.get("checked") and len(again.get("missed") or []) <= len(missed):
-                    fragment, brief_check = retry, again
-                    missed = list(again.get("missed") or [])
-                    _guided_log(gid, f"Chunk {index + 1}: after the fix, "
-                                     f"{len(missed)} brief line(s) still missed"
-                                     + (f" ({', '.join(missed)})." if missed else "."))
-                else:
-                    _guided_log(gid, f"Chunk {index + 1}: the brief fix did not improve "
-                                     f"on the draft — keeping the first version.")
-            if missed:
-                _guided_log(gid, f"⚠ Chunk {index + 1}: the course brief line(s) "
-                                 f"{', '.join(missed)} are still not applied — regenerate "
-                                 f"with a note naming them, or edit, before approving: "
-                                 + "; ".join(
-                                     f"[{r}] {brief_check['lines'].get(r, '')[:90]}" for r in missed))
+            return None
+
+    def _to_patch(check):
+        """The brief refs that earn a patch (status in patch_on)."""
+        if not (check and check.get("checked")):
+            return []
+        return [r for r, v in (check.get("verdicts") or {}).items()
+                if v.get("status") in patch_on]
+
+    hits = _chunk_repetition_hits(fragment) if index > 0 else []
+    brief_check = _brief(fragment) if brief_on else None
+    to_fix = _to_patch(brief_check)
+    if brief_check and brief_check.get("checked"):
+        n_chk = len(brief_check["verdicts"])
+        partial = [r for r, v in brief_check["verdicts"].items() if v.get("status") == "partial"]
+        if not to_fix and not partial:
+            _guided_log(gid, f"Chunk {index + 1}: course brief applied — {n_chk} skill(s) checked.")
+        elif not to_fix:
+            _guided_log(gid, f"Chunk {index + 1}: brief line(s) {', '.join(partial)} applied only "
+                             f"in places — shown in the pane for your call; no patch spent.")
+    attempts = max(int(rep_cfg.get("auto_fix_attempts", 1) or 0),
+                   int(bc_cfg.get("fix_attempts", 1) or 0))
+    for attempt in range(attempts):
+        if not hits and not to_fix:
+            break
+        parts = []
+        if hits:
+            parts.append(_repetition_fix_instruction(hits))
+        if to_fix:
+            parts.append(_skills_mod.brief_fix_instruction({**brief_check, "missed": to_fix}))
+        what = " and ".join(([f"{len(hits)} repeated bullet(s)"] if hits else [])
+                            + ([f"brief line(s) {', '.join(to_fix)} not applied"] if to_fix else []))
+        _guided_log(gid, f"Chunk {index + 1}: {what} — one patch before review.")
+        try:
+            from src import patcher
+            patch = generator.generate_patch(
+                state["base_context"], kind, fragment, "\n\n".join(parts),
+                course=state.get("course") or None, session=state.get("session_no"))
+            retry, _scope = patcher.apply(kind, fragment, patch)
+        except Exception as e:
+            _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
+            break
+        retry_hits = _chunk_repetition_hits(retry)
+        retry_brief = _brief(retry) if to_fix else brief_check
+        retry_fix = _to_patch(retry_brief) if to_fix else []
+        # Keep whichever version is no worse on BOTH counts (ties go to the rewrite,
+        # which was at least written against the explicit instruction).
+        if len(retry_hits) <= len(hits) and len(retry_fix) <= len(to_fix):
+            fragment, hits = retry, retry_hits
+            if to_fix:
+                brief_check, to_fix = retry_brief, retry_fix
+            _guided_log(gid, f"Chunk {index + 1}: after the patch — {len(hits)} repeated "
+                             f"bullet(s), {len(to_fix)} brief line(s) still missed"
+                             + (f" ({', '.join(to_fix)})." if to_fix else "."))
+        else:
+            _guided_log(gid, f"Chunk {index + 1}: the patch did not improve on the draft — "
+                             f"keeping the first version.")
+            break
+    if hits and rep_cfg.get("drop_unfixable_bullets", True):
+        fragment, dropped, kept = _drop_repeating_bullets(fragment, hits)
+        if dropped:
+            _guided_log(gid, f"Chunk {index + 1}: removed {dropped} bullet(s) that only "
+                             f"restated the paragraph — the paragraph already makes those points.")
+        hits = _chunk_repetition_hits(fragment)
+    if hits:
+        _guided_log(gid, f"Chunk {index + 1}: {len(hits)} repeated bullet(s) could not be "
+                         f"fixed without emptying a list — flagged for you below.")
+    if to_fix:
+        _guided_log(gid, f"⚠ Chunk {index + 1}: the course brief line(s) {', '.join(to_fix)} "
+                         f"are still not applied — regenerate with a note naming them, or "
+                         f"edit, before approving: "
+                         + "; ".join(f"[{r}] {brief_check['lines'].get(r, '')[:90]}" for r in to_fix))
+    if brief_check is not None and brief_check.get("checked"):
+        # What the pane shows: failed lines first (they block), then partial ones.
+        brief_check["missed"] = [r for r, v in brief_check["verdicts"].items()
+                                 if v.get("status") in ("fail", "partial")]
     markdown = docx_writer.chunk_to_markdown(kind, fragment)
     out = {"kind": kind, "fragment": fragment, "markdown": markdown}
     if brief_check is not None and brief_check.get("checked"):

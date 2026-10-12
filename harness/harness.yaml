@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.65"
+  version: "1.68"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1672,6 +1672,24 @@ meta:
               reason, stamped on budgets['hands_on'] so reserve/prompt/gate agree. Guided
               status poll: 1.5s -> 2.5s with back-off on HTTP 429 and no give-up on it (the
               host throttles one browser's polling; it used to stop the loop after ten)."
+    - "1.66 — COST. Run 5c35b90f0b15 (S5) cost $4.20 / 1.77M tokens / 38 calls; the breakdown
+              (runs.calls_json) showed: cache misses on 10 of 19 Sonnet calls (5-min TTL
+              expiring during long drafts), 94k output tokens of mostly thinking on the six
+              drafts, 10 patch calls + 12 brief checks, a judge truncated at 16k output, and
+              a 32k-token whole-doc revise fallback. Fixes: model.cache_ttl '1h' on both cached
+              system blocks (src/llm.py); reasoning_effort generate_chunk=medium, judge/revise/
+              chunk_brief=low; ONE combined fix patch per chunk (brief misses + repeated
+              bullets) and a patch only for a FAILED skill (gates.chunk_brief_check.patch_on).
+              Expected ~$2 per session; to be confirmed on the next live run."
+    - "1.67 — CONCISE, NOT LONG. Reviewer on the first 1.63 documents: paragraphs had become
+              'long long'. Text block 75/4 -> 50 words / 3 sentences (2-3 lines), bullets
+              5-28 -> 5-22 words; the plain-language and explain-the-why rules stand — fewer
+              words that still carry the whole meaning. Prompts, rubric and depth-mode updated."
+    - "1.68 — HANDS-ON NEEDS BOTH: a governing skill that asks for it (hands-on / practical /
+              exercise / lab / walkthrough / demo) AND screenshots attached to the skills
+              (constraints.hands_on.requires_screenshots). Either alone -> no section, and the
+              start-of-run log says which half is missing. Paragraph guidance clarified:
+              2-3 FULL sentences (~30-50 words) — not one-liners, not essays."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -1691,6 +1709,12 @@ model:
   generator: "anthropic/claude-sonnet-5"   # drafting + revision
   judge: "anthropic/claude-haiku-4.5"      # LLM-as-judge grader — Haiku: ~3x faster/cheaper than Sonnet for scoring
   prompt_caching: true              # cache the large static system prompt across generate/revise/judge calls
+  # 1.66: HOLD THE CACHE FOR AN HOUR. The ~54k-token prefix (system prompt + the run's
+  # base context) was cached for 5 minutes and expired while a section was still being
+  # written, so half the calls in a run re-paid it at full price (run 5c35b90f0b15:
+  # 10 misses of 19, ~$1.2). The 1h TTL writes once at 2x and reads at 0.1x for every
+  # call after. Set "" to go back to the 5-minute default.
+  cache_ttl: "1h"
   # OUTPUT CEILING. This caps THINKING PLUS TEXT, not just the JSON — and Claude
   # Sonnet 5 thinks by default (adaptive thinking is on whenever the request omits
   # the `thinking` field; on Sonnet 4.6 the same request did no thinking at all). A
@@ -1720,6 +1744,20 @@ model:
   reasoning_effort:
     repair_patch: low
     regenerate_patch: low
+    # 1.66, from the same run's breakdown: the six section drafts spent 94k OUTPUT
+    # tokens ($1.41 of the run's $4.20) and most of it was thinking — a 4-slide section
+    # is ~3k tokens of JSON. "medium" keeps real planning depth and roughly halves it.
+    # The judge is a grader reading a finished document: "low" stops it thinking for
+    # 16k tokens (one judge call truncated at the 16k ceiling, $0.11 for nothing).
+    # The whole-document re-draft fallback and the per-chunk brief check are mechanical
+    # and read at "low" too.
+    generate_chunk: medium
+    generate_chunk_retry: medium
+    revise: low
+    judge: low
+    judge_retry: low
+    chunk_brief: low
+    skills: low
 
 # ----------------------------------------------------------------------------
 # HARD CONSTRAINTS  (enforced by guardrails — a run FAILS if violated)
@@ -1908,15 +1946,28 @@ constraints:
     # paragraph can frame a slide; it cannot EXPLAIN one. The paragraph may now be a
     # short, plain-language explanation (what this is, why it exists, how it works in
     # one breath); the bullets still carry what it does not say.
+    # 1.67: the NORM is 2-3 lines; LONGER ONLY WHERE THE TOPIC DEMANDS IT. The
+    # reviewer, on the first documents under the 75-word cap: "long long paragraphs —
+    # 2-3 lines is fine for the intro part of each slide; concise but clear, as few
+    # words as convey the whole meaning" — and then: "you can go beyond only when
+    # needed, not everywhere, as per the demand of the topic". So two limits:
+    #   target  — what a paragraph normally is (50 words / 3 sentences);
+    #   max     — the ceiling for the rare paragraph a topic genuinely needs (75 / 4);
+    # and a document-wide gate on HOW OFTEN the norm is exceeded: more than
+    # max_share_over_target of the text blocks running past the target is a document
+    # that has drifted long, not a topic that needed room.
+    target_words_per_text_block: 50
+    target_sentences_per_text_block: 3
     max_words_per_text_block: 75
     max_sentences_per_text_block: 4
+    max_share_over_target: 0.2
     # ---- BULLETS ARE SENTENCES, NOT LABELS (1.63) ---------------------------------
     # A bullet reading "Resource pooling" teaches nothing; "Resource pooling means one
     # provider's hardware is shared by many customers, with capacity handed out as
     # each one needs it" does. Hard floor and hard ceiling, both gated: below the floor
     # is a label, above the ceiling is a paragraph that should have been one.
     min_words_per_bullet: 5
-    max_words_per_bullet: 28
+    max_words_per_bullet: 22        # 1.67: 28 -> 22 — a complete sentence, no padding
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
     # Verbatim cell matches were all the table rule ever caught, and a bullet that
@@ -2014,6 +2065,12 @@ constraints:
     # decision is made at /guided/start, logged with its reason, and stamped on the
     # run's budgets so the plan, the prompts and the gates agree.
     only_when_brief_asks: true
+    # …AND the screenshots must be there. The reviewer: "it will be clearly mentioned in
+    # the specific skill of that session if the hands-on is required, and the
+    # screenshots will be shared as well — then only provide that section, else don't".
+    # A skill that asks without pictures, or pictures without a skill that asks, is not
+    # a request.
+    requires_screenshots: true
     required: true                  # a document without one FAILS (doc scope) — when wanted
     min_slides: 1
     max_slides: 4
@@ -2524,6 +2581,12 @@ gates:
   # pass over approved slides. One judge call per chunk (+ one patch when needed).
   chunk_brief_check:
     enabled: true
+    # 1.66: only a FAILED skill earns a patch; a "partial" is shown to the reviewer in
+    # the pane and left to their judgement. And the patch is now ONE call per chunk that
+    # fixes the brief misses AND the repeated bullets together (server._gen_one), with
+    # one Haiku re-check afterwards — the run above paid for 10 patch calls and 12
+    # checks across 6 sections.
+    patch_on: ["fail"]
     fix_attempts: 1
   # WHAT the repair pass is allowed to fire on. Everything here is either a property of
   # the whole document (invisible to any single chunk review) or a defect that is not a
