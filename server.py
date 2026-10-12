@@ -3489,7 +3489,11 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     run_course = _require_course(user, body.course)
     sessions = course_loader.load_sessions(None, course=run_course)
     prev, cur, nxt = course_loader.neighbours(body.session_no, sessions)
-    hands_on_on = bool(context_builder.hands_on_cfg().get("enabled", False))
+    # A PRACTICAL HANDS-ON ONLY WHERE THE SKILLS ASK FOR ONE (or attach screenshots).
+    # Decided here, once, and stamped on the run's budgets so the slide plan, every
+    # chunk instruction and the final gates all agree — see context_builder.hands_on_wanted.
+    _ho = context_builder.hands_on_wanted(run_course, body.session_no)
+    hands_on_on = bool(context_builder.hands_on_cfg().get("enabled", False)) and bool(_ho["wanted"])
     labels = ["Opening (recap + agenda)"] + [
         f"Key takeaway {i + 1}: {kt[:70]}" for i, kt in enumerate(cur.key_takeaways)]
     gid = uuid.uuid4().hex[:12]
@@ -3507,6 +3511,7 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
     # prompt, the gates and the repair pass all speak about the same numbers.
     from src import budgets as budget_rules
     run_budgets = budget_rules.for_session(run_course, body.session_no)
+    run_budgets["hands_on"] = hands_on_on
     from src import profiles as profile_rules
     run_profile = profile_rules.for_course(run_course)
     base_context = (context_builder.build_guided_base(run_course, prev, cur, nxt,
@@ -3527,6 +3532,8 @@ def guided_start(body: GuidedStartBody, user: dict = Depends(current_user)):
             "budgets": run_budgets, "course": run_course,
             "logs": [], "result": None, "error": None,
         }
+    _guided_log(gid, ("Practical Hands-On: included — " if hands_on_on else
+                      "Practical Hands-On: not included — ") + _ho["reason"] + ".")
     # Checkpoint before any chunk is generated, so even a restart during the very
     # first LLM call leaves a resumable run rather than an orphaned id.
     _guided_save(gid)

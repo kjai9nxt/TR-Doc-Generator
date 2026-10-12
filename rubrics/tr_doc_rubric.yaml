@@ -137,8 +137,10 @@ dimensions:
       having named the set, caps this at 2 (the deterministic gate only checks the
       opening slide's role, so judge whether the CONTENT really sets the map). Also:
       concepts motivated before defined; terms introduced after the gap is felt; smooth
-      flow with no sudden jumps (nothing used before it is taught). The session must END
-      with a PRACTICAL HANDS-ON section (kind "hands_on", last section) whose title
+      flow with no sudden jumps (nothing used before it is taught). WHEN THE RUN INCLUDES
+      ONE (the course's skills asked for a practical or attached screenshots — a
+      document with no such section and no such skill is NOT penalised), the session
+      ENDS with a PRACTICAL HANDS-ON section (kind "hands_on", last section) whose title
       names the concrete exercise ("Hands-On: Launching a Free-Tier EC2 Instance", never
       "Hands-On: Practice"), whose steps are full sentences a learner can follow alone,
       which states the expected result and common mistakes, and which uses ONLY what the
@@ -293,9 +295,9 @@ dimensions:
     question: >
       Exact layout IN ORDER: session title; recap = ALL of the previous session's agenda
       items in its "topic: subtopics" format (omitted only for Session 1); agenda; one
-      section breaker PER agenda item in agenda order; then ONE "PRACTICAL HANDS-ON:"
-      section (kind hands_on, excluded from the one-per-agenda-item count and from the
-      coverage_map); key takeaways; upcoming session
+      section breaker PER agenda item in agenda order; then, only when the course brief
+      asked for one, ONE "PRACTICAL HANDS-ON:" section (kind hands_on, excluded from the
+      one-per-agenda-item count and from the coverage_map); key takeaways; upcoming session
       name; closing "Thank You | All the Best". The agenda must be NUMBERED 1..N and each
       item must be the curriculum's key-takeaway line VERBATIM — identical to key takeaway
       i, not summarised or reworded (these lines are exempt from every word cap, so a long

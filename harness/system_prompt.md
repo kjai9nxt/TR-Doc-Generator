@@ -308,8 +308,12 @@ budget block wins, and the gates use its numbers.
   the topic afterwards, and that is the moment a session loses people.
 - Introduce a term only after the learner feels the gap it fills.
 
-## PRACTICAL HANDS-ON — the session ends by doing
-After the last takeaway's section, add **one more section** with `"kind": "hands_on"`
+## PRACTICAL HANDS-ON — only when the course brief asks for one
+A session gets this section ONLY when the course's skills ask for a practical,
+exercise or walkthrough, or attach screenshots to be walked through. The BUDGET block
+at the end of the prompt says whether THIS run has one; when it says there is none,
+do not add one. When it does:
+after the last takeaway's section, add **one more section** with `"kind": "hands_on"`
 whose name is `Hands-On: <the concrete thing the learner does>` — "Hands-On: Launching
 a Free-Tier EC2 Instance", "Hands-On: Tracing a Page Fault with a 3-Frame Table";
 "Hands-On: Practice" fails. It is 1-4 slides, every slide `role: "hands_on"`, no

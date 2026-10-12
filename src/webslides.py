@@ -357,25 +357,168 @@ def _bundle_slide(n: int, entry: str) -> dict | None:
             "notes": notes, "tables": [], "section": section, "label": label}
 
 
+_ARRAY_DECL = re.compile(r"(?<![\w$.])([A-Za-z_$][\w$]*)=\[")
+_SPREAD = re.compile(r"^\s*\.\.\.([A-Za-z_$][\w$]*)\s*$")
+_DIVIDER_CALL = re.compile(r"^\s*[A-Za-z_$][\w$]*\(\s*(\d+)\s*,")
+_SECTION_IDENT = re.compile(r"(?<![\w$])section:([A-Za-z_$][\w$]*)")
+
+
+def _array_decls(text: str) -> dict[str, int]:
+    """`{name: index of its '['}` for every `name=[` in the script. The LAST declaration
+    wins, which is what a minifier's single-assignment constants make correct."""
+    return {m.group(1): m.end() - 1 for m in _ARRAY_DECL.finditer(text)}
+
+
+def _expand(text: str, start: int, decls: dict[str, int], seen: set[int]) -> list[str]:
+    """The entries of the array at `start`, with every `...name` spread replaced by
+    that array's own entries (recursively). A deck is commonly built as
+    `fM=[...opening, ...sectionA, ...sectionB, ...closing]`, one array per section,
+    so reading the main array alone finds the opening and nothing else — which is how
+    a 60-slide deck was read as 16."""
+    if start in seen:
+        return []
+    seen = seen | {start}
+    entries, _ = _array_entries(text, start)
+    out: list[str] = []
+    for e in entries:
+        m = _SPREAD.match(e)
+        if m and m.group(1) in decls:
+            out += _expand(text, decls[m.group(1)], decls, seen)
+        else:
+            out.append(e)
+    return out
+
+
+def _agenda_titles(text: str, decls: dict[str, int]) -> list[str]:
+    """The deck's agenda array (`[{title:"…",sub:"…"},…]`), for naming dividers that
+    are built by a factory call `$l(n, …)` rather than written out."""
+    best: list[str] = []
+    for name, start in decls.items():
+        entries, _ = _array_entries(text, start)
+        titles = []
+        for e in entries:
+            m = re.match(r'\s*\{title:"((?:[^"\\]|\\.)*)",sub:"', e)
+            if not m:
+                titles = []
+                break
+            titles.append(_unescape(m.group(1)))
+        if len(titles) > len(best):
+            best = titles
+    return best
+
+
+def _resolve_ident(text: str, name: str, agenda: list[str]) -> str:
+    """A string-valued constant: `si="Hypervisors"` or an agenda lookup `si=ta[1].title`."""
+    name = re.escape(name)
+    hit = re.search(r'(?<![\w$])' + name + r'="((?:[^"\\]|\\.)*)"', text)
+    if hit:
+        return _unescape(hit.group(1))
+    hit = re.search(r'(?<![\w$])' + name + r'=[A-Za-z_$][\w$]*\[(\d+)\]\.title', text)
+    if hit and int(hit.group(1)) < len(agenda):
+        return agenda[int(hit.group(1))]
+    return ""
+
+
+def _resolve_section(text: str, entry: str, agenda: list[str]) -> str:
+    """`section:"…"` is read by the tokenizer; `section:si` names a constant."""
+    m = _SECTION_IDENT.search(entry)
+    return _resolve_ident(text, m.group(1), agenda) if m else ""
+
+
+_CALL_HEAD = re.compile(r"^\s*([A-Za-z_$][\w$]*)\(")
+_IDENT_TOKEN = re.compile(r"(?<![\w$.\"'`])([A-Za-z_$][\w$]*)(?![\w$(])")
+
+
+def _call_slide(text: str, entry: str, agenda: list[str]) -> dict | None:
+    """A slide built by a FACTORY CALL — `Fa("cc3-install-2", Ct, De.install, "Screenshot
+    Walkthrough", "Installing VirtualBox: welcome and licence", {n:2, src:…, caption:"…"})`
+    — where the text is positional rather than keyed. The arguments at the top level of
+    the call are read in order: an id-looking first string is skipped, the first real
+    string is the title, the rest are body lines; nested objects contribute their
+    keyed strings (captions, points) exactly as a plain slide does; the first bare
+    identifier that resolves to a string constant names the section."""
+    m = _CALL_HEAD.match(entry)
+    if not m:
+        return None
+    open_at = m.end() - 1
+    inner = entry[open_at + 1:]
+    # Only the call's own arguments: split at depth 0 of the argument list.
+    args, _ = _array_entries("[" + inner, 0)
+    title, lines, section = "", [], ""
+    for a in args:
+        a_s = a.strip()
+        if a_s.startswith(("{", "[")):
+            # Wrapped one level down: a slide object's OWN pairs are read at depth 1
+            # (id/section/label/notes), so an argument object's pairs — caption,
+            # points, body — must sit at depth 2 to count as slide text.
+            sub = _bundle_slide(0, "{x:" + a_s + "}")
+            if sub:
+                if sub.get("body"):
+                    lines += sub["body"].split("\n")
+                if sub.get("title") and sub["title"] != sub.get("label"):
+                    lines.append(sub["title"])
+            continue
+        if a_s[:1] in "\"'`":
+            val = " ".join(_literal_value(a_s, 0, len(a_s)).split())
+            if not val or val.startswith("data:"):
+                continue
+            if not title and not lines and re.fullmatch(r"[\w$-]+", val) and "-" in val:
+                continue                       # the slide id
+            if not title:
+                title = val[:80]
+            else:
+                lines.append(val)
+            continue
+        if not section:
+            tok = _IDENT_TOKEN.match(a_s)
+            if tok:
+                section = _resolve_ident(text, tok.group(1), agenda)
+    if not (title or lines):
+        return None
+    return {"n": 0, "title": title or (lines[0][:80] if lines else ""), "body": "\n".join(lines),
+            "notes": "", "tables": [], "section": section, "label": ""}
+
+
 def _from_bundle(text: str) -> list[dict]:
     """The slides of a built Web Slides deck, or [] when `text` is not one.
 
-    Several arrays may start with `[{id:"…"` (a toolbar's icon list looks the same from
-    the outside), so every candidate is read and the one whose entries carry `element:`
-    — the deck itself — wins. Ties go to the longest.
+    Every `name=[` array in the script is a candidate; the deck is the one whose
+    entries — after spreads are expanded — carry the most `element:` objects. A
+    toolbar's icon list looks like a deck from the outside and loses on that count.
     """
-    best: list[dict] = []
-    for m in re.finditer(r'\[\{id:"', text):
-        entries, _ = _array_entries(text, m.start())
-        if len(entries) < 2 or sum(1 for e in entries if "element:" in e) < len(entries) // 2:
+    decls = _array_decls(text)
+    if not decls:
+        return []
+    agenda = _agenda_titles(text, decls)
+    best_entries: list[str] = []
+    best_n = 0
+    for name, start in decls.items():
+        entries = _expand(text, start, decls, set())
+        n = sum(1 for e in entries if "element:" in e)
+        if n >= 2 and n > best_n:
+            best_entries, best_n = entries, n
+    if not best_entries:
+        return []
+    slides: list[dict] = []
+    for e in best_entries:
+        m = _DIVIDER_CALL.match(e)
+        if m:
+            k = int(m.group(1))
+            title = agenda[k] if k < len(agenda) else f"Section {k + 1}"
+            slides.append({"n": 0, "title": f"Section: {title}", "body": "", "notes": "",
+                           "tables": [], "section": title, "label": "Section divider"})
             continue
-        slides = [s for s in (_bundle_slide(i, e) for i, e in enumerate(entries, 1)) if s]
-        # Renumber after dropping any entry that carried nothing readable.
-        for i, s in enumerate(slides, 1):
-            s["n"] = i
-        if len(slides) > len(best):
-            best = slides
-    return best
+        sl = _bundle_slide(0, e) if e.lstrip().startswith("{") else _call_slide(text, e, agenda)
+        if sl is None:
+            continue
+        if not sl.get("section"):
+            sl["section"] = _resolve_section(text, e, agenda)
+            if sl["title"] == sl.get("label") == "Section divider" and sl["section"]:
+                sl["title"] = f"Section: {sl['section']}"
+        slides.append(sl)
+    for i, sl in enumerate(slides, 1):
+        sl["n"] = i
+    return slides
 
 
 def _from_html(data: bytes, session_no, session_name, filename) -> dict:
@@ -388,7 +531,8 @@ def _from_html(data: bytes, session_no, session_name, filename) -> dict:
         # The page's <title> is the deck's name; the first slide is a brand frame.
         m = re.search(r"<title>\s*(.*?)\s*</title>", text, re.I | re.S)
         if m and m.group(1).strip():
-            deck["deck_title"] = " ".join(m.group(1).split())[:120]
+            import html as _html
+            deck["deck_title"] = _html.unescape(" ".join(m.group(1).split()))[:120]
             deck["summary"] = deck["deck_title"] + "\n" + deck["summary"].split("\n", 1)[-1]
         return deck
     from lxml import html as lhtml

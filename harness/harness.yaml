@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.64"
+  version: "1.65"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1659,7 +1659,19 @@ meta:
               course_brief_adherence 6->12, pedagogy 9->10 (totals are normalised). (3) New
               guardrail WARNING: acronyms used in slide text and never expanded anywhere in
               the document. (4) concept_intro paragraph recipe (plain meaning -> precise
-              definition -> why it matters) in format_spec + system prompt."
+              definition -> why it matters) in format_spec + system prompt. (5) Web Slides
+              bundle parser reads EVERY way a built deck declares slides: section arrays
+              spread into the main list (fM=[...aM,...oM]), divider/screenshot slides
+              built by factory calls ($l(n,…), Fa(id,section,…)), section names held in
+              constants (si=ta[1].title) — session 3 went from 16 read slides to 62.
+              evals/test_webslides_bundle.py pins all of it."
+    - "1.65 — HANDS-ON ONLY WHEN THE SKILLS ASK. constraints.hands_on.only_when_brief_asks:
+              a session gets the Practical Hands-On chunk only when an approved skill for it
+              mentions a practical/exercise/walkthrough or attaches screenshots
+              (context_builder.hands_on_wanted); decided at /guided/start, logged with the
+              reason, stamped on budgets['hands_on'] so reserve/prompt/gate agree. Guided
+              status poll: 1.5s -> 2.5s with back-off on HTTP 429 and no give-up on it (the
+              host throttles one browser's polling; it used to stop the loop after ten)."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -1995,7 +2007,14 @@ constraints:
   # the session actually taught.
   hands_on:
     enabled: true
-    required: true                  # a document without one FAILS (doc scope)
+    # ONLY WHERE THE SKILLS ASK FOR ONE. The reviewer: "unnecessarily we don't want a
+    # hands-on after every session". So a session gets the section only when an
+    # approved skill governing it talks about a practical / exercise / walkthrough, or
+    # attaches screenshots to be walked through (context_builder.hands_on_wanted). The
+    # decision is made at /guided/start, logged with its reason, and stamped on the
+    # run's budgets so the plan, the prompts and the gates agree.
+    only_when_brief_asks: true
+    required: true                  # a document without one FAILS (doc scope) — when wanted
     min_slides: 1
     max_slides: 4
     plan_slides: 3                  # reserved from the slide ceiling for this section

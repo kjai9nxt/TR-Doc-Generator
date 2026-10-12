@@ -980,10 +980,19 @@ export default function App() {
   function pollGuided(gid) {
     clearInterval(guidedPollRef.current)
     let pollMisses = 0
+    // BACK OFF WHEN THROTTLED. The host (not the app) answers 429 when one browser asks
+    // too often; this loop asked every 1.5 s regardless and, after ten throttled answers
+    // in a row, STOPPED polling and put a red box over a run that was generating fine.
+    // Now a 429 skips the next few ticks (longer each time), is shown as a soft notice,
+    // and never ends the loop: the server is plainly up, it just wants quiet.
+    let skip = 0
+    let throttled = 0
     const tick = async () => {
+      if (skip > 0) { skip -= 1; return }
       try {
         const st = await api.guidedState(gid)
         setGuided(st)
+        if (throttled) { throttled = 0; setGenErr(null) }
         // The final-doc button stays in its loading state from the click until the run
         // has actually finished assembling — the status is still 'reviewing' for the
         // first poll or two, which is exactly the window the spinner is for.
@@ -1018,6 +1027,16 @@ export default function App() {
         // generating it on the first status check it answers — so keep asking. Giving
         // up after 10 misses (15s) stopped listening before the server was back, and the
         // chunks "never came" although they were being written again.
+        if (e.status === 429) {
+          throttled += 1
+          skip = Math.min(1 + throttled, 6)          // 2.5s → 5s → 7.5s … up to 15s
+          if (throttled >= 2) {
+            setGenErr('The server asked this page to slow down (HTTP 429) — checking '
+                      + 'less often. Your run is unaffected and carries on; this notice '
+                      + 'clears by itself.')
+          }
+          return                                      // never counts toward giving up
+        }
         const hostDown = e.kind === 'backend' || [502, 503, 504].includes(e.status)
         if (hostDown && pollMisses >= 3 && pollMisses < 120) {
           setGenErr('The server is restarting — reconnecting to your run. Chunks '
@@ -1029,8 +1048,10 @@ export default function App() {
         }
       }
     }
-    guidedPollRef.current = setInterval(tick, 1500)
-    tick()   // fetch immediately so the UI reacts without a 1.5s lag
+    // 1.5s → 2.5s: a chunk takes one to two minutes to write, so sub-2-second status
+    // resolution bought nothing and was the single busiest caller the host saw.
+    guidedPollRef.current = setInterval(tick, 2500)
+    tick()   // fetch immediately so the UI reacts without a lag
   }
 
   function startGuided() {

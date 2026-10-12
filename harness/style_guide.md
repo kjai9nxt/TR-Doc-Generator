@@ -321,8 +321,11 @@ afterwards, and that is where a session loses people.
   not summarised, not re-titled, not a word changed. Bullet count must be `<=` the
   number of key-takeaway lines. No new scope introduced here.
 
-## The Practical Hands-On (the session ends by doing)
-- After the last takeaway's section, **one more section** (`kind: hands_on`) gives the
+## The Practical Hands-On (only where the brief asks for it)
+- Not every session has one. It exists only when a course skill asks for a practical,
+  exercise or walkthrough, or attaches screenshots; the BUDGET block says whether this
+  run has one. Never add one on your own.
+- When it exists: after the last takeaway's section, **one more section** (`kind: hands_on`) gives the
   learner something to DO with what was taught: 10-15 minutes, on their own machine or
   in the course's tool, using only concepts from this session.
 - **The title is the exercise.** "Hands-On: Launching a Free-Tier EC2 Instance",

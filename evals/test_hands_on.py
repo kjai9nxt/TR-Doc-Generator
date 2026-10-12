@@ -196,6 +196,52 @@ placed = [s for s in guardrails._slides(d6) if any(b.get("type") == "image" for 
 check("an unplaced screenshot with no matching words lands on the hands-on step",
       placed and placed[0]["role"] == "hands_on", str(notes))
 
+print("\n== a hands-on only where the skills ask for one ==")
+from src import db as _db, skills as _sk
+_C = "__zz_hands_on_wanted"
+try:
+    _db._exec("DELETE FROM course_skills WHERE course=?", (_C,))
+except Exception:
+    pass
+check("a course with no skills gets no hands-on", not CB.hands_on_wanted(_C, 1)["wanted"],
+      CB.hands_on_wanted(_C, 1)["reason"])
+_i1 = _db.add_skill(_C, "Use Indian-context analogies throughout.", kind="style"); _db.approve_skill(_i1, "t")
+check("a skill that says nothing about practice does not switch it on",
+      not CB.hands_on_wanted(_C, 1)["wanted"])
+_i2 = _db.add_skill(_C, "End with a practical exercise the learner runs in VirtualBox.", kind="style")
+_db.approve_skill(_i2, "t")
+w = CB.hands_on_wanted(_C, 1)
+check("a skill asking for a practical switches it on, naming the skill",
+      w["wanted"] and "practical" in w["reason"].lower(), str(w))
+try:
+    _db._exec("DELETE FROM course_skills WHERE course=?", (_C,))
+except Exception:
+    pass
+_i3 = _db.add_skill(_C, "Show the console as in the attached pictures.", kind="style"); _db.approve_skill(_i3, "t")
+try:
+    _db.add_skill_image(_C, _i3, key="k" * 24, filename="shot.png", mime="image/png",
+                        caption="console", width=10, height=10, data_b64="AA==", created_by="t")
+    w2 = CB.hands_on_wanted(_C, 1)
+    check("a skill carrying a screenshot switches it on", w2["wanted"] and "screenshot" in w2["reason"], str(w2))
+except Exception as e:
+    print(f"  skip image case ({e})")
+try:
+    _db._exec("DELETE FROM course_skills WHERE course=?", (_C,))
+except Exception:
+    pass
+no = {"hands_on": False}
+check("a run without one reserves no slides", CB.hands_on_reserve(True, no) == 0)
+check("…and the whole ceiling goes to the takeaways",
+      sum(CB.slide_plan(cur, budgets=no)) == CB.slide_ceiling(True, no))
+check("…and the prompt says not to add one",
+      "NO PRACTICAL HANDS-ON SECTION" in CB.time_mode_block(True, budgets=no))
+check("…and the gate does not demand one",
+      not any("Missing the PRACTICAL HANDS-ON" in f
+              for f in guardrails.check(GOLDEN, cur, False, False, budgets=no).failures))
+check("a run WITH one still has it demanded",
+      any("Missing the PRACTICAL HANDS-ON" in f
+          for f in guardrails.check(GOLDEN, cur, False, False, budgets={"hands_on": True}).failures))
+
 print("\n== the guided run has a hands-on chunk ==")
 import server                                                                          # noqa: E402
 n = cur.key_takeaways_count

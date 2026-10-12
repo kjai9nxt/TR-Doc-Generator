@@ -117,9 +117,11 @@ that shows what it depicts; and the **same slide carries a `text` block of 30+ w
 explaining it** — which screen this is, what each labelled part means, what to notice.
 Images are **outside the page budget**: never shorten a slide's teaching text to fit one.
 
-### The Practical Hands-On section
+### The Practical Hands-On section (only when the brief asks for it)
 
-The document's **last section** is one practical exercise: `"kind": "hands_on"`, name
+Present only when the course's skills ask for a practical / exercise / walkthrough or
+attach screenshots — the BUDGET block states whether this run has one. When it does,
+the document's **last section** is one practical exercise: `"kind": "hands_on"`, name
 `Hands-On: <the concrete thing the learner does>` (at least 3 words after the prefix —
 "Hands-On: Practice" fails), 1-4 slides, every slide `role: "hands_on"`, no analogy, not
 in the coverage map and not counted as a takeaway section. It carries, in order: the task
@@ -175,8 +177,8 @@ The breaker uses the same dash-wrapped form as the golden doc:
 4. **One section breaker per agenda item** — each agenda item gets its own section,
    in the same order as the agenda.
 5. **Slides** under each section — every slide carries all six fields (below).
-6. **Practical Hands-On** — one more section (`kind: hands_on`), the exercise that
-   closes the session, with a title naming what the learner does.
+6. **Practical Hands-On** — one more section (`kind: hands_on`) ONLY when the course
+   brief asks for one or attaches screenshots; a title naming what the learner does.
 7. **Key Takeaways** of the current session.
 8. **Next session name** — `Upcoming Session : {name}` (omit/null on the final session).
 9. **Closing** — centered `Thank You  |  All the Best`.

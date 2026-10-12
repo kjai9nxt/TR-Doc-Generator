@@ -435,6 +435,50 @@ def hands_on_cfg() -> dict:
     return dict(config.harness()["constraints"].get("hands_on") or {})
 
 
+_HANDS_ON_WORDS = re.compile(
+    r"hands[\s-]*on|practical|exercise|\blab\b|walk[\s-]*through|demo(?:nstrat)?|"
+    r"do[\s-]*it[\s-]*yourself|activity|try it|assignment|step[\s-]*by[\s-]*step", re.I)
+
+
+def hands_on_wanted(course: str | None, session_no=None) -> dict:
+    """Whether THIS session gets a Practical Hands-On section, and why.
+
+    The reviewer's rule: a hands-on exists only where the course's skills ask for one
+    or attach screenshots to be walked through — "unnecessarily we don't want hands-on
+    after every session". So it is decided from the approved skills that govern this
+    session (course-wide and session-scoped alike): a skill whose text talks about a
+    practical / exercise / walkthrough, or any skill carrying an image, switches it on;
+    nothing else does. `{"wanted": bool, "reason": str}`.
+    """
+    cfg = hands_on_cfg()
+    if not cfg.get("enabled", False):
+        return {"wanted": False, "reason": "hands-on sections are disabled in the harness"}
+    if not cfg.get("only_when_brief_asks", True):
+        return {"wanted": True, "reason": "the harness adds a hands-on to every session"}
+    if not course:
+        return {"wanted": False, "reason": "no course — no brief to ask for one"}
+    try:
+        from . import skills as _skills
+        rows = _skills.numbered(course, session_no)
+    except Exception:
+        rows = []
+    for sk in rows:
+        n_img = len(sk.get("images") or [])
+        if n_img:
+            return {"wanted": True,
+                    "reason": f"skill [{sk.get('ref')}] attaches {n_img} screenshot(s) to walk through"}
+    for sk in rows:
+        text = " ".join([str(sk.get("text") or "")]
+                        + [str(i) for i in (sk.get("instructions") or [])])
+        m = _HANDS_ON_WORDS.search(text)
+        if m:
+            return {"wanted": True,
+                    "reason": f"skill [{sk.get('ref')}] asks for it (“{m.group(0)}”): "
+                              f"{' '.join(str(sk.get('text') or '').split())[:90]}"}
+    return {"wanted": False,
+            "reason": "no approved skill asks for a practical or attaches screenshots"}
+
+
 def hands_on_reserve(enforce_time: bool = True, budgets: dict | None = None) -> int:
     """Slides held back from the takeaway sections for the PRACTICAL HANDS-ON section.
 
@@ -445,6 +489,10 @@ def hands_on_reserve(enforce_time: bool = True, budgets: dict | None = None) -> 
     """
     cfg = hands_on_cfg()
     if not cfg.get("enabled", False):
+        return 0
+    # The run's own decision (server stamps it on the budgets at /guided/start — see
+    # hands_on_wanted). Absent, the harness default applies.
+    if budgets is not None and budgets.get("hands_on") is False:
         return 0
     ceiling = slide_ceiling(enforce_time, budgets)
     con = config.harness()["constraints"]["slides"]
@@ -547,7 +595,9 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool,
              "Count every slide in every section.")
     ho = hands_on_reserve(enforce_time, budgets)
     ho_note = (f" The Practical Hands-On section at the end is INSIDE this ceiling and is "
-               f"planned at {ho} of those slides." if ho else "")
+               f"planned at {ho} of those slides." if ho else
+               " THIS RUN HAS NO PRACTICAL HANDS-ON SECTION — the course brief does not "
+               "ask for one, so do not add one.")
     block = (
         f"\nHARD SLIDE CEILING: the document must have between {con['min']} and {mx} "
         f"slides IN TOTAL. {scope}{ho_note} More slides than that fails the run, so 'use more "

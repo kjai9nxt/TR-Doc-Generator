@@ -1136,7 +1136,10 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     if ho_cfg.get("enabled", False):
         ho_secs = [sec for sec in (doc.get("sections") or []) if is_hands_on(sec)]
         prefix = str(ho_cfg.get("name_prefix") or "Hands-On:")
-        if scope == "doc" and ho_cfg.get("required", False) and not ho_secs:
+        # Required only when THIS RUN decided to have one (budgets["hands_on"], set by
+        # the server from the course's skills — see context_builder.hands_on_wanted).
+        wanted = (budgets or {}).get("hands_on", True)
+        if scope == "doc" and ho_cfg.get("required", False) and wanted and not ho_secs:
             fails.append(
                 f"Missing the PRACTICAL HANDS-ON section. After the last takeaway's "
                 f"section add one more section with \"kind\": \"hands_on\" and a name "
