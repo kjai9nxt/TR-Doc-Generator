@@ -98,8 +98,21 @@ def brief(images: list[dict], compact: bool = False) -> list[str]:
     """
     if not images:
         return []
-    out = ["", "## ATTACHED SCREENSHOTS — each one placed ONCE, where it belongs, and EXPLAINED"]
+    out = ["", "## ATTACHED SCREENSHOTS — placed ONCE, where they belong, and EXPLAINED"]
     if not compact:
+        out += [
+            "IN A RUN WITH A PRACTICAL HANDS-ON SECTION (the BUDGET block says whether this "
+            "run has one) these screenshots belong to the practical, and the rules below "
+            "are replaced by these: the theory sections place NO image; the hands-on "
+            "section CHOOSES the genuine ones — as many as it takes to show each major part "
+            "of the practical (the key screen of each major step, the final result) — and "
+            "leaves out only duplicates and sub-step screens, because the "
+            "instructor demos the practical in the recording and the step-by-step "
+            "practical guide is shared after the session video. Each chosen image still "
+            "gets a 30-50-word explaining `text` block.",
+            "",
+            "IN A RUN WITHOUT ONE:",
+        ]
         out += [
             "The course owner attached these pictures to the brief. Each MUST appear in the "
             "document exactly once, as a content block on the slide it belongs to:",
@@ -178,15 +191,40 @@ def _is_hands_on_slide(doc: dict, slide: dict) -> bool:
     return str(slide.get("role") or "") == "hands_on"
 
 
+def _hands_on_cfg() -> dict:
+    try:
+        from . import config
+        return dict(config.harness()["constraints"].get("hands_on") or {})
+    except Exception:
+        return {}
+
+
+def _hands_on_section(doc: dict) -> dict | None:
+    for sec in doc.get("sections") or []:
+        if str(sec.get("kind") or "").lower() == "hands_on":
+            return sec
+    return None
+
+
 def reconcile(doc: dict, images: list[dict]) -> list[str]:
-    """Make the document hold every attached image once, and nothing else. Returns the
-    notes of what was done (for the run log).
+    """Make the document hold the attached images once, and nothing invented. Returns
+    the notes of what was done (for the run log).
+
+    Two modes. In a document WITH a Practical Hands-On section (and
+    constraints.hands_on.select_screenshots) the writer chose the genuine screenshots
+    for the practical, so an unplaced one is LEFT OUT on purpose: the hands-on
+    section's count is capped only if `max_images` is set (0 = no cap, the default), and if the writer placed none at all,
+    the `min_images` best-matching one(s) go onto the hands-on slides. Otherwise every
+    attached image is placed, as before.
 
     Runs on the ASSEMBLED document, before it is graded, because that is where a
     missing or invented image is visible. Idempotent: a document already reconciled
     comes back unchanged.
     """
     notes: list[str] = []
+    ho_cfg = _hands_on_cfg()
+    ho_sec = _hands_on_section(doc)
+    selective = bool(ho_sec is not None and ho_cfg.get("select_screenshots", False))
     by_id = {int(im["id"]): im for im in images if im.get("id") is not None}
     seen: set[int] = set()
     for s in _slides(doc):
@@ -212,6 +250,8 @@ def reconcile(doc: dict, images: list[dict]) -> list[str]:
         if "content" in s or kept:
             s["content"] = kept
     missing = [im for i, im in by_id.items() if i not in seen]
+    if selective:
+        return notes + _reconcile_hands_on(ho_sec, missing, ho_cfg, seen)
     if not missing:
         return notes
     slides = list(_slides(doc))
@@ -231,6 +271,45 @@ def reconcile(doc: dict, images: list[dict]) -> list[str]:
             {"type": "image", "ref": int(im["id"]), "caption": caption_of(im)})
         notes.append(f"Placed attached image {im['id']} (“{caption_of(im)}”) on "
                      f"slide {best.get('n')}: the writer had not placed it.")
+    return notes
+
+
+def _reconcile_hands_on(sec: dict, unplaced: list[dict], cfg: dict,
+                       seen: set[int]) -> list[str]:
+    """Selective mode: cap the hands-on section's screenshots, and give it the best
+    match when the writer placed none anywhere. Unchosen screenshots stay out."""
+    notes: list[str] = []
+    cap = int(cfg.get("max_images", 0) or 0)
+    floor = int(cfg.get("min_images", 1) or 0)
+    ho_slides = [s for s in sec.get("slides") or [] if isinstance(s, dict)]
+    count = 0
+    for s in ho_slides:
+        kept = []
+        for b in s.get("content") or []:
+            if isinstance(b, dict) and b.get("type") == "image":
+                if cap and count >= cap:
+                    notes.append(f"Dropped screenshot {b.get('ref')} on slide {s.get('n')}: "
+                                 f"the hands-on shows at most {cap}.")
+                    continue
+                count += 1
+            kept.append(b)
+        s["content"] = kept
+    if not seen and ho_slides and unplaced and floor:
+        ranked = sorted(
+            unplaced, key=lambda im: -max(len(_words(caption_of(im), im.get("skill_text"))
+                                              & _slide_words(s)) for s in ho_slides))
+        for im in ranked[:floor]:
+            want = _words(caption_of(im), im.get("skill_text"))
+            best = max(ho_slides, key=lambda s: len(want & _slide_words(s)))
+            best.setdefault("content", []).append(
+                {"type": "image", "ref": int(im["id"]), "caption": caption_of(im)})
+            notes.append(f"Placed screenshot {im['id']} (“{caption_of(im)}”) on hands-on "
+                         f"slide {best.get('n')}: the writer had chosen none.")
+    left = len(unplaced) - (min(floor, len(unplaced)) if not seen and ho_slides else 0)
+    if left > 0:
+        notes.append(f"{left} attached screenshot(s) left out of the TR doc on purpose: the "
+                     f"hands-on shows only the genuine ones (the full set belongs to the "
+                     f"practical guide).")
     return notes
 
 

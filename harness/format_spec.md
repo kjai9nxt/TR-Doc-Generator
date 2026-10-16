@@ -112,7 +112,9 @@ Code without explanation is not teaching, and the gate says so.
 
 `{"type": "image", "ref": <id>, "caption": "..."}` places a screenshot the course owner
 attached to the brief (the ids are listed under ATTACHED SCREENSHOTS). Rules, all gated:
-each attached image appears **exactly once**; it goes on the slide (or hands-on step)
+each placed image appears **exactly once** (in a run WITH a hands-on section, only the
+genuine ones are placed — as many as the major parts need, all inside that section; otherwise every attached
+image is placed); it goes on the slide (or hands-on step)
 that shows what it depicts; and the **same slide carries a `text` block of 30+ words
 explaining it** — which screen this is, what each labelled part means, what to notice.
 Images are **outside the page budget**: never shorten a slide's teaching text to fit one.
@@ -123,11 +125,14 @@ Present only when a skill for the session asks for a hands-on / practical / walk
 AND screenshots are attached — the BUDGET block states whether this run has one. When it does,
 the document's **last section** is one practical exercise: `"kind": "hands_on"`, name
 `Hands-On: <the concrete thing the learner does>` (at least 3 words after the prefix —
-"Hands-On: Practice" fails), 1-4 slides, every slide `role: "hands_on"`, no analogy, not
-in the coverage map and not counted as a takeaway section. It carries, in order: the task
-and why it matters (text), the numbered steps as ONE bullet list of 3-8 full sentences
-each saying what to do and what appears, the expected result (text), and 3+ common
-mistakes with their fix (bullets). It may use only what the session taught. Rendered as
+"Hands-On: Practice" fails), 1-6 slides, every slide `role: "hands_on"`, no analogy, not
+in the coverage map and not counted as a takeaway section. It is the GIST of the
+practical (the demo is in the recording; the step-by-step practical guide follows the
+session video). It carries, in order: what gets built and why (text), the MAJOR steps as
+ONE numbered bullet list of 4-7 one-line items (<= 20 words, no sub-steps), the genuine
+screenshots — as many as it takes to show each major part, each with a 30-50-word
+explanation —, and the expected
+result (text). It may use only what the session taught. Rendered as
 `------ PRACTICAL HANDS-ON: <title> ------`.
 
 `role` is one of `overview`, `concept_intro`, `mechanism`, `working_example`,

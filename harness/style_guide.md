@@ -332,20 +332,21 @@ afterwards, and that is where a session loses people.
 - Not every session has one. It exists only when a skill for that session clearly asks
   for a hands-on / practical / walkthrough AND screenshots are attached; the BUDGET
   block says whether this run has one. Never add one on your own.
-- When it exists: after the last takeaway's section, **one more section** (`kind: hands_on`) gives the
-  learner something to DO with what was taught: 10-15 minutes, on their own machine or
-  in the course's tool, using only concepts from this session.
+- When it exists: after the last takeaway's section (the last theory slides), **one more
+  section** (`kind: hands_on`) gives the GIST of the practical, using only concepts from
+  this session. It is not the practical guide: the instructor demos the full practical
+  in the recording, and the step-by-step guide is shared after the session video.
 - **The title is the exercise.** "Hands-On: Launching a Free-Tier EC2 Instance",
   "Hands-On: Tracing a Page Fault with a 3-Frame Table" — never "Hands-On: Practice".
-- It carries, in order: the task and why it matters; the numbered steps as one bullet
-  list (3-8 full sentences, each saying what to open/click/type/run AND what the
-  learner then sees); the expected result so they can check themselves; 3+ common
-  mistakes, each with how to recognise and fix it. Screenshots of the tool go at the
-  step they show, explained.
-- Written in the plainest language in the document: the learner reading this section
-  alone should finish the exercise without asking anyone.
+- It carries, in order: what gets built and why; the MAJOR steps as one numbered bullet
+  list (4-7 items, one line each — no sub-steps, click paths, values or commands); the
+  genuine screenshots — as many as it takes to show each major part (the key screen of
+  each major step, the final result; no fixed number), each explained; the expected result. Unchosen screenshots are left out.
+- Written in the plainest language in the document.
 
 ## Screenshots attached to the brief
+- In a run with a Practical Hands-On, screenshots go ONLY in that section and only the
+  genuine ones are chosen (see above). Otherwise:
 - Each attached image appears **once**, on the slide or hands-on step that shows what
   it depicts (a console screenshot belongs at the step that uses the console, not on the
   concept slide that mentions the tool).

@@ -320,13 +320,17 @@ do not add one. When it does:
 after the last takeaway's section, add **one more section** with `"kind": "hands_on"`
 whose name is `Hands-On: <the concrete thing the learner does>` — "Hands-On: Launching
 a Free-Tier EC2 Instance", "Hands-On: Tracing a Page Fault with a 3-Frame Table";
-"Hands-On: Practice" fails. It is 1-4 slides, every slide `role: "hands_on"`, no
-analogy, not in the `coverage_map`, and it uses ONLY what this session taught. In
-order: the task and why it matters (text); the numbered steps as ONE bullet list of 3-8
-full sentences, each saying exactly what to open/click/type/run AND what the learner
-then sees; the expected result (text) so they can check themselves; 3+ common mistakes
-with how to recognise and fix each (bullets). Attached screenshots of the tool go at
-the step they show, explained. Plainest language in the document.
+"Hands-On: Practice" fails. It is 1-6 slides, every slide `role: "hands_on"`, no
+analogy, not in the `coverage_map`, and it uses ONLY what this session taught. It is
+the GIST of the practical, not the practical guide: the instructor demos the full
+practical in the recording and a step-by-step practical guide is shared after the
+session video. In order: what gets built and why (text); the MAJOR steps as ONE
+numbered bullet list of 4-7 items, one line each (<= 20 words, what gets done — no
+sub-steps, click paths, values or commands); the GENUINE screenshots — as many as it takes to
+show each major part (the key screen of each major step, the final result; no fixed
+number), each explained in a 30-50-word text block — only duplicates and sub-step
+screens are left out; the
+expected result (text). Theory sections place no screenshots in such a run.
 
 ## SLIDE ROLE — every slide declares why it exists
 Give every slide a `role`, one of:
@@ -615,9 +619,9 @@ just apply it:
    defined before it is used, is the WHY stated, does each slide connect to the one
    before it? Fix any slide a first-time reader could not follow alone.
 7c. **Hands-on audit.** Is the last section `kind: hands_on`, with a title that names the
-   exercise, steps a learner can follow without asking, the expected result, and common
-   mistakes — using only what this session taught? Is every attached screenshot placed
-   once, where it belongs, and explained on its slide?
+   exercise, the MAJOR steps one line each (no sub-steps), only the genuine screenshots
+   (as many as the major parts need, each explained) and the expected result — using only what this session
+   taught? Theory sections carry no screenshots in a hands-on run.
 8. Check `agenda[i]` is identical to `key_takeaways[i]`, both numbered 1..N.
 9. **Brief-adherence audit.** If a COURSE BRIEF was given to you, take each of its
    lines in turn and find where this output obeys it. A line you cannot point to is a

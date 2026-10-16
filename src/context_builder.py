@@ -489,6 +489,48 @@ def hands_on_wanted(course: str | None, session_no=None) -> dict:
             "reason": "no approved skill asks for a hands-on and none attaches screenshots"}
 
 
+def hands_on_skill_block(course: str | None, session_no=None) -> str:
+    """The skills that shaped THIS practical, quoted in full for the hands-on chunk.
+
+    Reviewer: "check the instructions mentioned in the skill carefully and work
+    accordingly". The brief already sits in the system block, but there it is one rule
+    among many; the hands-on is written from what the session's skill says about the
+    practical — what is built, its major parts, which screenshots matter — so those
+    skills are put in front of the writer again, whole, with their screenshots listed
+    by id and caption. Empty when no approved skill asks for a practical or attaches
+    screenshots.
+    """
+    if not course:
+        return ""
+    try:
+        from . import skills as _skills, skill_images as _imgs
+        rows = _skills.numbered(course, session_no)
+    except Exception:
+        return ""
+    out: list[str] = []
+    for sk in rows:
+        body = "\n".join([str(sk.get("text") or "")]
+                         + [str(i) for i in (sk.get("instructions") or [])])
+        imgs = sk.get("images") or []
+        if not (_HANDS_ON_WORDS.search(body) or imgs):
+            continue
+        out.append(f"[{sk.get('ref')}] " + "\n    ".join(
+            ln for ln in str(sk.get("text") or "").split("\n")))
+        for ins in sk.get("instructions") or []:
+            out.append(f"    - {ins}")
+        for im in imgs:
+            out.append(f"    screenshot id {im.get('id')}: “{_imgs.caption_of(im)}”")
+    if not out:
+        return ""
+    return ("\nTHE SKILL'S OWN INSTRUCTIONS FOR THIS PRACTICAL — read every line before "
+            "writing and follow it. Where the skill names what is built, the major parts, "
+            "their order, the tool, or which screenshots to show, use exactly that; the "
+            "defaults below only fill what the skill leaves open. Each screenshot below is "
+            "listed with its id — read its caption and the skill line it belongs to, and "
+            "show it at the major step it depicts.\n"
+            + "\n".join(out) + "\n")
+
+
 def hands_on_reserve(enforce_time: bool = True, budgets: dict | None = None) -> int:
     """Slides held back from the takeaway sections for the PRACTICAL HANDS-ON section.
 
@@ -817,14 +859,17 @@ def hands_on_instruction(course: str, cur: Session, *, slides_used: int = 0,
     """The guided chunk that ends the session by DOING — see constraints.hands_on.
 
     Written after every takeaway section, so it can only draw on what the session
-    actually taught. Its job is a short, followable exercise with a title that says
-    what the learner builds, steps that are full sentences, the result they should
-    see, and the mistakes they will make — in the plainest language in the document.
+    actually taught. Its job is the GIST of the practical (1.69): a title that says what
+    gets built, the major steps one line each, the few screenshots that genuinely help,
+    and the expected result. The full demo is in the recording and the step-by-step
+    practical guide is shared after the session video, so sub-steps stay out.
     """
     cfg = hands_on_cfg()
     allowance = hands_on_allowance(enforce_time, budgets, slides_used)
     prefix = str(cfg.get("name_prefix") or "Hands-On:")
     kts = _numbered(list(getattr(cur, "key_takeaways", []) or []))
+    max_steps = int(cfg.get("max_steps", 7) or 7)
+    max_step_words = int(cfg.get("max_step_words", 20) or 20)
     words = ""
     if enforce_time:
         cb = content_budget(enforce_time, budgets=budgets)
@@ -837,6 +882,7 @@ def hands_on_instruction(course: str, cur: Session, *, slides_used: int = 0,
         f"{allowance} slide(s). The takeaway sections have used {slides_used} of the "
         f"document's slides; this section takes what is left, up to its own ceiling.\n"
         + words
+        + hands_on_skill_block(course, getattr(cur, "number", None))
         + f"""GUIDED MODE — produce ONLY the PRACTICAL HANDS-ON section, as JSON:
 {{
   "section": {{
@@ -852,10 +898,12 @@ No "coverage" block and no "analogy" field: this section is practice, not a new 
 
 WHAT THIS SECTION IS. The session has taught these takeaways:
 {taught}
-Now the learner DOES something with them — one small, concrete exercise they can finish
-on their own machine or in the tool the course uses, in 10-15 minutes, using ONLY what
-the sections above taught. Nothing new is introduced here; if a step would need a
-concept the session did not cover, choose a different exercise.
+This section comes after the last theory slide and gives THE GIST of the practical: what
+gets built, the major steps, and the few screenshots that make it make sense. It is NOT
+the practical guide. The instructor demonstrates the full practical live in the
+recording, and a detailed step-by-step practical guide is shared after the session
+video — so every sub-step, click path, field value and command flag belongs THERE, not
+here. Use ONLY what the sections above taught; nothing new is introduced here.
 
 THE TITLE IS THE EXERCISE. "{prefix} Practice" or "{prefix} Exercise" fails the run.
 Name what gets built or done: "{prefix} Launching a Free-Tier EC2 Instance",
@@ -863,28 +911,35 @@ Name what gets built or done: "{prefix} Launching a Free-Tier EC2 Instance",
 Form Component". The breaker line in the document reads
 "PRACTICAL HANDS-ON: <your title>", so write the title as a person would say it.
 
-WHAT THE SLIDES CARRY, in this order (merge onto fewer slides when the budget is small):
-  1. The task and why it matters — a `text` block in plain words: what the learner will
-     build, what it will prove they understood, and what they need before starting
-     (an account, a tool, a file). Role `hands_on`, like every slide here.
-  2. The steps — ONE `bullets` list of 3-8 items, numbered inside the text ("1. Open
-     …", "2. Click …"). Each step is a full sentence that says exactly what to do (what
-     to open, click, type, run) AND what the learner should see when it worked. No step
-     may assume a click that was not named.
-  3. The expected result — a `text` block describing what is on screen (or what the
-     output/number is) when the exercise is complete, so the learner can check
-     themselves. Then a short `bullets` list of 3+ common mistakes, each saying the
-     mistake AND how to recognise and fix it.
-A `table` is welcome where steps have values to fill in (field -> value to enter).
-If the course brief attached SCREENSHOTS of this tool, put each one at the step it
-shows (an image block after that step's text) and explain it per the ATTACHED
-SCREENSHOTS rules — what is on screen, what to click, what to notice.
-`speaker_notes` (2-4 sentences): how to demo this live, where learners stall, and the
-interview angle ("what would you answer if asked why …").
+WHAT THE SLIDES CARRY, in this order (1-{allowance} slides — use more
+slides when several screenshots are needed, one or two per slide; merge when few):
+  1. The task and why it matters — a `text` block (2-3 sentences): what will be built,
+     which of the session's ideas it puts to work, and what is needed before starting.
+  2. The major steps — ONE `bullets` list of 4-{max_steps} items, numbered inside the text
+     ("1. Create the VPC and its subnets"). Each item is ONE major step in at most
+     {max_step_words} words: WHAT gets done at that stage, not how. No sub-steps, no
+     nested lists, no "click X then Y", no exact values or commands — those are in the
+     practical guide.
+  3. The genuine screenshots — see SCREENSHOTS below.
+  4. The expected result — one short `text` block: what the finished practical looks
+     like, so the learner knows what the demo is heading towards.
+  Close with one line saying the full walkthrough is demonstrated in the recording and
+  the step-by-step practical guide follows the session video.
+
+SCREENSHOTS — CHOOSE, DO NOT DUMP. The course brief attached screenshots of this practical
+(ATTACHED SCREENSHOTS). Pick the GENUINE ones — as many as it takes for the learner to
+see each MAJOR part of the practical: the key screen of each major step, the final
+result, an architecture picture of what gets built. There is no fixed number; if every
+major part needs its screenshot, include them all. Skip only near-duplicates,
+intermediate dialogs, sub-step screens and plain form-filling screens. Each chosen picture is an image block placed after the major step it belongs
+to, followed by a `text` block of 30-50 words: which screen this is, what it shows, and
+why it matters for that step (not a click-by-click instruction). Screenshots go ONLY in
+this section; any you did not choose are simply left out.
+`speaker_notes` (2-4 sentences): what to show in the live demo at this point, where
+learners usually stall, and the interview angle.
 `visual_guidance`: the screen or diagram to show at that point.
 Plain language throughout: short sentences, everyday words, every term as the session
-defined it. The learner reading this section alone should be able to complete the
-exercise without asking anyone.
+defined it.
 """)
 
 

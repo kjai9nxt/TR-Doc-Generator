@@ -1169,8 +1169,9 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 f"section add one more section with \"kind\": \"hands_on\" and a name "
                 f"like \"{prefix} <what the learner builds or does>\", holding "
                 f"{ho_cfg.get('min_slides', 1)}-{ho_cfg.get('max_slides', 4)} slides of "
-                f"role 'hands_on': what the exercise is and why, the numbered steps as "
-                f"full sentences, the expected result, and common mistakes.")
+                f"role 'hands_on': what gets built and why, the major steps as one "
+                f"numbered list (one line each, no sub-steps), the genuine "
+                f"screenshots of each major part, and the expected result.")
         if len(ho_secs) > 1:
             fails.append(f"{len(ho_secs)} hands-on sections — the document has exactly one, "
                          f"at the end.")
@@ -1207,8 +1208,43 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 if not has_steps:
                     fails.append(
                         "The hands-on section has no step list. One of its slides must "
-                        "carry the numbered steps as a bullet list of 3+ items, each a "
-                        "full sentence saying what to do and what the learner sees.")
+                        "carry the major steps as a numbered bullet list of 3+ items, "
+                        "one line each.")
+            # 1.69 — the GIST of the practical, not the practical guide: major steps
+            # only, one line each, and only the genuine screenshots.
+            max_steps = int(ho_cfg.get("max_steps", 0) or 0)
+            max_sw = int(ho_cfg.get("max_step_words", 0) or 0)
+            all_items = [str(it) for sl in ho_slides for items in _bullet_lists(sl)
+                         for it in items]
+            longest_list = max((len(items) for sl in ho_slides
+                                for items in _bullet_lists(sl)), default=0)
+            if max_steps and longest_list > max_steps:
+                fails.append(
+                    f"The hands-on step list has {longest_list} items; it shows "
+                    f"only the MAJOR steps (at most {max_steps}). Merge sub-steps into the "
+                    f"step they belong to — the full step-by-step is in the recording's "
+                    f"demo and the practical guide shared after the session.")
+            _SUB = re.compile(r"^\s*(?:\d+\.\d+|[a-z][.)]|[ivx]+[.)]|[-–•*]\s)", re.I)
+            subs = [it for it in all_items if _SUB.match(it)]
+            if subs:
+                fails.append(
+                    f"The hands-on section has sub-steps (\"{subs[0][:50]}\"). Show only "
+                    f"the major steps, one line each; sub-steps belong to the practical "
+                    f"guide shared after the session.")
+            if max_sw:
+                long = [it for it in all_items if _word_count(it) > max_sw]
+                if long:
+                    fails.append(
+                        f"{len(long)} hands-on step(s) run past {max_sw} words "
+                        f"(\"{long[0][:60]}…\"). Each step says WHAT gets done at that "
+                        f"stage in one line — not the clicks, values or commands.")
+            max_img = int(ho_cfg.get("max_images", 0) or 0)
+            n_img = sum(len(_image_blocks(sl)) for sl in ho_slides)
+            if max_img and n_img > max_img:
+                fails.append(
+                    f"The hands-on section shows {n_img} screenshots; keep only the "
+                    f"genuine ones (at most {max_img}) — the key screen of a major step "
+                    f"and the final result.")
 
     _cat(PROFILE)
     # --- ACRONYMS A LEARNER CANNOT DECODE (warning) -------------------------------

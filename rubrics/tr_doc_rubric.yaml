@@ -142,10 +142,13 @@ dimensions:
       a document with no such section and no such request is NOT penalised), the session
       ENDS with a PRACTICAL HANDS-ON section (kind "hands_on", last section) whose title
       names the concrete exercise ("Hands-On: Launching a Free-Tier EC2 Instance", never
-      "Hands-On: Practice"), whose steps are full sentences a learner can follow alone,
-      which states the expected result and common mistakes, and which uses ONLY what the
-      session taught. A missing hands-on, a vague title, or steps that skip clicks caps
-      this at 3. [G12,G17]
+      "Hands-On: Practice"), which gives the GIST of the practical — the MAJOR steps one
+      line each (no sub-steps or click paths: the demo is in the recording and the
+      step-by-step practical guide follows the session video), only the genuine
+      screenshots that help (as many as the major parts need, each explained) and the expected result — and
+      which uses ONLY what the session taught. A missing hands-on, a vague title, or a
+      hands-on that dumps every sub-step or every sub-step screenshot caps this at 3.
+      [G12,G17]
   - id: recording_time
     weight: 6                      # 8 -> 6 (1.64): the deterministic gate already binds
     question: >

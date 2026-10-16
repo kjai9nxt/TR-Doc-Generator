@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.68"
+  version: "1.69"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1690,6 +1690,15 @@ meta:
               (constraints.hands_on.requires_screenshots). Either alone -> no section, and the
               start-of-run log says which half is missing. Paragraph guidance clarified:
               2-3 FULL sentences (~30-50 words) — not one-liners, not essays."
+    - "1.69 — HANDS-ON IS A GIST WITH THE GENUINE SCREENSHOTS. The instructor demos the
+              practical in the recording and a step-by-step practical guide follows the
+              session video, so the TR doc's hands-on (still after the last theory section)
+              carries only: what is built and why, the 4-7 MAJOR steps one line each (no
+              sub-steps, no click paths — gated: constraints.hands_on.max_steps /
+              max_step_words), the screenshots that genuinely help — as many as the
+              major parts need, no fixed cap (writer selects, only in that section;
+              skill_images.reconcile no longer force-places every attachment in a
+              hands-on run), and the expected result. 1-6 slides."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -2073,7 +2082,13 @@ constraints:
     requires_screenshots: true
     required: true                  # a document without one FAILS (doc scope) — when wanted
     min_slides: 1
-    max_slides: 4
+    # 1.69 — A GIST, NOT THE GUIDE. Reviewer: the TR doc shows only the major steps of
+    # the practical and the genuine screenshots that help it make sense. The instructor
+    # demos the full practical in the recording, and a step-by-step practical guide is
+    # shared after the session video — so sub-steps, click paths and every attached
+    # screenshot do not belong here. Up to 6 slides so the screenshots that ARE needed
+    # (one per major part) each have room for their explanation; 3 reserved.
+    max_slides: 6
     plan_slides: 3                  # reserved from the slide ceiling for this section
     name_prefix: "Hands-On:"
     # "Hands-On: Practice" is not a title. The words after the prefix must name the
@@ -2081,6 +2096,17 @@ constraints:
     min_title_words: 3
     # At least one slide must carry the numbered steps as a bullet list (3+ items).
     require_steps: true
+    # …and only the MAJOR steps: one line each, no sub-steps (1.69).
+    max_steps: 7
+    max_step_words: 20
+    # Screenshots in a hands-on run: the writer CHOOSES the genuine ones — as many as it
+    # takes to show each major part of the practical — and leaves out duplicates and
+    # sub-step screens. Placed only in this section. Reviewer: "if more screenshots are
+    # needed, keep them", so there is NO fixed cap (max_images 0 = none). If the writer
+    # placed none, skill_images.reconcile adds the `min_images` best-matching one(s).
+    select_screenshots: true
+    min_images: 1
+    max_images: 0
   numbering:
     # Slides run 1..N with no gaps. Assembly already renumbers (pipeline.assemble), so
     # this is the assertion that it worked: a gap or a repeat here means a regenerated

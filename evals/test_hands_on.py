@@ -47,8 +47,7 @@ import yaml                                                                     
 _g = yaml.safe_load((ROOT / "evals" / "eval_set.yaml").read_text())["golden"]
 GOLDEN = json.loads((ROOT / _g["json"]).read_text(encoding="utf-8"))
 
-STEP = ("1. Open the AWS Management Console in a browser and sign in; the service "
-        "search bar appears at the top.")
+STEP = "1. Install Wireshark and open a capture on the active network interface."
 HANDS_ON = {
     "kind": "hands_on",
     "name": "Hands-On: Comparing SCTP and TCP Handshakes in Wireshark",
@@ -56,28 +55,20 @@ HANDS_ON = {
         "n": 99, "title": "Capture Both Handshakes and Compare Them", "role": "hands_on",
         "heading": "Capture the Handshakes", "subheading": "Wireshark Walkthrough",
         "content": [
-            {"type": "text", "text": "In this exercise the learner records one TCP connection "
-                                     "and one SCTP association on their own machine and reads "
-                                     "the handshake packets side by side, which shows why the "
-                                     "SCTP cookie exists. Wireshark and a terminal are needed."},
+            {"type": "text", "text": "This practical makes the cookie mechanism visible: seeing "
+                                     "both setups next to each other proves why the extra "
+                                     "round trip protects a server from flooding. Only a "
+                                     "laptop with admin rights is needed before starting."},
             {"type": "bullets", "items": [
                 STEP,
-                "2. Start a capture on the active interface and run the provided client, so "
-                "packets begin to appear in the list.",
-                "3. Filter on sctp and read the INIT, INIT-ACK, COOKIE-ECHO and COOKIE-ACK "
-                "rows in order, noting the cookie field.",
+                "2. Run the provided client to open one TCP connection and one SCTP association.",
+                "3. Filter the capture on sctp and read the four setup chunks in order.",
+                "4. Compare them with the three TCP handshake segments side by side.",
             ]},
-            {"type": "text", "text": "When the exercise is complete the filter shows exactly "
-                                     "four SCTP chunks for the association setup, and the "
-                                     "TCP filter shows three segments for its handshake."},
-            {"type": "bullets", "items": [
-                "Capturing on the wrong interface shows no packets at all; pick the one "
-                "carrying the client's traffic.",
-                "Forgetting the sctp filter buries the four chunks among other traffic; apply "
-                "it before reading the list.",
-                "Reading the rows out of time order makes the cookie look like a reply; sort "
-                "by the time column first.",
-            ]},
+            {"type": "text", "text": "At the end, the learner should be able to point at the "
+                                     "cookie field and explain what it saves the server from "
+                                     "remembering. The full walkthrough is demonstrated in "
+                                     "the recording."},
         ],
         "visual_guidance": "Wireshark window with the sctp filter applied and four rows highlighted.",
         "speaker_notes": "Demo the capture live before the learners try it. Say that the "
@@ -216,6 +207,58 @@ placed = [s for s in guardrails._slides(d6) if any(b.get("type") == "image" for 
 check("an unplaced screenshot with no matching words lands on the hands-on step",
       placed and placed[0]["role"] == "hands_on", str(notes))
 
+print("\n== the hands-on is the GIST: major steps, genuine screenshots ==")
+def _ho_items(doc):
+    return doc["sections"][-1]["slides"][0]["content"][1]["items"]
+many = with_hands_on(GOLDEN)
+_ho_items(many)[:] = [f"{i}. Do major step number {i} of the practical." for i in range(1, 10)]
+check("a 9-item step list FAILS (major steps only)",
+      any("MAJOR steps" in f for f in fails_of(many)))
+sub = with_hands_on(GOLDEN)
+_ho_items(sub).insert(2, "2.1 Open the interface list and choose the one with traffic.")
+check("a sub-step FAILS", any("sub-steps" in f for f in fails_of(sub)))
+wordy = with_hands_on(GOLDEN)
+_ho_items(wordy)[1] = ("2. Run the provided client from the terminal with the port flag set to "
+                       "9000 and the host flag set to localhost so it connects.")
+check("a step that spells out the clicks/values FAILS", any("run past" in f for f in fails_of(wordy)))
+pics = with_hands_on(GOLDEN)
+_expl = {"type": "text", "text": " ".join(["word"] * 35)}
+pics["sections"][-1]["slides"][0]["content"] += sum(
+    ([{"type": "image", "ref": i, "caption": f"shot {i}"}, _expl] for i in range(1, 7)), [])
+check("many genuine screenshots, each explained, are ALLOWED (no fixed cap)",
+      not any("keep only the genuine ones" in f for f in fails_of(pics)))
+_ho = spec["constraints"]["hands_on"]
+_ho["max_images"], _saved = 4, _ho.get("max_images")
+check("…but a cap set in the harness is still enforced",
+      any("keep only the genuine ones" in f for f in fails_of(pics)))
+_ho["max_images"] = _saved
+# selective reconcile: in a hands-on run, unchosen screenshots stay OUT
+sel = with_hands_on(GOLDEN)
+sel["sections"][-1]["slides"][0]["content"].append({"type": "image", "ref": 1, "caption": "capture"})
+imgs = [{"id": i, "caption": f"screen {i}", "skill_text": ""} for i in range(1, 6)]
+n7 = skill_images.reconcile(sel, imgs)
+check("a hands-on run keeps only the screenshots the writer chose",
+      skill_images.placed_refs(sel) == [1], f"{skill_images.placed_refs(sel)} {n7}")
+check("…and logs the rest as left out on purpose", any("left out" in n for n in n7), str(n7))
+none = with_hands_on(GOLDEN)
+n8 = skill_images.reconcile(none, imgs)
+ho_refs = [b["ref"] for b in none["sections"][-1]["slides"][0]["content"] if b.get("type") == "image"]
+check("…and when the writer chose none, the hands-on still gets one",
+      len(skill_images.placed_refs(none)) == 1 and len(ho_refs) == 1, str(n8))
+capped = with_hands_on(GOLDEN)
+capped["sections"][-1]["slides"][0]["content"] += [
+    {"type": "image", "ref": i, "caption": f"s{i}"} for i in range(1, 6)]
+skill_images.reconcile(capped, imgs)
+check("…and keeps every screenshot the writer chose (no fixed cap)",
+      len(skill_images.placed_refs(capped)) == 5, str(skill_images.placed_refs(capped)))
+plain = copy.deepcopy(GOLDEN)
+skill_images.reconcile(plain, imgs[:2])
+check("a run WITHOUT a hands-on still places every attached screenshot",
+      sorted(skill_images.placed_refs(plain)) == [1, 2])
+check("the hands-on chunk prompt says it is the gist, not the practical guide",
+      all(k in CB.hands_on_instruction("", cur) for k in
+          ("NOT\nthe practical guide", "CHOOSE, DO NOT DUMP", "No sub-steps")),)
+
 print("\n== a hands-on only where the skills ask for one ==")
 from src import db as _db, skills as _sk
 _C = "__zz_hands_on_wanted"
@@ -252,6 +295,17 @@ try:
     w3 = CB.hands_on_wanted(_C, 1)
     check("a skill that asks AND attached screenshots switch it on",
           w3["wanted"] and "screenshots attached" in w3["reason"], str(w3))
+    blk = CB.hands_on_skill_block(_C, 1)
+    check("the hands-on prompt quotes the practical skill in full",
+          "hands-on walkthrough of the VirtualBox install" in blk
+          and "SKILL'S OWN INSTRUCTIONS" in blk, blk[:300])
+    check("…and lists the skill's screenshots by id and caption",
+          "screenshot id" in blk and "“console”" in blk, blk[:400])
+    check("…and leaves out skills that are not about the practical",
+          "Indian-context" not in blk)
+    _cur1 = type("S", (), {"number": 1, "key_takeaways": ["Install a hypervisor"]})()
+    check("…and the block reaches the hands-on chunk prompt",
+          "hands-on walkthrough of the VirtualBox install" in CB.hands_on_instruction(_C, _cur1))
 except Exception as e:
     print(f"  skip image case ({e})")
 try:
