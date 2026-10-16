@@ -486,7 +486,8 @@ Return ONLY a single JSON object, no prose around it:
 # FIELD GUIDANCE
 - **Every slide MUST include: `role`, `heading`, `subheading`, `content`,
   `visual_guidance`, `speaker_notes`.** None may be omitted or empty — a missing field
-  fails the run.
+  fails the run. **Exception: hands-on slides** (`role: hands_on`) carry NO
+  `visual_guidance` and NO `speaker_notes` — omit both there.
 - **`analogy` is the one conditional field**: present iff `role == "concept_intro"`,
   omitted on every other role. Both directions fail the run.
 - **`heading` / `subheading`: 3-4 words MAXIMUM (hard cap — 5+ words fails the run).**

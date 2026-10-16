@@ -512,25 +512,36 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     _cat(GENERIC)
     # --- slide count ---
     slides = _slides(doc)
+    # 1.70: the session's slide count is for the TEACHING sections; when the harness says
+    # the hands-on is extra (constraints.hands_on.extra_slides), its slides sit on top and
+    # are not counted here — the hands-on gate below bounds them on its own.
+    ho_cfg_count = con.get("hands_on", {})
+    ho_extra = bool(ho_cfg_count.get("enabled", False) and ho_cfg_count.get("extra_slides", False)
+                    and (budgets or {}).get("hands_on", True) is not False)
+    counted = ([s for sec in teaching_sections(doc) for s in (sec.get("slides") or [])
+                if isinstance(s, dict)] if ho_extra else slides)
     # Depth mode (40-min limit off) allows more slides for worked examples etc.
     slide_max = int((budgets or {}).get("max_slides")
                     or (con["slides"].get("max_rich", con["slides"]["max"]) if rich
                         else con["slides"]["max"]))
     slide_min = int((budgets or {}).get("min_slides") or con["slides"]["min"])
-    if scope == "doc" and len(slides) < slide_min:
-        fails.append(f"Only {len(slides)} slides (min {slide_min}) — "
+    if scope == "doc" and len(counted) < slide_min:
+        fails.append(f"Only {len(counted)} slides (min {slide_min}) — "
                      f"split content across more slides, don't cram.")
-    if scope == "doc" and len(slides) > slide_max:
+    if scope == "doc" and len(counted) > slide_max:
         # This message is not just for the reviewer: it goes into `issues`, which is what
         # the revision pass is told to fix. It used to read "split content, don't cram" —
         # the advice for being UNDER the minimum — so a doc with too many slides was
         # asked to make more of them. Say where the excess is and what to merge.
-        over = len(slides) - slide_max
+        over = len(counted) - slide_max
         heavy = sorted(((len(sec.get("slides") or []), sec.get("name") or f"section {i + 1}")
-                        for i, sec in enumerate(doc.get("sections") or [])), reverse=True)[:3]
+                        for i, sec in enumerate(teaching_sections(doc) if ho_extra
+                                                else (doc.get("sections") or []))),
+                       reverse=True)[:3]
         worst = ", ".join(f"{name} ({n} slides)" for n, name in heavy)
         fails.append(
-            f"{len(slides)} slides (max {slide_max}) — {over} too many. MERGE, do not "
+            f"{len(counted)} slides" + (" in the teaching sections" if ho_extra else "")
+            + f" (max {slide_max}) — {over} too many. MERGE, do not "
             f"split: put closely-related sub-concepts on one slide (a shared bullet list "
             f"or a comparison table covering several at once) and drop analogies outside "
             f"concept_intro slides and worked examples the topic does not need. Never drop "
@@ -542,10 +553,22 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     # introduction and forbidden everywhere else (see the role/analogy gate below) —
     # the old "all six on every slide" rule is what produced an analogy on every
     # advantages, reasoning and worked-example slide.
+    # 1.70: a hands-on slide carries NO visual_guidance and NO speaker_notes when the
+    # harness says so (constraints.hands_on.no_notes) — the instructor demos live.
+    ho_no_notes = bool(con.get("hands_on", {}).get("enabled", False)
+                       and con.get("hands_on", {}).get("no_notes", False))
+    ho_slide_ids = {id(s) for sec in (doc.get("sections") or []) if is_hands_on(sec)
+                    for s in (sec.get("slides") or [])}
     for s in slides:
         tag = f"Slide {s.get('n', '?')}"
+        on_hands_on = id(s) in ho_slide_ids or str(s.get("role") or "") == "hands_on"
         for req in ("heading", "subheading", "content",
                     "visual_guidance", "speaker_notes"):
+            if ho_no_notes and on_hands_on and req in ("visual_guidance", "speaker_notes"):
+                if s.get(req) and str(s.get(req)).strip():
+                    fails.append(f"{tag}: a hands-on slide carries no '{req}' — remove it; "
+                                 f"the instructor demonstrates the practical live.")
+                continue
             if not s.get(req) or not str(s.get(req)).strip():
                 fails.append(f"{tag}: missing '{req}' (required on every slide).")
 

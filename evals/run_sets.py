@@ -233,9 +233,12 @@ def _chk_document_structure(doc, session, sset):
     # `analogy` is NOT in the required set: it is conditional on the slide's role, and
     # the analogy_placement set owns that biconditional. Requiring it here is what used
     # to force an analogy onto comparison and worked-example slides.
+    _ho_no_notes = bool(config.harness()["constraints"].get("hands_on", {}).get("no_notes"))
     for s in slides:
-        miss = [f for f in ("role", "heading", "subheading", "content",
-                            "visual_guidance", "speaker_notes") if not s.get(f)]
+        req = ("role", "heading", "subheading", "content", "visual_guidance", "speaker_notes")
+        if _ho_no_notes and str(s.get("role") or "") == "hands_on":
+            req = ("role", "heading", "subheading", "content")
+        miss = [f for f in req if not s.get(f)]
         if miss:
             v.append(f"slide {s.get('n')} missing {miss}")
     if config.harness()["constraints"].get("coverage", {}).get("require_coverage_map"):

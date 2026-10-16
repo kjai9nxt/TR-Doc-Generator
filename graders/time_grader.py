@@ -71,7 +71,15 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
     pacing = con.get("pacing", "word_count")
     mps = float(con.get("minutes_per_slide") or 0)
 
-    slides = [s for sec in doc.get("sections", []) for s in sec.get("slides", [])]
+    # 1.70: when the hands-on is EXTRA (constraints.hands_on.extra_slides) its slides are
+    # outside the session's recording budget, like its slides are outside the slide count
+    # — the practical is demonstrated live, on top of the taught minutes.
+    ho_cfg = config.harness()["constraints"].get("hands_on", {})
+    ho_extra = bool(ho_cfg.get("enabled", False) and ho_cfg.get("extra_slides", False)
+                    and (budgets or {}).get("hands_on", True) is not False)
+    sections = [sec for sec in doc.get("sections", [])
+                if not (ho_extra and str(sec.get("kind") or "").lower() == "hands_on")]
+    slides = [s for sec in sections for s in sec.get("slides", [])]
     skeleton_words = 0
     per_slide = []
     for s in slides:

@@ -70,10 +70,8 @@ HANDS_ON = {
                                      "remembering. The full walkthrough is demonstrated in "
                                      "the recording."},
         ],
-        "visual_guidance": "Wireshark window with the sctp filter applied and four rows highlighted.",
-        "speaker_notes": "Demo the capture live before the learners try it. Say that the "
-                         "cookie is what TCP's SYN flood problem lacked. Interviewers ask why "
-                         "four messages are not slower in practice.",
+        # 1.70: a hands-on slide carries NO visual_guidance and NO speaker_notes
+        # (constraints.hands_on.no_notes) — see evals/test_screenshot_match.py.
     }],
 }
 

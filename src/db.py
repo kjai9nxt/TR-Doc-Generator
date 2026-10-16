@@ -252,7 +252,8 @@ _SCHEMA = [
          id INTEGER PRIMARY KEY AUTOINCREMENT,
          skill_id INTEGER NOT NULL, course TEXT NOT NULL, key TEXT UNIQUE,
          filename TEXT, mime TEXT, caption TEXT, width INTEGER, height INTEGER,
-         bytes INTEGER, data_b64 TEXT, created_by TEXT, created_at TEXT)""",
+         bytes INTEGER, data_b64 TEXT, created_by TEXT, created_at TEXT,
+         description TEXT)""",
     "CREATE INDEX IF NOT EXISTS idx_skill_images_skill ON skill_images(skill_id)",
     "CREATE INDEX IF NOT EXISTS idx_skill_images_course ON skill_images(course)",
     # PREREQUISITE COURSES — what the learner already knows before session 1.
@@ -435,6 +436,16 @@ _COURSE_SETTINGS_ADDED_COLUMNS = [
 ]
 
 
+# 1.70: WHAT EACH SCREENSHOT SHOWS, in words — written once by a vision call
+# (skill_images.describe) and read by the text-only writer, which otherwise sees only
+# the caption, i.e. the filename ("Screenshot from 2026-10-09 11-03-00"). Every one of
+# the 27 screenshots on the deployed Cloud Computing course was captioned that way,
+# which is why they landed on the wrong steps.
+_SKILL_IMAGES_ADDED_COLUMNS = [
+    ("description", "TEXT"),
+]
+
+
 def _add_missing_columns(conn) -> list[str]:
     """Bring existing tables up to date. Idempotent."""
     added = []
@@ -443,7 +454,8 @@ def _add_missing_columns(conn) -> list[str]:
                         ("course_settings", _COURSE_SETTINGS_ADDED_COLUMNS),
                         ("teams", _TEAMS_ADDED_COLUMNS),
                         ("course_prereqs", _PREREQS_ADDED_COLUMNS),
-                        ("course_skills", _SKILLS_ADDED_COLUMNS)):
+                        ("course_skills", _SKILLS_ADDED_COLUMNS),
+                        ("skill_images", _SKILL_IMAGES_ADDED_COLUMNS)):
         try:
             cur = conn.cursor()
             cur.execute(f"PRAGMA table_info({table})")
@@ -1917,7 +1929,8 @@ def approved_skills(course: str, *, session=None) -> list[dict]:
 # --------------------------------------------------------------------------- #
 # skill images — screenshots that must appear in the document (src/skill_images.py)
 # --------------------------------------------------------------------------- #
-_IMG_COLS = "id, skill_id, course, key, filename, mime, caption, width, height, bytes, created_by, created_at"
+_IMG_COLS = ("id, skill_id, course, key, filename, mime, caption, width, height, bytes, "
+             "created_by, created_at, description")
 
 
 def _attach_images(course: str, rows: list[dict]) -> None:
@@ -1931,7 +1944,13 @@ def _attach_images(course: str, rows: list[dict]) -> None:
         imgs = _query(f"SELECT {_IMG_COLS} FROM skill_images WHERE course=? ORDER BY id",
                       ((course or "").strip(),))
     except Exception:
-        return
+        # A database init() has not migrated yet (no `description` column): the pictures
+        # still exist and must still reach the writer — without their readings.
+        try:
+            imgs = _query(f"SELECT {_IMG_COLS.rsplit(',', 1)[0]} FROM skill_images "
+                          f"WHERE course=? ORDER BY id", ((course or "").strip(),))
+        except Exception:
+            return
     by_skill = {r["id"]: r for r in rows}
     for im in imgs:
         sk = by_skill.get(im.get("skill_id"))
@@ -1974,6 +1993,17 @@ def set_skill_image_caption(course: str, image_id: int, caption: str) -> bool:
     try:
         _exec("UPDATE skill_images SET caption=? WHERE id=? AND course=?",
               ((caption or "").strip(), int(image_id), (course or "").strip()))
+        return True
+    except Exception:
+        return False
+
+
+def set_skill_image_description(image_id: int, description: str) -> bool:
+    """What the picture SHOWS, as the vision model read it (skill_images.describe).
+    Not course-scoped: it is written by the system, never by a request."""
+    try:
+        _exec("UPDATE skill_images SET description=? WHERE id=?",
+              ((description or "").strip(), int(image_id)))
         return True
     except Exception:
         return False

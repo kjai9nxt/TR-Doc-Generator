@@ -518,16 +518,19 @@ def hands_on_skill_block(course: str | None, session_no=None) -> str:
             ln for ln in str(sk.get("text") or "").split("\n")))
         for ins in sk.get("instructions") or []:
             out.append(f"    - {ins}")
-        for im in imgs:
-            out.append(f"    screenshot id {im.get('id')}: “{_imgs.caption_of(im)}”")
+        for ln in _imgs.image_lines(imgs):
+            out.append("    screenshot " + ln.lstrip("- "))
     if not out:
         return ""
     return ("\nTHE SKILL'S OWN INSTRUCTIONS FOR THIS PRACTICAL — read every line before "
             "writing and follow it. Where the skill names what is built, the major parts, "
             "their order, the tool, or which screenshots to show, use exactly that; the "
             "defaults below only fill what the skill leaves open. Each screenshot below is "
-            "listed with its id — read its caption and the skill line it belongs to, and "
-            "show it at the major step it depicts.\n"
+            "listed with its id and WHAT IT SHOWS (read from the picture itself — the caption "
+            "may be only a file name). Match every picture to the one major step or part it "
+            "is evidence of, by what it shows; a step whose screen is not pictured gets no "
+            "picture, and a picture that fits no step is left out. Explain each picture from "
+            "what is visible in it.\n"
             + "\n".join(out) + "\n")
 
 
@@ -546,6 +549,11 @@ def hands_on_reserve(enforce_time: bool = True, budgets: dict | None = None) -> 
     # hands_on_wanted). Absent, the harness default applies.
     if budgets is not None and budgets.get("hands_on") is False:
         return 0
+    # 1.70 — THE HANDS-ON IS EXTRA. Reviewer: "the number of slides decided for the
+    # session should not include the hands-on; it should take additional slides". So
+    # the takeaway sections get the whole ceiling and nothing is held back.
+    if cfg.get("extra_slides", False):
+        return 0
     ceiling = slide_ceiling(enforce_time, budgets)
     con = config.harness()["constraints"]["slides"]
     floor_doc = int((budgets or {}).get("min_slides") or con["min"])
@@ -560,8 +568,46 @@ def hands_on_allowance(enforce_time: bool = True, budgets: dict | None = None,
     the takeaway sections, clamped to the section's own min/max."""
     cfg = hands_on_cfg()
     lo, hi = int(cfg.get("min_slides", 1)), int(cfg.get("max_slides", 4))
+    if cfg.get("extra_slides", False):
+        return max(lo, hi)        # its own slides, on top of the session's count
     left = slide_ceiling(enforce_time, budgets) - max(int(slides_used), 0)
     return max(lo, min(hi, left))
+
+
+def hands_on_extra(budgets: dict | None = None) -> bool:
+    """True when the hands-on section's slides sit OUTSIDE the session's slide, page
+    and recording budgets (constraints.hands_on.extra_slides) — i.e. the gates count the
+    teaching sections only, and the hands-on adds its own slides on top."""
+    cfg = hands_on_cfg()
+    if not cfg.get("enabled", False) or not cfg.get("extra_slides", False):
+        return False
+    return not (budgets is not None and budgets.get("hands_on") is False)
+
+
+def hands_on_strip(doc_or_fragment: dict) -> int:
+    """Remove `visual_guidance` and `speaker_notes` from hands-on slides (1.70,
+    reviewer: "hands-on slides should not have visual guide and speaker notes" — the
+    instructor demos the practical live). Works on a whole document or a guided
+    fragment; returns how many fields it removed. No-op unless the harness says so."""
+    if not hands_on_cfg().get("no_notes", False) or not isinstance(doc_or_fragment, dict):
+        return 0
+    secs = doc_or_fragment.get("sections")
+    if secs is None and isinstance(doc_or_fragment.get("section"), dict):
+        secs = [doc_or_fragment["section"]]
+    n = 0
+    for sec in secs or []:
+        if not isinstance(sec, dict):
+            continue
+        for sl in sec.get("slides") or []:
+            if not isinstance(sl, dict):
+                continue
+            if (str(sec.get("kind") or "").lower() == "hands_on"
+                    or str(sl.get("role") or "") == "hands_on"):
+                for f in ("visual_guidance", "speaker_notes"):
+                    if f in sl:
+                        sl.pop(f, None)
+                        n += 1
+    return n
 
 
 def content_budget(enforce_time: bool, n_slides: int | None = None,
@@ -646,10 +692,16 @@ def _slide_budget_block(enforce_time: bool, *, guided: bool,
              if guided else
              "Count every slide in every section.")
     ho = hands_on_reserve(enforce_time, budgets)
-    ho_note = (f" The Practical Hands-On section at the end is INSIDE this ceiling and is "
-               f"planned at {ho} of those slides." if ho else
-               " THIS RUN HAS NO PRACTICAL HANDS-ON SECTION — the course brief does not "
-               "ask for one, so do not add one.")
+    if hands_on_extra(budgets):
+        hc = hands_on_cfg()
+        ho_note = (f" The Practical Hands-On section at the end is OUTSIDE this ceiling: it "
+                   f"adds its own {hc.get('min_slides', 1)}-{hc.get('max_slides', 4)} slides "
+                   f"on top, so the takeaway sections use the whole ceiling.")
+    else:
+        ho_note = (f" The Practical Hands-On section at the end is INSIDE this ceiling and is "
+                   f"planned at {ho} of those slides." if ho else
+                   " THIS RUN HAS NO PRACTICAL HANDS-ON SECTION — the course brief does not "
+                   "ask for one, so do not add one.")
     block = (
         f"\nHARD SLIDE CEILING: the document must have between {con['min']} and {mx} "
         f"slides IN TOTAL. {scope}{ho_note} More slides than that fails the run, so 'use more "
@@ -877,10 +929,29 @@ def hands_on_instruction(course: str, cur: Session, *, slides_used: int = 0,
                  f"slide (content + speaker_notes), ceiling ~{cb['per_slide_max']}. "
                  f"Screenshots cost no page budget.\n")
     taught = "\n".join(f"  {k}" for k in kts)
+    no_notes = bool(cfg.get("no_notes", False))
+    if cfg.get("extra_slides", False):
+        budget_line = (f"\nSLIDE BUDGET FOR THIS SECTION: between {cfg.get('min_slides', 1)} and "
+                       f"{allowance} slide(s) OF ITS OWN. The takeaway sections have used "
+                       f"{slides_used} slides; this section is outside the session's slide "
+                       f"count and adds its own on top.\n")
+    else:
+        budget_line = (f"\nSLIDE BUDGET FOR THIS SECTION: between {cfg.get('min_slides', 1)} and "
+                       f"{allowance} slide(s). The takeaway sections have used {slides_used} of the "
+                       f"document's slides; this section takes what is left, up to its own ceiling.\n")
+    slide_fields = ('"content": [ ...ordered blocks per the format spec... ] }} ] }} }}'
+                    if no_notes else
+                    '"content": [ ...ordered blocks per the format spec... ],\n'
+                    '                   "visual_guidance": "...", "speaker_notes": "..." }} ] }} }}')
+    notes_rule = (
+        "\nNO `visual_guidance` AND NO `speaker_notes` ON THESE SLIDES — omit both fields "
+        "entirely. The instructor demonstrates the practical live; the slide carries only "
+        "its content blocks.\n" if no_notes else
+        "`speaker_notes` (2-4 sentences): what to show in the live demo at this point, where\n"
+        "learners usually stall, and the interview angle.\n"
+        "`visual_guidance`: the screen or diagram to show at that point.\n")
     return (
-        f"\nSLIDE BUDGET FOR THIS SECTION: between {cfg.get('min_slides', 1)} and "
-        f"{allowance} slide(s). The takeaway sections have used {slides_used} of the "
-        f"document's slides; this section takes what is left, up to its own ceiling.\n"
+        budget_line
         + words
         + hands_on_skill_block(course, getattr(cur, "number", None))
         + f"""GUIDED MODE — produce ONLY the PRACTICAL HANDS-ON section, as JSON:
@@ -890,10 +961,7 @@ def hands_on_instruction(course: str, cur: Session, *, slides_used: int = 0,
     "name": "{prefix} <the concrete thing the learner does — at least 3 words>",
     "slides": [ {{ "n": <int>, "title": "...", "role": "hands_on",
                    "heading": "...", "subheading": "...",
-                   "content": [ ...ordered blocks per the format spec... ],
-                   "visual_guidance": "...", "speaker_notes": "..." }} ]
-  }}
-}}
+                   {slide_fields}
 No "coverage" block and no "analogy" field: this section is practice, not a new topic.
 
 WHAT THIS SECTION IS. The session has taught these takeaways:
@@ -935,10 +1003,13 @@ intermediate dialogs, sub-step screens and plain form-filling screens. Each chos
 to, followed by a `text` block of 30-50 words: which screen this is, what it shows, and
 why it matters for that step (not a click-by-click instruction). Screenshots go ONLY in
 this section; any you did not choose are simply left out.
-`speaker_notes` (2-4 sentences): what to show in the live demo at this point, where
-learners usually stall, and the interview angle.
-`visual_guidance`: the screen or diagram to show at that point.
-Plain language throughout: short sentences, everyday words, every term as the session
+WHICH PICTURE GOES WHERE is decided by WHAT IT SHOWS (each is described above — the
+screen, its state, the names and values visible), never by its caption or file name or
+the order it was attached in. A picture is placed only at the step or part it is
+evidence of; its explanation names what is visible in it. A step whose screen is not
+among the pictures gets no picture. The placement is checked against the pictures
+after you write, so a picture under the wrong step comes back to be moved.
+""" + notes_rule + """Plain language throughout: short sentences, everyday words, every term as the session
 defined it.
 """)
 
@@ -1253,7 +1324,9 @@ def takeaway_instruction(course: str, cur: Session, idx: int, *, slides_used: in
         + words
         + f"The takeaway sections together are capped at {budget} slides"
         + (f" ({reserve} more are reserved for the Practical Hands-On section written "
-           f"after them)" if reserve else "")
+           f"after them)" if reserve else
+           (" (the Practical Hands-On section written after them takes its own slides on "
+            "top, outside this cap)" if hands_on_extra(budgets) else ""))
         + f"; the other sections have "
         f"already used {slides_used}, and {sections_left} section(s) — including this "
         f"one — share the {max(budget - slides_used, 0)} that remain. Going over is not "

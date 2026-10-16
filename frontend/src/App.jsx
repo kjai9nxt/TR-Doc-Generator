@@ -1969,6 +1969,23 @@ export default function App() {
                                 </div>
                               : <span className="hint">Course brief: {c.brief_check.checked} skill(s) checked against this section — all applied.</span>
                           )}
+                          {/* THE SCREENSHOTS, LOOKED AT. After the draft, the vision model
+                              compared each placed picture with the text beside it and a
+                              mismatch was patched once; one still misplaced is named here. */}
+                          {c.image_check && (
+                            c.image_check.mismatches?.length
+                              ? <div className="alert warn">
+                                  <b>Screenshots — {c.image_check.mismatches.length} of {c.image_check.checked} sit under text about a different screen.</b>
+                                  <ul>
+                                    {c.image_check.mismatches.map((m) => (
+                                      <li key={m.ref}><b>Image {m.ref}</b> (slide {m.slide_n}) actually shows: <i>{m.picture_shows}</i>
+                                        {m.explained_as ? <> — explained as “{m.explained_as}”</> : null}</li>
+                                    ))}
+                                  </ul>
+                                  <span className="hint">Regenerate with a note saying where each belongs, or edit, before approving.</span>
+                                </div>
+                              : <span className="hint">Screenshots: {c.image_check.checked} looked at — each sits under the text that explains it.</span>
+                          )}
                           <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{c.markdown}</ReactMarkdown></div>
                           {/* ASK BEFORE YOU DECIDE. Regenerating is the lever for a
                               section you have decided is wrong; this is for the moment
@@ -2923,6 +2940,14 @@ function SkillCard({ s, canEdit, busy, editing, editText,
                              if (v != null && v.trim() !== (im.caption || '').trim()) onCaption?.(im.id, v)
                            }} />
                   ) : <figcaption>{im.caption}</figcaption>}
+                  {/* WHAT THE PICTURE SHOWS, as the vision model read it. This — not the
+                      caption, which is usually the file name — is what the writer matches
+                      the screenshot to a step by. Written once, shortly after upload. */}
+                  <span className="shotdesc" title={im.description || ''}>
+                    {im.description
+                      ? im.description.replace(/^SHOWS:\s*/, '').split(' | ')[0]
+                      : 'Reading what this shows…'}
+                  </span>
                   {canEdit && (
                     <button className="iconbtn danger shotdel" disabled={busy}
                             title="Remove this screenshot"
@@ -2931,8 +2956,9 @@ function SkillCard({ s, canEdit, busy, editing, editText,
                 </figure>
               ))}
               <span className="hint shothint">
-                Placed in the TR doc on the slide each caption best matches, once the skill is
-                approved.
+                Each picture is read once so the writer knows what it shows; it is placed at
+                the step it is evidence of, once the skill is approved. The caption prints
+                under it in the doc.
               </span>
             </div>
           )}

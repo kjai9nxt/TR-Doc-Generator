@@ -679,9 +679,12 @@ for i in range(N):
 _RESERVE = context_builder.hands_on_reserve(True)
 check(f"allowances sum to the takeaway budget ({allocs} = {used}, +{_RESERVE} hands-on)",
       used + _RESERVE == CEIL, str(allocs))
-check("the prompt tells each section that the hands-on slides are reserved",
-      "reserved for the Practical Hands-On" in context_builder.takeaway_instruction(
-          _REPEAT_COURSE, cur, 0, slides_used=0, sections_left=N))
+# 1.70: with constraints.hands_on.extra_slides the hands-on takes its OWN slides on top
+# of the ceiling instead of a reserve inside it — the prompt says whichever applies.
+_ti = context_builder.takeaway_instruction(_REPEAT_COURSE, cur, 0, slides_used=0, sections_left=N)
+check("the prompt tells each section where the hands-on slides come from",
+      ("reserved for the Practical Hands-On" in _ti) if _RESERVE
+      else ("takes its own slides on top" in _ti))
 squeezed = context_builder.chunk_slide_allowance(cur, slides_used=CEIL + 5, sections_left=2)
 floor = config.harness()["constraints"]["coverage"]["min_sub_concepts_per_takeaway"]
 check("an overspent budget squeezes later sections to the floor, not below",

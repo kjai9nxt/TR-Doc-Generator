@@ -176,8 +176,15 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
     for a in doc.get("agenda") or []:
         s.bullet(str(a), "front_matter")
 
-    # 4. sections and slides
+    # 4. sections and slides. 1.70: a hands-on that is EXTRA (constraints.hands_on.
+    # extra_slides) is measured under its own key and kept out of the page gate, exactly
+    # as screenshots are — the session's page budget is for the teaching sections.
+    ho_cfg = config.harness()["constraints"].get("hands_on", {})
+    ho_extra = bool(ho_cfg.get("enabled", False) and ho_cfg.get("extra_slides", False)
+                    and (budgets or {}).get("hands_on", True) is not False)
+    hands_on_pts = 0.0
     for sec in doc.get("sections") or []:
+        _h0 = s.height
         s.spacer("sections")
         s.heading(section_heading(sec), 2, "sections")
         for sl in sec.get("slides") or []:
@@ -208,6 +215,8 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
                 s.body(_labelled_text("Speaker Notes:", f'"{sl["speaker_notes"]}"'),
                        "speaker_notes")
             s.spacer("slides")
+        if ho_extra and str(sec.get("kind") or "").lower() == "hands_on":
+            hands_on_pts += s.height - _h0
 
     # 5. key takeaways, upcoming, closing
     s.heading("Key Takeaways", 2, "back_matter")
@@ -226,7 +235,12 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
     # teaching text around it — the opposite of what attaching one is for. The page
     # count reported is the honest total; the gate is on the pages the WRITING takes.
     image_pts = s.breakdown.get("images", 0.0)
-    text_pages = max(1, math.ceil(max(s.height - image_pts, 0.0) / usable))
+    # The extra hands-on's own pictures are already inside hands_on_pts.
+    ho_image_pts = min(image_pts, hands_on_pts) if hands_on_pts else 0.0
+    text_pages = max(1, math.ceil(max(s.height - image_pts - (hands_on_pts - ho_image_pts),
+                                      0.0) / usable))
+    if hands_on_pts:
+        s.breakdown["hands_on_extra"] = round(hands_on_pts, 1)
     max_pages = int((budgets or {}).get("max_pages") or cfg["max"])
     target = int((budgets or {}).get("target_pages") or cfg.get("target", max_pages))
     return {

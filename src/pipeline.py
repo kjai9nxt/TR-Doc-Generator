@@ -647,7 +647,15 @@ def _too_long(doc: dict, report: dict) -> list[str]:
 
 
 def _reconcile_images(doc: dict, course: str | None, session_no) -> list[str]:
-    """Every attached screenshot in the document once (src/skill_images). Never fatal."""
+    """Every attached screenshot in the document once (src/skill_images). Never fatal.
+    Also strips visual_guidance/speaker_notes from hands-on slides (1.70) — both are
+    properties of the assembled document, applied before it is graded."""
+    try:
+        n = context_builder.hands_on_strip(doc)
+    except Exception:
+        n = 0
+    if n:
+        _log(f"Removed {n} visual-guidance/speaker-notes field(s) from the hands-on slides.")
     if not course:
         return []
     try:

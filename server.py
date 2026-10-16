@@ -1586,6 +1586,19 @@ async def add_skill_images(skill_id: int, files: list[UploadFile] = File(...),
             refused.append(f"'{name}' could not be stored.")
     if not added and refused:
         raise HTTPException(status_code=400, detail={"message": " ".join(refused)})
+    # READ THEM NOW, in the background (1.70). The writer is text-only; what it learns
+    # about a picture is the description the vision model writes here. Off the request
+    # thread because ten screenshots take ~30 s to read, and the author should not wait.
+    if added:
+        def _describe(ids=list(added)):
+            try:
+                rows = [dict(r) for r in (db.skill_image(i) or {} for i in ids) if r]
+                for r in rows:
+                    r.pop("data_b64", None)
+                skill_images.ensure_described(rows)
+            except Exception:
+                pass
+        threading.Thread(target=_describe, daemon=True).start()
     return {"ok": True, "added": added, "refused": refused, "skills": db.skills(c)}
 
 
@@ -2492,9 +2505,54 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
         return [r for r, v in (check.get("verdicts") or {}).items()
                 if v.get("status") in patch_on]
 
+    # 1.70: hands-on slides carry no visual_guidance / speaker_notes — drop them before
+    # anything looks at the draft, so neither the gates nor the reviewer see them.
+    context_builder.hands_on_strip(fragment)
+
+    # 1.70: IS EACH PICTURE UNDER THE WORDS THAT EXPLAIN IT? Vision model, one call per
+    # placed screenshot; a mismatch joins the same patch as the brief misses below.
+    from src import skill_images as _si
+    ip_cfg = config.harness()["gates"].get("image_placement_check") or {}
+    run_images = []
+    if ip_cfg.get("enabled", False) and state.get("course"):
+        try:
+            run_images = db.skill_images_for_run(state["course"], session=state.get("session_no"))
+        except Exception:
+            run_images = []
+
+    def _images_in(frag) -> int:
+        sec = frag.get("section") if isinstance(frag, dict) else None
+        if not isinstance(sec, dict):
+            return 0
+        return sum(1 for sl in (sec.get("slides") or []) if isinstance(sl, dict)
+                   for b in (sl.get("content") or []) if isinstance(b, dict) and b.get("type") == "image")
+
+    def _placement(frag):
+        if not run_images or not _images_in(frag):
+            return None
+        try:
+            chk = _si.verify_placement(frag, run_images)
+        except Exception as e:
+            _guided_log(gid, f"Chunk {index + 1}: screenshot placement not checked ({e}).")
+            return None
+        for n in chk.get("notes") or []:
+            _guided_log(gid, f"Chunk {index + 1}: {n}")
+        return chk
+
     hits = _chunk_repetition_hits(fragment) if index > 0 else []
     brief_check = _brief(fragment) if brief_on else None
     to_fix = _to_patch(brief_check)
+    img_check = _placement(fragment)
+    img_bad = list((img_check or {}).get("mismatches") or [])
+    if img_check and img_check.get("checked"):
+        if not img_bad:
+            _guided_log(gid, f"Chunk {index + 1}: {img_check['checked']} screenshot(s) looked "
+                             f"at — each sits under the text that explains it.")
+        else:
+            _guided_log(gid, f"Chunk {index + 1}: {len(img_bad)} of {img_check['checked']} "
+                             f"screenshot(s) sit under text about a different screen — "
+                             + "; ".join(f"image {m['ref']} shows {m['picture_shows'][:80]}"
+                                         for m in img_bad))
     if brief_check and brief_check.get("checked"):
         n_chk = len(brief_check["verdicts"])
         partial = [r for r, v in brief_check["verdicts"].items() if v.get("status") == "partial"]
@@ -2504,17 +2562,21 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
             _guided_log(gid, f"Chunk {index + 1}: brief line(s) {', '.join(partial)} applied only "
                              f"in places — shown in the pane for your call; no patch spent.")
     attempts = max(int(rep_cfg.get("auto_fix_attempts", 1) or 0),
-                   int(bc_cfg.get("fix_attempts", 1) or 0))
+                   int(bc_cfg.get("fix_attempts", 1) or 0),
+                   int(ip_cfg.get("fix_attempts", 1) or 0) if img_bad else 0)
     for attempt in range(attempts):
-        if not hits and not to_fix:
+        if not hits and not to_fix and not img_bad:
             break
         parts = []
         if hits:
             parts.append(_repetition_fix_instruction(hits))
         if to_fix:
             parts.append(_skills_mod.brief_fix_instruction({**brief_check, "missed": to_fix}))
+        if img_bad:
+            parts.append(_si.placement_fix_instruction({"mismatches": img_bad}, run_images))
         what = " and ".join(([f"{len(hits)} repeated bullet(s)"] if hits else [])
-                            + ([f"brief line(s) {', '.join(to_fix)} not applied"] if to_fix else []))
+                            + ([f"brief line(s) {', '.join(to_fix)} not applied"] if to_fix else [])
+                            + ([f"{len(img_bad)} misplaced screenshot(s)"] if img_bad else []))
         _guided_log(gid, f"Chunk {index + 1}: {what} — one patch before review.")
         try:
             from src import patcher
@@ -2522,21 +2584,29 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                 state["base_context"], kind, fragment, "\n\n".join(parts),
                 course=state.get("course") or None, session=state.get("session_no"))
             retry, _scope = patcher.apply(kind, fragment, patch)
+            context_builder.hands_on_strip(retry)
         except Exception as e:
             _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
             break
         retry_hits = _chunk_repetition_hits(retry)
         retry_brief = _brief(retry) if to_fix else brief_check
         retry_fix = _to_patch(retry_brief) if to_fix else []
-        # Keep whichever version is no worse on BOTH counts (ties go to the rewrite,
+        retry_img = _placement(retry) if img_bad else img_check
+        retry_bad = list((retry_img or {}).get("mismatches") or []) if img_bad else []
+        # Keep whichever version is no worse on EVERY count (ties go to the rewrite,
         # which was at least written against the explicit instruction).
-        if len(retry_hits) <= len(hits) and len(retry_fix) <= len(to_fix):
+        if (len(retry_hits) <= len(hits) and len(retry_fix) <= len(to_fix)
+                and len(retry_bad) <= len(img_bad)):
             fragment, hits = retry, retry_hits
             if to_fix:
                 brief_check, to_fix = retry_brief, retry_fix
+            if img_bad:
+                img_check, img_bad = retry_img, retry_bad
             _guided_log(gid, f"Chunk {index + 1}: after the patch — {len(hits)} repeated "
                              f"bullet(s), {len(to_fix)} brief line(s) still missed"
-                             + (f" ({', '.join(to_fix)})." if to_fix else "."))
+                             + (f" ({', '.join(to_fix)})" if to_fix else "")
+                             + (f", {len(img_bad)} screenshot(s) still misplaced" if img_bad else "")
+                             + ".")
         else:
             _guided_log(gid, f"Chunk {index + 1}: the patch did not improve on the draft — "
                              f"keeping the first version.")
@@ -2555,12 +2625,20 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                          f"are still not applied — regenerate with a note naming them, or "
                          f"edit, before approving: "
                          + "; ".join(f"[{r}] {brief_check['lines'].get(r, '')[:90]}" for r in to_fix))
+    if img_bad:
+        _guided_log(gid, f"⚠ Chunk {index + 1}: {len(img_bad)} screenshot(s) still sit under "
+                         f"text about a different screen — regenerate with a note, or edit, "
+                         f"before approving: "
+                         + "; ".join(f"image {m['ref']} (slide {m['slide_n']}) shows "
+                                     f"{m['picture_shows'][:90]}" for m in img_bad))
     if brief_check is not None and brief_check.get("checked"):
         # What the pane shows: failed lines first (they block), then partial ones.
         brief_check["missed"] = [r for r, v in brief_check["verdicts"].items()
                                  if v.get("status") in ("fail", "partial")]
     markdown = docx_writer.chunk_to_markdown(kind, fragment)
     out = {"kind": kind, "fragment": fragment, "markdown": markdown}
+    if img_check and img_check.get("checked"):
+        out["image_check"] = {"checked": int(img_check["checked"]), "mismatches": img_bad}
     if brief_check is not None and brief_check.get("checked"):
         out["brief_check"] = {"missed": brief_check.get("missed") or [],
                               "checked": len(brief_check.get("verdicts") or {}),
@@ -2736,9 +2814,31 @@ def _guided_length_note(gid: str, index: int) -> None:
         _guided_log(gid, head)
 
 
+def _guided_describe_images(gid: str) -> None:
+    """Make sure every screenshot this run can place has been READ (1.70) — the ones
+    attached before this version have only a file name for a caption. Once per picture,
+    stored; metered to this run."""
+    try:
+        from src import skill_images as _si
+        state = GUIDED.get(gid) or {}
+        if not state.get("course"):
+            return
+        imgs = db.skill_images_for_run(state["course"], session=state.get("session_no"))
+        if not imgs:
+            return
+        for note in _si.ensure_described(imgs):
+            _guided_log(gid, note)
+        n_desc = sum(1 for im in imgs if _si.description_of(im))
+        _guided_log(gid, f"Screenshots available to this run: {len(imgs)}, "
+                         f"{n_desc} with a reading of what they show.")
+    except Exception as e:
+        _guided_log(gid, f"Screenshots could not be read ({e}); the writer gets captions only.")
+
+
 def _guided_generate_all(gid: str):
     """Generate every chunk up front, then move to the review phase."""
     llm.use_meter(gid)      # this thread's LLM spend belongs to this guided run
+    _guided_describe_images(gid)
     try:
         while True:
             with _lock:

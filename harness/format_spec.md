@@ -70,9 +70,7 @@ deterministic and lets graders inspect fields directly.
             {"type": "text", "text": "<40-90 words explaining the screenshot>"},
             {"type": "text", "text": "<the expected result, so the learner can check>"},
             {"type": "bullets", "items": ["<common mistake and how to fix it>", "…", "…"]}
-          ],
-          "visual_guidance": "...",
-          "speaker_notes": "..."
+          ]                                    // NO visual_guidance, NO speaker_notes here
         }
       ]
     }
@@ -125,14 +123,20 @@ Present only when a skill for the session asks for a hands-on / practical / walk
 AND screenshots are attached — the BUDGET block states whether this run has one. When it does,
 the document's **last section** is one practical exercise: `"kind": "hands_on"`, name
 `Hands-On: <the concrete thing the learner does>` (at least 3 words after the prefix —
-"Hands-On: Practice" fails), 1-6 slides, every slide `role: "hands_on"`, no analogy, not
-in the coverage map and not counted as a takeaway section. It is the GIST of the
+"Hands-On: Practice" fails), 1-6 slides OF ITS OWN — on top of the session's slide count,
+outside the slide, page and recording budgets —, every slide `role: "hands_on"`, no
+analogy, **no `visual_guidance` and no `speaker_notes`** (the instructor demonstrates the
+practical live; a hands-on slide carries only its content blocks), not in the coverage map
+and not counted as a takeaway section. It is the GIST of the
 practical (the demo is in the recording; the step-by-step practical guide follows the
 session video). It carries, in order: what gets built and why (text), the MAJOR steps as
 ONE numbered bullet list of 4-7 one-line items (<= 20 words, no sub-steps), the genuine
 screenshots — as many as it takes to show each major part, each with a 30-50-word
 explanation —, and the expected
-result (text). It may use only what the session taught. Rendered as
+result (text). Which picture goes where is decided by WHAT IT SHOWS (each attached
+picture is described to the writer: the screen, its state, the visible names and
+values), never by its caption or file name; a picture sits only at the step it is
+evidence of, and its explanation names what is visible in it. It may use only what the session taught. Rendered as
 `------ PRACTICAL HANDS-ON: <title> ------`.
 
 `role` is one of `overview`, `concept_intro`, `mechanism`, `working_example`,
@@ -192,7 +196,9 @@ The breaker uses the same dash-wrapped form as the golden doc:
 ## Required per-slide fields
 `role`, `heading`, `subheading`, `content`, `visual_guidance`, `speaker_notes` are
 **REQUIRED on every slide** — none may be omitted or left empty. (A missing field is a
-hard guardrail failure.)
+hard guardrail failure.) The one exception: slides of the Practical Hands-On section
+carry **no** `visual_guidance` and **no** `speaker_notes` — omit both fields there (a
+present one fails).
 
 `analogy` is **conditional, and exactly so**: required when `role == "concept_intro"`,
 **forbidden** on `overview`, `mechanism`, `working_example`, `comparison`,

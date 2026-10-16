@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.69"
+  version: "1.70"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1699,6 +1699,19 @@ meta:
               major parts need, no fixed cap (writer selects, only in that section;
               skill_images.reconcile no longer force-places every attachment in a
               hands-on run), and the expected result. 1-6 slides."
+    - "1.70 — SCREENSHOTS MATCHED BY WHAT THEY SHOW; HANDS-ON SLIDES BARE AND EXTRA. Reviewer:
+              the screenshots were landing on the wrong steps. Cause: the writer is
+              text-only and every caption was the file name. Now each attached picture is
+              READ ONCE by the vision-capable judge model (skill_images.describe → stored in
+              skill_images.description; done at upload and, for existing pictures, at the
+              start of the next run), briefed to the writer as SHOWS / VISIBLE / EVIDENCE OF,
+              used for fallback matching, and — after the hands-on chunk is drafted — each
+              placed picture is checked against the text beside it (verify_placement, gate
+              gates.image_placement_check) and a mismatch is patched before review. Also:
+              hands-on slides carry NO visual_guidance / speaker_notes (hands_on.no_notes,
+              stripped + gated), and the hands-on takes its OWN slides on top of the
+              session's slide count — outside the slide, page and recording budgets
+              (hands_on.extra_slides)."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -1717,6 +1730,10 @@ model:
   # Model ids use the provider's naming. OpenRouter's Claude Sonnet slug:
   generator: "anthropic/claude-sonnet-5"   # drafting + revision
   judge: "anthropic/claude-haiku-4.5"      # LLM-as-judge grader — Haiku: ~3x faster/cheaper than Sonnet for scoring
+  # 1.70: the model that LOOKS at attached screenshots (describe once at upload; check
+  # each placed picture against the text beside it). Blank = the judge model, which
+  # reads images. A fraction of a cent per picture.
+  vision: ""
   prompt_caching: true              # cache the large static system prompt across generate/revise/judge calls
   # 1.66: HOLD THE CACHE FOR AN HOUR. The ~54k-token prefix (system prompt + the run's
   # base context) was cached for 5 minutes and expired while a section was still being
@@ -1767,6 +1784,9 @@ model:
     judge_retry: low
     chunk_brief: low
     skills: low
+    # 1.70: reading a screenshot and checking a placed one are look-and-say tasks.
+    describe_image: low
+    image_check: low
 
 # ----------------------------------------------------------------------------
 # HARD CONSTRAINTS  (enforced by guardrails — a run FAILS if violated)
@@ -2026,6 +2046,10 @@ constraints:
   images:
     require_explanation: true
     min_explanation_words: 30
+    # 1.70: read every attached picture once with the vision model so the text-only
+    # writer knows what it shows (skill_images.describe / ensure_described). Off = the
+    # writer sees only the caption, which is usually the file name.
+    describe: true
   duplication:
     # NOTHING IS TAUGHT TWICE IN ONE DOCUMENT. The per-slide rules above stop a bullet
     # repeating its own paragraph or table; this one stops the same material appearing
@@ -2107,6 +2131,16 @@ constraints:
     select_screenshots: true
     min_images: 1
     max_images: 0
+    # 1.70 — BARE SLIDES. Reviewer: "hands-on slides should not have visual guide and
+    # speaker notes" — the instructor demonstrates the practical live, so a hands-on slide
+    # carries only its content blocks. Stripped after drafting and at assembly
+    # (context_builder.hands_on_strip) and gated (a field present FAILS).
+    no_notes: true
+    # 1.70 — EXTRA SLIDES. Reviewer: "the number of slides decided for the session should
+    # not include the hands-on; it should take additional slides". The takeaway sections
+    # use the whole slide ceiling (no reserve), the hands-on adds min_slides-max_slides of
+    # its own, and the slide, page and recording gates count the teaching sections only.
+    extra_slides: true
   numbering:
     # Slides run 1..N with no gaps. Assembly already renumbers (pipeline.assemble), so
     # this is the assertion that it worked: a gap or a repeat here means a regenerated
@@ -2613,6 +2647,15 @@ gates:
     # one Haiku re-check afterwards — the run above paid for 10 patch calls and 12
     # checks across 6 sections.
     patch_on: ["fail"]
+    fix_attempts: 1
+  # 1.70 — IS EACH PICTURE UNDER THE WORDS THAT EXPLAIN IT? Right after a chunk that
+  # places screenshots is drafted, the vision model looks at every placed picture with
+  # the slide heading and the text beside it; a picture whose explanation describes a
+  # different screen is named in the SAME patch the brief check uses (server._gen_one),
+  # with what each attached picture really shows, so the writer moves or swaps it before
+  # the reviewer reads the chunk. One small vision call per placed picture.
+  image_placement_check:
+    enabled: true
     fix_attempts: 1
   # WHAT the repair pass is allowed to fire on. Everything here is either a property of
   # the whole document (invisible to any single chunk review) or a defect that is not a

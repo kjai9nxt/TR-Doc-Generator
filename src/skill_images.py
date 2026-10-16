@@ -19,6 +19,17 @@ picture plus its caption.
 
 Stored in the database as base64 text, down-scaled to a sane width first, so they
 survive an ephemeral disk and a 512 MB host alike.
+
+WHAT THE WRITER KNOWS ABOUT A PICTURE (1.70). The writer is text-only. Until now it was
+told the caption, and the caption of every screenshot on the deployed course was its
+filename — "Screenshot from 2026-10-09 11-03-00", "Pasted image (6)" — so the model was
+matching pictures to steps blind, and the reviewer saw the VPC screenshot under the
+security-group step. Now each attached picture is READ ONCE by the vision-capable judge
+model (`describe`): which screen it is, what state it shows, the labels and values
+visible on it. That reading is stored on the row, briefed to the writer beside the
+caption, used for the fallback matching here, and — after the hands-on chunk is drafted
+— checked against the explanation the writer put under each picture
+(`verify_placement`), so a mismatch is patched before the reviewer reads it.
 """
 from __future__ import annotations
 import base64
@@ -83,6 +94,124 @@ def caption_of(img: dict) -> str:
     return (img.get("caption") or "").strip() or (img.get("filename") or "screenshot")
 
 
+def description_of(img: dict) -> str:
+    """What the picture SHOWS, as read by the vision model. Empty until described."""
+    return " ".join(str(img.get("description") or "").split())
+
+
+def _looks_like_filename(caption: str) -> bool:
+    """A caption nobody wrote: the file's own name ("Screenshot from 2026-10-09 11-03-00",
+    "Pasted image (6)", "required 2", "IMG_2041")."""
+    c = (caption or "").strip().lower()
+    return (not c or bool(re.match(r"^(screenshot|screen shot|pasted image|image|img|photo|"
+                                   r"capture|untitled|required|picture)\b", c))
+            or bool(re.search(r"\d{4}-\d{2}-\d{2}", c)))
+
+
+# --------------------------------------------------------------------------- #
+# reading a picture — once, stored
+# --------------------------------------------------------------------------- #
+_DESCRIBE_SYSTEM = (
+    "You read ONE screenshot attached to a teaching brief and say, in plain words, what "
+    "it shows — so that a writer who cannot see it can put it at the right step of a "
+    "practical exercise. Be literal and specific: name the tool or website and the exact "
+    "screen/page (e.g. 'AWS console, EC2 > Target groups > s6-web-tg, Targets tab'), the "
+    "state it shows (e.g. 'both targets Healthy', 'build finished with Successfully built'), "
+    "and copy the key visible text: titles, menu items, button labels, resource names, "
+    "commands, values, messages. Do not guess what is not visible; do not add teaching. "
+    "Return ONLY JSON: {\"shows\": \"<one or two sentences: the screen and its state>\", "
+    "\"visible_text\": \"<the key labels/names/values/commands visible, comma-separated>\", "
+    "\"evidence_of\": \"<which action or step of a practical this picture is evidence "
+    "of, in a few words>\"}"
+)
+
+
+def describe(image_row: dict, *, label: str = "describe_image") -> str:
+    """Read one picture (a row WITH `data_b64`) and return its description line, e.g.
+    "SHOWS: AWS console, VPC > Subnets, two public subnets listed … | VISIBLE: s5-public-subnet,
+    s6-public-subnet-2, ap-south-1a, ap-south-1b | EVIDENCE OF: the second subnet created".
+    Raises on a failed call; the caller decides whether that matters."""
+    from . import config, llm
+    m = config.harness()["model"]
+    model = str(m.get("vision") or "").strip() or m["judge"]
+    ctx = []
+    if image_row.get("filename"):
+        ctx.append(f"File name: {image_row['filename']}")
+    cap = (image_row.get("caption") or "").strip()
+    if cap and not _looks_like_filename(cap):
+        ctx.append(f"The author captioned it: {cap}")
+    if image_row.get("skill_text"):
+        ctx.append("It is attached to this instruction: "
+                   + " ".join(str(image_row["skill_text"]).split())[:300])
+    raw = llm.complete_vision(
+        _DESCRIBE_SYSTEM,
+        ("Describe this screenshot.\n" + "\n".join(ctx)).strip(),
+        [(image_row.get("mime") or "image/png", image_row["data_b64"])],
+        model=model, max_tokens=600, temperature=0.0, label=label)
+    try:
+        data = llm.extract_json(raw)
+    except Exception:
+        data = {}
+    shows = " ".join(str(data.get("shows") or "").split())
+    vis = " ".join(str(data.get("visible_text") or "").split())
+    ev = " ".join(str(data.get("evidence_of") or "").split())
+    if not shows:
+        shows = " ".join(str(raw or "").split())[:300]
+    parts = [f"SHOWS: {shows[:400]}"]
+    if vis:
+        parts.append(f"VISIBLE: {vis[:300]}")
+    if ev:
+        parts.append(f"EVIDENCE OF: {ev[:120]}")
+    return " | ".join(parts)
+
+
+def ensure_described(images: list[dict], *, label: str = "describe_image") -> list[str]:
+    """Give every image in `images` (metadata rows) a `description`, reading and storing
+    the ones that have none. Mutates the rows; returns log notes. One vision call per
+    undescribed picture, on the small model — a few cents for a whole skill's set — and
+    never twice for the same picture. A failure is reported, not raised: the writer then
+    works from the caption as before."""
+    from . import config, db
+    notes: list[str] = []
+    if not (config.harness()["constraints"].get("images") or {}).get("describe", True):
+        return notes
+    done = failed = 0
+    for im in images:
+        if description_of(im) or im.get("id") is None:
+            continue
+        try:
+            row = db.skill_image(int(im["id"]))
+            if not row or not row.get("data_b64"):
+                continue
+            desc = describe({**row, "skill_text": im.get("skill_text")}, label=label)
+            if not desc:
+                continue
+            db.set_skill_image_description(int(im["id"]), desc)
+            im["description"] = desc
+            done += 1
+        except Exception as e:
+            failed += 1
+            notes.append(f"Screenshot {im.get('id')} could not be read ({str(e)[:120]}); "
+                         f"the writer gets only its caption.")
+    if done:
+        notes.append(f"Read {done} attached screenshot(s) so the writer knows what each one "
+                     f"shows (stored; not repeated next run).")
+    return notes
+
+
+def match_words(img: dict) -> set[str]:
+    """The words a picture is matched to slides by: what it SHOWS first, its caption,
+    and — only when nothing else is known — the skill line it hangs on (which is the
+    same for every picture on that skill, so it cannot tell them apart)."""
+    desc = re.sub(r"\b(SHOWS|VISIBLE|EVIDENCE OF):", " ", description_of(img))
+    cap = caption_of(img)
+    if desc.strip():
+        return _words(desc, "" if _looks_like_filename(cap) else cap)
+    if not _looks_like_filename(cap):
+        return _words(cap)
+    return _words(cap, img.get("skill_text"))
+
+
 # --------------------------------------------------------------------------- #
 # the prompt
 # --------------------------------------------------------------------------- #
@@ -145,11 +274,42 @@ def brief(images: list[dict], compact: bool = False) -> list[str]:
             "says precisely what the picture shows.",
             "",
         ]
+    out += [
+        "",
+        "MATCH A PICTURE BY WHAT IT SHOWS. Each line below says what is actually visible in "
+        "the picture (SHOWS / VISIBLE / EVIDENCE OF — read from the image itself; the caption "
+        "may be only its file name). Put a screenshot ONLY at the step or part that it is "
+        "evidence of; a step whose screen is not among the pictures gets no picture, and a "
+        "picture that matches no step is left out rather than forced in. Two pictures of "
+        "the same screen in different states (before/after, empty/filled, unhealthy/healthy) "
+        "go with the two steps that produce those states. Write the explaining text FROM the "
+        "description: name what is visible (the names, values, messages), never something "
+        "the picture does not show.",
+    ]
+    out += image_lines(images)
+    return out
+
+
+def image_lines(images: list[dict]) -> list[str]:
+    """One line per attached picture: id, caption, what it shows."""
+    out = []
+    by_skill: dict = {}
     for im in images:
-        who = (im.get("skill_text") or "").strip()
+        by_skill.setdefault(im.get("skill_id"), []).append(im)
+    for im in images:
+        sibs = by_skill.get(im.get("skill_id")) or [im]
+        order = f" (picture {sibs.index(im) + 1} of {len(sibs)} on this skill)" if len(sibs) > 1 else ""
         scope = f" (session {im['session_ref']} only)" if im.get("session_ref") else ""
-        out.append(f"- id {im['id']}: “{caption_of(im)}”{scope}"
-                   + (f" — attached to the rule: {who[:160]}" if who else ""))
+        cap = caption_of(im)
+        desc = description_of(im)
+        line = f"- id {im['id']}{order}{scope}: caption “{cap}”"
+        if desc:
+            line += f" — {desc}"
+        elif _looks_like_filename(cap):
+            who = " ".join(str(im.get("skill_text") or "").split())
+            line += (" — (not yet read; the caption is only the file name)"
+                     + (f" attached to the rule: {who[:160]}" if who else ""))
+        out.append(line)
     return out
 
 
@@ -259,7 +419,7 @@ def reconcile(doc: dict, images: list[dict]) -> list[str]:
         return notes + [f"{len(missing)} attached image(s) could not be placed: the "
                         f"document has no slides."]
     for im in missing:
-        want = _words(caption_of(im), im.get("skill_text"))
+        want = match_words(im)
         best, best_key = slides[-1], (-1, 0)
         for s in slides:
             # Word overlap first; on a tie, a hands-on step beats a concept slide,
@@ -296,10 +456,10 @@ def _reconcile_hands_on(sec: dict, unplaced: list[dict], cfg: dict,
         s["content"] = kept
     if not seen and ho_slides and unplaced and floor:
         ranked = sorted(
-            unplaced, key=lambda im: -max(len(_words(caption_of(im), im.get("skill_text"))
-                                              & _slide_words(s)) for s in ho_slides))
+            unplaced, key=lambda im: -max(len(match_words(im) & _slide_words(s))
+                                          for s in ho_slides))
         for im in ranked[:floor]:
-            want = _words(caption_of(im), im.get("skill_text"))
+            want = match_words(im)
             best = max(ho_slides, key=lambda s: len(want & _slide_words(s)))
             best.setdefault("content", []).append(
                 {"type": "image", "ref": int(im["id"]), "caption": caption_of(im)})
@@ -311,6 +471,109 @@ def _reconcile_hands_on(sec: dict, unplaced: list[dict], cfg: dict,
                      f"hands-on shows only the genuine ones (the full set belongs to the "
                      f"practical guide).")
     return notes
+
+
+# --------------------------------------------------------------------------- #
+# after the draft — is each picture under the words that explain it?
+# --------------------------------------------------------------------------- #
+_VERIFY_SYSTEM = (
+    "You check whether a screenshot in a teaching document sits at the right place. You "
+    "see the picture, the heading of the slide it is on, and the text the writer put "
+    "beside it to explain it. Decide whether that text describes THIS picture — the same "
+    "screen, the same state, the same names and values — or a different one. Be strict "
+    "about the state: a 'targets Healthy' explanation under a picture showing 'Unhealthy' "
+    "is a mismatch; a 'security group inbound rules' explanation under a subnet list is a "
+    "mismatch. Return ONLY JSON: {\"matches\": true|false, \"picture_shows\": \"<one "
+    "sentence: what the picture actually shows>\", \"reason\": \"<one sentence>\"}"
+)
+
+
+def _explanation_for(slide: dict, idx: int) -> str:
+    """The words that explain the image block at `idx`: the text block right after it,
+    else the one right before, else the slide's other prose."""
+    content = [b for b in (slide.get("content") or []) if isinstance(b, dict)]
+    after = content[idx + 1] if idx + 1 < len(content) else None
+    if after and after.get("type") == "text" and str(after.get("text") or "").strip():
+        return str(after["text"]).strip()
+    before = content[idx - 1] if idx > 0 else None
+    if before and before.get("type") == "text" and str(before.get("text") or "").strip():
+        return str(before["text"]).strip()
+    return " ".join(str(b.get("text") or "") for b in content if b.get("type") == "text").strip()
+
+
+def verify_placement(fragment_or_doc: dict, images: list[dict], *,
+                     label: str = "image_check") -> dict:
+    """Look at every placed picture and the explanation under it. Returns
+    `{"checked": int, "mismatches": [{"ref", "slide_n", "explained_as", "picture_shows",
+    "reason"}], "notes": [str]}`. One vision call per placed picture on the small model.
+    A call that fails counts as not checked — never as a mismatch."""
+    from . import config, db, llm
+    out: dict = {"checked": 0, "mismatches": [], "notes": []}
+    by_id = {int(im["id"]): im for im in images if im.get("id") is not None}
+    sec = fragment_or_doc.get("section") if isinstance(fragment_or_doc, dict) else None
+    slides = ([s for s in (sec.get("slides") or []) if isinstance(s, dict)] if isinstance(sec, dict)
+              else list(_slides(fragment_or_doc)))
+    m = config.harness()["model"]
+    model = str(m.get("vision") or "").strip() or m["judge"]
+    for s in slides:
+        content = [b for b in (s.get("content") or []) if isinstance(b, dict)]
+        for i, b in enumerate(content):
+            if b.get("type") != "image":
+                continue
+            try:
+                ref = int(b.get("ref"))
+            except (TypeError, ValueError):
+                continue
+            if ref not in by_id:
+                continue
+            expl = _explanation_for(s, i)
+            if not expl:
+                continue
+            try:
+                row = db.skill_image(ref)
+                if not row or not row.get("data_b64"):
+                    continue
+                raw = llm.complete_vision(
+                    _VERIFY_SYSTEM,
+                    (f"SLIDE HEADING: {s.get('heading') or s.get('title') or ''}\n"
+                     f"CAPTION THE WRITER GAVE IT: {b.get('caption') or ''}\n"
+                     f"THE TEXT EXPLAINING THIS PICTURE:\n{expl}\n\n"
+                     f"Does that text describe this picture?"),
+                    [(row.get("mime") or "image/png", row["data_b64"])],
+                    model=model, max_tokens=400, temperature=0.0, label=label)
+                data = llm.extract_json(raw)
+            except Exception as e:
+                out["notes"].append(f"Screenshot {ref}: placement not checked ({str(e)[:100]}).")
+                continue
+            out["checked"] += 1
+            if data.get("matches") is False:
+                out["mismatches"].append({
+                    "ref": ref, "slide_n": s.get("n"),
+                    "explained_as": " ".join(expl.split())[:240],
+                    "picture_shows": " ".join(str(data.get("picture_shows") or "").split())[:240],
+                    "reason": " ".join(str(data.get("reason") or "").split())[:200]})
+    return out
+
+
+def placement_fix_instruction(check: dict, images: list[dict]) -> str:
+    """The patch reason for the mismatches `verify_placement` found: what each picture
+    really shows, and the full list to choose the right one from."""
+    parts = []
+    for mm in check.get("mismatches") or []:
+        parts.append(
+            f"- image id {mm['ref']} on slide {mm['slide_n']}: the text beside it says "
+            f"“{mm['explained_as'][:160]}…” but the picture actually shows: "
+            f"{mm['picture_shows'] or 'something else'}"
+            + (f" ({mm['reason']})" if mm.get("reason") else "") + ".")
+    return ("PUT EACH SCREENSHOT WHERE IT BELONGS. These pictures sit beside text that "
+            "describes a different screen:\n" + "\n".join(parts) + "\n"
+            "For each one, EITHER move the image block to the step/part whose screen it "
+            "actually shows and rewrite the 30-50-word text beside it from what is visible "
+            "in the picture, OR — if a different attached picture is the one that shows the "
+            "screen this text describes — swap in that picture's id, OR, if no step of this "
+            "practical matches the picture, remove the image block and its explanation. "
+            "Never leave a picture under words that describe another screen. The attached "
+            "pictures and what each shows:\n" + "\n".join(image_lines(images)))
 
 
 def placed_refs(doc: dict) -> list[int]:

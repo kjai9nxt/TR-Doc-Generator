@@ -488,6 +488,78 @@ def complete(system: str, user: str, *, model: str, max_tokens: int,
 
 
 # --------------------------------------------------------------------------- #
+# vision — one or more pictures in the user turn
+# --------------------------------------------------------------------------- #
+def complete_vision(system: str, user: str, images: list[tuple[str, str]], *,
+                    model: str, max_tokens: int, temperature: float = 0.0,
+                    retries: int = 2, label: str = "") -> str:
+    """Like `complete`, with `images` — `(mime, base64)` pairs — shown before the text.
+
+    Used to READ a screenshot the course owner attached (skill_images.describe) and to
+    CHECK that a placed one matches the step it illustrates (skill_images.verify_placement).
+    The writer itself is text-only and sees the words this produces, so the picture is
+    read once, by the small model, and the reading is stored. No prompt caching: these
+    calls are short and each carries its own picture.
+    """
+    m = config.harness()["model"]
+    provider = m.get("provider", "openrouter").lower()
+    effort = (m.get("reasoning_effort") or {}).get(label)
+    if provider == "anthropic":
+        try:
+            import anthropic
+        except ImportError as e:
+            raise RuntimeError("Install the SDK:  pip install anthropic") from e
+        client = anthropic.Anthropic(api_key=_key_or_raise())
+        content = [{"type": "image", "source": {"type": "base64", "media_type": mime,
+                                                 "data": b64}} for mime, b64 in images]
+        content.append({"type": "text", "text": user})
+        last = None
+        for attempt in range(retries):
+            try:
+                resp = client.messages.create(model=model, max_tokens=max_tokens,
+                                              temperature=temperature, system=system,
+                                              messages=[{"role": "user", "content": content}])
+                text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
+                u = getattr(resp, "usage", None)
+                if u is not None:
+                    _record_usage(label, model, {"input_tokens": getattr(u, "input_tokens", None),
+                                                 "output_tokens": getattr(u, "output_tokens", None)})
+                return text
+            except Exception as e:
+                last = e
+                time.sleep(2 * (attempt + 1))
+        raise RuntimeError(f"LLM vision call failed: {last}")
+    url = m.get("base_url", "https://openrouter.ai/api/v1").rstrip("/") + "/chat/completions"
+    headers = {"Authorization": f"Bearer {_key_or_raise()}", "Content-Type": "application/json",
+               "HTTP-Referer": "https://local.tr-doc-generator", "X-Title": "TR Doc Generator"}
+    content = [{"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
+               for mime, b64 in images]
+    content.append({"type": "text", "text": user})
+    payload = {"model": model, "max_tokens": max_tokens, "temperature": temperature,
+               "messages": [{"role": "system", "content": system},
+                            {"role": "user", "content": content}],
+               "usage": {"include": True}}
+    if effort:
+        payload["reasoning"] = {"effort": str(effort)}
+    last = None
+    for attempt in range(retries):
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=120)
+            if resp.status_code == 200:
+                data = resp.json()
+                text = data["choices"][0]["message"]["content"] or ""
+                _record_usage(label, model, data.get("usage"))
+                return text
+            last = RuntimeError(f"HTTP {resp.status_code}: {resp.text[:300]}")
+            if resp.status_code in _NON_TRANSIENT:
+                break
+        except Exception as e:
+            last = e
+        time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"LLM vision call failed: {last}")
+
+
+# --------------------------------------------------------------------------- #
 # JSON extraction (unchanged)
 # --------------------------------------------------------------------------- #
 def _repair_json(src: str) -> str:

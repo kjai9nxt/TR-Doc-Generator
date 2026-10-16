@@ -1,6 +1,6 @@
 {
   "kind": "offline",
-  "generated_at": "2026-10-13T00:13:08",
+  "generated_at": "2026-10-16T16:34:15",
   "overall_pass": true,
   "extraction": {
     "ok": false,
@@ -712,7 +712,7 @@
       "Slide 2: bullet list 1 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Multi-Streaming: one association carries; Multi-Homing: both endpoints register mu",
       "Slide 2: bullet 1.1 is 28 words (max 22) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block.",
       "Slide 2: bullet 1.2 is 31 words (max 22) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block.",
-      "Missing the PRACTICAL HANDS-ON section. After the last takeaway's section add one more section with \"kind\": \"hands_on\" and a name like \"Hands-On: <what the learner builds or does>\", holding 1-4 slides of role 'hands_on': what the exercise is and why, the numbered steps as full sentences, the expected result, and common mistakes."
+      "Missing the PRACTICAL HANDS-ON section. After the last takeaway's section add one more section with \"kind\": \"hands_on\" and a name like \"Hands-On: <what the learner builds or does>\", holding 1-6 slides of role 'hands_on': what gets built and why, the major steps as one numbered list (one line each, no sub-steps), the genuine screenshots of each major part, and the expected result."
     ],
     "warnings": [
       "17 acronym(s) are used on slides but never expanded anywhere in the document: SCTP (first on slide 1), NOT (first on slide 2), INIT (first on slide 2), ACK (first on slide 2), COOKIE (first on slide 2), ECHO (first on slide 2), HOL (first on slide 2), SYN (first on slide 3) …. Unless an earlier session already taught them, expand each the first time it appears — 'Full Name (ACR)' — so a learner can follow without looking it up.",
