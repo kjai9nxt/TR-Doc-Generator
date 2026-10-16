@@ -5058,11 +5058,26 @@ function EvalReport({ report }) {
  */
 function AutoTextarea({ value, minRows = 2, ...rest }) {
   const ref = useRef(null)
+  const prevLen = useRef(0)
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    el.style.height = 'auto'                       // shrink first, or it only ever grows
-    el.style.height = `${el.scrollHeight}px`
+    // THE PAGE JUMPED WHILE TYPING A SKILL. This used to set height to `auto` on EVERY
+    // keystroke to re-measure, which collapses the box to its minimum for one layout
+    // pass. With the composer low on a long page, the document gets shorter for that
+    // instant, the browser clamps the scroll position to the new bottom, and when the
+    // box grows back the view has moved — the caret ends up off-screen and the author
+    // cannot see what they are writing. Two changes: collapse only when the text got
+    // SHORTER (growing never needs it — scrollHeight already reports the full height),
+    // and put the window back where it was if the browser moved it anyway.
+    const len = String(value ?? '').length
+    const shrank = len < prevLen.current
+    prevLen.current = len
+    const y = window.scrollY
+    if (shrank) el.style.height = 'auto'
+    const h = el.scrollHeight
+    if (shrank || h > el.clientHeight) el.style.height = `${h}px`
+    if (window.scrollY !== y) window.scrollTo(0, y)
   }, [value])
   return <textarea ref={ref} rows={minRows} value={value} {...rest} />
 }
