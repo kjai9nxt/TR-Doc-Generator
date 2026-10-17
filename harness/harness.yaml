@@ -2359,6 +2359,13 @@ constraints:
     # content.min_bullet_items so a list is never taken below its own minimum; what
     # that protects reaches the reviewer flagged rather than silently wrong.
     drop_unfixable_bullets: true
+    # OVER-LONG LINES ride the same pre-review patch: a bullet over
+    # content.max_words_per_bullet, a paragraph over the hard cap, and — when more than
+    # content.max_share_over_target of a section's paragraphs run past the norm — the
+    # longest of those. The chunk gate used to only LOG them, so they reached review
+    # looking finished and were approved ("bullets a bit lengthy in a few slides, the
+    # paragraph also large sometimes"). What the patch cannot fix is flagged in the log.
+    fix_overlong_lines: true
     # The map is a PLANNING artifact for the graders, not lecture material — it is not
     # rendered into the .docx or the Markdown preview, so it costs no pages.
     rendered_in_docx: false

@@ -2570,6 +2570,8 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
         return chk
 
     hits = _chunk_repetition_hits(fragment) if index > 0 else []
+    len_on = bool(rep_cfg.get("fix_overlong_lines", True))
+    long_hits = _chunk_length_hits(fragment) if (index > 0 and len_on) else []
     brief_check = _brief(fragment) if brief_on else None
     to_fix = _to_patch(brief_check)
     img_check = _placement(fragment)
@@ -2595,16 +2597,20 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                    int(bc_cfg.get("fix_attempts", 1) or 0),
                    int(ip_cfg.get("fix_attempts", 1) or 0) if img_bad else 0)
     for attempt in range(attempts):
-        if not hits and not to_fix and not img_bad:
+        if not hits and not to_fix and not img_bad and not long_hits:
             break
         parts = []
         if hits:
             parts.append(_repetition_fix_instruction(hits))
+        if long_hits:
+            parts.append(_length_fix_instruction(long_hits))
         if to_fix:
             parts.append(_skills_mod.brief_fix_instruction({**brief_check, "missed": to_fix}))
         if img_bad:
             parts.append(_si.placement_fix_instruction({"mismatches": img_bad}, run_images))
         what = " and ".join(([f"{len(hits)} repeated bullet(s)"] if hits else [])
+                            + ([f"{len(long_hits)} over-long bullet(s)/paragraph(s)"]
+                               if long_hits else [])
                             + ([f"brief line(s) {', '.join(to_fix)} not applied"] if to_fix else [])
                             + ([f"{len(img_bad)} misplaced screenshot(s)"] if img_bad else []))
         _guided_log(gid, f"Chunk {index + 1}: {what} — one patch before review.")
@@ -2619,6 +2625,7 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
             _guided_log(gid, f"Chunk {index + 1}: auto-fix skipped ({e}).")
             break
         retry_hits = _chunk_repetition_hits(retry)
+        retry_long = _chunk_length_hits(retry) if len_on else []
         retry_brief = _brief(retry) if to_fix else brief_check
         retry_fix = _to_patch(retry_brief) if to_fix else []
         retry_img = _placement(retry) if img_bad else img_check
@@ -2626,14 +2633,15 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
         # Keep whichever version is no worse on EVERY count (ties go to the rewrite,
         # which was at least written against the explicit instruction).
         if (len(retry_hits) <= len(hits) and len(retry_fix) <= len(to_fix)
-                and len(retry_bad) <= len(img_bad)):
-            fragment, hits = retry, retry_hits
+                and len(retry_bad) <= len(img_bad) and len(retry_long) <= len(long_hits)):
+            fragment, hits, long_hits = retry, retry_hits, retry_long
             if to_fix:
                 brief_check, to_fix = retry_brief, retry_fix
             if img_bad:
                 img_check, img_bad = retry_img, retry_bad
             _guided_log(gid, f"Chunk {index + 1}: after the patch — {len(hits)} repeated "
-                             f"bullet(s), {len(to_fix)} brief line(s) still missed"
+                             f"bullet(s), {len(long_hits)} over-long line(s), "
+                             f"{len(to_fix)} brief line(s) still missed"
                              + (f" ({', '.join(to_fix)})" if to_fix else "")
                              + (f", {len(img_bad)} screenshot(s) still misplaced" if img_bad else "")
                              + ".")
@@ -2647,6 +2655,11 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
             _guided_log(gid, f"Chunk {index + 1}: removed {dropped} bullet(s) that only "
                              f"restated the paragraph — the paragraph already makes those points.")
         hits = _chunk_repetition_hits(fragment)
+    if long_hits:
+        _guided_log(gid, f"⚠ Chunk {index + 1}: {len(long_hits)} line(s) are still over "
+                         f"length — edit or regenerate before approving: "
+                         + "; ".join(f"slide {h['slide']} {h['kind']} ({h['words']}w)"
+                                     for h in long_hits[:6]))
     if hits:
         _guided_log(gid, f"Chunk {index + 1}: {len(hits)} repeated bullet(s) could not be "
                          f"fixed without emptying a list — flagged for you below.")
@@ -3513,6 +3526,83 @@ def _drop_repeating_bullets(fragment: dict, hits: list[dict]) -> tuple[dict, int
             items.pop(at)
             dropped += 1
     return frag, dropped, kept
+
+
+def _chunk_length_hits(fragment: dict) -> list[dict]:
+    """Bullets and paragraphs in one section that are longer than the gates allow.
+
+    The same caps as the guardrail (constraints.content): a bullet over
+    max_words_per_bullet, a paragraph over max_words_per_text_block or
+    max_sentences_per_text_block — and, when more than max_share_over_target of the
+    section's paragraphs run past the 50-word norm, the longest of those too, because
+    that share is what fails the whole document at finalize. The chunk gate used to only
+    LOG these, so a section went to review with them in it and the reviewer, reading
+    the content rather than the log, approved them.
+    """
+    from guardrails.guardrails import _word_count, _sentence_count
+    c = config.harness()["constraints"].get("content", {})
+    max_bw = int(c.get("max_words_per_bullet") or 0)
+    max_cw = int(c.get("max_words_per_text_block") or 0)
+    max_cs = int(c.get("max_sentences_per_text_block") or 0)
+    tgt_cw = int(c.get("target_words_per_text_block") or 0)
+    tgt_cs = int(c.get("target_sentences_per_text_block") or 0)
+    share = float(c.get("max_share_over_target") or 0)
+    hits, over_norm, n_paras = [], [], 0
+    section = (fragment or {}).get("section") or {}
+    for s in section.get("slides") or []:
+        for b in s.get("content") or []:
+            if not isinstance(b, dict):
+                continue
+            if b.get("type") == "bullets" and max_bw:
+                for it in b.get("items") or []:
+                    n = _word_count(it)
+                    if n > max_bw:
+                        hits.append({"slide": s.get("n", "?"), "kind": "bullet",
+                                     "text": str(it), "words": n, "limit": max_bw})
+            elif b.get("type") == "text" and b.get("text"):
+                n_paras += 1
+                t = str(b["text"])
+                wc, sc = _word_count(t), _sentence_count(t)
+                if (max_cw and wc > max_cw) or (max_cs and sc > max_cs):
+                    hits.append({"slide": s.get("n", "?"), "kind": "paragraph", "text": t,
+                                 "words": wc, "sentences": sc, "limit": tgt_cw or max_cw})
+                elif (tgt_cw and wc > tgt_cw) or (tgt_cs and sc > tgt_cs):
+                    over_norm.append({"slide": s.get("n", "?"), "kind": "paragraph",
+                                      "text": t, "words": wc, "sentences": sc,
+                                      "limit": tgt_cw})
+    if share and n_paras and len(over_norm) > share * n_paras:
+        # Trim the longest until the share is back within what the document allows —
+        # but leave a section ONE long paragraph: 20% of a three-paragraph section is
+        # zero, and the topic that genuinely needs the room is the reason the norm bends.
+        keep = max(1, int(share * n_paras))
+        hits += sorted(over_norm, key=lambda h: -h["words"])[:len(over_norm) - keep]
+    return hits
+
+
+def _length_fix_instruction(hits: list[dict]) -> str:
+    """The trim order for _chunk_length_hits, quoting every over-long line in full."""
+    lines = []
+    for h in hits[:10]:
+        if h["kind"] == "bullet":
+            lines.append(f"  Slide {h['slide']}, bullet ({h['words']} words, max "
+                         f"{h['limit']}): \"{h['text']}\"")
+        else:
+            lines.append(f"  Slide {h['slide']}, paragraph ({h['words']} words, "
+                         f"{h['sentences']} sentences; the norm is {h['limit']} words / "
+                         f"2-3 sentences): \"{h['text']}\"")
+    return (
+        "LENGTH TO FIX. These lines are longer than a TR doc allows:\n"
+        + "\n".join(lines)
+        + "\n\nFor each BULLET: say it in at most the stated number of words — one idea, "
+          "one plain sentence. If it really holds two ideas, split it into two bullets "
+          "in the same list.\n"
+          "For each PARAGRAPH: cut it to 2-3 short sentences (two or three lines) that "
+          "still explain what this is and why it matters. Drop qualifiers, repeated "
+          "framing and anything the bullets or table on the slide already carry; a "
+          "detail worth keeping that does not fit goes into the slide's bullets as its "
+          "own point, not into a longer sentence.\n"
+          "Keep every fact that matters and keep the meaning exact. Do not touch "
+          "anything else in this section.")
 
 
 def _repetition_fix_instruction(hits: list[dict]) -> str:
