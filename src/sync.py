@@ -346,6 +346,10 @@ def ingest_decks(course: str | None = None, *, force: bool = False,
             continue
         if not link:
             continue
+        # A session holding its TR doc keeps it: the doc occupies the session's slot in
+        # the store, and fetching the deck — even forced — would overwrite it.
+        if (r.get("tr_doc_file") or "").strip():
+            continue
         have_file = pptx_ingest.has_deck(course, no)
         if not force and r.get("deck_hash") and have_file:
             skipped += 1
@@ -448,7 +452,9 @@ def ingest_upload(course: str, session_no: int, filename: str, data: bytes) -> d
     name = webslides.safe_name(filename)
     chash, deck = webslides.extract_upload(name, data, int(session_no),
                                            row.get("session_name") or "")
-    pptx_ingest.put_deck(course, int(session_no), deck)
+    held_trdoc = (row.get("tr_doc_file") or "").strip()
+    if not held_trdoc:
+        pptx_ingest.put_deck(course, int(session_no), deck)
     db.curriculum_set_deck_file(course, int(session_no), name, chash)
     write_course_cache(course)
     try:
@@ -463,8 +469,56 @@ def ingest_upload(course: str, session_no: int, filename: str, data: bytes) -> d
                   if d.get("session_no") == int(session_no) and not d["ok"]]
     except Exception:
         issues = []
+    warnings = [i for grp in issues for i in grp]
+    if held_trdoc:
+        warnings.insert(0, f"Session {session_no} holds its TR doc ({held_trdoc}); that "
+                           f"stays the session's memory. The deck file is recorded.")
     return {"session_no": int(session_no), "file": name, "n_slides": deck.get("n_slides"),
-            "warnings": [i for grp in issues for i in grp]}
+            "warnings": warnings}
+
+
+def ingest_trdoc(course: str, session_no: int, filename: str, data: bytes) -> dict:
+    """Extract an uploaded TR doc (.docx) and make it this session's course memory.
+
+    Filed in the session's slot of the deck store — so the taught index, retrieval and
+    the generate list all treat the session as taught — and preferred over the deck
+    while it is held: it is the reviewed document, the deck is only its outline.
+    """
+    from . import db, trdoc_ingest, webslides
+    rows = {r["session_no"]: r for r in db.curriculum(course)}
+    row = rows.get(int(session_no))
+    if row is None:
+        raise ValueError(f"Session {session_no} is not in this course's curriculum.")
+    name = webslides.safe_name(filename)
+    chash, deck = trdoc_ingest.extract_trdoc(data, int(session_no),
+                                             row.get("session_name") or "", name)
+    pptx_ingest.put_deck(course, int(session_no), deck)
+    db.curriculum_set_tr_doc(course, int(session_no), name, chash)
+    write_course_cache(course)
+    try:
+        from . import session_memory
+        session_memory.prune(course,
+                            recorded_sessions=pptx_ingest.deck_session_numbers(course))
+    except Exception:
+        pass
+    return {"session_no": int(session_no), "file": name, "n_slides": deck.get("n_slides")}
+
+
+def detach_trdoc(course: str, session_no: int) -> dict:
+    """Drop a session's TR doc. Its deck, if the row has one, goes back to pending —
+    a link is fetched again by "Fetch new decks", a Web Slides file must be re-uploaded.
+    With no deck at all the session needs a TR doc again."""
+    from . import db
+    pptx_ingest.drop_deck(course, int(session_no))
+    try:
+        db.kb_forget(pptx_ingest.kb_rel(course, int(session_no)))
+    except Exception:
+        pass
+    db.curriculum_clear_tr_doc(course, int(session_no))
+    write_course_cache(course)
+    row = next((r for r in db.curriculum(course) if r["session_no"] == int(session_no)), {})
+    return {"session_no": int(session_no),
+            "deck": "link" if row.get("ppt_link") else ("file" if row.get("deck_file") else "none")}
 
 
 def _extraction_report(res: SyncResult, course: str) -> None:

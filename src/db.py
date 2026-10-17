@@ -367,6 +367,12 @@ _CURRICULUM_ADDED_COLUMNS = [
     # session, because a course can switch tools part-way through.
     ("deck_kind", "TEXT"),
     ("deck_file", "TEXT"),
+    # THE SESSION'S FINISHED TR DOC, uploaded as a .docx. A third way a session becomes
+    # course memory, alongside the deck link and the deck upload — and the strongest of
+    # the three: it is the reviewed teaching document itself, so when a row holds one it
+    # is what the agent remembers for that session (see sync.ingest_trdoc).
+    ("tr_doc_file", "TEXT"),
+    ("tr_doc_hash", "TEXT"),
 ]
 
 
@@ -1471,6 +1477,7 @@ def _row_to_session(r: dict) -> dict:
         "deck_kind": deck_kind(r),
         "deck_file": r.get("deck_file") or "",
         "deck_hash": r.get("deck_hash") or "",
+        "tr_doc_file": r.get("tr_doc_file") or "",
         "deck_status": r.get("deck_status") or ("linked" if deck_source(r) else "none"),
         # Per-session budget overrides; None means "inherit the course's".
         "max_pages": r.get("max_pages"),
@@ -1488,8 +1495,10 @@ def deck_source(r: dict) -> str:
     The ONE predicate for "this session has a deck". It used to be `ppt_link` non-empty
     in six places; a session whose deck arrived as an uploaded file has no link, and
     every one of those places would have called it a session still needing a doc.
+    An uploaded TR doc counts too: a session whose finished doc is held is taught.
     """
-    return (r.get("ppt_link") or "").strip() or (r.get("deck_file") or "").strip()
+    return ((r.get("ppt_link") or "").strip() or (r.get("deck_file") or "").strip()
+            or (r.get("tr_doc_file") or "").strip())
 
 
 def deck_kind(r: dict) -> str:
@@ -2422,6 +2431,38 @@ def curriculum_set_deck_file(course: str, session_no: int, filename: str,
                    deck_hash=?, deck_status='extracted', updated_at=?
                  WHERE course=? AND session_no=?""",
               ((filename or "").strip(), deck_hash or "", _now(), course, int(session_no)))
+        return True
+    except Exception:
+        return False
+
+
+def curriculum_set_tr_doc(course: str, session_no: int, filename: str,
+                          doc_hash: str) -> bool:
+    """An uploaded TR doc (.docx) has been extracted for this session.
+
+    Unlike a deck upload this leaves the link and the deck file alone: the row keeps
+    saying which deck the session was taught from, and the TR doc sits beside it.
+    """
+    try:
+        _exec("""UPDATE curriculum SET tr_doc_file=?, tr_doc_hash=?, updated_at=?
+                 WHERE course=? AND session_no=?""",
+              ((filename or "").strip(), doc_hash or "", _now(), course, int(session_no)))
+        return True
+    except Exception:
+        return False
+
+
+def curriculum_clear_tr_doc(course: str, session_no: int) -> bool:
+    """Detach a session's TR doc. Its deck (if any) goes back to PENDING, because the
+    extracted TR doc occupied the session's slot in the store and the deck has to be
+    read again — fetched for a link, re-uploaded for a Web Slides file."""
+    try:
+        _exec("""UPDATE curriculum SET tr_doc_file='', tr_doc_hash='', deck_hash='',
+                   deck_status=CASE WHEN COALESCE(ppt_link,'')<>'' OR COALESCE(deck_file,'')<>''
+                                    THEN 'pending' ELSE 'none' END,
+                   updated_at=?
+                 WHERE course=? AND session_no=?""",
+              (_now(), course, int(session_no)))
         return True
     except Exception:
         return False

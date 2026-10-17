@@ -540,6 +540,37 @@ export default function App() {
       .finally(() => setCurUploading(null))
   }
 
+  // A session's finished TR doc (.docx): read on upload, kept as that session's memory,
+  // and the session drops out of the Generate list.
+  const [trUploading, setTrUploading] = useState(null)
+  function uploadTrDoc(r, file) {
+    if (!file) return
+    setTrUploading(Number(r.session_no)); setCurLogs([])
+    api.uploadTrDoc(courseName || undefined, Number(r.session_no), file)
+      .then((d) => {
+        applyCurriculumReply(d)
+        const u = d.upload || {}
+        setCurLogs([`✓ Session ${u.session_no}: read ${u.n_slides ?? '?'} slide(s) from the TR doc ${u.file} — remembered as taught.`])
+      })
+      .catch((e) => setCurLogs([`TR doc upload failed — ${e.message}`]))
+      .finally(() => setTrUploading(null))
+  }
+  function detachTrDoc(r) {
+    if (!window.confirm(`Detach the TR doc from session ${r.session_no}? The agent forgets it; the session's deck (if any) has to be read again.`)) return
+    setTrUploading(Number(r.session_no)); setCurLogs([])
+    api.detachTrDoc(Number(r.session_no), courseName || undefined)
+      .then((d) => {
+        applyCurriculumReply(d)
+        const deck = d.detached?.deck
+        setCurLogs([`Session ${r.session_no}: TR doc detached. ` + (deck === 'link'
+          ? 'Its deck link is pending — press “Fetch new decks” to read it again.'
+          : deck === 'file' ? 'Upload its Web Slides file again to restore the deck.'
+          : 'It has no deck, so it is back on the Generate list.')])
+      })
+      .catch((e) => setCurLogs([`Detach failed — ${e.message}`]))
+      .finally(() => setTrUploading(null))
+  }
+
   // EVERY curriculum-mutating reply lands here. The table and the Generate dropdown are
   // two views of one curriculum, and they used to be updated in two different places:
   // save refreshed both (the dropdown via a second request), while insert and delete
@@ -1536,6 +1567,7 @@ export default function App() {
           saving={curSaving} ingesting={curIngesting} dirty={curDirty}
           pending={curPending} logs={curLogs}
           slidesMode={slidesMode} onUpload={uploadDeckFile} uploading={curUploading}
+          onTrUpload={uploadTrDoc} onTrDetach={detachTrDoc} trUploading={trUploading}
           budget={budget} onBudget={saveBudget}
           teams={myTeams} sharing={sharing} onShare={shareCourseWithTeam}
         />
@@ -4157,7 +4189,8 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
                                saving, ingesting, dirty, pending,
                                logs, teams = [], sharing, onShare,
                                budget, onBudget,
-                               slidesMode = 'google', onUpload, uploading = null }) {
+                               slidesMode = 'google', onUpload, uploading = null,
+                               onTrUpload, onTrDetach, trUploading = null }) {
   function edit(i, field, value) {
     setRows((rs) => rs.map((r, k) => (k === i ? { ...r, [field]: value, _dirty: true } : r)))
   }
@@ -4200,6 +4233,7 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
     return [...seen.entries()].filter(([, n]) => n > 1).map(([no]) => no)
   })()
   const deckChip = (r) => {
+    if (r.tr_doc_file && r.extracted) return <span className="chip good" title="The uploaded TR doc is this session's memory">TR doc held</span>
     if (!r.ppt_link && !r.deck_file) return <span className="chip">no deck</span>
     if (r.extracted) return <span className="chip good" title="Already extracted — syncing will not download it again">extracted</span>
     if (r.deck_file && !r.ppt_link) {
@@ -4243,6 +4277,29 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
                 onClick={() => setKind(i, other)}>
           {kind === 'web' ? 'Web Slides' : 'Google Slides'} · switch
         </button>
+      </div>
+    )
+  }
+  // THE TR DOC CELL — the session's finished doc, uploaded as .docx. Either this or a
+  // deck makes a session "taught"; when both are held the TR doc is what is remembered.
+  const trDocCell = (r) => {
+    const busy = trUploading === Number(r.session_no)
+    return (
+      <div className="c-tr deckfile">
+        {r.tr_doc_file
+          ? <span className="deckname" title={r.tr_doc_file}>{r.tr_doc_file}</span>
+          : <span className="deckname muted">no TR doc</span>}
+        <label className={`ghostbtn tiny upbtn ${busy ? 'disabled' : ''}`}
+               title="Upload this session's finished TR doc (.docx). It is read at once, remembered for the sessions after it, and the session leaves the Generate list.">
+          <Icon name="plus" size={11} /> {busy ? 'Reading…' : (r.tr_doc_file ? 'Replace' : 'Upload')}
+          <input type="file" accept=".docx" disabled={busy || !onTrUpload}
+                 onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) onTrUpload?.(r, f) }} />
+        </label>
+        {r.tr_doc_file && (
+          <button className="ghostbtn tiny" disabled={busy}
+                  title="Detach the TR doc — the agent forgets it (takes effect at once)"
+                  onClick={() => onTrDetach?.(r)}>Detach</button>
+        )}
       </div>
     )
   }
@@ -4312,7 +4369,8 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
           <span className="c-name">Session name</span>
           <span className="c-kt">Key takeaways — one per line</span>
           <span className="c-ppt">{deckLabel}</span>
-          <span className="c-deck">Deck</span>
+          <span className="c-tr">TR doc (.docx)</span>
+          <span className="c-deck">Status</span>
           <span className="c-act" />
         </div>
         {rows.map((r, i) => (
@@ -4336,6 +4394,7 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
                       title="Each line becomes an agenda item, a section and a Key Takeaway verbatim. Everything after the colon is a promise the session must teach."
                       onChange={(e) => edit(i, 'key_takeaways', e.target.value.split('\n'))} />
             {deckCell(r, i)}
+            {trDocCell(r)}
             {/* Per-session budget overrides are NOT here. Two more columns took the
                 row to nine cells against a seven-column grid, so Deck and ✕ wrapped onto
                 a line of their own and the sheet stopped reading as a sheet. They are a
@@ -4372,7 +4431,8 @@ function CurriculumDashboard({ course, rows, setRows, onSave, onDelete, onInsert
       <span className="hint">
         Each takeaway line becomes an agenda item, a section and a Key Takeaway
         <b> verbatim</b>; everything after the colon is treated as a promise the session
-        must teach. A session with no deck — no link and no uploaded file — still needs a TR doc.
+        must teach. A session with no deck and no TR doc still needs a TR doc; upload
+        either one and the session is remembered as taught and leaves the Generate list.
       </span>
 
     </section>

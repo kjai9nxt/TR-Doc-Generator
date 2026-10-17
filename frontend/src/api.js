@@ -317,6 +317,33 @@ export const api = {
 
   // Fetches ONLY decks that are new or whose link changed. force=true re-checks decks
   // whose link is unchanged — the only way to pick up an edit to the slides themselves.
+  // A session's finished TR doc (.docx). Same multipart shape as uploadDeckFile; the
+  // doc becomes the session's course memory and the session leaves the generate list.
+  uploadTrDoc: async (course, session_no, file) => {
+    await freshToken()
+    const fd = new FormData()
+    fd.append('file', file, file.name)
+    if (course) fd.append('course', course)
+    let res
+    try {
+      res = await fetch(`/api/curriculum/${session_no}/tr-doc`, {
+        method: 'POST', body: fd,
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      })
+    } catch (e) {
+      throw new Error('Cannot reach the backend API to upload the TR doc.')
+    }
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      const detail = data.detail || data
+      throw new Error((typeof detail === 'string' ? detail : detail.message)
+        || `Upload failed (HTTP ${res.status}).`)
+    }
+    return data
+  },
+  detachTrDoc: (session_no, course) =>
+    req(`/curriculum/${session_no}/tr-doc${qs({ course })}`, { method: 'DELETE' }),
+
   ingestDecks: (force = false, sessions = null, course = undefined) =>
     req('/curriculum/ingest', { method: 'POST', body: JSON.stringify({ force, sessions, course }) }),
   job: (id) => req(`/jobs/${id}`),

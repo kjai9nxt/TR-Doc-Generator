@@ -1025,14 +1025,14 @@ a.download:hover, button.download:hover:not(:disabled) { background: var(--dl-ho
    vertically-centred session number beside it reads as misaligned. */
 .sheetlike .currow {
   align-items: start;
-  /* SEVEN cells, seven columns — they must match. Adding two override columns without
+  /* EIGHT cells, eight columns — they must match. Adding two override columns without
      widening this wrapped Deck and ✕ onto a line of their own and broke the table. */
   grid-template-columns: 72px minmax(110px, 0.8fr) minmax(150px, 1.1fr)
-                         minmax(280px, 2.6fr) minmax(140px, 1fr) 92px 30px;
+                         minmax(260px, 2.4fr) minmax(140px, 1fr) minmax(130px, 0.9fr) 92px 30px;
 }
 /* A wide table scrolls INSIDE itself rather than pushing the page sideways. */
 .curtable { overflow-x: auto; }
-.sheetlike .currow { min-width: 900px; }
+.sheetlike .currow { min-width: 1040px; }
 .sheetlike .curhead { align-items: center; }
 .sheetlike textarea { resize: vertical; font-size: 12.5px; line-height: 1.5;
                       padding: 8px 10px; min-height: 38px; }
@@ -1071,8 +1071,9 @@ a.download:hover, button.download:hover:not(:disabled) { background: var(--dl-ho
      what it is. */
   .sheetlike .curhead { display: none; }
   .sheetlike .currow input.c-no { max-width: none; }
-  .sheetlike .c-deck { grid-area: 5 / 1; padding-top: 0; }
-  .sheetlike .c-act { grid-area: 5 / 2; justify-content: flex-start; padding-top: 0; }
+  .sheetlike .c-tr   { grid-area: 5 / 1 / 6 / -1; }
+  .sheetlike .c-deck { grid-area: 6 / 1; padding-top: 0; }
+  .sheetlike .c-act { grid-area: 6 / 2; justify-content: flex-start; padding-top: 0; }
 }
 .currow:first-child { border-top: none; }
 /* Once the row has stacked it is a card, so it gets a card's hover — at seven inline

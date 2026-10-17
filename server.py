@@ -1898,6 +1898,36 @@ async def upload_deck_file(session_no: int, file: UploadFile = File(...),
     return {"ok": True, "upload": result, **_curriculum_reply(course)}
 
 
+@app.post("/api/curriculum/{session_no}/tr-doc")
+async def upload_tr_doc(session_no: int, file: UploadFile = File(...),
+                        course: str | None = Form(None),
+                        user: dict = Depends(current_user)):
+    """Attach a session's finished TR doc (.docx). Read at once, filed as the session's
+    course memory, and the session leaves the generate list — the same outcome as its
+    deck being extracted, from the better record. See src/trdoc_ingest.py."""
+    course = _require_course(user, course)
+    _claim_course(user, course)
+    data = await file.read()
+    try:
+        result = sync.ingest_trdoc(course, session_no, file.filename or "tr_doc.docx", data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail={"message": str(e)})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"message":
+            f"The TR doc could not be read: {e}"})
+    return {"ok": True, "upload": result, **_curriculum_reply(course)}
+
+
+@app.delete("/api/curriculum/{session_no}/tr-doc")
+def detach_tr_doc(session_no: int, course: str | None = None,
+                  user: dict = Depends(current_user)):
+    """Detach a session's TR doc. Its deck (if any) goes back to pending."""
+    course = _require_course(user, course)
+    _claim_course(user, course)
+    result = sync.detach_trdoc(course, session_no)
+    return {"ok": True, "detached": result, **_curriculum_reply(course)}
+
+
 @app.post("/api/curriculum/ingest")
 def ingest_curriculum_decks(body: IngestBody, user: dict = Depends(current_user)):
     """Fetch the decks this course still needs — and only those."""
