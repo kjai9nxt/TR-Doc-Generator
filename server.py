@@ -3581,6 +3581,9 @@ def _chunk_length_hits(fragment: dict) -> list[dict]:
 
 def _length_fix_instruction(hits: list[dict]) -> str:
     """The trim order for _chunk_length_hits, quoting every over-long line in full."""
+    tgt_s = int(config.harness()["constraints"].get("content", {})
+                .get("target_sentences_per_text_block") or 2)
+    norm_s = f"1-{tgt_s} sentences" if tgt_s > 1 else "one sentence"
     lines = []
     for h in hits[:10]:
         if h["kind"] == "bullet":
@@ -3589,15 +3592,15 @@ def _length_fix_instruction(hits: list[dict]) -> str:
         else:
             lines.append(f"  Slide {h['slide']}, paragraph ({h['words']} words, "
                          f"{h['sentences']} sentences; the norm is {h['limit']} words / "
-                         f"2-3 sentences): \"{h['text']}\"")
+                         f"{norm_s}): \"{h['text']}\"")
     return (
         "LENGTH TO FIX. These lines are longer than a TR doc allows:\n"
         + "\n".join(lines)
-        + "\n\nFor each BULLET: say it in at most the stated number of words — one idea, "
-          "one plain sentence. If it really holds two ideas, split it into two bullets "
+        + "\n\nFor each BULLET: say it in at most the stated number of words — one fact, "
+          "a short sentence or a `Term: fact` line. If it really holds two ideas, split it into two bullets "
           "in the same list.\n"
-          "For each PARAGRAPH: cut it to 2-3 short sentences (two or three lines) that "
-          "still explain what this is and why it matters. Drop qualifiers, repeated "
+          f"For each PARAGRAPH: cut it to {norm_s} that still explain what this is "
+          "and why it matters. Drop qualifiers, repeated "
           "framing and anything the bullets or table on the slide already carry; a "
           "detail worth keeping that does not fit goes into the slide's bullets as its "
           "own point, not into a longer sentence.\n"

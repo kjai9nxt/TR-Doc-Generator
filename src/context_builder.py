@@ -947,7 +947,7 @@ def hands_on_instruction(course: str, cur: Session, *, slides_used: int = 0,
         "\nNO `visual_guidance` AND NO `speaker_notes` ON THESE SLIDES — omit both fields "
         "entirely. The instructor demonstrates the practical live; the slide carries only "
         "its content blocks.\n" if no_notes else
-        "`speaker_notes` (2-4 sentences): what to show in the live demo at this point, where\n"
+        "`speaker_notes` (2-3 sentences): what to show in the live demo at this point, where\n"
         "learners usually stall, and the interview angle.\n"
         "`visual_guidance`: the screen or diagram to show at that point.\n")
     return (

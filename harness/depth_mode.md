@@ -11,13 +11,13 @@ on every doc — which produced documents nobody could record and nobody wanted 
 
 ## What still binds in this mode
 
-- **The page ceiling applies unchanged** (`constraints.pages.max`, 36 by default — the
+- **The page ceiling applies unchanged** (`constraints.pages.max`, 30 by default — the
   BUDGET block states the figure for this run). There is no mode in which the document
   may run past it. Aim for the target.
 - **Slide ceiling unchanged** (`constraints.slides.max_rich` = 26). Depth is not more
   slides for their own sake.
 - `heading` / `subheading` stay 3-4 words, hard maximum 4.
-- A `content` text block stays 2-3 sentences / ≤ 50 words as the norm, 75 / 4 at most
+- A `content` text block stays 1-2 sentences / ≤ 35 words as the norm, 55 / 3 at most
   and only where the topic demands it. Depth goes into bullets, tables and
   better-chosen slides — never into longer paragraphs everywhere.
 - **The prose/bullet mix is unchanged**: at least 60% of slides carry a `text` block,
@@ -27,7 +27,7 @@ on every doc — which produced documents nobody could record and nobody wanted 
 - **The agenda is still the scope**: every slide maps to a sub-concept in
   `coverage_map`. Depth means covering the takeaways more thoroughly, never widening
   to adjacent topics.
-- `speaker_notes` stay ≤ 4 sentences: the teaching cue, how to explain it, the exam hook.
+- `speaker_notes` stay ≤ 3 sentences: the teaching cue, how to explain it, the exam hook.
 - **The analogy rule is unchanged and exact:** an analogy on `concept_intro` slides
   only, and no more than half the slides may be `concept_intro`. Depth never means
   more analogies.
@@ -46,8 +46,8 @@ on every doc — which produced documents nobody could record and nobody wanted 
    PAGE half of HARD RULE 1 still applies.
 
 2. **Tables may be fuller.** The 8-word table-cell cap is lifted. Bullets keep their
-   5-22 word range (they are gated in every mode): a bullet is a full sentence that
-   explains, never a label. Still no filler and no repetition — a longer line must carry
+   5-16 word range (they are gated in every mode): one fact per bullet, never a
+   bare label. Still no filler and no repetition — a longer line must carry
    more information, not more words.
 
 3. **Define, then explain (broad → specific).** For each core concept give the precise

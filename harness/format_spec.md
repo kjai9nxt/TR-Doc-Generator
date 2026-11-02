@@ -148,7 +148,7 @@ evidence of, and its explanation names what is visible in it. It may use only wh
 handed a definition cold: (1) the idea in everyday words — what it is and the problem
 it solves, as a friend would say it; (2) the precise definition, with the term named and
 any acronym expanded as `Full Name (ACR)`; (3) why it matters — what goes wrong without
-it, or where the learner will meet it. Two or three short sentences, ≤ 50 words as
+it, or where the learner will meet it. One or two short sentences, ≤ 35 words as
 the norm (longer only if the concept truly needs it); the bullets then carry
 the parts, steps or kinds. The same order holds for `speaker_notes` on that slide: say
 the everyday version first, then the exact term.
@@ -208,7 +208,7 @@ more than half the slides may be `concept_intro`.
 
 ## Length ceiling
 The rendered document must be within the page ceiling the BUDGET block states
-(**36 pages by default, target ~32**; images excluded), estimated deterministically
+(**30 pages by default, target ~26**; images excluded), estimated deterministically
 from this layout by `graders/page_grader.py`, and independently recordable within the
 stated minutes (40 by default) — which at ~1.5 minutes per slide means **≤ 26 slides** by
 default (a course may set more, and its minute and page budgets grow with it). Over either ceiling
@@ -239,17 +239,18 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
 
 ## Per-slide content rules
 - **Mix prose and bullets — a document of nothing but bullets is a defect.**
-  - `content` text blocks (short paragraphs): **2-3 sentences, ≤ 50 words — two or
-    three lines — as the norm.** They EXPLAIN in plain language — what this is, why
+  - `content` text blocks (short paragraphs): **1-2 sentences, ≤ 35 words — as the
+    norm.** They EXPLAIN in plain language — what this is, why
     it exists, how it connects to the slide before — in as few words as carry the
     whole meaning. Two or three short related points belong here as sentences, not as
     a bullet list. A paragraph may run longer ONLY where the topic demands it, up to
-    the hard ceiling of **75 words / 4 sentences**; past that is a hard failure, and so
+    the hard ceiling of **55 words / 3 sentences**; past that is a hard failure, and so
     is a document where more than one paragraph in five exceeds the norm.
   - `bullets`: **minimum 3 items**, parallel and substantial (types, steps, causes,
-    guarantees, trade-offs), **each a full sentence of 5-22 words** that says what the
-    thing is or does and why it matters. A 2-3 word bullet is a label and a hard
-    failure; a 25-word bullet is a paragraph and a hard failure. A one- or two-item
+    guarantees, trade-offs), **each 5-16 words (aim 8-12) carrying ONE fact** — a short sentence
+    or a `Term: fact` line. A 2-3 word bullet is a label and a hard failure; a
+    17-word bullet is a paragraph and a hard failure; a bullet stacking name +
+    mechanism + example + use-case should be two bullets or a table row. A one- or two-item
     list is a sentence somebody bulleted — write the sentence.
   - **At least 60% of slides must contain a `text` block.** A slide that opens
     straight into a list, with nothing saying what the list is, fails this.
@@ -263,7 +264,7 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
   thing twice. The same holds for a table and the bullets beside it, and for
   `speaker_notes` versus the slide body. One carrier per piece of information —
   the page ceiling is fixed, so a repeated line costs a line of coverage.
-- `speaker_notes`: **≤ 4 sentences** — the teaching cue, how to explain it in plain
+- `speaker_notes`: **≤ 3 sentences** — the teaching cue, how to explain it in plain
   words (and what to point at on a screenshot, if there is one), one exam/interview hook.
 - `analogy`: on a `concept_intro` slide only; ends with an explicit tie-back naming the
   concept ("… — just as <how the concept works>"), and matches the concept structurally.

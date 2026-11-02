@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.70"
+  version: "1.71"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1712,6 +1712,17 @@ meta:
               stripped + gated), and the hands-on takes its OWN slides on top of the
               session's slide count — outside the slide, page and recording budgets
               (hands_on.extra_slides)."
+    - "1.71 — BULLETS AND PARAGRAPHS BACK TO THE SESSION 1/3 SHAPE. Reviewer: S6 bullets and
+              paragraphs 'bit too lengthy'; S1 and S3 'look fine'. Measured on the
+              downloaded docs: S1/S3 bullets 8-9 words avg, paragraphs 24-26 words, ~3.7k
+              words total; S5/S6/S7 (after 1.63) bullets 14-16, paragraphs 33-36 with 15-24
+              over 50 words, ~5.3k words (+40%). 1.63 overshot the 'no 2-3 word labels'
+              fix by demanding a FULL SENTENCE per bullet, and the model packed name + fact
+              + example + use-case into each one. Now: bullets 5-16 words, aim 8-12, one
+              fact each, the S1 'Term: fact' form allowed (a bare label still fails);
+              paragraphs 1-2 sentences / ~35 words as the norm, 55 / 3 ceiling;
+              speaker_notes max 3 sentences; pages 36/32 -> 30/26 (per-slide word target
+              ~143 -> ~115)."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -1850,8 +1861,11 @@ constraints:
     # unchanged; the pages are what fuller slides cost, and they are what the
     # reviewer asked for. When a course sets its own slide ceiling the page ceiling
     # follows it at this same pages-per-slide rate (src/budgets.py).
-    max: 36                         # HARD ceiling — a longer doc FAILS the run
-    target: 32                      # aim here, so a revision round has room to work
+    # 1.71: 36/32 -> 30/26. The 1.63 docs ran ~40% longer than S1/S3, which the
+    # reviewer called fine; the per-slide word target (derived from this) drops
+    # from ~143 to ~115 words.
+    max: 30                         # HARD ceiling — a longer doc FAILS the run
+    target: 26                      # aim here, so a revision round has room to work
     # MEASURED, not assumed: median words per rendered page across every doc generated
     # so far (111,104,128,117,216,152,136 -> median 122). Used only to turn the page
     # budget into a per-slide WORD figure the model can act on — "keep this slide under
@@ -1985,10 +1999,12 @@ constraints:
     # and a document-wide gate on HOW OFTEN the norm is exceeded: more than
     # max_share_over_target of the text blocks running past the target is a document
     # that has drifted long, not a topic that needed room.
-    target_words_per_text_block: 50
-    target_sentences_per_text_block: 3
-    max_words_per_text_block: 75
-    max_sentences_per_text_block: 4
+    # 1.71: 50/3 -> 35/2 and 75/4 -> 55/3. Reviewer on S6 (avg 33 words, 18 paragraphs
+    # over 50): "bit too lengthy"; S1/S3 (avg 24-26 words) "look fine".
+    target_words_per_text_block: 35
+    target_sentences_per_text_block: 2
+    max_words_per_text_block: 55
+    max_sentences_per_text_block: 3
     max_share_over_target: 0.2
     # ---- BULLETS ARE SENTENCES, NOT LABELS (1.63) ---------------------------------
     # A bullet reading "Resource pooling" teaches nothing; "Resource pooling means one
@@ -1996,7 +2012,9 @@ constraints:
     # each one needs it" does. Hard floor and hard ceiling, both gated: below the floor
     # is a label, above the ceiling is a paragraph that should have been one.
     min_words_per_bullet: 5
-    max_words_per_bullet: 22        # 1.67: 28 -> 22 — a complete sentence, no padding
+    # 1.71: 22 -> 16. S6 averaged 16 words a bullet; S1/S3 (approved) 8-9. One fact per
+    # bullet; "Term: fact" is a valid bullet, a bare term is not.
+    max_words_per_bullet: 16
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
     # Verbatim cell matches were all the table rule ever caught, and a bullet that
@@ -2163,7 +2181,7 @@ constraints:
     # sentences could not carry "how to walk through this slide" plus the exam hook.
     # One teaching cue, how to explain it in plain words, one exam/interview hook, and
     # (where a screenshot is on the slide) what to point at. Nothing else.
-    max_sentences: 4
+    max_sentences: 3                # 1.71: 4 -> 3 (S1/S3 notes ran two sentences)
   analogy:
     # WHERE an analogy belongs. An analogy buys ONE thing: it makes an unfamiliar
     # concept graspable the first time it is met. Once the concept is on the table, a

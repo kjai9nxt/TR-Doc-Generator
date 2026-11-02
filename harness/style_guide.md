@@ -39,12 +39,15 @@ read by someone meeting the topic for the first time, so every slide is written 
   hardware is shared, …", "That metering is what makes …"), so the section reads as
   one explanation and not as a stack of unrelated cards. Within a section: what it is →
   why it exists → how it works → where it is used → what it costs.
-- **Bullets are sentences that teach, never labels.** A bullet is 5-22 words and says
-  what the thing is or does and why it matters. "Resource pooling" is a heading;
-  "Resource pooling means one provider's hardware is shared by many customers, with
-  capacity handed to each one as it is needed" is a bullet. Both bounds are gated.
+- **Bullets are short, scannable teaching points — never bare labels.** A bullet is
+  5-16 words (aim 8-12) and carries ONE fact. "Resource pooling" is a heading;
+  "Resource pooling: one provider's hardware shared by many customers" is a bullet,
+  and so is "Each virtual machine runs its own OS, isolated from others". The
+  `Term: fact` form is welcome. Do not stack a name, a mechanism, an example and a
+  use-case into one bullet — give the extra fact its own bullet, or put it in a
+  table. Both bounds are gated.
 - **Concise, not long.** Every sentence earns its place: the fewest words that still
-  carry the whole meaning, in plain language. A paragraph is two or three lines — it
+  carry the whole meaning, in plain language. A paragraph is one or two sentences — it
   frames and explains; it never becomes an essay. Longer only where the topic needs
   it, not as a habit. Cutting the reason, the example or the definition is a defect;
   cutting padding is the job.
@@ -53,7 +56,7 @@ read by someone meeting the topic for the first time, so every slide is written 
   carries a proper, specific title.
 
 ## Length (HARD — two ceilings, and what to cut)
-- The rendered document must be within its **page ceiling (36 by default, aim ~32;
+- The rendered document must be within its **page ceiling (30 by default, aim ~26;
   screenshots are not counted)** *and* recordable within its **minute ceiling (40 by
   default)** — the BUDGET block at the end of the prompt states this run's numbers. These
   are different limits and they are consumed differently:
@@ -131,16 +134,16 @@ The same rule holds between a table and the bullets beside it, and between
 ## Line lengths (HARD — gated both ways)
 A TR doc is a teaching reference the instructor records from and a learner can read
 alone. Every line is complete enough to teach and short enough to read at a glance:
-- **Bullets: 5-22 words each**, one idea per bullet, written as a full sentence. Under
-  5 words is a label and fails; over 22 is a paragraph and fails. If a bullet needs a
-  second idea, make it a second bullet.
-- **`content` text blocks: 2-3 FULL sentences, about 30-50 words (two or three lines)
-  — the norm. Not a one-liner either: a single clipped sentence does not explain.**
+- **Bullets: 5-16 words each (aim 8-12)**, one fact per bullet — a short sentence or
+  a `Term: fact` line. Under 5 words is a label and fails; over 16 is a paragraph and
+  fails. If a bullet needs a second fact, make it a second bullet.
+- **`content` text blocks: 1-2 sentences, about 20-35 words — the norm.** Enough to
+  frame the slide: what this is and why it matters.
   Enough to explain — what this is, why it exists, how it follows from the slide
   before — in the fewest clear words. **Go beyond only where the topic demands it**
   (a definition that cannot be split, a mechanism with a necessary caveat), up to the
-  hard ceiling of 75 words / 4 sentences — and on at most one paragraph in five across
-  the document. Everywhere else, two or three lines.
+  hard ceiling of 55 words / 3 sentences — and on at most one paragraph in five across
+  the document. Everywhere else, one or two sentences.
   This cap holds in depth mode too. The paragraph explains; the bullets and tables carry
   the steps, values, conditions and trade-offs it does not state.
 - **No redundancy on a slide.** Do not restate the lead-in sentence in the bullets
@@ -160,13 +163,13 @@ alone. Every line is complete enough to teach and short enough to read at a glan
   protocol which basically guarantees that data arrives in order."
 
 ## Density (this drives the PAGE budget)
-- A slide is recorded in about **1.5 minutes**. Aim for ~120-150 words of spoken
+- A slide is recorded in about **1.5 minutes**. Aim for ~100-120 words of spoken
   content (`content` + `analogy` + `speaker_notes`) — a clear, well-explained slide
-  written tightly, neither thin nor padded. If a slide clearly needs more than that, split it into two slides rather
+  written tightly, scannable rather than dense. If a slide clearly needs more than that, split it into two slides rather
   than cramming, up to the slide ceiling.
 - `content` blocks: a short framing paragraph, then bullets or a table for the
   detail. A bullet = one beat; a paragraph = the thread between the beats.
-- `speaker_notes`: **2-4 sentences, hard maximum 4** — the core teaching cue, how to
+- `speaker_notes`: **2-3 sentences, hard maximum 3** — the core teaching cue, how to
   explain it in plain words (the everyday phrasing or example to say aloud), what to
   point at if the slide carries a screenshot, and one exam/interview hook. Do NOT
   restate the slide body, do NOT write "close by…", do NOT write "tie back to the

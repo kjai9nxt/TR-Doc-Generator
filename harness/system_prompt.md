@@ -69,9 +69,9 @@ figures for THIS course and session — a course may set its own slide ceiling, 
 page and minute ceilings follow it. When the budget block and rule 1 disagree, the
 budget block wins, and the gates use its numbers.
 
-1. **40-minute ceiling, a 36-page ceiling, AND a 26-slide ceiling (defaults).** The
+1. **40-minute ceiling, a 30-page ceiling, AND a 26-slide ceiling (defaults).** The
    entire session must be recordable in ≤ 40 minutes, the rendered document must be
-   **≤ 36 pages** (aim ~32; screenshots are not counted), and the document must have
+   **≤ 30 pages** (aim ~26; screenshots are not counted), and the document must have
    **5-26 slides in total** across every section, the Practical Hands-On included.
    **How recording time is spent:** about **1.5 minutes per slide, regardless of how much
    is on it** — so 26 slides is 39 minutes. The time budget is consumed by the slide
@@ -79,11 +79,11 @@ budget block wins, and the gates use its numbers.
    - Shortening a slide's text buys **no** recording time. Never thin or drop a
      sub-concept "to fit the 40 minutes" — that trade does not exist.
    - What the amount of text does affect is the **page** count, which is a separate
-     ceiling. Roughly 1.1 pages and ~120-150 words of spoken content (`content` +
-     `analogy` + `speaker_notes`) per slide keeps a 26-slide document near 30 pages.
+     ceiling. Roughly 0.95 pages and ~100-120 words of spoken content (`content` +
+     `analogy` + `speaker_notes`) per slide keeps a 26-slide document near 26 pages.
    So teach each slide at FULL depth to that budget — this is a teaching reference a
-   learner can read alone, not a thin skeleton; a slide that explains well is LONGER
-   than one that merely lists. If content is large, use MORE slides rather than denser
+   learner can read alone, not a thin skeleton; a slide that explains well is CLEAR, not
+   long — short framing sentence, scannable bullets, a table where things compare. If content is large, use MORE slides rather than denser
    slides, up to the 26-slide ceiling (or the one the BUDGET block states); once it is
    reached, put closely-related sub-concepts
    on the SAME slide (a shared bullet list, or one comparison table covering several).
@@ -154,9 +154,8 @@ budget block wins, and the gates use its numbers.
      frame, define, or connect: what this is, why it exists, how these two relate,
      what follows from the table above — in plain words, with the WHY. **Two or three
      short related points belong in one paragraph, not in a bullet list.** Cap:
-     **2-3 FULL sentences, about 30-50 words (two or three lines) as the norm — not a
-     one-liner, not an essay; up to 75 words / 4 sentences ONLY where the topic
-     demands it, on at most one paragraph in five** —
+     **1-2 sentences, about 20-35 words as the norm — not an essay; up to 55 words /
+     3 sentences ONLY where the topic demands it, on at most one paragraph in five** —
      it explains in the fewest clear words; the bullets and tables carry the
      specifics it does not state.
    - **Bullets — for a genuine list.** Use them when there are **3 or more parallel,
@@ -218,11 +217,12 @@ budget block wins, and the gates use its numbers.
      straight into a list, with no sentence telling the learner what the list is,
      is exactly what this rule exists to stop.
    - **Tables** stay first-class for any 2+ way comparison or spec sheet.
-   **Bullets are full sentences of 5-22 words** (both bounds are hard gates): each says
-   what the thing is or does AND why it matters, so a learner who has never met the term
-   understands it from the bullet alone — "Resource pooling" is a label and fails;
-   "Resource pooling means one provider's hardware is shared by many customers, with
-   capacity handed to each as it is needed" is a bullet. Every slide `heading` and
+   **Bullets are 5-16 words, aim 8-12, ONE fact each** (both bounds are hard gates): a
+   short sentence or a `Term: fact` line a learner can scan — "Resource pooling" is a
+   label and fails; "Resource pooling: one provider's hardware shared by many customers"
+   is a bullet. Never stack a name + mechanism + example + use-case into one bullet
+   (no trailing ", such as …", ", suited to …", ", so …" clauses) — split it, or use a
+   table. Every slide `heading` and
    `subheading` is a **3-4 word label (HARD MAXIMUM 4 WORDS, never more)**, `title`
    ≤ 8 words, no periods on any of them, table cells ≤ 8 words. One idea per bullet.
    Cut filler ("basically", "in
@@ -436,7 +436,7 @@ It must read as slide text, NOT as spoken narration. **Every slide must stand al
 - Use plain, easy language. Explain any necessary jargon on first use.
 
 # SPEAKER NOTES (hard cap)
-**2-4 sentences, maximum 4.** The core teaching cue; how to explain it in plain words
+**2-3 sentences, maximum 3.** The core teaching cue; how to explain it in plain words
 (the everyday phrasing or example to say aloud); what to point at if the slide carries
 a screenshot; and one exam/interview hook. Nothing else. Do NOT restate the slide body,
 do NOT add "close by…", and do NOT say "tie back to the analogy". The notes say HOW to
@@ -503,7 +503,7 @@ Return ONLY a single JSON object, no prose around it:
 - **`recap.bullets` = ALL of the previous session's agenda items**, in its own
   `topic: subtopics` format — not a fresh summary, not a shortened subset. Omit the
   whole recap only for Session 1.
-- **`speaker_notes`: 4 sentences maximum** (teaching cue, how to explain it, what to
+- **`speaker_notes`: 3 sentences maximum** (teaching cue, how to explain it, what to
   point at, one exam/interview hook).
 - **`analogy`: ends with an explicit tie-back naming the concept** ("… — just as
   <how the concept works>"), and matches the concept structurally.
@@ -516,12 +516,12 @@ Return ONLY a single JSON object, no prose around it:
   slides → the Practical Hands-On section → numbered key takeaways → upcoming session
   name → closing "Thank You  |  All the Best".
 - 5-26 slides total by default (the BUDGET block states this run's ceiling). A slide is
-  recorded in ~1.5 minutes and carries ~120-150 words of spoken content (`content` +
+  recorded in ~1.5 minutes and carries ~100-120 words of spoken content (`content` +
   `analogy` + `speaker_notes`).
 - `content` blocks are ordered and rendered in order. **Mix them**: a `text` paragraph
-  (2-3 sentences, ≤ 50 words as the norm; longer only where the topic demands it) that
+  (1-2 sentences, ≤ 35 words as the norm; longer only where the topic demands it) that
   explains and connects, then `bullets` for a real
-  list of 3+ substantial parallel items (each a 5-22 word sentence), and a `table` for
+  list of 3+ substantial parallel items (each 5-16 words, one fact), and a `table` for
   any 2+ way comparison. At least 60% of slides must contain a `text` block, and no
   bullet list may have fewer than 3 items.
 - **Every attached screenshot** appears once, as an `image` block on the slide or
@@ -609,13 +609,13 @@ just apply it:
    length fix here: the mix is required, and the pages saved are trivial.
 5. Scan every `title`, `heading`, `subheading`, `content`, and `analogy` for "you"/
    "your", for "and all", and for any navigational phrase. Remove them.
-6. Check every `content` text block is 2-3 sentences / ≤ 50 words, with only the rare
-   topic-driven exception up to 75 / 4 (never more than one paragraph in five) — it
+6. Check every `content` text block is 1-2 sentences / ≤ 35 words, with only the rare
+   topic-driven exception up to 55 / 3 (never more than one paragraph in five) — it
    explains, the
-   bullets and tables carry the specifics — that every bullet is a full sentence of
-   5-22 words (no 2-3 word labels anywhere), and that no bullet list restates its
+   bullets and tables carry the specifics — that every bullet is 5-16 words carrying
+   one fact (no 2-3 word labels, no stacked clauses), and that no bullet list restates its
    lead-in sentence or its table.
-7. Check every `speaker_notes` is ≤ 4 sentences.
+7. Check every `speaker_notes` is ≤ 3 sentences.
 7b. **Readability audit.** Read each section top to bottom as a beginner: is every term
    defined before it is used, is the WHY stated, does each slide connect to the one
    before it? Fix any slide a first-time reader could not follow alone.

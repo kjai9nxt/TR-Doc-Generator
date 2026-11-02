@@ -60,7 +60,13 @@ check("finds the over-long bullet and the over-cap paragraph",
       kinds == ["bullet", "paragraph"], str(hits))
 check("a clean section has none",
       not server._chunk_length_hits(frag(OK_PARA, [OK_BULLET] * 3)))
-mid = " ".join(["A packet lost on one stream in SCTP never blocks the other streams."] * 4)  # 56w, 4 sentences
+# over the norm (words) but under the ceiling (words AND sentences), whatever the caps are
+_c = server.config.harness()["constraints"]["content"]
+_s = "A packet lost on one stream in SCTP never blocks the other streams."
+_k = max(1, min(int(_c["max_sentences_per_text_block"]),
+                int(_c["max_words_per_text_block"]) // len(_s.split())))
+mid = " ".join([_s] * _k)
+assert int(_c["target_words_per_text_block"]) < len(mid.split()), "fixture must exceed the norm"
 check("one paragraph over the norm in five is allowed (topic needs it)",
       not server._chunk_length_hits(frag(mid, [OK_BULLET] * 3, [OK_PARA] * 4)))
 over = server._chunk_length_hits(frag(mid, [OK_BULLET] * 3, [mid, OK_PARA]))
@@ -68,9 +74,10 @@ check("…but over the share, the longest are trimmed back to it",
       len(over) == 1 and over[0]["kind"] == "paragraph", str(over))
 instr = server._length_fix_instruction(hits)
 check("the fix prompt quotes the bullet in full and its limit",
-      LONG_BULLET in instr and "max 22" in instr, instr[:300])
-check("…and the paragraph, with the 2-3 sentence norm",
-      "2-3 sentences" in instr and "SCTP carries" in instr)
+      LONG_BULLET in instr and f"max {_c['max_words_per_bullet']}" in instr, instr[:300])
+_ns = int(_c["target_sentences_per_text_block"])
+check("…and the paragraph, with the harness's sentence norm",
+      f"1-{_ns} sentences" in instr and "SCTP carries" in instr)
 
 print("\n== the pre-review patch ==")
 gid = "test-length-fix"
