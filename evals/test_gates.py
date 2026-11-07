@@ -49,7 +49,9 @@ GRAND = ["Agenda has 4 items", "was reworded. Expected", "and key takeaway",
          "item(s) (min 3)", "must start BROAD",
          "must carry key takeaway", "section(s) for 7 key takeaways",
          # 1.63: the hands-on section and the 5-28 word bullet range (golden predates both)
-         "Missing the PRACTICAL HANDS-ON section", "that is a paragraph"]
+         "Missing the PRACTICAL HANDS-ON section", "that is a paragraph",
+         # 1.72: one clause per bullet (golden predates it)
+         "chains two statements"]
 
 def gate(doc, needle, *, want=True, label=None):
     """Assert `needle` appears (or not) in the non-grandfathered failures."""

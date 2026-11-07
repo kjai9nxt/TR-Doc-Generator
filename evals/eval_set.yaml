@@ -55,6 +55,7 @@ golden:
     # have positive tests in evals/test_gates.py.
     - "Missing the PRACTICAL HANDS-ON section"
     - "that is a paragraph"
+    - "chains two statements"
 
 # Live generation cases — exercise the full pipeline on real sessions.
 generate_cases:

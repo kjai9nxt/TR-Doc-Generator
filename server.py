@@ -3549,14 +3549,17 @@ def _chunk_length_hits(fragment: dict) -> list[dict]:
     share = float(c.get("max_share_over_target") or 0)
     hits, over_norm, n_paras = [], [], 0
     section = (fragment or {}).get("section") or {}
+    # the hands-on step list has its own one-line cap (hands_on.max_step_words)
+    is_ho = str(section.get("kind") or "").strip().lower() == "hands_on"
     for s in section.get("slides") or []:
         for b in s.get("content") or []:
             if not isinstance(b, dict):
                 continue
-            if b.get("type") == "bullets" and max_bw:
+            if b.get("type") == "bullets" and max_bw and not is_ho:
                 for it in b.get("items") or []:
                     n = _word_count(it)
-                    if n > max_bw:
+                    if n > max_bw or (c.get("single_clause_bullets") and (
+                            _sentence_count(it) > 1 or ";" in str(it))):
                         hits.append({"slide": s.get("n", "?"), "kind": "bullet",
                                      "text": str(it), "words": n, "limit": max_bw})
             elif b.get("type") == "text" and b.get("text"):
@@ -3596,9 +3599,13 @@ def _length_fix_instruction(hits: list[dict]) -> str:
     return (
         "LENGTH TO FIX. These lines are longer than a TR doc allows:\n"
         + "\n".join(lines)
-        + "\n\nFor each BULLET: say it in at most the stated number of words — one fact, "
+        + "\n\nFor each BULLET: say it in at most the stated number of words — one exact fact in ONE clause (no second sentence, no ';'), "
           "a short sentence or a `Term: fact` line. If it really holds two ideas, split it into two bullets "
-          "in the same list.\n"
+          "in the same list. Cut filler words ONLY — every fact, term, number and example "
+          "the bullet carried must still be on the slide (its own bullet, the paragraph or "
+          "a table row); a shorter slide that teaches less is a failure, not a fix. Nor may the slide grow: "
+          "the split bullets together use FEWER words than the original, and no slide is "
+          "added.\n"
           f"For each PARAGRAPH: cut it to {norm_s} that still explain what this is "
           "and why it matters. Drop qualifiers, repeated "
           "framing and anything the bullets or table on the slide already carry; a "

@@ -1131,7 +1131,13 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
     min_bw = int(c_cfg.get("min_words_per_bullet") or 0)
     max_bw = int(c_cfg.get("max_words_per_bullet") or 0)
     if min_bw or max_bw:
+        # 1.72: the hands-on step list has its own one-line cap (hands_on.max_step_words)
+        # and numbered steps ("1. Install …"); the teaching-bullet caps do not apply.
+        _ho = hands_on_section(doc) or {}
+        _ho_ids = {id(sl) for sl in (_ho.get("slides") or [])}
         for s in slides:
+            if id(s) in _ho_ids:
+                continue
             tag = f"Slide {s.get('n', '?')}"
             for li, items in enumerate(_bullet_lists(s)):
                 for bi, it in enumerate(items):
@@ -1148,7 +1154,15 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                         fails.append(
                             f"{tag}: bullet {li + 1}.{bi + 1} is {n} words (max {max_bw}) "
                             f"— that is a paragraph. Split it into two bullets, or move "
-                            f"the explanation into the slide's text block.")
+                            f"the explanation into the slide's text block — cut filler "
+                            f"words, never a fact.")
+                    elif c_cfg.get("single_clause_bullets") and (
+                            _sentence_count(it) > 1 or ";" in str(it)):
+                        fails.append(
+                            f"{tag}: bullet {li + 1}.{bi + 1} chains two statements "
+                            f"(\"{it}\") — a bullet is ONE exact fact in one clause. "
+                            f"Split it into two bullets — keep both facts; shorter never means less "
+                            f"content.")
 
     _cat(PROFILE)
     # --- A SCREENSHOT IS EXPLAINED ON THE SLIDE THAT SHOWS IT ------------------

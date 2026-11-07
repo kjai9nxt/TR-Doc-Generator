@@ -40,7 +40,7 @@ read by someone meeting the topic for the first time, so every slide is written 
   one explanation and not as a stack of unrelated cards. Within a section: what it is →
   why it exists → how it works → where it is used → what it costs.
 - **Bullets are short, scannable teaching points — never bare labels.** A bullet is
-  5-16 words (aim 8-12) and carries ONE fact. "Resource pooling" is a heading;
+  5-12 words (aim 6-10) and carries ONE exact fact. "Resource pooling" is a heading;
   "Resource pooling: one provider's hardware shared by many customers" is a bullet,
   and so is "Each virtual machine runs its own OS, isolated from others". The
   `Term: fact` form is welcome. Do not stack a name, a mechanism, an example and a
@@ -134,9 +134,19 @@ The same rule holds between a table and the bullets beside it, and between
 ## Line lengths (HARD — gated both ways)
 A TR doc is a teaching reference the instructor records from and a learner can read
 alone. Every line is complete enough to teach and short enough to read at a glance:
-- **Bullets: 5-16 words each (aim 8-12)**, one fact per bullet — a short sentence or
-  a `Term: fact` line. Under 5 words is a label and fails; over 16 is a paragraph and
-  fails. If a bullet needs a second fact, make it a second bullet.
+- **Bullets: 5-12 words each (aim 6-10)** — concise, precise, accurate. One exact
+  fact per bullet, in ONE clause: a short sentence or a `Term: fact` line. Under 5
+  words is a label and fails; over 12 is a sentence that grew too big and fails; a
+  second sentence or a `;` in a bullet fails. Name the exact term, number or
+  behaviour — no vague filler ("various", "helps with", "many things"). If a bullet
+  needs a second fact, make it a second bullet.
+- **Short bullets, FULL content.** Shortening cuts filler words, never facts,
+  terms, numbers or sub-topics. Every fact a long bullet carried survives — as its
+  own bullet, in the slide's paragraph, in a table row, or on another slide. The
+  slide's coverage of its takeaway must be exactly as complete as before.
+- **…and the document does NOT get longer.** A split is word-neutral: the two short
+  bullets together use FEWER words than the long one did (the filler is what goes).
+  Same slide count, same page budget — short and crisp, never extended.
 - **`content` text blocks: 1-2 sentences, about 20-35 words — the norm.** Enough to
   frame the slide: what this is and why it matters.
   Enough to explain — what this is, why it exists, how it follows from the slide

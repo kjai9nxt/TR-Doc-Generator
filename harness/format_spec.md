@@ -247,10 +247,10 @@ including depth mode. `title` keeps the looser ≤ 8-word phrase cap.
     the hard ceiling of **55 words / 3 sentences**; past that is a hard failure, and so
     is a document where more than one paragraph in five exceeds the norm.
   - `bullets`: **minimum 3 items**, parallel and substantial (types, steps, causes,
-    guarantees, trade-offs), **each 5-16 words (aim 8-12) carrying ONE fact** — a short sentence
-    or a `Term: fact` line. A 2-3 word bullet is a label and a hard failure; a
-    17-word bullet is a paragraph and a hard failure; a bullet stacking name +
-    mechanism + example + use-case should be two bullets or a table row. A one- or two-item
+    guarantees, trade-offs), **each 5-12 words (aim 6-10) carrying ONE exact fact in ONE clause** — a
+    short sentence or a `Term: fact` line. A 2-3 word bullet is a label and a hard failure; a
+    13-word bullet, a second sentence or a `;` is a hard failure; a bullet stacking name +
+    mechanism + example + use-case should be two bullets or a table row (both facts kept — never dropped to fit). A one- or two-item
     list is a sentence somebody bulleted — write the sentence.
   - **At least 60% of slides must contain a `text` block.** A slide that opens
     straight into a list, with nothing saying what the list is, fails this.

@@ -217,12 +217,16 @@ budget block wins, and the gates use its numbers.
      straight into a list, with no sentence telling the learner what the list is,
      is exactly what this rule exists to stop.
    - **Tables** stay first-class for any 2+ way comparison or spec sheet.
-   **Bullets are 5-16 words, aim 8-12, ONE fact each** (both bounds are hard gates): a
+   **Bullets are 5-12 words, aim 6-10, ONE exact fact in ONE clause** (both bounds are
+   hard gates; a second sentence or a `;` also fails) — concise, precise, accurate: a
    short sentence or a `Term: fact` line a learner can scan — "Resource pooling" is a
    label and fails; "Resource pooling: one provider's hardware shared by many customers"
    is a bullet. Never stack a name + mechanism + example + use-case into one bullet
    (no trailing ", such as …", ", suited to …", ", so …" clauses) — split it, or use a
-   table. Every slide `heading` and
+   table. **Short never means less content:** cut filler words, never a fact, term,
+   number or sub-topic — each extra fact gets its own bullet, a table row or the
+   paragraph. **And never longer:** a split uses fewer total words than the original
+   (filler goes), no extra slides — the slide and page budgets do not move. Every slide `heading` and
    `subheading` is a **3-4 word label (HARD MAXIMUM 4 WORDS, never more)**, `title`
    ≤ 8 words, no periods on any of them, table cells ≤ 8 words. One idea per bullet.
    Cut filler ("basically", "in
@@ -521,7 +525,7 @@ Return ONLY a single JSON object, no prose around it:
 - `content` blocks are ordered and rendered in order. **Mix them**: a `text` paragraph
   (1-2 sentences, ≤ 35 words as the norm; longer only where the topic demands it) that
   explains and connects, then `bullets` for a real
-  list of 3+ substantial parallel items (each 5-16 words, one fact), and a `table` for
+  list of 3+ substantial parallel items (each 5-12 words, one exact fact), and a `table` for
   any 2+ way comparison. At least 60% of slides must contain a `text` block, and no
   bullet list may have fewer than 3 items.
 - **Every attached screenshot** appears once, as an `image` block on the slide or
@@ -612,8 +616,8 @@ just apply it:
 6. Check every `content` text block is 1-2 sentences / ≤ 35 words, with only the rare
    topic-driven exception up to 55 / 3 (never more than one paragraph in five) — it
    explains, the
-   bullets and tables carry the specifics — that every bullet is 5-16 words carrying
-   one fact (no 2-3 word labels, no stacked clauses), and that no bullet list restates its
+   bullets and tables carry the specifics — that every bullet is 5-12 words carrying
+   one exact fact in one clause (no 2-3 word labels, no stacked clauses), and that no bullet list restates its
    lead-in sentence or its table.
 7. Check every `speaker_notes` is ≤ 3 sentences.
 7b. **Readability audit.** Read each section top to bottom as a beginner: is every term

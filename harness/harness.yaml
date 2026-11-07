@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.71"
+  version: "1.72"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1723,6 +1723,11 @@ meta:
               paragraphs 1-2 sentences / ~35 words as the norm, 55 / 3 ceiling;
               speaker_notes max 3 sentences; pages 36/32 -> 30/26 (per-slide word target
               ~143 -> ~115)."
+    - "1.72 — BULLETS SHORT AND EXACT. Reviewer: bullets must not be 'big big sentences';
+              'keep them concise, precise and accurate'. Bullets 5-12 words (was 16), aim
+              6-10, one exact fact in one clause — no second sentence, no ';' chain
+              (content.single_clause_bullets, gated). Precise = the exact term, number or
+              behaviour, no vague filler ('various', 'many things', 'helps with')."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -2014,7 +2019,12 @@ constraints:
     min_words_per_bullet: 5
     # 1.71: 22 -> 16. S6 averaged 16 words a bullet; S1/S3 (approved) 8-9. One fact per
     # bullet; "Term: fact" is a valid bullet, a bare term is not.
-    max_words_per_bullet: 16
+    # 1.72: 16 -> 12. Reviewer on the 1.71 docs: bullets still read as "big big
+    # sentences" — "keep them concise, precise and accurate". Aim 6-10 words: ONE
+    # exact fact, one clause; a bullet with a second sentence or a ';' fails
+    # (single_clause_bullets).
+    max_words_per_bullet: 12
+    single_clause_bullets: true
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
     # Verbatim cell matches were all the table rule ever caught, and a bullet that

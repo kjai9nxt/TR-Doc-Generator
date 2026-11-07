@@ -152,6 +152,17 @@ d3["sections"][0]["slides"][0]["content"].append(
                                   "another fine bullet of about eight words"]})
 check("a 35-word bullet FAILS as a paragraph",
       any("that is a paragraph" in f for f in fails_of(d3)))
+# 1.72: "concise, precise and accurate" — 13 words is too long, a chained bullet fails
+d4 = with_hands_on(GOLDEN)
+d4["sections"][0]["slides"][0]["content"].append(
+    {"type": "bullets", "items": [
+        "TCP retransmits every lost segment until the receiver finally acknowledges it now",
+        "TCP retransmits lost segments; UDP simply never does",
+        "Resource pooling: one provider's hardware shared by customers"]})
+f4 = fails_of(d4)
+check("a 13-word bullet FAILS (cap 12)", any("is 13 words (max 12)" in f for f in f4))
+check("a ';'-chained bullet FAILS", any("chains two statements" in f and "UDP" in f for f in f4))
+check("a 'Term: fact' bullet passes", not any("Resource pooling" in f for f in f4))
 
 print("\n== paragraphs: 2-3 lines as the norm, longer only where the topic needs it ==")
 _c = config.harness()["constraints"]["content"]
