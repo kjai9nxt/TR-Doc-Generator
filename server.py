@@ -2609,7 +2609,7 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
         if img_bad:
             parts.append(_si.placement_fix_instruction({"mismatches": img_bad}, run_images))
         what = " and ".join(([f"{len(hits)} repeated bullet(s)"] if hits else [])
-                            + ([f"{len(long_hits)} over-long bullet(s)/paragraph(s)"]
+                            + ([f"{len(long_hits)} over-long or meta-worded line(s)"]
                                if long_hits else [])
                             + ([f"brief line(s) {', '.join(to_fix)} not applied"] if to_fix else [])
                             + ([f"{len(img_bad)} misplaced screenshot(s)"] if img_bad else []))
@@ -2656,8 +2656,8 @@ def _gen_one(gid: str, index: int, prior: list[dict], reason: str | None = None)
                              f"restated the paragraph — the paragraph already makes those points.")
         hits = _chunk_repetition_hits(fragment)
     if long_hits:
-        _guided_log(gid, f"⚠ Chunk {index + 1}: {len(long_hits)} line(s) are still over "
-                         f"length — edit or regenerate before approving: "
+        _guided_log(gid, f"⚠ Chunk {index + 1}: {len(long_hits)} line(s) are still over-long or "
+                         f"meta-worded — edit or regenerate before approving: "
                          + "; ".join(f"slide {h['slide']} {h['kind']} ({h['words']}w)"
                                      for h in long_hits[:6]))
     if hits:
@@ -3579,6 +3579,19 @@ def _chunk_length_hits(fragment: dict) -> list[dict]:
         # zero, and the topic that genuinely needs the room is the reason the norm bends.
         keep = max(1, int(share * n_paras))
         hits += sorted(over_norm, key=lambda h: -h["words"])[:len(over_norm) - keep]
+    # 1.73: "instructor should say…", "given below/above" — fixed before review too,
+    # in the same patch, on every field of the slide (notes and visual guidance included).
+    from guardrails.guardrails import meta_hits, _slide_visible_text
+    v_cfg = config.harness()["constraints"].get("voice", {})
+    if v_cfg.get("banned_meta") or v_cfg.get("ban_session_numbers"):
+        for s in section.get("slides") or []:
+            fields = _slide_visible_text(s) + [
+                (f, str(s[f])) for f in ("speaker_notes", "visual_guidance") if s.get(f)]
+            for fld, txt in fields:
+                found = meta_hits(txt, v_cfg)
+                if found:
+                    hits.append({"slide": s.get("n", "?"), "kind": "meta", "field": fld,
+                                 "text": txt, "phrases": found, "words": _word_count(txt)})
     return hits
 
 
@@ -3587,8 +3600,8 @@ def _length_fix_instruction(hits: list[dict]) -> str:
     tgt_s = int(config.harness()["constraints"].get("content", {})
                 .get("target_sentences_per_text_block") or 2)
     norm_s = f"1-{tgt_s} sentences" if tgt_s > 1 else "one sentence"
-    lines = []
-    for h in hits[:10]:
+    lines, meta = [], [h for h in hits if h["kind"] == "meta"]
+    for h in [h for h in hits if h["kind"] != "meta"][:10]:
         if h["kind"] == "bullet":
             lines.append(f"  Slide {h['slide']}, bullet ({h['words']} words, max "
                          f"{h['limit']}): \"{h['text']}\"")
@@ -3596,8 +3609,25 @@ def _length_fix_instruction(hits: list[dict]) -> str:
             lines.append(f"  Slide {h['slide']}, paragraph ({h['words']} words, "
                          f"{h['sentences']} sentences; the norm is {h['limit']} words / "
                          f"{norm_s}): \"{h['text']}\"")
+    meta_txt = ""
+    if meta:
+        meta_txt = (
+            "WORDING TO FIX. These lines talk about the instructor, point 'below'/"
+            "'above', or name another session — a TR doc never does:\n"
+            + "\n".join(f"  Slide {h['slide']}, {h['field']} (contains "
+                         f"{', '.join(repr(p) for p in h['phrases'])}): \"{h['text']}\""
+                         for h in meta[:10])
+            + "\n\nRewrite each line without those words. A speaker note is the cue itself "
+              "(\"Point to …\", \"Ask: …\", \"Stress that …\"), never \"the instructor "
+              "should say …\" or \"say like this\". Slide text names the thing (\"this "
+              "table\", \"the diagram\", \"the three steps\") instead of \"given below\" "
+              "or \"shown above\". Never name a session (\"Session 3\", \"covered in sessions 2, 3\", "
+              "\"an earlier session\") — state the fact itself. Same meaning, same or fewer words.")
+    if not lines:
+        return meta_txt
     return (
-        "LENGTH TO FIX. These lines are longer than a TR doc allows:\n"
+        (meta_txt + "\n\n" if meta_txt else "")
+        + "LENGTH TO FIX. These lines are longer than a TR doc allows:\n"
         + "\n".join(lines)
         + "\n\nFor each BULLET: say it in at most the stated number of words — one exact fact in ONE clause (no second sentence, no ';'), "
           "a short sentence or a `Term: fact` line. If it really holds two ideas, split it into two bullets "

@@ -115,6 +115,17 @@ def evaluate(doc: dict, session, is_first: bool, is_last: bool, *, use_judge: bo
             f"slide, worked examples the topic does not need, bullets restating a table "
             f"or lead-in, and prose that should be bullets — do NOT drop a sub-concept.")
 
+    # 1.74: the hands-on rides on top of the page budget, but as an add-on of ~3-4 pages,
+    # not an open-ended second document.
+    ho_max = float(config.harness()["constraints"].get("hands_on", {}).get("max_pages") or 0)
+    if page_gate and ho_max and pe.get("hands_on_pages", 0) > ho_max:
+        page_ok = False
+        issues.append(
+            f"The Practical Hands-On runs ~{pe['hands_on_pages']:.1f} pages; it is an add-on "
+            f"of at most {ho_max:g} pages (screenshots included). Keep the major steps one "
+            f"line each and the explanation beside each screenshot short — do NOT drop a "
+            f"genuine screenshot or touch the teaching sections.")
+
     judge_ok = True
     rubric_total = 100
     if use_judge:
@@ -528,6 +539,9 @@ def _rejudge_acceptance(report: dict, profile: dict | None,
     time_ok = bool(te.get("within_budget", True)) or not report.get("time_enforced", True)
     page_gate = config.harness()["gates"].get("pages_within_budget", True)
     page_ok = bool((report.get("pages") or {}).get("within_budget", True)) or not page_gate
+    ho_max = float(config.harness()["constraints"].get("hands_on", {}).get("max_pages") or 0)
+    if page_gate and ho_max and (report.get("pages") or {}).get("hands_on_pages", 0) > ho_max:
+        page_ok = False
     judge_ok, reasons = True, []
     if use_judge and report.get("judge"):
         judge_ok, reasons = llm_judge.passes_gates(report["judge"], profile)

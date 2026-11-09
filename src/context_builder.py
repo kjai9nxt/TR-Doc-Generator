@@ -934,7 +934,9 @@ def hands_on_instruction(course: str, cur: Session, *, slides_used: int = 0,
         budget_line = (f"\nSLIDE BUDGET FOR THIS SECTION: between {cfg.get('min_slides', 1)} and "
                        f"{allowance} slide(s) OF ITS OWN. The takeaway sections have used "
                        f"{slides_used} slides; this section is outside the session's slide "
-                       f"count and adds its own on top.\n")
+                       f"count and adds its own on top — an ADD-ON of about "
+                       f"{cfg.get('target_pages', 3)}-{cfg.get('max_pages', 4)} pages including "
+                       f"its screenshots, outside the session's page budget.\n")
     else:
         budget_line = (f"\nSLIDE BUDGET FOR THIS SECTION: between {cfg.get('min_slides', 1)} and "
                        f"{allowance} slide(s). The takeaway sections have used {slides_used} of the "

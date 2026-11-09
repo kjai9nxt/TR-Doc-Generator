@@ -40,7 +40,7 @@ read by someone meeting the topic for the first time, so every slide is written 
   one explanation and not as a stack of unrelated cards. Within a section: what it is →
   why it exists → how it works → where it is used → what it costs.
 - **Bullets are short, scannable teaching points — never bare labels.** A bullet is
-  5-12 words (aim 6-10) and carries ONE exact fact. "Resource pooling" is a heading;
+  5-14 words (aim 8-12) and carries ONE exact fact. "Resource pooling" is a heading;
   "Resource pooling: one provider's hardware shared by many customers" is a bullet,
   and so is "Each virtual machine runs its own OS, isolated from others". The
   `Term: fact` form is welcome. Do not stack a name, a mechanism, an example and a
@@ -134,9 +134,9 @@ The same rule holds between a table and the bullets beside it, and between
 ## Line lengths (HARD — gated both ways)
 A TR doc is a teaching reference the instructor records from and a learner can read
 alone. Every line is complete enough to teach and short enough to read at a glance:
-- **Bullets: 5-12 words each (aim 6-10)** — concise, precise, accurate. One exact
+- **Bullets: 5-14 words each (aim 8-12)** — concise, precise, accurate. One exact
   fact per bullet, in ONE clause: a short sentence or a `Term: fact` line. Under 5
-  words is a label and fails; over 12 is a sentence that grew too big and fails; a
+  words is a label and fails; over 14 is a sentence that grew too big and fails; a
   second sentence or a `;` in a bullet fails. Name the exact term, number or
   behaviour — no vague filler ("various", "helps with", "many things"). If a bullet
   needs a second fact, make it a second bullet.
@@ -185,6 +185,15 @@ alone. Every line is complete enough to teach and short enough to read at a glan
   restate the slide body, do NOT write "close by…", do NOT write "tie back to the
   analogy". The notes are what the instructor reads while recording, so they say HOW to
   teach the slide, not what is already on it.
+- **No meta or positional wording, anywhere — notes included.** Never write "the
+  instructor should say…", "instructor can explain…", "say like this", "tell the
+  class…" — write the cue itself ("Point to the Healthy target.", "Ask: why does the
+  ACK carry seq+1?"). Never write "given below", "given above", "shown below", "the
+  table above", "as above" — name the thing instead ("this table", "the diagram",
+  "the three steps"). Both are hard failures.
+- **No session references.** Never "Session 3", "covered in sessions 2, 3", "an
+  earlier session", "already covered" — on a slide, in notes or anywhere else. State
+  the fact itself. Hard failure.
 - Analogy: **only on a `concept_intro` slide** — see the Analogy placement section
   below. 1-2 sentences. Concrete, everyday, not abstract — and it must
   **correlate, not just illustrate**: end with an explicit tie-back that names the

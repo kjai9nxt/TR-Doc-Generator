@@ -152,7 +152,7 @@ budget block wins, and the gates use its numbers.
    the ideas connect.
    - **Short paragraph (`text` block) — the default opener of a slide.** Use it to
      frame, define, or connect: what this is, why it exists, how these two relate,
-     what follows from the table above — in plain words, with the WHY. **Two or three
+     what follows from the comparison — in plain words, with the WHY. **Two or three
      short related points belong in one paragraph, not in a bullet list.** Cap:
      **1-2 sentences, about 20-35 words as the norm — not an essay; up to 55 words /
      3 sentences ONLY where the topic demands it, on at most one paragraph in five** —
@@ -217,7 +217,7 @@ budget block wins, and the gates use its numbers.
      straight into a list, with no sentence telling the learner what the list is,
      is exactly what this rule exists to stop.
    - **Tables** stay first-class for any 2+ way comparison or spec sheet.
-   **Bullets are 5-12 words, aim 6-10, ONE exact fact in ONE clause** (both bounds are
+   **Bullets are 5-14 words, aim 8-12, ONE exact fact in ONE clause** (both bounds are
    hard gates; a second sentence or a `;` also fails) — concise, precise, accurate: a
    short sentence or a `Term: fact` line a learner can scan — "Resource pooling" is a
    label and fails; "Resource pooling: one provider's hardware shared by many customers"
@@ -436,6 +436,14 @@ It must read as slide text, NOT as spoken narration. **Every slide must stand al
   on". The instructor SAYS those — they belong in `speaker_notes` only.
   The **only** places a forward/back reference is allowed are the structural ones:
   Recap, Agenda, Upcoming Session, and the closing.
+- **No meta or positional wording anywhere (notes included):** never "the instructor
+  should say…", "instructor can…", "say like this", "tell the class…" — write the cue
+  directly ("Point to …", "Ask: …"); never "given below/above", "shown below/above",
+  "the table above", "as above" — name the thing ("this table", "the diagram"). Gated.
+- **Never name another session — by number or by position — on any slide, note or
+  visual line:** no "Session 3", "covered in sessions 2, 3", "as taught in an earlier
+  session", "already covered". The prior-session material in your context is there so
+  you do not re-teach it, NOT to be cited. State the fact itself. Gated.
 - **No filler**: "and all", "basically", "in order to", "it is important to note".
 - Use plain, easy language. Explain any necessary jargon on first use.
 
@@ -525,7 +533,7 @@ Return ONLY a single JSON object, no prose around it:
 - `content` blocks are ordered and rendered in order. **Mix them**: a `text` paragraph
   (1-2 sentences, ≤ 35 words as the norm; longer only where the topic demands it) that
   explains and connects, then `bullets` for a real
-  list of 3+ substantial parallel items (each 5-12 words, one exact fact), and a `table` for
+  list of 3+ substantial parallel items (each 5-14 words, one exact fact), and a `table` for
   any 2+ way comparison. At least 60% of slides must contain a `text` block, and no
   bullet list may have fewer than 3 items.
 - **Every attached screenshot** appears once, as an `image` block on the slide or
@@ -616,7 +624,7 @@ just apply it:
 6. Check every `content` text block is 1-2 sentences / ≤ 35 words, with only the rare
    topic-driven exception up to 55 / 3 (never more than one paragraph in five) — it
    explains, the
-   bullets and tables carry the specifics — that every bullet is 5-12 words carrying
+   bullets and tables carry the specifics — that every bullet is 5-14 words carrying
    one exact fact in one clause (no 2-3 word labels, no stacked clauses), and that no bullet list restates its
    lead-in sentence or its table.
 7. Check every `speaker_notes` is ≤ 3 sentences.

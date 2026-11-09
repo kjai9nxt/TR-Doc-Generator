@@ -152,17 +152,36 @@ d3["sections"][0]["slides"][0]["content"].append(
                                   "another fine bullet of about eight words"]})
 check("a 35-word bullet FAILS as a paragraph",
       any("that is a paragraph" in f for f in fails_of(d3)))
-# 1.72: "concise, precise and accurate" — 13 words is too long, a chained bullet fails
+# 1.72: "concise, precise and accurate" — 15 words is too long (cap 14 since 1.74), a chained bullet fails
 d4 = with_hands_on(GOLDEN)
 d4["sections"][0]["slides"][0]["content"].append(
     {"type": "bullets", "items": [
-        "TCP retransmits every lost segment until the receiver finally acknowledges it now",
+        "TCP retransmits every lost segment until the receiver finally acknowledges it right now, always, quickly",
         "TCP retransmits lost segments; UDP simply never does",
         "Resource pooling: one provider's hardware shared by customers"]})
 f4 = fails_of(d4)
-check("a 13-word bullet FAILS (cap 12)", any("is 13 words (max 12)" in f for f in f4))
+check("a 15-word bullet FAILS (cap 14)", any("is 15 words (max 14)" in f for f in f4))
 check("a ';'-chained bullet FAILS", any("chains two statements" in f and "UDP" in f for f in f4))
 check("a 'Term: fact' bullet passes", not any("Resource pooling" in f for f in f4))
+
+print("\n== no meta / positional wording (1.73) ==")
+d5 = with_hands_on(GOLDEN)
+_s = d5["sections"][0]["slides"][0]
+_s["speaker_notes"] = "The instructor should say this slightly slower."
+_s["content"].append({"type": "text", "text": "The steps given below show how a VM boots."})
+f5 = fails_of(d5)
+check("'instructor should' in speaker_notes FAILS", any("'instructor should'" in f for f in f5))
+check("'given below' in slide text FAILS", any("'given below'" in f for f in f5))
+d6 = with_hands_on(GOLDEN)
+d6["sections"][0]["slides"][0]["speaker_notes"] = "This was covered in sessions 2, 3 already."
+d6["sections"][0]["slides"][0]["content"].append({"type": "text", "text": "Lecture 4 named the hypervisor types."})
+f6 = fails_of(d6)
+check("'sessions 2, 3' in notes FAILS", any("'sessions 2, 3'" in f for f in f6))
+check("'Lecture 4' in slide text FAILS", any("'Lecture 4'" in f for f in f6))
+check("a session-free golden passes the session rule",
+      not any("names another session" in f for f in fails_of(with_hands_on(GOLDEN))))
+check("a direct cue passes", not any("speaker_notes contains" in f and "below" in f
+                                     for f in fails_of(with_hands_on(GOLDEN))))
 
 print("\n== paragraphs: 2-3 lines as the norm, longer only where the topic needs it ==")
 _c = config.harness()["constraints"]["content"]

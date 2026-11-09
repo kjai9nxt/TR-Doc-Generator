@@ -256,6 +256,8 @@ def estimate(doc: dict, budgets: dict | None = None) -> dict:
         # Where the pages went — this is what makes an over-budget doc actionable
         # ("analogies: 2.4 pages" is a different fix from "tables: 3 pages").
         "pages_by_part": {k: round(v / usable, 2) for k, v in s.breakdown.items()},
+        # 1.74: the extra hands-on's own size (screenshots included), gated separately.
+        "hands_on_pages": round(hands_on_pts / usable, 2),
     }
 
 

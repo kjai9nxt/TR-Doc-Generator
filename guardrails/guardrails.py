@@ -393,6 +393,22 @@ def takeaway_subtopics(line: str) -> list[str]:
     return [p for p in parts if p and _content_tokens(p)]
 
 
+# 1.74: "Session 3", "sessions 2, 3", "lecture 4" — a slide or note never names another
+# session by number (reviewer: "don't mention session number anywhere, like 'this was
+# covered in session 2, 3'"). Recap / Upcoming are structural and are not slides.
+_SESSION_REF = re.compile(
+    r"\b(?:sessions?|lectures?|lessons?)\s*(?:#|no\.?\s*)?\d+"
+    r"(?:\s*(?:,|&|and|or|-|–)\s*\d+)*", re.I)
+
+
+def meta_hits(text: str, v_cfg: dict) -> list[str]:
+    """Meta / positional / session-reference wording in `text` (constraints.voice)."""
+    hits = _phrase_hits(text, v_cfg.get("banned_meta") or [])
+    if v_cfg.get("ban_session_numbers", False):
+        hits += [m.group(0) for m in _SESSION_REF.finditer(str(text or ""))]
+    return hits
+
+
 def _phrase_hits(text: str, phrases: list[str]) -> list[str]:
     """Which of `phrases` occur in `text`, matched on word boundaries so 'no' does
     not fire inside 'node' and 'you' does not fire inside 'your'."""
@@ -1355,6 +1371,19 @@ def check(doc: dict, session, is_first: bool, is_last: bool,
                 if hits:
                     fails.append(f"{tag}: {fld} contains {grp} "
                                  f"{', '.join(repr(x) for x in hits)} — {why}.")
+        # 1.73: no talking ABOUT the instructor, no pointing at the layout — anywhere on
+        # the slide, notes and visual guidance included.
+        meta_fields = _slide_visible_text(s) + [
+            (f, str(s[f])) for f in ("speaker_notes", "visual_guidance") if s.get(f)]
+        for fld, txt in meta_fields:
+            hits = meta_hits(txt, v_cfg)
+            if hits:
+                fails.append(
+                    f"{tag}: {fld} contains {', '.join(repr(x) for x in hits)} — the TR "
+                    f"doc never talks about the instructor, points 'below'/'above', or "
+                    f"names another session. "
+                    f"Write the cue directly (\"Point to …\", \"Ask: …\") or the content "
+                    f"itself, and name what is meant (\"this table\", \"the diagram\").")
         # Notes may keep continuity language, but still no second person.
         hits = _phrase_hits(s.get("speaker_notes"), banned_you)
         if hits:

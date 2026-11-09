@@ -243,6 +243,9 @@ export default function App() {
 
   const [result, setResult] = useState(null)
   const [genErr, setGenErr] = useState(null)
+  // A soft, self-clearing notice about the CONNECTION (throttled, restarting) — not an
+  // error about the run, so it is amber, not red, and never hides the run itself.
+  const [genNotice, setGenNotice] = useState(null)
 
   // Guided generation is the ONLY way a doc is written: generate all chunks -> review
   // each -> finalize. The old one-shot mode (whole doc in a single unreviewed call) is
@@ -305,6 +308,7 @@ export default function App() {
   // could disagree about whether the final doc could be created.
   const approvedSet = new Set(guided?.approved_chunks || [])
   const guidedPollRef = useRef(null)
+  const guidedVisRef = useRef(null)     // the visibilitychange listener of the live poll
 
   // Eval-sets (System B) run on the finished doc
   const [evalReport, setEvalReport] = useState(null)
@@ -756,7 +760,7 @@ export default function App() {
             setCurLogs((l) => [...l, `Failed: ${job.error}`])
           }
         } catch (e) { clearInterval(t); setCurIngesting(false); setCurLogs([e.message]) }
-      }, 1000)
+      }, 2500)     // was 1s — shares the host's per-IP rate limit with every other poll
     }).catch((e) => { setCurIngesting(false); setCurLogs([e.message]) })
   }
 
@@ -1008,7 +1012,7 @@ export default function App() {
           clearInterval(syncPollRef.current); setSyncing(false)
           setSyncErr({ kind: e.kind, message: e.message })
         }
-      }, 1000)
+      }, 2500)     // was 1s — shares the host's per-IP rate limit with every other poll
     }).catch((e) => { setSyncing(false); setSyncErr({ kind: e.kind, message: e.message }) })
   }
 
@@ -1046,6 +1050,7 @@ export default function App() {
 
   function pollGuided(gid) {
     clearInterval(guidedPollRef.current)
+    if (guidedVisRef.current) document.removeEventListener('visibilitychange', guidedVisRef.current)
     let pollMisses = 0
     // BACK OFF WHEN THROTTLED. The host (not the app) answers 429 when one browser asks
     // too often; this loop asked every 1.5 s regardless and, after ten throttled answers
@@ -1055,11 +1060,15 @@ export default function App() {
     let skip = 0
     let throttled = 0
     const tick = async () => {
+      // A HIDDEN TAB DOES NOT POLL. Render's edge rate-limits per IP, so every open tab
+      // (and every teammate on the same office network) shares one budget; background
+      // tabs polling a run nobody is looking at is what got the visible one throttled.
+      if (document.hidden) return
       if (skip > 0) { skip -= 1; return }
       try {
         const st = await api.guidedState(gid)
         setGuided(st)
-        if (throttled) { throttled = 0; setGenErr(null) }
+        if (throttled) { throttled = 0; setGenNotice(null) }
         // The final-doc button stays in its loading state from the click until the run
         // has actually finished assembling — the status is still 'reviewing' for the
         // first poll or two, which is exactly the window the spinner is for.
@@ -1081,7 +1090,7 @@ export default function App() {
           clearInterval(guidedPollRef.current); setResult(st.result); rememberGuided(null)
         }
         else if (st.status === 'error') { clearInterval(guidedPollRef.current); setGenErr(st.error) }
-        if (pollMisses) setGenErr(null)   // reconnected — clear the restart notice
+        if (pollMisses) setGenNotice(null)   // reconnected — clear the restart notice
         pollMisses = 0
       } catch (e) {
         // Ride out a run of bad answers rather than giving up on the first — and stay
@@ -1096,17 +1105,20 @@ export default function App() {
         // chunks "never came" although they were being written again.
         if (e.status === 429) {
           throttled += 1
-          skip = Math.min(1 + throttled, 6)          // 2.5s → 5s → 7.5s … up to 15s
+          // Honour the host's Retry-After when it sends one; otherwise back off
+          // 4s → 8s → … up to 28s.
+          skip = Math.max(Math.ceil((e.retryAfter || 0) / 4), Math.min(1 + throttled, 6))
           if (throttled >= 2) {
-            setGenErr('The server asked this page to slow down (HTTP 429) — checking '
-                      + 'less often. Your run is unaffected and carries on; this notice '
-                      + 'clears by itself.')
+            setGenNotice('Render (the hosting service) is limiting how often this page can '
+                         + 'ask for updates (HTTP 429), so it is checking less often. Your '
+                         + 'run keeps generating on the server. If the app is open in other '
+                         + 'tabs, close them — they share the same limit. This clears by itself.')
           }
           return                                      // never counts toward giving up
         }
         const hostDown = e.kind === 'backend' || [502, 503, 504].includes(e.status)
         if (hostDown && pollMisses >= 3 && pollMisses < 120) {
-          setGenErr('The server is restarting — reconnecting to your run. Chunks '
+          setGenNotice('The server is restarting — reconnecting to your run. Chunks '
                     + 'already generated are saved and generation carries on once it is '
                     + 'back (usually under a minute). No need to start again.')
         }
@@ -1115,9 +1127,12 @@ export default function App() {
         }
       }
     }
-    // 1.5s → 2.5s: a chunk takes one to two minutes to write, so sub-2-second status
-    // resolution bought nothing and was the single busiest caller the host saw.
-    guidedPollRef.current = setInterval(tick, 2500)
+    // 1.5s → 2.5s → 4s: a chunk takes one to two minutes to write, so second-level
+    // status resolution bought nothing and was the single busiest caller the host saw.
+    guidedPollRef.current = setInterval(tick, 4000)
+    // Coming back to the tab: fetch at once rather than waiting out the interval.
+    guidedVisRef.current = () => { if (!document.hidden) { skip = 0; tick() } }
+    document.addEventListener('visibilitychange', guidedVisRef.current)
     tick()   // fetch immediately so the UI reacts without a lag
   }
 
@@ -1125,7 +1140,7 @@ export default function App() {
     // Stop listening to any earlier run first. Its interval kept running, so its log
     // stayed on screen under a NEW run's error and the two read as one.
     clearInterval(guidedPollRef.current)
-    setResult(null); setGenErr(null); setGuided(null); setRegenFor(null); setRegenReason(''); setEvalReport(null); setEvalErr(null); setShowCost(true)
+    setResult(null); setGenErr(null); setGenNotice(null); setGuided(null); setRegenFor(null); setRegenReason(''); setEvalReport(null); setEvalErr(null); setShowCost(true)
     setRegenAll(false); setSplitFor(null); setSplitSlide(''); setSplitErr(null); setFinalizing(false)
     api.guidedStart(sel, true, policy.time_always_enforced,
                     workspace.kind === 'team' ? workspace.team_id : null,
@@ -1169,7 +1184,7 @@ export default function App() {
   function resumeGuided(gidArg) {
     const gid = gidArg || resumableGid
     if (!gid) return
-    setGenErr(null); setResult(null); setEvalReport(null); setEvalErr(null)
+    setGenErr(null); setGenNotice(null); setResult(null); setEvalReport(null); setEvalErr(null)
     setBusyAction(true)
     api.guidedState(gid).then((st) => {
       setBusyAction(false)
@@ -1302,7 +1317,7 @@ export default function App() {
           if (job.status === 'done') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalReport(job.result); setEvalOpen(true) }
           else if (job.status === 'error') { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(job.error); setEvalOpen(true) }
         } catch (e) { clearInterval(evalPollRef.current); setEvalRunning(false); setEvalErr(e.message); setEvalOpen(true) }
-      }, 1500)
+      }, 3000)
     }).catch((e) => { setEvalRunning(false); setEvalErr(e.message) })
   }
 
@@ -2206,6 +2221,7 @@ export default function App() {
             </>
           )}
 
+          {genNotice && !genErr && <div className="alert warn"><pre>{genNotice}</pre></div>}
           {genErr && <div className="alert error"><pre>{genErr}</pre></div>}
         </section>
       )}

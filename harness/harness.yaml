@@ -7,7 +7,7 @@
 
 meta:
   name: "TR Doc Generator Agent"
-  version: "1.72"
+  version: "1.74"
   owner: "AI Full-Stack Curriculum"
   purpose: >
     Generate a recording-ready TR (Teaching Reference) document for a single
@@ -1728,6 +1728,20 @@ meta:
               6-10, one exact fact in one clause — no second sentence, no ';' chain
               (content.single_clause_bullets, gated). Precise = the exact term, number or
               behaviour, no vague filler ('various', 'many things', 'helps with')."
+    - "1.73 — NO META OR POSITIONAL WORDING. Reviewer: 'instructor should say like this',
+              'given below', 'given above' must not appear in a TR doc. voice.banned_meta
+              is gated on every slide field INCLUDING speaker_notes and visual_guidance:
+              notes are direct cues ('Point to the Healthy target', 'Ask: …'), never
+              'the instructor should say …'; text names the thing ('This table compares
+              …', 'In the diagram, …') instead of pointing at 'below'/'above'."
+    - "1.74 — HANDS-ON IS A 3-4 PAGE ADD-ON; NO SESSION NUMBERS; BULLETS A LITTLE ROOMIER.
+              (a) hands_on.target_pages 3 / max_pages 4 (screenshots included), measured as
+              page_grader hands_on_pages and gated in pipeline.evaluate — still outside the
+              session's slide, page and time budgets. (b) voice.ban_session_numbers +
+              'earlier session' / 'already covered' phrases: no slide, note or visual line
+              names another session ('covered in session 2, 3'). (c) bullets 5-14 words
+              (was 12), aim 8-12 — reviewer: 'a bit more, not very lengthy, cover the
+              entire content'."
   architecture:
     entrypoints: ["server.py + frontend/ (React web app — the only generation UI)",
                   "run.py (CLI: sheet setup, sync, watch, list)"]
@@ -2023,7 +2037,8 @@ constraints:
     # sentences" — "keep them concise, precise and accurate". Aim 6-10 words: ONE
     # exact fact, one clause; a bullet with a second sentence or a ';' fails
     # (single_clause_bullets).
-    max_words_per_bullet: 12
+    # 1.74: 12 -> 14 — reviewer: "a bit more, not very lengthy, cover the entire content".
+    max_words_per_bullet: 14
     single_clause_bullets: true
     no_restating_lead_in_bullets: true
     no_table_restated_as_bullets: true
@@ -2169,6 +2184,11 @@ constraints:
     # use the whole slide ceiling (no reserve), the hands-on adds min_slides-max_slides of
     # its own, and the slide, page and recording gates count the teaching sections only.
     extra_slides: true
+    # 1.74: the hands-on is an ADD-ON of about 3-4 pages (screenshots included) on top of
+    # the session's page budget — reviewer: "should be additional 3-4 pages as an add-on".
+    # Measured by page_grader (`hands_on_pages`), gated in pipeline.evaluate.
+    target_pages: 3
+    max_pages: 4
   numbering:
     # Slides run 1..N with no gaps. Assembly already renumbers (pipeline.assemble), so
     # this is the assertion that it worked: a gap or a repeat here means a regenerated
@@ -2235,6 +2255,36 @@ constraints:
                         "in the previous slide", "in the next slide", "in this slide",
                         "we will see", "we saw", "let us", "moving on",
                         "recall that", "now that we", "earlier we", "coming up"]
+    # 1.73 — META / POSITIONAL WORDING. Reviewer: "words like 'instructor should say
+    # like this' and 'given below' / 'given above' are to be removed — do not use
+    # such things in the TR doc". The doc IS what the instructor says and shows, so
+    # it never talks ABOUT the instructor or points at its own layout. Banned
+    # EVERYWHERE on a slide — visible text, speaker_notes and visual_guidance.
+    banned_meta: ["instructor should", "instructor can", "instructor must",
+                  "instructor will", "instructor says", "instructor may",
+                  "the instructor", "instructors should", "trainer should",
+                  "teacher should", "should say", "can say", "say like this",
+                  "say something like", "like this:", "tell the class",
+                  "tell the students", "tell students", "tell learners",
+                  "tell the learners", "explain to students", "explain to the class",
+                  "given below", "given above", "shown below", "shown above",
+                  "mentioned below", "mentioned above", "listed below", "listed above",
+                  "explained below", "explained above", "described below",
+                  "described above", "as below", "as above", "see below", "see above",
+                  "table below", "table above", "diagram below", "diagram above",
+                  "figure below", "figure above", "image below", "image above",
+                  "screenshot below", "screenshot above", "example below",
+                  "example above", "below table", "above table", "below diagram",
+                  "above diagram", "the above", "the below", "following table",
+                  "following diagram", "following figure",
+                  # 1.74: no pointing at other sessions, by number OR by position
+                  "earlier session", "earlier sessions", "previous sessions",
+                  "prior session", "prior sessions", "past session", "past sessions",
+                  "covered in session", "covered earlier", "covered before",
+                  "already covered", "already discussed", "already learned",
+                  "already learnt", "already taught", "taught earlier"]
+    # "Session 3", "sessions 2, 3", "lecture 4" anywhere on a slide (notes included).
+    ban_session_numbers: true
   worked_example:
     # A worked example is not a ritual. It EARNS a slide when the learner could follow
     # the words and still not be able to DO the thing — and it wastes one otherwise.

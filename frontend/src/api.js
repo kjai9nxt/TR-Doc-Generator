@@ -125,6 +125,8 @@ async function req(path, opts = {}) {
     const err = new Error(msg)
     err.kind = detail.kind
     err.status = res.status
+    // Seconds the host asks us to wait before the next request (sent with a 429).
+    err.retryAfter = Number(res.headers.get('retry-after')) || 0
     // The whole detail object, not just its message: a refusal can carry the facts the
     // caller needs to act on it — the teams a shared course is on, for instance — and
     // those were being thrown away with the response.

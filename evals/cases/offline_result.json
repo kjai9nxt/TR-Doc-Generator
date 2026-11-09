@@ -1,6 +1,6 @@
 {
   "kind": "offline",
-  "generated_at": "2026-11-06T21:19:21",
+  "generated_at": "2026-11-07T11:34:54",
   "overall_pass": true,
   "extraction": {
     "ok": false,
@@ -711,12 +711,11 @@
       "Slide 1: bullet list 2 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Connection must restart from scratch; Unacceptable in telecom signalling, wher",
       "Slide 2: bullet list 1 has 2 item(s) (min 3) — a one- or two-item list is a sentence that was bulleted. Fold it into the slide's paragraph: Multi-Streaming: one association carries; Multi-Homing: both endpoints register mu",
       "Slide 1: bullet 1.1 chains two statements (\"Three images requested; image 2's packet is lost\") — a bullet is ONE exact fact in one clause. Split it into two bullets — keep both facts; shorter never means less content.",
-      "Slide 2: bullet 1.1 is 28 words (max 12) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
-      "Slide 2: bullet 1.2 is 31 words (max 12) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
-      "Slide 6: bullet 1.3 is 13 words (max 12) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
+      "Slide 2: bullet 1.1 is 28 words (max 14) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
+      "Slide 2: bullet 1.2 is 31 words (max 14) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
       "Slide 6: bullet 1.4 chains two statements (\"Fine for email, downloads, browsing; fails for live video, VoIP, real-time apps.\") — a bullet is ONE exact fact in one clause. Split it into two bullets — keep both facts; shorter never means less content.",
-      "Slide 8: bullet 1.2 is 19 words (max 12) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
-      "Slide 8: bullet 1.3 is 20 words (max 12) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
+      "Slide 8: bullet 1.2 is 19 words (max 14) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
+      "Slide 8: bullet 1.3 is 20 words (max 14) — that is a paragraph. Split it into two bullets, or move the explanation into the slide's text block — cut filler words, never a fact.",
       "Missing the PRACTICAL HANDS-ON section. After the last takeaway's section add one more section with \"kind\": \"hands_on\" and a name like \"Hands-On: <what the learner builds or does>\", holding 1-6 slides of role 'hands_on': what gets built and why, the major steps as one numbered list (one line each, no sub-steps), the genuine screenshots of each major part, and the expected result."
     ],
     "warnings": [

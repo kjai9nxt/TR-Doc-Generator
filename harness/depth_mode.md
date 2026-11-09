@@ -46,7 +46,7 @@ on every doc — which produced documents nobody could record and nobody wanted 
    PAGE half of HARD RULE 1 still applies.
 
 2. **Tables may be fuller.** The 8-word table-cell cap is lifted. Bullets keep their
-   5-12 word range (they are gated in every mode): one fact per bullet, never a
+   5-14 word range (they are gated in every mode): one fact per bullet, never a
    bare label. Still no filler and no repetition — a longer line must carry
    more information, not more words.
 
