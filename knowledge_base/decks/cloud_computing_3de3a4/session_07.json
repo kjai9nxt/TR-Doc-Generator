@@ -1,0 +1,344 @@
+{
+  "session_no": 7,
+  "source_file": "7 _ Block_ File _ Object Storage.docx",
+  "source_kind": "trdoc",
+  "source_hash": "f76283e846bda5d7560280ffd87d6708",
+  "deck_title": "Session 7 : Block, File & Object Storage",
+  "n_slides": 30,
+  "summary": "Session 7 : Block, File & Object Storage\n    - Slide 1: Block Storage Explained\n    - Slide 2: IOPS and Throughput Defined\n    - Slide 3: EBS Volume Types Compared\n    - Slide 4: Where Block Storage Is Used\n    - Slide 5: Block Storage Trade-offs\n    - Slide 6: File Storage Overview\n    - Slide 7: NFS: Network File System\n    - Slide 8: SMB: Server Message Block\n    - Slide 9: NFS vs SMB Compared\n    - Slide 10: When File Storage Wins\n    - Slide 11: Object Storage Landscape\n    - Slide 12: What An Object Is\n    - Slide 13: How Buckets Work\n    - Slide 14: Flat Namespace Vs Folders\n    - Slide 15: Object Storage In Practice\n    - Slide 16: How Applications Access Object Storage\n    - Slide 17: REST API Access To S3 Objects\n    - Slide 18: Presigned URLs For Temporary Access\n    - Slide 19: Versioning Keeps Every Object Copy\n    - Slide 20: Four Dimensions Of Storage Choice\n    - Slide 21: Storage Types Across The Four Dimensions\n    - Slide 22: Matching Workload To Storage Type\n    - Slide 23: Storage Choice Recap\n    - Slide 24: Lab Overview And Major Steps\n    - Slide 25: Object Storage Evidence in S3\n    - Slide 26: Block Storage Setup and Attachment\n    - Slide 27: Identifying and Verifying the EBS Disk\n    - Slide 28: Building the Shared EFS File System\n    - Slide 29: Sharing, Diagnostics And Cleanup\n    - Slide 30: Key Takeaways",
+  "slides": [
+    {
+      "n": 1,
+      "title": "Block Storage Explained",
+      "body": "Block Storage Explained\nSubheading: Raw Disks For Instances\nA block storage volume is a raw, unformatted disk that an operating system partitions and formats itself, the way a physical hard disk works. Amazon Elastic Block Store (EBS) is AWS's block storage service, giving each EC2 instance its own persistent virtual disk.\nAn EBS volume attaches to exactly one EC2 instance at a time, like a plugged-in disk.\nA volume lives in a single Availability Zone and attaches only to instances in that same zone.\nData on a volume persists independently of the instance, surviving stop, start or termination choices.\nVolumes come in SSD-backed and HDD-backed families, each suited to a different workload shape.\nAnalogy: An external hard disk plugged into one laptop stores files only that laptop can read directly — just as an EBS volume attaches as a raw block device to a single EC2 instance at a time.\nVisual Guidance: Diagram: EC2 instance icon inside an Availability Zone box, with an attached disk icon labelled EBS Volume beside it.",
+      "notes": "Explain that EBS gives an instance its own virtual hard disk, separate from the instance's lifecycle. Point out that the Availability Zone lock is a physical constraint, not a setting. Mention that this single-instance attachment will later contrast with shared file storage. An interviewer may ask why an EBS volume cannot attach across zones — the answer is physical replication boundaries.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "IOPS and Throughput Defined",
+      "body": "IOPS And Throughput\nSubheading: Measuring Volume Performance\nInput/Output Operations Per Second (IOPS) counts how many individual read or write requests a volume completes each second, while throughput measures the total data moved per second in megabytes. Together they describe a volume's speed from two different angles.\nIOPS matters most for small, random reads and writes, such as database transaction logs.\nThroughput matters most for large, sequential transfers, such as streaming video files or backups.\nGeneral purpose SSD volumes offer baseline IOPS and throughput that scale somewhat with volume size.\nProvisioned IOPS volumes let an application request a guaranteed IOPS level independent of volume size.\nVisual Guidance: Two-column visual: left shows many small IOPS arrows into a disk, right shows one wide throughput arrow.",
+      "notes": "Explain IOPS and throughput as two separate speedometers measuring different things. Contrast a database doing many small writes against a video backup doing one large sequential write. Point out that optimising for the wrong metric is a common real-world mistake. An interview question often asks which metric matters most for a given workload.",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "EBS Volume Types Compared",
+      "body": "EBS Volume Types\nSubheading: SSD Versus HDD Backing\nDifferent workloads need different performance profiles, so Amazon EBS offers volume types split into two backing media: solid-state drives for speed and hard-disk drives for lower-cost bulk transfer.\nA worked comparison: a transaction database needing 15,000 IOPS at 2,000 GiB can run on gp3 only by over-provisioning size to earn baseline IOPS, or on io2 provisioned directly at 15,000 IOPS regardless of size — io2 costs more per gigabyte but avoids wasted capacity bought only for speed.\nVisual Guidance: Render the four-row comparison table with the two SSD types grouped above the two HDD types.",
+      "notes": "Walk through the table left to right, pointing out the SSD-versus-HDD split first. Emphasise that gp3 is the default choice for most workloads today. Note that io2 trades cost for guaranteed performance. An interviewer may ask which volume type suits a given workload — match the access pattern to SSD or HDD first.",
+      "tables": [
+        [
+          [
+            "Volume Type",
+            "Backing Media",
+            "Best Fit"
+          ],
+          [
+            "General Purpose SSD (gp3)",
+            "SSD",
+            "Boot volumes and most general workloads"
+          ],
+          [
+            "Provisioned IOPS SSD (io2)",
+            "SSD",
+            "Databases needing guaranteed, consistent low latency"
+          ],
+          [
+            "Throughput Optimized HDD (st1)",
+            "HDD",
+            "Big sequential workloads like log processing"
+          ],
+          [
+            "Cold HDD (sc1)",
+            "HDD",
+            "Infrequently accessed data at lowest cost"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 4,
+      "title": "Where Block Storage Is Used",
+      "body": "Block Storage Use Cases\nSubheading: Where EBS Fits Best\nChoosing a volume type means matching an application's access pattern to the right backing media, since the same workload on the wrong type either wastes money or starves for performance.\nBoot volumes store the operating system and startup files, typically on general purpose SSD.\nRelational databases need consistent low-latency IOPS for every transaction, favouring provisioned IOPS SSD.\nBig data and log-processing pipelines read large sequential files, favouring throughput-optimized HDD.\nArchival or rarely-touched data favours cold HDD, trading access speed for the lowest cost.\nA nightly log pipeline moving 500 GB of sequential data fits st1, priced per gigabyte with no per-IOPS charge, whereas provisioning that same 500 GB on io2 at a guaranteed 15,000 IOPS would cost far more for throughput the sequential workload does not need.\nVisual Guidance: Four icons — boot disk, database, log files, archive box — each pointing to its matching volume type from the previous slide.",
+      "notes": "Map each use case back to the volume type from the previous table, rather than repeating definitions. Use a database transaction versus a nightly log dump as the clearest contrast. Mention that EBS pricing scales with both provisioned IOPS and throughput, so over-provisioning wastes budget. An interview question often gives a workload description and asks which volume type fits.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Block Storage Trade-offs",
+      "body": "Trade-offs And Limits\nSubheading: Cost And AZ Limits\nBlock storage's performance comes with real constraints: a volume is locked to one Availability Zone and normally serves only one instance, so cost and location choices must be made upfront.\nProvisioned IOPS volumes cost noticeably more, so workloads should be sized to actual need.\nA volume cannot attach to an instance in a different Availability Zone without a snapshot copy.\nNormally only one instance mounts a given volume at a time, limiting it for shared access.\nOver-provisioned IOPS or throughput sits idle, so right-sizing avoids paying for unused headroom.\nVisual Guidance: Short icon row: a locked Availability Zone padlock, a single-instance plug icon, and a cost-tag icon.",
+      "notes": "Stress that the Availability Zone lock is physical, not configurable, and plan volume placement accordingly. Note the cost trade-off: higher guaranteed IOPS always costs more per gigabyte. Flag the single-attach limitation as a reason shared file storage exists, without naming that topic yet. An interview question often probes why an EBS volume cannot simply move between zones.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "File Storage Overview",
+      "body": "File Storage Basics\nSubheading: Shared Filesystem Landscape\nFile storage exposes a shared filesystem that multiple servers mount and use like a single shared drive, instead of each server owning its own private disk. Two long-standing protocols carry this access: NFS and SMB.\nNFS (Network File System) originated on Unix and Linux systems and remains the standard for Linux-based shared storage.\nSMB (Server Message Block) originated on Windows and is the standard protocol for Windows file shares.\nBoth protocols let several client machines read and write the same files concurrently over a network.\nVisual Guidance: Diagram: several server icons connected to one shared filesystem box, labelled NFS (Linux) and SMB (Windows) as the two access protocols.",
+      "notes": "Introduce file storage as the shared-drive model before naming NFS and SMB individually. Mention that AWS offers this as Amazon EFS and Amazon FSx, covered next. Exam hook: learners should recall that file storage means several machines mount the same filesystem at once.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "NFS: Network File System",
+      "body": "NFS Mechanism\nSubheading: How NFS Works\nNetwork File System (NFS) lets a client machine mount a remote directory so it appears and behaves as a local folder, while the actual data stays on a remote file server. A client sends file operations such as read, write and lock over the network, and the server executes them against its own disk.\nNFSv3 is stateless, so each request carries full file-handle and offset information.\nNFSv4 is stateful and adds built-in locking, delegation and improved security over TCP.\nExports on the server define which directories are shared and with what permissions.\nConcurrent writers to the same file need an explicit locking protocol to avoid corruption.\nAnalogy: An office notice board lets every employee read and pin updates on the very same board instead of each keeping a private copy — just as NFS lets every mounting client read and write the one shared copy of a file kept on the server.\nVisual Guidance: Diagram: client box with a mounted folder icon pointing via an arrow labelled 'NFS protocol' to a server box holding the real files.",
+      "notes": "Explain that mounting makes a remote folder look local to the application. Point out the stateless-versus-stateful split between NFSv3 and NFSv4 as a common interview question. Mention that Amazon EFS is built on the NFSv4.1 protocol.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "SMB: Server Message Block",
+      "body": "SMB Mechanism\nSubheading: Windows File Sharing\nServer Message Block (SMB) is the protocol Windows systems use to share files, printers and named pipes over a network, with each shared folder exposed to clients as a network share.\nSMB authenticates each session against Windows user or domain credentials before granting file access.\nOpportunistic locks let a client cache a file locally and get notified if another client changes it.\nSMB 3.0 added end-to-end encryption and multichannel transport for higher throughput.\nCIFS (Common Internet File System) is the older, less efficient dialect SMB has replaced.\nVisual Guidance: Diagram: Windows client icon connecting over SMB to a network share folder on a file server, with an authentication step shown before access is granted.",
+      "notes": "Contrast SMB's session-based authentication with NFS's export-based permissions covered earlier. Note that Amazon FSx for Windows File Server offers SMB-based storage in AWS. Exam hook: ask which protocol pairs with which operating system family.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "NFS vs SMB Compared",
+      "body": "NFS Vs SMB\nSubheading: Protocol Comparison\nBoth protocols serve the same purpose, mounting a remote filesystem for shared access, but they differ in origin, authentication and the ecosystems built around them.\nVisual Guidance: Side-by-side table comparing NFS and SMB on platform, authentication, locking and the matching AWS managed service.",
+      "notes": "Walk through the table row by row, pausing on the AWS managed service row since that is the practical takeaway. Mention that the protocol choice usually follows the client operating system already in use. Exam hook: ask which AWS service backs each protocol.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "NFS",
+            "SMB"
+          ],
+          [
+            "Native platform",
+            "Linux and Unix",
+            "Windows"
+          ],
+          [
+            "Authentication",
+            "Export-based, host or user permissions",
+            "Session-based, user or domain credentials"
+          ],
+          [
+            "Locking",
+            "Advisory, explicit lock calls",
+            "Opportunistic locks with change notification"
+          ],
+          [
+            "AWS managed service",
+            "Amazon EFS",
+            "Amazon FSx for Windows File Server"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "title": "When File Storage Wins",
+      "body": "File Vs Block\nSubheading: Choosing File Storage\nBlock storage attaches to one instance at a time, so an application that needs several servers to read and write the same files needs a shared filesystem instead.\nContent management systems and shared home directories rely on concurrent access from many clients.\nRendering or batch pipelines where many worker nodes read and write shared intermediate files.\nAmazon EFS scales capacity automatically and charges per gigabyte stored, costing more per gigabyte than object storage.\nVisual Guidance: Decision diagram: single-instance workload arrow pointing to block storage; multi-instance shared-access workload arrow pointing to file storage (EFS/FSx).",
+      "notes": "Emphasise that the deciding question is whether more than one server must see the same files at once. Mention Amazon EFS's per-gigabyte pricing as the cost trade-off for that convenience. Exam hook: ask learners to justify choosing EFS over EBS for a specific shared workload.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Object Storage Landscape",
+      "body": "Object Storage Map\nSubheading: Buckets To Namespace\nObject storage holds data as independent units rather than as files inside folders or blocks on a disk, which is why cloud platforms use it for backups, media and static content at massive scale. Amazon S3 (Simple Storage Service) is the AWS implementation used across this storage practical.\nBucket: the top-level container that holds objects and sets region, access and lifecycle rules.\nObject: one stored item, made of the actual data, a key and metadata.\nKey: the unique string that identifies an object inside its bucket.\nMetadata: descriptive information attached to an object, kept separate from the data itself.\nFlat namespace: every object sits at one level inside a bucket, with no real folder tree.\nVisual Guidance: Diagram: a bucket icon containing several small object icons, each tagged with a key string and a metadata label; beside it, a flat list of keys contrasted with a traditional folder tree.",
+      "notes": "Open with the landscape before going into each part: bucket, object, key, metadata, flat namespace. Name Amazon S3 as the AWS service being used so the terms attach to a real product. Flag that the flat namespace is the structural difference the later slides return to.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "What An Object Is",
+      "body": "Object Anatomy\nSubheading: Data Key Metadata\nAn object is the basic unit of object storage: raw data such as a photo or a backup file, bundled with a key that names it and metadata that describes it. Unlike a file on a disk, an object carries all three parts together wherever it is stored.\nData: the actual bytes of the object, stored as an opaque blob of any size from a few bytes to several terabytes.\nKey: a string such as invoices/2024/jan.pdf that uniquely names the object inside its bucket.\nSystem metadata: content type, size and last-modified date, maintained automatically by the storage service.\nUser metadata: custom key-value pairs an application attaches, such as owner or project tags.\nAnalogy: A courier parcel carries the package itself, a tracking number printed on the label, and a contents declaration describing what is inside — just as an object bundles its data with a unique key and descriptive metadata.\nVisual Guidance: Diagram: one object box split into three labelled parts — Data, Key, Metadata — with example values filled in for a sample file.",
+      "notes": "Explain that every object bundles three things together, unlike a plain file on a disk. Use the courier parcel picture: the package, the tracking label, the contents declaration. Separate automatic system metadata from custom user metadata an application adds. A common interview question is which of the two a user can actually edit.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "How Buckets Work",
+      "body": "Bucket Mechanics\nSubheading: Naming And Scope\nA bucket is created inside one AWS region, and its name must be unique across all of AWS, not just within one account, because S3 uses the bucket name as part of every object's address. Objects placed inside a bucket inherit that bucket's region unless the application chooses otherwise.\nGlobal uniqueness: no two buckets anywhere on AWS can share the same name.\nNaming rules: lowercase letters, numbers and hyphens, three to sixty-three characters long.\nRegion pinning: a bucket lives in one chosen AWS region and does not move automatically.\nObject count: a bucket can hold an effectively unlimited number of objects, with no folder limit.\nVisual Guidance: Bucket icon labelled with its globally unique name and region tag, with a crossed-out duplicate name shown in a different account to illustrate global uniqueness.",
+      "notes": "Stress that bucket names compete in one global pool, unlike folder names that only need uniqueness within a parent folder. Walk through the naming rule as a quick checklist. Mention that region choice affects latency and where data physically sits. A frequent exam trap is assuming bucket names are scoped to one account.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Flat Namespace Vs Folders",
+      "body": "No Real Folders\nSubheading: Prefixes Simulate Trees\nA traditional file system nests folders inside folders, but an object store keeps every object at the same flat level inside its bucket, addressed only by its key. Console tools still display folder-like views by splitting keys on a delimiter, usually a forward slash.\nVisual Guidance: Side-by-side diagram: a nested folder tree on the left, and on the right a flat bucket with keys like photos/2024/a.jpg shown as plain strings, with a dashed line grouping keys that share a prefix.",
+      "notes": "Make clear that folders seen in the S3 console are a visual illusion built from key prefixes, not real directories. Explain why renaming a folder-like path is expensive: every object sharing that prefix must be copied and rewritten with a new key. This flat design is what lets object storage scale to billions of objects without directory lookups. Interviewers often ask why S3 cannot instantly rename a folder.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Hierarchical File System",
+            "Flat Object Namespace"
+          ],
+          [
+            "Structure",
+            "Nested folders and sub-folders",
+            "Single flat list of keys per bucket"
+          ],
+          [
+            "Path meaning",
+            "Directory entries physically group files",
+            "Key string only; the slash is just a character"
+          ],
+          [
+            "Listing a folder",
+            "Operating system walks the directory tree",
+            "Client filters keys sharing one prefix"
+          ],
+          [
+            "Renaming a folder",
+            "Updates a single directory entry",
+            "Means rewriting every key sharing that prefix"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Object Storage In Practice",
+      "body": "Where Objects Fit\nSubheading: Common Use Cases\nBecause objects are addressed by key rather than by physical location on a disk, applications reach them over the network instead of a mounted drive, which suits content that many services read independently rather than one server editing in place.\nStatic website assets: images, videos and downloadable files served directly to browsers.\nBackups and archives: large, infrequently changed data kept safe at low per-gigabyte cost.\nData lake storage: raw logs and datasets read by multiple analytics tools at the same time.\nVisual Guidance: Simple icon row: a website, a backup archive box, and an analytics dashboard, each with an arrow pointing to one shared bucket of objects.",
+      "notes": "Tie each use case back to key-based addressing: objects need no mount point, so many independent services can fetch the same object at once. This independence is why object storage backs static websites, backups and data lakes equally well. Buckets, objects, keys and metadata set up exactly how this access actually happens, which the practical demonstrates directly.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "How Applications Access Object Storage",
+      "body": "Object Storage Mechanics\nSubheading: Three Access Mechanisms\nObject storage exposes a bucket and its objects through a web interface rather than a mounted drive. Three mechanisms govern how an application or a person actually reaches that stored data and controls who can reach it.\nREST API access: every read, write or delete runs as a standard HTTP request to the object's address.\nPresigned URLs: a signed, time-limited link grants access without sharing permanent AWS credentials.\nVersioning: a bucket can retain every prior copy of an object under one key instead of overwriting it.\nVisual Guidance: Diagram: a client box sending an HTTP request to an S3 endpoint, branching into three labelled paths — REST call, presigned link, versioned object stack.",
+      "notes": "Frame this as the mechanics behind the bucket-and-key model already taught: how something actually reaches an object. Mention that each of the three gets its own slide next. Interviewers often ask how S3 is accessed without a filesystem mount — this slide is the answer.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "REST API Access To S3 Objects",
+      "body": "REST API Access\nSubheading: HTTP Verbs And Auth\nRepresentational State Transfer (REST) access means every bucket or object operation is a plain HTTP request addressed to that object's own URL. Amazon S3 exposes this as its native interface; the console, the AWS CLI and SDKs are all just convenient wrappers around the same calls.\nGET retrieves an object; PUT uploads or overwrites one; DELETE removes it from the bucket.\nEach request is authenticated with AWS Signature Version 4, not a stored password or session cookie.\nThe request URL embeds the bucket name and the object key as the resource path being acted on.\nA failed or unsigned request is rejected with an HTTP error code before any data moves.\nAnalogy: A library counter requires a visitor to fill a specific slip naming the exact catalog number and the action wanted — borrow, return or discard — before the book moves, just as a REST call names the exact object key and HTTP verb before S3 acts on that object.\nVisual Guidance: Show a sample request line: GET /bucket-name/object-key with an Authorization header, pointing arrows from 'verb' to action and 'path' to the object.",
+      "notes": "Say plainly: there is no drive letter here, only a web address and a verb. Point out that this is how every AWS SDK call eventually translates. Exam hook: ask what distinguishes a GET from a PUT on the same URL — the verb, not the address.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Presigned URLs For Temporary Access",
+      "body": "Presigned URLs\nSubheading: Temporary Signed Access\nA presigned URL is a specially signed link that grants temporary access to a private object without handing over any AWS credentials. The bucket owner generates it using their own permissions, and anyone holding the link can use it until it expires.\nThe signature is computed from the owner's credentials, the object key and a chosen expiry timestamp.\nAWS rejects the link automatically once the expiry time passes, with no server-side check needed.\nA browser or mobile app can upload or download directly, bypassing the application server entirely.\nTypical validity windows run from a few minutes to several days, set at generation time.\nAnalogy: A visitor gate pass is stamped with a single valid date and lets the holder enter without being issued a permanent employee badge, just as a presigned URL lets its holder reach one object for a limited time without ever receiving the owner's AWS credentials.\nVisual Guidance: Timeline graphic: link generated at T0, valid window shaded, expiry marker at T+n, with an 'access denied' icon after expiry.",
+      "notes": "Explain this as sharing a private file without making the bucket public. Mention the common use case of a web app letting a user upload straight to S3. Exam hook: ask who enforces the expiry — AWS, not the application — and why that matters for security.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Versioning Keeps Every Object Copy",
+      "body": "Object Versioning\nSubheading: Keeping Prior Copies\nVersioning lets a bucket retain every prior copy of an object under its same key, rather than the new upload replacing the old one. Once enabled, each PUT creates a fresh version instead of overwriting, and every version carries its own version ID.\nA GET without a version ID always returns the current, most recently written version.\nDeleting an object inserts a delete marker instead of erasing the earlier versions underneath it.\nAny specific version ID can be restored by requesting that version explicitly through the REST API.\nRetaining every version increases storage usage, since each overwrite is billed as a separate copy.\nVisual Guidance: Stack diagram: one object key with three stacked version blocks (v1, v2, v3-current), a delete-marker block on top of v3, and an arrow restoring v2 to the top.",
+      "notes": "Tie this to the earlier point that an object's key is a flat name — versioning adds a hidden depth behind that same key. Mention accidental-deletion recovery as the main real-world reason teams enable it. Exam hook: ask what happens to storage cost when versioning stays on indefinitely.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Four Dimensions Of Storage Choice",
+      "body": "Four Decision Dimensions\nSubheading: Performance Sharing Scale Cost\nBlock, file and object storage were each built around a different design goal, so picking one for a workload comes down to four questions rather than a single rule.\nPerformance: how fast single operations complete, measured as IOPS, throughput or latency.\nSharing: whether one instance or many clients can read and write the same data at once.\nScale: how large the data can grow and how that growth is managed.\nCost: whether billing follows provisioned capacity or actual consumption.\nVisual Guidance: Four-quadrant diagram with Performance, Sharing, Scale, Cost as labels, each pointing to the storage family it weighs heaviest for.",
+      "notes": "Frame this as the exam-style question: given a workload, which storage type fits. State each dimension in plain words before the comparison table. Interviewers often ask how to choose between S3, EBS and EFS — this slide is the answer skeleton.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Storage Types Across The Four Dimensions",
+      "body": "Storage Types Compared\nSubheading: Across Four Dimensions\nLaid out the way an architecture review would frame it, S3, EBS and EFS differ on how they are used, how they are shared, and how long data outlives the resource that created it.\nVisual Guidance: Four-row, three-column comparison table; colour-code each storage type's strongest row green to show its specialty.",
+      "notes": "Walk the table row by row: type, how it is reached, who can touch it at once, how long it outlives its creator, and what it is built for. Mention that EBS billing is for provisioned capacity whether idle or busy, unlike S3's pay-per-use model. A common interview trap is assuming one storage type is simply 'better' rather than fitter for a given row.",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Amazon S3",
+            "Amazon EBS",
+            "Amazon EFS"
+          ],
+          [
+            "Storage type",
+            "Object storage",
+            "Block storage",
+            "File storage"
+          ],
+          [
+            "Access method",
+            "Console, CLI or REST API",
+            "Block device formatted and mounted by the OS",
+            "Network file system mounted by clients"
+          ],
+          [
+            "Shared access",
+            "Many clients via permissions, no shared filesystem",
+            "Normally one instance at a time",
+            "Many EC2 instances mount concurrently"
+          ],
+          [
+            "Persistence",
+            "Until deleted or removed by a lifecycle rule",
+            "Independent of the instance lifecycle unless deleted",
+            "Independent of client instances until deleted"
+          ],
+          [
+            "Best suited for",
+            "Images, documents, backups, downloadable files",
+            "Boot disks and additional instance storage",
+            "Shared directories across multiple servers"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Matching Workload To Storage Type",
+      "body": "Matching Workload Needs\nSubheading: Selection Criteria\nTranslating the table into a decision means matching the row that matters most for the workload to the storage type that wins on it.\nAmazon S3 suits objects reached by key through a console, command line or API, not a mounted disk.\nAmazon EBS suits one instance needing disk-like storage in its own Availability Zone.\nAmazon EFS suits several instances that must read and write the same shared files.\nSelecting a service follows the application's access pattern, not habit or familiarity.\nVisual Guidance: Decision flow: workload question at top branching into three boxes (block, file, object), each with one real example label underneath.",
+      "notes": "Use one branch per service: a relational database's data files for EBS, a shared configuration directory across web servers for EFS, and user-uploaded images for S3. State plainly that S3 stores objects, EBS gives block-level volumes, and EFS gives a shared file system. Expect interview questions phrased as 'design the storage layer for X' — this slide is the reasoning template.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Storage Choice Recap",
+      "body": "Storage Choice Recap\nSubheading: Dimensions To Decision\nEvery storage decision reduces to the same check: which row of the table the workload cannot compromise on, and which type satisfies it without over-paying on the rest.\nObject, block and file storage differ mainly in how many clients can reach the same data and through what method.\nAn EBS volume must share its instance's Availability Zone because volumes replicate within a single zone only.\nWriting a file before a shared filesystem is mounted stores it on the local disk, not the shared one.\nThe right choice follows the access pattern: a single-instance disk, multi-instance sharing, or key-addressed objects.\nVisual Guidance: Single summary slide: the four-dimension diagram from the opening slide, now with a tick mark on the row each storage type satisfies best.",
+      "notes": "Close by restating the one-line rule: pick the row that matters most, not the service name that sounds familiar. Note that once a storage type is chosen, the next concern is how its cost and durability change over the data's lifetime. These four questions are the shape most interviewers actually ask.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Lab Overview And Major Steps",
+      "body": "Lab Overview\nSubheading: What Gets Tested\nThis practical builds one example of each storage type: an S3 bucket for objects, an EBS volume on one instance for block storage, and an EFS file system shared between two instances for file storage.\nStore an object in S3 and confirm it downloads with the same content.\nAttach an EBS volume to one instance and store a file on it.\nFormat and mount the new disk, then confirm the file survives a remount.\nCreate a shared EFS file system reachable from two separate instances.\nWrite a file from each instance and read it back from the other.\nCompare all three services on performance, sharing, scale and cost.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Object Storage Evidence in S3",
+      "body": "S3 Upload Verified\nSubheading: Properties Confirm Object\nS3 upload completion summary\nThe upload summary confirms one file succeeded, with zero failures, uploaded to the bucket destination shown in the S3 URI. This is the moment the object becomes available by its key.\nS3 object properties for session7-object.txt\nThe Properties tab lists the object key, its size, type, region and the S3 URI used to address it, confirming the object and its metadata are stored and retrievable.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Block Storage Setup and Attachment",
+      "body": "EBS Configuration\nSubheading: Volume Matches AZ\nAn EBS volume and the instance it attaches to must sit in the same Availability Zone, since a volume cannot attach across zones; this pairing is checked before creation, not after.\nEBS volume settings before creation\nThe volume settings show a gp3 volume sized 2 GiB created in the same Availability Zone as the instance, matching the rule that a volume and its instance must share a zone.\nAttach volume dialog with instance selected\nThe attach dialog pairs the volume ID with the running instance, both shown in the same Availability Zone, which is the precondition for a successful attachment.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Identifying and Verifying the EBS Disk",
+      "body": "Disk Identified\nSubheading: Format And Persist\nFormatting a disk erases anything already on it, so the newly attached empty disk must be identified by its size before any format command runs, and the root disk is never touched.\nlsblk output listing root and data disks\nThe lsblk output lists the root disk nvme0n1 with its boot partitions alongside the separate 2 GiB disk nvme1n1, which has no partitions yet and is the empty volume to format; device names can differ from what the console showed.\nEBS volume formatted, mounted, file written\nThe terminal output shows the disk formatted, mounted at the chosen mount point, and a file written and read back, demonstrating that the volume stores data belonging to this instance even after it is unmounted and remounted.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Building the Shared EFS File System",
+      "body": "EFS Creation\nSubheading: Mount Target Ready\nBefore mounting, the file system ID, the DNS name, the mount target's state and the security group rule allowing network file system traffic are all verified on both instances.\nEFS file system general settings\nThe file system details confirm it was created with General Purpose performance and Elastic throughput and shows an available state; this file system ID is what both instances must mount using the identical value.\nEFS mount target network configuration\nThe network access section shows the mount target placed in the same VPC and Availability Zone as the instances, with a security group attached that permits inbound network file system traffic from the instances' own security group.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Sharing, Diagnostics And Cleanup",
+      "body": "Sharing And Cleanup\nSubheading: Verify Then Remove\nInstance 1 terminal showing EFS mount and shared file\nThe output shows the EFS mount active at the mount directory, with the file created on this instance listed and readable, confirming the write succeeded on the shared filesystem.\nInstance 2 terminal reading the file from Instance 1\nThe same mount point on the second instance lists and reads the file created on Instance 1, proving both instances share one file system rather than two separate disks.\nWhen a file written on one instance is missing on the other, the mount listing on both instances usually reveals the cause.\nA disk-usage check confirms whether a shared file system is actually mounted there.\nA missing shared mount means the instance is still using its own local disk.\nA name-resolution check confirms the file system address is reachable before mounting.\nThe finished lab leaves one S3 object, one EBS file, and one EFS file visible from both instances.\nRemoving lab resources afterward follows a safe order so nothing shared or still in use is deleted by mistake.\nRecord the object name, volume ID and file system ID before removing anything.\nUnmount the shared file system on both instances before detaching the EBS volume.\nDelete only the extra EBS volume and file system created for this lab.\nTerminate only the two instances created for this lab, since termination cannot be undone.\nEmpty and delete only the bucket created for this lab.\nLeave any shared networking from an earlier session untouched.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Key Takeaways",
+      "body": "1. Block Storage: Volumes attached to instances; IOPS & throughput; use cases\n2. File Storage: Shared filesystems: NFS & SMB; when file storage beats block\n3. Object Storage: Buckets, objects, keys & metadata; the flat namespace\n4. Object Storage Mechanics: REST API access; presigned URLs; versioning\n5. Choosing a Storage Type: Comparison across performance, sharing, scale & cost\nUpcoming Session : Storage Tiering, Backup & DR\nThank You  |  All the Best",
+      "notes": "",
+      "tables": []
+    }
+  ]
+}

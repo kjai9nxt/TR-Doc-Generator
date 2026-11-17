@@ -4,7 +4,7 @@
 #
 # After connecting the repo, set these SECRET env vars in the Render dashboard
 # (marked sync:false, so they are NOT stored in git):
-#   OPENROUTER_API_KEY    your OpenRouter key
+#   ANTHROPIC_API_KEY     your Anthropic API key (console.anthropic.com)
 #   GOOGLE_CLIENT_ID      OAuth Web client id for @nxtwave.co.in
 #   TURSO_DATABASE_URL    libsql://<your-db>.turso.io   (from https://turso.tech)
 #   TURSO_AUTH_TOKEN      your Turso token
@@ -46,7 +46,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
-      - key: OPENROUTER_API_KEY
+      - key: ANTHROPIC_API_KEY
         sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false

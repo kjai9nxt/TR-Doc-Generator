@@ -475,8 +475,8 @@ def ask(state: dict, index: int, question: str, *, use_web: bool = True,
     model = m.get("judge") or m["generator"]
     web_note = ""
     # Web search is the same mechanism the judge already uses for market and recency
-    # checks: OpenRouter's ":online" variant, on the key that is already configured.
-    if use_web and m.get("provider", "openrouter").lower() == "openrouter":
+    # checks: a model id ending ":online" (see llm._anthropic_call).
+    if use_web and m.get("provider", "anthropic").lower() in ("anthropic", "openrouter"):
         if not model.endswith(":online"):
             model += ":online"
         web_note = (

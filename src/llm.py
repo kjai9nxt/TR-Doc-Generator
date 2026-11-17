@@ -1,9 +1,9 @@
 """Provider-aware LLM wrapper with JSON extraction + retries.
 
 Supports two providers, selected by harness model.provider:
-  - "openrouter" (or any OpenAI-compatible endpoint): plain HTTP via requests,
-    no extra SDK. Serves Claude Sonnet through OpenRouter.
-  - "anthropic": the native Anthropic Messages API SDK.
+  - "anthropic" (the default): the native Anthropic Messages API SDK, streamed.
+  - "openrouter" (or any OpenAI-compatible endpoint): plain HTTP via requests.
+    Kept as a fallback; switch back by setting provider/base_url/api_key_env.
 
 Model ids, base_url, and the key env var all come from the harness — nothing
 hardcoded here.
@@ -201,6 +201,14 @@ def _record_usage(label: str, model: str, usage: dict | None) -> None:
 _NON_TRANSIENT = (400, 401, 402, 403, 404)
 
 
+def _key_env() -> str:
+    """The env var the configured provider reads its key from (for error messages)."""
+    try:
+        return config.harness().get("model", {}).get("api_key_env") or "ANTHROPIC_API_KEY"
+    except Exception:
+        return "ANTHROPIC_API_KEY"
+
+
 def _provider_hint(status: int, body: str) -> str:
     """What a provider failure MEANS, in a sentence, ahead of its raw text.
 
@@ -215,7 +223,7 @@ def _provider_hint(status: int, body: str) -> str:
     """
     low = (body or "").lower()
     if status == 401:
-        return ("The API key was rejected. Check OPENROUTER_API_KEY in the environment — "
+        return (f"The API key was rejected. Check {_key_env()} in the environment — "
                 "this is a configuration problem, not a problem with the document.")
     if status == 402 or "insufficient" in low or "credit" in low:
         return ("The account is out of credit. Top it up and run this again; nothing "
@@ -223,7 +231,7 @@ def _provider_hint(status: int, body: str) -> str:
     if status == 403 and "limit" in low:
         return ("THE KEY'S SPEND LIMIT IS REACHED — not a fault in the app or the "
                 "document. Raise or clear the cap on the key (the link below opens it), "
-                "or point OPENROUTER_API_KEY at a key with room, then run this again. "
+                "or point " + _key_env() + " at a key with room, then run this again. "
                 "Everything already generated is still here.")
     if status == 403:
         return ("The provider refused the request for this key — usually a spend cap or "
@@ -283,8 +291,7 @@ def _truncation_error(max_tokens: int) -> TruncationError:
 def _key_or_raise() -> str:
     key = config.api_key()
     if not key:
-        env = config.harness().get("model", {}).get("api_key_env", "OPENROUTER_API_KEY")
-        raise RuntimeError(f"No API key found. Set {env} in the .env file.")
+        raise RuntimeError(f"No API key found. Set {_key_env()} in the .env file.")
     return key
 
 
@@ -416,47 +423,125 @@ def _complete_openai_compatible(system: str, user: str, *, model: str, max_token
 # --------------------------------------------------------------------------- #
 # native Anthropic SDK
 # --------------------------------------------------------------------------- #
-def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
-                        temperature: float, retries: int, label: str = "",
-                        system_extra: str = "", cached_context: str = "") -> str:
+# PRICES, because the Messages API returns tokens and no dollar figure (OpenRouter
+# returned `usage.cost`). USD per million tokens: (input, output). Cache reads bill at
+# 0.1x input; cache writes at 1.25x (5-minute TTL) or 2x (1-hour TTL). A model not in
+# this table records cost None and is counted as an unpriced call, not as $0.
+_PRICES = {
+    "claude-sonnet-5": (2.00, 10.00),
+    "claude-sonnet-5-5": (2.00, 10.00),
+    "claude-sonnet-4-6": (3.00, 15.00),
+    "claude-haiku-4-5": (1.00, 5.00),
+    "claude-haiku-5-5": (0.10, 0.50),
+    "claude-opus-5-5": (4.00, 20.00),
+    "claude-opus-5": (5.00, 25.00),
+}
+_WEB_SEARCH_USD = 10.00 / 1000          # per search
+# Haiku 4.5 predates the effort control and the dynamic-filtering web search tool.
+_NO_EFFORT = ("claude-haiku-4-5",)
+_BASIC_WEB_SEARCH = ("claude-haiku-4-5",)
+_WEB_SEARCH_MAX_USES = 12               # matches the judge prompt's "no more than 12"
+
+
+def _anthropic_usage(resp, model: str) -> dict:
+    """The response's usage as the meter's dict, with a computed cost.
+
+    `input_tokens` on the Messages API EXCLUDES cached tokens, where OpenRouter's
+    `prompt_tokens` included them — so the three are summed here to keep the report's
+    prompt-token column meaning the same thing across providers."""
+    u = getattr(resp, "usage", None)
+    if u is None:
+        return {}
+    fresh = getattr(u, "input_tokens", 0) or 0
+    read = getattr(u, "cache_read_input_tokens", 0) or 0
+    write = getattr(u, "cache_creation_input_tokens", 0) or 0
+    out = getattr(u, "output_tokens", 0) or 0
+    stu = getattr(u, "server_tool_use", None)
+    searches = (getattr(stu, "web_search_requests", 0) or 0) if stu is not None else 0
+    cost = None
+    price = _PRICES.get(model)
+    if price:
+        pin, pout = price
+        w_mult = 2.0 if str(config.harness()["model"].get("cache_ttl") or "") == "1h" else 1.25
+        cost = round((fresh * pin + read * pin * 0.1 + write * pin * w_mult
+                      + out * pout) / 1_000_000 + searches * _WEB_SEARCH_USD, 6)
+    return {"input_tokens": fresh + read + write, "output_tokens": out,
+            "cache_read_input_tokens": read, "cost": cost}
+
+
+def _anthropic_call(*, model: str, max_tokens: int, system, content, label: str,
+                    retries: int, context: str = "LLM call") -> str:
+    """One Messages API request, streamed, with retries. Returns the answer text.
+
+    STREAMED because the generator asks for up to 64k output tokens: the SDK refuses a
+    non-streaming request it expects to run past ten minutes, and a guided chunk that
+    thinks for six minutes is exactly that request.
+
+    NO `temperature`. Claude Sonnet 5 (and every model from it on) rejects sampling
+    parameters with a 400; depth is set with `effort` instead (harness
+    model.reasoning_effort, per call label).
+
+    WEB SEARCH is asked for the same way as on OpenRouter — a model id ending ":online"
+    — so the judge and the doc chat need no provider-specific code. Here the suffix is
+    stripped and Anthropic's server-side web search tool is attached instead."""
     try:
         import anthropic
     except ImportError as e:
         raise RuntimeError("Install the SDK:  pip install anthropic") from e
-    client = anthropic.Anthropic(api_key=_key_or_raise())
-    # Cache the large static system prompt across calls (see note in the
-    # OpenRouter path). Native SDK takes cache_control on a system text block.
-    system_param = _system_blocks(system, system_extra, cached_context)
+    web = model.endswith(":online")
+    model_id = model[: -len(":online")] if web else model
+    m = config.harness()["model"]
+    params = {"model": model_id, "max_tokens": max_tokens, "system": system}
+    effort = (m.get("reasoning_effort") or {}).get(label)
+    if effort and model_id not in _NO_EFFORT:
+        params["output_config"] = {"effort": str(effort)}
+    if web:
+        params["tools"] = [{
+            "type": ("web_search_20250305" if model_id in _BASIC_WEB_SEARCH
+                     else "web_search_20260209"),
+            "name": "web_search", "max_uses": _WEB_SEARCH_MAX_USES}]
+    client = anthropic.Anthropic(api_key=_key_or_raise(), timeout=_REQUEST_TIMEOUT_S,
+                                 max_retries=0)       # retried below, with the hints
     last = None
     for attempt in range(retries):
         try:
-            resp = client.messages.create(
-                model=model, max_tokens=max_tokens, temperature=temperature,
-                system=system_param, messages=[{"role": "user", "content": user}])
-            text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
-            if getattr(resp, "stop_reason", None) == "max_tokens":
-                _log_truncation(provider="anthropic", model=model,
+            messages = [{"role": "user", "content": content}]
+            blocks: list = []
+            # pause_turn: a long web-search turn can stop part-way; sending the partial
+            # turn back lets the server carry on where it left off.
+            for _ in range(4):
+                with client.messages.stream(messages=messages, **params) as s:
+                    resp = s.get_final_message()
+                _record_usage(label if resp.stop_reason != "max_tokens"
+                              else f"{label} (truncated)", model,
+                              _anthropic_usage(resp, model_id))
+                blocks.extend(resp.content)
+                if resp.stop_reason != "pause_turn":
+                    break
+                messages = messages + [{"role": "assistant", "content": resp.content}]
+            # With web search the answer is the text AFTER the last search result; the
+            # text before it is the model narrating its searches.
+            last_tool = max((i for i, b in enumerate(blocks)
+                             if getattr(b, "type", "").endswith("_tool_result")), default=-1)
+            text = "".join(b.text for b in blocks[last_tool + 1:]
+                           if getattr(b, "type", "") == "text")
+            if resp.stop_reason == "max_tokens":
+                _log_truncation(provider="anthropic", model=model_id,
                                 finish_reason="max_tokens", max_tokens=max_tokens,
                                 usage=getattr(resp, "usage", None), content=text)
-                _u = getattr(resp, "usage", None)
-                if _u is not None:                  # billed, so it is metered
-                    _record_usage(f"{label} (truncated)", model,
-                                  {"input_tokens": getattr(_u, "input_tokens", None),
-                                   "output_tokens": getattr(_u, "output_tokens", None)})
                 raise _truncation_error(max_tokens)
-            u = getattr(resp, "usage", None)
-            if u is not None:
-                # Native SDK has no cost field; record tokens (cost stays None).
-                _record_usage(label, model, {"input_tokens": getattr(u, "input_tokens", None),
-                                             "output_tokens": getattr(u, "output_tokens", None)})
+            if resp.stop_reason == "refusal":
+                det = getattr(resp, "stop_details", None)
+                raise _Refusal(
+                    "The model declined this request (stop_reason=refusal"
+                    + (f", {det.category}" if det is not None and getattr(det, "category", None)
+                       else "") + "). Rephrasing the input may help.")
             return text
-        except TruncationError:
-            raise  # retrying would truncate identically — surface it now
+        except (TruncationError, _Refusal):
+            raise  # retrying would end identically — surface it now
         except Exception as e:
-            # SAME SHORT-CIRCUIT AS THE HTTP PATH. A rejected key or a reached spend cap
-            # is not going to come good on the third attempt, and this path retried all
-            # of them with backoff — so a misconfigured key took three sleeps to report
-            # what it knew immediately.
+            # A rejected key or a reached spend cap is not going to come good on the
+            # third attempt — report it at once, with the plain-language hint first.
             status = getattr(e, "status_code", None) or getattr(
                 getattr(e, "response", None), "status_code", None)
             hint = _provider_hint(status, str(e)) if isinstance(status, int) else ""
@@ -464,7 +549,19 @@ def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
             if isinstance(status, int) and status in _NON_TRANSIENT:
                 break
             time.sleep(2 * (attempt + 1))
-    raise RuntimeError(f"LLM call failed after {retries} retries: {last}")
+    raise RuntimeError(f"{context} failed after {retries} attempt(s): {last}")
+
+
+class _Refusal(RuntimeError):
+    """stop_reason=refusal — the same input would be declined again, so not retried."""
+
+
+def _complete_anthropic(system: str, user: str, *, model: str, max_tokens: int,
+                        temperature: float, retries: int, label: str = "",
+                        system_extra: str = "", cached_context: str = "") -> str:
+    return _anthropic_call(model=model, max_tokens=max_tokens,
+                           system=_system_blocks(system, system_extra, cached_context),
+                           content=user, label=label, retries=retries)
 
 
 def complete(system: str, user: str, *, model: str, max_tokens: int,
@@ -474,7 +571,7 @@ def complete(system: str, user: str, *, model: str, max_tokens: int,
     — for instructions that must carry system-level authority but change between
     calls (the reviewer-enforced rules)."""
     m = config.harness()["model"]
-    provider = m.get("provider", "openrouter").lower()
+    provider = m.get("provider", "anthropic").lower()
     if provider == "anthropic":
         return _complete_anthropic(system, user, model=model, max_tokens=max_tokens,
                                    temperature=temperature, retries=retries, label=label,
@@ -502,33 +599,15 @@ def complete_vision(system: str, user: str, images: list[tuple[str, str]], *,
     calls are short and each carries its own picture.
     """
     m = config.harness()["model"]
-    provider = m.get("provider", "openrouter").lower()
+    provider = m.get("provider", "anthropic").lower()
     effort = (m.get("reasoning_effort") or {}).get(label)
     if provider == "anthropic":
-        try:
-            import anthropic
-        except ImportError as e:
-            raise RuntimeError("Install the SDK:  pip install anthropic") from e
-        client = anthropic.Anthropic(api_key=_key_or_raise())
         content = [{"type": "image", "source": {"type": "base64", "media_type": mime,
                                                  "data": b64}} for mime, b64 in images]
         content.append({"type": "text", "text": user})
-        last = None
-        for attempt in range(retries):
-            try:
-                resp = client.messages.create(model=model, max_tokens=max_tokens,
-                                              temperature=temperature, system=system,
-                                              messages=[{"role": "user", "content": content}])
-                text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
-                u = getattr(resp, "usage", None)
-                if u is not None:
-                    _record_usage(label, model, {"input_tokens": getattr(u, "input_tokens", None),
-                                                 "output_tokens": getattr(u, "output_tokens", None)})
-                return text
-            except Exception as e:
-                last = e
-                time.sleep(2 * (attempt + 1))
-        raise RuntimeError(f"LLM vision call failed: {last}")
+        return _anthropic_call(model=model, max_tokens=max_tokens, system=system,
+                               content=content, label=label, retries=retries,
+                               context="LLM vision call")
     url = m.get("base_url", "https://openrouter.ai/api/v1").rstrip("/") + "/chat/completions"
     headers = {"Authorization": f"Bearer {_key_or_raise()}", "Content-Type": "application/json",
                "HTTP-Referer": "https://local.tr-doc-generator", "X-Title": "TR Doc Generator"}

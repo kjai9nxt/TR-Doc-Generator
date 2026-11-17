@@ -1,0 +1,437 @@
+{
+  "session_no": 26,
+  "source_file": "CN — session 26",
+  "deck_title": "CN — session 26",
+  "n_slides": 61,
+  "summary": "\n    - Slide 2: Remote Logging & NMS\n    - Slide 3: Understanding TLS and HTTPS\n    - Slide 4: Remote Logging & NMS\n    - Slide 5: Remote Logging\n    - Slide 6: Remote Logging\n    - Slide 7: Remote Logging\n    - Slide 8: Remote Logging\n    - Slide 9: Remote Logging\n    - Slide 10: Remote Logging\n    - Slide 11: Remote Logging\n    - Slide 12: Remote Logging\n    - Slide 13: Remote Logging\n    - Slide 14: Telnet\n    - Slide 15: Telnet\n    - Slide 16: Telnet\n    - Slide 17: Telnet\n    - Slide 18: Telnet\n    - Slide 19: Telnet\n    - Slide 20: Telnet\n    - Slide 21: Remote Logging\n    - Slide 22: SSH (Secure Shell)\n    - Slide 23: SSH (Secure Shell)\n    - Slide 24: SSH (Secure Shell)\n    - Slide 25: SSH (Secure Shell)\n    - Slide 26: SSH (Secure Shell)\n    - Slide 27: SSH Authentication Methods\n    - Slide 28: Telnet and SSH\n    - Slide 29: Network Management\n    - Slide 30: Network Management\n    - Slide 31: Network Management\n    - Slide 32: Network Management System (NMS)\n    - Slide 33: Network Management\n    - Slide 34: Network Management System (NMS)\n    - Slide 35: Quiz Time!\n    - Slide 36: SNMP Protocol\n    - Slide 37: Network Management Protocols\n    - Slide 38: Simple Network Management Protocol\n    - Slide 39: Network Management System (NMS)\n    - Slide 40: SNMP Architecture\n    - Slide 41: SNMP Architecture\n    - Slide 42: SNMP Architecture\n    - Slide 43: SNMP Architecture\n    - Slide 44: SNMP Messages & Versions\n    - Slide 45: SNMP Messages\n    - Slide 46: SNMP Protocols\n    - Slide 47: SNMP Protocols\n    - Slide 48: SNMP Protocols\n    - Slide 49: SNMP Protocols\n    - Slide 50: SNMP Protocols\n    - Slide 51: SNMP Protocols\n    - Slide 52: SNMP Protocols\n    - Slide 53: SNMP Protocols\n    - Slide 54: SNMP Versions - v1, v2c, v3\n    - Slide 55: SNMP Versions - v1, v2c, v3\n    - Slide 56: SNMP Versions - v1, v2c, v3\n    - Slide 57: Quiz Time!\n    - Slide 58: Remote Logging & NMS\n    - Slide 59: Multimedia Networking & VoIP",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Remote Logging & NMS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Understanding TLS and HTTPS",
+      "body": "Understanding TLS and HTTPS\nTLS Handshake\nDigital Signature\nCertificate Authorities\nCertificate Chain\nSelf-Signed Certificate\nHTTPS Internals\nEncryption, Authentication\nTLS Handshake\nDigital Signature\nCertificate Authorities\nCertificate Chain\nSelf-Signed Certificate\nHTTPS Internals\nEncryption, Authentication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Remote Logging & NMS",
+      "body": "Remote Logging & NMS\nNetwork Management\nSNMP Protocol\nRemote Logging\nSNMP Messages & Versions\nTelnet & SSH\nArchitecture\nVersions: v1, v2c, v3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Remote Logging",
+      "body": "Remote Logging",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Remote Logging",
+      "body": "Introduction\nRemote Logging is the process of accessing and controlling a computer or network device from a distant location over a network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Remote Logging",
+      "body": "Introduction\nRemote Logging\nAccess Remotely\nExecute Commands\nTroubleshoot Issues",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Remote Logging",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Remote Logging",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Remote Logging",
+      "body": "Introduction\nTwo main protocols enable this\nTelnet\nSSH",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Remote Logging",
+      "body": "What is a Port ?\nThink of an IP address as an apartment building address, and a Port number as the flat number inside, It tells the data which application's door to knock on",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Remote Logging",
+      "body": "What is Telnet?\nTELNET stands for TELecommunication NETwork (also called Terminal Network). It is an application-layer protocol used for remote login over a TCP/IP network. It uses TCP Port 23, Developed in 1969, one of the oldest internet protocols\nInput from client\u000bKeyboard to server\nOutput from Server\u000bTo client display",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Remote Logging",
+      "body": "What is NVT?\nNVT (Network Virtual Terminal) is a virtual device that acts as a translator between different types of real terminals\nSince different computers may use different character sets, NVT provides a common standard format so that any machine can communicate with any other machine, regardless of their operating system\nNVT (Network Virtual Terminal)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Telnet",
+      "body": "How Does Telnet Work?\nUser types characters on the local machine\nTelnet Client converts characters into NVT (Network Virtual Terminal) format \nNVT-formatted characters travel through the Internet via TCP Port 23",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Telnet",
+      "body": "How Does Telnet Work?\nTelnet Server on the remote machine converts NVT characters back into a format the remote OS understands\nRemote OS executes the command and sends the output back through the same path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Telnet",
+      "body": "Data Journey\nTelnet Client\nLocal Machine\nNVT Encoding\u000b(Universal Format)\nTelnet Server\n(Remote Machine)\nNVT\u000bDecoding\nInternet\nTCP Port 23/ Internet\nOutput Data\nUser typing Input",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Telnet",
+      "body": "User Journey (4 - Step Process)\nStart Session: “telnet < address”\nConnect & Login: Enter Credentials Run Commands, Manage Files\nRemote Control\nTerminate: Type “exit”/ “quit”",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Telnet",
+      "body": "Why is Telnet Insecure?\nTelnet transmits all data in plain text including usernames and passwords\nNo encryption: data travels through the network as readable text\nNo authentication mechanism: does not verify the identity of the server\nProblem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Telnet",
+      "body": "Why is Telnet Insecure?\nAnyone on the network between the client and server can intercept and read the data using a packet sniffer (like Wireshark)\nVulnerable to Man-in-the-Middle (MITM) attacks\nVulnerable to eavesdropping and credential theft\nConsequence",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Telnet",
+      "body": "Why is Telnet Insecure?\nBecause of these security flaws, telnet has been largely replaced by SSH for remote access in modern networks. Telnet is still used in some legacy systems and for local network testing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Remote Logging",
+      "body": "What is SSH (Secure Shell) ?\nSSH stands for Secure Shell\nIt is a cryptographic network protocol for secure remote login and command execution over an unsecured network\nIt uses TCP Port 22\nCreated in 1995 by Tatu Ylönen as a secure replacement for Telnet\nCurrent version: SSH-2 (standardized by IETF)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "SSH (Secure Shell)",
+      "body": "How Does SSH Work ?\nThree Security Pillars \nMessage Type\nDirection\nLock\nEncryption\nPurpose\nAll data (including passwords, commands, output) is encrypted using algorithms like AES, so even if intercepted, it cannot be read\nShield\nAuthentication\nSSH verifies identity of both the server and the user. Supports password-based and public key-based authentication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "SSH (Secure Shell)",
+      "body": "How Does SSH Work ?\nMessage Type\nDirection\nCheckmark\nData Integrity\nPurpose\nUses hashing (SHA, MD5) to ensure data is not tampered with during transmission",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "SSH (Secure Shell)",
+      "body": "SSH Architecture\nTransport Layer\nTCP/IP Connection, Encryption, Compression, Integrity Checks, Key Exchange\nUser Authentication Layer\nPassword, Public Key, Host-based\nConnection Layer\nMultiple Logical Channels, Shell, SCP, SFTP, Port Forwarding\nClient\nServer\nSSH Session",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "SSH (Secure Shell)",
+      "body": "SSH Authentication Methods\nPassword-Based\nUser enters a username and password, Unlike Telnet, the password is encrypted before being sent over the network, Simple to use, but weak passwords can still be guessed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "SSH (Secure Shell)",
+      "body": "SSH Authentication Methods\nKey-Based (Public Key)\nUser generates a key pair a Public Key (kept on server) and a Private Key (kept on user's machine), Only the matching pair can establish a connection, More secure, no password travels over the network at all",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "SSH Authentication Methods",
+      "body": "Analogy\n Password-based is like entering a building by telling the guard a secret code, secure, but someone could overhear it, Key-based is like using a unique fingerprint scanner, only your fingerprint works, and you can't copy it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Telnet and SSH",
+      "body": "Key Insight\nSSH has almost entirely replaced Telnet in modern networks\nThe only reason Telnet still exists is for backward compatibility with very old (legacy) devices that don't support SSH\nIn interviews and exams, always emphasize that Telnet sends data in plain text, while SSH encrypts everything",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Network Management",
+      "body": "Network Management",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Network Management",
+      "body": "What is Network Management ?\nNetwork management refers to the process of monitoring, maintaining, and optimizing a network to ensure its efficient and secure operation.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Network Management",
+      "body": "Network Management System (NMS)\nA Network Management System (NMS) is a software tool that monitors, controls, and manages network devices and services \nNetwork Management System\nMonitors\nControls\nManages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Network Management System (NMS)",
+      "body": "Functions of NMS\nMonitors devices and collects data\nDetects faults and raises alerts\nTracks performance (traffic, errors, utilization)\nManages configurations and generates reports",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Network Management",
+      "body": "Network Management System\nNMS ensure the \nNetwork runs efficiently\nDetects problems\nHelps administrators resolve issues quickly",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Network Management System (NMS)",
+      "body": "NMS Tools",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "SNMP Protocol",
+      "body": "SNMP Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Network Management Protocols",
+      "body": "What is SNMP?\nSNMP stands for Simple Network Management Protocol\nSNMP is an application-layer protocol for monitoring and managing network devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Simple Network Management Protocol",
+      "body": "What Does SNMP Monitor?\nRouters\nSwitches\nFirewalls\nServers\nIoT devices\nCheck link status, bandwidth usage\n Monitor port status, errors \nTrack rules, traffic, CPU load \nMonitor memory, CPU, disk usage\nMonitor device status and health",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Network Management System (NMS)",
+      "body": "SNMP Components\nSNMP Components\nCentral software that queries devices and displays network data\nProgram on each device that collects and reports local data\nDatabase defining what device information can be monitored",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "SNMP Architecture",
+      "body": "How They Work Together?\nAgent Devices(Routers, Switches, etc)\nSNMP Manager\nMIB Database\nSNMP Agent Software\nSNMP Commands\nNMS\nSNMP Manager Software\nInternet\nSNMP Response",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "SNMP Architecture",
+      "body": "How They Work Together?\nManager sends query (e.g. “What is the CPU usage?”) to Agent\nAgent checks its MIB, retrieves the corresponding value\nAgent sends response back to Manager\nAgent Devices(Routers, Switches, etc)\nSNMP Manager\nMIB Database\nSNMP Agent Software\nSNMP Commands\nNMS\nSNMP Manager Software\nInternet\nSNMP Response",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "SNMP Architecture",
+      "body": "How They Work Together?\nAgent may also send alerts on its own (without being asked) to the Manager when critical events occur\nAlerts",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "SNMP Architecture",
+      "body": "Alerts\nHigh Resource usage\nCPU/memory reaching limits →  may lead to performance issues\nErrors\nPacket drops or interface faults → indicates hardware or network problems\nLink down\nA physical or logical connection has failed → communication is disrupted",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "SNMP Messages & Versions",
+      "body": "SNMP Messages & Versions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "SNMP Messages",
+      "body": "Doctor Patient Analogy\n“What is your Temperature?”\n“What about blood pressure?”\nGet Request \nGetNext Request \n“Take this Medicine now”\nSet Request\n“My Temperature is 101oF\nGetResponse\nClient (Doctor)\nServer (Patient)\n(SNMP Agent)\n(SNMP Manager)\nTRAP: Doctor! \u000bI Can't breathe",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "SNMP Protocols",
+      "body": "SNMP Messages\nIs your network interface UP?\n“Yes, interface is UP”\n“Interface just went DOWN!”\n2 hours later…\nStep 2\nStep 1\nStep 3\n(Sent without being asked)\nGetResponse\nGetRequest\nTrap\n(port 161)\n(port 161)\n(port 162)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "SNMP Protocols",
+      "body": "SNMP Messages\nSNMP knocks on door 161 for regular communication and door 162 for emergency alerts\nSNMP uses Port 161 for queries and Port 162 for Traps\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "SNMP Protocols",
+      "body": "SNMP Messages\nSNMP\u000bManager\nSNMP\u000bAgent\nGet Response\nTrap (unsolicited)\nSet Request\nGetNext Request\nGet Request",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "SNMP Protocols",
+      "body": "SNMP Messages\nMessage Type\nDirection\nGetRequest\nManager → Agent\nGetNextRequest\nManager → Agent\nPurpose\nManager asks for a specific value (e.g., \"What is the CPU usage?\")\nManager asks for the next value in the MIB tree (used for walking through MIB entries sequentially)\nSetRequest\nManager → Agent\nManager changes/sets a value on the agent (e.g., \"Set the interface status to UP\")",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "SNMP Protocols",
+      "body": "SNMP Messages\nMessage Type\nDirection\nGetResponse\nAgent → Manager\nPurpose\nAgent sends back the requested value as a response to Get/Set requests\nTrap\nAgent → Manager\nAgent sends an unsolicited alert to the Manager when a critical event occurs (e.g., link down, high CPU) — No acknowledgement from Manager",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "SNMP Protocols",
+      "body": "SNMP Versions - v1, v2c, v3\nSNMPv1\nFirst version of SNMP\nUses a shared password called Community String\nPassword sent in plain text anyone can read it\nNot Secure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "SNMP Protocols",
+      "body": "SNMP Versions - v1, v2c, v3\nSNMPv2c\n\"c\" stands for community-based\nStill sends password in plain text\nAdded new useful messages: GetBulk and Inform\nBetter performance for large networks\nFaster, but still not secure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "SNMP Protocols",
+      "body": "SNMP Versions - v1, v2c, v3\nSNMPv3\nProvides proper authentication (verifies identity)\nProvides encryption (scrambles data similar to what we learned in TLS/HTTPS in S6)\nControls who can access what on each device\nSecure, Recommended for use",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "SNMP Versions - v1, v2c, v3",
+      "body": "Analogy\nShouting your password \u000bin a crowded room \u000beveryone hears it\nV1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "SNMP Versions - v1, v2c, v3",
+      "body": "Analogy\nShouting louder and faster still everyone hears it\nV2c",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "SNMP Versions - v1, v2c, v3",
+      "body": "Analogy\nWhispering through a private encrypted phone call no \u000bone else can listen\nV3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Remote Logging & NMS",
+      "body": "Remote Logging\nTelnet & SSH\nNetwork Management\nSNMP Protocol\nArchitecture\nSNMP Messages & Versions\nVersions: v1, v2c, v3\nKey Takeaways\nNetwork Management\nSNMP Protocol\nRemote Logging\nSNMP Messages & Versions\nTelnet & SSH\nArchitecture",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Multimedia Networking & VoIP",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1CsuAIfup18xvNM-0lMeKX9EhDZUOQkQCAj_k3dfFM4g/edit"
+}

@@ -1,0 +1,535 @@
+{
+  "session_no": 14,
+  "source_file": "CN — session 14",
+  "deck_title": "CN — session 14",
+  "n_slides": 75,
+  "summary": "\n    - Slide 2: Routing Algorithms\n    - Slide 3: Packet Delivery Mechanisms\n    - Slide 4: Packet Delivery Mechanisms\n    - Slide 5: Routing Algorithms\n    - Slide 6: What is Routing?\n    - Slide 7: What is Routing?\n    - Slide 8: What is Routing?\n    - Slide 9: Static vs Dynamic Routing\n    - Slide 10: Static vs Dynamic Routing\n    - Slide 11: Static vs Dynamic Routing\n    - Slide 12: Static vs Dynamic Routing\n    - Slide 13: Distance Vector Routing\n    - Slide 14: Distance Vector Routing\n    - Slide 15: Distance Vector Routing\n    - Slide 16: Routing by Word of Mouth\n    - Slide 17: Distance Vector Routing\n    - Slide 18: Distance Vector Routing\n    - Slide 19: Count-to-Infinity Problem\n    - Slide 20: Count-to-Infinity Problem\n    - Slide 21: Count-to-Infinity Problem\n    - Slide 22: When Routers Count Forever\n    - Slide 23: When Routers Count Forever\n    - Slide 24: When Routers Count Forever\n    - Slide 25: When Routers Count Forever\n    - Slide 26: When Routers Count Forever\n    - Slide 27: When Routers Count Forever\n    - Slide 28: When Routers Count Forever\n    - Slide 29: When Routers Count Forever\n    - Slide 30: When Routers Count Forever\n    - Slide 31: RIP - Routing Information Protocol\n    - Slide 32: RIP - Routing Information Protocol\n    - Slide 33: RIP - Routing Information Protocol\n    - Slide 34: RIP - Routing Information Protocol\n    - Slide 35: RIP - Routing Information Protocol\n    - Slide 36: RIP - Routing Information Protocol\n    - Slide 37: Quiz Time!\n    - Slide 38: Link State Routing\n    - Slide 39: Link State Routing\n    - Slide 40: Link State Routing\n    - Slide 41: Link State Routing\n    - Slide 42: Link State Routing\n    - Slide 43: Link State Routing\n    - Slide 44: Link State Routing\n    - Slide 45: Dijkstra's Shortest Path Algorithm\n    - Slide 46: Dijkstra's Shortest Path Algorithm\n    - Slide 47: Dijkstra's Shortest Path Algorithm\n    - Slide 48: Dijkstra's Shortest Path Algorithm\n    - Slide 49: Dijkstra's Shortest Path Algorithm\n    - Slide 50: Dijkstra's Shortest Path Algorithm\n    - Slide 51: Dijkstra's Shortest Path Algorithm\n    - Slide 52: Dijkstra's Shortest Path Algorithm\n    - Slide 53: Dijkstra's Shortest Path Algorithm\n    - Slide 54: Dijkstra's Shortest Path Algorithm\n    - Slide 55: Dijkstra's Shortest Path Algorithm\n    - Slide 56: Dijkstra's Shortest Path Algorithm\n    - Slide 57: Shortest Path Routing\n    - Slide 58: Shortest Path Routing\n    - Slide 59: Shortest Path Routing\n    - Slide 60: OSPF - Open Shortest Path First\n    - Slide 61: OSPF - Open Shortest Path First\n    - Slide 62: OSPF - Open Shortest Path First\n    - Slide 63: OSPF - Open Shortest Path First\n    - Slide 64: OSPF - Open Shortest Path First\n    - Slide 65: DV vs Link State\n    - Slide 66: Distance Vector vs Link State\n    - Slide 67: Distance Vector vs Link State\n    - Slide 68: Distance Vector vs Link State\n    - Slide 69: Distance Vector vs Link State\n    - Slide 70: Distance Vector vs Link State\n    - Slide 71: Quiz Time!\n    - Slide 72: Routing Algorithms\n    - Slide 73: Internet Scaling Mechanisms",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Routing Algorithms",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Packet Delivery Mechanisms\nDelivery Mechanisms\nDirect Delivery\nIndirect Delivery\nForwarding Mechanism\nForwarding Table\nNext-Hop Concept",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Packet Delivery Mechanisms\nRouting Decision\nLongest Prefix Match\nNetwork Address Translation (NAT)\nPrivate vs Public IP Addresses\nStatic NAT\nDynamic NAT\nPort Address Translation (PAT)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Routing Algorithms",
+      "body": "Routing Algorithms\nDistance Vector Routing\nCount-to-Infinity Problem\nStatic vs Dynamic Routing\nBellman-Ford Algorithm & RIP\nLink State Routing\nCauses & Solutions\nDV vs Link State\nDijkstra's , Shortest Path Routing & OSPF\nComparison",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "What is Routing?",
+      "body": "Routing vs Forwarding\nThe Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "What is Routing?",
+      "body": "Type\nHow\nWhat\nRouting\nSoftware - runs periodically or on network change\nBuilds and maintains the table of best paths\nSpeed\nSlow - happens in background\nForwarding\nHardware - runs on every incoming packet\nSends each packet out the correct interface\nFast - happens in microseconds\nRouting vs Forwarding\nTwo key operations at the Network Layer:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "What is Routing?",
+      "body": "Routing vs Forwarding\nRouting\nForwarding",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Static vs Dynamic Routing",
+      "body": "Static vs Dynamic Routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Static vs Dynamic Routing",
+      "body": "How Routers Learn Paths?\nParameter\nAdaptability\nConfiguration\nStatic Routing\nNo - fixed routes\nManual by admin\nOverhead\nNone\nDynamic Routing\nYes - recalculates on failure\nAutomatic via protocol\nBandwidth + CPU for protocol messages\nScalability\nSmall, fixed networks\nExamples\nIP Route\nLarge, changing networks\nRIP, OSPF, BGP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Static vs Dynamic Routing",
+      "body": "How Routers Learn Paths?\nStatic routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Static vs Dynamic Routing",
+      "body": "How Routers Learn Paths?\nDynamic routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Distance Vector Routing",
+      "body": "Distance Vector Routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Distance Vector Routing",
+      "body": "Definition\nIn Distance Vector Routing, each router maintains a table of distances (costs) to every destination and shares this table only with its directly connected neighbours",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Distance Vector Routing",
+      "body": "How it Works?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Routing by Word of Mouth",
+      "body": "The Bellman-Ford Update Rule",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Distance Vector Routing",
+      "body": "Key Properties\nPartial knowledge - Each router knows only what neighbours report, not the full topology\nDistributed - Every router runs the same algorithm independently\nSlow convergence - Changes propagate one hop at a time",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Distance Vector Routing",
+      "body": "Routing by Word of Mouth\nSTEPS : 5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Count-to-Infinity Problem",
+      "body": "Count-to-Infinity Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Count-to-Infinity Problem",
+      "body": "When Routers Count Forever\nThe Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Count-to-Infinity Problem",
+      "body": "Result\nWhen Routers Count Forever",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "When Routers Count Forever",
+      "body": "What Happens - Step by Step",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "When Routers Count Forever",
+      "body": "What Happens - Step by Step",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "When Routers Count Forever",
+      "body": "What Happens - Step by Step\nA\nB\nC\nStale table\nLink failed\ntable: \nC = cost 2\nLost direct route to C\nUnreachable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "When Routers Count Forever",
+      "body": "What Happens - Step by Step",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "When Routers Count Forever",
+      "body": "What Happens - Step by Step\nA\nB\nCost = 3\nCost = 4\nUpdates to 4\nUpdates to 5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "When Routers Count Forever",
+      "body": "What Happens - Step by Step\nCost keeps rising every exchange :\n3\n4\n5\n8\n12\n16 = ∞\nUnreachable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "When Routers Count Forever",
+      "body": "Solutions\nDefine Infinity as a Small Number\nRIP uses 16. If cost = 16, destination is unreachable. Stops infinite counting. (Limits network to 15 hops.)\nRoute Poisoning\nWhen a route fails, the router advertises it with cost = infinity instead of removing it silently. Actively tells all neighbours: \"This destination is dead.\"\nInternet\nMetric : ∞",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "When Routers Count Forever",
+      "body": "Solutions\nSplit Horizon\nA router does not advertise a route back to the neighbour it learned it from. Prevents loops from forming in the first place\nInternet\n1\n1\n1\n(not performed)\n(not performed)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "When Routers Count Forever",
+      "body": "Solutions\nPoison Reverse\nPoison Reverse improves Split Horizon by advertising the route back with infinite cost instead of staying silent\nHold-Down Timers & Triggered Updates\nAfter a failure, ignore stale updates for a set time. Send immediate updates when a change is detected instead of waiting for the 30-second timer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "RIP - Routing Information Protocol",
+      "body": "Distance Vector in Practice\nRIP (Routing Information Protocol) is a Distance Vector routing protocol that uses hop count as its metric. It is simple and easy to configure but suitable only for small networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "RIP - Routing Information Protocol",
+      "body": "Distance Vector in Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "RIP - Routing Information Protocol",
+      "body": "Key Facts\nMetric\n1\nHop count (1 hop = cost 1; ignores bandwidth/delay) Max Hop Count: 15 (16 = unreachable)\nMetric\n1\nHop count (1 hop = cost 1; ignores bandwidth/delay) Max Hop Count: 15 (16 = unreachable)\nMaximum Hop Count\n2\nA cost of 16 = infinity = destination unreachable\nUpdate Method\n3\nEvery 30 sec (RIPv1: broadcast, RIPv2: multicast 224.0.0.9)\nVersions\n4\nRIPv1 : classful, no auth \nRIPv2: classless, supports CIDR & auth",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "RIP - Routing Information Protocol",
+      "body": "Distance Vector in Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "RIP - Routing Information Protocol",
+      "body": "Distance Vector in Practice\n1\n2\n3\n4\n1\n2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "RIP - Routing Information Protocol",
+      "body": "Distance Vector in Practice\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Link State Routing",
+      "body": "Link State Routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Link State Routing",
+      "body": "Definition\nIn Link State Routing, every router builds a complete map of the entire network topology. Each router then independently runs Dijkstra's algorithm on this map to compute the shortest path to every destination",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Link State Routing",
+      "body": "How it Works - 5 Steps\nEach router discovers its directly connected neighbours and the cost to each\nEach router creates a Link State Advertisement (LSA) - a small packet listing its neighbours and link costs\n1\n2\nEach router floods its LSA to all routers (not just neighbors). Flooding means forwarding it on all interfaces except the one it arrived on, so every router receives a copy\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Link State Routing",
+      "body": "Every Router Knows the Full Map\nEvery router collects all LSAs and builds the same complete network graph — the Link State Database (LSDB).\nEach router independently runs Dijkstra's algorithm on the LSDB and builds a complete routing table - no dependency on neighbours for path decisions\n4\n5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Link State Routing",
+      "body": "Key Properties",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Link State Routing",
+      "body": "Every Router Knows the Full Map\nEach route knows only its direct links\nLSA flood\nFull map - run Dijkstra\nStep 1-2 Discover neighbours, create LSA\nEach route floods its LSA to every other route\nStep 3-4 Flood LSA to all, build LSDB\nAll routers hold same LSDB. Each runs Dijkstra independently\nStep 5 Run Dijkstra on LSDB, build routing table\nLocal Knowledge only\nDistance Vector - routers share\nCosts with neighbours only | Link State - routers share topology with everyone\nLSA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Link State Routing",
+      "body": "Every Router Knows the Full Map",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path\nDijkstra’s algorithm finds the lowest-cost paths from one router to all others using a complete network graph. It requires non-negative link costs, as negative values can break correctness",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Algorithm Steps\nSet cost to source router = 0. Set cost to all others = ∞\nMark all nodes as unvisited\nPick the unvisited node with the smallest known cost - make it the current node",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "For each unvisited neighbour: if (cost to current + link cost) < known cost, update it\nMark current node as visited,  its shortest path is now final\nRepeat from Step 3 until all nodes are visited\nAlgorithm Steps",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path\nTwo key properties\nGreedy choice - always pick the cheapest unvisited node next\nRelaxation - update a neighbour's cost only if a cheaper path is found through the current node",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path\nA \ncost: 0\nC \ncost: ∞\nB \ncost: ∞\nD\ncost: ∞\n4\n1\n3\n7\n2\nSource",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path\nA \ncost: 0\nC \ncost: 2(via A)\nB \ncost: 4(via A)\nD\ncost: ∞\n4\n1\n3\n7\n2\nSource",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path\nA \ncost: 0\nC \ncost: 2\nD\ncost: \n9(via A→C)\n4\n1\n3\n7\n2\nSource\nB \ncost: \n4(via A→C)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path\nA \ncost: 0\nC \ncost: 2\nD\ncost: \n6(via A→C→B)\n4\n1\n3\n7\n2\nSource\nB \ncost: 3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path\nA \ncost: 0\nC \ncost: 2\nD\ncost: 6\n4\n1\n3\n7\n2\nSource\nB \ncost: 3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Step\n1\nStart\nCurrent Node\nA (cost=0)\n—\n2\nC (cost=2)\n3\nB (cost=3)\n4\nD (cost=6)\nCost to B\n4 (via A)\n∞\n3 (via A→C)\nvisited\nvisited\nCost to C\n2 (via A)\n∞\nvisited\nvisited\nvisited\nCost to D\n∞\n∞\n9 (via A→C)\n6 (via A→C→B)\nvisited\nFinding the Shortest Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Key Rule\nOnce a node is marked visited, its cost is final - it will never change. This is what makes Dijkstra correct and efficient\nFinding the Shortest Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Dijkstra's Shortest Path Algorithm",
+      "body": "Finding the Shortest Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Shortest Path Routing",
+      "body": "Finding the Cheapest Path\nIn networking, shortest path does not always mean fewest hops \nIt means the path with the lowest total cost, where cost depends on the metric used:\nRIP - Cost = number of hops (1 per router hop, max 15)\nOSPF - Cost = 100 Mbps / Link Bandwidth (higher bandwidth = lower cost)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Shortest Path Routing",
+      "body": "Network: A—B (cost 5), A—C (cost 2), C—B (cost 1), B—D (cost 4), C—D (cost 9)\nFind the shortest path from A to D\nFinding the Cheapest Path\nShortest path = A → C → B → D, Total cost = 7\nPath A → D direct via C = 11. Path via C → B = 7. Dijkstra picks the cheaper one",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Shortest Path Routing",
+      "body": "1\n2\n3\n4\nFinding the Cheapest Path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "OSPF - Open Shortest Path First",
+      "body": "Link State at Scale\nOSPF (Open Shortest Path First) is the most widely used Link State routing protocol, used inside enterprise networks and by ISPs. OSPF solves both major limitations of RIP - the weak hop-count metric and the 15-hop scalability problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "OSPF - Open Shortest Path First",
+      "body": "Key Facts about OSPF\nAlgorithm & Metric\nUses Dijkstra; bandwidth-based cost (higher bandwidth = lower cost)\nTransport\nRuns over IP (Protocol 89), no TCP/UDP\nUpdates & Convergence\nTriggered updates → fast convergence",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "OSPF - Open Shortest Path First",
+      "body": "Key Facts about OSPF\nNeighbour Discovery\nHello packets to form adjacencies\nScalability\nUses Areas (Area 0 backbone) for large networks\nFeatures\nSupports CIDR, VLSM, authentication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "OSPF - Open Shortest Path First",
+      "body": "Link State at Scale\nRIP uses hop count - ignores bandwidth. OSPF uses bandwidth - smarter metric\nRIP updates every 30 seconds - slow to react. OSPF triggers updates immediately\nRIP limited to 15 hops. OSPF scales to any size with areas\nOSPF has no count-to-infinity problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "OSPF - Open Shortest Path First",
+      "body": "Link State at Scale",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "DV vs Link State",
+      "body": "DV vs Link State",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Distance Vector vs Link State",
+      "body": "Two Philosophies of Routing\nFeature\nAlgorithm\nTopology Knowledge\nDistance Vector (RIP)\nBellman-Ford\nPartial - only neighbour-reported costs\nInformation Shared\nFull routing table (all destinations)\nShared With\nDirect neighbours only\nConvergence\nSlow - 30-second periodic updates\nLink State (OSPF)\nDijkstra\nComplete - full network map (LSDB)\nLSA - only local link information\nAll routers in the network (flooding)\nFast - triggered updates on change",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Distance Vector vs Link State",
+      "body": "Feature\nMemory & CPU\nCount-to-Infinity\nDistance Vector (RIP)\nLow - simple table\nYes - serious problem\nScalability\nFull routing table (all destinations)\nReal Protocol\nPoor  15-hop limit\nBest For\nSmall, simple networks\nLink State (OSPF)\nHigh - stores topology, runs Dijkstra\nNo - full topology prevents it\nGood - scales with Areas\nOSPF\nLarge enterprise & ISP networks\nTwo Philosophies of Routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Distance Vector vs Link State",
+      "body": "Key Observations\nKey Observations\nBoth are Interior Gateway Protocols (IGPs) - used within a single autonomous system\nNeither is universally better - choice depends on network size and requirements",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Distance Vector vs Link State",
+      "body": "Analogy\nDistance Vector",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Distance Vector vs Link State",
+      "body": "Analogy\nLink State",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Routing Algorithms",
+      "body": "Static vs Dynamic Routing\nDistance Vector Routing \nBellman-Ford Algorithm & RIP\nCount-to-Infinity Problem  \nCauses & Solutions\nLink State Routing \nDijkstra's , Shortest Path Routing & OSPF\nDV vs Link State \nComparison",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Internet Scaling Mechanisms",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1P0d015AfJOp_uObQ0gWsP_YjinpPt_mnWb2oncHhXUg/edit"
+}

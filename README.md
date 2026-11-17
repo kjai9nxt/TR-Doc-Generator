@@ -148,7 +148,7 @@ target session ────┘                              │
 
 ```bash
 pip install -r requirements.txt
-# put your key in .env  (OPENROUTER_API_KEY=... ; provider is set in harness.yaml)
+# put your key in .env  (ANTHROPIC_API_KEY=... ; provider is set in harness.yaml)
 
 ./start.sh          # backend (FastAPI) + React UI — open the URL it prints
 

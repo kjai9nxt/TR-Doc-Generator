@@ -1,0 +1,465 @@
+{
+  "session_no": 15,
+  "source_file": "CN — session 15",
+  "deck_title": "CN — session 15",
+  "n_slides": 65,
+  "summary": "\n    - Slide 2: Packet Delivery Mechanisms\n    - Slide 3: DHCP & IP Address Assignment\n    - Slide 4: Packet Delivery Mechanisms\n    - Slide 5: Delivery Mechanisms\n    - Slide 6: Packet Delivery Mechanisms\n    - Slide 7: Packet Delivery Mechanisms\n    - Slide 8: Packet Delivery Mechanisms\n    - Slide 9: Packet Delivery Mechanisms\n    - Slide 10: 1. Direct Delivery\n    - Slide 11: 1. Direct Delivery\n    - Slide 12: 1. Direct Delivery\n    - Slide 13: 1. Direct Delivery\n    - Slide 14: 2. Indirect Delivery\n    - Slide 15: 2. Indirect Delivery\n    - Slide 16: 2. Indirect Delivery\n    - Slide 17: 2. Indirect Delivery\n    - Slide 18: 2. Indirect Delivery\n    - Slide 19: 2. Indirect Delivery\n    - Slide 20: 2. Indirect Delivery\n    - Slide 21: 2. Indirect Delivery\n    - Slide 22: 2. Direct Delivery Vs Indirect Delivery\n    - Slide 23: Forwarding Mechanism\n    - Slide 24: Forwarding Table\n    - Slide 25: Forwarding Table\n    - Slide 26: Forwarding Table\n    - Slide 27: Forwarding Table\n    - Slide 28: Next-Hop Concept\n    - Slide 29: Next-Hop Concept\n    - Slide 30: Next-Hop Concept\n    - Slide 31: Quiz Time!\n    - Slide 32: Routing Decision\n    - Slide 33: Longest Prefix Match\n    - Slide 34: Longest Prefix Match\n    - Slide 35: Longest Prefix Match\n    - Slide 36: Longest Prefix Match\n    - Slide 37: Network Address Translation (NAT)\n    - Slide 38: Private and Public IP Addresses\n    - Slide 39: Private and Public IP Addresses\n    - Slide 40: Private and Public IP Addresses\n    - Slide 41: NAT - Network Address Translation\n    - Slide 42: NAT - Network Address Translation\n    - Slide 43: NAT - Network Address Translation\n    - Slide 44: NAT - Network Address Translation\n    - Slide 45: NAT - Network Address Translation\n    - Slide 46: NAT - Network Address Translation\n    - Slide 47: NAT - Network Address Translation\n    - Slide 48: NAT - Network Address Translation\n    - Slide 49: Types of NAT\n    - Slide 50: Types of NAT\n    - Slide 51: Types of NAT\n    - Slide 52: Types of NAT\n    - Slide 53: Types of NAT\n    - Slide 54: Types of NAT\n    - Slide 55: Types of NAT\n    - Slide 56: Types of NAT\n    - Slide 57: NAT - Network Address Translation\n    - Slide 58: NAT - Network Address Translation\n    - Slide 59: NAT - Network Address Translation\n    - Slide 60: Quiz Time!\n    - Slide 61: Packet Delivery Mechanisms\n    - Slide 62: Packet Delivery Mechanisms\n    - Slide 63: Routing Algorithms",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Packet Delivery Mechanisms",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "DHCP & IP Address Assignment",
+      "body": "DHCP & IP Address Assignment\nIntroduction to IP Addressing\nRole & Responsibilities\nDHCP Process & Management\nIPv4 Structure\nClassful Addressing\nAddress Resolution and Mapping",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Packet Delivery Mechanisms\nForwarding Mechanism\nRouting Decision\nDelivery Mechanisms\nDirect Delivery, Indirect Delivery\nNetwork Address Translation (NAT)\nForwarding Table, Next-Hop Concept\nLongest Prefix Match\nPrivate vs Public IP Addresses, Static NAT, Dynamic NAT, Port Address Translation (PAT)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Delivery Mechanisms",
+      "body": "Delivery Mechanisms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Packet Delivery Mechanisms",
+      "body": "The First Question a Router Asks\nWhen data is transmitted across a network, it is divided into packets \nThe Network Layer is responsible for delivering packets from the source to the destination across networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Is the destination on the same network, or a different network?\nThe First Question a Router Asks\nThe first decision a sender makes is:\nBased on the answer, there are two types of delivery:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Analogy\nDirect Delivery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Analogy\nTown A\nTown B\nTown A\nTown B\nIndirect Delivery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "1. Direct Delivery",
+      "body": "Destination on the Same Network\nDefinition",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "1. Direct Delivery",
+      "body": "How it works?\nThe sender checks whether the destination IP belongs to the same network\nSubnet mask is applied to both IPs to compare the network address\nSender uses ARP to find the destination's MAC address\nThe packet is encapsulated in a frame and sent using the MAC address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "1. Direct Delivery",
+      "body": "Destination on the Same Network\nSwitch\nHost A\nHost B\nDirect Delivery - No Router\n192.168.1.10\n192.168.1.25\nSame network - 192.168.1.0/24",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "1. Direct Delivery",
+      "body": "Destination on the Same Network\nSame network AND operation\nHost A\n192.168.1.10\nAND 255.255.255.0\nHost B\n192.168.1.25\nAND 255.255.255.0\n= 192.168.1.0\n= 192.168.1.0\nMatch\nSame network - Direct Delivery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "2. Indirect Delivery",
+      "body": "Destination on a Different Network\nDefinition",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "2. Indirect Delivery",
+      "body": "How it works?\nThe sender checks whether the destination IP is in a different network\nIf yes, the sender forwards the packet to the Default Gateway (the local router)\nThe router consults its Forwarding Table to determine the next hop",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "2. Indirect Delivery",
+      "body": "How it works?\nThe packet is forwarded from router to router, hop by hop, until it reaches the destination network\nThe final router performs Direct Delivery to the destination host",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "2. Indirect Delivery",
+      "body": "Destination on a Different Network\nDefault Gateway",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "2. Indirect Delivery",
+      "body": "Destination on a Different Network\n&\nNetwork A\nNetwork B\nNetwork A\nNetwork B\nNetwork C\nNetwork D\nGateway\nDefault Gateway\nGateway & Default Gateway",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "2. Indirect Delivery",
+      "body": "Destination on a Different Network\nKey Rule\nThe source IP and destination IP normally remain unchanged across all hops\nHowever, fields like TTL are updated at each router. Only the MAC addresses in the Data Link frame change at each router",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "2. Indirect Delivery",
+      "body": "Direct Delivery\nNo\nSame network\nRouter involved?\nDestination\nIndirect Delivery\nYes (one or more)\nDifferent network\nDirect Delivery\nFinal step\nEnds with Direct delivery\nDestination on a Different Network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "2. Indirect Delivery",
+      "body": "Destination on a Different Network\nRouter R1\nDefault GW\nRouter R2\nRouter R3\nHost A\n192.168.10\nHost B\n10.0.0.5\nDirect Delivery\nhop 1\nhop 2\nhop 3\nlast hop\nSource IP and Destination IP stay the same across ALL hops\n Only the MAC address in the Data Link frame changes at each router",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "2. Direct Delivery Vs Indirect Delivery",
+      "body": "Difference Between Both\nHost\nHost\nDirect delivery\nNetwork\nDirect delivery\nTo the rest of the Internet\nHost (source)\nNetwork\nNetwork\nRouter\nDirect delivery\nIndirect delivery\nDirect Delivery\nIndirect Delivery\nHost (destination)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Forwarding Mechanism",
+      "body": "Forwarding Mechanism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Forwarding Table",
+      "body": "Routing Table\nHow Routers Forward Packets?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Forwarding Table",
+      "body": "Definition\nHow Routers Forward Packets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Forwarding Table",
+      "body": "How Routers Forward Packets\nWhat each row in the table contains?\nSubnet Mask\nUsed to determine if the destination IP matches this network\nDestination Network\nThe network prefix this entry applies to\nNext Hop\nThe IP of the next router to forward the packet to. If 'Direct', the destination network is directly connected\nInterface\nThe router interface used to send the packet\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Forwarding Table",
+      "body": "Analogy\nForwarding Table\nPacket\nRouter",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Next-Hop Concept",
+      "body": "One Step at a Time\nDefinition",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Next-Hop Concept",
+      "body": "Key points\nHop-by-Hop\nThe packet moves one router at a time. Each router hands off to the next\nDecentralized\nEach router independently selects the next hop using its Forwarding Table\nIP Header Does Not Change\nThe source IP and destination IP stay the same across all hops\nMAC Address Changes\nAt each hop, the router removes the old frame and creates a new frame with new MAC addresses\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Next-Hop Concept",
+      "body": "Analogy\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Routing Decision",
+      "body": "Routing Decision",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Longest Prefix Match",
+      "body": "Selecting the Most Specific Match\nRule\nThe Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Longest Prefix Match",
+      "body": "Destination Network\n192.168.0.0\n0.0.0.0\nEntry\nB\nA\nPrefix\n/16\n/0 (Default — matches everything)\n192.168.1.0\nC\n/24\n192.168.1.128\nD\n/25\nNext Hop\nRouter Y\nRouter X\nRouter Z\nRouter W\nForwarding Table:\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Longest Prefix Match",
+      "body": "Selecting the Most Specific Match\nPacket arrives for destination IP: 192.168.1.200",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Longest Prefix Match",
+      "body": "Selecting the Most Specific Match\nAll four entries match. The router selects Entry D (/25) - the longest prefix",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Network Address Translation (NAT)",
+      "body": "Network Address Translation (NAT)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Private and Public IP Addresses",
+      "body": "Why Two Types of IPs Exist\nGlobally unique and routable on the internet. Assigned by ISPs. Used to identify networks or servers on the internet\n1. Public IP\nUsed inside private networks (homes, offices). Not routable on the internet. Free for internal use\n2. Private IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Private and Public IP Addresses",
+      "body": "Range\n172.16.0.0 – 172.31.255.255\n10.0.0.0 – 10.255.255.255\nSubnet\n/12\n/8\n192.168.0.0 – 192.168.255.255\n/16\nTypical Use\nMedium organizations\nLarge enterprises\nHome / small office\nAddresses\n~1 million\n~16.7 million\n~65,000\nReserved Private IP Ranges (RFC 1918):\nWhy Two Types of IPs Exist",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Private and Public IP Addresses",
+      "body": "Why Two Types of IPs Exist\nKey Difference\nPrivate IPs\nPrivate IPs can repeat across different networks\nMillions of homes may use 192.168.1.x at the same time\nPublic IPs\nMust be globally unique on the internet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "NAT - Network Address Translation",
+      "body": "Need of NAT\nThe Problem\nThis is why NAT was introduced",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "NAT - Network Address Translation",
+      "body": "Analogy\nHostel",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "NAT - Network Address Translation",
+      "body": "Analogy\nHostel",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "NAT - Network Address Translation",
+      "body": "How Private Devices Access Internet?\nDefinition",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "NAT - Network Address Translation",
+      "body": "How Private Devices Access Internet?\nDevices\n(PC / Tablet / SmartPhone)\nRouter\nInternet\nPrivate IP Address\n174.122.1.1\nPublic IP Address\n244.46.1.1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "NAT - Network Address Translation",
+      "body": "How It Works - Step By Step\nDevice A (private IP: 192.168.1.10) sends a packet to a website (8.8.8.8)\n01\n02\n03\n04\nThe packet reaches the NAT router\nThe router replaces the source IP with its public IP (e.g., 203.0.113.5) and records the translation in a NAT table\nThe packet travels to the website. The website sees the request from 203.0.113.5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "NAT - Network Address Translation",
+      "body": "How Private Devices Access Internet?\nThe website replies to 203.0.113.5\n05\n06\n07\nThe router checks the NAT table and translates the destination back to the original private IP\nThe reply reaches Device A",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "NAT - Network Address Translation",
+      "body": "NAT Table",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Types of NAT",
+      "body": "1. Static NAT\n01\nOne private IP permanently mapped to one public IP\nThe mapping is permanent and does not change\nExample: 192.168.1.10 always maps to 203.0.113.10\nUse case: Servers that must be reachable from the internet\nLimitation: Requires one public IP per device - does not save IP addresses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Types of NAT",
+      "body": "1. Static NAT\n192.168.0.1\n192.168.0.2\n192.168.0.3\n192.168.0.4\nNAT Translation\nOne to One\nSwitch\nRouter",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Types of NAT",
+      "body": "2. Dynamic NAT\n02\nPrivate IPs share a pool of public IPs\nWhen a private device needs internet access, it is assigned one public IP from the pool temporarily\nWhen the session ends, the public IP returns to the pool\nLimitation: If all public IPs in the pool are in use, new connections fail",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Types of NAT",
+      "body": "2. Dynamic NAT\n192.168.0.1\n192.168.0.2\n192.168.0.3\n192.168.0.4\nNAT Translation\nMany to Many with Pool\nSwitch\nRouter\nRandom",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Types of NAT",
+      "body": "3. PAT (Port Address Translation)\n03\nAll private devices share a single public IP\nAlso called NAT Overload or NAPT\nPort numbers are used to distinguish between different devices on the same public IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Types of NAT",
+      "body": "3. PAT (Port Address Translation)\n03\nAll private devices share a single public IP\nExample: 192.168.1.10:1025 and 192.168.1.11:3300 both appear as 203.0.113.5 - just with different port numbers\n192.168.1.10:1025 → 203.0.113.5:5001\n192.168.1.11:3300 → 203.0.113.5:5002",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Types of NAT",
+      "body": "PAT\n03\nAll private devices share a single public IP\nOne public IP can handle up to 65,535 simultaneous connections (one per port number)\nUse case: Home routers, small office routers - the most common type of NAT in use today",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Types of NAT",
+      "body": "Type\nDynamic NAT\nStatic NAT\nMapping\n1 Private ↔ 1 from Public Pool\n1 Private ↔ 1 Fixed Public\nPAT\nMany Private ↔ 1 Public + Port\nPublic IPs Needed\nPool of IPs\nOne per device\nONE\nCommon Use\nOrganizations with an IP pool\nInternet-facing servers\nHome / office networks\nStatic NAT, Dynamic NAT and PAT",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "NAT - Network Address Translation",
+      "body": "Advantages \nMultiple devices share a single public IP, extending IPv4’s life\nInternal devices are shielded, blocking unsolicited inbound traffic unless a NAT mapping exists\nChanges in internal addresses don't affect the public IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "NAT - Network Address Translation",
+      "body": "Limitations\nNAT prevents direct device-to-device communication, designed in the internet's architecture\nApps like VoIP and video calls struggle behind NAT, requiring workarounds (STUN/TURN)\nSome apps (e.g., FTP, SIP) embed IPs in the payload, causing issues with NAT\nNAT adds load by inspecting and rewriting each packet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "NAT - Network Address Translation",
+      "body": "Limitations\nNAT blocks unsolicited inbound traffic but doesn't inspect outbound traffic\nIPv6 offers enough unique addresses, making NAT unnecessary\nNAT's address rewriting complicates tracing the original traffic source",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Delivery Mechanisms\nDirect Delivery\nIndirect Delivery\nForwarding Mechanism\nForwarding Table\nNext-Hop Concept\nKey Takeaways (1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Routing Decision\nLongest Prefix Match\nNetwork Address Translation (NAT)\nPrivate vs Public IP Addresses\nStatic NAT\nDynamic NAT\nPort Address Translation (PAT)\nKey Takeaways (2/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Routing Algorithms",
+      "body": "Routing Algorithms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/19Fx6JMuAQ-JdADHIzzz-CTT9quc-d2dbGuvNnbCrqRU/edit"
+}

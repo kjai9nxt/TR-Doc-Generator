@@ -1,0 +1,444 @@
+{
+  "session_no": 16,
+  "source_file": "CN — session 16",
+  "deck_title": "CN — session 16",
+  "n_slides": 62,
+  "summary": "\n    - Slide 2: DHCP & IP Address Assignment\n    - Slide 3: Network Layer & IP Addressing\n    - Slide 4: DHCP and IP Address Assignment\n    - Slide 5: Introduction to IP Addressing\n    - Slide 6: IP Address Assignment\n    - Slide 7: IP Address Assignment\n    - Slide 8: IP Address Assignment\n    - Slide 9: IP Address Assignment\n    - Slide 10: IP Address Assignment\n    - Slide 11: IP Address Assignment\n    - Slide 12: DHCP - Dynamic Host Configuration Protocol\n    - Slide 13: DHCP - Dynamic Host Configuration Protocol\n    - Slide 14: DHCP - Dynamic Host Configuration Protocol\n    - Slide 15: DHCP - Dynamic Host Configuration Protocol\n    - Slide 16: DHCP - Dynamic Host Configuration Protocol\n    - Slide 17: DHCP Process & Management\n    - Slide 18: DHCP — The DORA Process\n    - Slide 19: DHCP — The DORA Process\n    - Slide 20: DHCP — The DORA Process\n    - Slide 21: DHCP — The DORA Process\n    - Slide 22: DHCP — The DORA Process\n    - Slide 23: DHCP — The DORA Process\n    - Slide 24: DHCP — The DORA Process\n    - Slide 25: DHCP - The DORA Process\n    - Slide 26: DHCP Lease\n    - Slide 27: DHCP Lease\n    - Slide 28: DHCP Lease\n    - Slide 29: DHCP Lease\n    - Slide 30: DHCP Lease\n    - Slide 31: DHCP Relay Agent\n    - Slide 32: DHCP Relay Agent\n    - Slide 33: DHCP Relay Agent\n    - Slide 34: DHCP Relay Agent\n    - Slide 35: DHCP Relay Agent\n    - Slide 36: DHCP Relay Agent\n    - Slide 37: Quiz Time!\n    - Slide 38: Address Resolution and Mapping\n    - Slide 39: ARP - Address Resolution Protocol\n    - Slide 40: ARP - Address Resolution Protocol\n    - Slide 41: ARP - Address Resolution Protocol\n    - Slide 42: ARP - Address Resolution Protocol\n    - Slide 43: How ARP Works\n    - Slide 44: How ARP Works\n    - Slide 45: How ARP Works\n    - Slide 46: How ARP Works\n    - Slide 47: How ARP Works\n    - Slide 48: ARP Cache\n    - Slide 49: ARP Cache\n    - Slide 50: ARP Cache\n    - Slide 51: RARP - Reverse ARP\n    - Slide 52: RARP - Reverse ARP\n    - Slide 53: RARP - Reverse ARP\n    - Slide 54: RARP - Reverse ARP\n    - Slide 55: Resolution, Reversal, and Assignment\n    - Slide 56: Resolution, Reversal, and Assignment\n    - Slide 57: Resolution, Reversal, and Assignment\n    - Slide 58: Quiz Time!\n    - Slide 59: DHCP & IP Address Assignment\n    - Slide 60: Packet Delivery Mechanisms",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "DHCP & IP Address Assignment",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Network Layer & IP Addressing",
+      "body": "Network Layer & IP Addressing\nNetwork Layer\nRole & Responsibilities\nLogical Addressing\nIPv4 Structure, Classful Addressing \nCIDR and Subnetting\nIPv4 Datagram Format \nKey Fields\nSpecial Addresses \nLoopback, Broadcast & Private",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "DHCP and IP Address Assignment",
+      "body": "DHCP and IP Address Assignment\nDHCP Process & Management\nAddress Resolution and Mapping\nIntroduction to IP Addressing\nStatic vs Dynamic IP Addressing, \nDHCP (Dynamic Host Configuration Protocol)\nDHCP Lease, Renewal, and Relay Agent\nARP Cache, ARP Request/Reply, RARP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Introduction to IP Addressing",
+      "body": "Introduction to IP Addressing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "IP Address Assignment",
+      "body": "Where Do IP Addresses Come From?\nAn IP address is a unique logical address assigned to every device on a network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "IP Address Assignment",
+      "body": "Where Do IP Addresses Come From?\nEvery device on a network needs an IP address to communicate. IP addresses can be classified based on how they are assigned to a device – either manually (Static) or automatically (Dynamic)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "IP Address Assignment",
+      "body": "Where Do IP Addresses Come From?\nStatic IP\nManually configured by an administrator, Fixed, and Never changes\nDynamic IP\nAutomatically assigned by a DHCP server from a pool of available addresses when a device joins the network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "IP Address Assignment",
+      "body": "Dynamic IP\nAssigned for a limited time (lease) and may change\nUsed for laptops, phones, and user devices\nAutomatically assigned by a DHCP server\nStatic IP\nRemains fixed unless manually changed\nUsed for servers, routers, printers\nManually configured by an administrator\nBasis\nDoes it change?\nBest used for\nWho assigns it?\nWhere Do IP Addresses Come From?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "IP Address Assignment",
+      "body": "Analogy\nStatic IP\nSome guests have a room permanently assigned to them",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "IP Address Assignment",
+      "body": "Analogy\nDynamic IP\nMost guests receive whatever room is available when they check in",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "DHCP - Dynamic Host Configuration Protocol",
+      "body": "Definition\nDHCP (Dynamic Host Configuration Protocol) is an Application Layer protocol that automatically assigns IP configuration information to devices on a network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "DHCP - Dynamic Host Configuration Protocol",
+      "body": "What DHCP provides to a device?\nIP Address\nLogical address used to identify the device on the network\nSubnet Mask\nDefines the network and host portions of the IP address\nDefault Gateway\nThe router’s IP address used to send traffic to other networks\nDNS Server Address\nTranslates domain names (like google.com) into IP addresses\nLease Duration\nThe time period for which the device is allowed to use the assigned IP address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "DHCP - Dynamic Host Configuration Protocol",
+      "body": "Key Technical Points\nUses UDP - Port 67 (server), Port 68 (client)\nRuns at the Application Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "DHCP - Dynamic Host Configuration Protocol",
+      "body": "Key Technical Points\nDHCP follows a client–server model where the DHCP server manages a pool of IP addresses and assigns them to clients\nUses UDP instead of TCP because the client initially does not know its IP address and must send broadcast messages to discover a DHCP server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "DHCP - Dynamic Host Configuration Protocol",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "DHCP Process & Management",
+      "body": "DHCP Process & Management",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "DHCP — The DORA Process",
+      "body": "Four Steps to Get an IP Address\nWhen a device joins a network and needs an IP address, DHCP follows a four-step process called DORA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "DHCP — The DORA Process",
+      "body": "1\nDHCP Discover (Client → Broadcast)\nDevice has no IP yet. It shouts to the entire network: \"Is there a DHCP server here?\"\nSource IP: 0.0.0.0   |   Destination: 255.255.255.255 (broadcast)\nCarries the client's MAC address so the server can identify it\nFour Steps to Get an IP Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "DHCP — The DORA Process",
+      "body": "2\nDHCP Offer (Server → Client)\nDHCP server replies with an available IP address and full configuration\nIf multiple servers exist, all of them send an Offer - the client picks the first one received\nFour Steps to Get an IP Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "DHCP — The DORA Process",
+      "body": "3\nDHCP Request (Client → Broadcast)\nClient accepts one offer and broadcasts its selection so all other DHCP servers know their offers were not chosen and can return those IP addresses to the pool\nFour Steps to Get an IP Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "DHCP — The DORA Process",
+      "body": "4\nDHCP Acknowledge (Server → Client)\nThe selected DHCP server sends a DHCPACK confirming the assignment. The device configures its network interface and the lease period begins\nFour Steps to Get an IP Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "DHCP — The DORA Process",
+      "body": "DHCP Client\nDHCP Server\nDHCP Discover\nDHCP Offer\nDHCP Request\nDHCP ACK/NAK\nFour Steps to Get an IP Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "DHCP — The DORA Process",
+      "body": "Who Sends\nServer\nClient\nServer\nClient\nStep\n2. Offer\n3. Request\n4. Acknowledge\n1. Discover\nType\nBroadcast / Unicast\nBroadcast\nBroadcast / Unicast\nBroadcast\nMessage\nDHCPOFFER\nDHCPREQUEST\nDHCPACK\nDHCPDISCOVER\nSummary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "DHCP - The DORA Process",
+      "body": "Analogy\nDiscover\nOffer\nRequest\nAcknowledge",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "DHCP Lease",
+      "body": "IP Addresses Are Borrowed, Not Owned\nA DHCP lease is a time-limited assignment of an IP address. The device uses the IP only for the lease duration - after that, it must renew or lose the address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "DHCP Lease",
+      "body": "IP Addresses Are Borrowed, Not Owned\nDevices join and leave networks constantly. Leases ensure IP addresses are returned to the pool and reused",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "DHCP Lease",
+      "body": "Renewal - Two Timers\nClient sends a DHCPREQUEST message (unicast) to the same DHCP server\nT1 (50% of lease time)\nIf T1 failed, client broadcasts a Request to any available DHCP server\nT2 (87.5% of lease time)\nIf both T1 and T2 failed, the device loses its IP and restarts the full DORA process\nExpiry (100%)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "DHCP Lease",
+      "body": "Renewal - Two Timers\nDHCP Release\nA device can voluntarily return its IP before expiry by sending a DHCPRELEASE message - this happens when a device gracefully disconnects",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "DHCP Lease",
+      "body": "Analogy\nReturning early = DHCP Release",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "DHCP Relay Agent",
+      "body": "One DHCP Server for Multiple Networks\nThe Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "DHCP Relay Agent",
+      "body": "One DHCP Server for Multiple Networks\nThe Solution - DHCP Relay Agent",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "DHCP Relay Agent",
+      "body": "One DHCP Server for Multiple Networks\nClient broadcasts DHCPDISCOVER on its local subnet\nRelay Agent (router) intercepts the broadcast\nRelay Agent forwards it as a unicast to the DHCP server's IP address.(Configured using ip helper-address command on the router.)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "DHCP Relay Agent",
+      "body": "One DHCP Server for Multiple Networks\nDHCP server processes it and sends the Offer back to the Relay Agent\nRelay Agent forwards the Offer to the client\nThis allows one centralized DHCP server to serve multiple subnets\nWithout a relay agent, every subnet would need its own DHCP server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "DHCP Relay Agent",
+      "body": "PC 1\nL2 SW\nL2 SW\n1.1.1.254/24\nDHCP Server\nRouter\nBroadcast Domain (1.1.1.0/24)\nBroadcast Domain (2.1.1.0/254)\nDHCP messages delivered to DHCP server through DHCP relay agent\nDHCP relay agent, converting broadcast DHCP messages to unicast and forwarding to DHCP server\nDHCP Discover/Request (Broadcast)\nDHCP Discover/Request (Unicast)\n100.1.1.1\nInternet\nOne DHCP Server for Multiple Networks\n100.1.1.254/24\nDHCP Relay Agent",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "DHCP Relay Agent",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Address Resolution and Mapping",
+      "body": "Address Resolution and Mapping",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "ARP - Address Resolution Protocol",
+      "body": "Every device has two addresses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "ARP - Address Resolution Protocol",
+      "body": "ARP in one line\nThe Problem\nMapping IP Addresses to MAC Addresses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "ARP - Address Resolution Protocol",
+      "body": "Mapping IP Addresses to MAC Addresses\nARP\nIP\nMAC\nARP works only within the same subnet. If the destination is on another network, ARP finds the gateway router's MAC instead",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "ARP - Address Resolution Protocol",
+      "body": "Analogy\nKnow Name (IP)\nARP Request\nARP Reply\nMAC",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "How ARP Works",
+      "body": "Broadcast Request, Unicast Reply\n1\nARP Request (Broadcast):\nDevice A sends an ARP Request as a broadcast on the local subnet\nDestination MAC: FF:FF:FF:FF:FF:FF (broadcast — all devices receive it)\nMessage: \"Who has IP 192.168.1.20? Please tell me your MAC address.\"\nAll devices receive this. Each one checks: \"Is this my IP?\" Only the matching device responds",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "How ARP Works",
+      "body": "Broadcast Request, Unicast Reply\n2\nARP Reply (Unicast):\nDevice B (owner of 192.168.1.20) replies directly to Device A\nReply: \"My IP is 192.168.1.20 and my MAC is 00:1A:2B:3C:4D:5E.\"\nDevice A now has the MAC address and can deliver the data",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "How ARP Works",
+      "body": "Sent To\nRequesting device\nFF:FF:FF:FF:FF:FF\nMessage\nARP Reply\nARP Request\nType\nUnicast\nBroadcast\nPurpose\n\"I have that IP. Here is my MAC.\"\n\"Who has this IP? Tell me your MAC.\"\nBroadcast Request, Unicast Reply\nKey fact: ARP Request = Broadcast. ARP Reply = Unicast",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "How ARP Works",
+      "body": "Request\nLooking for physical address of a node with IP address 141.23.56.23\nSystem A\nSystem B\nReply\nThe node physical address is A4:6E:F4:59:83:AB\nSystem A\nSystem B\na.1ARP request is broadcast\nb. ARP reply is unicast\nBroadcast Request, Unicast Reply",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "How ARP Works",
+      "body": "Broadcast Request, Unicast Reply\nARP Request - broadcast to all\nWhich student has roll number 42?\nI am here, row 1 seat 5\nARP Reply - unicast back to the teacher",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "ARP Cache",
+      "body": "Temporary Storage of IP–MAC Mappings\nEvery device maintains an ARP Cache - a table that maps IP addresses to MAC addresses learned through ARP\nAfter receiving an ARP Reply, the device stores the IP-MAC mapping in its cache\nNext time the same IP is needed, the device checks the cache first - no broadcast needed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "ARP Cache",
+      "body": "ARP Cache Entry Types\nLearned automatically via ARP. Has a TTL (typically a few minutes, varies by OS). Deleted after TTL expires\nDynamic\nManually added by an administrator. Does not expire. Used for critical devices\nStatic",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "ARP Cache",
+      "body": "Analogy\nARP Request/Reply\nARP Cache\nnew IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "RARP - Reverse ARP",
+      "body": "MAC to IP Mapping\nA diskless device boots and knows only its MAC address\nIt broadcasts: \"My MAC is 00:1A:2B:3C:4D:5E. What IP should I use?\"\nSends a RARP Broadcast Request\nA RARP Server looks up the MAC in its table and replies with the assigned IP address\nThe device configures its network interface using that IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "RARP - Reverse ARP",
+      "body": "MAC to IP Mapping\nKnown\nMAC Address\nIP Address\nProtocol\nRARP\nARP\nFinds\nIP Address\nMAC Address\nDirection\nPhysical → Logical\nLogical → Physical",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "RARP - Reverse ARP",
+      "body": "MAC to IP Mapping\nRARP could provide only an IP address\nRequired a RARP server on every subnet (no relay support)\nReplaced by BOOTP (1985), then replaced again by DHCP (1993)\nDHCP handles all of RARP's use cases and much more - RARP is now only of historical interest",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "RARP - Reverse ARP",
+      "body": "Analogy\nARP \nRARP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Resolution, Reversal, and Assignment",
+      "body": "ARP vs RARP vs DHCP\nFull Form\nReverse Address Resolution Protocol\nAddress Resolution Protocol\nProtocol\nRARP\nARP\nPurpose\nFinds IP from a known MAC\nFinds MAC from a known IP (within local subnet)\nStill Used?\nNo - Obsolete\nYes\nDynamic Host Configuration Protocol\nDHCP\nAssigns full network config (IP, subnet, gateway, DNS)\nYes - Current Standard",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Resolution, Reversal, and Assignment",
+      "body": "Key Properties\nARP and RARP work only within one subnet. DHCP works across subnets via a Relay Agent\nARP Request is a broadcast; ARP Reply is a unicast\nARP vs RARP vs DHCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Resolution, Reversal, and Assignment",
+      "body": "Key Properties\nDHCP uses UDP (port 67/68); ARP operates at the Data Link Layer (Layer 2) and has no port number\nRARP was replaced by BOOTP (1985) and then by DHCP (1993)\nARP vs RARP vs DHCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "DHCP & IP Address Assignment",
+      "body": "Introduction to IP Addressing\nRole & Responsibilities\nDHCP Process & Management\nIPv4 Structure\nClassful Addressing\nAddress Resolution and Mapping",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Packet Delivery Mechanisms",
+      "body": "Packet Delivery Mechanisms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1cWL-lI1kJIKUvl2X2FbdBrfX0AWGcctfKHBsCoSZdJY/edit"
+}

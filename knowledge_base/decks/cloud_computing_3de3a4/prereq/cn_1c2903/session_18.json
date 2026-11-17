@@ -1,0 +1,416 @@
+{
+  "session_no": 18,
+  "source_file": "CN — session 18",
+  "deck_title": "CN — session 18",
+  "n_slides": 58,
+  "summary": "\n    - Slide 2: SCTP & Quality of Service\n    - Slide 3: TCP : Data, Flow & Congestion\n    - Slide 4: SCTP & Quality of Service\n    - Slide 5: Stream Control Transmission Protocol\n    - Slide 6: Why was SCTP Created?\n    - Slide 7: Why was SCTP Created?\n    - Slide 8: Why was SCTP Created?\n    - Slide 9: Why was SCTP Created?\n    - Slide 10: SCTP — Stream Control Transmission Protocol\n    - Slide 11: SCTP — Stream Control Transmission Protocol\n    - Slide 12: SCTP — Stream Control Transmission Protocol\n    - Slide 13: SCTP — Stream Control Transmission Protocol\n    - Slide 14: SCTP — Stream Control Transmission Protocol\n    - Slide 15: SCTP — Stream Control Transmission Protocol\n    - Slide 16: SCTP — Stream Control Transmission Protocol\n    - Slide 17: SCTP vs TCP vs UDP\n    - Slide 18: SCTP\n    - Slide 19: SCTP\n    - Slide 20: SCTP\n    - Slide 21: SCTP\n    - Slide 22: Quiz Time!\n    - Slide 23: Quality of Service (QoS)\n    - Slide 24: Quality of Service (QoS)\n    - Slide 25: Quality of Service (QoS)\n    - Slide 26: Quality of Service (QoS)\n    - Slide 27: Quality of Service (QoS)\n    - Slide 28: Quality of Service (QoS)\n    - Slide 29: Scheduling and Traffic Shaping\n    - Slide 30: QoS Techniques\n    - Slide 31: Scheduling and Traffic Shaping\n    - Slide 32: QoS Techniques\n    - Slide 33: QoS Techniques\n    - Slide 34: QoS Techniques\n    - Slide 35: QoS Techniques\n    - Slide 36: IntServ, DiffServ & Switched Networks\n    - Slide 37: How Does a Network Guarantee Quality?\n    - Slide 38: How Does a Network Guarantee Quality?\n    - Slide 39: How the Internet Works by Default?\n    - Slide 40: How the Internet Works by Default?\n    - Slide 41: How the Internet Works by Default?\n    - Slide 42: 1. Best Effort\n    - Slide 43: Per-Flow Reservation\n    - Slide 44: 2. Integrated Services (IntServ)\n    - Slide 45: Per-Class Treatment\n    - Slide 46: 3. Differentiated Services (DiffServ)\n    - Slide 47: 3. Differentiated Services (DiffServ)\n    - Slide 48: Three Approaches to Network-Wide QoS\n    - Slide 49: QoS in Switched Networks (Local Network)\n    - Slide 50: QoS in Switched Networks (Local Network)\n    - Slide 51: How Switches Prioritise Traffic\n    - Slide 52: QoS in Switched Networks (Local Network)\n    - Slide 53: QoS in Switched Networks (Local Network)\n    - Slide 54: Quiz Time!\n    - Slide 55: SCTP & Quality of Service\n    - Slide 56: Network Layer & IP Addressing",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "SCTP & Quality of Service",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "TCP : Data, Flow & Congestion",
+      "body": "TCP : Data, Flow & Congestion\nFlow Control\nSliding Window with Numbers, rwnd Formula, Duplicate ACKs\nCongestion Control\ncwnd, Slow Start, Congestion Avoidance, AIMD\nFast Retransmit & Fast Recovery\nHow TCP Recovers Without Slow Start\nTCP Error Control\nRTO, Jacobson’s Algorithm, Karn’s Algorithm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "SCTP & Quality of Service",
+      "body": "SCTP & Quality of Service\nSCTP vs TCP vs UDP\nQuality of Service (QoS)\nSCTP\nFeatures, Multi-Streaming & Multi-Homing\nIntServ, DiffServ & Switched Networks\nParameters & Techniques",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Stream Control Transmission Protocol",
+      "body": "Stream Control Transmission Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Why was SCTP Created?",
+      "body": "Three images requested. Image 2's packet is lost. Image 3 is stuck waiting even though it arrived fine\nProblem 1 — Head-of-Line (HOL) Blocking:\nTCP delivers data as one ordered stream. If one segment is lost, all segments behind it wait — even if they already arrived correctly\nTwo Problems TCP Could Not Solve",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why was SCTP Created?",
+      "body": "Two Problems TCP Could Not Solve\nProblem 2 — Single Path Dependency:\nTCP binds a connection to one IP address per side\nIf that path fails, the entire connection drops and must restart from scratch\nCritical problem for telecom signaling where availability cannot be interrupted",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Why was SCTP Created?",
+      "body": "Two Problems TCP Could Not Solve",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Why was SCTP Created?",
+      "body": "Two Problems TCP Could Not Solve",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "SCTP — Stream Control Transmission Protocol",
+      "body": "A Smarter Transport Protocol\nSCTP is a connection-oriented, reliable Transport Layer protocol — like TCP, but with two additional capabilities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "SCTP — Stream Control Transmission Protocol",
+      "body": "A Smarter Transport Protocol\nOne association carries multiple independent streams\nA loss in Stream 1 does NOT block Stream 2 or Stream 3\nEach stream has its own Stream Sequence Number (SSN)\nMulti-Streaming:\nFeature 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "SCTP — Stream Control Transmission Protocol",
+      "body": "A Smarter Transport Protocol\nBoth endpoints register multiple IP addresses at association setup\nOne is the Primary Path; others are Standby Paths\nSCTP sends Heartbeat chunks to monitor standbys\nIf primary fails → automatically switches to standby. No reconnection is needed\nMulti-Homing:\nFeature 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "SCTP — Stream Control Transmission Protocol",
+      "body": "Multi-Homing\nMulti-Streaming\nA Smarter Transport Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "SCTP — Stream Control Transmission Protocol",
+      "body": "A Smarter Transport Protocol\nFeature\nConnection term\nData unit\nHandshake\nDetail\nRFC 4960\nAssociation (not \"connection\")\nChunk (not \"segment\")\nReliability\n4-Way (INIT → INIT-ACK → COOKIE-ECHO → COOKIE-ACK)\nMulti-Streaming\nYes — like TCP\nMulti-Homing\nYes — solves HOL Blocking\nStandard\nYes — solves single path failure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "SCTP — Stream Control Transmission Protocol",
+      "body": "A Smarter Transport Protocol\nSCTP Packet\nCommon Header\nChunks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "SCTP — Stream Control Transmission Protocol",
+      "body": "A Smarter Transport Protocol\nWhere is SCTP Used?\nSCTP is used in 4G/5G mobile networks (to manage signaling between towers and core network), WebRTC (real-time browser communication like Google Meet), and telecom backbone networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "SCTP vs TCP vs UDP",
+      "body": "SCTP vs TCP vs UDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "SCTP",
+      "body": "4-Way Handshake:\nDirection\nServer → Client\nClient → Server\nServer → Client\nPurpose\nRequest association; share IPs & stream count\nRespond with a Cookie token\nEcho the cookie back\nCookie verified; association open\nClient → Server\nMessage\nINIT-ACK\nCOOKIE-ECHO\nCOOKIE-ACK\nINIT\nStep\n2\n3\n4\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "SCTP",
+      "body": "4-Way Handshake:\nWhy Cookie?\nServer allocates no resources until the cookie is echoed back \nFake INIT messages cannot exhaust server memory\nThis protects against a DoS (Denial of Service) attack — where an attacker sends thousands of fake connection requests to crash the server by exhausting its memory \nSince SCTP's server stores nothing until the cookie is echoed back, fake requests cause no harm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "SCTP",
+      "body": "4-Way Handshake:\nTCP\nYes\nNo\nNo\nSCTP\nYes (Association)\nYes\nYes\nYes\nYes\nUDP\nNo\nNo\nNo\nNo\nFeature\nReliability\nMulti-Streaming\nMulti-Homing\nConnection\nSCTP vs TCP vs UDP:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "SCTP",
+      "body": "4-Way Handshake:\nTCP\n3-Way\nWeak\nHTTP, files, email\nSCTP\nNo\n4-Way + Cookie\nBuilt-in\n5G, telecom, WebRTC\nYes\nUDP\nNone\nNo\nDNS, VoIP, games\nN/A\nFeature\nHandshake\nDoS Protection\nUse Cases\nHOL Blocking\nSCTP vs TCP vs UDP:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Quality of Service (QoS)",
+      "body": "Quality of Service (QoS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Quality of Service (QoS)",
+      "body": "At the same time on your network:\nNot All Traffic is Equal\n1\n2\nA video call needs smooth, real-time delivery — delay kills it\nA software update runs in the background — a few extra seconds do not matter\nWithout QoS, the network treats both identically. The video call suffers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Quality of Service (QoS)",
+      "body": "Not All Traffic is Equal\nQoS = Ability of a network to manage traffic and provide different levels of service to different types of data — ensuring critical, time-sensitive applications like voice calls and video get the resources they need, especially when the network is busy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Quality of Service (QoS)",
+      "body": "Not All Traffic is Equal\nMost Critical For\nStreaming, VoIP\nVideo streaming\nVoIP, real-time apps\nVoIP (< 150ms per ITU-T G.114)\nWhat It Measures\nVariation in delay between packets\nAvailable data rate on a path\n% of packets never delivered\nTime from source to destination\nParameter\nJitter\nBandwidth\nPacket Loss\nDelay\nFour QoS Parameters:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Quality of Service (QoS)",
+      "body": "Not All Traffic is Equal\nJitter in brief\nPackets sent at equal intervals but arriving unevenly (10ms, 25ms, 12ms) → choppy audio. Fixed using a Jitter Buffer at the receiver",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Quality of Service (QoS)",
+      "body": "Not All Traffic is Equal\nQoS does the same for network traffic - urgent data goes first",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Scheduling and Traffic Shaping",
+      "body": "A - Scheduling: Who Gets Served First?\nNote\nLow-priority can starve\nNo starvation; balanced\nEqual turns; ignores urgency\nUnfair to real-time traffic\nHow It Works?\nHigh-priority queue served first\nEach queue gets a % share (Voice 50%, Video 30%, Data 20%)\nOne packet per queue in turns\nFirst in, first out. No priority\nMethod\nPriority Queuing\nWeighted Fair Queuing (WFQ)\nRound Robin\nFIFO\nModern routers use WFQ — everyone gets a share, priority classes get more",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "QoS Techniques",
+      "body": "Scheduling and Traffic Shaping",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Scheduling and Traffic Shaping",
+      "body": "B - Traffic Shaping: Control the Rate\nLeaky Bucket\nInput: bursty packets → Output: constant, fixed rate. Overflow → packets dropped",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "QoS Techniques",
+      "body": "Leaky Bucket Algorithm\nHost Computer\nLeaky Bucket\nWater drop flowing at constant rate\nInterface containing Leaky Bucket\nUnregulated Packet Flow\nBucket Holding Packets\nRegulated Packet Flow\nNetwork",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "QoS Techniques",
+      "body": "Scheduling and Traffic Shaping\nToken Bucket\nTokens added at a constant rate. One token = send one packet. Saved tokens allow a controlled burst\nMore flexible — allows short bursts when the network can handle it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "QoS Techniques",
+      "body": "Token Bucket\nStream i\nToken Bucket\nPacket Queue\nToken Check\nRate r_i\n  Network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "QoS Techniques",
+      "body": "Leaky Bucket vs Token Bucket\nToken Bucket\nWaits for a token\nAllow bursts within bounds\nCan burst (up to bucket size)\nLeaky Bucket\nDropped\nStrict rate enforcement\nAlways constant\nParameter\nExcess\nBest for\nOutput",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "IntServ, DiffServ & Switched Networks",
+      "body": "IntServ, DiffServ & Switched Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "How Does a Network Guarantee Quality?",
+      "body": "Three Models \nHow does the entire network - across multiple routers - ensure quality end to end?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "How Does a Network Guarantee Quality?",
+      "body": "Three Models\nCore Idea\nReserve resources per flow before sending\nMark traffic into classes, treat each class consistently\nNo guarantee — deliver when possible. Default internet behaviour\nFull Name\nIntegrated Services\nDifferentiated Services\nBest Effort\nApproach\nIntServ\nDiffServ\nBest Effort\nThree architectures answer this:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "How the Internet Works by Default?",
+      "body": "1. Best Effort\nBest Effort delivery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "How the Internet Works by Default?",
+      "body": "Packets may be delayed, dropped, or delivered out of order\nNo guarantee\nNo resources are set aside for any traffic\nNo reservation\nEvery packet is treated equally\nNo priority\nThe network simply does its best to deliver data whenever possible\n1. Best Effort",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "How the Internet Works by Default?",
+      "body": "This works fine for:\nThis fails for:\nThis is exactly why IntServ and DiffServ were introduced - to improve upon Best Effort for time-sensitive traffic\n1. Best Effort",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "1. Best Effort",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Per-Flow Reservation",
+      "body": "2. Integrated Services (IntServ)\nProtocol\nRSVP - PATH message downstream to receiver; RESV message upstream, each router reserves resources\nService types\nGuaranteed (hard delay bound) and Controlled Load (behaves like lightly loaded network)\nProblem\nEvery router stores state for every active flow → not scalable at internet scale\nApplication reserves resources (bandwidth + delay) along the entire path before sending",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "2. Integrated Services (IntServ)",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Per-Class Treatment",
+      "body": "3. Differentiated Services (DiffServ)\nNo per-flow tracking. Traffic sorted into classes at the network edge\nEdge router marks each packet with a DSCP value (6-bit field in IP header)\nCore routers only read the DSCP label and forward — no flow memory needed. Highly scalable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "3. Differentiated Services (DiffServ)",
+      "body": "Analogy\nAnalogy for DiffServ",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "3. Differentiated Services (DiffServ)",
+      "body": "Traffic Classes in DiffServ\nUse\nVideo, priority data — bounded delay\nGeneral browsing — no guarantee\nVoIP, real-time — lowest delay\nName\nAssured Forwarding\nBest Effort\nExpedited Forwarding\nClass\nAF\nBE\nEF\nTraffic Classes in DiffServ\nBackward compatibility with IP Precedence\nClass Selector\nCS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Three Approaches to Network-Wide QoS",
+      "body": "IntServ vs DiffServ:\nDiffServ\nExcellent\nSoft\nPer-class\nIntServ\nPoor\nHard\nPer-flow\nScalability\nGuarantee\nGranularity\nDSCP marking\nInternet & enterprise\nRSVP\nSmall managed networks\nProtocol\nUse case",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "QoS in Switched Networks (Local Network)",
+      "body": "How Switches Prioritise Traffic?\nQoS also works inside a local network — within your college, office, or data centre — using Ethernet switches",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "QoS in Switched Networks (Local Network)",
+      "body": "How Switches Prioritise Traffic\nHow Does a Switch Know Which Traffic is Priority?\nEvery Ethernet frame can carry a VLAN tag (802.1Q)\nInside this tag, there is a 3-bit field called PCP (Priority Code Point)\n3 bits = 8 priority levels (0 to 7), where 7 is highest and 0 is lowest\nEthernet uses a standard called IEEE 802.1p to mark priority inside a local network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "How Switches Prioritise Traffic",
+      "body": "Priority Level Mapping\nTraffic Type\nVoIP calls, video conferencing\nBusiness critical applications\nNetwork control traffic\nPriority Level\n5 – 6\n3 – 4\n7\nGeneral data, best effort\n0 – 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "QoS in Switched Networks (Local Network)",
+      "body": "How Switches Prioritise Traffic\nHow It Works:\nWhen a VoIP packet enters the switch, it is tagged with PCP = 6\nWhen a file download enters the switch, it is tagged with PCP = 0\nThe switch reads this PCP value and serves higher priority frames first from its queue\nResult - even on a busy office network, voice calls stay clear",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "QoS in Switched Networks (Local Network)",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "SCTP & Quality of Service",
+      "body": "SCTP\nFeatures, Multi-Streaming & Multi-Homing\nSCTP vs TCP vs UDP\nQuality of Service (QoS)\nParameters & Techniques\nIntServ, DiffServ & Switched Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Network Layer & IP Addressing",
+      "body": "Network Layer & IP Addressing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1VAY73kJtqUqB2Z4HJd30Y-qYON94GdwKL54fyGPpqAw/edit"
+}

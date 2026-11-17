@@ -1,0 +1,556 @@
+{
+  "session_no": 13,
+  "source_file": "CN — session 13",
+  "deck_title": "CN — session 13",
+  "n_slides": 78,
+  "summary": "\n    - Slide 2: Internet Scaling Mechanisms\n    - Slide 3: Routing Algorithms\n    - Slide 4: Internet Scaling Mechanisms\n    - Slide 5: Hierarchical Routing & BGP\n    - Slide 6: In flat routing, every router stores the full routing table for the entire netwo\n    - Slide 7: Routing Table Explosion\n    - Slide 8: This is why the internet uses Hierarchical Routing, grouping routers into region\n    - Slide 9: Hierarchical routing divides the internet into groups called Autonomous Systems \n    - Slide 10: Level\n    - Slide 11: Routers store only routes within their own AS + summary routes to other ASes, mu\n    - Slide 12: Hierarchical Routing\n    - Slide 13: BGP (Border Gateway Protocol) is the routing protocol that exchanges routing inf\n    - Slide 14: Note: Border Gateway Protocol constructs an autonomous systems graph based on th\n    - Slide 15: BGP - Border Gateway Protocol\n    - Slide 16: BGP - Border Gateway Protocol\n    - Slide 17: BGP Feature\n    - Slide 18: BGP Feature\n    - Slide 19: BGP - Border Gateway Protocol\n    - Slide 20: Multicasting \n    - Slide 21: Multicasting sends one packet from a source to multiple destinations, and the ne\n    - Slide 22: Why Multicast Instead of Broadcast?\n    - Slide 23: Types of Network Communication\n    - Slide 24: In multicast, the sender sends data to a group address\n    - Slide 25: Multicasting\n    - Slide 26: Live Video Streaming\n    - Slide 27: Casting in Networking\n    - Slide 28: Feature\n    - Slide 29: Types of Network Communication\n    - Slide 30: IPv4 reserves the Class D range for multicast addresses: 224.0.0.0 to 239.255.25\n    - Slide 31: IGMP is the protocol a device uses to join or leave a multicast group\n    - Slide 32: IGMPv2\n    - Slide 33: Routers use IGMP to learn which devices want to join multicast groups and forwar\n    - Slide 34: Source-Based Tree\n    - Slide 35: Broadcast Routing is a technique where a source packet is delivered to every des\n    - Slide 36: Common Uses: \n    - Slide 37: Broadcast Routing : One-to-All Delivery\n    - Slide 38: Flooding\n    - Slide 39: Spanning Tree\n    - Slide 40: Disadvantages\n    - Slide 41: Broadcast Routing : One-to-All Delivery\n    - Slide 42: Virtual Circuit Networks\n    - Slide 43: The internet uses packet switching, each packet is independently routed\n    - Slide 44: Virtual Circuit Networks\n    - Slide 45: Virtual Circuit Networks\n    - Slide 46: The source sends a \"Call Request\"\n    - Slide 47: All packets follow the same route, arriving in the correct order with minimal he\n    - Slide 48: VC Teardown\n    - Slide 49: Virtual Circuit (VC)\n    - Slide 50: Virtual Circuit (VC)\n    - Slide 51: In a VC network, routers maintain a table\n    - Slide 52: Virtual Circuit Networks\n    - Slide 53: Quiz Time!\n    - Slide 54: IPv6 - The Next Generation Internet Protocol\n    - Slide 55: IPv6  is the latest version of IP designed to replace IPv4\n    - Slide 56: Written as 8 groups of 16 bits each, separated by colons, each group is in hexad\n    - Slide 57: Leading zeros in any group can be dropped, 0DB8 → DB8, 0000 → 0\n    - Slide 58: Step\n    - Slide 59: IPv6\n    - Slide 60: One sender to one receiver\n    - Slide 61: Types of IPv6 Addresses\n    - Slide 62: In IPv6, devices can automatically configure their own global unicast address wi\n    - Slide 63: IPv4\n    - Slide 64: IPv4\n    - Slide 65: IPv4\n    - Slide 66: Transition Strategies\n    - Slide 67: Transition Strategies, How the World Moves from IPv4 to IPv6:\n    - Slide 68: Dual Stack\n    - Slide 69: Tunneling\n    - Slide 70: Translation (NAT64)\n    - Slide 71: Strategy\n    - Slide 72: Transition Strategies\n    - Slide 73: Quiz Time!\n    - Slide 74: Internet Scaling Mechanisms\n    - Slide 75: Internet Scaling Mechanisms\n    - Slide 76: ICMP In Action",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Internet Scaling Mechanisms",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Routing Algorithms",
+      "body": "Routing Algorithms\nStatic vs Dynamic Routing\nDistance Vector Routing \nBellman-Ford Algorithm & RIP\nCount-to-Infinity Problem  \nCauses & Solutions\nLink State Routing \nDijkstra's , Shortest Path Routing & OSPF\nDV vs Link State \nComparison",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Internet Scaling Mechanisms",
+      "body": "Internet Scaling Mechanisms\nMulticasting\nVirtual Circuit Networks\nIPv6\nMulticast, Broadcast Routing\nNeed, Address Format & Types, IPv4 vs IPv6\nHierarchical Routing & BGP\nTransition Strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Hierarchical Routing & BGP",
+      "body": "Hierarchical Routing & BGP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "In flat routing, every router stores the full routing table for the entire netwo",
+      "body": "In flat routing, every router stores the full routing table for the entire network\nThe Problem with Flat Routing\nWhy Flat Routing Fails at Scale?\nRouter A\nFull routing table\nRouter B\nFull routing table\nRouter C\nFull routing table\nRouter D\nFull routing table\nRouter E\nFull routing table\nRouter F\nFull routing table\nRouter G\nFull routing table\nRouter H\nFull routing table\nEvery Router Knows every Destination\nTable size grows with network size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Routing Table Explosion",
+      "body": "Routing Table Explosion\nWith millions of networks worldwide, every router would need to store millions of routes, and this number keeps growing\nExcessive Update Traffic\nEvery topology change triggers updates that spread across the entire network, consuming bandwidth\nNo Administrative Control\nOrganizations cannot apply their own policies on how traffic moves\nThe Problem with Flat Routing\nProblems with Flat Routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "This is why the internet uses Hierarchical Routing, grouping routers into region",
+      "body": "This is why the internet uses Hierarchical Routing, grouping routers into regions so each router only stores what it needs to know\nThe Solution\nHierarchical Routing\nGateway Router\nRouter\nLocal Routing info\nRouter\nLocal Routing info\nAutonomous System 1 (AS1)\nGateway Router\nRouter\nLocal Routing info\nRouter\nLocal Routing info\nAutonomous System 2 (AS2)\nInter-AS Routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Hierarchical routing divides the internet into groups called Autonomous Systems ",
+      "body": "Hierarchical routing divides the internet into groups called Autonomous Systems (AS)\nAutonomous System (AS): A group of routers under one administrative domain (e.g., an ISP, a university, a company).\n Each AS has a unique AS Number (ASN)\nHierarchical Routing\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Level",
+      "body": "Level\nBetween ASes (Inter-AS)\nInside one AS (Intra-AS)\nWho Manages It\nBGP\nIGP: OSPF, RIP\nHierarchical Routing\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Routers store only routes within their own AS + summary routes to other ASes, mu",
+      "body": "Routers store only routes within their own AS + summary routes to other ASes, much smaller tables\nRouting updates stay inside their region, less network traffic\nEach organization controls its own routing policy\nHierarchical Routing\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Hierarchical Routing",
+      "body": "Hierarchical Routing\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "BGP (Border Gateway Protocol) is the routing protocol that exchanges routing inf",
+      "body": "BGP (Border Gateway Protocol) is the routing protocol that exchanges routing information between Autonomous Systems (AS) on the internet\nKnown as the \"backbone protocol,\" it determines the best data paths using:\nEnsuring efficient communication between networks\nPath Attributes\nPolicies\nRules\nBGP - Border Gateway Protocol\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Note: Border Gateway Protocol constructs an autonomous systems graph based on th",
+      "body": "Note: Border Gateway Protocol constructs an autonomous systems graph based on the information exchanged between BGP routers\nTypes of BGP:\neBGP (External BGP) - Between routers in different ASes\niBGP (Internal BGP) - Between routers within the same AS\n1\n2\nBGP - Border Gateway Protocol\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "BGP - Border Gateway Protocol",
+      "body": "BGP - Border Gateway Protocol\nExternal BGP\nAutonomous System 1\nRouter 1\nAutonomous System 2\nRouter 2\nSharing routing Information",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "BGP - Border Gateway Protocol",
+      "body": "BGP - Border Gateway Protocol\nInternal BGP\nRouter 1\nRouter 2\nSharing of Routing Information\nAutonomous System",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "BGP Feature",
+      "body": "BGP Feature\nProtocol Type\nValue\nPath Vector\nTransport\nTCP, Port 179\nCurrent Version\nBGP-4\nBGP - Border Gateway Protocol\nKey Features",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "BGP Feature",
+      "body": "BGP Feature\nWorks Between\nValue\nDifferent Autonomous Systems\nReal-World Users\nISPs, cloud providers (AWS, Google, Azure)\nPolicy-Based\nOrganizations can set rules to prioritize ISPs, avoid certain countries, and more\nBGP - Border Gateway Protocol\nKey Features",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "BGP - Border Gateway Protocol",
+      "body": "BGP - Border Gateway Protocol\nAnalogy\nInternal Routing (IGP)\nAS1\nAS3\nAS4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Multicasting ",
+      "body": "Multicasting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Multicasting sends one packet from a source to multiple destinations, and the ne",
+      "body": "Multicasting sends one packet from a source to multiple destinations, and the network only makes copies of it where needed\nWhat is Multicasting?\nMulticasting\nTypes of Network Communication\nMulticast",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Why Multicast Instead of Broadcast?",
+      "body": "Why Multicast Instead of Broadcast?\nEfficient and targeted\nMulticast goes only to devices that have joined the group\nIt wastes bandwidth\nBroadcast goes to everyone, including devices that do not want it\nTypes of Network Communication\nBroadcast vs Multicast",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Types of Network Communication",
+      "body": "Types of Network Communication\nMulticast",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "In multicast, the sender sends data to a group address",
+      "body": "In multicast, the sender sends data to a group address\nRouters replicate packets only when paths diverge, ensuring efficient bandwidth usage\nRecipients join and leave the group as needed\nMulticasting\nMulticasting\nHow Multicasting Works?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Multicasting",
+      "body": "Multicasting\nEthernet Multicast\nIP Multicast\nUses a special MAC address to send data to multiple devices on the local network\nUses IP addresses (224.0.0.0 to 239.255.255.255) and protocols like IGMP to manage groups, with routers sending data to multiple receivers\nMulticasting\nTypes of Multicasting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Live Video Streaming",
+      "body": "Live Video Streaming\nFinancial Data Feeds\nOSPF and RIP\nSoftware updates\nUse multicast, not broadcast, for routing updates\nSame price update sent to thousands of traders at once\nIPTV, sports broadcasts\nPushed to thousands of servers simultaneously\nMulticasting\nReal-World Use Cases",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Casting in Networking",
+      "body": "Casting in Networking\nData Transmission Methods",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Feature",
+      "body": "Feature\nCommunication\nUnicast\nOne-to-One\nTraffic Load\nLow (direct)\nCommon Use\nWeb browsing, Email\nBroadcast\nOne-to-All\nMulticast\nOne-to-Many/Few\nModerate (efficient)\nDHCP, ARP\nIPTV, Video Conf\nScalability\nGood\nPoor\nExcellent\nHigh (floods network)\nUnicast vs Broadcast vs Multicast\nKey Differences",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Types of Network Communication",
+      "body": "Types of Network Communication\nAnalogy\nBrodcasting\nMulitcast\nUnicast",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "IPv4 reserves the Class D range for multicast addresses: 224.0.0.0 to 239.255.25",
+      "body": "IPv4 reserves the Class D range for multicast addresses: 224.0.0.0 to 239.255.255.255\nMulticast Address\n224.0.0.1\n224.0.0.2\n224.0.0.5\nPurpose\nAll hosts on the local subnet\nAll OSPF routers\n224.0.0.9\nAll RIP routers\nAll routers on the local subnet\n239.0.0.0/8\nPrivate/organizational use\nMulticast - Addresses & Group Management\nClass D Addresses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "IGMP is the protocol a device uses to join or leave a multicast group",
+      "body": "IGMP is the protocol a device uses to join or leave a multicast group\nWhen a device wants to receive a multicast stream, it sends an IGMP Join message to its local router\nThe router adds the device to the multicast group and starts forwarding that traffic to it\nMulticast - Addresses & Group Management\nInternet Group Management Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "IGMPv2",
+      "body": "IGMPv2\nAdds the Leave Group message, improving group management\n2\nMulticast - Addresses & Group Management\nIGMP Versions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Routers use IGMP to learn which devices want to join multicast groups and forwar",
+      "body": "Routers use IGMP to learn which devices want to join multicast groups and forward traffic to them\nThis is essential for multicast routing protocols like PIM, which build the delivery tree across the network\nMulticast - Addresses & Group Management\nHow Routers Use IGMP\nClients\nHost\nRouter 1\nLocal Multicast Router\nL2 Switch with IGMP Snooping\nPIM\nIGMP\nIGMP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Source-Based Tree",
+      "body": "Source-Based Tree\nShared Tree\nOne tree per source-group pair, rooted at the source\nOptimal paths but uses more memory\nOne tree for all sources in a group, rendezvous point (RP) acts as the root \nSimpler but paths may not be optimal\nMulticast - Addresses & Group Management\nDelivery Trees",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Broadcast Routing is a technique where a source packet is delivered to every des",
+      "body": "Broadcast Routing is a technique where a source packet is delivered to every destination in the network\nThe network layer assumes the responsibility of replicating the packet so that all nodes receive it\nDefinition\nBroadcast Routing : One-to-All Delivery\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Common Uses: ",
+      "body": "Common Uses: \nARP (Address Resolution Protocol)\nDHCP (Dynamic Host Configuration Protocol)\nRouting table updates\nGoal\nTo ensure 100% coverage across the network\nBroadcast Routing : One-to-All Delivery\nConcepts, Pros, and Cons",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Broadcast Routing : One-to-All Delivery",
+      "body": "Broadcast Routing : One-to-All Delivery\nBroadcast\nNetwork A\nNetwork B",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Flooding",
+      "body": "Flooding\nThe \"dumb\" approach, every router forwards the packet to all neighbors except the sender\nFix: Controlled Flooding uses sequence numbers to stop a router from processing the same packet twice\nBroadcast Routing : One-to-All Delivery\nDelivery Techniques",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Spanning Tree",
+      "body": "Spanning Tree\nCreating a \"master map\" (tree) of the network that has no loops, the packet only travels along these branches\nBroadcast Routing : One-to-All Delivery\nDelivery Techniques\nReverse Path Forwarding (RPF)\nThe \"smart\" approach, a router only forwards a packet if it arrives from the shortest path back to the source, if it came from a \"side door,\" it is dropped to prevent loops",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Disadvantages",
+      "body": "Disadvantages\nAdvantages\nEasy to implement, source doesn't need to know destination addresses\nNetwork Congestion: Can lead to \"Broadcast Storms\" that crash the network\nEssential for finding services (e.g., ARP, DHCP) in a local area\nSecurity: Every device receives the data, even if it shouldn't see it\nUseful for sending sudden network status changes to everyone at once.\nResource Waste: Consumes CPU cycles on devices that don't need the packet\nBroadcast Routing : One-to-All Delivery\nAdvantages & Disadvantages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Broadcast Routing : One-to-All Delivery",
+      "body": "Broadcast Routing : One-to-All Delivery\nAnalogy\nControlled Flooding\nSpanning Tree\nReverse Path Forwarding(RPF)\nFlooding",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Virtual Circuit Networks",
+      "body": "Virtual Circuit Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "The internet uses packet switching, each packet is independently routed",
+      "body": "The internet uses packet switching, each packet is independently routed\nVirtual Circuit Switching is a different approach that combines properties of both circuit switching and packet switching\nVirtual Circuit Networks\nVirtual Circuit Networks\nConnection-Oriented Packet Switching",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Virtual Circuit Networks",
+      "body": "Virtual Circuit Networks\nWhat is a Virtual Circuit?\nA Virtual Circuit is a connection-oriented computer network where resources are reserved for data transmission between two nodes for a specific time period\nIt is a reliable medium of transfer but can be costly to implement\nVirtual Circuit Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Virtual Circuit Networks",
+      "body": "Virtual Circuit Networks\nWhat is a Virtual Circuit?\n1\n2\n3\n4\nF\nA\nB\nC\nD\nE\nEnd System\nEnd System\nEnd System\nEnd System",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "The source sends a \"Call Request\"",
+      "body": "The source sends a \"Call Request\"\nVC Setup\n1\nRouters along the path \ndetermine the route, \nreserve bandwidth/buffers, and\nassign a VCI (Virtual-Circuit Identifier) to their internal tables\n2\nVirtual Circuit Networks\nThe Three-Phase Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "All packets follow the same route, arriving in the correct order with minimal he",
+      "body": "All packets follow the same route, arriving in the correct order with minimal header overhead\nData Transfer\n1\nVirtual Circuit Networks\nThe Three-Phase Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "VC Teardown",
+      "body": "VC Teardown\nVirtual Circuit Networks\nThe Three-Phase Lifecycle\nAfter the session ends, a \"Clear Request\" is sent to delete the VCI and free the reserved resources\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Virtual Circuit (VC)",
+      "body": "Virtual Circuit (VC)\nFixed at setup\nDatagram (Standard IP)\nIndependent per packet\nFeature\nPath\nShort VCI (Label)\nFull Destination IP Address\nAddress Info\nGuaranteed in-sequence\nCan arrive out-of-order\nPacket Order\nVirtual Circuit Networks\nThe Three-Phase Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Virtual Circuit (VC)",
+      "body": "Virtual Circuit (VC)\nReserved (Guaranteed)\nDatagram (Standard IP)\nBest-effort (No guarantees)\nFeature\nResources\nHigh (but if one link fails, VC dies)\nHigh (can route around failures)\nReliability\nMPLS, ATM, X.25\nThe Global Internet (IP)\nExamples\nVirtual Circuit Networks\nThe Three-Phase Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "In a VC network, routers maintain a table",
+      "body": "In a VC network, routers maintain a table\nEach packet carries a short label called VCI\nWhen a packet arrives, the router uses the VCI to look up the next path and may replace it with a new VCI before forwarding\n This makes forwarding faster than using full IP addresses\nHow Does It Work?\nVirtual Circuit Networks\nThe Three-Phase Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Virtual Circuit Networks",
+      "body": "Virtual Circuit Networks\nAnalogy\nVirtual Circuit\nNormal Internet (datagram)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "IPv6 - The Next Generation Internet Protocol",
+      "body": "IPv6 - The Next Generation Internet Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "IPv6  is the latest version of IP designed to replace IPv4",
+      "body": "IPv6  is the latest version of IP designed to replace IPv4\nIPv4 uses 32-bit addresses (~4.3 billion)\nWhich ran out as the number of internet devices grew\nIPv6 uses 128-bit addresses (2¹²⁸)\nProviding a huge number of unique addresses\nIt also improves routing, includes built-in security (IPsec), and supports automatic address configuration, removing the need for NAT\nIPv6 - Internet Protocol Version 6\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Written as 8 groups of 16 bits each, separated by colons, each group is in hexad",
+      "body": "Written as 8 groups of 16 bits each, separated by colons, each group is in hexadecimal representing 4 bits (1 nibble)\nIPv6 - Internet Protocol Version 6\nIPv6 Address Format\nIPv6 address\n2001 : 0SC8 : E004 : 0001 : 0000 : 0000 : 0000 : F00A\n16 bits : 16 bits : 16 bits : 16 bits : 16 bits : 16 bits : 16 bits : 16 bits\n128 Bits",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Leading zeros in any group can be dropped, 0DB8 → DB8, 0000 → 0",
+      "body": "Leading zeros in any group can be dropped, 0DB8 → DB8, 0000 → 0\nRule 1\nSimplification Rules:\nOne or more consecutive all-zero groups can be replaced with ::. But :: can only appear once in an address\nRule 2\nIPv6 - Internet Protocol Version 6\nIPv6 Solution",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Step",
+      "body": "Step\nFull\nAddress\n2001:0DB8:0000:0000:0000:0000:0000:0001\nDrop leading zeros\n2001:DB8:0:0:0:0:0:1\nApply ::\n2001:DB8::1\nLoopback (full)\n0000:0000:0000:0000:0000:0000:0000:0001\nLoopback (simplified)\n::1\nIPv6\nSimplification Rules",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "IPv6",
+      "body": "IPv6\nAnalogy\nIPv4\nIPv6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "One sender to one receiver",
+      "body": "One sender to one receiver\nUnicast\nMulticast\nAnycast\nOne sender to multiple receivers (group members only), starts with FF00::/8 IPv6 uses multicast instead of broadcast for all one-to-many communication\nOne sender to the nearest of multiple devices sharing the same address, used for DNS root servers and CDN nodes, traffic automatically goes to the closest server\nIPv6 has three types of addresses\nTypes of IPv6 Addresses\nUnicast, Multicast & Anycast",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Types of IPv6 Addresses",
+      "body": "Types of IPv6 Addresses\nUnicast, Multicast & Anycast\nIPv6 Address Types\nUnicast\nMulticast\nAnycast\nWell-Known\nff00::/12\nSolicited-Node\nff02:0:0:0:0:1:ff00::/104",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "In IPv6, devices can automatically configure their own global unicast address wi",
+      "body": "In IPv6, devices can automatically configure their own global unicast address without a DHCP server\nThe router advertises the network prefix, and the device generates its own interface ID (usually from its MAC address) This is called SLAAC\nSLAAC(Stateless Address Autoconfiguration)\nTypes of IPv6 Addresses\nUnicast, Multicast & Anycast",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "IPv4",
+      "body": "IPv4\n32-bit\nIPv6\n128-bit\nFeature\nAddress Size\n~4.3 billion\n~340 undecillion\nTotal Addresses\n20–60 bytes (variable)\nFixed 40 bytes\nHeader Size\nSupported\nNot supported replaced by multicast\nBroadcast\nIPv4 vs IPv6 - Key Differences & Transition\nComparison & Migration to IPv6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "IPv4",
+      "body": "IPv4\nYes\nIPv6\nNo - handled by transport layer\nFeature\nChecksum in Header\nBy routers and hosts\nOnly by source host\nFragmentation\nOptional\nMandatory\nIPsec\nYes (address shortage workaround)\nNo\nNAT Required\nIPv4 vs IPv6 - Key Differences & Transition\nComparison & Migration to IPv6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "IPv4",
+      "body": "IPv4\nNeeds DHCP\nIPv6\nSLAAC - no DHCP server needed\nFeature\nAuto-Configuration\n127.0.0.1\n::1\nLoopback\nNot natively supported\nNatively supported\nAnycast\nIPv4 vs IPv6 - Key Differences & Transition\nComparison & Migration to IPv6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Transition Strategies",
+      "body": "Transition Strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Transition Strategies, How the World Moves from IPv4 to IPv6:",
+      "body": "Transition Strategies, How the World Moves from IPv4 to IPv6:\nThe internet cannot switch overnight. Billions of devices still use IPv4\nThree strategies allow IPv4 and IPv6 to coexist:\nIPv4 vs IPv6 - Key Differences & Transition\nTransition Strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Dual Stack",
+      "body": "Dual Stack\nA device runs both IPv4 and IPv6 simultaneously\nIt uses IPv6 when the destination supports it, IPv4 otherwise\nNo translation needed\nMost modern operating systems (Windows, Linux, Android, iOS) are dual-stack by default\nIPv4 vs IPv6 - Key Differences & Transition\nTransition Strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Tunneling",
+      "body": "Tunneling\nIPv6 packets are wrapped (encapsulated) inside IPv4 packets to cross IPv4-only networks\nAt the entry point: encapsulation\nAt the exit point: decapsulation\nThe IPv6 packet continues unchanged, examples: 6to4, ISATAP, Teredo\nIPv4 vs IPv6 - Key Differences & Transition\nTransition Strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Translation (NAT64)",
+      "body": "Translation (NAT64)\nWhen an IPv6-only device must communicate with an IPv4-only device\nA NAT64 gateway translates between the two protocols\nDNS64 creates synthetic IPv6 addresses for IPv4-only destinations\nIPv4 vs IPv6 - Key Differences & Transition\nTransition Strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Strategy",
+      "body": "Strategy\nDual Stack\nWhen to Use It?\nDevice supports both IPv4 and IPv6, uses whichever fits the destination\nTunneling\nIPv6 traffic needs to cross an IPv4-only network segment\nNAT64 / Translation\nIPv6-only and IPv4-only devices need to communicate with each other\nIPv4 vs IPv6 - Key Differences & Transition\nTransition Strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Transition Strategies",
+      "body": "Transition Strategies\nAnalogy\nDual Stack\nTunneling\nTranslation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Internet Scaling Mechanisms",
+      "body": "Hierarchical Routing & BGP\nMulticasting\nMulticast, \nBroadcast Routing\nVirtual Circuit Networks\nKey Takeaways Part (1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Internet Scaling Mechanisms",
+      "body": "IPv6\nNeed, \nAddress Format & Types, \nIPv4 vs IPv6\nTransition Strategies\nKey Takeaways Part (2/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "ICMP In Action",
+      "body": "ICMP In Action",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1AZZiM6jmdWsMj0dI3OFTQZe4yk3KwvF0IgzQaatr8hQ/edit"
+}

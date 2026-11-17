@@ -1,0 +1,551 @@
+{
+  "session_no": 1,
+  "source_file": "cloud-computing-fundamentals.html",
+  "source_link": "",
+  "source_kind": "web",
+  "deck_title": "Cloud Computing Fundamentals",
+  "n_slides": 60,
+  "summary": "Cloud Computing Fundamentals\n    - Slide 1: Brand\n    - Slide 2: Welcome\n    - Slide 3: What We Will Cover\n    - Slide 4: Section: Cloud Computing Basics\n    - Slide 5: Why Cloud Emerged\n    - Slide 6: NIST Formal View\n    - Slide 7: NIST Formal View\n    - Slide 8: Analogy: a furnished apartment\n    - Slide 9: Ownership and Delivery\n    - Slide 10: Cloud Computing Architecture\n    - Slide 11: Cost Scale Speed\n    - Slide 12: Section: History & Evolution\n    - Slide 13: From Mainframes To Cloud\n    - Slide 14: One Machine Many Users\n    - Slide 15: One Machine Many Users\n    - Slide 16: Analogy: a library reading room\n    - Slide 17: Hardware Gets Abstracted\n    - Slide 18: Hardware Gets Abstracted\n    - Slide 19: Analogy: a subdivided plot\n    - Slide 20: Pooling And Metering Power\n    - Slide 21: Pooling And Metering Power\n    - Slide 22: Analogy: a shared truck fleet\n    - Slide 23: 2006 Onward Milestones\n    - Slide 24: Eras And Their Legacy\n    - Slide 25: Quiz time\n    - Slide 26: Section: Essential Characteristics - I\n    - Slide 27: Five NIST Traits\n    - Slide 28: Five NIST traits, glossed\n    - Slide 29: No Human Intervention\n    - Slide 30: Analogy: an ATM\n    - Slide 31: Ubiquitous Standard Access\n    - Slide 32: Shared Infrastructure Model\n    - Slide 33: Analogy: a hostel mess kitchen\n    - Slide 34: Section: Essential Characteristics - II\n    - Slide 35: Elasticity Scalability Metering\n    - Slide 36: Auto-Scaling Mechanism\n    - Slide 37: Analogy: a rubber band\n    - Slide 38: Traffic Spike Traced\n    - Slide 39: Traffic Spike Traced\n    - Slide 40: Pay-Per-Use Metering\n    - Slide 41: Analogy: an electricity meter\n    - Slide 42: Section: Benefits & Challenges\n    - Slide 43: Cloud Trade-Offs Map\n    - Slide 44: Cloud Trade-Offs Map\n    - Slide 45: CapEx To OpEx\n    - Slide 46: CapEx To OpEx\n    - Slide 47: Analogy: renting a taxi\n    - Slide 48: Scale Reach Speed\n    - Slide 49: Switching Cost Risk\n    - Slide 50: Analogy: fitted cupboards\n    - Slide 51: Unplanned Billing Risk\n    - Slide 52: Analogy: roaming left on\n    - Slide 53: Distance And Law Limits\n    - Slide 54: Weighing Trade-Offs Together\n    - Slide 55: Weighing Trade-Offs Together\n    - Slide 56: Quiz time\n    - Slide 57: Key takeaways\n    - Slide 58: Deployment & Service Models\n    - Slide 59: Feedback\n    - Slide 60: Thank you",
+  "slides": [
+    {
+      "n": 1,
+      "title": "Brand",
+      "body": "Welcome!",
+      "notes": "The opening mark. Content rule 21 keeps \"Welcome to today's session\" for the next frame, so this one says something else.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Brand"
+    },
+    {
+      "n": 2,
+      "title": "Welcome",
+      "body": "",
+      "notes": "The session name, in minimal mode: the kicker and the title, nothing else.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Welcome"
+    },
+    {
+      "n": 3,
+      "title": "What We Will Cover",
+      "body": "",
+      "notes": "The TR's own agenda, all five items, split at the colon it writes. These exact strings come back on the Key Takeaways frame (content rule 20).",
+      "tables": [],
+      "section": "Opening",
+      "label": "Agenda"
+    },
+    {
+      "n": 4,
+      "title": "Section: Cloud Computing Basics",
+      "body": "",
+      "notes": "TR section 1. The subtitle is the agenda's own sub for this section.",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "Section divider"
+    },
+    {
+      "n": 5,
+      "title": "Why Cloud Emerged",
+      "body": "Cloud Computing Overview\nTraditional IT ties hardware purchases to guesses about future demand, locking capital years before the load actually arrives.\nOn-premise IT\norganisation buys, installs, maintains hardware\nCloud IT\ncomputing rented as a metered service\nShift driven by cost, scale and speed pressures",
+      "notes": "TR visual guidance: \"Split-screen diagram: left a server room with racks and IT staff, right a laptop reaching a cloud icon over the network.\" The panels carry the TR's first two bullets as their own bodies and the third is the caption, so the same three strings are not on the frame twice. TR speaker notes: \"Set up the capacity-planning problem before naming cloud computing as the fix. Interviewers often open this topic by asking what problem cloud computing actually solves.\"",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "Why cloud emerged"
+    },
+    {
+      "n": 6,
+      "title": "NIST Formal View",
+      "body": "Cloud Computing Defined\nFive essential characteristics govern shared resource access\nThree service models: IaaS, PaaS, SaaS\nFour deployment models: public, private, hybrid, community\nAWS Management Console exposes this self-service resource catalog\nNIST Definition\nThe National Institute of Standards and Technology (NIST) defines cloud computing as a model for enabling anywhere, convenient, on-demand network access to a shared pool of configurable computing resources (networks, servers, storage, applications, and services) that can be rapidly provisioned and released with minimal management effort or service provider interaction.",
+      "notes": "The TR's Content paragraph for this slide is the NIST definition, 55 words of it. It is set as the definition callout rather than as a lead: six lines of 22px lead type pushes the rest of the slide off the canvas, and this is the one sentence in the session the room is most likely to be asked to reproduce. TR speaker notes: \"Name NIST SP 800-145 as the source so the definition is quoted correctly. This exact definition is a frequent interview question, so state it precisely.\"",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "NIST formal view"
+    },
+    {
+      "n": 7,
+      "title": "NIST Formal View",
+      "body": "Cloud Computing Defined\nNIST Definition\nEssential Characteristics\nfive of them\nService Models\nIaaS, PaaS, SaaS\nDeployment Models\npublic, private, hybrid, community",
+      "notes": "TR visual guidance: \"Central box labelled 'NIST Definition' branching into three labelled boxes: Essential Characteristics, Service Models, Deployment Models.\" It gets its own frame because it needs the full width: squeezed into a side column beside the definition and four bullets, its third label ran off the bottom of the canvas and into the footer mark, which is what `qa.mjs` and `align-check.mjs` both reported. Same kicker and title as the frame before it, so `continuity.ts` holds the header still: one heading, a second exhibit. Only the characteristics are opened in this session; the service and deployment models are the next session, so name them and move on (content rule 4).",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "NIST: three branches"
+    },
+    {
+      "n": 8,
+      "title": "Analogy: a furnished apartment",
+      "body": "Cloud Computing Defined\nA furnished apartment\nCloud computing\nMove in, do not build",
+      "notes": "TR analogy, verbatim: \"Renting a furnished apartment instead of constructing a house gives instant living space without owning bricks or cement — just as cloud computing gives access to configurable computing resources on demand without owning the underlying infrastructure.\" Say it; the frame draws it. The three mapping rows are what the room can check, so walk them left to right.",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "Analogy: a furnished apartment"
+    },
+    {
+      "n": 9,
+      "title": "Ownership and Delivery",
+      "body": "On-Premise vs Cloud\nOn-premise IT keeps hardware, software and staff inside the organisation; cloud shifts ownership and operation to a provider, delivered over the network.\nA locked data centre\nReachable from anywhere over the internet\nAspect\nOn-Premise IT\nCloud\nOwnership\nOrganisation owns hardware\nProvider owns infrastructure\nCost model\nCapital expenditure (CapEx)\nOperating expenditure (OpEx)\nProvisioning time\nWeeks to months\nMinutes\nScaling\nManual hardware upgrade\nOn-demand, software-driven\nMaintenance\nIn-house IT team\nProvider-managed",
+      "notes": "Both of the TR's visuals are here: \"Two-panel diagram: left a locked data-centre building, right a cloud icon reachable from anywhere over the internet\", above the five-row table. The panels are in label-only mode, because their job on this frame is to say what is being compared before the table compares it. Five rows, values exactly as the TR sets them. TR speaker notes: \"Stress the CapEx-to-OpEx shift as the single biggest contrast for interviews. Ask learners to map each row to a real purchase decision they know.\"",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "On-premise vs cloud"
+    },
+    {
+      "n": 10,
+      "title": "Cloud Computing Architecture",
+      "body": "On-Premise vs Cloud",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN. It is embedded in the document between the on-premise/cloud table and that slide's Visual Guidance line, and both builds before this one missed it because the Drive connector's text representation of a Google Doc drops embedded images silently: nothing in the text said an image was there. It only appeared on an export to HTML. Walk the numbers: 1 is the front end, 9 is the internet between the halves, and 2 to 6 are the back-end layers with management and security running down both sides. Nothing on it is opened here; these layers are what the rest of the course builds on. IT IS NOT THE SOURCE PNG. The designer's deck embeds that same image byte for byte (md5 73ee77...), and the instruction was to take the reference and draw our own, so `CloudArchitecture` redraws it in the deck's blue at the deck's type sizes, animating top down. Every label and every number is the source's.",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "Cloud computing architecture"
+    },
+    {
+      "n": 11,
+      "title": "Cost Scale Speed",
+      "body": "Adoption Drivers\nThree pressures push organisations toward cloud: unpredictable cost of owning hardware, difficulty scaling for sudden demand, and slow speed of provisioning new infrastructure.\nCost\nconverts CapEx to pay-per-use OpEx, cuts idle capacity\nScale\nresources added or removed as demand shifts\nSpeed\nservers provisioned in minutes, not procurement cycles\nCloud Adoption\nReflected in tools like AWS Cost Explorer, Pricing Calculator",
+      "notes": "TR visual guidance: \"Three icons in a row — a rupee coin, an elastic band, a stopwatch — each labelled cost, scale, speed, feeding one arrow marked 'Cloud Adoption'.\" The three tiles carry the TR's first three bullets verbatim and the fourth is the caption. TR speaker notes: \"Tie each driver to a concrete AWS tool so the point feels practical, not abstract. Interviewers often ask learners to justify a cloud migration using exactly these three drivers.\"",
+      "tables": [],
+      "section": "Cloud Computing Basics",
+      "label": "Adoption drivers"
+    },
+    {
+      "n": 12,
+      "title": "Section: History & Evolution",
+      "body": "",
+      "notes": "TR section 2.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Section divider"
+    },
+    {
+      "n": 13,
+      "title": "From Mainframes To Cloud",
+      "body": "Four Eras Of Computing\nCloud computing did not appear overnight; it inherited ideas from four earlier eras, each solving the resource-sharing problem of its own time.\n1960s-70s\nmainframes & time-sharing\n1980s-2000s\nclient-server & x86 virtualization\n1990s-2000s\ngrid & utility computing\n2006 onward\nthe public cloud era",
+      "notes": "TR visual guidance: \"Horizontal timeline strip with four labelled eras and simple icons: mainframe terminal, PC-plus-server, linked grid nodes, cloud symbol.\" The stops ARE the TR's four bullets, split at the colon the TR writes, so the four era strings appear once rather than twice. TR speaker notes: \"Frame this as the roadmap for the section before going era by era. Exam angle: each era is often asked as 'what did X contribute to cloud computing'.\"",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Four eras of computing"
+    },
+    {
+      "n": 14,
+      "title": "One Machine Many Users",
+      "body": "Mainframes & Time-Sharing\nEarly mainframes were too costly for one user alone, so time-sharing let many users access the same machine at once.\nMainframes: centralised, costly machines run by dedicated operators\nBatch processing: jobs queued and run without interaction\nTime-sharing (1960s): CPU scheduled across simultaneous terminal users",
+      "notes": "TR visual guidance: \"Mainframe box with several terminal lines converging on it, a small clock icon marking scheduled turns.\" The lines point INWARD, which is why this is not `RadialSpread`: the claim is four terminals queueing for one machine, not one machine reaching four terminals. The fifth bullet's em dash became a colon (content rule 1). TR speaker notes: \"Time-sharing is the first appearance of the resource-multiplexing idea cloud scales up massively. Exam angle: contrast queued batch jobs against interactive time-sharing.\"",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Mainframes and time-sharing"
+    },
+    {
+      "n": 15,
+      "title": "One Machine Many Users",
+      "body": "Mainframes & Time-Sharing\nEach user experienced an illusion of a private computer\nIBM's CP-40/CP-67 (1960s) pioneered mainframe virtualization: the earliest form of the concept\nTerminal\nMainframe\nCPU scheduled across simultaneous terminal users\nscheduled turns",
+      "notes": "The two bullets the converging-terminals figure does not illustrate: what each user experienced, and the IBM machines that got there first. They are on their own frame because this slide measured 459 characters of lead-plus-bullets against a ~420 comfort ceiling, and five two-line bullets beside a figure is the densest thing in the deck.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Mainframes and time-sharing, continued"
+    },
+    {
+      "n": 16,
+      "title": "Analogy: a library reading room",
+      "body": "Mainframes & Time-Sharing\nA library reading room\nTime-sharing\nEveryone gets a scheduled turn",
+      "notes": "TR analogy, verbatim: \"A library reading room with one shared encyclopedia set, where each reader gets a scheduled turn at the desk — just as time-sharing gave every terminal user a scheduled turn on one mainframe.\" The third mapping row is the one worth pressing: the reason to share was never fairness, it was that the machine was too expensive to leave idle.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Analogy: a library reading room"
+    },
+    {
+      "n": 17,
+      "title": "Hardware Gets Abstracted",
+      "body": "Client-Server & Virtualization\nPersonal computers and networks split work into client requests and dedicated servers; virtualization then lets one physical server run several independent virtual machines.\n1980s-90s: client-server split desktop and network-server roles\nCommodity x86 virtualization (late 1990s onward, e.g. VMware): a hypervisor partitions one server",
+      "notes": "TR visual guidance: \"Diagram: physical server box, hypervisor layer above it, three VM boxes each with its own OS icon on top.\" `LayerStack` in the kit stacks full-width bands, which would draw the three VMs as layers OF each other; the side-by-side row is the point, because it is what isolation looks like. TR speaker notes: \"Virtualization is the direct technical ancestor of cloud multi-tenancy taught later in this session. Interview angle: explain how a hypervisor isolates VMs sharing one host.\"",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Client-server and virtualization"
+    },
+    {
+      "n": 18,
+      "title": "Hardware Gets Abstracted",
+      "body": "Client-Server & Virtualization\nEach virtual machine runs its own OS, isolated from others\nDecouples software from physical hardware, enabling resource pooling\nVM\nits own OS\nVM\nits own OS\nVM\nits own OS\nHypervisor\nOne physical server",
+      "notes": "What the hypervisor buys, once it has partitioned the server: isolation per virtual machine, and hardware the software no longer depends on. Split off because the frame before it measured 459 characters.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Client-server and virtualization, continued"
+    },
+    {
+      "n": 19,
+      "title": "Analogy: a subdivided plot",
+      "body": "Client-Server & Virtualization\nOne plot, locked apartments\nVirtual machines\nOne space, divided and locked",
+      "notes": "TR analogy, verbatim: \"One large plot subdivided into separate, locked apartments by a building's structure — just as a hypervisor partitions one physical server into isolated virtual machines, each unaware of its neighbours.\" The middle row is the one that matters: the structure does the dividing, and a tenant cannot undo it from inside their own flat.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Analogy: a subdivided plot"
+    },
+    {
+      "n": 20,
+      "title": "Pooling And Metering Power",
+      "body": "Grid & Utility Computing\nGrid computing pooled processing power across many organisations for one large task, while utility computing proposed billing that powers the way electricity is billed.\nGrid computing: idle CPUs across institutions combined for shared jobs\nExample: distributed scientific projects pooling volunteer processing power",
+      "notes": "TR visual guidance: \"Diagram: multiple institution icons linked into one central grid; a separate metering gauge icon beside it for billing.\" The gauge sits beside the hub rather than inside it, because the TR names it as a separate thing: what it measures is the sharing, not the machines. TR speaker notes: \"Grid pioneered pooling distributed compute; utility pioneered pay-per-use billing, both feeding directly into cloud. Interview angle: distinguish grid (pooled computation) from cloud (pooled plus on-demand self-service).\"",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Grid and utility computing"
+    },
+    {
+      "n": 21,
+      "title": "Pooling And Metering Power",
+      "body": "Grid & Utility Computing\nUtility computing: pay only for capacity consumed, not owned\nBoth separate consumption from ownership of hardware, ahead of cloud\nInstitution\nOne grid\nIdle CPUs combined for shared jobs\nmetered billing",
+      "notes": "The utility half of the pair. Grid pooled the capacity; utility billed for what was consumed, and the two together are what cloud inherited. Split off because the frame before it measured 441 characters.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Grid and utility computing, continued"
+    },
+    {
+      "n": 22,
+      "title": "Analogy: a shared truck fleet",
+      "body": "Grid & Utility Computing\nOne shipping company's trucks\nGrid and utility computing\nPool the load, pay your share",
+      "notes": "TR analogy, verbatim: \"Several small businesses sharing one shipping company's trucks, pooling partial loads and paying only for the weight each one ships — just as grid computing pools spare processing power and utility computing bills only for capacity consumed.\" Two ideas in one picture, and they are the two eras: the fleet is grid computing, paying by weight is utility computing.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Analogy: a shared truck fleet"
+    },
+    {
+      "n": 23,
+      "title": "2006 Onward Milestones",
+      "body": "Public Cloud Emerges\nThe public cloud era began when providers started selling the pooled, virtualized, metered resources of earlier eras directly over the internet, on demand.\n2006\nAmazon Web Services launches S3 storage, then EC2 compute\n2008\nGoogle App Engine offers a managed application platform\n2010\nMicrosoft launches Windows Azure commercially\nBy the 2010s\npublic cloud becomes the default for new IT\nAdoption",
+      "notes": "TR visual guidance: \"Timeline strip from 2006 to 2010s with provider logos placed at their launch years and a rising adoption curve beneath.\" The four stops are the TR's own four milestone lines, which it writes as three plain lines and one bullet. The marks come from `slide-kit/assets/companies/` (content rule 13), each the vendor's own, unrecoloured. TR speaker notes: \"AWS's 2006 launch is the commonly cited start of the modern public cloud industry. Exam angle: know that S3 preceded EC2 within that same year.\"",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Public cloud emerges"
+    },
+    {
+      "n": 24,
+      "title": "Eras And Their Legacy",
+      "body": "Evolution At A Glance\nEach era solved a resource problem that cloud computing still answers, from shared access on one machine to metered, on-demand delivery over the internet.\n1960s-70s\n1980s-2000s\n1990s-2000s\n2006 onward\nEra\nPeriod\nCore Idea\nCloud Legacy\nMainframes & Time-sharing\n1960s-70s\nMany users share one machine\nShared-access roots\nClient-Server & Virtualization\n1980s-2000s\nHardware abstracted into virtual machines\nResource pooling\nGrid & Utility Computing\n1990s-2000s\nPooled capacity, pay-per-use billing\nMetered service model\nPublic Cloud\n2006 onward\nOn-demand delivery over internet\nToday's cloud platforms",
+      "notes": "Both of the TR's visuals: \"Full four-row table on screen with a slim timeline ribbon above it repeating the four eras in sequence.\" The ribbon carries the periods only; the era names are in the table's first column directly beneath it, and printing them twice on one frame is the redundancy a ribbon is trying to avoid. Values exactly as the TR sets them. TR speaker notes: \"This table is a frequent interview question on cloud history. Ask learners to match each precursor model to the cloud characteristic it most resembles.\"",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Evolution at a glance"
+    },
+    {
+      "n": 25,
+      "title": "Quiz time",
+      "body": "",
+      "notes": "Placed here on instruction: the quiz goes immediately after the second topic. Everything from here on assumes the room can already read mainframe, time-sharing, hypervisor and grid, so a misunderstanding caught here does not compound through the three sections that follow. This is the For Loop session's own frame, byte for byte. Open the quiz on the portal, everyone answers alone, then go through the answers together.",
+      "tables": [],
+      "section": "History & Evolution",
+      "label": "Quiz time"
+    },
+    {
+      "n": 26,
+      "title": "Section: Essential Characteristics - I",
+      "body": "",
+      "notes": "TR section 3.",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "Section divider"
+    },
+    {
+      "n": 27,
+      "title": "Five NIST Traits",
+      "body": "Essential Characteristics\nNIST formally defines cloud computing through five essential characteristics, the standard checklist that distinguishes cloud from traditional IT.",
+      "notes": "REDRAWN FROM THE TR DOC'S OWN DIAGRAM, and it is exactly what its Visual Guidance line asks for: \"five-box diagram, each box labelled with one NIST characteristic name, arranged around a central 'Cloud' icon\". The source image is embedded in the document and was invisible to the Drive connector's text read, which is why the first two builds drew a substitute for it; the designer's deck then turned out to embed the very same PNG (md5 b7ddbc...). This is the same composition in the deck's own palette and type, which is what was asked for: take the reference, do not ship the image. Name the five going round the ring; the frame after this one glosses them. TR speaker notes: \"The five traits together form the complete NIST definition of cloud computing.\"",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "Five NIST traits"
+    },
+    {
+      "n": 28,
+      "title": "Five NIST traits, glossed",
+      "body": "Essential Characteristics\nOn-demand self-service: provisioning without human intervention\nBroad network access: reachable over standard protocols\nResource pooling: shared infrastructure across multiple tenants\nRapid elasticity: capacity scales automatically with demand\nMeasured service: usage metered and billed per consumption",
+      "notes": "The TR's own five bullets, each split at the colon it writes: the name, then what it means. They get their own frame because five two-line bullets beside the diagram ran off the bottom of the canvas, and because the picture and the gloss are two beats rather than one. Same kicker and title as the diagram before them, so `continuity.ts` holds the header still. This is the one place in the deck that introduces five terms at once, because it is the TR's overview frame and the three slides after it open them one at a time.",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "Five NIST traits, glossed"
+    },
+    {
+      "n": 29,
+      "title": "No Human Intervention",
+      "body": "On-Demand Self-Service\nOn-demand self-service lets a customer provision computing resources automatically, without requiring a phone call or ticket to the provider's staff.\nCustomer requests via console, CLI or API\nContrasts with traditional IT: weeks-long procurement tickets\nAWS: EC2 'Launch Instance' or CLI run-instances call\nConsole\nCLI\nAPI\nWeeks-long procurement ticket\nResources provisioned\nwithout human intervention",
+      "notes": "TR visual guidance asked for a \"screenshot-style mockup: AWS console 'Launch Instance' button highlighted, arrow showing instant provisioning with no approval step in between\". A reconstructed screenshot is exactly what content rules 11 and 30 forbid, and no real capture of Launch Instance exists in the asset library or any course's captures, so this draws the mechanism and the plan carries the capture as outstanding work. The struck-through ticket is the figure's argument: what the slide asserts is the ABSENCE of a step, and an absence drawn as a gap is invisible. TR speaker notes: \"Contrast this with traditional data-centre provisioning, which needed weeks of approval tickets.\"",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "On-demand self-service"
+    },
+    {
+      "n": 30,
+      "title": "Analogy: an ATM",
+      "body": "On-Demand Self-Service\nAn ATM\nOn-demand self-service\nNobody to ask first",
+      "notes": "TR analogy, verbatim: \"An ATM lets a customer withdraw cash any time, without a bank clerk approving each transaction — just as on-demand self-service lets a customer provision cloud resources instantly without provider staff involvement.\" The middle row is the characteristic: what makes it self-service is the approval step that is not there.",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "Analogy: an ATM"
+    },
+    {
+      "n": 31,
+      "title": "Ubiquitous Standard Access",
+      "body": "Broad Network Access\nBroad network access means cloud resources are reachable over standard network protocols from heterogeneous client devices, laptops, phones or thin clients alike.\nAWS API\nLaptop\nHTTPS/API\nMobile app\nHTTPS/API\nBrowser console\nHTTPS/API\nCLI\nHTTPS/API",
+      "notes": "TR visual guidance: \"Diagram: single AWS icon at centre, arrows fanning out to laptop, phone, browser and CLI-terminal icons, each arrow labelled 'HTTPS/API'.\" `RadialSpread` is the right kit figure here and the wrong one two sections back: this claim really does point outward, one API reached from four kinds of client. The mark is the vendor's own from `slide-kitdata:image/png;base64,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aA+3A2z1PEw/P9SIsefh9u/bxXeMXTANZr3+veJZP2srZ3adjJf1C946Gzzb1tz4OOhtGACIiIhSKLZLARMREZE7DABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEJZEBERUZ/INdgHBRys1ej99DwcgqH66WH68dAtj82WMrZTP7dOj/X6eL1+zbriOdRzRg97rtAjj3XmPKyGJwZERES0DS3gx2qBPVEL50r9cJw+PkRLzDH6+GB9fLA+Hgp3XtDv0abfY5k+XlZ8rGdzPppQQgwARESUWvILTNEC9litlU/V8yQtFXP66cMRV4IO/RmX6KPFen7AnIu70U8MAERElApytdbgC5iuD2fo8Q4tAY/X83Akm+1OuEuDwZ/197mrL10IDABERFS25Jc4Wk+n63Ea4lyzLxXBA/rn7Vq6/1HDwAu7+lIGACIiKhsiWq5dhVnoLvDtMRbptFGPq/S4fGdBgAGAiIgST67CMQhxppZqH9MP9wNt9qYen9MQ8Oft/wcDABERJZJci4OQx6f14ZlIQ/P+QBgNAefiV9t+ioiIKEG0X/8sPdnjRFBvvaLHWG0JWL/5E1wIiIiIYk9+gsEYhHP14b/BzsWnvtoXgpP0/LfNn9hhANC+lCP0C0+1D/Vo1SaWB83nsRZEREQeya8xBJ04X0ujS7TNen9Q/xmcjJ0FAPkZRulnfq1P9Pu3+UsZbNAml+v1fJk5G0+DiIjIoZ6C/wJswv/Tgms0O6xL4uitP9h2M6AKXKFP8vvf9le6lzw8DwU8Kb/Ad+X6xC+cQEREMaWt0B/Wgv8pffjDYuFPpTJh6w+2ZKpi/8rg4rzB3liFEF/XP681l+ojIiKiASquv1/AlfrwPSA3zkVgTLF7f6sWgKHbJoPdOED/5lWay1q0ReAUEBER9ZNciqx2M39VC/9WsPB36xdvrZHwVgDYgOfQVwZT9LhHQ8Ct+uJxDiYREfWJXI3jcSBa9OFlsFvoklvZ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EqO4Z0EGM/WqPR42EAim6+OhIPJno153C/W6e0Tr80/o9fio9t8vBlECMQBQYmm3QVYjwZFbBYLj9fEEEJWGLeyb9fyYdk3ZaXmPYSQWc0oelQsGACor8ivsh3wxDGwOBMfop4eDaNc6txT2pqew3wstLOypnDEAUFkrDi7cH+O0qXay3uAn6xVvtzs+vOcxZx2kjWCTvu52S9xWPRbr49bi8RyWmUs1OhKlCAMApZZcjQP0lm+DwOHFYPBWQBgDSrqN6B6J34qtC/u90M5aPVE3BgCi7cgVGIEKDQLhVi0GKI4tOFSPvUDxIFijfy7X12i5ntv146eLZ2htnjvjEe0WAwBRH8gPMRTDMVYLm0O0c+GQ4lmK0xMP7ZmmaA+OOSgNW4tfAVvIS7GQX67PeffjApabC/E6iKjfGACISkyuwT7atWADwkHaijC+GAy6Q8LBeuyrH9sdE+0xBGll++KhPe8Gz+rjlcUzes724wo8az6Ll0FEzjAAEEVEfoLB+t8+xUBgj0JPMNgcEGSnH8dvhUTBS/pz2SZ5e6zuaZ5f3fM5W1N/CbaAD7oLenMOVoGIIsUAQJRAxa6IvTU+5PUI9ZCeI9tzLmCQvrttC0P3x5meM7Y6m+JjO/K9qw/HJv07b2pBvkZr6WtYSydKLgYAIiKiFApAREREqcMAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKcQAQERElEIMAERERCnEAEBERJRCDABEREQpxABARESUQgwAREREKfT/AQAA///h67M3AAAABklEQVQDAE/1hl2+GYC6AAAAAElFTkSuQmCC` (content rules 12 and 13). TR speaker notes: \"This leans on already-known HTTP and client-server concepts, now applied to cloud access. A private, LAN-only application lacks this same universal reachability.\"",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "Broad network access"
+    },
+    {
+      "n": 32,
+      "title": "Shared Infrastructure Model",
+      "body": "Pooling And Multi-Tenancy\nResource pooling means provider infrastructure is shared across customers, with capacity assigned dynamically rather than dedicated per customer.\nMulti-tenancy: multiple customers share same physical hardware\nHypervisor: virtualization software splitting one server into isolated tenants\nLocation independence: customer unaware of physical resource\nAWS: EC2 hosts run multiple tenants via shared hypervisor\nTenant A\nTenant B\nTenant C\nHypervisor\nShared physical hardware",
+      "notes": "TR visual guidance: \"Diagram: one physical server icon with a hypervisor layer, three tenant boxes (A, B, C) each drawing a slice dynamically from the shared pool.\" Same figure as the virtualization slide with the top row relabelled, which is the point: the TR is saying multi-tenancy IS that mechanism applied to customers. TR speaker notes: \"Emphasise that hypervisor-enforced isolation is what keeps tenant data separate on shared hardware.\"",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "Pooling and multi-tenancy"
+    },
+    {
+      "n": 33,
+      "title": "Analogy: a hostel mess kitchen",
+      "body": "Pooling And Multi-Tenancy\nA hostel mess kitchen\nResource pooling\nOne stock, portions on demand",
+      "notes": "TR analogy, verbatim: \"A hostel mess kitchen serves many students from one shared stock of vessels, portioning food on demand instead of giving each student a dedicated stove — exactly as resource pooling shares infrastructure dynamically across tenants.\" The last row is the one to press: pooling is defined by what is NOT dedicated.",
+      "tables": [],
+      "section": "Essential Characteristics - I",
+      "label": "Analogy: a hostel mess kitchen"
+    },
+    {
+      "n": 34,
+      "title": "Section: Essential Characteristics - II",
+      "body": "",
+      "notes": "TR section 4.",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Section divider"
+    },
+    {
+      "n": 35,
+      "title": "Elasticity Scalability Metering",
+      "body": "Three Characteristics Overview\nCloud platforms must absorb changing demand and charge only for what gets used. Three characteristics make that possible: rapid elasticity, scalability, and measured service.\nRapid elasticity\nautomatic scale-out and scale-in with demand\nScalability\ncapacity to grow, vertically or horizontally\nMeasured service\nusage tracked and billed per resource consumed",
+      "notes": "TR visual guidance: \"Three-panel diagram: an elastic demand curve with scaling arrows in and out, beside a meter icon feeding a billing screen.\" The three panels carry the TR's three bullets, split at the colon it writes; the curve and the meter are drawn in full on the two slides that follow, where each is the slide's own subject. `CardGrid` click-gates its cards, so this is a three-beat build: name each characteristic as it lands. TR speaker notes: \"Distinguish elasticity's automatic, reversible scaling from scalability's broader capacity question before tracing a live example.\"",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Three characteristics overview"
+    },
+    {
+      "n": 36,
+      "title": "Auto-Scaling Mechanism",
+      "body": "Rapid Elasticity\nRapid elasticity is the cloud's ability to provision and release resources - in most cases automatically, almost instantly, as demand rises or falls.\nTriggered by real-time metrics, such as CloudWatch alarms\nAuto Scaling Groups add or remove instances within minutes\nScales in both directions: out under load, in after\nCost: extra capacity billed only while it actually runs\nDemand\nInstance count\nCloudWatch alarm triggers the Auto Scaling Group",
+      "notes": "TR visual guidance: \"Timeline graph showing traffic spike with instance-count line rising then falling back to baseline, an Auto Scaling Group icon triggering the change.\" Demand is a smooth curve and instance count is a STEP line, deliberately: a server either exists or does not, and drawing the count smoothly would assert that 2.4 instances is a thing. The lead keeps the TR's own hyphen; content rule 1 bans the spaced EM dash, which this is not. TR speaker notes: \"Elasticity is automatic and reversible, unlike a one-time capacity upgrade.\"",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Rapid elasticity"
+    },
+    {
+      "n": 37,
+      "title": "Analogy: a rubber band",
+      "body": "Rapid Elasticity\nA rubber band\nRapid elasticity\nStretch, then spring back",
+      "notes": "TR analogy, verbatim: \"A rubber band stretches under load and springs back once released — just as auto-scaled capacity expands during a spike and contracts once demand fades.\" The second and third rows are the whole distinction from scalability, which is coming next: a band that stretched and stayed stretched would not be elastic.",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Analogy: a rubber band"
+    },
+    {
+      "n": 38,
+      "title": "Traffic Spike Traced",
+      "body": "Elasticity Vs Scalability\nDuring a demand surge, elasticity reacts automatically to the moment; scalability asks whether the underlying architecture can absorb growth at all.\nElasticity\nInstance count\nScalability\nInstance size",
+      "notes": "TR visual guidance: \"Side-by-side bar chart: instance count over time showing elasticity's spike-and-return versus a step-change resize for scalability.\" Both are step lines, because both are whole-number changes, and both use the SAME y scale so the shapes can be compared: one goes up and comes back, one goes up and stays. That contrast is the slide. The table that states it in words is the next frame.",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Elasticity vs scalability charts"
+    },
+    {
+      "n": 39,
+      "title": "Traffic Spike Traced",
+      "body": "Elasticity Vs Scalability\nAspect\nElasticity\nScalability\nTrigger\nReal-time demand (CloudWatch alarm)\nPlanned capacity growth\nTimescale\nMinutes, fully automatic\nHours to days, manual or automated\nDirection\nScales out and back in\nMostly one-directional growth\nWorked case\n2→10 instances in ~3 min, back to 2\nm5.large resized to m5.4xlarge in advance",
+      "notes": "Four rows, values exactly as the TR sets them, arrows included. The TR writes the worked case as `2→10 instances in \\~3 min`; the backslash is a Google Docs escape, not content, so the cell reads `2→10 instances in ~3 min`. Same kicker and title as the chart frame before it, deliberately: `continuity.ts` holds the header still, so the room reads one heading with a second exhibit under it. TR speaker notes: \"Trace the same flash-sale scenario for both terms so the contrast stays concrete. The trigger and timescale columns are the quick answer.\"",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Elasticity vs scalability table"
+    },
+    {
+      "n": 40,
+      "title": "Pay-Per-Use Metering",
+      "body": "Measured Service\nMeasured service means cloud providers automatically monitor, meter and report resource usage, so bills map directly to actual consumption.\nMetrics tracked: compute-seconds, storage-GB, data transfer, API calls\nCloudWatch collects usage; Billing and Cost Explorer compute charges\nGranular units: EC2 per-second, S3 per-GB-month, Lambda per-request\nNo usage recorded means no charge: true pay-per-use pricing\nCloudWatch\nEC2 per-second\nS3 per-GB-month\nLambda per-request\nBilling and Cost Explorer\ncompute-seconds\nmetered\nstorage-GB\nmetered\ndata transfer\nmetered\nAPI calls\nmetered",
+      "notes": "TR visual guidance: \"Meter icon feeding into a billing dashboard graphic, with small tags showing per-second, per-GB and per-request units.\" The bill is itemised rather than totalled, and every row reads `metered` rather than a number: no figure in this deck invents a price. The fourth bullet's em dash became a colon (content rule 1). TR speaker notes: \"Metering makes elastic scaling financially viable, since every added instance bills only while running.\"",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Measured service"
+    },
+    {
+      "n": 41,
+      "title": "Analogy: an electricity meter",
+      "body": "Measured Service\nA household electricity meter\nMeasured service\nBilled for what was used",
+      "notes": "TR analogy, verbatim: \"A household electricity meter records exactly how many units are consumed, and the bill reflects only that usage — just as cloud providers meter every compute-second and byte served, billing only for actual use.\" The last row is the one interviews ask for: the difference from fixed licensing is that zero use costs zero.",
+      "tables": [],
+      "section": "Essential Characteristics - II",
+      "label": "Analogy: an electricity meter"
+    },
+    {
+      "n": 42,
+      "title": "Section: Benefits & Challenges",
+      "body": "",
+      "notes": "TR section 5.",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Section divider"
+    },
+    {
+      "n": 43,
+      "title": "Cloud Trade-Offs Map",
+      "body": "Benefits & Challenges\nCloud adoption delivers clear business benefits, but each benefit carries a matching operational risk; recognising both before migration separates sound architecture decisions from costly surprises.\nBenefits\nChallenges\nCost model shift (CapEx→OpEx)\nVendor lock-in\nElasticity of resources\nCost overruns\nGlobal reach\nLatency\nSpeed to market\nData residency",
+      "notes": "TR visual guidance: \"Two-column split slide: benefits listed left, challenges listed right, with arrows linking related pairs across the middle.\" The values are the TR table's own, unchanged; what this frame adds is the connector, which is the thing a table row cannot say. The table itself is the next frame. TR speaker notes: \"Present benefits and challenges as one connected map rather than two separate lists. Interviewers often ask candidates to name both sides of a cloud trade-off in the same answer.\"",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Cloud trade-offs map"
+    },
+    {
+      "n": 44,
+      "title": "Cloud Trade-Offs Map",
+      "body": "Benefits & Challenges\nBenefits\nChallenges\nCost model shift (CapEx→OpEx)\nVendor lock-in\nElasticity of resources\nCost overruns\nGlobal reach\nLatency\nSpeed to market\nData residency",
+      "notes": "Four rows, two columns, values exactly as the TR sets them including `CapEx→OpEx`. The same heading as the frame before it: one heading, a second exhibit.",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Cloud trade-offs table"
+    },
+    {
+      "n": 45,
+      "title": "CapEx To OpEx",
+      "body": "Cost Model Shift\nOn-premise IT demands large upfront capital expenditure on hardware before any workload runs. Cloud shifts most of that spend to metered operating expenditure, billed for resources as they're consumed.\nNo upfront hardware purchase or depreciation schedule\nSpend scales largely with actual resource usage (committed-use options like Reserved Instances trade some flexibility for lower rates)",
+      "notes": "TR visual guidance: \"Two bars side by side: a tall one-time CapEx spike versus a flat recurring OpEx line over time.\" Both panels share ONE ceiling, which is the only reason the figure means anything: scaled independently they would draw the same height and say the opposite of the slide. The bars are a shape, not a claim about anyone's spend, and carry no rupee figures. TR speaker notes: \"The shift is financial, not technical — the underlying compute still runs somewhere.\"",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Cost model shift"
+    },
+    {
+      "n": 46,
+      "title": "CapEx To OpEx",
+      "body": "Cost Model Shift\nFrees capital for core business investment\nAWS Cost Explorer and Billing Dashboard track OpEx spend\nCapEx\nYr 1\nYr 2\nYr 3\nYr 4\nOpEx\nYr 1\nYr 2\nYr 3\nYr 4",
+      "notes": "What the shift is FOR, and the tools that track it. Split off because the frame before it measured 486 characters, the densest in the deck, and one of its bullets alone runs 134.",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Cost model shift, continued"
+    },
+    {
+      "n": 47,
+      "title": "Analogy: renting a taxi",
+      "body": "Cost Model Shift\nRenting a taxi\nOpEx cloud billing\nPay for the trip, not the car",
+      "notes": "TR analogy, verbatim: \"Renting a taxi for occasional trips avoids buying and maintaining a car that sits idle most days — exactly as OpEx cloud billing avoids owning hardware capacity that sits unused.\" Worth naming the limit out loud: the taxi is more expensive per kilometre, which is why Reserved Instances exist and why the bullets on the frame before this one mention them.",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Analogy: renting a taxi"
+    },
+    {
+      "n": 48,
+      "title": "Scale Reach Speed",
+      "body": "Growth And Speed Benefits\nElasticity, global reach and speed to market convert cloud's technical flexibility into concrete business value: faster launches, worldwide presence and lower idle spend.\nElasticity: autoscaling matches spend to real-time load\nGlobal reach: new AWS Region live in minutes\nSpeed to market: idea to production in days\nReal-world: AWS Auto Scaling groups, Global Infrastructure Region map",
+      "notes": "TR visual guidance: \"World map with AWS Region markers lighting up one after another, alongside a rising-then-falling autoscaling curve.\" This is the one figure in the deck that is a REAL capture rather than a drawing, reused from the Deployment course and re-copied through `cloud_computing_course/workflow/captures/` (content rule 13). Re-capture it if AWS redraws the page. The autoscaling curve is drawn in full on the elasticity slide, where it is the subject, so it is not repeated here. TR speaker notes: \"Tie the benefit back to the underlying elasticity mechanism rather than the marketing phrase alone.\"",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Growth and speed benefits"
+    },
+    {
+      "n": 49,
+      "title": "Switching Cost Risk",
+      "body": "Vendor Lock-In\nDeep reliance on one provider's proprietary APIs, data formats or managed services makes moving a workload elsewhere slow, risky and expensive.\nProprietary services (Lambda triggers, DynamoDB APIs) resist portability\nData egress fees add direct exit cost\nTeam skill-set built around one provider's tools\nMitigation: multi-cloud design, open standards, Infrastructure as Code\nOne provider\nYour application\nLambda triggers\nDynamoDB APIs\nData egress fees\nOther providers",
+      "notes": "TR visual guidance: \"Icon of an application boxed inside one provider's logo, with a locked padlock on the arrow pointing toward other providers.\" The nesting is the argument: lock-in is not \"the app talks to one provider\", it is that the app is built out of that provider's parts, so the boundary runs around it. The destination box is drawn at full strength and not faded, because content rule 4 forbids greying out a real option. TR speaker notes: \"Lock-in is a design-time risk that compounds with every proprietary service adopted, not a one-time migration cost.\"",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Vendor lock-in"
+    },
+    {
+      "n": 50,
+      "title": "Analogy: fitted cupboards",
+      "body": "Vendor Lock-In\nA landlord's fitted cupboards\nVendor lock-in\nFitted things do not move",
+      "notes": "TR analogy, verbatim: \"A rented apartment fitted with the landlord's custom cupboards works only in that apartment — just as an application built entirely on one cloud's proprietary APIs runs only on that cloud.\" The analogy is about DESIGN choices, not about the rental: every cupboard was a decision someone made, which is the point of the mitigation bullet on the frame before this one.",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Analogy: fitted cupboards"
+    },
+    {
+      "n": 51,
+      "title": "Unplanned Billing Risk",
+      "body": "Cost Overruns\nPay-per-use billing grows silently with usage, unlike a fixed on-premise budget; unmonitored or misconfigured resources can turn into a large, unexpected bill.\nIdle or forgotten resources keep billing after use\nMisconfigured autoscaling can multiply costs unexpectedly\nData transfer and API charges accumulate unnoticed\nAWS Budgets and Cost Anomaly Detection flag abnormal spend\nMonthly bill\nAn unmonitored resource kept billing",
+      "notes": "TR visual guidance: \"A steadily climbing bill graph with a red spike where an unmonitored resource kept running.\" Same chart component as the elasticity slide, in its bill variant: the shape is the whole content, so it is derived from values rather than hand-drawn. No amount is shown, because no amount is known. TR speaker notes: \"Stress that cost overruns are an operational discipline problem, not a pricing flaw.\"",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Cost overruns"
+    },
+    {
+      "n": 52,
+      "title": "Analogy: roaming left on",
+      "body": "Cost Overruns\nRoaming left switched on\nCost overruns\nLeft on, still charging",
+      "notes": "TR analogy, verbatim: \"Leaving international roaming switched on during travel racks up charges unnoticed until the bill arrives — just as unmonitored cloud resources keep billing until the invoice reveals the overrun.\" The middle row is where the fix lives: AWS Budgets and Cost Anomaly Detection exist to remove the \"nothing tells you at the time\".",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Analogy: roaming left on"
+    },
+    {
+      "n": 53,
+      "title": "Distance And Law Limits",
+      "body": "Latency And Residency\nPhysical distance to the nearest AWS Region adds network delay, and certain data must legally remain within national borders regardless of which Region is closest.\nMitigation: nearest Region or a CDN edge location\nData residency: laws such as GDPR require in-country storage\nAWS Region selection at creation enforces residency choice\nUser\nNearest Region\nDistant Region\nless delay\nmore delay\nData residency zone",
+      "notes": "TR visual guidance: \"World map showing a user, a distant Region (long delay arrow) and a nearby Region chosen instead, with a border outline marking a data-residency zone.\" It is NOT drawn as a world map: a hand-drawn coastline at this size carries no real geography and content rule 8 wants the slide's own concept, not the topic in general. The real AWS Region map is used three slides back, as a genuine capture. Every element the TR lists is here; only the coastline is not, and the coastline was never the teaching. The user and the near Region sit INSIDE one dashed enclosure, because that is what the law says. TR speaker notes: \"Distinguish latency as a performance concern from data residency as a legal constraint.\"",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Latency and residency"
+    },
+    {
+      "n": 54,
+      "title": "Weighing Trade-Offs Together",
+      "body": "Benefit Risk Pairing\nEach cloud benefit carries a paired risk; weighing both together, not benefits alone, is what a sound migration decision requires.\nCost model shift (OpEx)\nCost overruns without governance\nElasticity & speed to market\nVendor lock-in via managed services\nGlobal reach\nLatency & data residency limits",
+      "notes": "TR visual guidance: \"Balance-scale graphic with a benefit icon on one side and its matching risk icon on the other, for each of the three rows.\" The beams are LEVEL on purpose: a tilt would answer the question the slide is asking, and the TR's own point is that neither side wins in general. The room supplies the tilt for their own case. The table that states the three pairings in words is the next frame.",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Benefit risk pairing"
+    },
+    {
+      "n": 55,
+      "title": "Weighing Trade-Offs Together",
+      "body": "Benefit Risk Pairing\nBenefit Driving Adoption\nMatching Risk To Manage\nCost model shift (OpEx)\nCost overruns without governance\nElasticity & speed to market\nVendor lock-in via managed services\nGlobal reach\nLatency & data residency limits",
+      "notes": "Three rows, values exactly as the TR sets them. TR speaker notes: \"Ask which risk applies to which benefit, since exam and interview questions often pair them directly. This pairing is the practical takeaway before any cloud migration decision.\"",
+      "tables": [],
+      "section": "Benefits & Challenges",
+      "label": "Benefit risk table"
+    },
+    {
+      "n": 56,
+      "title": "Quiz time",
+      "body": "",
+      "notes": "The second quiz frame, in the slot content rule 18 fixes: immediately before Key Takeaways. The takeaways state what the room should now believe, so this is the last chance to find out whether they do while the session is still in the room.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Quiz time"
+    },
+    {
+      "n": 57,
+      "title": "Key takeaways",
+      "body": "",
+      "notes": "The TR's Key Takeaways list, which is its agenda word for word. Content rule 20: the room was promised exactly these five, and this frame is the receipt. Both frames read from one `AGENDA` constant so they cannot drift.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Key takeaways"
+    },
+    {
+      "n": 58,
+      "title": "Deployment & Service Models",
+      "body": "Next Session",
+      "notes": "The TR's own upcoming-session line. This is the one slide in the deck allowed to name another session, and it names it by title rather than by number (content rule 2b).",
+      "tables": [],
+      "section": "Closing",
+      "label": "Next session"
+    },
+    {
+      "n": 59,
+      "title": "Feedback",
+      "body": "",
+      "notes": "Leave it on screen while the room fills the form. Read the link out rather than assuming everyone can see it.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Feedback"
+    },
+    {
+      "n": 60,
+      "title": "Thank you",
+      "body": "All the Best",
+      "notes": "The TR closes on \"Thank You | All the Best\", so that is the message. Nothing new goes on this frame, and no \"next up\" line: the slide before it already carries that.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Thank you"
+    }
+  ]
+}

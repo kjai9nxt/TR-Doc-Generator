@@ -1,0 +1,1022 @@
+{
+  "session_no": 7,
+  "source_file": "CN — session 7",
+  "deck_title": "CN — session 7",
+  "n_slides": 73,
+  "summary": "\n    - Slide 2: Wireless LANs \n    - Slide 3: Wired LANS\n    - Slide 4: Agenda\n    - Slide 5: Wireless LANs \n    - Slide 6: Wireless LAN\n    - Slide 7: Going Cable-Free\n    - Slide 8: Going Cable-Free\n    - Slide 9: Going Cable-Free\n    - Slide 10: Going Cable-Free\n    - Slide 11: IEEE 802.11\n    - Slide 12: IEEE 802.11\n    - Slide 13: IEEE 802.11\n    - Slide 14: IEEE 802.11\n    - Slide 15: IEEE 802.11\n    - Slide 16: Wi-Fi Architecture\n    - Slide 17: Wi-Fi Architecture\n    - Slide 18: The Building Block – BSS\n    - Slide 19: The Building Block – BSS\n    - Slide 20: 802.11 Basic Service Set\n    - Slide 21: 802.11 Basic Service Set\n    - Slide 22: Extended Service Set (ESS)\n    - Slide 23: Extended Service Set (ESS)\n    - Slide 24: Extended Service Set (ESS)\n    - Slide 25: Ad-Hoc Mode\n    - Slide 26: Ad-Hoc Mode\n    - Slide 27: BSS, Extended Service Set (ESS) & Ad-Hoc Mode\n    - Slide 28: CSMA/CA\n    - Slide 29: Wireless Collision Problem\n    - Slide 30: CSMA/CA\n    - Slide 31: CSMA/CD & CSMA/CA\n    - Slide 32: CSMA/CD & CSMA/CA\n    - Slide 33: CSMA/CA\n    - Slide 34: CSMA/CA\n    - Slide 35: Quiz Time!\n    - Slide 36: Node Issues\n    - Slide 37: Wireless Challenges\n    - Slide 38: Wireless Challenges\n    - Slide 39: Request To Send / Clear To Send\n    - Slide 40: Hidden Node Problem\n    - Slide 41: Wireless Challenges\n    - Slide 42: Wireless Challenges\n    - Slide 43: The Exposed Node Problem\n    - Slide 44: Hidden Node & Exposed Node\n    - Slide 45: Wireless Security\n    - Slide 46: Wireless Security\n    - Slide 47: Wireless Security\n    - Slide 48: Wireless Security\n    - Slide 49: Wireless Security\n    - Slide 50: 1. WEP\n    - Slide 51: 1. WEP\n    - Slide 52: 1. WEP\n    - Slide 53: 1. WEP\n    - Slide 54: 2. WPA\n    - Slide 55: 2. WPA\n    - Slide 56: 3. WPA2\n    - Slide 57: WPA2-Personal\n    - Slide 58: 3. WPA2\n    - Slide 59: 3. WPA2\n    - Slide 60: Wireless Security\n    - Slide 61: 4. WPA3\n    - Slide 62: 4. WPA3\n    - Slide 63: 4. WPA3\n    - Slide 64: Wireless Security\n    - Slide 65: WEP , WPA , WPA2 & WPA3\n    - Slide 66: WEP , WPA , WPA2 & WPA3\n    - Slide 67: WEP , WPA , WPA2 & WPA3\n    - Slide 68: Wireless Security\n    - Slide 69: Quiz Time!\n    - Slide 70: Wireless LANS\n    - Slide 71: Physical Layer",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Wireless LANs ",
+      "body": "Wireless LANs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Wired LANS",
+      "body": "Wired LANS\nEthernet\nHistory, Evolution & IEEE 802.3 Standard\nCSMA/CD \nEthernet Frame Format\nTypes of Ethernet\nFast Ethernet & Gigabit Ethernet\nBridges, Switches & Token Ring (IEEE 802.5)\nLAN Protocols\nVLANs: Virtual LANs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "Wireless LANs\nCSMA/CA\nWi-Fi Architecture\nWireless LANs\nWireless Security\nNode Issues\nWEP, WPA, WPA2, WPA3 ,  \u000bhow encryption protects data ?\nIEEE 802.11 Standards\nIntroduction , CSMA/CA vs CSMA/CD\nBSS, ESS, and \nAd-Hoc modes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Wireless LANs ",
+      "body": "Wireless LANs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Wireless LAN",
+      "body": "Going Cable-Free\nDevices communicate via radio frequency (RF) signals\nGoverned by IEEE 802.11 standards\nCommercially called Wi-Fi\nA Wireless LAN (WLAN) is a local area network that uses radio waves instead of physical cables to connect devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Going Cable-Free",
+      "body": "Advantages\nLess clutter\n3\nMobility\nEasy setup\nLess clutter\n1\n2\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Going Cable-Free",
+      "body": "Disadvantages\nInterference \nSecurity risks\nLimited range\n1\n2\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Going Cable-Free",
+      "body": "Applications\n1\n2\n3\nHome and Office Networks\nPublic Hotspots\nEducational Institutions\n4\nIndustrial IoT & Smart Buildings",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Going Cable-Free",
+      "body": "Analogy\nWired LAN\nWireless LAN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "IEEE 802.11",
+      "body": "Wi-Fi Generations At A Glance\nWhat is IEEE 802.11?\nA set of standards defining how wireless devices communicate in a LAN\nDifferent versions improve speed, range, and frequency use over time",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "IEEE 802.11",
+      "body": "Wi-Fi Generations At A Glance\nStandar\n802.11b\nWifi Name\nWi-Fi 1\nFrequency\n2.4 GHz\n802.11a\nWi-Fi 2\n5 GHz\n802.11g\nWi-Fi 3\n2.4 GHz\nMax Speed\n11 Mbps\nKey Feature\nFirst widely adopted Wi-Fi\n54 Mbps\nFaster, less interference\n54 Mbps\nBackward compatible with 802.11b",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Standard",
+            "Wi-Fi Name",
+            "Frequency",
+            "Max Speed",
+            "Key Feature"
+          ],
+          [
+            "802.11b",
+            "Wi-Fi 1",
+            "2.4 GHz",
+            "11 Mbps",
+            "First widely adopted Wi-Fi"
+          ],
+          [
+            "802.11a",
+            "Wi-Fi 2",
+            "5 GHz",
+            "54 Mbps",
+            "Faster, less interference"
+          ],
+          [
+            "802.11g",
+            "Wi-Fi 3",
+            "2.4 GHz",
+            "54 Mbps",
+            "Backward compatible with 802.11b"
+          ],
+          [
+            "802.11n",
+            "Wi-Fi 4",
+            "2.4 / 5 GHz",
+            "600 Mbps",
+            "Introduced MIMO antennas"
+          ],
+          [
+            "802.11ac",
+            "Wi-Fi 5",
+            "5 GHz",
+            "3.5 Gbps",
+            "MU-MIMO, beamforming"
+          ],
+          [
+            "802.11ax",
+            "Wi-Fi 6/6E",
+            "2.4 / 5 / 6 GHz",
+            "9.6 Gbps",
+            "OFDMA, better in dense areas"
+          ]
+        ],
+        [
+          [
+            "Standard",
+            "Wifi Name",
+            "Frequency",
+            "Max Speed",
+            "Key Feature"
+          ],
+          [
+            "802.11b",
+            "Wi-Fi 1",
+            "2.4 GHz",
+            "11 Mbps",
+            "First widely adopted Wi-Fi"
+          ],
+          [
+            "802.11a",
+            "Wi-Fi 2",
+            "5 GHz",
+            "54 Mbps",
+            "Faster, less interference"
+          ],
+          [
+            "802.11g",
+            "Wi-Fi 3",
+            "2.4 GHz",
+            "54 Mbps",
+            "Backward compatible with 802.11b"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "IEEE 802.11",
+      "body": "Wi-Fi Generations At A Glance\nStandar\n802.11n\nWifi Name\nWi-Fi 4\nFrequency\n2.4 / 5 GHz\n802.11ac\nWi-Fi 5\n5 GHz\n802.11ax\nWi-Fi 6/6E\n2.4 / 5 / 6 GHz\nMax Speed\n600 Mbps\nKey Feature\nIntroduced MIMO antennas\n3.5 Gbps\nMU-MIMO, beamforming\n9.6 Gbps\nOFDMA, better in dense areas\n802.11be\nWi-Fi 7\n2.4 / 5 / 6 GHz\n46 Gbps\nUltra-fast, multi-band,low-latency",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Standard",
+            "Wifi Name",
+            "Frequency",
+            "Max Speed",
+            "Key Feature"
+          ],
+          [
+            "802.11n",
+            "Wi-Fi 4",
+            "2.4 / 5 GHz",
+            "600 Mbps",
+            "Introduced MIMO antennas"
+          ],
+          [
+            "802.11ac",
+            "Wi-Fi 5",
+            "5 GHz",
+            "3.5 Gbps",
+            "MU-MIMO, beamforming"
+          ],
+          [
+            "802.11ax",
+            "Wi-Fi 6/6E",
+            "2.4 / 5 / 6 GHz",
+            "9.6 Gbps",
+            "OFDMA, better in dense areas"
+          ],
+          [
+            "802.11be",
+            "Wi-Fi 7",
+            "2.4 / 5 / 6 GHz",
+            "46 Gbps",
+            "Ultra-fast, multi-band,low-latency"
+          ]
+        ],
+        [
+          [
+            "802.11be",
+            "Wi-Fi 7",
+            "2.4 / 5 / 6 GHz",
+            "46 Gbps",
+            "Ultra-fast, multi-band,low-latency."
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "IEEE 802.11",
+      "body": "Key Points to Remember\n1\n2\n3\n2.4 GHz: Longer range, more interference, fewer channels\n5 GHz: Shorter range, faster speeds, less congestion, more channels\n6 GHz (Wi-Fi 6E): Newest, widest channels, least congested\n4\nMIMO: Multiple antennas for faster speed\n5\nMU-MIMO: Multiple users served simultaneously",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "IEEE 802.11",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Wi-Fi Architecture",
+      "body": "Wi-Fi Architecture",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Wi-Fi Architecture",
+      "body": "The Building Block – BSS\nBasic Service Set (BSS) is the basic unit of a wireless network, consisting of one Access Point (AP) and its connected devices.\nAP acts as the central communication point\nDevices communicate through the AP\nAP connects devices to the LAN or internet\nBSSID is the AP’s MAC address\nBSA is the AP’s coverage area",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "The Building Block – BSS",
+      "body": "802.11 Basic Service Set\nAccess Point\nSTA 1\nSTA 2\nSTA 3\nSTA 4\nSTA 5\nSTA 6\nSTA 7",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "The Building Block – BSS",
+      "body": "Types of BSS\nTypes of BSS:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "802.11 Basic Service Set",
+      "body": "SSID (Service Set Identifier)\nHuman-readable, case-sensitive name (up to 32 characters) of a Wi-Fi network, used to distinguish between networks\n It can be modified, and devices connect using the SSID. The BSSID (MAC address of the AP) is not visible to users\nw\nBSSID\nNot visible \u000bto users\nDevices connected using the SSID\nHuman-readable, case-sensitive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "802.11 Basic Service Set",
+      "body": "Analogy\nAnalogy: Think of the AP as a classroom teacher. All students (devices) communicate through the teacher (AP). Students do not talk directly to each other during class — they raise their hand, the teacher acknowledges, then the communication happens. This is how all data flows in a BSS.\nAll students (devices) communicate through the teacher (AP)\n2. A student (device) must raise \u000bits hand to speak\n3. Teacher acknowledges granting \u000bexclusive time\n4. All data flows through the AP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Extended Service Set (ESS)",
+      "body": "Introduction\nMultiple BSSs connect through a Distribution System\nSame SSID gives users one Wi-Fi name\nDevices roam between APs smoothly\nDifferent channels reduce interference\nUsed in campuses, offices, hotels, and schools",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Extended Service Set (ESS)",
+      "body": "Architecture\nTablet\nNotebook",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Extended Service Set (ESS)",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Ad-Hoc Mode",
+      "body": "IBSS – Independent BSS\nPeer-to-Peer: Devices connect directly without an Access Point (AP)\nLimited Range: No internet unless shared by a device\nModern Use: Rare today, but used in some IoT devices\nExample: Two laptops directly communicating without an AP (traditional IBSS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Ad-Hoc Mode",
+      "body": "Analogy\nAd-Hoc mode is like a small group of friends talking directly to each other\nThere’s no teacher or coordinator, so everyone communicates peer-to-peer\nCommunication works only within the group and stops if someone leaves,  unlike ESS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "BSS, Extended Service Set (ESS) & Ad-Hoc Mode",
+      "body": "Features\nFeature\nAccess Point\nBSS\nOne AP\nESS\nMultiple APs\nCoverage\nSingle area\nLarge area (campus)\nRoaming\nNo\nYes\nAd-Hoc (IBSS)\nNo AP\nVery limited\nNo\nInternet Access\nVia AP\nVia backbone\nOnly if a device shares\nExample\nHome Wi-Fi\nCampus/Office Wi-Fi\nWi-Fi Direct file share",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "BSS",
+            "ESS",
+            "Ad-Hoc (IBSS)"
+          ],
+          [
+            "Access Point",
+            "One AP",
+            "Multiple APs",
+            "No AP"
+          ],
+          [
+            "Coverage",
+            "Single area",
+            "Large area (campus)",
+            "Very limited"
+          ],
+          [
+            "Roaming",
+            "No",
+            "Yes",
+            "No"
+          ],
+          [
+            "Internet Access",
+            "Via AP",
+            "Via backbone",
+            "Only if a device shares"
+          ],
+          [
+            "Example",
+            "Home Wi-Fi",
+            "Campus/Office Wi-Fi",
+            "Wi-Fi Direct file share"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 28,
+      "title": "CSMA/CA",
+      "body": "CSMA/CA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Wireless Collision Problem",
+      "body": "Solution : CSMA/CA\nSolution: CSMA/CA → avoid collisions using \u000bwaiting + backoff + ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "CSMA/CA",
+      "body": "Used in Wireless Networks (Wi-Fi)\n1\n2\n3\nIFS (Interframe Space): Waits a short time after channel becomes idle\nBackoff (Contention Window): Random delay to avoid multiple devices transmitting together\nRTS/CTS (optional): Reserves channel and helps avoid hidden node problem\nKey Mechanisms:\nCSMA/CA avoids collisions before transmission (not after). Used in wireless networks (IEEE 802.11) where collision detection is not possible",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "CSMA/CD & CSMA/CA",
+      "body": "Difference\nFeature\nFull Form\nCSMA/CD\nCollision Detection\nCSMA/CA\nCollision Avoidance\nUsed In\nWired networks (Ethernet)\nWireless networks (Wi-Fi)\nCollision Handling\nDetects collision and aborts transmission\nMinimizes the possibility \u000bof collision\nEfficiency\nHigher, no avoidance overhead\nLower due to avoidance overhead",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "CSMA/CD",
+            "CSMA/CA"
+          ],
+          [
+            "Full Form",
+            "Collision Detection",
+            "Collision Avoidance"
+          ],
+          [
+            "Used In",
+            "Wired networks (Ethernet)",
+            "Wireless networks (Wi-Fi)"
+          ],
+          [
+            "Collision Handling",
+            "Detects collision and aborts transmission",
+            "Minimizes the possibility of collision"
+          ],
+          [
+            "Efficiency",
+            "Higher, no avoidance overhead",
+            "Lower due to avoidance overhead"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 32,
+      "title": "CSMA/CD & CSMA/CA",
+      "body": "Difference\nCSMA/CD\nYes\nCSMA/CA\nNo\nAfter a collision occurs\nBefore a collision occurs\nResends the data frame\nTransmits intent to send (RTS) before data\n802.3\n802.11\nFeature\nJam Signal\nWhen Effective\nOn Collision\nIEEE Standard",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "CSMA/CD",
+            "CSMA/CA"
+          ],
+          [
+            "Jam Signal",
+            "Yes",
+            "No"
+          ],
+          [
+            "When Effective",
+            "After a collision occurs",
+            "Before a collision occurs"
+          ],
+          [
+            "On Collision",
+            "Resends the data frame",
+            "Transmits intent to send (RTS) before data"
+          ],
+          [
+            "IEEE Standard",
+            "802.3",
+            "802.11"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 33,
+      "title": "CSMA/CA",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "CSMA/CA",
+      "body": "Step-by-Step Collision Avoidance\nSlide 6: How CSMA/CA Works\nHeading: CSMA/CA | Subheading: Step-by-Step Collision Avoidance\nimage\nStep 4: Start random backoff timer (counts down only when channel is idle)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Node Issues",
+      "body": "Node Issues",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Wireless Challenges",
+      "body": "Hidden Node Problem\nHidden Station Problem (HSP) occurs when two stations that cannot detect each other transmit to the same receiver at the same time, causing a collision and reducing network capacity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Wireless Challenges",
+      "body": "image\nHidden Node Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Request To Send / Clear To Send",
+      "body": "image\nHidden Node Problem Prevention\nUse of handshaking to prevent hidden station problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Hidden Node Problem",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Wireless Challenges",
+      "body": "The Exposed Node Problem\nExposed Node Problem occurs when a device unnecessarily \u000bwaits after detecting a nearby transmission, even though \u000bsending data would not cause a collision. This reduces \u000bnetwork efficiency",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Wireless Challenges",
+      "body": "image\nThe Exposed Node Problem\nA\nB\nC\nD",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "The Exposed Node Problem",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Hidden Node & Exposed Node",
+      "body": "Difference\nHidden Node\nTwo nodes cannot hear each other → collision at AP\nExposed Node\nA node hears a transmission it should not care about → unnecessary delay\nCollision occurs\nWasted channel capacity\nRTS/CTS mechanism\nMore complex,  no simple universal fix\nFeature\nProblem\nEffect\nSolution",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Hidden Node",
+            "Exposed Node"
+          ],
+          [
+            "Problem",
+            "Two nodes cannot hear each other → collision at AP",
+            "A node hears a transmission it should not care about → unnecessary delay"
+          ],
+          [
+            "Effect",
+            "Collision occurs",
+            "Wasted channel capacity"
+          ],
+          [
+            "Solution",
+            "RTS/CTS mechanism",
+            "More complex — no simple universal fix"
+          ]
+        ],
+        [
+          [
+            "Feature",
+            "Hidden Node",
+            "Exposed Node"
+          ],
+          [
+            "Problem",
+            "Two nodes cannot hear each other → collision at AP",
+            "A node hears a transmission it should not care about → unnecessary delay"
+          ],
+          [
+            "Effect",
+            "Collision occurs",
+            "Wasted channel capacity"
+          ],
+          [
+            "Solution",
+            "RTS/CTS mechanism",
+            "More complex,  no simple universal fix"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 45,
+      "title": "Wireless Security",
+      "body": "Wireless Security",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Wireless Security",
+      "body": "The Open-Air Problem\nIn wired networks, attackers must physically connect to intercept traffic\nIn wireless networks, signals travel openly through the air,  anyone within range can listen\nWhat’s the issue?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Wireless Security",
+      "body": "Key Risks\nWithout encryption, data is readable \u000b(e.g., passwords, emails)\nAuthentication is needed to ensure only authorized users can join the network\nWireless Security Solves\nEncryption\nAuthentication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Wireless Security",
+      "body": "Analogy\nWired Network = Private Room\nWireless Network = Public Park\nEncryption = Secret Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Wireless Security",
+      "body": "Types\nWireless Security Protocols \nimage",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "1. WEP",
+      "body": "Introduction\nWhat is WEP?\nWEP was the first wireless security protocol, \u000bintroduced in 1997 with 802.11\nDesigned to provide wired-equivalent privacy \u000bfor wireless networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "1. WEP",
+      "body": "How It Works?\nPlain Text\nReceiver\nXOR\nRC4\nSender\nPlain text\nXOR\nRC4\nCiphered message",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "1. WEP",
+      "body": "Why WEP is Broken:\nWEP uses a short 24-bit IV, so IVs repeat quickly in \u000bheavy traffic\nRepeated IVs allow attackers to compare packets and derive the key\nTools like Aircrack-ng can crack WEP within minutes\nWEP was deprecated by IEEE in 2004 and \u000bshould not be used\nWhy Is It Broken?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "1. WEP",
+      "body": "Analogy\nA WEP Lock’s Weakness\nCracking the Simple Code\nThe Key is Discovered & Locks are Opened",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "2. WPA",
+      "body": "A Transition from WEP\nContent:\nWPA, introduced in 2003 as a temporary replacement for WEP until WPA2 was ready, was based on the IEEE 802.11i draft. \nIt used TKIP (Temporal Key Integrity Protocol) for better security, generating a new 128-bit key per packet and replacing WEP’s CRC with a Message Integrity Check (MIC). \nWhile it improved security, flaws in the Michael algorithm were later discovered, exposing vulnerabilities.\u000b\nWPA was introduced in 2003 as a temporary replacement for WEP until WPA2 was ready\nIt was based on the IEEE 802.11i draft and used TKIP for better security\nTKIP generated a new 128-bit key per packet and replaced WEP’s CRC with MIC for message integrity\nHowever, flaws were later found in the Michael algorithm, making WPA vulnerable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "2. WPA",
+      "body": "Key Points\nWPA replaces WEP with better encryption and data integrity\nIt laid the foundation for WPA2, which was a more secure solution\nKey Points",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "3. WPA2",
+      "body": "Introduction\nKey Features of WPA2\nUses AES-CCMP (Advanced Encryption Standard – Counter Mode with CBC-MAC Protocol)\nStronger encryption than WEP and WPA\nTwo modes of operation:\nWPA2 (Wi-Fi Protected Access 2), introduced in 2004, replaced WEP and WPA, \u000busing AES encryption (the same used by banks and governments) to ensure strong security",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "WPA2-Personal",
+      "body": "WPA2-PSK\nMost commonly used for home Wi-Fi networks\nUses a Pre-Shared Key (password) that is the same for all users\nEasy to set up but less secure than WPA2-Enterprise",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "3. WPA2",
+      "body": "WPA2-Enterprise:\nUsed in business or institutional networks, \nIt uses EAP with a central server like RADIUS, \nEach user/device is given unique credentials for stronger security and management",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "3. WPA2",
+      "body": "Known Weakness\nKnown Weakness\nKRACK attack (2017): Exploited a flaw in the 4-way handshake, now patched\nWPA2-Personal: Vulnerable to offline dictionary attacks with weak passwords",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Wireless Security",
+      "body": "Analogy\nAnalogy: WPA2-Personal is like having a shared house key, but the lock changes its pattern each time. WPA2-Enterprise is like each hotel guest getting a unique key card.\nWPA2-Personal\nWPA2-Enterprise",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "4. WPA3",
+      "body": "Introduction\nIntroduced in 2018, WPA3 addresses the weaknesses of WPA2 and is the latest and most secure Wi-Fi security standard",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "4. WPA3",
+      "body": "Key Points\nSAE (Simultaneous Authentication of Equals): replaces the PSK handshake to prevent offline dictionary attacks\n Forward Secrecy uses unique session keys, so past data stays safe even if the password is later compromised\nKey Points",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "4. WPA3",
+      "body": "Next-Generation Wi-Fi Security\nKey Points\nOpen Network Protection (OWE – Opportunistic Wireless Encryption): Encrypts traffic even on open (passwordless) Wi-Fi networks like those in cafes and airports\nSimplified Device Onboarding: Wi-Fi Easy Connect simplifies device setup via QR code for IoT devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Wireless Security",
+      "body": "Analogy\nWPA3-SAE\nOWE",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "WEP , WPA , WPA2 & WPA3",
+      "body": "WEP vs WPA vs WPA2 vs WPA3\nFrequency\nStandar\nWifi Name\nMax Speed\nKey Feature\n2.4 / 5 GHz\n802.11n\nWi-Fi 4\n600 Mbps\nIntroduced MIMO antennas\n5 GHz\n802.11ac\nWi-Fi 5\n3.5 Gbps\nMU-MIMO, beamforming\n2.4 / 5 / 6 GHz\n802.11ax\nWi-Fi 6/6E\n9.6 Gbps\nOFDMA, better in dense areas\n2.4 / 5 / 6 GHz\n802.11be\nWi-Fi 7\n46 Gbps\nFeature\nEncryption Protocol\nWEP (1997)\nRC4 (broken)\nWPA (2003)\nTKIP\nKey Size\n64-bit / 128-bit\n256-bit\nCipher Type\nRC4 stream cipher\nRC4-based (TKIP)\nWPA2 (2004)\nAES-128\nWPA3 (2018)\nAES-128 / AES-192\n256-bit\n192-bit / 256-bit\nAES\nAES-GCMP (Block Cipher)\nData Integrity\nCyclic Redundancy Check\nMessage Integrity Check\nCCMP\nGMAC\nDifference",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "WEP (1997)",
+            "WPA (2003)",
+            "WPA2 (2004)",
+            "WPA3 (2018)"
+          ],
+          [
+            "Encryption Protocol",
+            "RC4 (broken)",
+            "TKIP",
+            "AES-128",
+            "AES-128 / AES-192"
+          ],
+          [
+            "Key Size",
+            "64-bit / 128-bit",
+            "256-bit",
+            "256-bit",
+            "192-bit / 256-bit"
+          ],
+          [
+            "Cipher Type",
+            "RC4 stream cipher",
+            "RC4-based (TKIP)",
+            "AES",
+            "AES-GCMP (Block Cipher)"
+          ],
+          [
+            "Data Integrity",
+            "Cyclic Redundancy Check",
+            "Message Integrity Check",
+            "CCMP",
+            "GMAC"
+          ],
+          [
+            "Authentication",
+            "Shared key (weak)",
+            "PSK / RADIUS",
+            "PSK + PMK",
+            "SAE + EAP"
+          ],
+          [
+            "Offline Attack Risk",
+            "Yes (easily cracked)",
+            "Yes (dictionary attack)",
+            "No (SAE prevents it)",
+            "No (SAE prevents it)"
+          ],
+          [
+            "Forward Secrecy",
+            "No",
+            "No",
+            "No",
+            "Yes"
+          ],
+          [
+            "Open Network Encryption",
+            "No",
+            "No",
+            "No",
+            "Yes (OWE)"
+          ],
+          [
+            "Status",
+            "Deprecated – Never Use",
+            "Current Standard",
+            "Current Standard",
+            "Recommended – Latest"
+          ]
+        ],
+        [
+          [
+            "Feature",
+            "WEP (1997)",
+            "WEP (1997)",
+            "WPA2 (2004)",
+            "WPA3 (2018)"
+          ],
+          [
+            "Encryption Protocol",
+            "RC4 (broken)",
+            "TKIP",
+            "AES-128",
+            "AES-128 / AES-192"
+          ],
+          [
+            "Key Size",
+            "64-bit / 128-bit",
+            "256-bit",
+            "256-bit",
+            "192-bit / 256-bit"
+          ],
+          [
+            "Cipher Type",
+            "RC4 stream cipher",
+            "RC4-based (TKIP)",
+            "AES",
+            "AES-GCMP (Block Cipher)"
+          ],
+          [
+            "Data Integrity",
+            "Cyclic Redundancy Check",
+            "Message Integrity Check",
+            "CCMP",
+            "GMAC"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 66,
+      "title": "WEP , WPA , WPA2 & WPA3",
+      "body": "WEP vs WPA vs WPA2 vs WPA3\nFrequency\nStandar\nWifi Name\nMax Speed\nKey Feature\n2.4 / 5 GHz\n802.11n\nWi-Fi 4\n600 Mbps\nIntroduced MIMO antennas\n5 GHz\n802.11ac\nWi-Fi 5\n3.5 Gbps\nMU-MIMO, beamforming\n2.4 / 5 / 6 GHz\n802.11ax\nWi-Fi 6/6E\n9.6 Gbps\nOFDMA, better in dense areas\n2.4 / 5 / 6 GHz\n802.11be\nWi-Fi 7\n46 Gbps\nFeature\nAuthentication\nWEP (1997)\nShared key (weak)\nWPA (2003)\nPSK / RADIUS\nOffline Attack Risk\nYes (easily cracked)\nYes (dictionary attack)\nForward Secrecy\nNo\nNo\nWPA2 (2004)\nPSK + PMK\nWPA3 (2018)\nSAE + EAP\nNo (SAE prevents it)\nNo (SAE prevents it)\nNo\nNo\nDifference",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "WEP (1997)",
+            "WPA (2003)",
+            "WPA2 (2004)",
+            "WPA3 (2018)"
+          ],
+          [
+            "Authentication",
+            "Shared key (weak)",
+            "PSK / RADIUS",
+            "PSK + PMK",
+            "SAE + EAP"
+          ],
+          [
+            "Offline Attack Risk",
+            "Yes (easily cracked)",
+            "Yes (dictionary attack)",
+            "No (SAE prevents it)",
+            "No (SAE prevents it)"
+          ],
+          [
+            "Forward Secrecy",
+            "No",
+            "No",
+            "No",
+            "Yes"
+          ],
+          [
+            "Open Network Encryption",
+            "No",
+            "No",
+            "No",
+            "Yes (OWE)"
+          ],
+          [
+            "Status",
+            "Deprecated – Never Use",
+            "Current Standard",
+            "Current Standard",
+            "Recommended – Latest"
+          ]
+        ],
+        [
+          [
+            "Feature",
+            "WEP (1997)",
+            "WEP (1997)",
+            "WPA2 (2004)",
+            "WPA3 (2018)"
+          ],
+          [
+            "Authentication",
+            "Shared key (weak)",
+            "PSK / RADIUS",
+            "PSK + PMK",
+            "SAE + EAP"
+          ],
+          [
+            "Offline Attack Risk",
+            "Yes (easily cracked)",
+            "Yes (dictionary attack)",
+            "No (SAE prevents it)",
+            "No (SAE prevents it)"
+          ],
+          [
+            "Forward Secrecy",
+            "No",
+            "No",
+            "No",
+            "Yes"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 67,
+      "title": "WEP , WPA , WPA2 & WPA3",
+      "body": "WEP vs WPA vs WPA2 vs WPA3\nFrequency\nStandar\nWifi Name\nMax Speed\nKey Feature\n2.4 / 5 GHz\n802.11n\nWi-Fi 4\n600 Mbps\nIntroduced MIMO antennas\n5 GHz\n802.11ac\nWi-Fi 5\n3.5 Gbps\nMU-MIMO, beamforming\n2.4 / 5 / 6 GHz\n802.11ax\nWi-Fi 6/6E\n9.6 Gbps\nOFDMA, better in dense areas\n2.4 / 5 / 6 GHz\n802.11be\nWi-Fi 7\n46 Gbps\nFeature\nOpen Network Encryption\nWEP (1997)\nNo\nWPA (2003)\nNo\nDeprecated – Never Use\nCurrent Standard\nWPA2 (2004)\nNo\nWPA3 (2018)\nYes (OWE)\nCurrent Standard\nRecommended – Latest\nStatus\nDifference",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "WEP (1997)",
+            "WPA (2003)",
+            "WPA2 (2004)",
+            "WPA3 (2018)"
+          ],
+          [
+            "Open Network Encryption",
+            "No",
+            "No",
+            "No",
+            "Yes (OWE)"
+          ],
+          [
+            "Status",
+            "Deprecated – Never Use",
+            "Current Standard",
+            "Current Standard",
+            "Recommended – Latest"
+          ]
+        ],
+        [
+          [
+            "Feature",
+            "WEP (1997)",
+            "WEP (1997)",
+            "WPA2 (2004)",
+            "WPA3 (2018)"
+          ],
+          [
+            "Open Network Encryption",
+            "No",
+            "No",
+            "No",
+            "Yes (OWE)"
+          ],
+          [
+            "Status",
+            "Deprecated – Never Use",
+            "Current Standard",
+            "Current Standard",
+            "Recommended – Latest"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 68,
+      "title": "Wireless Security",
+      "body": "What Encryption Actually Does",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Wireless LANS",
+      "body": "Wireless LANs\nIEEE 802.11 Standards\nWi-Fi Architecture\nBSS, ESS, and Ad-Hoc modes\nCSMA/CA\nIntroduction , CSMA/CA vs CSMA/CD\nNode Issues\nWireless Security\nWEP, WPA, WPA2, WPA3 , \u000bhow encryption protects data ?\nCSMA/CA\nWi-Fi Architecture\nWireless LANs\nWireless Security\nNode Issues\nIntroduction , CSMA/CA vs CSMA/CD\nIEEE 802.11 Standards\nBSS, ESS, and \u000bAd-Hoc modes\nWEP, WPA, WPA2, WPA3 ,  \u000bhow encryption protects data ?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Physical Layer",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/14XGC4FtAzjJXOp_lwcJq9kinyPP-ekPaq4jZnzwPUPU/edit"
+}

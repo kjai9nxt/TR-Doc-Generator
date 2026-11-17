@@ -1,0 +1,451 @@
+{
+  "session_no": 20,
+  "source_file": "CN — session 20",
+  "deck_title": "CN — session 20",
+  "n_slides": 63,
+  "summary": "\n    - Slide 2: TCP Header Lifecycle & Key Concepts\n    - Slide 3: TCP State Diagram and Connection \n    - Slide 4: TCP Header Lifecycle & Key Concepts\n    - Slide 5: TCP Header\n    - Slide 6: TCP Header Going Inside Every Field\n    - Slide 7: RFC 793 vs Modern TCP\n    - Slide 8: TCP Control Flags\n    - Slide 9: TCP Control Flags\n    - Slide 10: TCP Control Flags\n    - Slide 11: Sequence Numbers & Acknowledgment Numbers\n    - Slide 12: Sequence Numbers\n    - Slide 13: Sequence Numbers\n    - Slide 14: Sequence Numbers\n    - Slide 15: Example\n    - Slide 16: Sequence Numbers\n    - Slide 17: Sequence Numbers\n    - Slide 18: Acknowledgment Numbers\n    - Slide 19: Acknowledgment Numbers\n    - Slide 20: Acknowledgment Numbers\n    - Slide 21: Acknowledgment Numbers\n    - Slide 22: Quiz Time!\n    - Slide 23: Full TCP Lifecycle\n    - Slide 24: Full TCP Lifecycle\n    - Slide 25: Full TCP Lifecycle\n    - Slide 26: Full TCP Lifecycle\n    - Slide 27: Full TCP Lifecycle\n    - Slide 28: Phase 2 — Data Exchange\n    - Slide 29: Phase 2 — Data Exchange\n    - Slide 30: Phase 2 — Data Exchange\n    - Slide 31: Phase 2 — Data Exchange\n    - Slide 32: Phase 2 — Data Exchange\n    - Slide 33: Full TCP Lifecycle\n    - Slide 34: Keywords and Concepts\n    - Slide 35: ACKs in TCP\n    - Slide 36: ACKs in TCP\n    - Slide 37: Piggybacking\n    - Slide 38: Piggybacking\n    - Slide 39: ACK Flag vs Acknowledgment Number\n    - Slide 40: Nagle's Algorithm\n    - Slide 41: Nagle's Algorithm\n    - Slide 42: Nagle's Algorithm\n    - Slide 43: Nagle's Algorithm\n    - Slide 44: TCP Buffers\n    - Slide 45: TCP Buffers\n    - Slide 46: TCP Buffers\n    - Slide 47: TCP Buffers\n    - Slide 48: TCP Buffers\n    - Slide 49: Maximum Segment Size (MSS)\n    - Slide 50: Maximum Segment Size (MSS)\n    - Slide 51: Maximum Segment Size (MSS)\n    - Slide 52: How Much Data Can Be In Flight at Once?\n    - Slide 53: Window Size\n    - Slide 54: Window Size\n    - Slide 55: Window Size\n    - Slide 56: Difference\n    - Slide 57: MSS vs Window Size\n    - Slide 58: Quiz Time!\n    - Slide 59: TCP Header Lifecycle & Key Concepts\n    - Slide 60: TCP Header Lifecycle & Key Concepts\n    - Slide 61: TCP: Data, Flow & Congestion",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "TCP Header Lifecycle & Key Concepts",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "TCP State Diagram and Connection ",
+      "body": "TCP State Diagram and Connection \nTCP State Diagram\nConnections\nHalf-Open and Half-Close Connections",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "TCP Header Lifecycle & Key Concepts",
+      "body": "TCP Header Lifecycle & Key Concepts\nSequence Numbers & Acknowledgment Numbers\nFull TCP Lifecycle\nTCP Header\nDeep Dive Into What Each Field Actually Does\nKeywords and Concepts\nHandshake + Data Exchange + Teardown (with actual Seq/Ack numbers)\nACKs, Buffers, Maximum Segment Size (MSS) & Window Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "TCP Header",
+      "body": "TCP Header",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "TCP Header Going Inside Every Field",
+      "body": "What Each One Actually Does?\nSequence Number\nFour fields that drive everything in TCP:\nAcknowledgment Number\nControl Flags\nWindow Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "RFC 793 vs Modern TCP",
+      "body": "Flag Field History\nRFC\nReserved\nRFC 793 (1981) — Original\n6 bits\nControl Bits\n3 bits\nModern (post RFC 3168)\n6 bits: URG, ACK, PSH, RST, SYN, FIN only\n9 bits: NS*, CWR, ECE added for ECN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "TCP Control Flags",
+      "body": "All 9 Flags\nSYN(Synchronize)\nFlag\nInitiates connection, exchanges ISN, consumes 1 sequence number\nWhat it does ?\nOnly on the first packet from each side\nWhen Used ?\nACK(Acknowledge)\nConfirms receipt. Makes the Ack Number field valid\nEvery packet except the first SYN\nFIN(Finish)\nGraceful close: No more data, in-transit data delivered first\nWhen an endpoint is done sending",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "TCP Control Flags",
+      "body": "All 9 Flags\nRST(Reset)\nFlag\nAbruptly terminates connection, in-transit data may be lost\nWhat it does ?\nErrors, port unreachable, invalid segments\nWhen Used ?\nPSH(Push)\nTells receiver to deliver data immediately to app, skip buffering\nData segments needing immediate delivery\nURG(Urgent)\nWhen sender marks data as urgent\nMarks bytes as urgent, processed before buffered data, activates Urgent Pointer field",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "TCP Control Flags",
+      "body": "All 9 Flags\nCWR(Congestion Window Reduced)\nFlag\nSender confirms it received ECE and has already reduced sending rate\nWhat it does ?\nNext new data packet after receiving an ECE-flagged ACK\nWhen Used ?\nECE(ECN-Echo)\nHandshake: advertises ECN support. Data transfer: signals congestion detected\nSYN (negotiation) and ACKs when CE-marked IP packet received\nNS*(Nonce Sum)\nNot used\nExperimental, protection against hidden congestion signals. Deprecated 2017",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Sequence Numbers & Acknowledgment Numbers",
+      "body": "Sequence Numbers & Acknowledgment Numbers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Sequence Numbers",
+      "body": "How TCP Tracks Every Byte of Data?\nThe Sequence Number field (32 bits) identifies the position of the first byte of data in this segment within the total byte stream being sent\nHow Sequence Numbers Work:\nEach side independently picks a random 32-bit Initial Sequence Number (ISN) at connection start, not 0",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Sequence Numbers",
+      "body": "How TCP Tracks Every Byte of Data\nWhy random? \nSequence Number advances by the exact number of bytes sent in that segment\nSYN and FIN each consume exactly 1 sequence number, even though they carry no application data",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Sequence Numbers",
+      "body": "How TCP Tracks Every Byte of Data\nThis is why the ACK after a SYN is always ISN + 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Example",
+      "body": "Sequence Number Advancement\nClient\nServer\nSeq.1000, SYN = 1, MSS = 1460 B\nWindow 14600 B\nSeq.2000, SYN = 1, MSS = 1460 B, Ack no. = 1001\nWindow 20000B\nSeq.1001, Ack no. 2001, ACK =1\nSeq.1001, Ack no. 2001, ACK =1, Data:200 B\nISN_C = 1000\nRISN = 2000\nRISN -  Random initial sequence number\nSYN - Flag consumes 1 sequence number\nACK - Flag consumes 0 sequence number\nFIN - Flag consumes 1 sequence number\nISN_C -  Client’s random initial sequence number\nSeq.1201, Ack no. 2001, ACK =1, Data:200 B\nSeq.1401, Ack no. 2001, ACK =1, Data:200 B\nData Transfer Begins\nClient",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Sequence Numbers",
+      "body": "What Sequence Numbers Enable\nOrdering\nOut-of-order segments are reordered and reassembled correctly at the receiver\nDuplicate Detection\nThe duplicate Sequence Number is identified and the second copy is discarded\nLoss Detection\nA gap in sequence numbers indicates missing bytes that must be retransmitted",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Sequence Numbers",
+      "body": "Analogy\nPage numbers in a book delivered one chapter at a time\nEven if Chapter 5 arrives before Chapter 3, page numbers allow correct reassembly\nIf Chapter 4 never arrives, the reader knows exactly which chapter to request",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Acknowledgment Numbers",
+      "body": "How Receiver Confirms Delivery?\nAcknowledgment Number = Last byte received + 1\nThis is a Cumulative Acknowledgment, it confirms all bytes up to (but not including) the Ack Number have been received correctly, the Ack Number is only valid when the ACK flag = 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Acknowledgment Numbers",
+      "body": "How the Receiver Confirms Delivery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Acknowledgment Numbers",
+      "body": "Segment Loss Handling\nThe receiver cannot acknowledge 1401  \nAssume Seq=1201 is lost. Seq=1401 arrives, with cumulative ACKs\nThe stream has a gap\nThe receiver keeps sending Ack=1201\nSender\nReceiver\n1401\nSender\nReceiver\nACK = 1201\nACK = 1201\nACK = 1201\nAsking for the missing segment",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Acknowledgment Numbers",
+      "body": "Segment Loss Handling\nThese repeated ACKs for the same byte are called Duplicate ACKs\nAfter 3 Duplicate ACKs, the sender retransmits, this is Fast Retransmit\nSender\nReceiver\nACK = 1201\nACK = 1201\nACK = 1201\nAsking for the missing segment",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Full TCP Lifecycle",
+      "body": "Full TCP Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Full TCP Lifecycle",
+      "body": "3 Phases\nThe full TCP lifecycle has three phases:\n1\nPhase 1\nConnection Establishment (3-Way Handshake)\n2\nPhase 2\nData Exchange\n3\nPhase 3\nConnection Termination (4-Way Teardown)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Full TCP Lifecycle",
+      "body": "Phase 1: 3-Way Handshake\nStep\nDirection\n1\nClient → Server \nFlags\nSYN\nSeq\n1000 (ISN_C)\nWhat This Means\nClient MSS, Window Size (in Options)\nAck\n-\n2\nServer → Client\nSYN+ACK\n5000 (ISN_S)\nServer MSS, Window Size (in Options)\n1001\n3\nClient → Server \nACK\n1001\nConnection → ESTABLISHED\n5001",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Full TCP Lifecycle",
+      "body": "Phase 1: 3-Way Handshake\nThe handshake achieves three things simultaneously:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Full TCP Lifecycle",
+      "body": "Phase 2: Data Exchange\nStep\nDirection\n4\nClient → Server \nFlags\nPSH+ACK\nSeq\n1001\nData\n200 bytes - HTTP GET Request\nAck\n5001\n5\nServer → Client\nACK\n5001\n0 bytes - confirms 200 bytes received\n1201\n6\nServer → Client\nPSH+ACK\n5001\n500 bytes - HTTP Response\n1201\n7\nClient → Server\nACK\n1201\n0 bytes -  confirms 500 bytes received\n5501",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Phase 2 — Data Exchange",
+      "body": "Tracing the Numbers Through Each Step\nStep 4\nClient sends 200 bytes starting at Seq=1001\nPSH = deliver immediately to Server application\nAfter this segment, Client's Seq advances to 1201 (1001 + 200)\nSeq=1001\n200 Bytes\nSeq=1201\nSeq=1001",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Phase 2 — Data Exchange",
+      "body": "Step 5\nServer ACKs, Ack=1201 means last byte received = 1200\nAck=1201\n1200 Bytes\nnext expected = 1201, pure ACK no data\nTracing the Numbers Through Each Step",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Phase 2 — Data Exchange",
+      "body": "Step 6\nServer sends 500 bytes starting at its own Seq=5001 PSH = deliver immediately to Client application\nAfter this segment, Server's Seq advances to  5501 (5001 + 500)\nSeq=5001\n500 Bytes\nSeq=5001\nSeq=5501\nTracing the Numbers Through Each Step",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Phase 2 — Data Exchange",
+      "body": "Step 7\nClient ACKs, Ack=5501 means last byte received = 5500\nAck=5501\n5501 Bytes\nnext expected = 5501, pure ACK no data\nTracing the Numbers Through Each Step",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Phase 2 — Data Exchange",
+      "body": "PSH+ACK is the standard flag combination for data-carrying segments\nPure ACK segments carry no data only confirm receipt\nEach side's Seq number is independent and advances only when that side sends data\nData begins at ISN + 1,  the SYN consumed one sequence number during the handshake\nKey observations:\nTracing the Numbers Through Each Step",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Full TCP Lifecycle",
+      "body": "Phase 3: 4-Way Teardown\nStep\nDirection\n8\nClient → Server \nFlags\nFIN+ACK\nSeq\n1201\nData\nClient → FIN_WAIT_1\nAck\n5501\n9\nServer → Client\nACK\n5501\nClient → FIN_WAIT_2 / Server → CLOSE_WAIT\n1202\n10\nServer → Client\nFIN+ACK\n5501\nServer → LAST_ACK\n1202\n11\nClient → Server\nACK\n1202\nClient → TIME_WAIT → CLOSED / Server → CLOSED\n5502",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Keywords and Concepts",
+      "body": "Keywords and Concepts",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "ACKs in TCP",
+      "body": "Cumulative Acknowledgment\nOne Ack number confirms ALL bytes received up to that point\nAck=1401 - \"Received everything up to byte 1400,         send me 1401 next\"\nIf byte 1201 is lost,  receiver keeps repeating Ack=1201 even if later bytes arrived\nCumulative ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "ACKs in TCP",
+      "body": "Piggybacking\nWhen the receiver has data to send back, the ACK is bundled with that outgoing segment\nNo separate ACK packet needed\nSaves one packet per exchange\nPiggybacking",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Piggybacking",
+      "body": "Working of Piggybacking\nHOST ‘A’\nHOST ‘B’\nHOST ‘A’ sends data\nHOST ‘B’ sends data along with the acknowledgment of data received by A\nHOST ‘A’ sends only ACK (when there is no data to send)\nTime",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Piggybacking",
+      "body": "Delayed ACK\nTCP waits up to 200ms before sending a pure ACK, hoping to piggyback it\nIf nothing to attach after 200ms ACK is sent alone\nDelayed ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "ACK Flag vs Acknowledgment Number",
+      "body": "Analogy\nPiggybacking Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Nagle's Algorithm",
+      "body": "Solving the Tiny Packet Problem\nProblem\n1 byte data + 40 byte header = 4000% overhead (tinygrams)\nCondition\nNew data ≥ MSS\nNew data < MSS, no unACKed data in flight\nNew data < MSS, unACKed data in flight\nAction\nSend immediately\nSend immediately\nBuffer - wait for ACK or MSS to fill",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Nagle's Algorithm",
+      "body": "Solving the Tiny Packet Problem\nIn effect, Nagle limits small segment transmission to one per RTT, the ACK from the previous segment triggers the next send",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Nagle's Algorithm",
+      "body": "Client\nServer\nClient\nServer\nData\nNagle\nNo Nagle\nDelay\nSolving the Tiny Packet Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Nagle's Algorithm",
+      "body": "Analogy\nPost office holds letters until the box is full\nTCP_NODELAY = express courier",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "TCP Buffers",
+      "body": "Send Buffer & Receive Buffer\nBuffer\nLocation\nRole\nHolds sent-but-unACKed data. Source for retransmission. Cleared only after ACK\nSend Buffer\nSender OS\nHolds data waiting for the app to read. Free space here = Window Size advertised to sender\nReceive Buffer\nReceiver OS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "TCP Buffers",
+      "body": "Zero Window\nReceive Buffer full → Window Size = 0 → sender stops\nSender sends periodic Window Probes (1-byte) to check if space reopened\nApp reads data → Receiver sends Window Update with new Window Size\nZero Window",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "TCP Buffers",
+      "body": "Silly Window Syndrome (SWS)\nApp reads slowly \nSilly Window Syndrome (SWS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "TCP Buffers",
+      "body": "Send Buffer, Receive Buffer & Flow Control\nReceiver must NOT advertise window until free space ≥ min( MSS, Half buffer )\nClark's Solution\nFree space\nmin( MSS, Half buffer )\n≥",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "TCP Buffers",
+      "body": "Problem and Solutions\nProblem\nTinygrams\nSide\nSender\nProblem\nNagle's Algorithm\nSWS\nReceiver\nClark's Solution",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Maximum Segment Size (MSS)",
+      "body": "Deep Dive\nMSS = Maximum application data per segment ( TCP and IP headers NOT counted )\n1460B\n20B\n1480B\nHead\nPayload  = 1500B\nTail\nTransport Layer\nNetwork Layer\nData Link Layer\nMax. Segment Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Maximum Segment Size (MSS)",
+      "body": "Negotiation\nprevents fragmentation at either end\nSmaller value wins\nFixed at handshake\nDefault MSS = 536 bytes\ncannot change during the connection\nwhen MSS is not declared in SYN\nEach side declares MSS in SYN Options during handshake",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Maximum Segment Size (MSS)",
+      "body": "MSS is derived from MTU so every TCP segment fits inside one IP packet without fragmentation\nCalculation\nEthernet MTU\n1500 bytes\n=\n IP Header\n20 bytes\n=\nTCP Header\n20 bytes\n=\nTypical MSS  for Ethernet with IPv4  = 1460 bytes ← max \nCalculation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "How Much Data Can Be In Flight at Once?",
+      "body": "Flow Control\ninstitute_id\nWindow Size (16 bits) \nHow many bytes the receiver can accept right now without waiting for individual ACKs. This is TCP Flow Control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Window Size",
+      "body": "Flow Control\nAdvertised in every ACK, dynamic, changes throughout the connection\nSender cannot exceed Window Size bytes of unACKed data in flight\nWindow Size = 0 → sender stops completely",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Window Size",
+      "body": "Sliding Window\nSent & ACKed\nSent, Unacked\nCan Send \nCannot Send Yet\nAs ACKs arrive, left boundary slides right, new bytes enter the \"Can Send\" zone",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Window Size",
+      "body": "Sliding Window\nMax Window Size :\n65,535 bytes (16-bit limit)\nWindow Scaling (RFC 7323):\nFor high-speed/high-latency links where 65 KB in flight is not enough\nShift count 0–14 negotiated in SYN Options\nEffective window = Window Size × 2^(shift count), Max ≈ 1 GB\nBoth sides must agree, if only one sends it, scaling is not used",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Difference",
+      "body": "MSS vs Window Size\nProperty\nControls\nMSS\nSize of one segment\nWindow Size\nTotal data in flight at once\nChanges\nFixed at handshake\nEvery ACK\nPurpose\nAvoids fragmentation\nFlow control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "MSS vs Window Size",
+      "body": "Analogy\nMSS = bucket size\nWindow Size = how many buckets the tank holds\nPour 3 buckets \n(if Window = 4380, MSS = 1460)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "TCP Header Lifecycle & Key Concepts",
+      "body": "TCP Header\nDeep Dive Into What Each Field Actually Does\nSequence Numbers & Acknowledgment Numbers\nKey Takeaways (Part 1/2)\nKeywords and Concepts\nACKs, Buffers Maximum Segment Size (MSS) & Window Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "TCP Header Lifecycle & Key Concepts",
+      "body": "Full TCP Lifecycle:\nHandshake + Data Exchange + Teardown ( with actual Seq/Ack numbers )\nKeywords and Concepts\nACKs, Buffers, Maximum Segment Size (MSS) & Window Size\nKey Takeaways (Part 2/2)\nKeywords and Concepts\nACKs, Buffers Maximum Segment Size (MSS) & Window Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "TCP: Data, Flow & Congestion",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1T-ATR4T86If3Cm5ueDNOcP-j7AsK4zwOPoN8Zud0e14/edit"
+}

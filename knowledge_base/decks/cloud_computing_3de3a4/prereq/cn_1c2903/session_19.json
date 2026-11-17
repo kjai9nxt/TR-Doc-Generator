@@ -1,0 +1,423 @@
+{
+  "session_no": 19,
+  "source_file": "CN — session 19",
+  "deck_title": "CN — session 19",
+  "n_slides": 59,
+  "summary": "\n    - Slide 2: TCP: Data, Flow & Congestion\n    - Slide 3: TCP Header Lifecycle & Key Concepts\n    - Slide 4: TCP Header Lifecycle & Key Concepts\n    - Slide 5: TCP: Data, Flow & Congestion\n    - Slide 6: Flow Control\n    - Slide 7: Flow Control\n    - Slide 8: Flow Control\n    - Slide 9: Sliding Window\n    - Slide 10: Sliding Window\n    - Slide 11: Sliding Window\n    - Slide 12: The rwnd Formula\n    - Slide 13: The rwnd Formula\n    - Slide 14: The rwnd Formula\n    - Slide 15: The rwnd Formula\n    - Slide 16: Duplicate ACKs\n    - Slide 17: Duplicate ACKs\n    - Slide 18: Duplicate ACKs\n    - Slide 19: Duplicate ACKs\n    - Slide 20: Congestion Control\n    - Slide 21: Congestion Control\n    - Slide 22: Congestion Control\n    - Slide 23: Congestion Control\n    - Slide 24: Congestion Window\n    - Slide 25: Congestion Window\n    - Slide 26: Congestion Window\n    - Slide 27: Slow Start\n    - Slide 28: Slow Start\n    - Slide 29: Slow Start\n    - Slide 30: Slow Start\n    - Slide 31: Congestion Avoidance\n    - Slide 32: Congestion Avoidance\n    - Slide 33: Congestion Avoidance\n    - Slide 34: Congestion Avoidance\n    - Slide 35: AIMD\n    - Slide 36: AIMD\n    - Slide 37: AIMD\n    - Slide 38: AIMD\n    - Slide 39: Flow Control vs Congestion Control\n    - Slide 40: Two Problems, One Sender\n    - Slide 41: Quiz Time!\n    - Slide 42: Fast Retransmit & Fast Recovery\n    - Slide 43: Fast Retransmit\n    - Slide 44: Fast Retransmit\n    - Slide 45: Fast Retransmit\n    - Slide 46: Fast Recovery\n    - Slide 47: Fast Recovery\n    - Slide 48: TCP Error Control\n    - Slide 49: TCP Error Control\n    - Slide 50: Jacobson’s Algorithm\n    - Slide 51: Karn’s Algorithm\n    - Slide 52: Karn’s Algorithm\n    - Slide 53: Karn’s Algorithm\n    - Slide 54: Karn’s Algorithm\n    - Slide 55: Quiz Time!\n    - Slide 56: TCP: Data, Flow & Congestion\n    - Slide 57: SCTP & Quality of Service",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "TCP: Data, Flow & Congestion",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "TCP Header Lifecycle & Key Concepts",
+      "body": "TCP Header Lifecycle & Key Concepts\nTCP Header\nDeep Dive Into What Each Field Actually Does\nSequence Numbers & Acknowledgment Numbers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "TCP Header Lifecycle & Key Concepts",
+      "body": "TCP Header Lifecycle & Key Concepts\nFull Lifecycle Diagram:\nHandshake + Data Exchange + Teardown ( with actual Seq/Ack numbers )\nKeywords and Concepts\nACKs, Buffers Maximum Segment Size (MSS) & Window Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "TCP: Data, Flow & Congestion",
+      "body": "TCP: Data, Flow & Congestion\nCongestion Control\nFast Retransmit & Fast Recovery\nFlow Control\nSliding Window with Numbers, rwnd Formula, Duplicate ACKs\nTCP Error Control\ncwnd, Slow Start, Congestion Avoidance, AIMD\nHow TCP Recovers Without Slow Start?\nRTO, Jacobson’s Algorithm, Karn’s Algorithm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Flow Control",
+      "body": "Flow Control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Flow Control",
+      "body": "Sender rule: Bytes in flight ≤ rwnd\nContinuous feedback → rwnd updated in every ACK\nReceiver Controls the Sender",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Flow Control",
+      "body": "Receiver Controls the Sender\nSend only what fits\nTable almost full\nSliding Window is TCP's mechanism for this — sender sends multiple segments at once, up to the window limit\nByte-oriented — as ACKs arrive, window slides forward, opening space for new segments",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Sliding Window",
+      "body": "Tracking Bytes in Flight\nBytes in flight = LastByteSent − LastByteAcked\nRule:  Bytes in flight  ≤  Window Size\n1\n2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Sliding Window",
+      "body": "Tracking Bytes in Flight\nEvent\nStart\nSend Seg-1\nSend Seg-2\nLastByteAcked\n0\n0\n0\nLastByteSent\n0\n1000\n2000\nSend Seg-3\n0\n3000\nBytes in Flight\n0\n1000\n2000\n3000\nCan Send?\nYes — 4000 free\nYes — 3000 free\nYes — 2000 free\nYes — 1000 free",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Sliding Window",
+      "body": "Tracking Bytes in Flight\nEvent\nSend Seg-4\nACK = 2001 arrives\nSend Seg-5\nLastByteAcked\n0\n2000\n2000\nLastByteSent\n4000\n4000\n5000\nSend Seg-6\n2000\n6000\nBytes in Flight\n4000\n2000\n3000\n4000\nCan Send?\nNo — window full\nYes — window opens\nYes — 1000 free\nNo — window full again",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "The rwnd Formula",
+      "body": "Free Buffer = rwnd\nrwnd (Receive Window)\nTCP sends multiple segments without waiting for individual ACKs — but the sender needs a limit. That limit comes from the receiver’s available buffer space. The receiver measures this free space and sends it to the sender. This value is called rwnd (Receive Window)\nThe sending rule is:  Bytes in flight  ≤  rwnd",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "The rwnd Formula",
+      "body": "Free Buffer = rwnd\nThe Formula: \nrwnd = Receive Buffer Size − (LastByteReceived − LastByteRead)\nLastByteReceived      last byte that arrived from the network into the buffer\nLastByteRead     last byte the application consumed via recv()\nLastByteReceived − LastByteRead = occupied buffer space\nBuffer Size minus occupied space = free space = rwnd",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "The rwnd Formula",
+      "body": "Free Buffer = rwnd\nBuffer Size\n8000 bytes\n8000 bytes\n8000 bytes\nLastByteReceived\n4000\n7500\n8000\nLastByteRead\n1000\n1000\n0\nOccupied\n3000\n6500\n8000\nrwnd\n5000\n1500\n0 — sender must stop",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "The rwnd Formula",
+      "body": "Free Buffer = rwnd\nWhat drives rwnd down\nApplication reads slowly — data piles up in the buffer\nWhat drives rwnd up\nApplication reads quickly — buffer empties, free space opens",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Duplicate ACKs",
+      "body": "Receiver sends ACK for the next expected byte\u000b\nIf a segment is missing, ACK cannot advance\u000b\nOut-of-order segments arrive → receiver keeps ACKing the same byte\u000b\nThese repeated ACKs are Duplicate ACKs\nDetecting Packet Loss",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Duplicate ACKs",
+      "body": "Detecting Packet Loss\nSuppose the sender transmits Seg-1, Seg-2, Seg-3, Seg-4, Seg-5. Seg-2 is lost\nSeg-3 arrives → gap at Seg-2 → Dup ACK (Ack = 1001) — “still waiting for byte 1001”\nSeg-4 arrives → gap still present → Dup ACK (Ack = 1001)\nSeg-5 arrives → gap still present → Dup ACK (Ack = 1001)\nThe sender receives 3 consecutive duplicate ACKs for byte 1001",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Duplicate ACKs",
+      "body": "Detecting Packet Loss\nCount\n1 Dup ACK\n2 Dup ACKs\n3 Dup ACKs\nWhat it likely means?\nCould be normal packet reordering — very common\nStill ambiguous — reordering is still possible\nStatistically reliable signal of genuine loss (RFC 5681)\nAction\nNo action\nNo action\nRetransmit immediately",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Duplicate ACKs",
+      "body": "Detecting Packet Loss\nCritical observation:\nSeg-3, Seg-4, Seg-5 are arriving at the receiver. Only Seg-2 is missing. The network path is working — this is an isolated, mild loss event. The response should be proportional\nContrast with Timeout:\nThe response to each is very different — Fast Retransmit handles the mild case, Timeout triggers a full reset",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Congestion Control",
+      "body": "Congestion Control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Congestion Control",
+      "body": "Sender Protects the Network\nNetwork also has limits → excess traffic fills router buffers → packet loss\nCongestion Control handles this (different from flow control)\nTCP infers congestion from loss/delay — no explicit signal\nUses cwnd (Congestion Window) to regulate sending\nRule: Bytes in flight ≤ cwnd",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Congestion Control",
+      "body": "Sender Protects the Network\nDropped packets trigger retransmissions\n1\nMore load\n2\nMore drops\n3\nNear-zero throughput\n4\nThis is called Congestion Collapse — it actually happened on the internet in 1986",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Congestion Control",
+      "body": "Sender Protects the Network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Congestion Window",
+      "body": "Sender’s Network Estimate\ncwnd - Congestion Window\nMaintained only at sender (not shared with receiver)\nLimits how much data can be safely in flight\nStarts small → grows as network handles more\nShrinks on congestion detection\nTCP needs its own estimate of network capacity, independent of the receiver. This is cwnd — Congestion Window",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Congestion Window",
+      "body": "Sender’s Network Estimate\nrwnd = “how much the receiver can accept” (receiver-controlled)\ncwnd = “how much the network can carry” (sender-estimated)\nThe sender uses whichever is smaller\nBoth rwnd and cwnd constrain the sender simultaneously:  Bytes in flight  ≤  min(rwnd, cwnd)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Congestion Window",
+      "body": "Sender’s Network Estimate\nmin (rwnd, cwnd)\nLast byte\u000bACKed\nSent, not - yet ACKed (“in-flight”)\nLast byte\u000bsent\nFast Server\nLow - power device\nFinite socket buffer space at the receiver\nACK, rwnd: 4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Slow Start",
+      "body": "Building cwnd From Zero\nAt start, TCP doesn’t know network capacity → full send risks congestion\nSlow Start begins with cwnd = 1 MSS\nGrows exponentially: each RTT, ACKs increase cwnd → doubles per RTT\nQuickly reaches usable capacity without staying too slow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Slow Start",
+      "body": "Building cwnd From Zero\nAt connection start: cwnd = 1 MSS\n01\n02\n03\n04\nFor every ACK received: cwnd = cwnd + 1 MSS\nRTT (Round Trip Time) is the time from when a segment is sent to when its ACK is received back. It is the basic clock of TCP’s sending behavior\nThe Algorithm:\ncwndn = IW x 2n\nEffect: cwnd doubles every RTT — Exponential Growth",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Slow Start",
+      "body": "Building cwnd From Zero\ncwnd Growth Per RTT:\nRTT\n1\n2\n3\ncwnd (MSS)\n1\n2\n4\nSegments Sent\n1\n2\n4\n4\n8\n8\n5\n16\n16\n6\n32\n32",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Slow Start",
+      "body": "Building cwnd From Zero\nswitch to Congestion Avoidance\ncwnd ≥ ssthresh\ntrigger congestion response\nPacket loss\nBoundary between phases\nInitially high → allows rapid growth\nOn loss: ssthresh = cwnd / 2 → records safe rate\nFuture growth slows here (TCP learns capacity)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Congestion Avoidance",
+      "body": "Linear Growth Near Capacity\nOnce cwnd ≥ ssthresh, TCP switches from exponential to linear growth\nTCP is now near the network's capacity — rapid growth would overshoot and cause congestion",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Congestion Avoidance",
+      "body": "Why asymmetric — slow up, fast down?\nBeyond ssthresh → near congestion zone\nLinear growth = cautious probing for extra capacity without causing loss\nLinear Growth Near Capacity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Congestion Avoidance",
+      "body": "Linear Growth Near Capacity\nFor every ACK received: cwnd = cwnd + [(MSS × MSS) / cwnd]\n01\n02\nEffect: cwnd increases by approximately 1 MSS per RTT — linear growth, regardless of window size\nThe Algorithm:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Congestion Avoidance",
+      "body": "Linear Growth Near Capacity\nLoss Signal\n3 Duplicate ACKs\nTimeout\nssthresh\nssthresh = cwnd / 2\nssthresh = cwnd / 2\ncwnd\nssthresh + 3 MSS\nReset to 1 MSS\nNext State\nFast Recovery → Congestion Avoidance\nSlow Start\nResponse to Loss During Congestion Avoidance:\nSlide 38 — Response to Loss During Congestion Avoidance\nLoss Signal | Next State | ssthresh | cwnd\u000b 3 Duplicate ACKs | Fast Recovery → Congestion Avoidance | ssthresh = cwnd / 2 | ssthresh + 3 MSS\u000b Timeout | Slow Start | ssthresh = cwnd / 2 | Reset to 1 MSS\nChange: cwnd for 3 Dup ACKs updated from \"Set to ssthresh\" → ssthresh + 3 MSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "AIMD",
+      "body": "Increase Slowly, Decrease Fast\nAdditive Increase (AI)\nMultiplicative Decrease (MD)\nEvery RTT without loss → cwnd = cwnd + 1 MSS \nslow, linear, cautious\nOn congestion signal → cwnd = cwnd × 0.5 \nHalve immediately\nAIMD is the formal name for the cwnd management strategy TCP uses:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "AIMD",
+      "body": "Increase Slowly, Decrease Fast\nWhy asymmetric — slow up, fast down?\nSlow increase safely probes capacity, while fast decrease quickly relieves congestion by halving the rate\nadditively increase window size …\n.... until loss occurs (then cut window in half)\nAIMD saw tooth behavior: \nprobing for bandwidth\ncwnd\ntime",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "AIMD",
+      "body": "Increase Slowly, Decrease Fast\nWorked Example — cwnd Behaviour Over Time:\nRTT\n1–3\n4\n5–7\nEvent\nCongestion Avoidance, No loss\n3 Dup ACKs\nCongestion Avoidance, No loss\ncwnd After\n33, 34, 35\nssthresh = 17, cwnd = 20\n21, 22, 23\n8\nTimeout\nssthresh = 11, cwnd = 1\n9–12\nSlow Start\n2, 4, 8, 10 (hits ssthresh)\n13+\nCongestion Avoidance\n11, 12, 13…",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "AIMD",
+      "body": "Increase Slowly, Decrease Fast\nTCP Fairness\nTwo TCP connections share the same network → AIMD makes it fair\nOne sending more → reduces more after loss\nOne sending less → keeps increasing\nBoth slowly reach equal speed over time",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Flow Control vs Congestion Control",
+      "body": "Two Problems, One Sender\nParameter\nProtects\nControlled by\nSignal\nFlow Control\nThe receiver’s buffer\nThe receiver — advertises rwnd\nrwnd in every ACK header\nCongestion Control\nThe network (routers, links)\nThe sender — estimates cwnd internally\nPacket loss (timeout or 3 dup ACKs)\nVariable\nrwnd — Receive Window\ncwnd — Congestion Window\nLocation\nTCP header (Window Size field)\nSender’s memory only — never transmitted\nProblem solved\nSender too fast for the receiver\nSender too fast for the network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Two Problems, One Sender",
+      "body": "The Combined Sending Rate Rule\n01\n02\nIf the receiver is the bottleneck → rwnd is smaller → limits sending\nIf the network is the bottleneck → cwnd is smaller → limits sending\nBoth constraints apply simultaneously:\nBytes in flight  ≤  min(rwnd, cwnd)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Fast Retransmit & Fast Recovery",
+      "body": "Fast Retransmit & Fast Recovery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Fast Retransmit",
+      "body": "No Timer — Retransmit Now",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Fast Retransmit",
+      "body": "No Timer — Retransmit Now\nSeg-3, 4, 5 arrived — network is live, only Seg-2 missing → response must be proportional, not severe\nWithout Fast Recovery: TCP resets cwnd to 1 MSS and restarts Slow Start — severe overreaction to an isolated drop\nWith Fast Recovery: cwnd halves, TCP skips Slow Start & resumes Congestion Avoidance directly",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Fast Retransmit",
+      "body": "No Timer — Retransmit Now\nSender sends Seg-1, 2, 3, 4, 5\n1\nSeg-2 dropped in network\n2\nSeg-3 arrives → Dup ACK (Ack = 1001)\n3\nStep-by-step — Seg-2 is lost:\nSeg-4 arrives → Dup ACK (Ack = 1001)\n4\nSeg-5 arrives → Dup ACK (Ack = 1001)\n5\nSender retransmits Seg-2 immediately\n6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Fast Recovery",
+      "body": "Skip Slow Start, Resume Linear\nKey result: cwnd halves. Slow Start completely bypassed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Fast Recovery",
+      "body": "Skip Slow Start, Resume Linear\nWhen is Slow Start actually triggered?\nTrigger\nConnection start\nTimeout\n3 Dup ACKs\ncwnd Response\ncwnd = 1 MSS\ncwnd = 1 MSS\ncwnd = ssthresh (halved)\nNext State\nSlow Start\nSlow Start\nFast Recovery → Congestion Avoidance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "TCP Error Control",
+      "body": "TCP Error Control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "TCP Error Control",
+      "body": "RTO and Fast Retransmit\nMechanism\nRetransmission Timer (RTO)\nFast Retransmit\nTrigger\nNo ACK within timeout — severe loss\n3 Duplicate ACKs — isolated loss\nResponse\nRetransmit; reset cwnd = 1 MSS; Slow Start\nRetransmit immediately; enter Fast Recovery\nTCP error control operates entirely at the endpoints. Two mechanisms cover segment loss:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Jacobson’s Algorithm",
+      "body": "Adaptive RTO from RTT\nMechanism\nRTT\nSRTT\nTrigger\nTime from sending to receiving ACK — changes constantly\nSmoothed average — absorbs spikes\nResponse\n—\n(1−0.125)×SRTT + 0.125×RTTsample\nRTTVAR\nRTT fluctuation — high = unpredictable network\n(1 − 0.25) × RTTVAR + 0.25 × |SRTT − RTTsample|\nRTO = SRTT + 4 × RTTVAR [Min = 1 second]\nRTO = the timer TCP starts when it sends a segment. If no ACK before expiry → retransmit. Must adapt to network conditions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Karn’s Algorithm",
+      "body": "Retransmission Ambiguity Fix\nThe Problem:\nWhen a segment is retransmitted and an ACK arrives, TCP cannot tell: \nWas the ACK for the original segment? → RTT = time since original send\nWas the ACK for the retransmitted copy? → RTT = time since retransmission\nUsing the wrong value corrupts SRTT — making RTO too short or too long",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Karn’s Algorithm",
+      "body": "Retransmission Ambiguity Fix\nKarn’s Solution (RFC 6298):\nRule 1\nDo not measure RTT from retransmitted segments. Only use segments sent exactly once\nRule 2\nExponential Backoff: After each timeout, double the RTO:\nRTO = 2 × RTO  (on each consecutive timeout)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Karn’s Algorithm",
+      "body": "Next segment (no retransmit)\nRetransmission Ambiguity Fix\nSender\nReceiver\nOriginal Tx\nRetransmit\nRTT ?\nSender\nReceiver\nFreeze RTT measurement\nNew Tx\nACK (ignored)\nSampleRTT\nRetransmit (skip)\nACK (clean)\nACK (which Tx?)\nDo NOT update RTT Double RTO only\nResume Jacobson’s calc SampleRTT is valid\nAmbiguous case SampleRTT = unknown\nKarn’s fix \nResume only on clean ACK\nTimeout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Karn’s Algorithm",
+      "body": "Retransmission Ambiguity Fix",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "TCP: Data, Flow & Congestion",
+      "body": "Flow Control\nSliding Window with Numbers, rwnd Formula, Duplicate ACKs\nCongestion Control\ncwnd, Slow Start, Congestion Avoidance, AIMD\nFast Retransmit & Fast Recovery\nHow TCP Recovers Without Slow Start\nTCP Error Control\nRTO, Jacobson’s Algorithm, Karn’s Algorithm",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "SCTP & Quality of Service",
+      "body": "SCTP & Quality of Service",
+      "notes": "In the next session we will start off with the “SCTP & Quality Service” Session",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1SJ10HlXte14PCkw0n81VsYZi8khbM0BfUAmhq-bmLbI/edit"
+}

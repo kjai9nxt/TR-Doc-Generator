@@ -1,0 +1,589 @@
+{
+  "session_no": 4,
+  "source_file": "CN — session 4",
+  "deck_title": "CN — session 4",
+  "n_slides": 78,
+  "summary": "\n    - Slide 2: Network Troubleshooting & Real World\n    - Slide 3: Transmission Media and Switching\n    - Slide 4: Transmission Media and Switching\n    - Slide 5: Network Troubleshooting & Real World\n    - Slide 6: Real-World Network Issues\n    - Slide 7: From Textbook Networks to the Real World\n    - Slide 8: From Textbook Networks to the Real World\n    - Slide 9: From Textbook Networks to the Real World\n    - Slide 10: Packet Loss\n    - Slide 11: Packet Loss\n    - Slide 12: Packet Loss\n    - Slide 13: Packet Loss\n    - Slide 14: Latency vs Jitter\n    - Slide 15: Latency vs Jitter\n    - Slide 16: Latency vs Jitter\n    - Slide 17: Signal Problems\n    - Slide 18: Signal Problems\n    - Slide 19: Signal Problems\n    - Slide 20: Signal Problems\n    - Slide 21: Signal Problems\n    - Slide 22: Signal Problems\n    - Slide 23: Signal Problems\n    - Slide 24: Signal Problems\n    - Slide 25: Signal Problems\n    - Slide 26: Signal Problems\n    - Slide 27: Networking Devices\n    - Slide 28: Networking Devices\n    - Slide 29: Networking Devices\n    - Slide 30: Networking Devices\n    - Slide 31: Repeater and Hub\n    - Slide 32: Repeater and Hub\n    - Slide 33: Repeater and Hub\n    - Slide 34: Repeater and Hub\n    - Slide 35: Repeater and Hub\n    - Slide 36: Switch\n    - Slide 37: Switch\n    - Slide 38: Switch\n    - Slide 39: Switch\n    - Slide 40: VLANs\n    - Slide 41: Router\n    - Slide 42: Router\n    - Slide 43: Router vs Switch\n    - Slide 44: Hub vs Switch vs Router\n    - Slide 45: Quiz Time!\n    - Slide 46: Debugging Tools in Action\n    - Slide 47: Ping\n    - Slide 48: Ping\n    - Slide 49: Reading mdev (Jitter) in Linux Ping Output\n    - Slide 50: Reading mdev (Jitter) in Linux Ping Output\n    - Slide 51: Reading mdev in Linux Ping\n    - Slide 52: nslookup and netstat - Two More Essential Tools\n    - Slide 53: nslookup\n    - Slide 54: netstat\n    - Slide 55: netstat\n    - Slide 56: Nslookup & netstat\n    - Slide 57: Wireshark\n    - Slide 58: Wireshark\n    - Slide 59: Wireshark\n    - Slide 60: Wireshark\n    - Slide 61: Important\n    - Slide 62: Case Studies\n    - Slide 63: Case Study 1\n    - Slide 64: Case Study 1\n    - Slide 65: Case Study 1\n    - Slide 66: Case Study 2\n    - Slide 67: Case Study 2\n    - Slide 68: Case Study 2\n    - Slide 69: Case Study 3\n    - Slide 70: Case Study 3\n    - Slide 71: Case Study 3\n    - Slide 72: Case Study 3\n    - Slide 73: Quiz Time!\n    - Slide 74: Network Troubleshooting & Real World\n    - Slide 75: Network Troubleshooting & Real World\n    - Slide 76: Network Security Essentials",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Network Troubleshooting & Real World",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Transmission Media and Switching",
+      "body": "Transmission Media and Switching\nGuided Media\nTwisted Pair\nCoaxial\nFiber Optic\nUnguided Media\nRadio Waves\nMicrowaves\nInfrared",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Transmission Media and Switching",
+      "body": "Transmission Media and Switching\nSwitching\nCircuit\nMessage\nPacket Switching\nPerformance Metrics\nBandwidth\nThroughput\nLatency , Jitter\nBDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Network Troubleshooting & Real World",
+      "body": "Network Troubleshooting & Real World\nPacket Loss, Latency, Jitter\nRepeater, Hub, Switch, Router\nNoise, Attenuation, Distortion\nping, traceroute, nslookup, netstat & Wireshark Basics\nNetworking Devices\nSignal Problems \nReal-World Network Issues\nCase Studies\nDebugging Tools in Action\n(Noise, Attenuation, Distortion)\nReal-World Debugging Scenarios",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Real-World Network Issues",
+      "body": "Real-World Network Issues",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "From Textbook Networks to the Real World",
+      "body": "Introduction\nIn real networks, internet can slow down, calls can freeze, Wi-Fi can drop, and servers can become unreachable. Network engineers must quickly identify and fix these issues.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "From Textbook Networks to the Real World",
+      "body": "Real-World Problems\nPerformance problems\nThe network works, but slowly\nHigh latency\nLow throughput\nVideo buffering\nVideo calls freezing\nReliability problems\nNetwork connection breaks or becomes unreachable.\nExamples: packet loss, connection drops, service not reachable.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "From Textbook Networks to the Real World",
+      "body": "Real-World Problems\nSignal problems\nThe physical signal itself is weak or distorted\nA faulty cable\nA Wi-Fi dead zone\nElectrical interference from a microwave oven",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Packet Loss",
+      "body": "Faulty Network\nPacket loss occurs when packets sent from a source fail to reach the destination. In TCP, missing packets are retransmitted, causing delays and reducing network speed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Packet Loss",
+      "body": "Common Causes\nNetwork congestion\nFull router queues lead to dropped packets\nFaulty hardware\nDamaged cables or failing routers cause packet loss\nWireless interference\nWeak Wi-Fi signals drop packets\nSoftware bugs\nMisconfigured firewalls or routing loops discard packets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Packet Loss",
+      "body": "User Impact\nHow is it measured?\nPacket loss is reported as a percentage (e.g., 20% packet loss). The simplest tool is ping. A typical ping output line - ‘5 packets transmitted, 4 received, 20% packet loss’. Anything above 1% is considered a problem for voice and video calls",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Packet Loss",
+      "body": "Troubleshooting Steps\nRestart routers and modems\nUpdate drivers and firmware\nReplace faulty Ethernet cables\nCheck for unauthorized or high-traffic devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Latency vs Jitter",
+      "body": "01\nThe average delay\nSymptoms\nSlow file transfers\nOnline games Lag\nWeb pages loading delay \nTwo Faces of Delay\n02\nThe variation in delay\nSymptoms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Latency vs Jitter",
+      "body": "A steady 80 ms delay is usually acceptable, but delay changes from 20 ms to 200 ms make voice unclear\nReal-time apps use a jitter buffer to slightly delay packets and keep audio playback smooth\nTwo Faces of Delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Latency vs Jitter",
+      "body": "10ms\n20ms\n30ms\nReceiver\nStable Latency = 20ms\nJitter = variable packet delay\nSender\nTwo Faces of Delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Signal Problems",
+      "body": "Signal Problems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Signal Problems",
+      "body": "Three Impairments\nMost \"packet loss\" actually starts at the physical layer. When a 0 or 1 cannot be cleanly recognised at the receiver, the frame fails the CRC check and is dropped - looking like packet loss to the upper layers. Three impairments cause this:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Signal Problems",
+      "body": "1\nunwanted signal ADDED to the original:\nSources: thermal (random electron motion), crosstalk (leakage between wires), and EMI (motors, microwaves, lights).\nEffect: SNR drops → max data rate falls (Shannon)\nThree Impairments",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Signal Problems",
+      "body": "Transmitted \nNoise \nReceived \nPoint 1\nPoint 2\nTransmission medium\nNoise",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Signal Problems",
+      "body": "2\nsignal strength LOSS with distance:\nEvery medium absorbs energy; copper fades faster than fiber\nFix: amplifiers (analog) and repeaters (digital)\nEffect: this is why Ethernet on twisted pair is capped at 100 m\nThree Impairments",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Signal Problems",
+      "body": "Attenuation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Signal Problems",
+      "body": "3\nsignal SHAPE changed in transit\nDifferent frequency components travel at slightly different speeds, so a clean square pulse arrives stretched and rounded\nEffect: bit boundaries blur and the receiver samples at the wrong moment\nThree Impairments",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Signal Problems",
+      "body": "At the sender \nAt the Receiver \nComposite signal sent\nComposite signal received\nComponents, in phase\nComponents, out of phase\nDistortion",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Signal Problems",
+      "body": "Important Note\nIn short\nNoise adds, Attenuation removes, Distortion reshapes. All three lower the SNR, raise the bit error rate, and surface as packet loss to the upper layers.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Signal Problems",
+      "body": "Analogy\nNoise\nAttenuation\nDistortion",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Networking Devices",
+      "body": "Networking Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Networking Devices",
+      "body": "Core Devices\nSwitch - Data Link Layer\nRouter - Network Layer\nRepeater - Physical Layer\nHub - Physical Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Networking Devices",
+      "body": "Bridge - Data Link Layer\nAn older device that connected two LAN segments. A modern switch is essentially a multi-port bridge - same job, more ports, faster hardware\nLayer 3 Switch - \nData Link + Network Layer\nA switch that also performs basic routing in hardware. Common in modern data centers where speed is critical\nCore Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Networking Devices",
+      "body": "The simple rule\nCore Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Repeater and Hub",
+      "body": "Layer 1 Devices\n1\nA signal regenerator:\nWorks only with bits and has two ports: input and output\nTakes a weak signal, cleans it, and retransmits it at full strength\nHelps extend cable distance by solving attenuation\nDoes not check MAC/IP addresses or detect collisions; it only copies bits",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Repeater and Hub",
+      "body": "Repeater\nAttenuated Signal\nRegenerated Signal\nLayer 1 Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Repeater and Hub",
+      "body": "2\nA multi-port repeater:\nHas many ports (commonly 4, 8, 16, or 24)\nWhen a bit arrives on one port, the hub broadcasts it to every other port. There is no \"decision\" - every port hears every bit\nHalf-duplex - a device can either send or receive at a moment, never both. If two devices try to transmit at once, a collision occurs, leading to data loss\nLayer 1 Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Repeater and Hub",
+      "body": "Hub\nLayer 1 Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Repeater and Hub",
+      "body": "Hubs are obsolete because they broadcast data to all devices, which shares bandwidth .Eg : 100 Mbps ÷ 10 devices ≈ 10 Mbps each – and exposes all transmissions, creating security risks\nSwitches addressed both issues, replacing hubs in the early 2000s. Repeaters still exist, mostly in long-haul fiber and wireless systems\nLayer 1 Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Switch",
+      "body": "Heart of Every Modern LAN\nA switch understands frames and MAC addresses. Its job is to receive a frame on one port and forward it to only the port where the destination MAC lives\n It does this using a MAC-to-port mapping called the MAC address table (also called the CAM table)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Switch",
+      "body": "How A Switch Learns?\nWhen a frame arrives, the switch records the source MAC and port in the MAC table. It then checks the destination MAC:\nIf the port is known, it forwards the frame to that port (unicast)\n01\n02\n03\nIf unknown, it floods the frame to all ports until the destination replies\nBroadcast frames (FF:FF:FF:FF:FF:FF) are always flooded, allowing ARP requests to reach all devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Switch",
+      "body": "Multicasting By A Switch\nReceivers\nSender\nSwitch",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Switch",
+      "body": "Why Switches Are Better Than Hubs?\nEach port is its own collision domain. Two pairs of devices can send and receive at the same time without colliding\n01\n02\n03\n04\nFull-duplex operation - a device can send and receive simultaneously\nPer-port bandwidth - a 24-port gigabit switch gives each port a dedicated 1 Gbps\nSecurity - a frame is sent only to the right port; other devices cannot eavesdrop by default",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "VLANs",
+      "body": "Introduction\nVLANs\nSplitting one switch into many:\nA modern switch supports Virtual LANs. The same physical switch is divided into separate logical LANs, isolating traffic. Devices in VLAN 10 cannot directly talk to devices in VLAN 20 even if plugged into the same switch - separation is enforced in hardware.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Router",
+      "body": "How the Internet Itself Is Built?\nA router connects different IP networks/subnets and forwards packets using its routing table\nWhen a packet arrives, it checks the destination IP, applies longest-prefix match, and sends it through the correct next hop/interface\nRouting tables are built using static routes or protocols like RIP, OSPF, and BGP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Router",
+      "body": "Operating at Network Layer\nPacket",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Router vs Switch",
+      "body": "Key Differences\nRouter\nDifferent IP networks\nSwitch\nDevices in one network\nIP address\nMAC address\nDifference\nConnects\nAddress used\nStops broadcasts between networks\nShares broadcasts within LAN/VLAN\nBroadcasts\nSupports NAT\nNo NAT\nNAT\nDecreases TTL\nDoes not change TTL\nTTL",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Difference",
+            "Router",
+            "Switch"
+          ],
+          [
+            "Connects",
+            "Different IP networks",
+            "Devices in one network"
+          ],
+          [
+            "Address used",
+            "IP address",
+            "MAC address"
+          ],
+          [
+            "Broadcasts",
+            "Stops broadcasts between networks",
+            "Shares broadcasts within LAN/VLAN"
+          ],
+          [
+            "NAT",
+            "Supports NAT",
+            "No NAT"
+          ],
+          [
+            "TTL",
+            "Decreases TTL",
+            "Does not change TTL"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 44,
+      "title": "Hub vs Switch vs Router",
+      "body": "Layered View\nv/s\nv/s",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Debugging Tools in Action",
+      "body": "Debugging Tools in Action",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Ping",
+      "body": "Built on ICMP Echo Request / Reply\nThe 4-Step Troubleshooting Ladder\nping 127.0.0.1 - Is my own network stack working?\nping 192.168.1.1 - Is my gateway / LAN reachable?\nping 8.8.8.8 - Is the internet up? (no DNS involved)\nping google.com - Is DNS resolving correctly?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Ping",
+      "body": "Key insight\nIf Step 3 works but Step 4 fails - the internet is fine, DNS is the problem. This single pattern saves hours of guesswork",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Reading mdev (Jitter) in Linux Ping Output",
+      "body": "Understanding RTT Fluctuation\nLinux adds a fourth field to the summary line that Windows does not show:\nrtt min/avg/max/mdev = 11.8/12.1/12.4/0.3 ms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Reading mdev (Jitter) in Linux Ping Output",
+      "body": "Low vs High mdev\nLow mdev (e.g. 0.3 ms) = stable, consistent path High mdev (e.g. 67 ms) = jittery link",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Reading mdev in Linux Ping",
+      "body": "Check Speed and Stability Together\nThe simple rule",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "nslookup and netstat - Two More Essential Tools",
+      "body": "nslookup - Query the DNS\nnslookup queries DNS servers and prints the result. It answers ‘what IP does this domain resolve to?’ and ‘which DNS server gave that answer?’\n$ nslookup google.com\nServer:    8.8.8.8\nAddress:   8.8.8.8#53\nName:      google.com\nAddress:   142.250.183.78",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "nslookup",
+      "body": "When nslookup Helps?\n‘Site is unreachable by name but works by IP’ → DNS issue\n‘Different users see different IPs for the same domain’ → DNS caching or geo-routed DNS\nVerifying that a new DNS record has propagated globally",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "netstat",
+      "body": "$ netstat -an\n$ netstat -tuln\nCommon states: LISTEN, ESTABLISHED, TIME_WAIT, CLOSE_WAIT\nShow Local Network Connections\nnetstat shows active TCP/UDP connections, open ports, listening processes, and connected remote systems. In modern Linux, ss is commonly used instead\nList all connections and listening ports\nTCP/UDP listening ports only",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "netstat",
+      "body": "When netstat Helps?\n‘Is my web server actually listening on port 80?’ → check for LISTEN on :80\n‘Why is my app slow on shutdown?’ → many connections in TIME_WAIT\n‘Is something already using this port?’ → quick way to find a port conflict\nSuspicious activity - too many connections from one IP, or to an unknown remote IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Nslookup & netstat",
+      "body": "Analogy\nnetstat\nnslookup",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Wireshark",
+      "body": "Inspect real packets\nOther network commands show summaries, but Wireshark captures actual packets and lets engineers inspect fields, flags, payload, and timing in detail",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Wireshark",
+      "body": "Deep Dive\nThe full layered breakdown - Ethernet header, IP header, TCP/UDP header, and application payload - all decoded into human-readable fields\nSource and destination MAC and IP addresses, port numbers, and packet sizes\nTCP flags (SYN, ACK, FIN, RST), sequence and acknowledgement numbers - for diagnosing handshakes and retransmissions \nInter-packet timing - exact microsecond timestamps to spot delays",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Wireshark",
+      "body": "Capture filters vs Display filters",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Wireshark",
+      "body": "Common Things To Check\nTCP retransmissions\nWireshark marks them in red; many retransmissions indicate packet loss\nTCP three-way handshake\nConfirm SYN, SYN-ACK, ACK appear in order\nDNS queries and replies\nConfirm the right server is being asked and the right answer returned\nTLS handshake\nConfirm certificate exchange completes and no fatal alerts are sent\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Important",
+      "body": "Ethics And Legality:\nCapture only on networks the engineer is authorised to monitor. Capturing on a public Wi-Fi or in someone else’s network without permission is illegal in most jurisdictions. Always test in a lab or on a personal home network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Case Studies",
+      "body": "Case Studies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Case Study 1",
+      "body": "The Internet Is Slow\nA user says: ‘Yesterday everything was fine. Today, websites take forever, and video calls keep freezing.’ No error messages - just slowness",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Case Study 1",
+      "body": "1\nping the gateway (the home router)\n2\nping a public IP (8.8.8.8)\n3\nDashboard\nThe Internet Is Slow\n4\ntraceroute google.com\n5\ndiagnose",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Case Study 1",
+      "body": "Always test in layers - local first, then internet IP, then DNS name, then a specific destination\nJitter and loss together usually point to a congested or rerouted link upstream\nHalf of all ‘slow internet’ complaints are not the user’s network at all - they are an upstream issue\nThe Internet Is Slow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Case Study 2",
+      "body": "Some Sites Open, Others Don’t",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Case Study 2",
+      "body": "Some Sites Open, Others Don’t\n1\nping mybank.in by name\n2\nping a public IP (8.8.8.8)\n3\nTry a different DNS server\n4\nConfirm with ping by IP\n5\nDiagnose and fix",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Case Study 2",
+      "body": "‘Some sites work, others do not’ almost always points to DNS - not routing\nAlways cross-check with a different DNS server before blaming the destination\nnslookup is the right tool for selective name-resolution problems\nSome Sites Open, Others Don’t",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Case Study 3",
+      "body": "Server Reachable Locally, Not Remotely",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Case Study 3",
+      "body": "Server Reachable Locally, Not Remotely\n1\nConfirm the server is actually listening\n2\nTest locally\n3\nColleague tries from another network\n4\nCheck the local firewall\n5\nFix the firewall and re-test",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Case Study 3",
+      "body": "‘Works on my machine’ usually means ‘works on localhost (127.0.0.1)’ - which only confirms the application, not the network\nnetstat is the fastest way to confirm a service is listening - and on which interface\nThree classic blockers between two machines: firewall, NAT, routing. Eliminate them in order\nServer Reachable Locally, Not Remotely",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Case Study 3",
+      "body": "Analogy\nLocalhost\nRouting\nNAT\nFirewall",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Network Troubleshooting & Real World",
+      "body": "Real-World Network Issues \nPacket Loss, Latency, Jitter\nSignal Problems \nNoise, Attenuation, Distortion\nNetworking Devices \nRepeater, Hub, Switch, Router \nKey Takeaways (1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Network Troubleshooting & Real World",
+      "body": "Debugging Tools in Action \nping, traceroute, nslookup, netstat & Wireshark Basics\nCase Studies\nReal-World Debugging Scenarios\nKey Takeaways (2/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Network Security Essentials",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1y2N240bYqziuZ_pf56ehEkNnxrOpAh5StAtGXA-raDA/edit"
+}

@@ -22,7 +22,7 @@ Never commit `.env`.
 
 ## 4. Set the secret env vars
 Service → **Environment** → add:
-- `OPENROUTER_API_KEY` = your OpenRouter key
+- `ANTHROPIC_API_KEY` = your Anthropic API key
 - `GOOGLE_CLIENT_ID` = your OAuth Web client id (for `@nxtwave.co.in`)
 - `TURSO_DATABASE_URL` = `libsql://your-db.turso.io`
 - `TURSO_AUTH_TOKEN` = your Turso token

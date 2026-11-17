@@ -101,8 +101,10 @@ def api_key() -> str | None:
     """Return the API key for the configured provider. Looks up the harness-named
     env var first, then common fallbacks, so an existing .env keeps working."""
     load_env()
-    names = [harness().get("model", {}).get("api_key_env", "OPENROUTER_API_KEY"),
-             "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY"]
+    # ONLY the configured provider's key. A fallback to another provider's variable
+    # would send, say, an OpenRouter key to the Anthropic API and fail as "rejected
+    # key" with the real cause (the variable is unset) hidden.
+    names = [harness().get("model", {}).get("api_key_env") or "ANTHROPIC_API_KEY"]
     for name in names:
         val = (os.environ.get(name) or "").strip()
         if val and val not in _PLACEHOLDERS:

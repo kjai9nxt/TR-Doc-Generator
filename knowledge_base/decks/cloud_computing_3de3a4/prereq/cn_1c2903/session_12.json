@@ -1,0 +1,465 @@
+{
+  "session_no": 12,
+  "source_file": "CN — session 12",
+  "deck_title": "CN — session 12",
+  "n_slides": 65,
+  "summary": "\n    - Slide 2: ICMP In Action\n    - Slide 3: IPv6\n    - Slide 4: Overview, Importance, Role \n    - Slide 5: ICMP Basics\n    - Slide 6: IP Needs a Companion - Meet ICMP\n    - Slide 7: IP Needs a Companion - Meet ICMP\n    - Slide 8: IP Needs a Companion - Meet ICMP\n    - Slide 9: IP Needs a Companion - Meet ICMP\n    - Slide 10: ICMP - Internet Control Message Protocol\n    - Slide 11: ICMP - Internet Control Message Protocol\n    - Slide 12: ICMP - Internet Control Message Protocol\n    - Slide 13: ICMP Messages \n    - Slide 14: Inside Every ICMP Message\n    - Slide 15: Inside Every ICMP Message\n    - Slide 16: Inside Every ICMP Message\n    - Slide 17: Inside Every ICMP Message\n    - Slide 18: Inside Every ICMP Message\n    - Slide 19: ICMP\n    - Slide 20: ICMP\n    - Slide 21: ICMP\n    - Slide 22: ICMP Type\n    - Slide 23: ICMP Type\n    - Slide 24: ICMP Type\n    - Slide 25: ICMP Query Messages\n    - Slide 26: ICMP Query Messages\n    - Slide 27: ICMP Query Messages\n    - Slide 28: Echo Request (Type 8) and Echo Reply (Type 0)\n    - Slide 29: ICMP Query Messages\n    - Slide 30: ICMP Query Messages\n    - Slide 31: Quiz Time!\n    - Slide 32: Ping & Traceroute\n    - Slide 33: Ping - How It Works Internally\n    - Slide 34: Ping - How It Works Internally\n    - Slide 35: Ping - How It Works Internally\n    - Slide 36: Reading Ping Output\n    - Slide 37: Ping - How It Works Internally\n    - Slide 38: Ping - How It Works Internally\n    - Slide 39: Ping - How It Works Internally\n    - Slide 40: Traceroute\n    - Slide 41: Traceroute\n    - Slide 42: Traceroute\n    - Slide 43: Traceroute\n    - Slide 44: Traceroute\n    - Slide 45: Traceroute\n    - Slide 46: Traceroute\n    - Slide 47: Traceroute\n    - Slide 48: Traceroute\n    - Slide 49: Traceroute vs Tracert\n    - Slide 50: Traceroute vs Tracert\n    - Slide 51: Traceroute vs Tracert\n    - Slide 52: Traceroute vs Tracert\n    - Slide 53: Traceroute vs Tracert\n    - Slide 54: Network Diagnostic Scenarios\n    - Slide 55: Reading ICMP in the Real World\n    - Slide 56: Reading ICMP in the Real World\n    - Slide 57: Reading ICMP in the Real World\n    - Slide 58: ICMP\n    - Slide 59: Reading ICMP in the Real World\n    - Slide 60: Quiz Time!\n    - Slide 61: ICMP In Action\n    - Slide 62: ICMP In Action\n    - Slide 63: Data Link Layer | Part I",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "ICMP In Action",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "IPv6",
+      "body": "IPv6\nNeed, Address Format & Types, IPv4 vs IPv6\nTransition Strategies\nInternet Scaling Mechanisms\nHierarchical Routing & BGP\nMulticasting\nMulticast, Broadcast Routing\nVirtual Circuit Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Overview, Importance, Role ",
+      "body": "Overview, Importance, Role \nHow do they work internally?\nMessage Structure, Error Reporting Messages types, Query Types : Echo Request, Echo Reply\nICMP In Action\nICMP Messages\nPing & Traceroute\nICMP Basics\nNetwork Diagnostic Scenarios",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "ICMP Basics",
+      "body": "ICMP Basics",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "IP Needs a Companion - Meet ICMP",
+      "body": "Error Reporter of the Network Layer\nIP does not guarantee delivery\n1\nIP does not know if a packet was dropped\nIP does not notify the sender if something goes wrong\n2\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "IP Needs a Companion - Meet ICMP",
+      "body": "Error Reporter of the Network Layer\nIf a packet is dropped, a router is unreachable, or a host cannot be found - who tells the sender?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "IP Needs a Companion - Meet ICMP",
+      "body": "Error Reporter of the Network Layer\nReport errors that occur during packet delivery\n1\nAllow network testing and path discovery tools\n2\nAnswer: ICMP - Internet Control Message Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "IP Needs a Companion - Meet ICMP",
+      "body": "Internet Control Message Protocol\nICMP Error Message\nICMP Message Flow in Network Communication\nIP Packet\nUnreachable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "ICMP - Internet Control Message Protocol",
+      "body": "How Does it Work?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "ICMP - Internet Control Message Protocol",
+      "body": "Property\nLayer\nFull Name\nDetail\nNetwork Layer (works inside IP datagrams)\nInternet Control Message Protocol\nRFC\nRFC 792 (IPv4 ICMP) | RFC 4443 (ICMPv6)\nProtocol Number\n1 (carried inside IP with Protocol field = 1)\nPurpose\nError Reporting + Network Diagnostics\nDoes it fix errors?\nNo - it only reports them to the sender\nKey Features",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "ICMP - Internet Control Message Protocol",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "ICMP Messages ",
+      "body": "ICMP Messages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Inside Every ICMP Message",
+      "body": "Structure\nIndicates the ICMP message type (e.g., Echo Request)\nContains the original IP header and first 8 bytes of the failed packet to help identify the issue\nError detection over the entire ICMP message",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Inside Every ICMP Message",
+      "body": "Structure\nSpecifies the subtype within a message type (e.g., host, port, or network unreachable)\nVaries by type; may be zero or carry additional information",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Inside Every ICMP Message",
+      "body": "Categories of ICMP Messages\nTwo categories\nTell the sender something went wrong (e.g., destination unreachable, time exceeded)\nError Reporting Messages\n1\nUsed by diagnostic tools (e.g., Echo Request/Reply used by Ping)\nQuery Messages\n2\nEvery ICMP message - whether an error report or a query - has the same basic structure:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Inside Every ICMP Message",
+      "body": "Categories of ICMP Messages\nType\n3\nMessage\nDestination unreachable\n11\nTime exceeded\n12\nParameter problem\n5\nRedirection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Inside Every ICMP Message",
+      "body": "When ICMP reports an error, it includes the IP header + first 8 bytes of the original failed packet in its payload. This is how the sender identifies which packet failed and which application/process was affected\nCategories of ICMP Messages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "ICMP",
+      "body": "Error Reporting Messages\nCode\n0 or 1\n0-15\nPurpose\nTTL hit zero (routing loop protection) or fragment TTL hit zero (routing loop protection) or fragment timeout\nCannot deliver - many specific reasons via Code\n0\nRouter buffer full - asks sender to slow down (deprecated, rarely used today)\nType No.\n11\n3\n4\nICMP Type\nTime Exceeded\nDestination Unreachable\nSource Quench",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "ICMP",
+      "body": "Error Reporting Messages\nCode\n0 or 1\n0-3\nPurpose\nIP header has an invalid or malformed field\nRouter tells sender: use a better route next time\nType No.\n12\n5\nICMP Type\nParameter Problem\nRedirect",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "ICMP",
+      "body": "Error Reporting Messages\nNote on Source Quench: Although it exists in RFC 792, it is effectively deprecated. Modern networks use TCP's built-in congestion control instead of relying on ICMP Source Quench",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "ICMP Type",
+      "body": "Destination Unreachable\nCode\n1\n0\nMeaning\nHost Unreachable - Route to network found but host not responding\nNetwork Unreachable - No route to the destination network\n2\nProtocol Unreachable - Destination does not support the requested protocol\nWho Sends It\nRouter\nRouter\nDestination Host",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "ICMP Type",
+      "body": "Code\n4\n3\nMeaning\nFragmentation Needed but DF bit set - Packet too large, cannot fragment\nPort Unreachable - No application listening on the target port\nWho Sends It\nRouter\nDestination Host\nDestination Unreachable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "ICMP Type",
+      "body": "Time Exceeded\nCode 0 - TTL exceeded in transit: Router decremented TTL to 0 and discarded the packet\nCode 1 - Fragment reassembly time exceeded: Destination was waiting for all fragments to arrive, but they did not arrive in time. It discards all received fragments and reports the error",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "ICMP Query Messages",
+      "body": "Important Note\nNot all ICMP messages report errors. Query messages are used to test the network or gather information. The most widely used are Echo Request and Echo Reply - the foundation of the Ping tool",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "ICMP Query Messages",
+      "body": "Echo Request and Echo Reply",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "ICMP Query Messages",
+      "body": "Echo Request and Echo Reply",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Echo Request (Type 8) and Echo Reply (Type 0)",
+      "body": "Field\nCode\nType\nEcho Request (Type 8)\n0\n8\nIdentifier\nSet by sender (matches process/PID)\nEcho Reply (Type 0)\n0\n0\nEchoed back unchanged\nSequence Number\nIncrements with each new request\nData Payload\nOptional - can include timestamps or padding\nEchoed back unchanged\nEchoed back unchanged\nKey Difference",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "ICMP Query Messages",
+      "body": "Important Note\nThe Identifier + Sequence Number combination is what allows a host sending multiple simultaneous pings to different destinations to match each reply to the correct request",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "ICMP Query Messages",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Ping & Traceroute",
+      "body": "Ping & Traceroute",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Ping - How It Works Internally",
+      "body": "Introduction\nPing 192.168.0.1\nICMP Echo Request\nICMP Echo Reply\nHost A\nHost B\nIP 192.168.0.1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Ping - How It Works Internally",
+      "body": "Running : ping 8.8.8.8\nOS creates an ICMP Echo Request - Type 8, Code 0\n01\n02\n03\n04\nIt sets an Identifier (process ID) and Sequence Number (starting at 1)\nThe ICMP message is encapsulated inside an IP datagram addressed to 8.8.8.8\nThe datagram travels across routers - each router forwards it using normal IP routing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Ping - How It Works Internally",
+      "body": "Running : Ping 8.8.8.8\nThe destination (8.8.8.8 - Google DNS) receives it and sends back ICMP Echo Reply - Type 0, Code 0\n05\n06\n07\nMachine receives the reply and prints RTT and TTL\nSteps 1–6 repeat (with Sequence Number incrementing) until you press Ctrl+C",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Reading Ping Output",
+      "body": "What Each Field Means?\nPing Output Field\ntime=14ms\nbytes=32\nWhat It Tells You?\nRound-Trip Time - how long the full journey took (both ways)\nSize of the ICMP Echo Request payload (padding data)\nTTL=117\nTTL value in the Echo Reply - tells you roughly how many hops the reply traveled\nRequest timed out\nNo Echo Reply received within the timeout period - host may be down, unreachable, or blocking ICMP\nPackets: Sent=4, Received=4, Lost=0\nSummary of reliability - loss % = how many requests got no reply",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Ping - How It Works Internally",
+      "body": "Basic ping Commands\nping <destination>\nWindows\nping -n <count> <destination>\nping <destination>\nLinux/macOS\nping -c <count> <destination>\nping <destination>\nNetwork Devices \nping repeat <count> <destination>\nBasic Ping Command\nPing A Specific Number Of Times",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Ping - How It Works Internally",
+      "body": "What Ping Proves - and What It Does Not\nImportant",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Ping - How It Works Internally",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Traceroute",
+      "body": "Introduction\nPing tells you if a destination is reachable. Traceroute tells you exactly which routers a packet passes through - and how long each hop takes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Traceroute",
+      "body": "Introduction\nThe Core Idea: Exploit TTL deliberately\nTTL starts at a value (typically 1, 2, 3, ...) and a router decrements it. When TTL = 0, the router discards the packet and sends back an ICMP Time Exceeded (Type 11, Code 0) - and crucially, that ICMP message comes from the router's own IP address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Traceroute",
+      "body": "How Traceroute Works (Step-by-Step)\nSend a probe packet with TTL = 1 → first router discards it and replies with ICMP Time Exceeded → Hop 1 identified\nSend with TTL = 2 → reaches second router → it replies → Hop 2 identified\nContinue increasing TTL (3, 4, 5...) → each router reveals itself when TTL expires",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Traceroute",
+      "body": "How Traceroute Works (Step-by-Step)\nWhen the packet reaches the destination, it sends:\nICMP Echo Reply (Windows) or\nICMP Port Unreachable (Linux/UDP) → route complete",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Traceroute",
+      "body": "Working of Traceroute",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Traceroute",
+      "body": "Traceroute Output\nHop #\n2\n1\nIP Address\n10.0.0.1\n192.168.1.1\n3\n* * *\nWhat It Means?\nISP's first router - 3 probes each for statistical accuracy\nYour local gateway/router - always first hop\nRouter discards ICMP or does not reply - not necessarily a broken path\n…\n…\n12\n8.8.8.8\nEach line = one router hop in the path\nDestination reached - traceroute ends\nRTT 1\n5 ms\n1 ms\n-\n…\n14 ms\nRTT 2\n5 ms\n1 ms\n-\n…\n13 ms\nRTT 3\n6 ms\n1 ms\n-\n…\n14 ms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Traceroute",
+      "body": "Why 3 probes per hop?\nTraceroute sends 3 probe packets per TTL value to give a statistical RTT reading - accounting for temporary fluctuations. The three RTT values shown are from those 3 probes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Traceroute",
+      "body": "The * * * case\nWhen you see * * *, it means the router at that hop did not send an ICMP reply. This could be because: \nthe router is configured to not reply to ICMP probes (firewall/policy), or \nthe router replies were lost. However, the path beyond that hop can still succeed - * * * does not mean the path is broken",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Traceroute",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Traceroute vs Tracert",
+      "body": "Two Implementations, Same TTL Trick\nThe underlying concept of traceroute is identical on all platforms - deliberately expire TTL and collect ICMP Time Exceeded responses. The difference is in what probe packet they send",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Traceroute vs Tracert",
+      "body": "Two Implementations, Same TTL Trick\nProperty\nDestination Port\nProbe Packet Type\nLinux - traceroute\nHigh ephemeral port (33434+, increments)\nUDP datagrams (default)\nDestination Detection\nICMP Port unreachable\nWindows - tracert\nN/A - ICMP has no ports\nICMP Echo Requests\nICMP Echo Reply (Type 0, Code 0)\nProbes per hop\nTTL exploitation\n3 probes by default\nSame - TTL starts at 1 and increments\nCommand\ntraceroute <destination>\n3 probes by default\nSame - TTL starts at 1 and increments\ntracert <destination>",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Traceroute vs Tracert",
+      "body": "Two Implementations, Same TTL Trick",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Traceroute vs Tracert",
+      "body": "Two Implementations, Same TTL Trick\nOn Windows (using Tracert)\nOn macOS or Linux (using Traceroute):\nLinux's traceroute can also use ICMP mode with the -I flag: \nNote\ntracert google.com\ntraceroute google.com\ntraceroute -I <destination>",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Traceroute vs Tracert",
+      "body": "Analogy\nRouter",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Network Diagnostic Scenarios",
+      "body": "Network Diagnostic Scenarios",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Reading ICMP in the Real World",
+      "body": "Messages During Troubleshooting\nICMP is the network's built-in diagnostic language. A network engineer reads ICMP messages the way a doctor reads symptoms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Reading ICMP in the Real World",
+      "body": "Common Scenarios\nScenario\nPing returns error\nPing fails\nWhat You Observe\nDestination Host Unreachable\nRequest Timed Out\nAccess closed service\nICMP Port Unreachable\nPacket TTL expires\nTime Exceeded from a router\nICMP Message\nType 3, Code 1 - Host Unreachable\nNo reply\nType 3, Code 3 - Port Unreachable\nType 11, Code 0 - TTL = 0\nRoot Cause\nHost not reachable\nHost down / firewall / network issue\nService not running\nTTL expired (loop/long path)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Reading ICMP in the Real World",
+      "body": "Common Scenarios\nScenario\nIncreasing latency after hop 8\nTraceroute * * *\nWhat You Observe\nRTT jumps from 20ms to 150ms\nno reply\nlarge packets fail\nSmall works, large fails\nICMP Message\nTime Exceeded replies take longer\nNo ICMP reply\nICMP Type 3, Code 4\nRoot Cause\nLong distance / congestion\nRouter not responding (path may continue)\nPath MTU issue - a link on the path cannot handle the packet size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "ICMP",
+      "body": "Practical Diagnostic Workflow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Reading ICMP in the Real World",
+      "body": "Analogy\n1\n2\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "ICMP In Action",
+      "body": "ICMP Basics\nOverview\nImportance\nRole \nICMP Messages\nMessage Structure\nError Reporting Messages types \nQuery Types : Echo Request, Echo Reply\nKey Takeaways (1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "ICMP In Action",
+      "body": "Ping & Traceroute\nHow do they work internally?\nNetwork Diagnostic Scenarios\nKey Takeaways (2/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Data Link Layer | Part I",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1Z--0n72nKMJinfGYWf3ymRYgDFi49xzv03FRVH-DYy0/edit"
+}

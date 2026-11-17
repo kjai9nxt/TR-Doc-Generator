@@ -1,0 +1,493 @@
+{
+  "session_no": 9,
+  "source_file": "CN — session 9",
+  "deck_title": "CN — session 9",
+  "n_slides": 69,
+  "summary": "\n    - Slide 2: Multiple Access Protocols\n    - Slide 3: Data Link Layer | Part II\n    - Slide 4: Agenda\n    - Slide 5: The Multiple \n    - Slide 6: The Shared Medium Challenge\n    - Slide 7: Why Does This Problem Exist?\n    - Slide 8: Multiple Access Protocols are rules used in a network that decide how multiple d\n    - Slide 9: Multiple Access Protocols\n    - Slide 10: 1. Random Access\n    - Slide 11: 2. Controlled Access\n    - Slide 12: 3. Channelization Access\n    - Slide 13: Analogy\n    - Slide 14: Random Access Protocols\n    - Slide 15: Introduction\n    - Slide 16: Importance\n    - Slide 17: How ALOHA Works?\n    - Slide 18: 1. Pure ALOHA\n    - Slide 19: How ALOHA Works?\n    - Slide 20: 2. Slotted ALOHA\n    - Slide 21: Pure & Slotted ALOHA\n    - Slide 22: Pure & Slotted ALOHA\n    - Slide 23: Keynote\n    - Slide 24: Analogy\n    - Slide 25: Introduction\n    - Slide 26: How CSMA Works?\n    - Slide 27: Three Persistence Strategies\n    - Slide 28: Three Persistence Strategies\n    - Slide 29: Three Persistence Strategies\n    - Slide 30: Three Persistence Strategies\n    - Slide 31: CSMA reduces collisions compared to ALOHA but cannot completely eliminate them\n    - Slide 32: Analogy\n    - Slide 33: Quiz Time!\n    - Slide 34: Controlled Access Protocols\n    - Slide 35: Introduction\n    - Slide 36: Reservation Time is divided into fixed-length frames, each containing a reservat\n    - Slide 37: The channel is then allocated to that station for the corresponding data slot\n    - Slide 38: Key Properties\n    - Slide 39: Overhead from reservation intervals\n    - Slide 40: 0\n    - Slide 41: A primary (central controller) manages all communication\n    - Slide 42: Deep Dive\n    - Slide 43: Primary\n    - Slide 44: Primary\n    - Slide 45: 3. Token Passing\n    - Slide 46: Key Properties\n    - Slide 47: Drawbacks\n    - Slide 48: Example\n    - Slide 49: Feature\n    - Slide 50: Analogy\n    - Slide 51: Channelization Protocols\n    - Slide 52: Introduction\n    - Slide 53: Deep Dive\n    - Slide 54: Key Points\n    - Slide 55: Data\n    - Slide 56: Deep Dive\n    - Slide 57: Key Points\n    - Slide 58: Data\n    - Slide 59: Deep Dive\n    - Slide 60: Example\n    - Slide 61: Other signals appear as noise, but desired signal is decoded using the code\n    - Slide 62: Feature\n    - Slide 63: Feature\n    - Slide 64: Analogy\n    - Slide 65: Quiz Time!\n    - Slide 66: Multiple Access Protocols\n    - Slide 67: Wired LANS",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Multiple Access Protocols",
+      "body": "Multiple Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Data Link Layer | Part II",
+      "body": "Data Link Layer | Part II\nError Detection\nParity Check, Checksum, CRC\nError Correction\nHamming Code\nData Link Control\nLine Discipline, Flow Control, Error Control\nFlow Control Protocols\nStop-and-Wait, Sliding Window",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Agenda",
+      "body": "Multiple Access Protocols\nRandom Access Protocols\nThe Multiple Access Problem\nShared medium challenges , \u000bNeed of Access Control\nControlled Access Protocols\nPure ALOHA, Slotted ALOHA, and CSMA strategies\nReservation, Polling, \u000bToken Passing\nChannelization\nFDMA, TDMA, and CDMA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "The Multiple ",
+      "body": "The Multiple \nAccess Problem",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "The Shared Medium Challenge",
+      "body": "The Shared Medium Challenge\nWhen Everyone Talks at Once",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why Does This Problem Exist?",
+      "body": "Why Does This Problem Exist?\nThe Shared Medium Challenge\nA shared channel has fixed bandwidth\nMultiple devices want to use it at the same time\nWithout coordination, signals collide and data is lost",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Multiple Access Protocols are rules used in a network that decide how multiple d",
+      "body": "Multiple Access Protocols are rules used in a network that decide how multiple devices share the same communication channel without conflicts\nDefinition\nMultiple Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Multiple Access Protocols",
+      "body": "Multiple Access Protocols\nRandom Access Protocols\nChannelization Protocols\nHow Do Networks Solve This?\nMultiple Access Protocols\nControlled Access Protocols\nAloha\nCSMA\nCSMA/CD\nCSMA/CA\nReservation\nPolling\nToken Passing\nFDMA\nTDMA\nCDMA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "1. Random Access",
+      "body": "1. Random Access\nMultiple Access Protocols\nNo fixed order for transmission\nDevices can transmit anytime\nCollisions may happen, but are handled using rules",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "2. Controlled Access",
+      "body": "2. Controlled Access\nMultiple Access Protocols\nA controller or token decides who can transmit\nDevices take turns\nNo collisions, but some waiting is involved",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "3. Channelization Access",
+      "body": "3. Channelization Access\nMultiple Access Protocols\nChannel is divided among users\n(by time, frequency, or code)\nEach device gets a dedicated portion",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Analogy",
+      "body": "Analogy\nMultiple Access Protocols\nRandom Access\nControlled Access\nChannelization Access",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Random Access Protocols",
+      "body": "Random Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Introduction",
+      "body": "Introduction\nALOHA : The First Random Access Protocol\nMultiple Devices Transmitting\nDevices Transmitting \u000bat the same time\nALOHA is a random access protocol that allows multiple devices to share a communication channel by transmitting whenever they have data\nIf two devices transmit at the same time, a collision occurs, \u000band data must be retransmitted",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Importance",
+      "body": "Importance\nALOHA : The First Random Access Protocol\nMultiple devices needed to share a single wireless channel\nNo coordination mechanism existed in early systems\nGoal: Allow simple and independent transmission",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "How ALOHA Works?",
+      "body": "How ALOHA Works?\nALOHA : The First Random Access Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "1. Pure ALOHA",
+      "body": "1. Pure ALOHA\nALOHA : The First Random Access Protocol\nCollision Duration\nCollision Duration",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "How ALOHA Works?",
+      "body": "How ALOHA Works?\nALOHA : The First Random Access Protocol\n2. Slotted ALOHA\nTime is divided into equal slots. A device can only begin transmitting at the start of a slot.\nReduces the collision window by half compared to Pure ALOHA.\nMaximum efficiency: 36.8%  →  roughly double the throughput of Pure ALOHA\nTime Slots",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "2. Slotted ALOHA",
+      "body": "2. Slotted ALOHA\nALOHA : The First Random Access Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Pure & Slotted ALOHA",
+      "body": "Pure & Slotted ALOHA\nALOHA : The First Random Access Protocol\nFeature\nPure ALOHA\nAny time\nhigh\n18.4%\nSlotted ALOHA\nReduced\nTransmission\nCollision Handling\nEfficiency\nOnly at slot start\n36.8%\nVery simple\nComplexity\nNeeds synchronization",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Pure & Slotted ALOHA",
+      "body": "Pure & Slotted ALOHA\nALOHA : The First Random Access Protocol\nFeature\nPure ALOHA\nContinuous\n2 × Tt\ns= G x e-2G\nSlotted ALOHA\nTt\nTime Model\nCollision Window\nSuccess Probability\nDiscrete (synchronized)\ns= G x e-G",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Keynote",
+      "body": "Keynote\nALOHA : The First Random Access Protocol\nSlotted ALOHA improves efficiency by reducing the time window in which collisions can occur",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Analogy",
+      "body": "Analogy\nALOHA : The First Random Access Protocol\nPure ALOHA\nSlotted ALOHA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Introduction",
+      "body": "Introduction\nCSMA\nCSMA (Carrier Sense Multiple Access) is a network protocol in which a device first checks (listens) whether the communication channel is free before transmitting data. It improves ALOHA by ensuring that a device transmits only when the channel is idle; otherwise, it waits\nListening for Channel\nChannel Idle\nTransmitting Data",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "How CSMA Works?",
+      "body": "How CSMA Works?\nCSMA\nDevice wants to transmit → listens to the channel\nIf the channel is idle → transmit\nIf the channel is busy → wait",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Three Persistence Strategies",
+      "body": "Three Persistence Strategies\nHow CSMA Works?\nWhat to do when the channel is busy:\nWait until the channel becomes idle, then immediately transmit\nProblem: if multiple devices were waiting, all transmit at once → high collision probability\n1. Persistent:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Three Persistence Strategies",
+      "body": "Three Persistence Strategies\nCSMA\nIdle?\nTransmit with p\nWait with 1-p\nIf busy, wait a random time, then sense again\nReduces collisions but wastes channel capacity during random waits\n2. Non-Persistent:\nWhen idle, transmit with probability p, or wait one slot with probability (1-p)\nBalance between the two extremes\n3. p-Persistent:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Three Persistence Strategies",
+      "body": "Three Persistence Strategies\nCSMA\nContinuously sense\nSense and transmit\nBusy\nTime\na. 1-persistent\nb. Nonpersistent",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Three Persistence Strategies",
+      "body": "Three Persistence Strategies\nCSMA\nc. p-persistent",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "CSMA reduces collisions compared to ALOHA but cannot completely eliminate them",
+      "body": "CSMA reduces collisions compared to ALOHA but cannot completely eliminate them\nKeynote\nCSMA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Analogy",
+      "body": "Analogy\nCSMA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Controlled Access Protocols",
+      "body": "Controlled Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Introduction",
+      "body": "Introduction\nControlled Access Protocols\nControlled access protocols ensure that only one device transmits at a time, \u000beliminating collisions completely by requiring explicit permission before sending data",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Reservation Time is divided into fixed-length frames, each containing a reservat",
+      "body": "Reservation Time is divided into fixed-length frames, each containing a reservation interval followed by \u000bdata slots\nEach station reserves a slot in the reservation interval before transmitting\nIf a station wants to send → it sets its bit in the reservation interval\n1. Reservation\nControlled Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "The channel is then allocated to that station for the corresponding data slot",
+      "body": "The channel is then allocated to that station for the corresponding data slot\nEnsures orderly, collision-free transmission without a central controller\n1. Reservation Time\nControlled Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Key Properties",
+      "body": "Key Properties\n1. Reservation\nNo collisions\nDecentralized - no primary station needed\nEfficient for bursty traffic patterns",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Overhead from reservation intervals",
+      "body": "Overhead from reservation intervals\nDelay introduced before actual transmission begins\nLess efficient when traffic is light \nDrawbacks\n1. Reservation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "0",
+      "body": "0\n0\n0\n0\n0\nData Station 2\n0\n1\n0\n0\n0\nData Station 5\nData Station 3\nData Station 2\n0\n1\n1\n0\n1\n1\n2\n3\n4\n5\n1\n2\n3\n4\n5\nReservation Frame\nExample\n1. Reservation\n1\n2\n3\n4\n5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "A primary (central controller) manages all communication",
+      "body": "A primary (central controller) manages all communication\nPrimary stations poll each device one by one: “Do you have data to send?”\nIf a device has data → it transmits\nIf not → controller immediately moves to the next device\nProcess repeats in a cycle\n2. Polling\nControlled Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Deep Dive",
+      "body": "Deep Dive\n2. Polling\nPolling Variants:\nRoll-call Polling: Sequential polling of all stations\nHub Polling: Starts from last polled station \u000b(reduces overhead)\nDrawbacks of Polling:\nSingle point of failure (primary station)\nWasted time when polling idle devices\nRoll-Call Polling\nHub Polling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Primary",
+      "body": "Primary\nB\nA\nPOLL\nPOLL\nACK\nDATA\nNAK\nPOLL\nSecondary\nExample\n2. Polling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Primary",
+      "body": "Primary\nB\nA\nSEL\nDATA\nACK\nACK\nSelect\nSecondary\nExample\n2. Polling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "3. Token Passing",
+      "body": "3. Token Passing\nControlled Access Protocols\nA token (control frame) circulates in a logical ring\nOnly the device holding the token can transmit\nAfter transmission (or if no data), token is passed to next device\nUsed in Token Ring (IEEE 802.5) and FDDI networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Key Properties",
+      "body": "Key Properties\n3. Token Passing\nNo collisions\nGuaranteed access for all stations\nPredictable communication delay (latency)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Drawbacks",
+      "body": "Drawbacks\n3. Token Passing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Example",
+      "body": "Example\n3. Token Passing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Feature",
+      "body": "Feature\nPolling\nCentral Primary Station\nNone\nToken Passing\nDistributed \u000b(token travels the ring)\nController\nCollisions\nNone\nPrimary Station Failure\nFailure Risk\nToken Loss\nReservation\nDistributed \n(reservation slots)\nNone\nSlot Synchronization Failure\nCentralized Systems\nUse Case\nToken Ring, FDDI\nSatellite networks, WiMAX\nComparison Table\nControlled Access Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Analogy",
+      "body": "Analogy\nControlled Access Protocols\n-",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Channelization Protocols",
+      "body": "Channelization Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Introduction",
+      "body": "Introduction\nChannelization\nChannelization divides a shared channel into smaller logical parts, \u000bso multiple devices can transmit without collisions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Deep Dive",
+      "body": "Deep Dive\n1. FDMA – Frequency Division Multiple Access\nTotal bandwidth is divided into frequency bands (channels)\nEach device gets a dedicated frequency\nAll devices transmit simultaneously\nUsed in: 1G cellular networks, Radio broadcasting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Key Points",
+      "body": "Key Points\n1. FDMA – Frequency Division Multiple Access\nGuard bands prevent overlap between frequencies\nUnused frequency → wasted bandwidth",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Data",
+      "body": "Data\nData\nData\nf\nf\nf\nt\nt\nt\n1\n2\n3\nf\nt\nData\nCommon Channel\nExample\n1. FDMA – Frequency Division Multiple Access",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Deep Dive",
+      "body": "Deep Dive\n2. TDMA – Time Division Multiple Access\nChannel divided into time slots\nEach device transmits in its assigned time slot\nSame frequency shared by all devices\nUsed in: GSM (2G), Satellite communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Key Points",
+      "body": "Key Points\n2. TDMA – Time Division Multiple Access\nRequires time synchronization\nGuard times prevent slot overlap\nMore efficient than FDMA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Data",
+      "body": "Data\nData\nData\nf\nf\nf\nt\nt\nt\n1\n2\n3\nf\nt\nData\nCommon Channel\nExample\nChannelization",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Deep Dive",
+      "body": "Deep Dive\n3. CDMA – Code Division Multiple Access\nAll devices transmit at the same time and frequency\nEach device uses a unique code\nReceiver extracts data using the same code\nUsed in: 3G (WCDMA), GPS, Military systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Example",
+      "body": "Example\n3. CDMA – Code Division Multiple Access",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Other signals appear as noise, but desired signal is decoded using the code",
+      "body": "Other signals appear as noise, but desired signal is decoded using the code\nKey Idea\n3. CDMA – Code Division Multiple Access",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Feature",
+      "body": "Feature\nFDMA\nFrequency\nYes (diff. freq.)\nNot needed\nTDMA\nNo (one at a time)\nDivision By\nSimultaneous Tx\nSynchronization\nTime\nRequired (time sync)\nLow (fixed slots)\nEfficiency\nModerate\nCDMA\nYes (same freq.)\nCode\nNot required\nHigh\nComparison Table\nChannelization Protocols\n1G\nGeneration\n2G (GSM)\n3G (WCDMA)\nNot required\nCodeword\nNot required\nRequired \u000b(unique chip code)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Feature",
+      "body": "Feature\nFDMA\nGuard bands between channels\nContinuous signal\nTDMA\nGuard times between slots\nGuard Requirement\nMode of Transfer\nSignal in bursts\nLow\nData Rate\nMedium\nCDMA\nBoth guard bands and guard times\nDigital signal\nHigh\nComparison Table\nChannelization Protocols\nLow\nFlexibility\nModerate\nHigh\nGuard bands needed\nInterference Handling\nGuard times needed\nManaged by \u000bspreading codes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Analogy",
+      "body": "Analogy\nChannelization Protocols\nFDMA Analogy\nTDMA Analogy\nCDMA Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Multiple Access Protocols",
+      "body": "The Multiple Access Problem\nShared medium challenges ,  why access control is needed\nRandom Access Protocols\nPure ALOHA, Slotted ALOHA, and \u000bCSMA strategies\nControlled Access Protocols\nReservation, Polling, Token Passing\nChannelization\nFDMA, TDMA, and CDMA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Wired LANS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1dJNr9_4iOlHgFwgeUePmNzJq3qf2BXUBLfjGf2Eheqk/edit"
+}

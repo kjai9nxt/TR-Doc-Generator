@@ -2,7 +2,7 @@ name: CI
 
 # Offline eval + frontend build run automatically on every push/PR (free, no API).
 # The live eval is MANUAL only (Actions tab -> Run workflow) because it calls the
-# model and costs credits — it needs an OPENROUTER_API_KEY repository secret.
+# model and costs credits — it needs an ANTHROPIC_API_KEY repository secret.
 on:
   push:
     branches: [ main ]
@@ -195,12 +195,12 @@ jobs:
           cache-dependency-path: requirements.txt
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Run live eval (needs OPENROUTER_API_KEY secret)
+      - name: Run live eval (needs ANTHROPIC_API_KEY secret)
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          if [ -z "$OPENROUTER_API_KEY" ]; then
-            echo "::error::OPENROUTER_API_KEY secret is not set — add it in Settings → Secrets → Actions."
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set — add it in Settings → Secrets → Actions."
             exit 1
           fi
           # The learning loop first: it is a handful of cheap distillation calls and it

@@ -1,0 +1,388 @@
+{
+  "session_no": 30,
+  "source_file": "CN — session 30",
+  "deck_title": "CN — session 30",
+  "n_slides": 54,
+  "summary": "\n    - Slide 2: Web Request & Network Models\n    - Slide 3: Fundamentals of Computer Networks\n    - Slide 4: Client,DNS Lookup,\n    - Slide 5: Web Request Journey\n    - Slide 6: Web Request Journey\n    - Slide 7: Step-2 : DNS Lookup \n    - Slide 8: A device (such as a phone or laptop) acts as the client, sending a request to th\n    - Slide 9: DNS Lookup\n    - Slide 10: TCP (Transmission Control Protocol) is a connection-oriented protocol that ensur\n    - Slide 11: TLS (Transport Layer Security) is a secure, encrypted communication protocol bet\n    - Slide 12: The TCP + TLS Handshake combines two processes:\n    - Slide 13: TCP 3-Way Handshake ensures that both the client and server are ready for data t\n    - Slide 14: I am available at 3 PM, does that work?\n    - Slide 15: Client\n    - Slide 16: The TLS Handshake makes sure the connection between the client (like a browser) \n    - Slide 17: Web Request Journey\n    - Slide 18: Search\n    - Slide 19: Network Model Stack\n    - Slide 20: The Network Model Stack is a framework that defines how data is transmitted and \n    - Slide 21: Key Design Principles\n    - Slide 22: Key Design Principles\n    - Slide 23: Abstraction\n    - Slide 24: Abstraction\n    - Slide 25: 1\n    - Slide 26: Breaking a complex system (like a network) into smaller, manageable chunks calle\n    - Slide 27: The power of this model lies in simplicity : \n    - Slide 28: Real-World Example\n    - Slide 29: Layer 2: \n    - Slide 30: Layer 3: \n    - Slide 31: Layer 4: \n    - Slide 32: Why do we need models ?\n    - Slide 33: Solution: Reference Models\n    - Slide 34: Benefit:\n    - Slide 35: Each layer has a job, One holds the patty, one adds flavor, one keeps everything\n    - Slide 36: Quiz Time!\n    - Slide 37: Understanding Network Models\n    - Slide 38: Application Layer\n    - Slide 39: Application Layer\n    - Slide 40: WhatsApp creates your message. You typed 'Hi'\n    - Slide 41: The TCP/IP Model simplifies the OSI Model’s \n    - Slide 42: Application Layer\n    - Slide 43: Application Layer\n    - Slide 44: Understanding Network Models\n    - Slide 45: Understanding Network Models\n    - Slide 46: Importance of Layers\n    - Slide 47: Role of each Layer\n    - Slide 48: Importance of Layers\n    - Slide 49: Quiz Time!\n    - Slide 50: Web Request & Network Models\n    - Slide 51: Web Request & Network Models\n    - Slide 52: Web Essentials: WWW, HTTP & DNS",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Web Request & Network Models",
+      "body": "Web Request & Network Models",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Fundamentals of Computer Networks",
+      "body": "Fundamentals of Computer Networks\nComputer Networks\nWhat are Computer Networks? \nImportance & Mechanism\nNetworking Basics\nNetworking Essentials",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Client,DNS Lookup,",
+      "body": "Client,DNS Lookup,\nTCP and TLS Handshake,\nOverview of Web Page Loading\nAbstraction and Layering, \nWhy Models Exist?\nWeb Request Journey\nNetwork Model Stack\nUnderstanding Network Models\nAgenda for Today’s Session\nWeb Request & Network Models\nImportance of Layers\nOSI Model Vs TCP/IP Model",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Web Request Journey",
+      "body": "Web Request Journey",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Web Request Journey",
+      "body": "Web Request Journey\nSteps in a Web Request Process\nClient Sends Request: The browser initiates the request to the server\nDNS Lookup: The browser resolves the domain to an IP address\nTCP Connection: A reliable connection is established\nTLS Handshake: A secure connection is set up\nServer Responds: The server sends the webpage data, and \u000bthe browser begins displaying it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Step-2 : DNS Lookup ",
+      "body": "Step-2 : DNS Lookup \n(The 'Phonebook' Moment)\nLet's explore the process step by step :\n Step-1 : Client\nWhen google.com is typed into a web browser, a series of steps occur to display the website\nWeb Request Journey\nHow browser opens google.com?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "A device (such as a phone or laptop) acts as the client, sending a request to th",
+      "body": "A device (such as a phone or laptop) acts as the client, sending a request to the server via the web browser\nThe Client\n1\nWeb Request Journey\nClient",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "DNS Lookup",
+      "body": "DNS Lookup\n2\n(The 'Phonebook' Moment)\nClient\nDNS\nThe DNS server looks up the IP address for google.com. It checks if it is in the cache or else translates the domain name to an IP address and searches the internet\nWeb Request Journey\nDNS Lookup",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "TCP (Transmission Control Protocol) is a connection-oriented protocol that ensur",
+      "body": "TCP (Transmission Control Protocol) is a connection-oriented protocol that ensures reliable data transmission between devices on a network\nWeb Request Journey\nTCP Connection\nTCP\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "TLS (Transport Layer Security) is a secure, encrypted communication protocol bet",
+      "body": "TLS (Transport Layer Security) is a secure, encrypted communication protocol between the client and server over a network, preventing unauthorized access to data\u000b\nWeb Request Journey\nTLS Handshake\nTLS\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "The TCP + TLS Handshake combines two processes:",
+      "body": "The TCP + TLS Handshake combines two processes:\nHandshake is like two people shaking hands to confirm they are ready to communicate \nWeb Request Journey\nTCP and TLS Handshake",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "TCP 3-Way Handshake ensures that both the client and server are ready for data t",
+      "body": "TCP 3-Way Handshake ensures that both the client and server are ready for data transmission by establishing a reliable connection\nI want to schedule an appointment\nClient\nServer\nWeb Request Journey\nTCP 3-Way Handshake",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "I am available at 3 PM, does that work?",
+      "body": "I am available at 3 PM, does that work?\nYes, 3 PM works for me!\nClient\nServer\nWeb Request Journey\nTCP 3-Way Handshake",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Client",
+      "body": "Client\nServer\nWeb Request Journey\nTCP 3-Way Handshake",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "The TLS Handshake makes sure the connection between the client (like a browser) ",
+      "body": "The TLS Handshake makes sure the connection between the client (like a browser) and the server is secure and encrypted \nClient Hello\nThe client asks the server about the available security options\nThe server provides its identity and shows which options are available \nAuthentication & Secret\nThe client verifies the server’s identity and agrees on secure communication\nBoth confirm the connection is secure and ready for communication\nSecure data transfer begins between the client and server\nServer Hello\nSession Key\nFinished\nWeb Request Journey\nTLS Handshake",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Web Request Journey",
+      "body": "Web Request Journey\nGoogle.com\nThe server sends webpage files (like HTML, CSS, and JavaScript), and the browser begins loading and displaying the page\nData Transfer\n5\nSearch",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Search",
+      "body": "Search\nDNS Lookup\nFinds the IP address of google.com \u000busing DNS resolver\nTCP\nTLS\nHandshake\nEstablishes a reliable (TCP) and secure (TLS) connection with Google’s server\n“Hey Google, give me your \u000bhomepage”\nBrowser sends a request\nHTTP Request Sent\nServer Responds with HTML/CSS/JS\nThe browser receives content and \u000bstarts rendering the webpage\nPage Loads, More \u000bRequests Happen\nBackground requests fetch fonts, \u000bicons, analytics, etc\nTCP + TLS\nWeb Request Journey\nOverview of Web Page Loading\nServer Response",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Network Model Stack",
+      "body": "Network Model Stack",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "The Network Model Stack is a framework that defines how data is transmitted and ",
+      "body": "The Network Model Stack is a framework that defines how data is transmitted and processed across networks\nIt breaks down complex networking tasks into manageable layers\nWhere each layer has a specific responsibility in ensuring smooth communication between devices\nThe Network Model Stack\nNetwork Model Stack\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Key Design Principles",
+      "body": "Key Design Principles\n1\n2\nLayering\nAbstraction\nNetwork Model Stack\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Key Design Principles",
+      "body": "Key Design Principles\n2\nLayering\n1\nAbstraction\nNetwork Model Stack\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Abstraction",
+      "body": "Abstraction\nDo you think about the radio waves transmitting the data?\nWhen you send a text message\nOr the antennas at the cell tower? Or the complex binary code being sent?\nNetwork Model Stack\nAbstraction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Abstraction",
+      "body": "Abstraction\nAbstraction means we use an interface or service without worrying about how it works behind the scenes. We only care about what it does, not how it's implemented\nNetwork Model Stack\nAbstraction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "1",
+      "body": "1\nAbstraction\n2\nLayering\nNetwork Model Stack\nKey Design Principles",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Breaking a complex system (like a network) into smaller, manageable chunks calle",
+      "body": "Breaking a complex system (like a network) into smaller, manageable chunks called layers each with a defined role, to simplify complex tasks, we break them down into smaller, manageable parts, each part is called a layer\nNetwork Model Stack\nLayering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "The power of this model lies in simplicity : ",
+      "body": "The power of this model lies in simplicity : \nEach layer focuses only on its specific task\nA layer provides a service to the layer above it and relies on the services of the layer below it\nImportantly, it doesn't need to know how the layers above and below it work\nNetwork Model Stack\nLayering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Real-World Example",
+      "body": "Real-World Example\nLayer 1: \nThe t-shirt is the raw data, the information you want to send, you put that t-shirt in a box and seal it up the box is a simple container, a frame\nNetwork Model Stack\nAbstraction and Layering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Layer 2: ",
+      "body": "Layer 2: \nThis layer's job is just to get the box to the local distribution center.It doesn’t care what’s inside, it just moves it to the next point\nNetwork Model Stack\nAbstraction and Layering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Layer 3: ",
+      "body": "Layer 3: \nAt the local distribution center, they look at the destination address on the outside of the box. They put that box onto a truck heading for a specific city\nNetwork Model Stack\nAbstraction and Layering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Layer 4: ",
+      "body": "Layer 4: \nAt the final distribution center, a delivery driver takes the box to the exact street address.\nThis driver's job is to ensure the package arrives safely and reliably at the right front door\nNetwork Model Stack\nAbstraction and Layering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Why do we need models ?",
+      "body": "Why do we need models ?\nMillions of devices from different manufacturers and software need to communicate effectively\nWithout a common framework, ensuring compatibility would be difficult and prone to errors\nNetwork Model Stack\nWhy Models Exist?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Solution: Reference Models",
+      "body": "Solution: Reference Models\nOSI Model (7 layers)\nTCP/IP Model (4 layers)\n1\n2\nNetwork Model Stack\nAbstraction and Layering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Benefit:",
+      "body": "Benefit:\n1\n2\n3\nDivide communication into layers\nAllow developers to focus on one layer\nCrucially, it doesn't care how the layer below it does its job\nNetwork Model Stack\nAbstraction and Layering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Each layer has a job, One holds the patty, one adds flavor, one keeps everything",
+      "body": "Each layer has a job, One holds the patty, one adds flavor, one keeps everything together\nEach layer has a specific job \nThe two most popular models are the OSI and TCP/IP models\nUnderstanding Network Models\nThe Layered Approach",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Understanding Network Models",
+      "body": "Understanding Network Models",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Application Layer",
+      "body": "Application Layer\nPresentation Layer\nSession Layer\nTransport Layer\nNetwork Layer\nData Link Layer\nPhysical Layer\nUnderstanding Network Models\nOSI Model (7 Layers)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Application Layer",
+      "body": "Application Layer\nPresentation Layer\nSession Layer\nTransport Layer\nNetwork Layer\nData Link Layer\nPhysical Layer\nDeals with end-user services and user interactions\nFormats, encrypts, and compresses data\nMaintains and synchronizes active communication between devices\nManages data transmission, ensuring reliable and error-free delivery\nDecides the path for data and handles addressing\nEnsures reliable data transfer with error detection and correction\nTransmits data over physical media\nUnderstanding Network Models\nOSI Model (7 Layers)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "WhatsApp creates your message. You typed 'Hi'",
+      "body": "WhatsApp creates your message. You typed 'Hi'\nApplication Layer\nPresentation Layer\nSession Layer\nTransport Layer\nNetwork Layer\nData Link Layer\nPhysical Layer\nYour message is encrypted and formatted here to ensure privacy\nThis ensures you're logged in and connected\nMessage divided into segments for guaranteed delivery.\nIP address of your friend’s device is attached\nMessage prepared for local network. MAC address added.\nThe message is converted into 1s and 0s — electric signals, radio waves\nUnderstanding Network Models\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "The TCP/IP Model simplifies the OSI Model’s ",
+      "body": "The TCP/IP Model simplifies the OSI Model’s \n7 layers into 4, making it more practical, efficient, and better  suited for implementation\nUnderstanding Network Models\nTCP/IP Model(4 Layers)\nApplication Layer\nTransport Layer\nInternet Layer\nLink Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Application Layer",
+      "body": "Application Layer\nTransport Layer\nInternet Layer\nLink Layer\nManages user interactions, encryption, and sessions (combines OSI’s top three layers)\nEnsures reliable delivery, using protocols like TCP or UDP\n Handles routing and addressing (like OSI’s Network Layer)\nCombines OSI’s Data Link and Physical Layers\nUnderstanding Network Models\nTCP/IP Model(4 Layers)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Application Layer",
+      "body": "Application Layer\nTransport Layer\nInternet Layer\nLink Layer\nWhatsApp creates your message. You typed 'Hi'\nMessage divided into segments for guaranteed delivery\nAdds your friend’s IP address to send it to the right device\nAdds the MAC address and prepares the message for transmission over Wi-Fi or cable\nUnderstanding Network Models\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Understanding Network Models",
+      "body": "Understanding Network Models\nOSI vs TCP/IP\nApplication Layer\nPresentation Layer\nSession Layer\nTransport Layer\nNetwork Layer\nData link Layer\nPhysical Layer\nApplication Layer\nTransport Layer\nInternet Layer\nLink Layer\nTCP/IP\nOSI",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Understanding Network Models",
+      "body": "Understanding Network Models\nOSI vs TCP/IP\nThe OSI model offers a more detailed breakdown, whereas TCP/IP is preferred in practice due to its simplicity and efficiency in actual network environments",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Importance of Layers",
+      "body": "Importance of Layers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Role of each Layer",
+      "body": "Importance of Layers\nTOP\nMIDDLE\nBOTTOM\nApplication - \u000bHow applications use the network\nTransport & Network- \u000bHow data gets delivered reliably and routed correctly\nData Link & Physical – \u000bHow data is formatted and sent across the physical medium",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Importance of Layers",
+      "body": "Importance of Layers\nWhy These Layers Matter?\nEach Layer Has a Role",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Web Request & Network Models",
+      "body": "Web Request & Network Models\nKey Takeaways (PART 1/2)\nWeb Request Journey\nClient,DNS Lookup\nTCP and  TLS Handshake\nOverview of Web Page Loading\nNetwork Model Stack\nAbstraction and Layering \nWhy Models Exist",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Web Request & Network Models",
+      "body": "Web Request & Network Models\nKey Takeaways (PART 2/2)\nUnderstanding Network Models\nOSI Model Vs TCP/IP Model\nImportance of Layers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Web Essentials: WWW, HTTP & DNS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1GLNvLxO-VgfbJ3Dz12S3TnX_VwZIdzqwZIspf0WWyAU/edit"
+}

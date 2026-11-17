@@ -1,0 +1,535 @@
+{
+  "session_no": 11,
+  "source_file": "CN — session 11",
+  "deck_title": "CN — session 11",
+  "n_slides": 67,
+  "summary": "\n    - Slide 2: Data Link Layer\n    - Slide 3: ICMP in Action\n    - Slide 4: ICMP in Action\n    - Slide 5: Agenda\n    - Slide 6: Data Link Layer \n    - Slide 7: From IP to the Wire — The Missing Link\n    - Slide 8: Transport to Data Link Layers\n    - Slide 9: Why the Data Link Layer Exists?\n    - Slide 10: The Data Link Layer\n    - Slide 11: The Data Link Layer\n    - Slide 12: The Data Link Layer\n    - Slide 13: The Data Link Layer\n    - Slide 14: The Data Link Layer\n    - Slide 15: Framing\n    - Slide 16: Framing — Packaging Bits for the Physical Layer\n    - Slide 17: Framing — Packaging Bits for the Physical Layer\n    - Slide 18: Framing — Packaging Bits for the Physical Layer\n    - Slide 19: Framing — Packaging Bits for the Physical Layer\n    - Slide 20: 1. Character Count — Simplest Framing Method\n    - Slide 21: 1. Character Count — Simplest Framing Method\n    - Slide 22: 1. Character Count — Simplest Framing Method\n    - Slide 23: 1. Character Count — Simplest Framing Method\n    - Slide 24: 1. Character Count — Simplest Framing Method\n    - Slide 25: 1. Character Count — Simplest Framing Method\n    - Slide 26: 1. Character Count — Simplest Framing Method\n    - Slide 27: 2. Byte Stuffing — Using Delimiters to Mark Frames\n    - Slide 28: 2. Byte Stuffing — Using Delimiters to Mark Frames\n    - Slide 29: 2. Byte Stuffing — Using Delimiters to Mark Frames\n    - Slide 30: 2. Byte Stuffing — Using Delimiters to Mark Frames\n    - Slide 31: 2. Byte Stuffing — Using Delimiters to Mark Frames\n    - Slide 32: 2. Byte Stuffing — Using Delimiters to Mark Frames\n    - Slide 33: 2. Byte Stuffing — Using Delimiters to Mark Frames\n    - Slide 34: 3. Bit Stuffing\n    - Slide 35: 3. Bit Stuffing\n    - Slide 36: 3. Bit Stuffing\n    - Slide 37: 3. Bit Stuffing\n    - Slide 38: 3. Bit Stuffing\n    - Slide 39: Framing Methods\n    - Slide 40: Quiz Time!\n    - Slide 41:  MAC Address \n    - Slide 42: MAC Address — The Physical Address of a Device\n    - Slide 43: MAC Address — The Physical Address of a Device\n    - Slide 44: MAC Address — The Physical Address of a Device\n    - Slide 45: MAC Address — The Physical Address of a Device\n    - Slide 46: MAC Address — The Physical Address of a Device\n    - Slide 47: MAC Address — The Physical Address of a Device\n    - Slide 48: MAC Address — The Physical Address of a Device\n    - Slide 49: MAC Address — The Physical Address of a Device\n    - Slide 50: ARP \n    - Slide 51: ARP — What Happens at the Frame Level?\n    - Slide 52: ARP — What Happens at the Frame Level?\n    - Slide 53: ARP — What Happens at the Frame Level?\n    - Slide 54: ARP — What Happens at the Frame Level?\n    - Slide 55: ARP — What Happens at the Frame Level?\n    - Slide 56: ARP — What Happens at the Frame Level?\n    - Slide 57: ARP — What Happens at the Frame Level?\n    - Slide 58: ARP at Every Hop\n    - Slide 59: ARP at Every Hop\n    - Slide 60: ARP at Every Hop\n    - Slide 61: ARP at Every Hop\n    - Slide 62: ARP at Every Hop\n    - Slide 63: Quiz Time!\n    - Slide 64: Data Link Layer | Part 1\n    - Slide 65: Data Link Layer | Part II",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Data Link Layer",
+      "body": "Data Link Layer\nPart I",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "ICMP in Action",
+      "body": "ICMP in Action\nHierarchical Routing & BGP\nMulticasting \nMulticast, Broadcast Routing\nVirtual Circuit Networks\nIPv6 \nNeed, Address Format & Types, IPv4 vs IPv6\nTransition Strategies\nHierarchical Routing & BGP\nMulticasting – Multicast, Broadcast Routing\nVirtual Circuit Networks\nIPv6 — Need, Address Format & Types, IPv4 vs IPv6 \nTransition Strategies\nICMP Basics\nOverview\nImportance\nRole \nICMP Messages\nMessage Structure\nError Reporting Messages types \nQuery Types : Echo Request, Echo Reply",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "ICMP in Action",
+      "body": "ICMP in Action\nHierarchical Routing & BGP\nMulticasting \nMulticast, Broadcast Routing\nVirtual Circuit Networks\nIPv6 \nNeed, Address Format & Types, IPv4 vs IPv6\nTransition Strategies\nHierarchical Routing & BGP\nMulticasting – Multicast, Broadcast Routing\nVirtual Circuit Networks\nIPv6 — Need, Address Format & Types, IPv4 vs IPv6 \nTransition Strategies\nPing & Traceroute\nHow do they work internally?\nNetwork Diagnostic Scenarios",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Data Link Layer | Part I\nFraming\nData Link Layer\nRole & Responsibilities\nMAC Address\nCharacter Count, Byte Stuffing, Bit Stuffing\nPhysical Addressing (48-bit)\nARP\nAddress Resolution Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Data Link Layer ",
+      "body": "Data Link Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "From IP to the Wire — The Missing Link",
+      "body": "Why the Data Link Layer Exists?\nIP knows where to send a packet. But how does a packet actually travel from one device to its immediate neighbor,  across a wire, a WiFi signal, or a cable?\nThat is exactly what the Data Link Layer solves\nWired connection\nWifi signal\nCable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Transport to Data Link Layers",
+      "body": "Layer\nTransport Layer\nDelivery Type\nProcess to Process\nNetwork Layer\nHost to Host\nData Link Layer\nNode to Node\nAddress Used\nPort Number\nUnit\nSegment/Datagram\nPacket\nMAC Address\nFrame\nIP Address\nOverview",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Why the Data Link Layer Exists?",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "The Data Link Layer",
+      "body": "Definition\nPhysical layer\nData Link layer\nTransport layer\nNetwork layer\nApplication layer\n1\n2\n3\n4\n5\n5\n4\n3\n2\n1\nData Link Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "The Data Link Layer",
+      "body": "Key Functions\n3. Error Detection\n1. Framing\n2. Physical Addressing\nAdds a checksum (CRC) in \u000bthe frame trailer to detect transmission errors\nWraps IP packets into frames with headers and trailers\nUses MAC addresses to identify sender and receiver on the local network\n4. Flow Control\nEnsures a fast sender does not overwhelm a slow receiver\nDecides which device transmits when multiple devices share \u000bthe same medium\n5. Access Control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "The Data Link Layer",
+      "body": "Sub Layer\nInterfaces with the Network Layer above\nHandles flow control and error notification\nProvides a consistent interface regardless of \u000bthe physical medium\nLLC — Logical Link Control (Upper Sub-layer):\nThe Data Link Layer is split into two sub-layers:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "The Data Link Layer",
+      "body": "Sub Layer\nInterfaces with the Physical Layer below\nHandles physical addressing (MAC addresses)\nControls when a device is allowed to transmit on \u000bthe shared medium (access control)\nMAC — Medium Access Control (Lower Sub-layer):\nThe Data Link Layer is split into two sub-layers:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "The Data Link Layer",
+      "body": "Analogy\nAnalogy:\nThe Data Link Layer is like the local courier service within a city. The Network Layer (IP) is the national logistics company that plans a package's journey from source to destination across cities. But the local courier handles each delivery within the city — picks up the package, checks local addresses (MAC), avoids traffic (access control), reports if a delivery failed (error detection). Different job, same package.\nData Link Layer\nNetwork Layer (IP)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Framing",
+      "body": "Framing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Framing — Packaging Bits for the Physical Layer",
+      "body": "Why Frames Exist?\nThe Physical Layer transmits raw bits — a continuous stream of 0s and 1s. It has no concept of where one message ends and another begins\nFraming solves this problem. The Data Link Layer groups bits into meaningful units called frames. A frame has a defined start, a body (the payload), and a defined end — so the receiver knows exactly where each unit begins and ends",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Framing — Packaging Bits for the Physical Layer",
+      "body": "A frame typically contains:\nFrame Component\nHeader\nPayload / Data\nTrailer\nContents\nDestination MAC Address, Source MAC Address, Type/Length field\nError Detection Code (e.g., CRC)\nThe Network Layer Packet (IP Datagram)\nWhy Frames Exist",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Framing — Packaging Bits for the Physical Layer",
+      "body": "Uses a field in the header to state how many characters are in the frame\nCharacter Count\nUses special start/end delimiter bytes; inserts an escape byte when the delimiter appears in data\nByte Stuffing \u000b(Character Stuffing)\nUsed in bit-oriented protocols; inserts a 0 after every five consecutive 1s to prevent false frame delimiters\nBit Stuffing\nWhy Frames Exist",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Framing — Packaging Bits for the Physical Layer",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "1. Character Count — Simplest Framing Method",
+      "body": "Count the Characters, Build the Frame\nIn the Character Count method, the header of each frame contains a count field that specifies the total number of characters (bytes) in the frame, including the count field itself",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "1. Character Count — Simplest Framing Method",
+      "body": "Count the Characters, Build the Frame\nHow it works?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "1. Character Count — Simplest Framing Method",
+      "body": "Count the Characters, Build the Frame\n5\nA\nB\nC\nD\nFrame 1:\n4\nE\nF\nG\nFrame 2:\nCount = 5 (including the count byte itself)\nCount = 4\nExample:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "1. Character Count — Simplest Framing Method",
+      "body": "Count the Characters, Build the Frame\nCharacter Count Framing Structure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "1. Character Count — Simplest Framing Method",
+      "body": "Critical Problem — Error in Count Field:\nIf the count field itself is corrupted during transmission, the receiver reads the wrong count.\nIt then grabs the wrong number of bytes, completely losing track of where frames begin and end.\nThis is called framing error or loss of frame synchronization — and it cascades: all subsequent frames are misread.\nThis fatal weakness is why Character Count is rarely used in practice for reliable communication.\nCount the Characters, Build the Frame\nCritical Problem, Error in Count Field:\nIf the count field is corrupted, the receiver reads \u000bthe wrong count\nIt then grabs the wrong number of bytes, completely losing track of where frames begin and end",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "1. Character Count — Simplest Framing Method",
+      "body": "Count the Characters, Build the Frame\nCritical Problem, Error in Count Field:\nThis is called framing error or loss of frame synchronization, and it cascades: all subsequent frames are misread\nThis fatal weakness is why Character Count is \u000brarely used in practice for reliable communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "1. Character Count — Simplest Framing Method",
+      "body": "Analogy\nAnalogy:\nCharacter Count is like a book with chapter lengths listed at the start: 'Chapter 1: 12 pages, Chapter 2: 8 pages...' If the page count for Chapter 1 is misprinted, the reader starts Chapter 2 mid-sentence and every chapter after is also misaligned. One error corrupts everything downstream.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "2. Byte Stuffing — Using Delimiters to Mark Frames",
+      "body": "FLAG, ESC, and the Art of Escaping\nFLAG Byte\nMarks the START and END of each frame (e.g., 01111110 in binary or a reserved ASCII value)\n1\nESC Byte\nAn escape byte used when the FLAG pattern or ESC byte itself appears inside the data payload\n2\nByte Stuffing (also called Character Stuffing) uses special reserved bytes to mark the boundaries of frames:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "2. Byte Stuffing — Using Delimiters to Mark Frames",
+      "body": "FLAG, ESC, and the Art of Escaping\nThe Problem this Solves:\nIf the data payload happens to contain the same bit pattern as the FLAG byte, the receiver would wrongly think the frame ended. Byte Stuffing prevents this",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "2. Byte Stuffing — Using Delimiters to Mark Frames",
+      "body": "FLAG, ESC, and the Art of Escaping\nHow Byte Stuffing Works?\nThe sender scans the data payload before sending\nIf a FLAG byte appears in the data → insert an ESC byte before it\nIf an ESC byte appears in the data → insert another ESC byte before it\nReceiver reverses the process: sees ESC → treats the next byte as data \u000b(not a delimiter), removes the ESC",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "2. Byte Stuffing — Using Delimiters to Mark Frames",
+      "body": "FLAG, ESC, and the Art of Escaping\nSituation in Data\nFLAG byte in data\nWhat Sender Does\nInsert ESC before FLAG\nESC byte in data\nInsert ESC before ESC\nNormal data byte\nSend as-is\nWhat Receiver Does\nSee ESC → treat next byte as data, remove ESC\nReceive as-is\nSee ESC → treat next byte as data, remove ESC",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Situation in Data",
+            "What Sender Does",
+            "What Receiver Does"
+          ],
+          [
+            "FLAG byte in data",
+            "Insert ESC before FLAG",
+            "See ESC → treat next byte as data, remove ESC"
+          ],
+          [
+            "ESC byte in data",
+            "Insert ESC before ESC",
+            "See ESC → treat next byte as data, remove ESC"
+          ],
+          [
+            "Normal data byte",
+            "Send as-is",
+            "Receive as-is"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "2. Byte Stuffing — Using Delimiters to Mark Frames",
+      "body": "Flag\nESC\nFlag\nHeader\nESC\nFlag\nESC\nESC\nFlag\nTrailer\nFlag\nHeader\nESC\nFlag\nESC\nESC\nFlag\nTrailer\nFlag\nESC\nFLAG, ESC, and the Art of Escaping\nByte Stuffing\nByte Un - Stuffing\nSending Machine\nReceiving Machine\nData Link Frame Sent\nData Link Frame Received\nData from Network Layer\nData to Network Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "2. Byte Stuffing — Using Delimiters to Mark Frames",
+      "body": "FLAG, ESC, and the Art of Escaping\nDrawback of Byte Stuffing:\nIt is a character-oriented technique — works well for text data\nIf the data contains many FLAG or ESC patterns, the stuffed frame becomes significantly larger than the original data\nNot ideal for binary data where any byte pattern can appear",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "2. Byte Stuffing — Using Delimiters to Mark Frames",
+      "body": "Analogy\nAnalogy:\nByte Stuffing is like writing a legal document where certain words are reserved keywords — 'END', 'ESC'. If the document text needs to use the word 'END', the lawyer puts a special marker before it: [ESCAPE] END — telling the reader: 'this is not the end of the document, it is just the word end in the text.' The reader knows to look for the escape marker and treat the next word as regular content.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "3. Bit Stuffing",
+      "body": "Introduction\nBit Stuffing is used in bit-oriented protocols \u000b(like HDLC, High-Level Data Link Control). Instead of working with bytes, it works at the individual bit level\nFlag Pattern: 01111110 (six consecutive 1s surrounded by 0s)\nThis specific pattern marks the start and end of a frame",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "3. Bit Stuffing",
+      "body": "Introduction\nProblem\nIf the data payload contains the bit pattern 01111110 or even just six consecutive 1s, the receiver would wrongly detect a frame boundary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "3. Bit Stuffing",
+      "body": "Introduction\nHow Bit Stuffing Works:\nSender Rule: After every five consecutive 1s in the data payload, the sender automatically inserts a 0\nReceiver Rule: After every five consecutive 1s, if the next bit is 0, remove it (it was stuffed). If the next bit is 1 followed by 0 → it is the FLAG (frame end). If the next bit is 1 followed by 1 → it is an error (abort sequence)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "3. Bit Stuffing",
+      "body": "Example:\nIntroduction\nStuffed Frame\nStuffed Data\n110111111001111101\nRecovered Network \u000bLayer Data\nDestuffed Data\nTransmission\nPhysical Transmission\nReceiving Process\nBit UN-Stuffer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "3. Bit Stuffing",
+      "body": "Analogy\nAnalogy:\nBit Stuffing is like a rule in Morse code: if you ever accidentally tap five dots in a row, you must insert a deliberate pause (0) so the listener knows the next dots are still part of the message — not the special 'end of message' signal. The listener knows the rule and removes the pause when replaying the message.\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Framing Methods",
+      "body": "Overview of 3 framing methods\nMethod\nCharacter Count\nWorks At\nCharacter level\nByte Stuffing\nByte level\nBit Stuffing\nBit level\nDelimiter\nCount field in header\nEscape Mechanism\nNone\nESC byte before FLAG/ESC in data\n01111110 flag\nInsert 0 after five consecutive 1s\nFLAG byte\nUsed In\nRarely used\nPPP\nHDLC, USB\nOverview",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": " MAC Address ",
+      "body": "MAC Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "48-bit Hardware Address\nA MAC address (Media Access Control Address) is a unique hardware identifier assigned to every Network Interface Card (NIC). It is a physical address, burned into the hardware at the time of manufacture",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "48-bit Hardware Address\nKey Properties of a MAC Address\nSize: 48 bits (6 bytes)\nFormat: Written as six pairs of hexadecimal digits \u000bseparated by colons or hyphens. Example: 00:1A:2B:3C:4D:5E\nUniqueness: Every NIC in the world is assigned a unique MAC address\nScope: MAC addresses are local, used only within the same network segment (LAN). They are not routed across networks\nLayer: Data Link Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "48-bit Hardware Address\n1st Octet\n2nd Octet\n3rd Octet\n4th Octet\n5th Octet\n6th Octet\n6 octets\nb7\nb6\nb5\nb4\nb3\nb2\nb1\nb0\nor\n0: Unicast\n1: Multicast\n0: Globally unique\n1: Locally administered",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "Structure of a MAC Address (48 bits):\nBits\nBits 47–24 (first 3 bytes)\nPart\nOUI — Organizationally Unique Identifier\nBits 23–0 (last 3 bytes)\nDevice Identifier\nDescription\nAssigned by IEEE to the manufacturer (e.g., Intel, Cisco, Apple)\nAssigned by the manufacturer — unique per device\n48-bit Hardware Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "48-bit Hardware Address\nTypes of MAC Addresses\nUnicast\nMulticast\nBroadcast\nOne-to-one Communication\nOne-to-many Communication\nOne-to-all Communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "Special MAC Addresses:\n48-bit Hardware Address\nFF:FF:FF:FF:FF:FF\nBroadcast address. Sent to all devices on the local network\n01:xx:xx:xx:xx:xx\nMulticast address. Sent to a group of devices\nUnicast\nAny MAC address where the least significant bit of \u000bthe first byte is 0. Sent to one specific device",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "MAC vs IP Address — Key Difference:\n48-bit Hardware Address\nProperty\nMAC Address\nData Link Layer (Layer 2)\nManufacturer (hardware)\nLocal (same LAN only)\nIP Address\nNetwork administrator / DHCP\nFixed (burned in hardware)\n48 bits — hexadecimal\nGlobal (across networks)\nChanges\nAssigned by\nLayer\nNetwork Layer (Layer 3)\nScope\nFormat\n32 bits (IPv4) — dotted decimal\nCan change (dynamic IP)",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Property",
+            "MAC Address",
+            "IP Address"
+          ],
+          [
+            "Layer",
+            "Data Link Layer (Layer 2)",
+            "Network Layer (Layer 3)"
+          ],
+          [
+            "Assigned by",
+            "Manufacturer (hardware)",
+            "Network administrator / DHCP"
+          ],
+          [
+            "Scope",
+            "Local (same LAN only)",
+            "Global (across networks)"
+          ],
+          [
+            "Changes?",
+            "Fixed (burned in hardware)",
+            "Can change (dynamic IP)"
+          ],
+          [
+            "Format",
+            "48 bits — hexadecimal",
+            "32 bits (IPv4) — dotted decimal"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 49,
+      "title": "MAC Address — The Physical Address of a Device",
+      "body": "Analogy:\nA MAC address is like the serial number of a car — stamped into the chassis at the factory, unique worldwide, and never changes. An IP address is like a license plate — assigned by the government (your ISP or network admin), tied to where the car is registered, and can change when the car moves to a different state. The serial number identifies the car itself; the license plate identifies where it is registered.\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "ARP ",
+      "body": "ARP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "ARP — What Happens at the Frame Level?",
+      "body": "What the Wire Actually Carries?\nARP does not travel alone — it is wrapped inside \u000ba Data Link Layer frame just like any other message\nWhat does an ARP message actually look like inside an Ethernet frame?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "ARP — What Happens at the Frame Level?",
+      "body": "What the Wire Actually Carries?\nHardware Type\nProtocol Type\nOperation \u000b1: Request    2: Reply\nProtocol Length\nHardware Length\nSender Hardware Address\nSender Protocol Address\nTarget Hardware Address\nTarget Protocol Address\n32 bits",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "ARP — What Happens at the Frame Level?",
+      "body": "What the Wire Actually Carries?\nARP Message Format (inside an Ethernet frame):\nField\nSize\n2 bytes\n2 bytes\n1 byte\nDescription\nType of logical address — 0x0800 = IPv4\n1 byte\n2 bytes\nLength of MAC address — 6 bytes\nProtocol Address Length\nProtocol Type\nHardware Type\nType of physical network — 1 = Ethernet\nHardware Address Length\nOperation\n1 = ARP Request, 2 = ARP Reply\nLength of IP address — 4 bytes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "ARP — What Happens at the Frame Level?",
+      "body": "ARP Message Format (inside an Ethernet frame):\nWhat the Wire Actually Carries?\nARP Message Format (inside an Ethernet frame):\nField\nSize\n6 bytes\n4 bytes\n6 bytes\nDescription\nIP of the device sending this ARP message\n4 bytes\nIn Request: all zeros (unknown). In Reply: filled in\nTarget IP Address\nSender IP Address\nSender MAC Address\nMAC of the device sending this ARP message\nTarget MAC Address\nIP being queried (Request) or confirmed (Reply)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "ARP — What Happens at the Frame Level?",
+      "body": "What the Wire Actually Carries?\nKey observation — In an ARP Request\nThe Target MAC Address field is 00:00:00:00:00:00 — all zeros. This is because the whole point of the request is that the sender does NOT know the target MAC yet\nKey observation — In an ARP Reply\nThe Target MAC Address field is now filled in with the actual MAC. This is the answer being returned",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "ARP — What Happens at the Frame Level?",
+      "body": "What the Wire Actually Carries?\nThe Ethernet frame carrying the ARP Request uses:\nDestination MAC: FF:FF:FF:FF:FF:FF \u000b(broadcast everyone receives it)\nEtherType field: 0x0806 (this tells the receiver: \u000bthe payload is an ARP message, not IP)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "ARP — What Happens at the Frame Level?",
+      "body": "Analogy\nEthernet Frame",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "ARP at Every Hop",
+      "body": "Source IP and Destination IP → never change end-to-end \u000bacross the entire journey\nWhy MAC Addresses Keep Changing\nSource MAC and Destination MAC → change at every single hop\nThis is one of the most important and most misunderstood concepts in networking",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "ARP at Every Hop",
+      "body": "Why MAC Addresses Keep Changing\nMAC addresses are local. They are only meaningful on one network segment. As soon as a packet crosses a router, the router strips \u000bthe old frame (and its MAC addresses), looks at the IP header, \u000bmakes a routing decision, and builds a brand new frame with \u000bnew MAC addresses for the next segment\nARP is what makes this possible at every hop",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "ARP at Every Hop",
+      "body": "Example\nStep-by-Step Example — Laptop to Web Server across two routers:\nHop\nSource MAC\nLaptop MAC\nRouter A's outgoing MAC\nRouter B's outgoing MAC\nDestination MAC\nRouter B's interface MAC\nWeb Server MAC\nRouter A → Router B\nLaptop → Router A\nRouter A's interface MAC\nRouter B → Web Server\nSource IP\n192.168.1.10\n192.168.1.10\n192.168.1.10\nDestination IP\n93.184.216.34\n93.184.216.34\n93.184.216.34",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "ARP at Every Hop",
+      "body": "This is why ARP needs to run at every router on the path — not just at the source\nWhy MAC Addresses Keep Changing\nAt each hop, the router:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "ARP at Every Hop",
+      "body": "Analogy\nAnalogy: Imagine a relay race. The packet (IP packet) carries the same runner numbers (source IP, destination IP) all through the race. But the person holding the packet (MAC address) changes at every exchange point (router). Before each handoff, the runners ask, \"Are you the next runner? What’s your lane number?\" (ARP). The packet’s label stays the same, but the person holding it keeps changing..",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Data Link Layer | Part 1",
+      "body": "Data Link Layer\nRole & Responsibilities\nFraming\nCharacter Count, Byte Stuffing, Bit Stuffing\nMAC Address\nPhysical Addressing (48-bit)\nARP\nAddress Resolution Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Data Link Layer | Part II",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1QQ2skbD-_r5MtQPzgb13d_lltNlX2uPACZUeJcZ-Cew/edit"
+}

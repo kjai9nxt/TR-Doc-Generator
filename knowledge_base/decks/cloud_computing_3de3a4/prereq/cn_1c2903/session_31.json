@@ -1,0 +1,346 @@
+{
+  "session_no": 31,
+  "source_file": "CN — session 31",
+  "deck_title": "CN — session 31",
+  "n_slides": 48,
+  "summary": "\n    - Slide 2: Fundamentals of Computer Networks\n    - Slide 3: Agenda for Today’s Session\n    - Slide 4: Computer Networks\n    - Slide 5: COMPUTER\n    - Slide 6: A Computer Network is a system of interconnected devices like computers, printer\n    - Slide 7: Importance & Mechanism\n    - Slide 8: Ensures everything is connected\n    - Slide 9: Ensuring Safe and Error-Free Delivery\n    - Slide 10: How Do They Achieve This?\n    - Slide 11: Networking Basics \n    - Slide 12: Internet:\n    - Slide 13: 1969\n    - Slide 14: NODES\n    - Slide 15: Nodes communicate through links\u000b\n    - Slide 16: ANALOGY\n    - Slide 17: Client:\n    - Slide 18: A set of rules or a common digital language that two devices follow to communica\n    - Slide 19: A set of rules or a common digital language that two devices follow to communica\n    - Slide 20: Examples of Protocols\n    - Slide 21: What is a Standard ?\n    - Slide 22: Why Standards Are Needed ?\n    - Slide 23: Examples of Standards\n    - Slide 24: An IP address is a unique identifier for each device connected to the internet\n    - Slide 25: Networking Basics\n    - Slide 26: Networking Basics\n    - Slide 27: IP Address\n    - Slide 28: IP Address\n    - Slide 29: Domain Name System (DNS)\n    - Slide 30:  Connects different networks and directs data traffic \n    - Slide 31: Networking Basics\n    - Slide 32: Quiz Time!\n    - Slide 33: Networking Essentials\n    - Slide 34: Data is Broken Into Small Pieces (Packets)\n    - Slide 35: Based on Area\n    - Slide 36: Network Topology refers to the arrangement or layout of devices in a network, sh\n    - Slide 37: Star Topology\n    - Slide 38: Networking Essentials\n    - Slide 39: Networking Essentials\n    - Slide 40: Networking Essentials\n    - Slide 41: Networking Essentials\n    - Slide 42: Networking Essentials\n    - Slide 43: Fundamentals of Computer Networks\n    - Slide 44: Quiz Time!\n    - Slide 45: Fundamentals of Computer Networks\n    - Slide 46: Web Request & Network Models",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Fundamentals of Computer Networks",
+      "body": "Fundamentals of Computer Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Agenda for Today’s Session",
+      "body": "Agenda for Today’s Session\nFundamentals of Computer Networks\nImportance & Mechanism\nNetworking Basics\nComputer Networks\nNetworking Essentials",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Computer Networks",
+      "body": "Computer Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "COMPUTER",
+      "body": "COMPUTER\nNETWORK\nSmartphones\nSmart TVs\nServers\nTablets\nComputer Networks\nFrom Computers to Connections",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "A Computer Network is a system of interconnected devices like computers, printer",
+      "body": "A Computer Network is a system of interconnected devices like computers, printers, and servers that can communicate with each other and share resources\nComputer Networks\nWhat is Computer Network?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Importance & Mechanism",
+      "body": "Importance & Mechanism",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Ensures everything is connected",
+      "body": "Ensures everything is connected\nEnhanced Communication & Collaboration\nResource & Data Sharing\nComputer Networks\nWhy is it important?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Ensuring Safe and Error-Free Delivery",
+      "body": "Ensuring Safe and Error-Free Delivery\nComputer Networks\nAnalogy\nDelivering It to the Correct House\nChoosing the Best Route for Sending the Letter\nOrganizing and Preparing It for Delivery\nWriting the Letter Properly",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "How Do They Achieve This?",
+      "body": "Mechanism\nFollowing Protocols\nUsing Layered \u000bArchitecture\nRouting Data \u000bEfficiently\nAddressing Each \u000bDevice\nHandling Errors \u000b& Security",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Networking Basics ",
+      "body": "Networking Basics",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Internet:",
+      "body": "Internet:\nA global network that connects millions of devices\nAllows devices like computers, phones, and sensors to communicate\nNo single computer controls it. It’s made up of many connected networks\nNetworking Basics\nInternet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "1969",
+      "body": "1969\n1972\n1983\n1989\n1990\n1991\nARPANET (Earliest network) connects \n4 universities\n ARPANET introduces email\nARPANET adopts TCP/IP\nTim Berners-Lee develops the World Wide Web\nARPANET is shut down\n World Wide Web (WWW) becomes publicly available\nHistory of Internet:\nNetworking Basics\nInternet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "NODES",
+      "body": "NODES\nDevices that send, receive, or forward data\nEnd devices\nNetwork devices\nComputers\nSmartphones\nTablets\nRouters\nswitches\nservers\nWired\nWireless\nEthernet\nfiber optics\nWi-Fi\nBluetooth\nSatellite\nLINKS\nConnections between \nnodes\nNetworking Basics\nNodes and Links",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Nodes communicate through links\u000b",
+      "body": "Nodes communicate through links\u000b\nLinks can be:\u000b\nPoint-to-point (two nodes only)\u000b\nMultipoint (shared by many nodes)\nHow they work together ?\nPoint-to-point\nMultipoint\nNetworking Basics\nNodes and Links",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "ANALOGY",
+      "body": "ANALOGY\nNodes are like people, \nlinks are like roads\nWithout roads, people can’t meet\nRoad quality affects travel speed and reliability\nNetworking Basics\nNodes and Links",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Client:",
+      "body": "Client:\nA client is any device that requests data or a service - like your phone, laptop, or browser\nServer: \nIt is a computer or program that provides those data or services\nClient \nServer \nRequest \nResponse \nClient makes a request the server processes it - and sends back the response\nThis relationship is called the Client-Server Architecture\nNetworking Basics\nClient Server Architecture",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "A set of rules or a common digital language that two devices follow to communica",
+      "body": "A set of rules or a common digital language that two devices follow to communicate and understand each other correctly\n❌ Message not understood\nFriend A writes in French\nFriend B doesn’t know French\nNetworking Basics\nProtocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "A set of rules or a common digital language that two devices follow to communica",
+      "body": "A set of rules or a common digital language that two devices follow to communicate and understand each other correctly\n✅ Message understood\nNetworking Basics\nProtocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Examples of Protocols",
+      "body": "Networking Basics\nFor loading websites.\nFor transferring files.\nThe backbone ensuring reliable data transfer across networks.\nHTTP\nFTP\nTCP/IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "What is a Standard ?",
+      "body": "Networking Basics\nA standard is a set of specifications/agreements adopted to ensure that hardware, software, and protocols work together globally",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Why Standards Are Needed ?",
+      "body": "Networking Basics\nTo ensure devices and software from different companies can communicate smoothly\nTo ensure reliable and predictable communication\nTo allow global compatibility and network scalability\nTo provide common rules for protocols and network operations",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Examples of Standards",
+      "body": "Networking Basics\nIEEE / ISO standards ensure all devices follow the same rules so they can work together easily\nExample: Wi-Fi routers from different brands can connect to any laptop or phone because they follow the same Wi-Fi standard",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "An IP address is a unique identifier for each device connected to the internet",
+      "body": "An IP address is a unique identifier for each device connected to the internet\nNetworking Basics\nIP Address\nIP address\nInternet\nUnique identifier\nConnected",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Networking Basics",
+      "body": "Networking Basics\nAnalogy\nWe write an address so the postman knows where to deliver the letter",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Networking Basics",
+      "body": "Networking Basics\nIP Address\nTwo types of IP addresses:\nPublic \nPrivate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "IP Address",
+      "body": "IP Address\n1. Public IP Address\nThis IP address is globally unique and can be routed over the internet\nPublic IP addresses are used for websites, servers, and other resources available to the general public\nA Public IP address is assigned to devices that are directly accessible over the internet\nExample: Google IP address 142.250.72.46",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "IP Address",
+      "body": "IP Address\n2. Private IP Address\nA Private IP address is used within a local network and is not routable over the internet\nExample: IP address ranging from 192.168.0.0 to 192.168.255.255 \nThese addresses are used for devices that need to communicate with each other within a local network, such as in homes or offices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Domain Name System (DNS)",
+      "body": "Domain Name System (DNS)\nName-to-IP Mapping\nDNS Server\nHuman-Friendly Internet\nNetworking Basics\nDNS: Turning Names into IP Addresses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": " Connects different networks and directs data traffic ",
+      "body": "Connects different networks and directs data traffic \nConnects multiple devices in a network (broadcasts data to all)\nSends data to specific devices within a network \nConnects two network segments to work as one\nConverts digital data for internet access\nRouter\nHub\nBridge\nModem\nSwitch\nNetworking Basics\nNetwork Devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Networking Basics",
+      "body": "Networking Basics\nImportant Keywords (Wrap-up)\nIP Address\nNetwork Devices\nDNS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Networking Essentials",
+      "body": "Networking Essentials",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Data is Broken Into Small Pieces (Packets)",
+      "body": "Data is Broken Into Small Pieces (Packets)\nPackets Travel Through Routers\nProtocols Help Packets Understand Each Other\nPackets Are Put Back Together at the Destination\nHow Data Travels Across Networks ?\nNetworking Essentials\nHow Data Travels Across Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Based on Area",
+      "body": "Based on Area\nBased on Topology\nBased on Communication\nBased on Architecture\nClassifications of Computer Networks\nLAN\nWAN\nMAN\nNetworking Essentials\nClassification\nBus\nStar\nRing\nMesh\nUnicast \nBroadcast \nMulticast\nSimplex\nHalf-Duplex\nFull-Duplex\nClient-Server \nP2P\nBased on Transmission Mode",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Network Topology refers to the arrangement or layout of devices in a network, sh",
+      "body": "Network Topology refers to the arrangement or layout of devices in a network, showing how they are connected and how data flows between them\nNetworking Essentials\nNetwork Topology",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Star Topology",
+      "body": "Star Topology\nBus Topology\nRing Topology\nMesh Topology\nNetworking Essentials\nTypes of Network Topologies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Networking Essentials",
+      "body": "Networking Essentials\nData Communication\nData communication is the exchange of data between devices via a communication system\nDefinition\nChatting online\nBrowsing a website\nSending an email\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Networking Essentials",
+      "body": "Networking Essentials\nData Communication\nTransmission Medium\nSender\nReceiver\nMessage\nProtocols\nProtocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Networking Essentials",
+      "body": "Networking Essentials\nData Communication\nComponent\nSender\nReceiver\nFunction\nDevice that generates and sends the data (PC, phone)\nDevice that receives the data (PC, server, phone)\nMessage\nThe actual data being transmitted (text, image, video)\nProtocol\nRules for communication to ensure sender and \u000breceiver understand each other",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Networking Essentials",
+      "body": "Networking Essentials\nGoals of Data Communication\nAccuracy: Data should not be altered during transmission\nSpeed: Data should be transmitted quickly\nSecurity: Data should be protected from unauthorized access",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Networking Essentials",
+      "body": "Networking Essentials\nImportant Concepts (Wrap-up)\nHow Data Travels\nClassifications of Computer Networks\nNetwork Topologies\nData Communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Fundamentals of Computer Networks",
+      "body": "Fundamentals of Computer Networks\nComputer Networks in Daily Life",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Fundamentals of Computer Networks",
+      "body": "Fundamentals of Computer Networks\nKey Takeaways \nComputer Networks\nWhat are Computer Networks? \nImportance & Mechanism\nNetworking Basics\nNetworking Essentials",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Web Request & Network Models",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1z2rj5Ep89E_GVmdvXP1wzZZFXItSk_xBPgznYvnUiR8/edit"
+}

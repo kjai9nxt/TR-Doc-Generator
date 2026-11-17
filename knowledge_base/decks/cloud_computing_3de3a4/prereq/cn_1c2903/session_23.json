@@ -1,0 +1,690 @@
+{
+  "session_no": 23,
+  "source_file": "CN — session 23",
+  "deck_title": "CN — session 23",
+  "n_slides": 72,
+  "summary": "\n    - Slide 2: Understanding TCP and UDP\n    - Slide 3: Introduction to Transport Layer\n    - Slide 4: Understanding TCP and UDP\n    - Slide 5: The Transport Layer\n    - Slide 6: The Transport Layer\n    - Slide 7: The Transport Layer\n    - Slide 8: UDP\n    - Slide 9: UDP (User Datagram Protocol)\n    - Slide 10: UDP (User Datagram Protocol)\n    - Slide 11: UDP (User Datagram Protocol)\n    - Slide 12: UDP Datagram\n    - Slide 13: UDP (User Datagram Protocol)\n    - Slide 14: UDP (User Datagram Protocol)\n    - Slide 15: UDP (User Datagram Protocol)\n    - Slide 16: UDP Header\n    - Slide 17: UDP Header\n    - Slide 18: UDP Header\n    - Slide 19: UDP Header\n    - Slide 20: UDP Header\n    - Slide 21: UDP Header\n    - Slide 22: UDP Header\n    - Slide 23: UDP (User Datagram Protocol)\n    - Slide 24: UDP (User Datagram Protocol)\n    - Slide 25: UDP Datagram\n    - Slide 26: UDP Datagram\n    - Slide 27: UDP (User Datagram Protocol)\n    - Slide 28: Where Is UDP Used ?\n    - Slide 29: UDP (User Datagram Protocol)\n    - Slide 30: UDP (User Datagram Protocol)\n    - Slide 31: UDP (User Datagram Protocol)\n    - Slide 32: TCP\n    - Slide 33: TCP (Transmission Control Protocol)\n    - Slide 34: TCP (Transmission Control Protocol)\n    - Slide 35: TCP (Transmission Control Protocol)\n    - Slide 36: TCP (Transmission Control Protocol)\n    - Slide 37: TCP Header — A Closer Look\n    - Slide 38: TCP Header — A Closer Look\n    - Slide 39: TCP Header — A Closer Look\n    - Slide 40: TCP Header — A Closer Look\n    - Slide 41: TCP (Transmission Control Protocol)\n    - Slide 42: TCP Header Vs UDP Header\n    - Slide 43: TCP Segment — The Data Unit of TCP\n    - Slide 44: TCP Segment — The Data Unit of TCP\n    - Slide 45: TCP Segment — The Data Unit of TCP\n    - Slide 46: TCP Segment — The Data Unit of TCP\n    - Slide 47: TCP Segment — The Data Unit of TCP\n    - Slide 48: TCP Segment — The Data Unit of TCP\n    - Slide 49: TCP Segment — The Data Unit of TCP\n    - Slide 50: TCP Segment — The Data Unit of TCP\n    - Slide 51: TCP\n    - Slide 52: TCP\n    - Slide 53: TCP\n    - Slide 54: TCP\n    - Slide 55: Quiz Time!\n    - Slide 56: TCP Vs UDP\n    - Slide 57: TCP vs UDP — Side by Side\n    - Slide 58: TCP vs UDP — Side by Side\n    - Slide 59: TCP vs UDP — Side by Side\n    - Slide 60: TCP vs UDP — Side by Side\n    - Slide 61: TCP vs UDP — Side by Side\n    - Slide 62: Choosing Between TCP and UDP\n    - Slide 63: Why Not Just Always Use TCP?\n    - Slide 64: Why Not Just Always Use TCP?\n    - Slide 65: Why Not Just Always Use TCP?\n    - Slide 66: Why Not Just Always Use TCP?\n    - Slide 67: Why Not Just Always Use TCP?\n    - Slide 68: Quiz Time!\n    - Slide 69: Understanding TCP and UDP\n    - Slide 70: TCP Handshakes & States",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Understanding TCP and UDP",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Introduction to Transport Layer",
+      "body": "Introduction to Transport Layer\nTransport Layer\nEnd-to-End Communication\nProcess-to-Process Delivery\nPort Numbers & Socket Addresses\nClient-Server Architecture\nMultiplexing & Demultiplexing\nServices\nConnectionless vs Connection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Understanding TCP and UDP",
+      "body": "Understanding TCP and UDP\nTCP\nTCP Vs UDP\nUDP\nIntroduction,\nUse Cases\nIntroduction,\nUse Cases",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "The Transport Layer",
+      "body": "Two Important Protocols\nJust like the Application Layer has protocols (HTTP, FTP, SMTP, DNS), the Transport Layer has its own protocols to deliver services\nTCP (Transmission Control Protocol)\nUDP (User Datagram Protocol)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "The Transport Layer",
+      "body": "1\n2\nTwo Important Protocols\nWhy not just one protocol?\nBecause applications have different needs:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "The Transport Layer",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "UDP",
+      "body": "UDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "Definition\nUDP (User Datagram Protocol) is a simple, connectionless transport layer protocol that sends data between applications with minimal overhead, but does not guarantee delivery, ordering, or reliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "Key Characteristics of UDP\nConnectionless:\u000bNo setup before sending\nUnreliable:\u000bNo delivery guarantee, no acknowledgments\nNo Ordering:\u000bDatagrams may arrive out of order\nNo Flow or Congestion Control:\u000bSender does not adjust speed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "Key Characteristics of UDP\nStateless:\u000bEach datagram is independent\nFast & Lightweight:\u000bMinimal overhead\nLow Latency:\u000bNo Retransmission delays",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "UDP Datagram",
+      "body": "Structure and Size Limitations\nFor data units at the Transport Layer, different protocols use different names:\nIn UDP, the data unit is called a Datagram (or User Datagram)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "What does it actually do?\nTakes data from the application\nAdds a small header (source port, destination port, length, checksum)\nHands it to the Network Layer for delivery\nUDP does the bare minimum:\nThat is it. No handshakes, no retransmissions, no ordering",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "What does it actually do?\nUDP: The Bare Minimum\nPayload\u000b(Application Data)\nSource Port\nDestination Port\nChecksum\nApplication Data\nNetwork Layer\nNo Handshakes\nNo retransmissions\nNo ordering\nLength",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "Analogy\nAnalogy: UDP is like shouting a message across a crowded room. You shout it once and hope the other person hears it. You do not wait for them to confirm. You do not repeat it if they missed it. You do not even check if they are still in the room. It is fast, but there is no guarantee.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "UDP Header",
+      "body": "Simple and Small\nThe UDP header is one of the simplest headers in all of networking. It is only 8 bytes (64 bits) long",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "UDP Header",
+      "body": "Simple and Small\nUDP Header Fields\nMessage Type\nSize/Length\nSource Port Number\n16 bits (2 bytes)\nPurpose\nIdentifies the sending application’s port\nDestination Port Number\n16 bits (2 bytes)\nIdentifies the receiving application’s port",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "UDP Header",
+      "body": "Simple and Small\nUDP Header Fields\nMessage Type\nSize/Length\nLength\n16 bits (2 bytes)\nPurpose\nTotal length of the UDP datagram (header + data) in bytes. Minimum value = 8 (header only)\nChecksum\n16 bits (2 bytes)\nUsed for error detection. Covers header + data. Optional in IPv4, mandatory in IPv6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "UDP Header",
+      "body": "Simple and Small\nUDP Header\nUDP Data\nSource port 16 bits\nLength 16 bits\nDestination port 16 bits\nChecksum 16 bits\n8 Bytes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "UDP Header",
+      "body": "Simple and Small\nTotal Header Size: 8 bytes only. Compare this with TCP which has a minimum header of 20 bytes (and can go up to 60 bytes). This tiny header is one reason why UDP is so fast — less overhead per packet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "UDP Header",
+      "body": "Important Notes\nLength Field: Specifies total datagram size (header + data). Minimum value = 8 bytes (header size)\nChecksum: Detects corruption. If corrupted, the datagram is discarded (no retransmission)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "UDP Header",
+      "body": "Important Notes\nPseudo-header: Includes source and destination IP to ensure correct host delivery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "What Does It Actually Do?\nZero\nDestination address\nSource address\nProtocol\nUDP length\nPseudo Header",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "UDP Datagram",
+      "body": "Structure and Size Limitations\nStructure of a UDP Datagram\n1\nContains source port, destination port, length, and checksum\n2\nUDP Header (8 bytes)\nData/Payload\nThe actual application data being transmitted\nUDP Header\nUDP Data\n8 bytes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "UDP Datagram",
+      "body": "Structure and Size Limitations\nKey Point\nUDP does not split or reassemble data. It sends application data as a single datagram. If the datagram is too large, IP(Network Layer) handles fragmentation, not UDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "What does it actually do?\nLength field is 16 bits → Maximum size = 65,535 bytes (including header). 2^16 - 1\nActual limit depends on the IP layer.(Maximum IP packet size = 65,535 bytes including IP header)\nIn practice, UDP datagrams are kept small to avoid fragmentation\nMaximum Size:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Where Is UDP Used ?",
+      "body": "Real-World Use Cases\nVideo Calls / VoIP\nReal-time audio/video; lost frames are skipped, not retransmitted\nDNS (Port 53)\nSmall, fast queries\nOnline Gaming\nReal-time state updates; old data is useless\n1\n2\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "Real-World Use Cases\nDHCP (Ports 67/68)\nDevice requests IP before it has one\nLive Streaming\nMinor loss acceptable; delay is not\nSNMP (Port 161)\nFast, low-overhead monitoring data\n4\n5\n6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "The Common Pattern\nAll these applications either need real-time speed, involve small quick exchanges, or can tolerate some data loss without breaking functionality",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "UDP (User Datagram Protocol)",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "TCP",
+      "body": "TCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "TCP (Transmission Control Protocol)",
+      "body": "Introduction\nTCP (Transmission Control Protocol) is a connection-oriented, reliable transport layer protocol that ensures data is delivered accurately, in order, and without loss between two applications\nClient\nServer\nSYN\nSYN-ACK\nACK\nUnicast\u000b(one-to-one)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "TCP (Transmission Control Protocol)",
+      "body": "Introduction\nRequires setup (3-way handshake)\nConnection-Oriented\nLost segments are detected and retransmitted\nReliable\nUses checksums\nError Detection\nSequence numbers ensure correct order\nOrdered",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "TCP (Transmission Control Protocol)",
+      "body": "Introduction\nAdjusts speed based on receiver capacity\nFlow Control\nReduces rate during network congestion\nCongestion Control\nData flows both directions simultaneously\nFull-Duplex\nTreats data as a continuous stream\nByte-Stream Oriented",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "TCP (Transmission Control Protocol)",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "TCP Header — A Closer Look",
+      "body": "Format and Overview\nThe TCP header is significantly larger and more complex than UDP header. This complexity is the cost of reliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "TCP Header — A Closer Look",
+      "body": "Modern TCP Header Fields (Overview)\nSource Port\n16 bits\nIdentifies the sending application\nDestination Port\n16 bits\nIdentifies the receiving application\nSequence Number\n32 bits\nPosition of the first byte in this segment within the data stream\nAcknowledgment Number\n32 bits\nThe next byte the receiver expects (confirms receipt of all prior bytes)\nHeader Length (Data Offset)\n4 bits\nLength of TCP header in 4-byte words (min 5 = 20 bytes)\nField\nSize\nDescription",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "TCP Header — A Closer Look",
+      "body": "Modern TCP Header Fields (Overview)\nField\nSize\nReserved\n3 bits\nDescription\nReserved for future use; set to 0\nControl Flags\n9 bits\nNS, CWR, ECE, SYN, ACK, FIN, RST, PSH, URG — control connection behavior\nWindow Size\n16 bits\nHow many bytes the receiver can accept (flow control)\nChecksum\n16 bits\nError detection covering pseudo-header + header + data\nUrgent Pointer\n16 bits\nPoints to urgent data (used with URG flag)\nOptions\n0-40 bytes\nOptional fields like Maximum Segment Size (MSS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "TCP Header — A Closer Look",
+      "body": "Modern TCP Header Fields (Overview)\nTotal: Minimum 20 bytes, Maximum 60 bytes (with options)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "TCP (Transmission Control Protocol)",
+      "body": "What does it actually do?\nHeader\nSource Port Address 16-bits\nDestination Port Address 16 bits\nData\nSequence Number (32 bits)\nAcknowledgement Number (32 bits)\nWindow Size (16 bits)\nHeader Length(4 bits)\n Reserved\u000b(3 bits)\nChecksum (16 bits)\nUrgent Pointer (16 bits)\nOptions and Padding Up to 40 bytes\n20-60 bytes\n Flags\u000b(9 bits)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "TCP Header Vs UDP Header",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "In TCP, the data unit at the Transport Layer is called a Segment\nHow TCP Packages Data?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "How TCP Packages Data?\nThe application sends a stream of bytes to TCP\nTCP stores these bytes in a send buffer\nTCP divides the data into appropriately sized chunks based on the Maximum Segment Size (MSS)\nHow TCP Creates Segments:\nUnlike UDP, TCP does NOT send data as one big chunk. Here is what happens:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "How TCP Packages Data?\nEach chunk gets a TCP header attached to it — this becomes a segment\nSegments are passed to the Network Layer for transmission\nHow TCP Creates Segments:\nUnlike UDP, TCP does NOT send data as one big chunk. Here is what happens:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "Maximum Segment Size (MSS)\nMSS defines the maximum amount of data (not including the header) that a TCP segment can carry\nMSS is negotiated during the TCP connection setup (3-way handshake)\nTypical MSS value: 1460 bytes (Ethernet MTU 1500 - 20 bytes IP header - 20 bytes TCP header = 1460 bytes)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "Maximum Segment Size (MSS)\nTCP Send Buffer\nDivides into MSS-sized Chunks (e.g., 1460 bytes)\nApplication Data Stream",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "Maximum Segment Size (MSS)\nPayload / Data (MSS = 1460 bytes )\nTCP Header (20 bytes)\nPayload / Data (MSS = 1460 bytes )\nTCP Header (20 bytes)\nPayload / Data (MSS = 1460 bytes )\nTCP Header (20 bytes)\nPayload / Data (MSS = 1460 bytes )\nTCP Segment\nPayload / Data (MSS = 1460 bytes )\nTCP Segment\nPayload / Data (MSS = 1460 bytes )\nTCP Segment",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "Aspect\nUDP\nData Unit Name\nDatagram\nTCP\nSegment\nSegmentation\nDoes NOT segment — sends as-is\nSegments data into MSS-sized chunks\nReassembly\nNo reassembly\nReassembles at receiver using sequence numbers\nData Treatment\nMessage-oriented (preserves boundaries)\nByte-stream oriented (continuous stream)\nKey Difference from UDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "TCP Segment — The Data Unit of TCP",
+      "body": "Analogy: Imagine you need to send a 500-page book to a friend. UDP would try to stuff the entire book into one envelope. TCP would divide the book into chapters, number each chapter (sequence number), put each in a separate envelope, and the friend would reassemble the book in order at the other end. If chapter 5 gets lost, TCP makes sure it gets resent.\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "TCP",
+      "body": "Real-World Use Cases\nPages must load fully\nWeb (80/443)\nMessages must not lose content\nEmail (25/143/110)\nNo byte can be missing\nFile Transfer (20/21)\nTCP ensures complete delivery\nTCP guarantees integrity\nTCP ensures error-free transfer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "TCP",
+      "body": "Real-World Use Cases\nCommands must arrive in order\nSSH (22)\nData must be accurate\nDatabases (3306/5432)\nTCP preserves sequence\nTCP ensures reliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "TCP",
+      "body": "The Common Pattern\nAll these applications cannot tolerate any data loss. Even one missing byte means broken pages, corrupted files, garbled emails, or wrong query results",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "TCP",
+      "body": "Analogy: Think of these as legal documents — every word matters. You would never send a contract via postcard (UDP). You would use registered post (TCP) because missing even one page could change the entire meaning.\nAnalogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "TCP Vs UDP",
+      "body": "TCP Vs UDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "TCP vs UDP — Side by Side",
+      "body": "A Detailed Comparison\nThis is one of the most important comparisons in all of networking\nFull Name\nTransmission Control Protocol\nUser Datagram Protocol\nConnection-Oriented\nConnectionless\nReliability\nReliable — guarantees delivery\nUnreliable — no guarantee\nOrdering\nOrdered — in-sequence delivery\nUnordered — may arrive out of order\nConnection Type\nError Detection\nYes (checksum)\nYes (checksum)\nYes — retransmits lost segments\nNo — discards corrupted datagrams\nError Recovery\nFlow Control\nYes (sliding window)\nNo\nYes (slow start, AIMD)\nNo\nCongestion Control\nFeature\nTCP\nUDP",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "TCP",
+            "UDP"
+          ],
+          [
+            "Full Name",
+            "Transmission Control Protocol",
+            "User Datagram Protocol"
+          ],
+          [
+            "Connection Type",
+            "Connection-Oriented",
+            "Connectionless"
+          ],
+          [
+            "Reliability",
+            "Reliable — guarantees delivery",
+            "Unreliable — no guarantee"
+          ],
+          [
+            "Ordering",
+            "Ordered — in-sequence delivery",
+            "Unordered — may arrive out of order"
+          ],
+          [
+            "Error Detection",
+            "Yes (checksum)",
+            "Yes (checksum)"
+          ],
+          [
+            "Error Recovery",
+            "Yes — retransmits lost segments",
+            "No — discards corrupted datagrams"
+          ],
+          [
+            "Flow Control",
+            "Yes (sliding window)",
+            "No"
+          ],
+          [
+            "Congestion Control",
+            "Yes (slow start, AIMD)",
+            "No"
+          ],
+          [
+            "Connection Setup",
+            "Required (3-way handshake)",
+            "Not required"
+          ],
+          [
+            "Header Size",
+            "20-60 bytes",
+            "8 bytes"
+          ],
+          [
+            "Data Unit",
+            "Segment",
+            "Datagram"
+          ],
+          [
+            "Speed",
+            "Slower (more overhead)",
+            "Faster (minimal overhead)"
+          ],
+          [
+            "Data Treatment",
+            "Byte-stream oriented",
+            "Message-oriented"
+          ],
+          [
+            "Broadcasting",
+            "Not supported",
+            "Supported"
+          ],
+          [
+            "State",
+            "Stateful",
+            "Stateless"
+          ],
+          [
+            "Best For",
+            "Reliability-critical apps",
+            "Speed-critical apps"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 58,
+      "title": "TCP vs UDP — Side by Side",
+      "body": "A Detailed Comparison\nThis is one of the most important comparisons in all of networking\nFeature\nTCP\nConnection Setup\nRequired (3-way handshake)\nUDP\nNot required\n20-60 bytes\n8 bytes\nData Unit\nSegment\nDatagram\nSpeed\nSlower (more overhead)\nFaster (minimal overhead)\nHeader Size\nData Treatment\nByte-stream oriented\nMessage-oriented\nNot supported\nSupported\nBroadcasting\nState\nStateful\nStateless\nReliability-critical apps\nSpeed-critical apps\nBest For",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "TCP",
+            "UDP"
+          ],
+          [
+            "Full Name",
+            "Transmission Control Protocol",
+            "User Datagram Protocol"
+          ],
+          [
+            "Connection Type",
+            "Connection-Oriented",
+            "Connectionless"
+          ],
+          [
+            "Reliability",
+            "Reliable — guarantees delivery",
+            "Unreliable — no guarantee"
+          ],
+          [
+            "Ordering",
+            "Ordered — in-sequence delivery",
+            "Unordered — may arrive out of order"
+          ],
+          [
+            "Error Detection",
+            "Yes (checksum)",
+            "Yes (checksum)"
+          ],
+          [
+            "Error Recovery",
+            "Yes — retransmits lost segments",
+            "No — discards corrupted datagrams"
+          ],
+          [
+            "Flow Control",
+            "Yes (sliding window)",
+            "No"
+          ],
+          [
+            "Congestion Control",
+            "Yes (slow start, AIMD)",
+            "No"
+          ],
+          [
+            "Connection Setup",
+            "Required (3-way handshake)",
+            "Not required"
+          ],
+          [
+            "Header Size",
+            "20-60 bytes",
+            "8 bytes"
+          ],
+          [
+            "Data Unit",
+            "Segment",
+            "Datagram"
+          ],
+          [
+            "Speed",
+            "Slower (more overhead)",
+            "Faster (minimal overhead)"
+          ],
+          [
+            "Data Treatment",
+            "Byte-stream oriented",
+            "Message-oriented"
+          ],
+          [
+            "Broadcasting",
+            "Not supported",
+            "Supported"
+          ],
+          [
+            "State",
+            "Stateful",
+            "Stateless"
+          ],
+          [
+            "Best For",
+            "Reliability-critical apps",
+            "Speed-critical apps"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 59,
+      "title": "TCP vs UDP — Side by Side",
+      "body": "A Detailed Comparison",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "TCP vs UDP — Side by Side",
+      "body": "A Detailed Comparison\nBoth TCP and UDP use port numbers for multiplexing and demultiplexing\nBoth use checksums for error detection, but TCP retransmits lost data, while UDP simply discards it\nTCP adds overhead for reliability and data integrity\nKey Observations",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "TCP vs UDP — Side by Side",
+      "body": "A Detailed Comparison\nKey Observations\nUDP prioritizes speed by avoiding control mechanisms\nNeither is better — the choice depends on the application’s needs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Choosing Between TCP and UDP",
+      "body": "Applications that use BOTH\nApplication\nDNS\nHow?\nUses UDP for regular queries (fast). Uses TCP for zone transfers and large responses (>512 bytes)\nStreaming (Netflix, YouTube)\nUses TCP (via HTTPS) for video delivery; may use UDP-based protocols for lower latency",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Why Not Just Always Use TCP?",
+      "body": "Understanding TCP’s Trade-offs\nThis is a common question:\n\"If TCP guarantees delivery, why would anyone use UDP?\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Why Not Just Always Use TCP?",
+      "body": "Understanding TCP’s Trade-offs\nConnection Delay: Requires a 3-way handshake → adds extra latency (at least 1 RTT)\nNo Broadcast/Multicast: Supports only one-to-one communication\nIf TCP guarantees delivery, why use UDP?\nThe Cost of TCP Reliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Why Not Just Always Use TCP?",
+      "body": "Understanding TCP’s Trade-offs\nCongestion Control: Slows down transmission during congestion → not ideal for real-time apps\nHead-of-Line Blocking: One lost packet delays all following packets → causes freezes in real-time apps\nHigher Overhead: 20-byte header (vs 8 bytes in UDP) → inefficient for small messages\nIf TCP guarantees delivery, why use UDP?\nThe Cost of TCP Reliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Why Not Just Always Use TCP?",
+      "body": "Understanding TCP’s Trade-offs\nKey Observations\nTCP’s reliability comes at a cost — latency, overhead, and rigidity. For applications where speed and real-time performance matter more than perfection, UDP is the better choice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Why Not Just Always Use TCP?",
+      "body": "Understanding TCP’s Trade-offs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Understanding TCP and UDP",
+      "body": "UDP\nIntroduction\nUse Cases\nTCP \nIntroduction\nUse Cases\nTCP Vs UDP\nKey Takeaways",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "TCP Handshakes & States",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1fsbBiNP_5qyGYGhFOrA-iEsLJJZHCrNnHRs7IDqhFX0/edit"
+}

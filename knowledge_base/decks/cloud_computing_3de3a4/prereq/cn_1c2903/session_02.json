@@ -1,0 +1,500 @@
+{
+  "session_no": 2,
+  "source_file": "CN — session 2",
+  "deck_title": "CN — session 2",
+  "n_slides": 70,
+  "summary": "\n    - Slide 2: Modern Internet Infrastructure\n    - Slide 3: Network Security Essentials\n    - Slide 4: Network Security Essentials\n    - Slide 5: Agenda\n    - Slide 6: Delay Types\n    - Slide 7: Four Types of Delay in a Network\n    - Slide 8: Four Types of Delay in a Network\n    - Slide 9: The Four Types of Delay in a Network\n    - Slide 10: The Four Types of Delay in a Network\n    - Slide 11: The Four Types of Delay in a Network\n    - Slide 12: The Four Types of Delay in a Network\n    - Slide 13: The Four Types of Delay in a Network\n    - Slide 14: Caching\n    - Slide 15: Caching\n    - Slide 16: Caching Layers\n    - Slide 17: Caching Layers\n    - Slide 18: Caching Layers\n    - Slide 19: Caching Layers\n    - Slide 20: Caching Layers\n    - Slide 21: Caching Layers\n    - Slide 22: Caching Layers\n    - Slide 23: Caching Layers\n    - Slide 24: Caching Layers\n    - Slide 25: Types of Cache\n    - Slide 26: CDNs\n    - Slide 27: Content Delivery Networks\n    - Slide 28: Content Delivery Networks\n    - Slide 29: Content Delivery Networks\n    - Slide 30: Content Delivery Networks\n    - Slide 31: Content Delivery Networks\n    - Slide 32: Content Delivery Networks\n    - Slide 33: Content Delivery Networks\n    - Slide 34: Real-World Failure Scenarios\n    - Slide 35: Real-World Failure Scenarios\n    - Slide 36: Real-World Failure Scenarios\n    - Slide 37: Real-World Failure Scenarios\n    - Slide 38: Real-World Failure Scenarios\n    - Slide 39: Real-World Failure Scenarios\n    - Slide 40: Real-World Failure Scenarios\n    - Slide 41: Load Balancers\n    - Slide 42: Load Balancers\n    - Slide 43: Load Balancers\n    - Slide 44: Load Balancers\n    - Slide 45: Load Balancers\n    - Slide 46: Load Balancers\n    - Slide 47: Load Balancers\n    - Slide 48: Load Balancers - Distributing Traffic Across Multiple Servers\n    - Slide 49: Load Balancers - Distributing Traffic Across Multiple Servers\n    - Slide 50: Load Balancers - Distributing Traffic Across Multiple Servers\n    - Slide 51: Load Balancers - Distributing Traffic Across Multiple Servers\n    - Slide 52: Load Balancers - Distributing Traffic Across Multiple Servers\n    - Slide 53: End-to-End Network Design\n    - Slide 54: End-to-End\n    - Slide 55: End-to-End - From Browser to Server and Back\n    - Slide 56: End-to-End - From Browser to Server and Back\n    - Slide 57: End-to-End - From Browser to Server and Back\n    - Slide 58: End-to-End - From Browser to Server and Back\n    - Slide 59: Scaling the Internet\n    - Slide 60: Scaling the Internet\n    - Slide 61: Scaling the Internet\n    - Slide 62: Scaling the Internet\n    - Slide 63: Scaling the Internet\n    - Slide 64: Scaling the Internet\n    - Slide 65: Scaling the Internet\n    - Slide 66: Quiz Time!\n    - Slide 67: Modern Internet Infrastructure\n    - Slide 68: Modern Internet Infrastructure",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Modern Internet Infrastructure",
+      "body": "Modern Internet Infrastructure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Network Security Essentials",
+      "body": "Network Security Essentials\nFirewalls\nPacket Filter, Stateful Inspection, Application-Level Gateway\nNetwork Segmentation\nCollision Domains vs Broadcast Domains\nProxy Servers\nForward Proxy and Reverse Proxy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Network Security Essentials",
+      "body": "Network Security Essentials\nVPNs and IPsec\nEncrypted Tunnels for Secure Communication\nCommon Network Attacks\nPacket Sniffing, MITM\nDoS/DDoS and Their Prevention",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Agenda",
+      "body": "Modern Internet Infrastructure\nPropagation, Transmission, Queuing, Processing\nHow Content Delivery Networks Work?\nDNS Cache, Browser Cache, Server-Side Cache\nReal-World Debugging Scenarios\nCDNs\nCaching\nDelay Types\nEnd-to-End Network Design \nLoad Balancers\nCDNs\nCaching\nDelay Types\nEnd-to-End Network Design \nLoad Balancers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Delay Types",
+      "body": "Delay Types",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Four Types of Delay in a Network",
+      "body": "Why Every Packet Takes Time?\nWhen a packet travels from a source to a destination, it does not arrive instantly. Several factors slow it down at every step. Understanding these delays helps diagnose network problems and design better systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Four Types of Delay in a Network",
+      "body": "1. Transmission Delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "The Four Types of Delay in a Network",
+      "body": "2. Propagation Delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "The Four Types of Delay in a Network",
+      "body": "3. Queuing Delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "The Four Types of Delay in a Network",
+      "body": "4. Processing Delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "The Four Types of Delay in a Network",
+      "body": "Total End-to-End Delay\nCaused By\nPacket size, low bandwidth\nReducible By\nIncrease bandwidth or reduce packet size\nPhysical distance\nShorter distance or better medium/path\nDelay Type\nTransmission\nPropagation\nNetwork congestion\nBetter routing, traffic shaping, QoS\nQueuing\nRouter hardware\nFaster routers, simpler headers\nProcessing\nLatency =  Propagation + Transmission + Queuing + Processing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "The Four Types of Delay in a Network",
+      "body": "Analogy\nTransmission Delay\nPropagation Delay\nQueuing Delay\nProcessing Delay",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Caching",
+      "body": "Caching",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Caching",
+      "body": "What Does Cache Reduce?\nCaching is the technique of storing a copy of frequently accessed data at a location closer to the requester, so the same data does not have to be fetched from the original source every time\nCaching reduces:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Caching Layers",
+      "body": "1. DNS Cache\nDNS cache stores recently resolved domain names and IP addresses\nDNS records have a TTL (Time to Live), which decides how long the cached result is valid",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Caching Layers",
+      "body": "Levels of DNS caching:\nBrowser cache Stores recent DNS lookups\n1. DNS Cache",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Caching Layers",
+      "body": "1. DNS Cache\nIf a DNS record changes, users may still reach the old IP until the TTL expires\nTTL trade-off:\nBetter freshness, more DNS queries\nLower DNS load, possible stale records",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Caching Layers",
+      "body": "2. Browser Cache",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Caching Layers",
+      "body": "2. Browser Cache\nCache for 1 day",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Caching Layers",
+      "body": "Problem\n2. Browser Cache\nReturning users load pages faster because many files come from local storage\nUsers may see old files if the cache has not expired\nBenefit",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Caching Layers",
+      "body": "3. Server-Side Cache\nServer-side cache stores results of expensive operations so they are not recomputed for every request\nCommon tools:\nTop 10 trending products are cached for 60 seconds. During that time, many users get the result from cache instead of repeatedly querying the database\nRedis",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Caching Layers",
+      "body": "3. Server-Side Cache\nTypes:\nFull-page cache\nObject cache\nQuery cache",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Caching Layers",
+      "body": "4. CDN Cache\nCDN cache stores website files on servers closer to users\nIt usually caches:\nImages\nVideos\nCSS files\nJavaScript files\nJS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Types of Cache",
+      "body": "Cache Type\nBrowser Cache\nServer-Side Cache\nWhere Stored\nBrowser / OS / Resolver\nUser's device\nApplication server / memory\nCDN edge servers\nDNS Cache\nWhat Is Cached\nStatic assets (HTML, CSS, JS, images)\nDB query results, computed data\nStatic files like images, videos, CSS, JS\nDomain → IP mappings\nExample\nChrome, Firefox\nRedis, Memcached\nCloudflare, Akamai, AWS CloudFront\nOS resolver, ISP DNS\nCDN Cache\nWrap-Up",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "CDNs",
+      "body": "CDNs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Content Delivery Networks",
+      "body": "What is a CDN?\nA Content Delivery Network (CDN) is a group of servers placed across different locations\nThese servers are called edge servers or PoPs\nThey store cached copies of content closer to users",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Content Delivery Networks",
+      "body": "What is a CDN?\nWithout CDN\nA user in Chennai requesting content from a US server may face high latency\nDuring high traffic, many users hit the same origin server\nThis can slow down the website or overload the server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Content Delivery Networks",
+      "body": "What is a CDN?\nWith CDN\nUsers are connected to a nearby or optimal edge server\nCached content is served faster from the edge server\nThe origin server handles fewer requests",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Content Delivery Networks",
+      "body": "How CDN Works?\nUser requests a website or content\nDNS/CDN routing sends the user to a nearby edge server\nThe browser connects to the edge server\nCache hit: CDN serves the content directly\nCache miss: CDN fetches content from the origin, stores it, and serves it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Content Delivery Networks",
+      "body": "What CDNs Usually Cache?\nUsually Not Cached\nUser account data\nCart details\nCached Content\nImages, videos, audio\nCSS and JavaScript files\nLive scores / stock prices\nStatic HTML pages\nPersonalized recommendations\nFonts and icons\nAuthenticated API responses\nSoftware downloads",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Content Delivery Networks",
+      "body": "Benefits of CDN\nImproves availability\nHelps absorb DDoS traffic\nCan handle SSL/TLS at the edge server\nCDN Providers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Content Delivery Networks",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Real-World Failure Scenarios",
+      "body": "What Can Go Wrong?\nModern websites depend on CDNs, DNS, TLS, and TCP connections. If any one of these fails, users may not be able to access the website",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Real-World Failure Scenarios",
+      "body": "1. DNS Failure\nThe domain name cannot be converted into an IP address\nCauses :\nERR_NAME_NOT_RESOLVED\nDNS_PROBE_FINISHED_NXDOMAIN\nUser may see:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Real-World Failure Scenarios",
+      "body": "The browser cannot create a secure HTTPS connection\nCauses :\nExpired SSL certificate\nCertificate name mismatch\nUntrusted certificate authority\nTLS version mismatch (TLS 1.0/1.1 vs 1.2+)\nERR_CERT_DATE_INVALID\nNET: :ERR_CERT_AUTHORITY_INVALID\nUser may see:\n2. TLS / HTTPS Error",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Real-World Failure Scenarios",
+      "body": "The browser sends a connection request, but no response comes back\nCauses :\nERR_CONNECTION_TIMED_OUT\nUser may see:\n3a. TCP Timeout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Real-World Failure Scenarios",
+      "body": "3b. TCP Connection Refused\nThe browser sends a connection request and the server immediately rejects it\nCauses :\nServer process is down (nothing listening on that port)\nApplication has crashed\nWrong port number being contacted\nERR_CONNECTION_REFUSED\nUser may see:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Real-World Failure Scenarios",
+      "body": "The CDN is reachable, but it cannot serve the requested content\nCauses :\nHTTP 503 Service Unavailable\nCDN-specific error page\nUser may see:\n4. CDN / Backend Failure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Real-World Failure Scenarios",
+      "body": "Wrap-Up\nSymptom\nERR_NAME_NOT_RESOLVED\nERR_CERT_DATE_INVALID\nFailure Type\nDNS Failure\nTLS Error\nERR_CONNECTION_TIMED_OUT\nTCP Timeout\n503 Service Unavailable\nCDN / Backend Failure\nRoot Cause\nDNS server unreachable, bad record\nExpired or invalid certificate\nServer overloaded, firewall drop, crash\nLoad balancer cannot find a healthy backend",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Load Balancers",
+      "body": "Load Balancers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Load Balancers",
+      "body": "Introduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Load Balancers",
+      "body": "Why Are They Needed?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Load Balancers",
+      "body": "What Load Balancers Do?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Load Balancers",
+      "body": "What Load Balancers Do?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Load Balancers",
+      "body": "Types of Load Balancers\nOperates At\nTCP/UDP layer\nHTTP/HTTPS layer\nType\n(Transport)\n(Application)\nBasis for Decision\nIP address + Port number\nURL path, headers, cookies\nRoot Cause\nAWS NLB (Network Load Balancer)\nAWS ALB (Application Load Balancer), Nginx",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Load Balancers",
+      "body": "Layer 4 Load Balancer: \nFaster because it does not inspect HTTP content.Useful for TCP/UDP traffic like databases, gaming, or streaming\nLayer 7 Load Balancer:\nSmarter - reads the HTTP request. Can route /api/* to API servers and /images/* to image servers. Essential for microservices architectures\nTypes of Load Balancers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Load Balancers - Distributing Traffic Across Multiple Servers",
+      "body": "Round Robin\nLoad Balancing Algorithms\nSends requests one by one to each server\nExample: Server 1 → Server 2 → Server 3 → Server 1\nWorks well when all servers have similar capacity\nLimitation: It does not check current server load",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Load Balancers - Distributing Traffic Across Multiple Servers",
+      "body": "Weighted Round Robin\nLoad Balancing Algorithms\nSends more requests to servers with higher capacity\nExample: Server A with weight 3 gets more traffic than Server B with weight 1\nUseful when servers have different hardware capacities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Load Balancers - Distributing Traffic Across Multiple Servers",
+      "body": "Load Balancing Algorithms\nLeast Connections\nSends the request to the server with the fewest active connections\nUseful for long-running requests like uploads or streaming\nBetter than Round Robin when request duration varies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Load Balancers - Distributing Traffic Across Multiple Servers",
+      "body": "IP Hash\nUses the client’s IP address to send the same user to the same server\nHelps maintain sticky sessions\nLimitation: If a server fails, users may need to be remapped\nLoad Balancing Algorithms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Load Balancers - Distributing Traffic Across Multiple Servers",
+      "body": "Least Response Time\nSends requests to the server with the fastest response and fewer active connections\nUseful for performance-sensitive applications\nLimitation: Needs continuous monitoring of server response time\nLoad Balancing Algorithms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "End-to-End Network Design",
+      "body": "End-to-End Network Design",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "End-to-End",
+      "body": "From Browser to Server and Back\nWhen a user types www.amazon.in, the request passes through multiple network components before the homepage is displayed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "End-to-End - From Browser to Server and Back",
+      "body": "DNS Resolution\nBrowser checks cache first\nIf not found, DNS resolver finds the IP address\nDNS/CDN routing directs the user to a nearby or optimal CDN edge server\nStep-by-Step Flow\n1\nTCP Connection\nBrowser creates a TCP connection with the CDN edge server\nTCP uses the 3-way handshake: SYN → SYN-ACK → ACK\n2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "End-to-End - From Browser to Server and Back",
+      "body": "TLS Handshake\nTLS runs on top of TCP to create a secure HTTPS connection\nBrowser verifies the certificate\n           Session keys are created for encrypted communication\n3\nHTTP Request\nBrowser sends an HTTP request, such as GET /\nThe request reaches the CDN edge server\n4\nCDN Cache Check\nCache hit: CDN serves the content directly\nCache miss: CDN forwards the request to the origin server\n5\nStep-by-Step Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "End-to-End - From Browser to Server and Back",
+      "body": "Load Balancer\nAt the origin, the load balancer receives the request\nIt checks healthy backend servers\nIt forwards the request to a suitable server\n6\nBackend Processing\nThe backend server processes the request\nIt may fetch data from databases or caches like Redis\nIt prepares the response\n7\nStep-by-Step Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "End-to-End - From Browser to Server and Back",
+      "body": "Response and Rendering\nResponse travels back to the browser\nBrowser loads HTML, CSS, JS, images, and fonts\nMany static files may come from the CDN cache\nThe page is finally rendered\n8\nStep-by-Step Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Scaling the Internet",
+      "body": "From One Server To Millions\nWhen traffic grows from hundreds to millions of users, a single server cannot keep up. Modern systems scale using four core strategies",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Scaling the Internet",
+      "body": "From One Server To Millions\nAdd more CPU, RAM, or storage to a single server. Simple, but has a hard hardware ceiling and creates a single point of failure\nHorizontal Scaling (Scale Out)\nAdd more servers and distribute traffic using a load balancer. No theoretical upper limit. Requires services to be stateless - session state must live in a shared store like Redis, not on the server itself",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Scaling the Internet",
+      "body": "From One Server To Millions\nIt automatically adds or removes servers based on demand (Eg: CPU usage, traffic), ensuring enough capacity during spikes while avoiding unnecessary resources during low traffic\nMulti-Region Deployment\nRun the system across multiple geographic regions. Users are routed to the nearest region for low latency. If one region fails, traffic fails over to another automatically",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Scaling the Internet",
+      "body": "What It Solves\nQuick capacity boost\nUnlimited scale-out\nStrategy\nVertical Scaling\nHorizontal Scaling\nHandles traffic spikes automatically\nAuto-Scaling\nLow latency + high availability globally\nMulti-Region\nKey Limitation\nHard hardware ceiling\nRequires stateless design\nNeeds tuned thresholds\nComplex data replication\nFrom One Server to Millions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Scaling the Internet",
+      "body": "Analogy\nVertical Scaling\nHorizontal Scaling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Scaling the Internet",
+      "body": "Analogy\nAuto-Scaling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Scaling the Internet",
+      "body": "Analogy\nMulti-Region",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Modern Internet Infrastructure",
+      "body": "Delay Types \nPropagation, Transmission, Queuing, Processing\nCaching \nDNS Cache, Browser Cache, Server-Side Cache\nKey Takeaways (1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Modern Internet Infrastructure",
+      "body": "CDNs \nHow Content Delivery Networks Work\nLoad Balancers  \nTypes & Algorithms\nEnd-to-End Network Design \nKey Takeaways (2/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1SUgiRDhyE12a6MLDK3TY5vaJngdf8k7ziUYz3WjybUA/edit"
+}

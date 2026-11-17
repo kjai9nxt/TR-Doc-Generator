@@ -1,0 +1,598 @@
+{
+  "session_no": 6,
+  "source_file": "CN — session 6",
+  "deck_title": "CN — session 6",
+  "n_slides": 84,
+  "summary": "\n    - Slide 2: Physical Layer\n    - Slide 3: Wireless LANs\n    - Slide 4: Physical Layer\n    - Slide 5: Physical Layer \n    - Slide 6: Physical Layer\n    - Slide 7: Physical Layer\n    - Slide 8: Physical Layer\n    - Slide 9: Physical Layer\n    - Slide 10: Physical Layer\n    - Slide 11: Physical Layer\n    - Slide 12: Physical Layer\n    - Slide 13: Physical Layer\n    - Slide 14: Physical Layer\n    - Slide 15: Digital & Analog Transmission\n    - Slide 16: Two Ways to Represent Information\n    - Slide 17: Classification of Signals\n    - Slide 18: Classification of Signals\n    - Slide 19: Classification of Signals\n    - Slide 20: Classification of Signals\n    - Slide 21: Analog vs Digital Signals\n    - Slide 22: Analog vs Digital Signals\n    - Slide 23: Quiz Time!\n    - Slide 24: Medium Limits\n    - Slide 25: Encoding & Decoding\n    - Slide 26: Encoding & Decoding\n    - Slide 27: Line Coding\n    - Slide 28: Line Coding (per Forouzan)\n    - Slide 29: 1. Unipolar\n    - Slide 30: 1. Unipolar\n    - Slide 31: 2. Polar\n    - Slide 32: 2. Polar\n    - Slide 33: 2. Polar\n    - Slide 34: 2. Polar\n    - Slide 35: 2. Polar\n    - Slide 36: 2. Polar (Biphase)\n    - Slide 37: 2. Polar (Biphase)\n    - Slide 38: 2. Polar (Biphase)\n    - Slide 39: 3. Bipolar\n    - Slide 40: 3. Bipolar\n    - Slide 41: 3. Bipolar\n    - Slide 42: Line Coding\n    - Slide 43: Line Coding\n    - Slide 44: Modulation & Demodulation\n    - Slide 45: Modulation - AM, FM, and PM\n    - Slide 46: Modulation - AM, FM, and PM\n    - Slide 47: Modulation - AM, FM, and PM\n    - Slide 48: Modulation - AM, FM, and PM\n    - Slide 49: Modulation - AM, FM, and PM\n    - Slide 50: Modulation - AM, FM, and PM\n    - Slide 51: Modulation - AM, FM, and PM\n    - Slide 52: Modulation - AM, FM, and PM\n    - Slide 53: Modulation\n    - Slide 54: Modulation\n    - Slide 55: Modulation\n    - Slide 56: Modulation\n    - Slide 57: Modulation - AM, FM, and PM\n    - Slide 58: Multiplexing & Spread Spectrum\n    - Slide 59: Nyquist Theorem\n    - Slide 60: Nyquist Theorem\n    - Slide 61: Nyquist Theorem\n    - Slide 62: Nyquist Theorem\n    - Slide 63: Nyquist Theorem\n    - Slide 64: Nyquist Theorem\n    - Slide 65: Solution - Maximum Capacity of a Noisy Channel\n    - Slide 66: Solution - Maximum Capacity of a Noisy Channel\n    - Slide 67: Shannon’s Theorem\n    - Slide 68: Shannon’s Theorem\n    - Slide 69: Nyquist vs Shannon\n    - Slide 70: Nyquist & Shannon\n    - Slide 71: Multiplexing - FDM, TDM, and WDM\n    - Slide 72: Multiplexing\n    - Slide 73: Multiplexing - FDM, TDM, and WDM\n    - Slide 74: Multiplexing - FDM, TDM, and WDM\n    - Slide 75: Multiplexing - FDM, TDM, and WDM\n    - Slide 76: Spread Spectrum\n    - Slide 77: Spread Spectrum\n    - Slide 78: Spread Spectrum\n    - Slide 79: Quiz Time!\n    - Slide 80: The Physical Layer\n    - Slide 81: The Physical Layer\n    - Slide 82: Transmission Media & Switching",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Physical Layer",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Wireless LANs",
+      "body": "Wireless LANs\nWireless LANs\nIEEE 802.11 Standards\nWi-Fi Architecture\nBSS, ESS, and Ad-Hoc modes\nCSMA/CA\nIntroduction , CSMA/CA vs CSMA/CD\nNode Issues\nWireless Security\nWEP, WPA, WPA2, WPA3 , \u000bhow encryption protects data ?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Physical Layer",
+      "body": "Physical Layer\nDigital & Analog Transmission\nMedium Limits\nPhysical Layer \nMultiplexing & Spread Spectrum\nLine Coding, Modulation (ASK, FSK, PSK, QAM)\nNyquist and Shannon Theorems\nMultiplexing (FDM, TDM, WDM) and Spread Spectrum (FHSS, DSSS)\nRole & Responsibilities, Types of Physical Signals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Physical Layer ",
+      "body": "Physical Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Physical Layer",
+      "body": "Introduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Physical Layer",
+      "body": "Layer\nNetwork Layer\nData Link Layer\nPhysical Layer\nUnit\nSegment\nPacket\nFrame\nBit\nTransport Layer\nIntroduction\nAddress\nPort Number\nIP Address\nMAC Address\nNone\nFunction\nProcess-to-Process\nHost-to-Host\nNode-to-Node\nSignal Transmission",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Physical Layer",
+      "body": "Physical layer\nData Link layer\nTransport layer\nNetwork layer\nApplication layer\n1\n2\n3\n4\n5\n5\n4\n3\n2\n1\nIntroduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Physical Layer",
+      "body": "Responsibilities\nFrom data link layer\nFrom data link layer\nPhysical layer\nPhysical layer\nTransmission media",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Physical Layer",
+      "body": "Encoding and Decoding\nResponsibilities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Physical Layer",
+      "body": "Responsibilities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Physical Layer",
+      "body": "Responsibilities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Physical Layer",
+      "body": "Types of Physical Signals\nElectrical signals\nTransmitted over copper wires (Twisted Pair, Coaxial). Used in Ethernet, DSL\nRadio waves\nTransmitted through air. Used in Wi-Fi, Bluetooth, 4G/5G\nLight / Optical signals\nTransmitted over fiber optic cables. Pulses of laser light. Used in backbone networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Physical Layer",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Digital & Analog Transmission",
+      "body": "Digital & Analog Transmission",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Two Ways to Represent Information",
+      "body": "What is a Signal?\n1. Analog Signals\n2. Digital Signals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Classification of Signals",
+      "body": "1. Analog Signals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Classification of Signals",
+      "body": "Human voice\nTraditional AM/FM radio\nTelephone (legacy PSTN)\nHighly susceptible to noise. Interference changes the continuous values unpredictably and the receiver cannot tell signal from noise beyond a certain level\n1. Analog Signals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Classification of Signals",
+      "body": "2. Digital Signals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Classification of Signals",
+      "body": "2. Digital Signals\nComputer data\nEthernet frames\nUSB",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Analog vs Digital Signals",
+      "body": "Key Signal Properties\nProperty\nFrequency\nPeriod\nPhase\nSymbol\nA\nf\nT\nφ\nAmplitude\nBandwidth\nB\nDefinition\nNumber of cycles per second\nTime for one complete cycle (T = 1/f)\nStarting position of the wave cycle\nHeight / strength of the signal\nRange of frequencies the channel carries\nUnit\nVolts (V)\nHertz (Hz)\nSeconds\nDegrees / Radians\nHz\nRelevance\nDetermines data rate capacity\nInverse of frequency\nUsed in PM/PSK modulation\nDetermines signal power\nDetermines channel capacity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Analog vs Digital Signals",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Medium Limits",
+      "body": "Medium Limits",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Encoding & Decoding",
+      "body": "Turning Bits into Signals\nEncoding: Converting 0s and 1s into actual signals such as voltage, light, or radio waves\nDecoding: Converting received signals back into 0s and 1s\nWhen the data is digital and the signal is also digital, the encoding process is called Line Coding",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Encoding & Decoding",
+      "body": "Features Of A Good Line Code",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Line Coding",
+      "body": "Turning Bits into Digital Signals\nThe signal pattern must allow the receiver to correctly reconstruct each original bit. It is also known as digital PAM formats",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Line Coding (per Forouzan)",
+      "body": "Categories \nCategory\nNRZ scheme\nNRZ-L, NRZ-I, RZ\nBiphase: Manchester & differential Manchester\nAMI\nPseudoternary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "1. Unipolar",
+      "body": "NRZ & Unipolar NRZ\nNRZ - Non-Return to Zero:\nIn NRZ encoding, the signal does NOT return to zero voltage between bits. It holds its level for the entire bit period\nUnipolar NRZ (Unipolar):\nUses only one polarity. 1 → +V (positive voltage); 0 → 0V (no voltage)\nSimplest possible scheme. But poor DC balance - long runs of 1s produce continuous positive voltage, draining power and causing baseline drift\nRarely used today",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "1. Unipolar",
+      "body": "Unipolar NRZ\nAmplitude\nTime",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "2. Polar",
+      "body": "NRZ-L & NRZ-I\nNRZ-L (Level):\n0 → low voltage (+V); 1 → high voltage (-V). Simple, but long runs of the same bit cause baseline wander and synchronization loss\nNRZ-I (Invert on 1):\nsignal inverts on every 1; stays the same on 0. Solves sync for runs of 1s, but long runs of 0s still lose sync\nThe signal does not return to zero between bits - it holds its level for the full bit period",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "2. Polar",
+      "body": "Amplitude\nTime\nTime\nNRZ-L & NRZ-I",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "2. Polar",
+      "body": "NRZ-L & NRZ-I\nNRZ is bandwidth-efficient - Requires the least bandwidth of all line codes. But the synchronization problem limits its use in high-speed networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "2. Polar",
+      "body": "RZ - Return to Zero (Polar):\nThe signal returns to zero voltage in the middle of every bit period\n1 → starts at +V, returns to 0 at mid-bit; 0 → starts at −V, returns to 0 at mid-bit\nSelf-synchronizing - every bit produces a guaranteed transition.\nDrawback: requires double the bandwidth of NRZ (two transitions per bit) and uses three voltage levels (+V, 0, −V) - more complex hardware\nRZ",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "2. Polar",
+      "body": "RZ\nAmplitude\nTime",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "2. Polar (Biphase)",
+      "body": "Manchester\nManchester (Polar):\nEvery bit period has a transition in the middle.\nRule (IEEE 802.3): 0 → high-to-low at mid-point; 1 → low-to-high at mid-point\nSelf-synchronizing - the mid-bit transition always occurs, regardless of the bit value\nDrawback: requires double the bandwidth of NRZ\nUsed in: 10BASE-T Ethernet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "2. Polar (Biphase)",
+      "body": "Differential Manchester (Polar)\nA transition at the start of the bit period means 0; no transition at the start means 1. A mid-bit transition always occurs (for clocking)\nMore noise-resistant than Manchester because the bit value is encoded by the presence or absence of a transition, not absolute voltage\nUsed in: Token Ring (IEEE 802.5)\nDifferential Manchester",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "2. Polar (Biphase)",
+      "body": "Amplitude\nTime\nTime\nManchester\nDifferential Manchester\nManchester & Differential Manchester",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "3. Bipolar",
+      "body": "AMI\nAMI - Alternate Mark Inversion (Bipolar):\n0 → zero voltage; 1 → alternates between +V and −V on successive 1s\nSelf-sync for 1s only; long runs of 0s still cause sync loss\nTwo consecutive same-polarity 1s indicate a transmission error (built-in error detection)\nUsed in: T1 telephone lines, ISDN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "3. Bipolar",
+      "body": "Pseudoternary\nThe exact opposite of AMI. 1 → zero voltage; 0 → alternates between +V and −V on successive 0s\nSame properties as AMI (self-sync for 0s instead of 1s, same error-detection capability)\nUsed in: ISDN basic access lines\nPseudoternary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "3. Bipolar",
+      "body": "Amplitude\nTime\nTime\nAMI\nPseudoternary\nAMI & Pseudoternary",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Line Coding",
+      "body": "Categories - Wrap Up\nScheme\nNRZ-L\nNRZ-I\nRZ\nCategory\nUnipolar\nPolar\nPolar\nPolar\nUnipolar NRZ\nRule for 0 / 1\n0 = low, 1 = high\n0 = no change, 1 = invert\n0 starts at −V, 1 starts at +V; both return to 0 mid-bit\n0 = 0V, 1 = +V\nSelf-Sync\nNo\nNo\nPartial (1s only)\nYes (always)\nUsed In\nBasic digital systems\nBasic digital systems\nSome clock-recovery systems\nHistorical / educational",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Line Coding",
+      "body": "Scheme\nDiff. Manchester\nAMI\nPseudoternary\nCategory\nPolar\nPolar\nBipolar\nBipolar\nManchester\nRule for 0 / 1\n0 = transition at start; 1 = no transition at start\n0 = zero, 1 = alternates ±V\n1 = zero, 0 = alternates ±V\n0 = H→L mid, 1 = L→H mid\nSelf-Sync\nYes (always)\nYes (always)\nPartial (1s only)\nPartial (0s only)\nUsed In\nToken Ring\nT1, ISDN\nISDN\n10BASE-T Ethernet\nCategories - Wrap Up",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Modulation & Demodulation",
+      "body": "Introduction\nModulation is the process where a sender encodes data onto a high-frequency carrier wave so it can travel over wireless or bandpass communication channels. \nDemodulation is the reverse - the receiver extracts the original data from that carrier wave. \nThey always work as a pair, and devices that do both are called modems (e.g., DSL modems, Wi-Fi cards, mobile radios)\nModulation & Demodulation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "Why Is It Needed?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "AM\nAmplitude changes to represent 0 or 1\nSimple but noise-prone (noise directly corrupts amplitude)\nUsed in: AM radio, basic optical fiber (intensity modulation), early modems\nThree Classical Techniques",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "Message Signal\nCarrier Signal\nAmplitude Modulated Signal\nAmplitude Modulation\nAmplitude\nTime\nAmplitude\nTime\nAmplitude\nTime\nEnvelope of Modulated Signal\nMinimum Amplitude\nMaximum Amplitude\nAc",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "FM\nFrequency changes; \namplitude stays constant\nMore noise-resistant than AM because noise affects amplitude, not frequency\nUsed in: FM radio, early modems (V.21 standard), Bluetooth (uses GFSK - Gaussian FSK)\nFrequency Modulation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "Message Signal\nCarrier Signal\nFrequency modulated signal\nAmplitude\nTime\nAmplitude\nTime\nAmplitude\nTime\nFrequency Modulation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "Phase Modulation\nPM\nPhase shifts to represent 0 or 1 (e.g. 180° flip)\nHighly noise-resistant\nAdvanced forms: QPSK (2 bits/symbol), 8-PSK (3 bits/symbol)\nUsed in: Wi-Fi (802.11), LTE/4G, 5G, satellite communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "Message Signal\nCarrier Signal\nAmplitude\nTime\nAmplitude\nTime\nPhase Modulation\nPhase modulated signal\nAmplitude\nTime",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "Analog Modulation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Modulation",
+      "body": "Quadrature Amplitude Modulation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Modulation",
+      "body": "QAM\nCombines amplitude + phase changes to pack multiple bits per symbol\n 64-QAM = 6 bits, 256-QAM = 8 bits, 1024-QAM = 10 bits per symbol - dramatically increasing data rates\nUsed in: Wi-Fi 5 (802.11ac) / Wi-Fi 6 (802.11ax), Cable internet (DOCSIS), DSL, 4G/5G\nQuadrature Amplitude Modulation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Modulation",
+      "body": "In phase channel output signal\nQuadrature channel output signal\nQuadrature Amplitude Modulation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Modulation",
+      "body": "Modulation\nFM / FSK\nPM / PSK\nQAM\nWhat Changes\nAmplitude\nFrequency\nPhase\nAmplitude + Phase\nAM / ASK\nNoise Resistance\nMedium\nHigh\nHigh (complex receiver)\nLow\nUsed In\nAM radio, basic optical\nFM radio, Bluetooth\nWi-Fi, 4G/5G, satellite\nWi-Fi 6, Cable, DSL, 5G\nWrap Up",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Modulation - AM, FM, and PM",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Multiplexing & Spread Spectrum",
+      "body": "Multiplexing & Spread Spectrum",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Nyquist Theorem",
+      "body": "Noiseless Channel Capacity\nGiven a channel with a certain bandwidth, what is the maximum data rate achievable?\nThe answer depends on two factors: the channel bandwidth, and the number of signal levels used",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Nyquist Theorem",
+      "body": "Noiseless Channel Capacity\nThe bandwidth of the channel in Hertz (Hz)\nNumber of signal levels (distinct voltage levels, phases, or symbols used)\nMaximum Bit Rate  =  2  ×  Bandwidth (Hz)  ×  log₂(L)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Nyquist Theorem",
+      "body": "Noiseless Channel Capacity\nMaximum data rate in bits per second (bps)\nThe number of bits each signal level can represent\nMaximum Bit Rate  =  2  ×  Bandwidth (Hz)  ×  log₂(L)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Nyquist Theorem",
+      "body": "Noiseless Channel Capacity\nOriginal Signal\nSampled signal at twice the original frequency\nReconstructed signal from sampling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Nyquist Theorem",
+      "body": "More signal levels mean more bits per symbol and higher data rate\nBut in real channels, noise makes many levels harder to distinguish\nNyquist assumes a perfect noiseless channel, which is not practical\nKey Insight\nNoiseless Channel Capacity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Nyquist Theorem",
+      "body": "Signal Levels (L)\n4 (QPSK)\n8\n16\nlog₂(L)\n1\n2\n3\n4\n2 (binary)\nMax Bit Rate\n2 × 3000 × 2  =  12,000 bps\n2 × 3000 × 3  =  18,000 bps\n2 × 3000 × 4  =  24,000 bps\n2 × 3000 × 1  =  6,000 bps\nNoiseless Channel Capacity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Solution - Maximum Capacity of a Noisy Channel",
+      "body": "Shannon’s Theorem\nClaude Shannon (1948) proved that every real channel - with noise - has an absolute maximum data rate beyond which reliable communication is impossible, no matter how clever the encoding or modulation. This is called the Channel Capacity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Solution - Maximum Capacity of a Noisy Channel",
+      "body": "Shannon’s Theorem\nSignal-to-Noise Ratio : the ratio of signal power to noise power (unitless ratio)\nChannel Capacity : the maximum achievable data rate in bits per second (bps)\nBandwidth of the channel in Hz",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Shannon’s Theorem",
+      "body": "SNR and Decibels\nSNR (dB)  =  10 × log₁₀(SNR)\nConversion: SNR = 30 dB\nActual SNR  =  10(30/10)  =  103  =  1000",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Shannon’s Theorem",
+      "body": "Example\nC  =  3000 × log₂(1 + 1000)  =  3000 × log₂(1001)  ≈  3000 × 9.97  ≈  29,900 bps\nBandwidth B = 3000 Hz. SNR = 30 dB\nSNR ratio = 1000",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Nyquist vs Shannon",
+      "body": "How To Use Both?\nTheorem\nShannon\nAssumption\nNoiseless channel\nNoisy channel (real)\nNyquist\nFormula\nB × log₂(1 + SNR)\n2B × log₂(L)\nWhat It Gives\nAbsolute channel capacity\nMax rate for given signal levels",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Nyquist & Shannon",
+      "body": "Working Together\nIn practice, engineers use both theorems together:\nShannon gives the hard maximum data rate for a noisy channel\nNyquist shows how signal levels can help approach that limit\nIf Nyquist allows more than Shannon, Shannon’s limit wins",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Multiplexing - FDM, TDM, and WDM",
+      "body": "Definition\nMultiplexing allows multiple signals to share a single transmission medium\nMUX combines signals at the sender side\nDEMUX separates them at the receiver side",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Multiplexing",
+      "body": "FDM\nFDM\nSplits bandwidth into non-overlapping frequency bands;\nAll senders transmit simultaneously\nGuard bands prevent interference\nUsed in: AM/FM radio, cable TV, ADSL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Multiplexing - FDM, TDM, and WDM",
+      "body": "TDM\nTDM\nEach sender gets the full bandwidth for a rotating time slot\nSynchronous TDM: Fixed slots per sender even if idle - simple but wasteful\nStatistical TDM: Slots assigned only when there's data - efficient but needs headers to identify the source\nUsed in: T1/E1 lines, SONET/SDH, GSM",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Multiplexing - FDM, TDM, and WDM",
+      "body": "WDM\nWDM\nFibre-optic equivalent of FDM;\ndifferent wavelengths (colours) of light carry separate signals on the same fibre\nDWDM packs 80–160 wavelengths, each at 10–100 Gbps → terabits/sec total\nUsed in: internet backbone, undersea cables",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Multiplexing - FDM, TDM, and WDM",
+      "body": "Type\nTDM\nMedium\nAnalog / RF\nDigital\nFDM\nDivision\nTime slots\nFrequency bands\nUsed In\nT1/E1, GSM, SONET\nAM/FM radio, cable TV, DSL\nWDM / DWDM\nOptical Fiber\nWavelength (colour)\nInternet backbone, undersea cables\nWrap Up",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Spread Spectrum",
+      "body": "FHSS and DSSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Spread Spectrum",
+      "body": "FHSS\nFHSS\nTransmitter hops frequencies in a pseudo-random sequence shared with the receiver\n A jammer or eavesdropper without the key can't follow \nUsed in: Bluetooth (79 channels, 1600 hops/sec), cordless phones",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "Spread Spectrum",
+      "body": "DSSS\nEach bit is XOR'd with a high-rate chip code, spreading it across a wide band\n Receiver applies the same code to recover the bit\nMore chips = better noise rejection but more bandwidth\n Used in: Wi-Fi 802.11b, GPS (unique code per satellite), CDMA 2G/3G\nDSSS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "The Physical Layer",
+      "body": "Physical Layer\nRole & Responsibilities, Types of Physical Signals\nDigital & Analog Transmission\nLine Coding, Modulation (ASK, FSK, PSK, QAM)\nKey Takeaways (1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 81,
+      "title": "The Physical Layer",
+      "body": "Key Takeaways (2/2)\nMedium Limits\nNyquist and Shannon Theorems\nMultiplexing & Spread Spectrum\nMultiplexing (FDM, TDM, WDM) and Spread Spectrum (FHSS, DSSS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 82,
+      "title": "Transmission Media & Switching",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 83,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 84,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1P9aWuLPuSV15drlT4rdJEJLEaZVaOo70J5HmF8ohQaQ/edit"
+}

@@ -1032,7 +1032,7 @@ check("a reached spend cap says so, and says it is not the document",
 check("…and that nothing generated has been lost",
       "still here" in _llm._provider_hint(403, _KEYLIMIT))
 check("a rejected key points at the setting, not at the run",
-      "OPENROUTER_API_KEY" in _llm._provider_hint(401, "invalid api key"))
+      _llm._key_env() in _llm._provider_hint(401, "invalid api key"))
 check("an empty account says top it up",
       "out of credit" in _llm._provider_hint(402, "insufficient credit"))
 check("a rate limit says it is temporary",

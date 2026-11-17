@@ -1,0 +1,523 @@
+{
+  "session_no": 25,
+  "source_file": "CN — session 25",
+  "deck_title": "CN — session 25",
+  "n_slides": 70,
+  "summary": "\n    - Slide 2: Multimedia Networking\n    - Slide 3: Remote Logging & NMS\n    - Slide 4: Multimedia Networking & VoIP\n    - Slide 5: Multimedia Networking Fundamentals\n    - Slide 6: Multimedia Networking\n    - Slide 7: Multimedia Networking\n    - Slide 8: Multimedia Networking\n    - Slide 9: Multimedia Networking\n    - Slide 10: Multimedia Networking\n    - Slide 11: Digitization of Multimedia\n    - Slide 12: Digitization of Multimedia\n    - Slide 13: Digitization of Multimedia\n    - Slide 14: Digitization of Multimedia\n    - Slide 15: Digitizing Audio\n    - Slide 16: Digitization of Multimedia\n    - Slide 17: Digitization of Multimedia\n    - Slide 18: Digitization of Multimedia\n    - Slide 19: Streaming Media Over Networks\n    - Slide 20: Streaming Media Over Networks\n    - Slide 21: Streaming Stored Audio/Video\n    - Slide 22: Streaming Stored Audio/Video\n    - Slide 23: Streaming Stored Audio/Video\n    - Slide 24: Streaming Stored Audio/Video\n    - Slide 25: Streaming Stored Audio/Video\n    - Slide 26: Streaming Stored Audio/Video\n    - Slide 27: Streaming Stored Audio/Video\n    - Slide 28: Streaming Stored Audio/Video\n    - Slide 29: Streaming Protocols\n    - Slide 30: Streaming Protocols\n    - Slide 31: Streaming Protocols\n    - Slide 32: Adaptive Bitrate Streaming (ABR)\n    - Slide 33: Adaptive Bitrate Streaming (ABR)\n    - Slide 34: Adaptive Bitrate Streaming (ABR)\n    - Slide 35: Adaptive Bitrate Streaming (ABR)\n    - Slide 36: Quiz Time!\n    - Slide 37: Real-Time Media Protocols\n    - Slide 38: Real-Time Transport Protocol\n    - Slide 39: Real-Time Transport Protocol\n    - Slide 40: Real-Time Transport Protocol\n    - Slide 41: Real-Time Transport Protocol\n    - Slide 42: Real-Time Transport Protocol\n    - Slide 43: Real-Time Transport Control Protocol\n    - Slide 44: Real-Time Transport Control Protocol\n    - Slide 45: Real-Time Transport Control Protocol\n    - Slide 46: Real-Time Transport Control Protocol\n    - Slide 47: How RTP & RTCP Work Together?\n    - Slide 48: How RTP & RTCP Work Together?\n    - Slide 49: How RTP & RTCP Work Together?\n    - Slide 50:  Voice over Internet Protocol (VoIP)\n    - Slide 51: Voice over Internet Protocol (VoIP)\n    - Slide 52: VoIP Architecture\n    - Slide 53: VoIP Architecture\n    - Slide 54: VoIP Architecture\n    - Slide 55: VoIP Architecture\n    - Slide 56: VoIP Protocols\n    - Slide 57: VoIP Protocols\n    - Slide 58: VoIP Protocols\n    - Slide 59: VoIP Protocols\n    - Slide 60: VoIP Protocols\n    - Slide 61: Voice over Internet Protocol (VoIP)\n    - Slide 62: Voice over Internet Protocol (VoIP)\n    - Slide 63: Voice over Internet Protocol (VoIP)\n    - Slide 64: Voice over Internet Protocol (VoIP)\n    - Slide 65: Quiz Time!\n    - Slide 66: Multimedia Networking & VoIP\n    - Slide 67: Multimedia Networking & VoIP\n    - Slide 68: Introduction to Transport Layer",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Multimedia Networking",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Remote Logging & NMS",
+      "body": "Remote Logging & NMS\nRemote Logging\nTelnet & SSH\nNetwork Management\nSNMP Protocol\nArchitecture\nSNMP Messages & Versions\nVersions: v1, v2c, v3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Multimedia Networking & VoIP",
+      "body": "Multimedia Networking & VoIP\nDigitizing Audio\nDigitizing Video\nRTP, RTCP\nArchitecture, Protocols\nMultimedia Networking Fundamentals\nDigitization of Multimedia\nStreaming Media Over Networks\nVoIP (Voice Over IP)\nReal-Time Media Protocols\nArchitecture, Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Multimedia Networking Fundamentals",
+      "body": "Multimedia Networking Fundamentals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Multimedia Networking",
+      "body": "What is Multimedia?\nMultimedia is the integration of multiple media types to represent and communicate information digitally\nMultimedia",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Multimedia Networking",
+      "body": "Types of Multimedia\nText\nGraphics /Images\nAudio / Sound\nVideo / Motion\n(including Animation) \nMultimedia Core Components\nA multimedia presentation can combine two or more of these media types to deliver quality content",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Multimedia Networking",
+      "body": "What is Multimedia Networking?\nMultimedia Networking\nMultimedia networking is the process of transmitting and delivering multimedia content over computer networks using specialized protocols and techniques",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Multimedia Networking",
+      "body": "Where & How Multimedia is Used?\nEducation & Training\nEntertainment\n Interactive tutorials, e‑learning, digital textbooks\nMovies, video‑streaming, games, audio/video streaming\nAds, product demos, business presentations, marketing content\nVideo calls, Online classes, Team meetings\nBusiness & Presentations\nCommunication & Collaboration",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Multimedia Networking",
+      "body": "Why Multimedia is powerful?\nwhy Multimedia is powerful:\nCombines multiple senses (vision, hearing, reading) for better understanding\u000b\nMore engaging than plain text — helps grab attention\u000b\nHelps explain complex ideas using combinations (visual + audio + text)\nCombines multiple senses (vision, hearing, reading) for better understanding\nMore engaging than plain text, helps grab attention\nHelps explain complex ideas using combinations (visual + audio + text)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Digitization of Multimedia",
+      "body": "Digitization of Multimedia",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Digitization of Multimedia",
+      "body": "Digitizing Audio\nConverting sound (analog) into a digital format so computers can store, process, or send it over a network\n What is Digitizing Audio?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Digitization of Multimedia",
+      "body": "Digitizing Audio\nSampling: Measure the audio signal at regular intervals\nQuantization: Round each sample to a fixed numeric value (bit depth)\nEncoding & Compression: Converting quantized values into digital code and compressing to reduce size\nSteps to Convert Analog Audio to Digital:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Digitization of Multimedia",
+      "body": "Digitizing Audio\nComputers understand only digital data (0s and 1s)\n Why Digitizing Audio?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Digitizing Audio",
+      "body": "Examples of Audio Formats\nA popular audio compression format used for songs, podcasts, and audio files\nMP3 (MPEG Audio Layer III)\nA newer audio codec/format used in streaming apps (YouTube, Apple Music) because it gives better quality at smaller Sizes\nAAC (Advanced Audio Coding)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Digitization of Multimedia",
+      "body": "Digitizing Video\nConverting real-world motion into digital video frames\n What is Digitizing Video?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Digitization of Multimedia",
+      "body": "Digitizing Video\nTo store, transmit, or stream video online\n What is Digitizing Video?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Digitization of Multimedia",
+      "body": "Digitizing Video\nFrame Capture: Recording video as a sequence of images (frames) at a fixed rate\nCompression & Encoding: Reducing the size of video using codecs like H.264, H.265\nStorage or Transmission: The compressed video can be stored on a disk or streamed over the Internet\nSteps to Convert motion into digital :",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Streaming Media Over Networks",
+      "body": "Streaming Media Over Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Streaming Media Over Networks",
+      "body": "Streaming Stored Audio/Video\nStreaming allows playback while the media is being received, without waiting for the full file to download.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Why is it useful?\nInstant access No waiting for full download\nSmooth playback with proper Pre-loading\nSaves local storage",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Types of Streaming",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Types of Streaming\nMust download the entire file first\nExample: Downloading a movie to watch later\nDownload-and-Play",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Types of Streaming\nStreaming\nPlayback starts immediately as data arrives\nNo need to download the full file\nExample: YouTube on-demand video",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Types of Streaming\nProgressive Download\nThe file starts downloading, and playback begins once enough data is buffered but the file is downloaded linearly (start to end)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Types of Streaming\nPodcast apps downloading episodes, older HTML5 video players, downloading a song on a music app while listening\nNetflix and YouTube do NOT use progressive download,  they use Adaptive Bitrate Streaming (HLS/DASH), which is more advanced",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Streaming Problems\nDelay (Latency)\nDelay before content starts playing\nBuffering\nVideo pauses to load more data\nPacket Loss\n Missing data causes glitches",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Streaming Stored Audio/Video",
+      "body": "Streaming Problems\nJitter\nUneven arrival of packets →  video/audio plays unevenly\nBandwidth Variation\nNetwork speed changes affect quality",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Streaming Protocols",
+      "body": "How Media Reaches User?\nMessage Type\nDirection\nRTSP\nReal-Time Streaming Protocol\nPurpose\nControls media playback (play, pause, seek) like a TV remote for streaming\nExample\nCCTV cameras, IP cameras, older media players",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Streaming Protocols",
+      "body": "How Media Reaches User?\nMessage Type\nDirection\nHLS\nHTTP Live Streaming\nPurpose\nBreaks video into small chunks (.ts files) and delivers over HTTP. Adapts quality based on your internet speed\nExample\nYouTube, Netflix, Apple devices, Instagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Streaming Protocols",
+      "body": "How Media Reaches User?\nMessage Type\nDirection\nDASH\nDynamic Adaptive Streaming over HTTP\nPurpose\nSimilar to HLS  adapts video quality in real-time based on network conditions. Open standard (not Apple-only)\nExample\nYouTube, Netflix, Amazon Prime",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Adaptive Bitrate Streaming (ABR)",
+      "body": "Behind Buffer-Free Viewing\nServer stores video in MULTIPLE quality levels\n240p, 360p, 480p, 720p, 1080p\nPlayer checks your current \u000binternet speed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Adaptive Bitrate Streaming (ABR)",
+      "body": "Behind Buffer-Free Viewing\nPlayer automatically picks the best quality → Fast internet? 1080p HD → Slow internet? → 480p SD → Speed drops mid-video? → Switches down seamlessly\nVideo plays without buffering!",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Adaptive Bitrate Streaming (ABR)",
+      "body": "Behind Buffer-Free Viewing\nBoth HLS and DASH use this technique. This is why Netflix and YouTube rarely buffer they ADAPT to your network instead of trying to force HD on a slow connection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Adaptive Bitrate Streaming (ABR)",
+      "body": "Analogy\nABR is like a smart water tap when water pressure is high, it gives full flow (HD), When pressure drops, it reduces flow (lower quality) but never stops completely, You always get water (video) without interruption",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Real-Time Media Protocols",
+      "body": "Real-Time Media Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Real-Time Transport Protocol",
+      "body": "RTP (Real-Time Transport Protocol)\nWhy it’s used\nEnsures smooth delivery of media packets\nHelps maintain timing of audio/video\nWhat is RTP\nA protocol used to send real-time audio and video over the Internet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Real-Time Transport Protocol",
+      "body": "What RTP does?\nAdds timestamps → Tells the receiver WHEN each packet should be played (keeps audio/video timed correctly)\nPayload Type Identification → Tells receiver what media type is inside (codec info)\nAdds sequence numbers → Tells the receiver the ORDER of packets (detects missing or out-of-order packets)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Real-Time Transport Protocol",
+      "body": "What RTP does?\nRTP does NOT fix jitter by itself. It provides the metadata (timestamps + sequence numbers) that the receiver's jitter buffer uses to reorder and smooth out playback",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Real-Time Transport Protocol",
+      "body": "Analogy\nThink of RTP like a postal service that stamps every letter with a number and date, If letters arrive out of order, YOU (the receiver/jitter buffer) can rearrange them using the numbers, The postal service (RTP) didn't rearrange them it just gave you the information to do it yourself",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Real-Time Transport Protocol",
+      "body": "Applications Using RTP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Real-Time Transport Control Protocol",
+      "body": "Introduction\nWhat is RTCP?\nRTCP works with RTP to provide feedback on media delivery. It does not carry media itself\nRTCP\nSender\nFeedback",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Real-Time Transport Control Protocol",
+      "body": "What RTCP Provides?\nQoS Reports → How well the stream is performing\nPacket Loss Reports → Identifies network issues\nDelay Measurements → Helps detect latency\nAudio/Video Sync → Keeps voice and video aligned",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Real-Time Transport Control Protocol",
+      "body": "Purpose\nRTCP Purpose\nImproves streaming quality by reporting problems so systems can adjust",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Real-Time Transport Control Protocol",
+      "body": "How RTP & RTCP Work Together?\nRTP and RTCP operate side-by-side to deliver smooth real-time audio/video\nSender\nReceiver\nReceiver\nInternet\nRTP\nRTCP\nRTCP\nRTCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "How RTP & RTCP Work Together?",
+      "body": "How RTP Works?\nAudio/video packets with timestamps & sequence numbers\nEnsures correct order and timing during playback\nRTP sends media data\nRTP: Sender → Receivers (one-way)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "How RTP & RTCP Work Together?",
+      "body": "How RTCP Works?\nReports on delay, packet loss\nHelps sender adjust quality (buffering, etc.)\nRTCP sends feedback\nRTCP : Sender ↔ Receivers (both ways)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "How RTP & RTCP Work Together?",
+      "body": "Overall Idea\nRTP & RTCP Together, Real-time communication becomes smooth and synchronized",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": " Voice over Internet Protocol (VoIP)",
+      "body": "Voice over Internet Protocol (VoIP)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Voice over Internet Protocol (VoIP)",
+      "body": "What is VoIP?\nVoIP (Voice over Internet Protocol)\nVoIP (Voice over Internet Protocol) is a technology that allows voice calls to be transmitted over the Internet instead of traditional telephone lines\nWhatsApp voice call\nSkype\nZoom audio call",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "VoIP Architecture",
+      "body": "How Voice Travels Over the Internet?",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Component",
+            "Role"
+          ],
+          [
+            "VoIP Endpoint",
+            "Your device IP phone, softphone app (WhatsApp, Zoom), \u000bor ATA (Analog Telephone Adapter)"
+          ],
+          [
+            "SIP Proxy Server",
+            "Routes call requests finds where the other person is, \u000bsets up the connection"
+          ],
+          [
+            "VoIP Gateway",
+            "Bridges VoIP and traditional phone (PSTN) converts \u000bdigital voice to analog and vice versa"
+          ],
+          [
+            "PSTN",
+            "Public Switched Telephone Network the old landline system"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 53,
+      "title": "VoIP Architecture",
+      "body": "How Voice Travels Over the Internet?\nCaller A\u000b(VoIP Phone/ Softphone)\nCaller B\u000b(VoIP Phone/ Softphone)\nSIP Proxy\nServer\nInternet\nSIP Proxy\nServer\nVoIP Gateway\nPSTN (Traditional Phone Network)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "VoIP Architecture",
+      "body": "Analogy\nThink of the SIP server as a receptionist at a hotel  when you call someone, the receptionist (SIP server) finds out which room (IP address) the person is in and connects your call",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "VoIP Architecture",
+      "body": "Analogy\nThe VoIP Gateway is like a translator if one person speaks digital (VoIP) and the other speaks analog (landline), the gateway translates between the two",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "VoIP Protocols",
+      "body": "SIP (Session Initiation Protocol)\nThe MOST widely used VoIP signaling protocol today\nHandles: Setting up, modifying, and tearing down voice/video calls\nWorks like HTTP text-based, uses requests and responses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "VoIP Protocols",
+      "body": "SIP (Session Initiation Protocol)\nSIP Messages\nINVITE\nStart a call\nACK\nConfirm call setup\nBYE\nEnd the call\nREGISTER\nRegister your device with SIP server\nUsed by: WhatsApp, Zoom, Microsoft Teams, most modern VoIP systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "VoIP Protocols",
+      "body": "H.323 (ITU-T Standard)\nAn older, more complex VoIP protocol suite\nWas the dominant VoIP standard before SIP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "VoIP Protocols",
+      "body": "H.323 (ITU-T Standard)\nMultiple Sub Protocols\nH.225\nCall signaling\nH.245\nMedia control\nRTP\nMedia transport\nStill used in: Legacy enterprise video conferencing, older telecom systems\nMore complex than SIP but very feature-rich",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "VoIP Protocols",
+      "body": "Analogy\nSIP vs H.323 is like WhatsApp vs a Fax Machine, Both can send messages, but WhatsApp (SIP) is simpler, faster, and what everyone uses today, Fax machines (H.323) still exist in some offices but they're the older, more complex way of doing things",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Voice over Internet Protocol (VoIP)",
+      "body": "How VoIP Works?\n1\n2\n3\n4\n5\n6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Voice over Internet Protocol (VoIP)",
+      "body": "How VoIP Works?\nThe 6 steps use these protocols\nSteps 1-2 (Call setup and signaling)\nSIP\nStep 3 (Compression)\nCodecs (G.711, G.729)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Voice over Internet Protocol (VoIP)",
+      "body": "How VoIP Works?\nThe 6 steps use these protocols\nSteps 4-5 (Packetization and Transmission)\nRTP\nMonitors quality during Steps 4-5\nRTCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Voice over Internet Protocol (VoIP)",
+      "body": "VoIP Challenges\nDelay (Latency)\n Jitter\nPacket Loss\nEcho & Noise\nBandwidth Requirement\nVoice arrives late\nInconsistent audio\n Broken or robotic voice\n Poor Microphones \nPoor call quality",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Multimedia Networking & VoIP",
+      "body": "Multimedia Networking Fundamentals\nDigitization of Multimedia\nDigitizing Audio\nDigitizing Video\nStreaming Media Over Networks\nKey Takeaways (PART 1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Multimedia Networking & VoIP",
+      "body": "Real-Time Media Protocols\nRTP\nRTCP\t\nVoIP (Voice Over IP)\nArchitecture \nProtocols\nKey Takeaways (PART 2/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Introduction to Transport Layer",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1h5MWHehn1UNU6IALP_tcfOPXmYcxSeoFShDUspIaOj8/edit"
+}

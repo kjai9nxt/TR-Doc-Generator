@@ -1,0 +1,570 @@
+{
+  "session_no": 29,
+  "source_file": "CN — session 29",
+  "deck_title": "CN — session 29",
+  "n_slides": 80,
+  "summary": "\n    - Slide 2: Web Essentials: WWW, HTTP & DNS\n    - Slide 3: Web Request & Network Models\n    - Slide 4: Web Request & Network Models\n    - Slide 5: Web Essentials - WWW, HTTP & DNS\n    - Slide 6: World Wide Web (WWW)\n    - Slide 7: World Wide Web (WWW)\n    - Slide 8: Internet Vs Web\n    - Slide 9: World Wide Web (WWW)\n    - Slide 10: World Wide Web (WWW)\n    - Slide 11: Internet Vs Web\n    - Slide 12: Internet Vs Web\n    - Slide 13: Internet Vs Web\n    - Slide 14: Internet Vs Web\n    - Slide 15: Internet Vs Web\n    - Slide 16: World Wide Web (WWW)\n    - Slide 17: World Wide Web (WWW)\n    - Slide 18: World Wide Web (WWW)\n    - Slide 19: URL\n    - Slide 20: Client–Server Model \n    - Slide 21: Application Layer\n    - Slide 22: Application Layer\n    - Slide 23: Client–Server Model & HTTP Lifecycle\n    - Slide 24: Application Layer\n    - Slide 25: Application Layer\n    - Slide 26: Application Layer\n    - Slide 27: Client–Server Model & HTTP Lifecycle\n    - Slide 28: Client-Server Model\n    - Slide 29: Client-Server Model\n    - Slide 30: Client–Server Model & HTTP Lifecycle\n    - Slide 31: HTTP (Hypertext Transfer Protocol)\n    - Slide 32: HTTP (Hypertext Transfer Protocol)\n    - Slide 33: HTTP (Hypertext Transfer Protocol)\n    - Slide 34: HTTP (Hypertext Transfer Protocol)\n    - Slide 35: HTTP (Hypertext Transfer Protocol)\n    - Slide 36: Client–Server Model & HTTP Lifecycle\n    - Slide 37: Client–Server Model & HTTP Lifecycle\n    - Slide 38: Client–Server Model & HTTP Lifecycle\n    - Slide 39: Client–Server Model & HTTP Lifecycle\n    - Slide 40: Client–Server Model & HTTP Lifecycle\n    - Slide 41: Client–Server Model & HTTP Lifecycle\n    - Slide 42: Client–Server Model & HTTP Lifecycle\n    - Slide 43: Client–Server Model & HTTP Lifecycle\n    - Slide 44: HTTP Life Cycle\n    - Slide 45: HTTP Life Cycle\n    - Slide 46: HTTP Life Cycle\n    - Slide 47: Quiz Time!\n    - Slide 48: Domain Name System (DNS)\n    - Slide 49: Domain Name System (DNS)\n    - Slide 50: Domain Name System (DNS)\n    - Slide 51: Domain Name System (DNS)\n    - Slide 52: Domain Name System (DNS)\n    - Slide 53: Domain Name System (DNS)\n    - Slide 54: Domain Name System (DNS)\n    - Slide 55: DNS in Internet\n    - Slide 56: DNS Resolution\n    - Slide 57: DNS Resolution\n    - Slide 58: DNS Recursive Query\n    - Slide 59: DNS Resolution (Recursive vs Iterative)\n    - Slide 60: DNS Iterative Query\n    - Slide 61: DNS Resolution (Recursive vs Iterative)\n    - Slide 62: DNS Resolution (Recursive vs Iterative)\n    - Slide 63: DNS Resolution (Recursive vs Iterative)\n    - Slide 64: DNS Resolution (Recursive vs Iterative)\n    - Slide 65: DNS Resolution (Recursive vs Iterative)\n    - Slide 66: DNS Resolution (Recursive vs Iterative)\n    - Slide 67: DNS Resolution (Recursive vs Iterative)\n    - Slide 68: DNS Resolution (Recursive vs Iterative)\n    - Slide 69: Domain Name System (DNS)\n    - Slide 70: Domain Name System (DNS)\n    - Slide 71: DNS Resolution (Recursive vs Iterative)\n    - Slide 72: DNS Message\n    - Slide 73: DNS Message\n    - Slide 74: DNS Message\n    - Slide 75: Quiz Time!\n    - Slide 76: Web Essentials - WWW, HTTP & DNS\n    - Slide 77: Web Essentials - WWW, HTTP & DNS\n    - Slide 78: Internet Communication Protocols",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Web Essentials: WWW, HTTP & DNS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Web Request & Network Models",
+      "body": "Web Request & Network Models\nWeb Request Journey\nClient, DNS Lookup\nTCP, TLS Handshake\nOverview of Web Page Loading \nNetwork Model Stack\nAbstraction and Layering \nWhy Models Exist",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Web Request & Network Models",
+      "body": "Web Request & Network Models\nUnderstanding Network Models\nOSI Model Vs TCP/IP Model\nImportance of Layers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Web Essentials - WWW, HTTP & DNS",
+      "body": "Web Essentials - WWW, HTTP & DNS\nDomain Name System (DNS) \nClient-Server Model & HTTP Lifecycle\nApplication Layer, Client-Server Model, HTTP Lifecycle\nWorld Wide Web (WWW)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "World Wide Web (WWW)",
+      "body": "World Wide Web (WWW)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "World Wide Web (WWW)",
+      "body": "Definition\nThe World Wide Web (WWW) is a collection of websites and online content that can be accessed through the internet using a web browser",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Internet Vs Web",
+      "body": "Internet\nNetwork of networks\nConnects billions of devices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "World Wide Web (WWW)",
+      "body": "What is HTTP?\nWhat is HTTP?\nHTTP (HyperText Transfer Protocol) is the language of the web",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "World Wide Web (WWW)",
+      "body": "What is HTTP?\nIt’s how browsers and servers communicate\nText-based and human-readable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Internet Vs Web",
+      "body": "World Wide Web (WWW)\n1\n2\n3\nService built on top of the Internet like many others\nUses HTTP or HTTPS protocols\nIdentified by URLs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Internet Vs Web",
+      "body": "World Wide Web (WWW)\nSo, whenever you browse a website, stream a YouTube video, or call a REST API — you’re using the Web",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Internet Vs Web",
+      "body": "Send an email via Gmail\nMake a WhatsApp Call \nUses of Internet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Internet Vs Web",
+      "body": "Uses of WWW\nVisit gmail.com in your browser → using the Web via HTTP/HTTPS\nStream YouTube → using the Web, because video is delivered via HTTP/HTTPS\nhttps://www.youtube.com/watch?v=pSZ_97_lZZk",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Internet Vs Web",
+      "body": "The Internet is like the entire network of roads and highways\nInternet\nAnalogy\nThe Web is like a specific set of cars driving on those roads, but they follow one special set of traffic rules called HTTP\nWeb",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "World Wide Web (WWW)",
+      "body": "Web Documents\nA web resource (or web document) is any content that can be access on the Web.\nA web resource (or web document) is any content that can be accessed on the Web",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "World Wide Web (WWW)",
+      "body": "No matter what type of resource it is, the common thing is: \u000bit can be retrieved using a URL(Uniform Resource Locator)\nTypes of Web Resources\nHTML pages\nTypes of Web Resources\nStylesheet or script\nImage or video\nAPI endpoint\nDownloadable files",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "World Wide Web (WWW)",
+      "body": "What is a URL?\nUniform Resource Locator\nThe address of a resource on the Web",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "URL",
+      "body": "Example\nProtocol\nDomain Name\nPath",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Client–Server Model ",
+      "body": "Client–Server Model \n& HTTP Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Application Layer",
+      "body": "We have the Address... Now what?\nTo actually get the \"Web Document,\" you need to:\nKnock on the door (Start a connection)\nSpeak a language they understand (Use a Protocol)\nAsk specifically for what you need (Make a Request)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Application Layer",
+      "body": "We have the Address... Now what?\nBefore we can move data, we need a \"meeting place\" where our apps can talk. This \"meeting place\" is the Application Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "What is an Application Layer?\nThe Application Layer is the user-facing layer of networking where our apps speak to the network using protocols\nProtocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Application Layer",
+      "body": "OSI Model vs TCP/IP Model\nOSI Model\n(All three layers are separate)\nAll three layers are combined into the Application Layer\nTCP/IP Model\nApplication Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Application Layer",
+      "body": "Functions\nHandle user interaction\nData formatting\n(e.g., Translation, compression)\nEncryption\nFor secure communication\nSession management\ne.g., Establishing, maintaining sessions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Application Layer",
+      "body": "Some Common Protocols Used Daily",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "Client-Server model\nClient: \u000bA Device making the request\nServer: \u000bA machine handles the request\nLaptop, phone, browser\nE.g., a data center or server handling WhatsApp, Gmail, etc",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Client-Server Model",
+      "body": "Example\nClient\nRequest\nServer\nResponse\nYou\u000b(in a restaurant)\nYour order to the waiter\nThe kitchen preparing your food\nThe waiter bringing your dish back",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Client-Server Model",
+      "body": "Client\nRequest\nServer\nResponse\nYou\u000b(in a restaurant)\nYour order to the waiter\nThe kitchen preparing your food\nThe waiter bringing your dish back\nWeb = Request-Response\nThe client asks, the server responds\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "Key characteristics of HTTP\nStateless: \u000bEach request is independent, meaning the server doesn’t remember past requests",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "HTTP (Hypertext Transfer Protocol)",
+      "body": "Why You Stay Logged In?\nYou log in to Instagram/YouTube and then close the app.\u000b\nWhen you reopen the app, do you need to login again?\u000b\nNo! ✅\u000b\nQuestion: If every request was independent, shouldn’t you be asked to log in again? ❌\nYou log in to Instagram/YouTube and then close the app\nWhen you reopen the app, do you need to login again?\nIf every request was independent, shouldn’t you be asked to log in again?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "HTTP (Hypertext Transfer Protocol)",
+      "body": "When Memory is Needed ?\nTo make websites more interactive, like keeping logged in or remembering the shopping cart, we use: \u000bCookies and Sessions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "HTTP (Hypertext Transfer Protocol)",
+      "body": "Sessions: Server-side memory linked to you, often with a session ID in a cookie\nCookies: Small pieces of data stored in your browser, sent with each request\nWhen Memory is Needed ?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "HTTP (Hypertext Transfer Protocol)",
+      "body": "Why HTTP?\nHTTP is the core that connects apps and networks, making the web possible\nStandard protocol to:\nRequest resources (HTML, CSS, images, APIs)\nSend data (forms, logins, JSON)\nControl caching, authentication, and sessions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "HTTP (Hypertext Transfer Protocol)",
+      "body": "The HTTP Lifecycle (Step by Step)\nThe HTTP lifecycle describes how a web browser (client) requests and receives information from a server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle (Step by Step)\n01\n02\n03\n04\n05\n06\n07\n08\n1. Client Initiates Request\u000bAction like typing a URL or clicking a link triggers the process",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle – Step by Step\n01\n02\n03\n04\n05\n06\n07\n08\n2. DNS Lookup\u000bBrowser resolves the domain name (e.g., google.com) to an IP address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle – Step by Step\n01\n02\n03\n04\n05\n06\n07\n08\n3. TCP/IP Connection\u000bClient connects to the server using TCP (Three-Way Handshake: SYN, SYN-ACK, ACK)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle – Step by Step\n01\n02\n03\n04\n05\n06\n07\n08\n4. HTTP Request Sent\u000bClient sends the HTTP request (GET, POST, headers, and data) over TCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle – Step by Step\n01\n02\n03\n04\n05\n06\n07\n08\n5. Server Processes Request \u000bServer processes the request and prepares a response (may involve database retrieval)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle – Step by Step\n01\n02\n03\n04\n05\n06\n07\n08\n6. HTTP Response Sent\u000bServer sends a response with a status line (200 OK, 404), headers, \u000band content (HTML, CSS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle – Step by Step\n01\n02\n03\n04\n05\n06\n07\n08\n7. Client Renders Content\nBrowser parses the response and displays content to the user",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Client–Server Model & HTTP Lifecycle",
+      "body": "The HTTP Lifecycle – Step by Step\n01\n02\n03\n04\n05\n06\n07\n08\n8. Connection Termination\u000bTCP connection is closed or kept open for further requests",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "HTTP Life Cycle",
+      "body": "Client\nThe client (you) places an order\nLife cycle in Simple Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "HTTP Life Cycle",
+      "body": "The server (kitchen) prepares the meal (processing)\nThe kitchen preparing your food\nServer\nLife cycle in Simple Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "HTTP Life Cycle",
+      "body": "The waiter delivers the dish to you (response)\nThe waiter bringing your dish back\nEach order is independent — the restaurant doesn't remember past orders unless you have a loyalty card (cookies)\nResponse\nLife cycle in Simple Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Domain Name System (DNS)",
+      "body": "Domain Name System (DNS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Domain Name System (DNS)",
+      "body": "What is Domain Name Space ?\nDefinition\nDomain Name Space is a hierarchical tree structure used on the \u000bInternet to manage domain names",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Domain Name System (DNS)",
+      "body": "What is Name Space ?\nDefinition\nA Name Space is a system used to assign unique, meaningful names to resources in a network (computers, websites, services)\nWhy Name Space?\nHelps us identify devices easily\nAvoids confusion when many systems exist\nMakes the Internet organized",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Domain Name System (DNS)",
+      "body": "Name Space\nNo hierarchy\nNames stored in a simple list\nNot scalable\nTypes of Name Spaces Structures\nFlat Name Space\nNames arranged like a tree\nEasy to manage\nScalable\nHierarchical Name Space\nExamples\n\"PC1\", \"AdminPC\", \"Printer01\" \u000b(used in early LAN networks)\nwww.google.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Domain Name System (DNS)",
+      "body": "Structure\nRoot( . )\n.com\n.org\n.in\ngoogle\nwww\namazon\nwww\nWikipedia\nwww",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Domain Name System (DNS)",
+      "body": "Structure\nRoot Level ( . )\nTop-Level Domains (TLDs)\nGeneric TLDs: .com, .org, .net\nCountry TLDs: .in, .uk, .jp\nSecond-Level Domains:\ngoogle.com, wipro.in\nSubdomains:\nmail.google.com, support.microsoft.com\nStructure\nKey Idea\nEvery domain name = sequence of labels from node → root",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Domain Name System (DNS)",
+      "body": "DNS in Internet\nDNS translates human-readable names to machine-readable IP addresses and vice versa\nDNS (Domain Name System) handles this translation process\nhuman-readable names \u000b(e.g., google.com)\nMachine-readable IP addresses \u000b(e.g., 142.250.183.78)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "DNS in Internet",
+      "body": "Why DNS Exists?\nComputers use IP addresses; humans prefer names\nDNS is the Internet's phonebook, mapping domain names (e.g., google.com) to IP addresses(192.168.1.1)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "DNS Resolution",
+      "body": "Introduction\nDNS Resolution is the process of finding the IP address of a domain name.\nTypes of Queries:\nRecursive Query: Server must give final answer\u000b\nIterative Query: Server gives \"best possible answer\" or referral\nDNS Resolution is the process of finding the IP address of a domain name\nTypes of Queries\nIterative Query\nRecursive Query\nServer must give final answer\nServer gives best possible answer or referral",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "DNS Resolution",
+      "body": "What is a Recursive Query?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "DNS Recursive Query",
+      "body": "Recursive Example\nVisitor\nAttender\nSub head\nHead\nVisitor asks the Attender for information\nAttender forwards the query to the Sub Head\nSub Head consults the Head for the answer\nHead provides the response back to the Visitor",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "Iterative Query\nDNS Resolution \nWhat is an Iterative Query?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "DNS Iterative Query",
+      "body": "Iterative Example\nThis continues step by step until you finally get the complete address\nGuide\nGuide\nGuide",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "The DNS Hierarchy\nThe resolution process follows a step-by-step approach, moving from one level to the next\nThe DNS Hierarchy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "Recursive vs Iterative Queries\nThe Local DNS Server does all the work, contacting root, TLD, and authoritative servers, then returns the IP\nRecursive Query\nLocal DNS Server\nContacting root\nTLD\nAuthoritative servers\nReturns the IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "Recursive vs Iterative Queries\nThe Local DNS server queries each server in the hierarchy until it gets the answer\nIterative Query\nLocal DNS Server\nAnswer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "Resolving google.com\nBrowser (Client)\nLocal Resolver\u000b(router / ISP / public DNS like 8.8.8.8)\nCached\nNot-Cached\nRoot Server\n.com TLD Server\nAuthoritative Server\nReturn result",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "DNS Resolution (Recursive vs Iterative)\nIP Address returned\nBrowser starts TCP connection\nResolving google.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "DNS Resolution (Recursive vs Iterative)\nResolving google.com\nEnd-user never directly queries Root Servers\nNOTE :",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "Impact of DNS Caching\nDNS caching stores a website’s address for quick reuse instead of searching for it again\nWhat is DNS Caching?\nDNS would be too slow if this happened every single time  So, we have caching at multiple layers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "Impact of DNS Caching\nBrowser stores DNS results for quick access\nOperating System caches DNS for all apps\nISP keeps DNS cache to avoid repeated lookups",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Domain Name System (DNS)",
+      "body": "A DNS Message is a structured packet of information exchanged between a DNS client (resolver) and a DNS server to perform name resolution that is, to find the IP address corresponding to a domain name (or vice versa)\nIt ensures that queries and responses are accurate, organized, and efficient\nDNS Message\nDefinition",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Domain Name System (DNS)",
+      "body": "Types of DNS Messages\nThere are two types of DNS messages: Queries (requests) and Responses (replies)\nDNS messages\nQuery\nResponse",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "DNS Resolution (Recursive vs Iterative)",
+      "body": "DNS Messages Structure\nQuestion Section\nHeader\nQuestion Section\nHeader\nAnswer Section\nAuthoritative Section\nAdditional Section\nA. Query\nB. Response\nQuery and Response messages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "DNS Message",
+      "body": "DNS Message  Components\nHeader → metadata, flags, transaction ID\u000b\nQuestion → domain and query details\u000b\nAnswer → records answering the query\u000b\nAuthority → authoritative servers\u000b\nAdditional → extra info to help resolution\nMetadata, flags, transaction ID\nHeader\nDomain and query details\nQuestion\nRecords answering the query\nAnswer\nAuthoritative servers\nAuthority\nExtra info to help resolution\nAdditional",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "DNS Message",
+      "body": "Example\nQuery Message\u000b\nSent by the resolver (client) to ask:\u000b “What is the IP address of this domain?”\u000b\u000b\nResponse Message\u000b\nSent by the DNS server with the answer\u000b\nContains:\u000b\nAnswer Section → requested IP or record\u000b\nAuthority Section → information about authoritative servers\u000b\nAdditional Section → extra helpful records\nSent by the resolver (client) to ask:\n “What is the IP address of this domain?”\nQuery Message",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "DNS Message",
+      "body": "Example\nSent by the DNS server with the answer\nResponse Message\nAnswer Section → requested IP or record\nAuthority Section → information about authoritative servers\nAdditional Section → extra helpful records",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Web Essentials - WWW, HTTP & DNS",
+      "body": "World Wide Web (WWW)\nClient–Server Model & HTTP Lifecycle\nApplication Layer\nClient-Server Model\nHTTP\nHTTP Lifecycle\nKey Takeaways (PART 1/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Web Essentials - WWW, HTTP & DNS",
+      "body": "Domain Name System (DNS) \nName Space\nDomain Name Space\nDNS in Internet\nDNS Resolution \nDNS Message\nKey Takeaways (PART 2/2)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "Internet Communication Protocols",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1H0DHIdqKdkLcRq-nXSSYc5PkF71-cYjhzxsD6T2zryQ/edit"
+}

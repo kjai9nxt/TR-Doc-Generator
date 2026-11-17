@@ -1,0 +1,369 @@
+{
+  "session_no": 6,
+  "source_file": "6 _ Load Balancing _ CDN.docx",
+  "source_kind": "trdoc",
+  "source_hash": "fd13bc31d64afe575d4558a38999f218",
+  "deck_title": "Session 6 : Load Balancing & CDN",
+  "n_slides": 27,
+  "summary": "Session 6 : Load Balancing & CDN\n    - Slide 1: The Single Point of Failure Problem\n    - Slide 2: What a Load Balancer Does\n    - Slide 3: Purpose: Availability and Scalability\n    - Slide 4: Load Balancer Types Overview\n    - Slide 5: Layer 4 vs Layer 7 Balancing\n    - Slide 6: Internal vs Internet-Facing\n    - Slide 7: Choosing Load Balancer Type\n    - Slide 8: Distribution Algorithms Landscape\n    - Slide 9: Round Robin And Weighting Mechanism\n    - Slide 10: Least Connections In Depth\n    - Slide 11: IP Hash For Client Affinity\n    - Slide 12: Comparing The Four Algorithms\n    - Slide 13: Health Checks And Session Handling Map\n    - Slide 14: Designing A Health Check\n    - Slide 15: Draining An Unhealthy Backend\n    - Slide 16: Sticky Sessions Versus Stateless Design\n    - Slide 17: DNS and CDN for Internet-Scale Delivery\n    - Slide 18: Steering Traffic Through DNS\n    - Slide 19: Detecting and Routing Around Failures\n    - Slide 20: Refreshing Content From the Origin\n    - Slide 21: Forcing Edge Content to Refresh\n    - Slide 22: DNS Routing Against Load Balancing\n    - Slide 23: Building a Load-Balanced Web Tier\n    - Slide 24: Confirming Setup Before Testing\n    - Slide 25: Testing Distribution And Health-Check Recovery\n    - Slide 26: Expected Result and Wrap-Up\n    - Slide 27: Key Takeaways",
+  "slides": [
+    {
+      "n": 1,
+      "title": "The Single Point of Failure Problem",
+      "body": "Single Point Failure\nSubheading: The Core Problem\nA web application running on one server has only one path for every request. If that server fails, the whole application stops — this is the single-point-of-failure problem. Cloud architectures solve it by placing more than one backend server behind a traffic distributor.\nA single point of failure is one component whose failure alone stops the entire application from working.\nHardware failure, an operating-system patch, or a crash removes the only server handling requests.\nTraffic above that one server's capacity slows or drops requests, with no second server to absorb the load.\nReplacing the lone server with a bigger one raises the ceiling but never removes the single point of failure.\nAnalogy: A railway station with only one ticket counter forces every passenger to wait once that counter closes for a break — exactly as a single server failing removes the only route available for every user's request.\nVisual Guidance: Left: one browser icon with an arrow into one server box, a red cross through it. Right: the same browser with arrows into two server boxes, one still green.",
+      "notes": "Open by stating plainly that one server means one failure point, tying it to the earlier horizontal-scaling idea from networking. Use the ticket-counter picture to make the outage feel concrete before naming load balancing. An interviewer may ask what single point of failure means in a web architecture — this slide is that answer.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "What a Load Balancer Does",
+      "body": "Traffic Distribution\nSubheading: Load Balancer Role\nA load balancer sits in front of a group of backend servers and routes each incoming request to one of them, so no single server is a mandatory stop for every user.\nRunning identical servers behind the load balancer lets one fail without stopping the application for users.\nAdding or removing backend servers behind the load balancer changes total capacity without changing application code.\nAmazon Web Services offers this as the Elastic Load Balancing service, set up from the EC2 console's Load Balancers page.\nAn Application Load Balancer is billed for every hour it runs, plus the traffic it processes.\nChoosing a load balancer type is therefore a cost decision, not only a technical one.\nVisual Guidance: One load-balancer icon in the middle, arrows fanning out to three server icons below it; label the top arrow 'incoming requests'.",
+      "notes": "Explain the load balancer as the layer that stands between users and servers, deciding where each request goes. Point out that this is the exact service used later in the practical, reachable from the EC2 console. A common interview question is why a fixed server address cannot be handed to users directly — this mechanism is the answer.",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Purpose: Availability and Scalability",
+      "body": "Availability Scalability Goals\nSubheading: Why It Exists\nRemoving the single point of failure is not the only gain: the same routing that steers traffic away from a failed server also lets capacity grow simply by adding more servers behind it.\nAvailability: traffic keeps reaching healthy servers even while one instance fails or is being patched.\nScalability: new servers can join behind the load balancer as demand grows, without any downtime for users.\nHorizontal scaling works safely only when the load balancer, not a fixed server address, is what users actually reach.\nRunning extra backend servers for availability adds compute cost, a trade-off revisited later under cost optimisation.\nVisual Guidance: Simple timeline: two servers growing to four behind the same load balancer icon, with a small cost-tag icon beside the fourth server.",
+      "notes": "Stress that availability and scalability come from the same mechanism — rerouting traffic — just applied to failure versus growth. Mention briefly that more servers mean more cost, without turning it into a pricing discussion. Close by noting that dividing traffic sensibly among several servers needs a defined distribution method, which the next section builds on.",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Load Balancer Types Overview",
+      "body": "Load Balancer Types\nSubheading: Two Classification Axes\nLoad balancers are classified along two independent questions: which network layer they read, and who is allowed to reach them. Both choices change routing intelligence, speed, and exposure.\nThe layer axis separates Layer 4 (transport) balancers from Layer 7 (application) balancers.\nThe exposure axis separates internet-facing balancers from internal, private-only balancers.\nA real deployment combines one choice from each axis, such as an internet-facing Layer 7 balancer.\nVisual Guidance: 2x2 grid: rows Layer 4 / Layer 7, columns Internet-facing / Internal, each cell naming a typical use case.",
+      "notes": "Set up both axes before going deep into either one. Say plainly: layer decides how smart the routing is, exposure decides who can send traffic. Mention this map will be filled in across the next three slides.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Layer 4 vs Layer 7 Balancing",
+      "body": "Transport Vs Application\nSubheading: Balancer Comparison\nA Layer 4 balancer reads only transport-layer headers and forwards packets without opening the request. A Layer 7 balancer terminates the connection and reads the full HTTP request before routing it. Amazon Web Services calls these the Network Load Balancer (NLB) and the Application Load Balancer (ALB).\nVisual Guidance: Side-by-side packet diagrams: Layer 4 arrow passing through unopened; Layer 7 arrow opened to show HTTP headers before forwarding.",
+      "notes": "Emphasise the trade-off: Layer 4 is faster because it never opens the packet, Layer 7 is smarter because it does. Point at the AWS service names since they are what appears on the console. Interview hook: ask when NLB is preferred over ALB (raw TCP/UDP speed, preserving client IP).",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Layer 4 (transport)",
+            "Layer 7 (application)"
+          ],
+          [
+            "Decision basis",
+            "Source/destination IP and port number",
+            "URL path, HTTP headers, cookies"
+          ],
+          [
+            "Visibility into request",
+            "Cannot read request content",
+            "Reads full HTTP request and response"
+          ],
+          [
+            "Speed and overhead",
+            "Lower overhead, no content parsing",
+            "Higher overhead, content inspection"
+          ],
+          [
+            "Routing capability",
+            "Single destination pool per listener",
+            "Rule-based routing to different pools by path or host"
+          ],
+          [
+            "Typical AWS service",
+            "Network Load Balancer (NLB)",
+            "Application Load Balancer (ALB)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 6,
+      "title": "Internal vs Internet-Facing",
+      "body": "Internal Vs Internet-Facing\nSubheading: Who Can Reach It\nEvery load balancer is also classified by exposure: an internet-facing balancer gets a public IP address and accepts traffic from the public internet, while an internal balancer gets only a private IP address, reachable solely from inside its own Virtual Private Cloud (VPC).\nInternal balancers sit between internal tiers, such as an application tier calling a backend service.\nInternal balancers shrink the attack surface because no public route to them ever exists.\nBoth exposure types can be built as Layer 4 or Layer 7, since the two axes are independent.\nAnalogy: An office building has a public reception desk anyone off the street can walk into, and separate staff-only corridors reachable only by employees already inside — just as an internet-facing balancer accepts any public visitor while an internal balancer accepts only traffic that already originates inside the VPC.\nVisual Guidance: Diagram: public internet arrow hitting an internet-facing balancer icon with a public IP; a second balancer icon inside the VPC boundary with only internal arrows reaching it.",
+      "notes": "Stress that exposure is a separate decision from layer, not a variant of it. Give the everyday phrasing: public reception versus staff-only corridor. Point out that a microservice calling another microservice should never need a public-facing balancer. Exam hook: ask why placing a database-facing balancer internal-only is good security practice.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Choosing Load Balancer Type",
+      "body": "Choosing Balancer Type\nSubheading: Combining Both Axes\nConnecting the two axes, an architecture typically places an internet-facing Layer 7 balancer in front of user traffic, and an internal Layer 4 or Layer 7 balancer between internal services, so each hop only pays for the intelligence it actually needs before any request reaches a specific server.\nAWS offers an Application Load Balancer (ALB) for Layer 7 traffic and a Network Load Balancer (NLB) for Layer 4 traffic.\nThe internet-facing or internal scheme is chosen once, when the load balancer is created in the EC2 console.\nPublic-facing websites typically use an internet-facing ALB; service-to-service calls typically use an internal NLB or ALB.\nVisual Guidance: Architecture diagram: public internet to internet-facing ALB, ALB fans to a service tier, service tier to an internal NLB, internal NLB fans to a database tier.",
+      "notes": "Tie the two axes together with one concrete architecture so the choice feels practical, not abstract. Point at the EC2 console's load balancer creation screen as the actual place this setting lives. Note this sets up the next topic: once traffic reaches the right balancer type, an algorithm still decides which specific server gets each request.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Distribution Algorithms Landscape",
+      "body": "Distribution Algorithms\nSubheading: Four Approaches Compared\nA load balancer needs a rule to pick which healthy target serves each request, and the right rule depends on how traffic and server capacity vary. Production systems keep several such rules available side by side rather than relying on just one.\nRound robin cycles through targets in fixed order, assuming every target can handle equal load.\nLeast connections picks the target with fewest active requests, adapting to real-time load.\nIP hash maps a client's address to the same target every time, for session continuity.\nWeighted distribution biases any of the above toward stronger targets using assigned capacity weights.\nVisual Guidance: Four-quadrant diagram: load balancer in the centre, one arrow style per algorithm (cyclic, counter-based, hash-based, weighted) fanning out to target icons.",
+      "notes": "Frame this as the rulebook a load balancer consults for every single request. Stress that none of the four is universally best; each suits a different traffic shape. An interviewer may ask which algorithm fits a given scenario, so link each name to its one-line trigger.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Round Robin And Weighting Mechanism",
+      "body": "Round Robin Weighting\nSubheading: Static Capacity Bias\nPlain round robin treats every target as equal, which fails once servers differ in capacity. Weighted distribution corrects this by giving stronger targets a proportionally larger share of the fixed rotation.\nSmooth weighted round robin increases each target's running total by its weight every pick, avoiding bursts to one server.\nA 3:1 weight ratio still averages three requests to one target for every single request to the other, over time.\nAWS Application Load Balancer target groups default to round robin, and support weighted target groups for traffic shifting.\nWeights are set once from known capacity and do not change automatically with real-time load.\nVisual Guidance: Sequence strip showing a weighted rotation order (e.g. A A A B) under two server icons sized differently to show capacity.",
+      "notes": "Explain smoothing with the running-total idea so the order does not look clumped, since that is a common exam trip-up. Point out that weights are a manual, planned setting, unlike least connections which reacts automatically. Mention the AWS target group weight field as the real-world location.",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Least Connections In Depth",
+      "body": "Least Connections Depth\nSubheading: Dynamic Load Tracking\nRound robin and weighting both follow a fixed plan regardless of what is actually happening on each server. Least connections instead reacts continuously, sending each new request to whichever target is least busy right now.\nThe load balancer increments a per-target counter when a request starts and decrements it on completion.\nLong-lived connections, like streaming or uploads, make this algorithm outperform round robin under uneven request durations.\nAWS Application Load Balancer offers a least outstanding requests option, counting in-flight requests rather than raw connections.\nThe counter resets to zero whenever a target is marked unhealthy and removed from rotation temporarily.\nVisual Guidance: Two target icons with live counters (e.g. 2 and 5) and an arrow from the load balancer pointing to the lower counter.",
+      "notes": "Emphasise the word 'live' — this counter updates on every request start and finish, unlike a weight set once in advance. Use an upload scenario to show why duration matters more than request count here. The AWS option name, least outstanding requests, is a common interview detail.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "IP Hash For Client Affinity",
+      "body": "IP Hash Explained\nSubheading: Client To Server Mapping\nSome applications keep per-client state only on the server that first handled a request, so later requests from that client must reach the same target. IP hash solves this by hashing the client's source IP address to pick a target, keeping the mapping fixed while the target pool stays unchanged.\nAdding or removing a target reshuffles the hash mapping, which can redirect many existing clients at once.\nClients sharing one corporate or mobile-network gateway IP can overload a single target disproportionately.\nAWS Network Load Balancer uses flow hashing on IP and port for a similar effect at the transport layer.\nThis method needs no shared session store, unlike approaches that replicate session data across servers.\nAnalogy: A customer calling a company support line is always connected to the same agent because the caller ID is matched to an assignment list — just as IP hash always routes the same client IP to the same backend target based on the hash of its address.\nVisual Guidance: Three client icons with distinct IPs, each with a dashed line always landing on the same one of two target icons, labelled 'hash(IP)'.",
+      "notes": "Open with the session-affinity problem before naming the term, per the teach-before-naming approach. Point out the reshuffle risk when a target is added or removed, since that is the usual follow-up interview question. Mention Network Load Balancer flow hashing as the transport-layer cousin of this idea.",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Comparing The Four Algorithms",
+      "body": "Algorithms Compared\nSubheading: Choosing The Right Fit\nEach algorithm trades simplicity for adaptiveness differently, which is why production target groups often default to one while allowing an override for special cases.\nWhichever algorithm a target group uses, it only sends traffic to targets that health checks have confirmed healthy.\nVisual Guidance: Four-column table as the main visual; a small health-check icon beside the closing line to bridge forward.",
+      "notes": "Walk the table row by row, pairing each decision basis with its trade-off rather than re-reading the earlier slides. Use the closing line to set up that distribution never overrides a health check's verdict. A common interview ask is 'which algorithm for session-heavy apps' — point to IP hash's row.",
+      "tables": [
+        [
+          [
+            "Algorithm",
+            "Decision Basis",
+            "Best Fit",
+            "Trade-off"
+          ],
+          [
+            "Round Robin",
+            "Fixed sequence, no load check",
+            "Uniform-capacity, short requests",
+            "Ignores real server load"
+          ],
+          [
+            "Weighted Distribution",
+            "Fixed sequence biased by weight",
+            "Mixed-capacity server pools",
+            "Weights need manual updates"
+          ],
+          [
+            "Least Connections",
+            "Live active-request count",
+            "Long or uneven-duration requests",
+            "Needs continuous tracking"
+          ],
+          [
+            "IP Hash",
+            "Hash of client source IP",
+            "Session affinity, no shared store",
+            "Reshuffles when pool changes"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 13,
+      "title": "Health Checks And Session Handling Map",
+      "body": "Health And Sessions\nSubheading: Section Topic Map\nA load balancer must know which backends are actually working, and decide how a user's follow-up requests are handled across multiple servers. Three linked questions cover this.\nHealth checks rely on configurable signals: how often to test and how long to wait for a reply.\nA separate pair of thresholds decides how many consecutive passes or failures flip the health status.\nDraining protects requests already underway by giving a failing or retiring backend a fixed grace window before full removal.\nSession handling decides whether a returning user must reach the same backend again or any healthy one can serve them.\nVisual Guidance: Three labelled boxes in a row: Health Checks, Draining, Sessions — each with a one-icon hint (heartbeat, tap closing, cookie).",
+      "notes": "Set up these three as one connected story: a load balancer first detects a problem, then removes the backend safely, and separately decides how to handle returning users. Mention this builds directly on the distribution algorithms already covered. Exam angle: expect a question distinguishing health checks from session stickiness, since both affect which server gets a request.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Designing A Health Check",
+      "body": "Health Check Design\nSubheading: How Checks Work\nA health check works like a repeated vitals check: the load balancer sends a small test request to each backend and reads the reply, confirming the application itself is responding, not just that the machine is switched on.\nInterval sets how often the check repeats, for example every few seconds.\nTimeout caps how long the backend has to reply before that attempt is counted as a miss.\nThe healthy threshold is the count of consecutive passes needed before traffic resumes to that backend.\nThe unhealthy threshold is the count of consecutive failures needed before traffic stops going to it.\nAnalogy: A doctor does not assume a patient is fine just because they are breathing; a short, repeated vitals check confirms the body is actually functioning — just as a health check confirms the server is actually serving requests correctly, not merely running.\nVisual Guidance: Timeline strip showing repeated check pulses at fixed intervals, with a counter of consecutive passes/fails building toward the two thresholds.",
+      "notes": "Stress that a server can be powered on and still fail a health check, for instance if the application crashed while the operating system stays up. Use the everyday phrase 'repeated vitals check' before naming the thresholds. Interview hook: ask what happens if the interval is too long versus too short, since that trades detection speed against false alarms.",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Draining An Unhealthy Backend",
+      "body": "Connection Draining\nSubheading: Removing A Backend Safely\nRemoving a backend the instant it fails a check would cut off requests already mid-flight. Draining gives it a short grace period, called the deregistration delay, to finish current work before it fully leaves rotation.\nNew requests stop being sent to the backend as soon as it is marked unhealthy or scheduled for removal.\nRequests already in progress on that backend are allowed to complete normally during the grace period.\nThe deregistration delay is a fixed waiting window configured on the load balancer, not on the backend itself.\nAfter the delay expires, the backend is dropped from rotation even if some work remains unfinished.\nVisual Guidance: Backend box shown in three states left to right: serving, draining (fading, with two in-flight arrows still reaching it), removed.",
+      "notes": "Explain draining as the polite way to retire a server, contrasted with simply yanking it out mid-request. Point out this same mechanism also runs during a planned scale-down, not only after a health check failure. Exam angle: a question may ask why draining exists instead of immediate removal — the answer is avoiding broken in-flight requests.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Sticky Sessions Versus Stateless Design",
+      "body": "Sticky Vs Stateless\nSubheading: Two Session Approaches\nHTTP is stateless by default, so a load balancer must decide whether a returning user must land on the same backend, or whether any backend can serve them equally well.\nVisual Guidance: Side-by-side diagram: left shows one user cookie-pinned to one server box; right shows the same user's requests landing on either server with a shared data store below both.",
+      "notes": "Tie this back to draining: a sticky user pinned to a draining backend is exactly the case that forces a remap. Note that stateless design is the preferred pattern in modern cloud architectures because it lets any instance be added, removed or replaced freely. Interview hook: ask why stateless design scales better than sticky sessions, expecting the answer that it removes the server-affinity bottleneck.",
+      "tables": [
+        [
+          [
+            "Approach",
+            "How It Works",
+            "Trade-off"
+          ],
+          [
+            "Sticky sessions",
+            "A cookie set by the load balancer binds a user to one backend for the session duration",
+            "Breaks if that backend drains or fails, and skews load unevenly"
+          ],
+          [
+            "Stateless design",
+            "Session data lives outside the server, so any healthy backend can answer any request",
+            "Needs an external store, but removal and scaling stay simple"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 17,
+      "title": "DNS and CDN for Internet-Scale Delivery",
+      "body": "DNS And CDN\nSubheading: Routing And Delivery\nLoad balancing spreads traffic across servers inside one location; DNS-based routing and content delivery solve the same spreading problem at internet scale, across regions and across users far from any single data centre.\nDNS-based routing sends each user to the nearest or healthiest available endpoint before any connection starts.\nDNS failover automatically swaps a failed address for a working one once health checks detect trouble.\nA Content Delivery Network (CDN) caches copies of content at edge locations spread close to users.\nCache invalidation and origin pulls keep those edge copies accurate whenever the source content changes.\nVisual Guidance: Map diagram: a user icon, a DNS resolver choosing between two regional data centres, and separately a user hitting a nearby CDN edge server linked back to one origin server.",
+      "notes": "Frame this as traffic steering at a wider scale than the load balancer just covered. Mention that DNS decides which region a user reaches, while the CDN decides where the content itself is stored. Flag that interviewers often ask how DNS and a CDN differ from a load balancer.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Steering Traffic Through DNS",
+      "body": "DNS Based Routing\nSubheading: Steering By Resolution\nThe Domain Name System (DNS) normally returns one fixed address for a name; DNS-based routing instead returns a different address depending on policy, routing users to a region without the user ever knowing a choice was made.\nGeographic (geo) routing returns the record of the data centre nearest the user's resolver.\nLatency-based routing returns whichever region has historically responded fastest to that specific user.\nWeighted routing splits DNS answers across regions by a configured traffic percentage.\nMulti-value answer routing returns several healthy addresses so the client itself can pick one.\nAnalogy: A railway enquiry counter that sends each passenger to whichever platform has the nearest, on-time train rather than always naming the same platform — just as DNS-based routing hands each user the address of whichever regional endpoint is closest or healthiest for that user.\nVisual Guidance: World map with a DNS resolver icon branching arrows to three region icons, each arrow labelled geo, latency or weighted.",
+      "notes": "Explain that the same name can resolve to different addresses depending on who is asking and from where. Use the enquiry-counter analogy to fix the idea before naming the four policy types. An interviewer may ask how this differs from a load balancer; the answer is that routing happens before any connection is opened.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Detecting and Routing Around Failures",
+      "body": "DNS Failover Mechanism\nSubheading: Health Checked Record Swap\nRouting by proximity alone cannot sense that a region has gone down, so DNS failover adds a continuous check behind the same records, withdrawing a failed address before it is ever handed to a user.\nAn external health checker polls each endpoint over HTTP or TCP at a short fixed interval.\nA record that fails consecutive checks is marked down and removed from future DNS answers.\nRemaining healthy records keep being returned, so failover completes within the record's TTL window.\nLower TTL values speed up failover but raise resolver query load, a direct trade-off.\nVisual Guidance: Timeline strip: health checker pinging a region every interval, a red cross on the region after repeated failures, then the DNS answer list updating to drop it.",
+      "notes": "Connect this to the health checks already seen for a load balancer's targets, but note the checked unit here is an entire region's address, not one server. Point out the TTL trade-off between fast failover and resolver load as a common interview probe. Mention that time-to-live still governs how fast old cached answers expire.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Refreshing Content From the Origin",
+      "body": "Origin Pull Mechanism\nSubheading: Refreshing Edge Content\nOnce a request reaches an edge server, it must decide whether its stored copy is still safe to serve or stale enough to fetch again from the origin, the server holding the authoritative version of the content.\nA cache miss triggers an origin pull, where the edge server fetches the object fresh.\nTime-to-live (TTL), set through a cache-control header, decides how long an edge copy stays valid.\nA conditional request can confirm a cached copy is still fresh without re-downloading the whole object.\nStatic assets get long TTLs, while frequently changing pages get short or no caching at all.\nVisual Guidance: Flow arrow: edge server cache box, a branch to origin server labelled origin pull on miss, and a loop back labelled TTL check on hit.",
+      "notes": "Build directly on the cache hit and miss idea already known, and add that the miss path is called an origin pull. Explain TTL as the timer that decides when a cached copy is treated as stale. A common exam question asks why static files use long TTLs and dynamic pages do not.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Forcing Edge Content to Refresh",
+      "body": "Cache Invalidation\nSubheading: Forcing Fresh Content\nWaiting for a TTL to expire can leave outdated content live for minutes or hours, so cache invalidation lets an operator remove or bypass a stale copy immediately rather than waiting out that window.\nPurge invalidation explicitly removes an object from every edge location before its TTL expires.\nVersioned URLs attach a new filename or query string, so old cached files are simply skipped.\nAn invalidation request can target one path or sweep an entire cache in a single call.\nOver-invalidating raises load on the origin, since every edge must then re-fetch the content.\nVisual Guidance: Two side-by-side mini-diagrams: a purge command striking a cached object, and a URL changing from style.css to style-v2.css beside an unchanged cached copy.",
+      "notes": "Present purge and versioning as the two practical answers to the same deployment problem: old content served after an update. The versioned-URL trick is a favourite interview question because it needs no purge call at all. Note the cost side: purging too aggressively pushes traffic back onto the origin.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "DNS Routing Against Load Balancing",
+      "body": "DNS Vs Load Balancer\nSubheading: Two Routing Layers\nDNS-based routing and a load balancer both move traffic away from a failed target, but they act at different layers and at different speeds, which is why production systems typically use both together.\nA user is first sent by DNS to a healthy region, and a load balancer inside that region then spreads the request across healthy servers, so the two layers complement rather than replace each other.\nVisual Guidance: Layered diagram: top layer labelled DNS routing across three region icons, bottom layer zoomed into one region showing a load balancer fanning out to three servers.",
+      "notes": "Use the table to fix the layer and speed difference, since this comparison is a frequent interview question. State plainly that DNS failover is slower because of TTL caching, while a load balancer reacts within its own health-check interval. Close by noting both layers are commonly combined, not chosen between.",
+      "tables": [
+        [
+          [
+            "Layer",
+            "Scope",
+            "Failover Speed",
+            "Example"
+          ],
+          [
+            "DNS routing",
+            "Across regions or data centres",
+            "Minutes, bound by record TTL",
+            "Geo or latency routing to the nearest region"
+          ],
+          [
+            "Load balancer",
+            "Within one region, across servers",
+            "Seconds, by health-check interval",
+            "Application Load Balancer and its target group"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 23,
+      "title": "Building a Load-Balanced Web Tier",
+      "body": "Load Balancer Build\nSubheading: Task And Steps\nThis exercise builds a small load-balanced web tier: two web servers behind one Application Load Balancer, using the VPC and subnets created earlier. It creates billable AWS resources, so the Billing dashboard should be checked first, and all resources are deleted right after screenshots are captured.\nAn Application Load Balancer spans more than one Availability Zone, so the servers it balances across must sit in separate zones for true redundancy.\n1. Verify the Session 5 VPC, subnets, and route table against the table above before creating anything new.\n2. Add one new subnet in a second zone, plus a load balancer security group and a web server security group.\n3. Launch two EC2 web servers, one per public subnet, each running a startup script.\n4. Create a target group and register both web servers as its targets.\n5. Create an internet-facing Application Load Balancer spanning both subnets, forwarding to the target group.\n6. Test the load balancer, then stop and restart a server to observe health checks.\n7. Verify every component, capture screenshots, and delete all resources in dependency order.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Resource",
+            "Expected Name",
+            "Expected Configuration"
+          ],
+          [
+            "VPC",
+            "s5-cloud-network-vpc",
+            "CIDR 10.0.0.0/16"
+          ],
+          [
+            "First public subnet",
+            "s5-public-subnet",
+            "10.0.1.0/24, Availability Zone ap-south-1a"
+          ],
+          [
+            "Internet Gateway",
+            "s5-igw",
+            "Attached to s5-cloud-network-vpc"
+          ],
+          [
+            "Public route table",
+            "s5-public-rt",
+            "Default route 0.0.0.0/0 points to s5-igw"
+          ],
+          [
+            "Private subnet",
+            "s5-private-subnet",
+            "10.0.2.0/24"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 24,
+      "title": "Confirming Setup Before Testing",
+      "body": "Setup Confirmation\nSubheading: Security Groups, Listener, Servers\nBefore testing, confirm three things: the web-server security group only trusts the load balancer, the listener forwards to the right target group, and both servers are running.\nWeb Server Security Group\ns6-web-sg inbound rule — source is the ALB's own security group, not the public internet\nLoad Balancer Security Group\ns6-alb-sg inbound rule — source is 0.0.0.0/0, open to all public traffic\nListener Routing\nHTTP:80 listener forwards to target group s6-web-tg\nBoth Servers Running\nBoth EC2 instances (s6-web-1, s6-web-2) in Running state, ready to be registered",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Testing Distribution And Health-Check Recovery",
+      "body": "Load Balancer Action\nSubheading: Test And Recovery\nTesting confirms two behaviours: healthy targets share traffic, and a stopped target is automatically taken out of rotation.\nBoth Targets Healthy\nTarget group summary — 2 Healthy, 0 Unhealthy, before any traffic test\nBrowser Test — Load Balancer Alternates Servers\nRequest via the ALB's DNS name — answered by s6-web-1\nA later request — answered by s6-web-2; which server answers is not guaranteed to alternate strictly\nAfter Stopping s6-web-2\nStatus shows Unused — “Target is in the stopped state,” not Unhealthy; Unhealthy is reserved for a running instance that fails its health check path",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Expected Result and Wrap-Up",
+      "body": "Result And Cleanup\nSubheading: Wrap-Up Checklist\nThe finished setup is a single load balancer domain name that reaches two interchangeable web servers, each able to fail and recover without any manual rerouting of traffic.\nThis classroom setup enables public addresses on both backend servers to keep access simple; in a production deployment, servers sitting behind an internet-facing load balancer are usually placed in private subnets instead, since the load balancer is the only component that needs to be publicly reachable.\nCleanup runs in dependency order: the load balancer is deleted first, then the target group, then the two instances, then the security groups, since each later resource still depends on the one before it.",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Component",
+            "Expected Result"
+          ],
+          [
+            "VPC",
+            "s5-cloud-network-vpc"
+          ],
+          [
+            "Public subnets",
+            "s5-public-subnet and s6-public-subnet-2 in different zones"
+          ],
+          [
+            "Security groups",
+            "s6-alb-sg open to 0.0.0.0/0; s6-web-sg open only to s6-alb-sg"
+          ],
+          [
+            "EC2 instances",
+            "s6-web-1 and s6-web-2, both running"
+          ],
+          [
+            "Target group",
+            "s6-web-tg, both instances Healthy"
+          ],
+          [
+            "Load balancer",
+            "s6-demo-alb, listener forwards to s6-web-tg"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 27,
+      "title": "Key Takeaways",
+      "body": "1. Load Balancing Basics: Purpose: availability & scalability; the single-point-of-failure problem\n2. Load Balancer Types: Layer 4 (transport) vs Layer 7 (application); internal vs internet-facing\n3. Distribution Algorithms: Round robin; least connections; IP hash; weighted distribution\n4. Health Checks & Sessions: Health check design; draining an unhealthy backend; sticky sessions vs stateless design\n5. DNS & Content Delivery: DNS-based routing & failover; CDN: edge caching, origin & cache invalidation\nUpcoming Session : Block, File & Object Storage\nThank You  |  All the Best",
+      "notes": "",
+      "tables": []
+    }
+  ]
+}

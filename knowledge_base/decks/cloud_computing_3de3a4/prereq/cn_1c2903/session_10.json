@@ -1,0 +1,500 @@
+{
+  "session_no": 10,
+  "source_file": "CN — session 10",
+  "deck_title": "CN — session 10",
+  "n_slides": 70,
+  "summary": "\n    - Slide 2: Data Link Layer | Part II\n    - Slide 3: Data Link Layer | Part I\n    - Slide 4: Data Link Layer | Part II\n    - Slide 5: Error Detection\n    - Slide 6: Errors in Transmission - Why They Happen?\n    - Slide 7: Errors in Transmission - Why They Happen\n    - Slide 8: Errors in Transmission - Why They Happen\n    - Slide 9: Errors in Transmission - Why They Happen\n    - Slide 10: Errors in Transmission - Why They Happen\n    - Slide 11: Errors in Transmission - Why They Happen\n    - Slide 12: Parity Check - The Simplest Error Detection\n    - Slide 13: Even and Odd Parity\n    - Slide 14: Parity Check - The Simplest Error Detection\n    - Slide 15: Parity Check - The Simplest Error Detection\n    - Slide 16: Parity Check - The Simplest Error Detection\n    - Slide 17: Parity Check - The Simplest Error Detection\n    - Slide 18: Parity Check - The Simplest Error Detection\n    - Slide 19: Checksum - Sum-Based Error Detection\n    - Slide 20: Checksum - Sum-Based Error Detection\n    - Slide 21: Checksum - Sum-Based Error Detection\n    - Slide 22: Checksum - Sum-Based Error Detection\n    - Slide 23: Checksum - Sum-Based Error Detection\n    - Slide 24: Checksum - Sum-Based Error Detection\n    - Slide 25: CRC - The Most Powerful Error Detection\n    - Slide 26: CRC - The Most Powerful Error Detection\n    - Slide 27: CRC - The Most Powerful Error Detection\n    - Slide 28: CRC - The Most Powerful Error Detection\n    - Slide 29: CRC - The Most Powerful Error Detection\n    - Slide 30: CRC - The Most Powerful Error Detection\n    - Slide 31: CRC - The Most Powerful Error Detection\n    - Slide 32: CRC - The Most Powerful Error Detection\n    - Slide 33: CRC - The Most Powerful Error Detection\n    - Slide 34: Error Correction \n    - Slide 35: Hamming Code - Detecting and Correcting Errors\n    - Slide 36: Hamming Code - Detecting and Correcting Errors\n    - Slide 37: Hamming Code - Detecting and Correcting Errors\n    - Slide 38: Hamming Code - Detecting and Correcting Errors\n    - Slide 39: Hamming(7,4) Example\n    - Slide 40: Hamming Code - Detecting and Correcting Errors\n    - Slide 41: Hamming Code - Detecting and Correcting Errors\n    - Slide 42: Data Link Control\n    - Slide 43: Data Link Control - Managing the Communication\n    - Slide 44: Data Link Control - Managing the Communication\n    - Slide 45: Data Link Control - Managing the Communication\n    - Slide 46: Data Link Control - Managing the Communication\n    - Slide 47: Data Link Control - Managing the Communication\n    - Slide 48: Flow Control Protocols\n    - Slide 49: Stop-and-Wait - One Frame at a Time\n    - Slide 50: Stop-and-Wait - One Frame at a Time\n    - Slide 51: Stop-and-Wait - One Frame at a Time\n    - Slide 52: Stop-and-Wait - One Frame at a Time\n    - Slide 53: The Simplest Flow Control Protocol\n    - Slide 54: Stop-and-Wait - One Frame at a Time\n    - Slide 55: Sliding Window - Keeping the Pipe Full\n    - Slide 56: Sliding Window - Keeping the Pipe Full\n    - Slide 57: Sliding Window - Keeping the Pipe Full\n    - Slide 58: 1. Go-Back-N (GBN)\n    - Slide 59: Go-Back-N vs Selective Repeat - Detailed Comparison\n    - Slide 60: Go-Back-N vs Selective Repeat - Detailed Comparison\n    - Slide 61: 2. Selective Repeat (SR)\n    - Slide 62: Go-Back-N vs Selective Repeat - Detailed Comparison\n    - Slide 63: Go-Back-N vs Selective Repeat - Detailed Comparison\n    - Slide 64: Go-Back-N vs Selective Repeat\n    - Slide 65: Go-Back-N vs Selective Repeat - Detailed Comparison\n    - Slide 66: Quiz Time!\n    - Slide 67: Data Link Layer | Part II\n    - Slide 68: Multiple Access Protocols",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Data Link Layer | Part II",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Data Link Layer | Part I",
+      "body": "Data Link Layer | Part I\nData Link Layer\nRole & Responsibilities\nFraming\nCharacter Count, Byte Stuffing, Bit Stuffing\nMAC Address\nPhysical Addressing (48-bit)\nARP\nAddress Resolution Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Data Link Layer | Part II",
+      "body": "Data Link Layer | Part II\nError Correction \nData Link Control\nError Detection\nParity Check, Checksum, CRC\nFlow Control Protocols\nHamming Code\nLine Discipline, Flow Control, Error Control\nStop-and-Wait, Sliding Window",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Error Detection",
+      "body": "Error Detection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Errors in Transmission - Why They Happen?",
+      "body": "The Noise Problem\nWhen bits travel across a physical medium - a copper wire, a WiFi signal, a fibre optic cable - they are exposed to noise, interference, and signal degradation. This can flip bits: a 0 becomes a 1, or a 1 becomes a 0",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Errors in Transmission - Why They Happen",
+      "body": "Types of transmission errors\n1\n0\n1\n1\n0\n0\n1\n1\n1\n0\n1\n1\n0\n1\n1\n1\nSent\nTransmission\nReceived\nSingle-bit error:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Errors in Transmission - Why They Happen",
+      "body": "The Noise Problem on the Physical Layer\n1\n0\n1\n1\n0\n0\n1\n1\n1\n1\n0\n0\n0\n0\n1\n1\nSent\nTransmission\nReceived\nBurst error:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Errors in Transmission - Why They Happen",
+      "body": "The Noise Problem \nThe Data Link Layer's job is to detect these errors before the corrupted data reaches the Network Layer. It does this by adding redundant information to each frame - extra bits that allow the receiver to check whether any bits were flipped during transmission",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Errors in Transmission - Why They Happen",
+      "body": "Error Detection Methods\nMost powerful. Used in Ethernet and most data link protocols\nSimplest method. Adds one extra bit\n Adds up data values; sends the sum. Used in TCP/IP\nParity Check \nCRC - Cyclic Redundancy Check\nChecksum",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Errors in Transmission - Why They Happen",
+      "body": "Analogy\nError detection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Parity Check - The Simplest Error Detection",
+      "body": "Even Parity and Odd Parity\nEven Parity\nOdd Parity\nParity Check adds one extra bit - called the parity bit - to a block of data bits. The parity bit is chosen so that the total number of 1s in the block (data bits + parity bit) is either even (Even Parity) or odd (Odd Parity)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Even and Odd Parity",
+      "body": "Example\nEven Parity\nCount of 1s = 4 (already even)\nData bits:\n0   → Total 1s = 4 (even)\nParity bit:\nSend:\n↓\nOdd Parity\nCount of 1s = 5 (odd)\nData bits:\n0   → Total 1s = 5 (odd)\nParity bit:\nSend:\n↓",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Parity Check - The Simplest Error Detection",
+      "body": "How the Receiver Checks?\nCount the number of 1s in the received block (including the parity bit)\n01\n02\n03\nIf Even Parity was agreed: total 1s should be even. If odd → error detected\nIf Odd Parity was agreed: total 1s should be odd. If even → error detected",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Parity Check - The Simplest Error Detection",
+      "body": "Limitations of Parity Check",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Parity Check - The Simplest Error Detection",
+      "body": "Limitations of Parity Check\n2D Parity (VRCb[Vertical Redundancy Check] + LRC[Longitudinal Redundancy Check]): \u000bA stronger variant adds parity per row and per column in a 2D grid of bits - detects and corrects single-bit errors, detects most burst errors",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Parity Check - The Simplest Error Detection",
+      "body": "2-D Parity Check\nRow parities\nColumn parities  →\nOriginal Data",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Parity Check - The Simplest Error Detection",
+      "body": "Method\n2D Parity\nSimple Parity (1D)\nExtra Bits Added\n1 bit per row + column\n1 bit\nDetects Single-Bit Error?\nYes\nYes (odd count of errors)\nDetects Burst Error?\nMost cases\nPartially\nCan Correct?\nSingle-bit\u000bYes\nNo\n2-D Parity Check",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Checksum - Sum-Based Error Detection",
+      "body": "How TCP/IP Detects Errors\nChecksum is the error detection method used by TCP, UDP, and IP headers. It is more powerful than simple parity because it considers the content of the entire data block, not just the count of 1s",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Checksum - Sum-Based Error Detection",
+      "body": "Divide the data into fixed-size segments (e.g., 16-bit blocks)\nAdd all segments together using one's complement arithmetic\nTake the one's complement of the result  this is the  checksum \nAppend the checksum to the data and transmit\nHow Checksum Works (Sender Side)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Checksum - Sum-Based Error Detection",
+      "body": "How Checksum Works (Receiver Side)\nDivide the received data (including checksum) into the same fixed-size segments\nAdd all segments together (including the checksum) using one's complement arithmetic\nIf the result is all 1s (1111...1111) → No error detected. If the result is not all 1s → Error detected",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Checksum - Sum-Based Error Detection",
+      "body": "Original Data\n1001\n1010\n1011\n1\n2\n3\nSum:   1111\nComplement: 0000\nSum:\nComplement:\nSender\nReceiver\nk=3, m=4\n1\n2\n3\nConclusion: No Error (Data OK)\nCheckSum: 0000\nHow TCP/IP Detects Errors\n1\n2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Checksum - Sum-Based Error Detection",
+      "body": "Limitations of Checksum\nIf two errors cancel each other out (e.g., one bit flipped up and one flipped down), the sum may still be correct error undetected\nLess powerful than CRC for burst errors\nHowever, it is computationally simple and fast - ideal for software implementation in TCP/IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Checksum - Sum-Based Error Detection",
+      "body": "Analogy\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "Introduction\nCRC (Cyclic Redundancy Check) is the most widely used and powerful error detection method in the Data Link Layer. It is used in Ethernet (IEEE 802.3), WiFi (IEEE 802.11), USB, and many other protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "Introduction\nCore Idea\nTreat the data as a binary polynomial. Divide it by a pre-agreed generator polynomial. The remainder of this division is the CRC - appended to the frame as a Frame Check Sequence (FCS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "Both sender and receiver agree on a Generator Polynomial (e.g., x3 + x + 1 → binary: 1011)\nAppend (n-1) zeros to the data, where n = number of bits in generator\nDivide the augmented data by the generator using modulo-2 division (XOR division - no borrows or carries)\nCRC Process - Sender",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "CRC Process - Sender\nThe remainder of this division is the CRC value. Replace the appended zeros with this CRC\nTransmit:\nOriginal Data \nCRC",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "CRC Process - Receiver\nDivide the received frame (data + CRC) by the same generator polynomial using modulo-2 division\nIf remainder = 0 → No error. If remainder ≠ 0 → Error detected",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "CRC Process - Receiver\nLet's data to be send is 1010000 and divisor in the form of polynomial is x3 + 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "Original Data\n1010000\nReceiver\n1010000000\n+011\n1010000011\nMessage to be transmitted\n1010000011\n1001\n0011000011\n     1001\n     01010011\n        1001\n     0011011\n          1001\n          01001\n            1001\n            0000\n1001\n@\n@\n@\n@\n@\nZero means data is accepted\n1x3 + 0x2 +0x1 + 1x0\nGenerator polynomial x3 + 1\nCRC generator\n1001 → 4-bit\nIf CRC generator is of n bit then append ( n-1 ) Zeros in the end of original message\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "Detects all single-bit errors\nDetects all burst errors of length ≤ (n − 1) (where n = number of bits in the generator polynomial)\nDetects most longer burst errors with very high probability\nCRC-32 (used in Ethernet) uses a 32-bit remainder, providing very strong error detection, though not 100% guaranteed\nWhy CRC is Powerful?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "CRC - The Most Powerful Error Detection",
+      "body": "Error Detection Method\nChecksum\nParity Check\nDetects Single-bit?\nYes\nYes (odd count)\nDetects Burst?\nPartially\nPartially\nComplexity\nLow\nVery Low\nUsed In\nTCP, UDP, IP headers\nSimple hardware, VRC\nCRC\nAll\nAll ≤ n-1 bits\nMedium\nEthernet, WiFi, USB, HDLC\nPolynomial Division for Frame Integrity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Error Correction ",
+      "body": "Error Correction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Hamming Code - Detecting and Correcting Errors",
+      "body": "From Detection to Correction\nError detection tells the receiver that something went wrong. Error correction goes further - it identifies exactly which bit was corrupted and fixes it without needing a retransmission\nHamming Code (developed by Richard Hamming, 1950) is the most fundamental error-correcting code. It can:\nDetect up to 2-bit errors\nCorrect single-bit errors automatically",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Hamming Code - Detecting and Correcting Errors",
+      "body": "Introduction\nHamming Code inserts parity bits at positions that are powers of 2: Position 1, 2, 4, 8, 16, ...\nThese parity bits each cover a specific subset of data bits. Together, their values form a binary number that points to the exact position of the error",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Hamming Code - Detecting and Correcting Errors",
+      "body": "How Many Parity Bits Required?\nFor m data bits: find r such that 2r ≥ m + r + 1\n4 data bits → r = 3 parity bits needed. Total bits transmitted = 4 + 3 = 7 (Hamming(7,4))",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Hamming Code - Detecting and Correcting Errors",
+      "body": "Hamming(7,4) Example\nd1=1, d2=0, d3=1, d4=1\n1(p1), 2(p2), 3(d1), 4(p3), 5(d2), 6(d3), 7(d4)\n[p1 | p2 | 1 | p3 | 0 | 1 | 1]",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Hamming(7,4) Example",
+      "body": "Computing parity bits (even parity)\np1 (position 1)\nCovers positions 1, 3, 5, 7 → bits: p1, d1, d2, d4 = p1, 1, 0, 1. Count of 1s (excluding p1) = 2 (even), so p1 = 0\np2 (position 2)\nCovers positions 2, 3, 6, 7 → bits: p2, d1, d3, d4 = p2, 1, 1, 1. Count = 3 (odd) → p2 = 1\np3 (position 4)\nCovers positions 4, 5, 6, 7 → bits: p3, d2, d3, d4 = p3, 0, 1, 1. Count = 2 (even) → p3 = 0",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Hamming Code - Detecting and Correcting Errors",
+      "body": "Error Detection and Correction at Receiver\nReceiver recalculates all parity bits from the received frame. Each recalculation produces a 0 (parity OK) or 1 (parity error). These results form a binary number called the syndrome",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Hamming Code - Detecting and Correcting Errors",
+      "body": "Error Detection and Correction at Receiver\nNo error\nSyndrome = 000\nThe syndrome value (in binary) gives the exact position of the corrupted bit\nSyndrome ≠ 000\nerror corrected\nReceiver flips that bit\nSyndrome = 011 (binary) = position 3 → bit at position 3 is corrupted. Flip it → original data recovered",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Data Link Control",
+      "body": "Data Link Control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Data Link Control - Managing the Communication",
+      "body": "DLC Components\nAfter handling framing and error detection, the Data Link Layer must also manage how two directly connected nodes communicate - when to send, how fast to send, and what to do when things go wrong. This is called Data Link Control (DLC)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Data Link Control - Managing the Communication",
+      "body": "Three DLC components\n01\nControls which device can transmit at a time\nENQ/ACK\nSender asks permission (ENQ), receiver confirms (ACK), then data is sent\nPoll/Select:\nA primary device controls communication - polls devices to receive and selects them to send",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Data Link Control - Managing the Communication",
+      "body": "02\nPrevents a fast sender from overwhelming a slow receiver\nThe receiver has a buffer (limited memory). If the sender sends faster than the receiver can process, the buffer overflows and data is lost\nFlow control mechanisms slow down the sender to match the receiver's capacity\nTwo main protocols: Stop-and-Wait, Sliding Window \nThree DLC components",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Data Link Control - Managing the Communication",
+      "body": "Three DLC components\n03\nHandles detected errors - \nensures data is retransmitted when frames are corrupted or lost\nAutomatic Repeat reQuest (ARQ) - receiver detects error using CRC → sends NAK (Negative Acknowledgement) or simply does not ACK → sender retransmits\nGo-Back-N ARQ and Selective Repeat ARQ are advanced variants (part of Sliding Window)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Data Link Control - Managing the Communication",
+      "body": "DLC Component\nFlow Control\nLine Discipline\nProblem Solved\nSender too fast for receiver?\nWho transmits when?\nMechanism\nStop-and-Wait, Sliding Window\nENQ/ACK, Poll/Select\nError Control\nFrame corrupted or lost?\nARQ - ACK, NAK, retransmission\nDLC Components",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Flow Control Protocols",
+      "body": "Flow Control Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Stop-and-Wait - One Frame at a Time",
+      "body": "Introduction\nStop-and-Wait is the simplest flow control and error control protocol. The sender sends one frame, then stops and waits for an acknowledgement (ACK) before sending the next frame",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Stop-and-Wait - One Frame at a Time",
+      "body": "How Stop-and-Wait Works?\nSender transmits Frame 0\nSender stops - waits for ACK from receiver\nReceiver receives Frame 0, checks CRC. If correct → sends ACK 1 (ready for frame 1)\nSender receives ACK 1 → sends Frame 1. Then waits again",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Stop-and-Wait - One Frame at a Time",
+      "body": "Error Case\nIf receiver detects error (CRC fails) → sends NAK (or no ACK). Sender has a timer - if it expires without an ACK → retransmit the same frame\nLost ACK\n If the ACK itself is lost  sender times out and retransmits Frame 0. Receiver may get a duplicate. Sequence numbers (0 and 1 alternating) allow the receiver to detect duplicates\nHow Stop-and-Wait Works?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Stop-and-Wait - One Frame at a Time",
+      "body": "Simplest Flow Control Protocol\nA\nB\nFrame 0\nACK 1\nFrame 1\nACK 0\nFrame 0\nFrame 0\nACK 1\nFrame 1\nACK 0\nFrame 1\nACK 0\nTime\nACK 0 lost: A retransmits\nFrame lost: A retransmits\nTimeout\nTimeout\nB discards duplicate frame",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "The Simplest Flow Control Protocol",
+      "body": "very low when propagation delay is large\nKey Characteristics\nEfficiency =\nIf propagation delay is high (e.g., satellite link), the sender spends most of its time waiting for ACKs instead of sending data. The link is idle most of the time. This is the fundamental limitation of Stop-and-Wait\nEfficiency Problem - Bandwidth Waste:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Stop-and-Wait - One Frame at a Time",
+      "body": "Analogy\nSend One Note\nWait for Confirmation\nOnly then Send Next\nInefficiency with Distance\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Sliding Window - Keeping the Pipe Full",
+      "body": "Multiple Frames In-Flight at Once\nThe Sliding Window protocol solves the efficiency problem of Stop-and-Wait by allowing the sender to transmit multiple frames before waiting for an acknowledgement. The number of unacknowledged frames allowed at once is called the window size (W)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Sliding Window - Keeping the Pipe Full",
+      "body": "Multiple Frames In-Flight at Once\nSender Window:\n← window slides right as ACKs arrive →\nWindow Size and Efficiency:\nEfficiency = W / (1 + 2a), where a = Tprop / Tframe\nIf W ≥ 1 + 2a → Efficiency = 100% (sender never has to wait - pipe always full)\nIf W < 1 + 2a → Efficiency = W / (1 + 2a) - less than 100%",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Sliding Window - Keeping the Pipe Full",
+      "body": "Multiple Frames In-Flight at Once\nTwo main variants of Sliding Window with error handling:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "1. Go-Back-N (GBN)",
+      "body": "Key Rules\nSender window size\n1\nup to 2n - 1 (where n = number of sequence number bits)\nReceiver window size\n2\nExactly 1 - only accepts the next expected frame in order\nOn error or lost frame\n3\nReceiver discards all subsequent frames (even correctly received ones) and sends NAK. Sender retransmits from the errored frame and all frames after it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Go-Back-N vs Selective Repeat - Detailed Comparison",
+      "body": "Go-Back-N (GBN)\nIf window = 2n, the receiver cannot distinguish between new frames and retransmitted frames after a lost ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Go-Back-N vs Selective Repeat - Detailed Comparison",
+      "body": "Go-Back-N (GBN)\nSender\nReceiver",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "2. Selective Repeat (SR)",
+      "body": "Key R\tules\nSender window size\n1\nup to 2(n-1)\nReceiver window size\n2\nup to 2(n-1)- buffers out-of-order frames\nOn error\n3\nOnly the errored frame is retransmitted; other correctly received frames are buffered",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Go-Back-N vs Selective Repeat - Detailed Comparison",
+      "body": "Selective Repeat (SR)\nPrevents ambiguity between old and new frames in the receiver buffer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Go-Back-N vs Selective Repeat - Detailed Comparison",
+      "body": "0\n1\n2\n3\n0\n1\n2\n0\n1\n2\n3\n0\n1\n2\n0\n1\n2\n3\n0\n1\n2\n0\n1\n2\n3\n0\n1\n2\n0\n1\n2\n3\n0\n1\n2\nSender\nReceiver\nFrame 0\nFrame 1\nFrame 2\nFrame 3\nFrame 2\nTime\nResent\nLost\nACK 2\nNAK 2\nS\nS\nS\nS\nS\nSelective Repeat (SR)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Go-Back-N vs Selective Repeat",
+      "body": "Protocol\nSelective Repeat\nGo-Back-N\nSequence Number Range\n0 to 7 (8 values)\n0 to 7 (8 values)\nMax Sender Window\n4 (2(3-1))\n7 (23 - 1)\nMax Receiver Window\n4\n1\nExample\nwith 3-bit sequence numbers (n=3):",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Go-Back-N vs Selective Repeat - Detailed Comparison",
+      "body": "Analogy\nOne student Misses a Lesson\nGo-Back-N Method (Inefficient Repeat)\nSelective Repeat \nEfficient but More Tracking\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Data Link Layer | Part II",
+      "body": "Error Detection  \nParity Check, Checksum, CRC\nError Correction \nHamming Code\nData Link Control  \nLine Discipline, Flow Control, Error Control\nFlow Control Protocols\nStop-and-Wait, Sliding Window",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Multiple Access Protocols",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/15xeiEeX9c6i3M1soCryjCpwPdqpsvNPYMdq6F1SowX8/edit"
+}

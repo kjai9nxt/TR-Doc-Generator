@@ -1,0 +1,542 @@
+{
+  "session_no": 2,
+  "source_file": "deployment-and-service-models.html",
+  "source_link": "",
+  "source_kind": "web",
+  "deck_title": "Deployment & Service Models",
+  "n_slides": 59,
+  "summary": "Deployment & Service Models\n    - Slide 1: Brand\n    - Slide 2: Welcome\n    - Slide 3: Cloud Computing Fundamentals\n    - Slide 4: What We Will Cover\n    - Slide 5: Section: Cloud Deployment Models\n    - Slide 6: Four Ways To Deploy\n    - Slide 7: Shared Multi-Tenant Infrastructure\n    - Slide 8: Analogy: a shared cab\n    - Slide 9: On-Premise Vs Hosted\n    - Slide 10: On-Premise Vs Hosted\n    - Slide 11: Analogy: a house or a bungalow\n    - Slide 12: Cloud Bursting Explained\n    - Slide 13: Cloud Bursting Explained\n    - Slide 14: Analogy: a banquet hall\n    - Slide 15: Shared Among Peers\n    - Slide 16: Ownership Tenancy Use Case\n    - Slide 17: Section: Multi-Cloud\n    - Slide 18: Multiple Providers Together\n    - Slide 19: Multiple Providers Together\n    - Slide 20: Analogy: two banks\n    - Slide 21: Resilience Negotiation Regulation\n    - Slide 22: Managing Multiple Platforms\n    - Slide 23: Quiz time\n    - Slide 24: Section: Service Models\n    - Slide 25: Stack Ownership Map\n    - Slide 26: Stack Ownership Map\n    - Slide 27: Raw Infrastructure Rental\n    - Slide 28: Analogy: a kitchen only\n    - Slide 29: Ready-Made Platform\n    - Slide 30: Analogy: a kitchen with dough ready\n    - Slide 31: Complete Application Delivered\n    - Slide 32: Analogy: a ready-made pizza\n    - Slide 33: Section: Beyond the Big Three\n    - Slide 34: New Service Models\n    - Slide 35: Pay Per Execution\n    - Slide 36: Pay Per Execution\n    - Slide 37: Analogy: a cab for one trip\n    - Slide 38: Pre-Built Intelligence APIs\n    - Slide 39: Pre-Built Intelligence APIs\n    - Slide 40: Analogy: a specialist doctor\n    - Slide 41: Provider Vs User\n    - Slide 42: Section: Cloud Economics & Providers\n    - Slide 43: Costs And Providers\n    - Slide 44: Balance Sheet Impact\n    - Slide 45: Balance Sheet Impact\n    - Slide 46: Analogy: a house on a loan, or rent\n    - Slide 47: Beyond The Price Tag\n    - Slide 48: Analogy: a smartphone\n    - Slide 49: On-Demand To Spot\n    - Slide 50: Analogy: three train tickets\n    - Slide 51: Discount And Risk\n    - Slide 52: Discount And Risk\n    - Slide 53: AWS Azure GCP\n    - Slide 54: Regional Alternatives\n    - Slide 55: Quiz time\n    - Slide 56: Key takeaways\n    - Slide 57: Virtualization & Hypervisors\n    - Slide 58: Feedback\n    - Slide 59: Thank you",
+  "slides": [
+    {
+      "n": 1,
+      "title": "Brand",
+      "body": "Welcome!",
+      "notes": "The opening mark. Content rule 21 keeps \"Welcome to today's session\" for the next frame, so this one says something else.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Brand"
+    },
+    {
+      "n": 2,
+      "title": "Welcome",
+      "body": "",
+      "notes": "The session name, in minimal mode: the kicker and the title, nothing else.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Welcome"
+    },
+    {
+      "n": 3,
+      "title": "Cloud Computing Fundamentals",
+      "body": "Recap",
+      "notes": "The TR's recap block: the five agenda items of the previous session, in its words. It uses the takeaways layout, not `RecapSlide`: five items with their sub lines run under the control cluster in `RecapSlide`'s two columns, and `align-check.mjs` reported it. The slide names the topic and never the session number (content rule 2b). Ask which one the room is least sure of before moving on.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Recap"
+    },
+    {
+      "n": 4,
+      "title": "What We Will Cover",
+      "body": "",
+      "notes": "The TR's agenda, all five items, split at the colon it writes. These exact strings come back on the Key Takeaways frame (content rule 20).",
+      "tables": [],
+      "section": "Opening",
+      "label": "Agenda"
+    },
+    {
+      "n": 5,
+      "title": "Section: Cloud Deployment Models",
+      "body": "",
+      "notes": "TR section 1. The subtitle is the agenda's own sub for this section.",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Section divider"
+    },
+    {
+      "n": 6,
+      "title": "Four Ways To Deploy",
+      "body": "Deployment Models Map\nEvery workload needs infrastructure somewhere, and no single arrangement of ownership, location and sharing suits every organisation's control and compliance needs.\nInfrastructure Choice\nFully shared\nFully dedicated\nPublic cloud\nprovider-owned, shared across tenants\nCommunity cloud\nshared by organisations with common needs\nHybrid cloud\nprivate and public linked together\nPrivate cloud\ndedicated, either on-premise or hosted",
+      "notes": "TR visual guidance: \"Four boxes labelled Public, Private, Hybrid, Community arranged around a central 'Infrastructure Choice' node, arrows showing a spectrum from fully shared to fully dedicated.\" The four TR bullets are the four boxes' own lines, so the strings appear once. They are ordered along the spectrum rather than in the TR's list order, because the spectrum is the argument. TR speaker notes: \"Frame deployment choice as a spectrum from fully shared to fully dedicated infrastructure. A common exam question gives a scenario and asks which model fits it best.\"",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Deployment models map"
+    },
+    {
+      "n": 7,
+      "title": "Shared Multi-Tenant Infrastructure",
+      "body": "Public Cloud\nA provider such as Amazon Web Services (AWS) builds and operates the data centres, then rents capacity to any customer over the internet on shared hardware.\nInfrastructure owned and run entirely by the provider\nMany tenants share hardware, isolated logically from each other\nCapacity scales rapidly across resources pooled across customers\nBest fit: variable workloads, fast launch, low compliance limits\nCloud Service Provider\nEnterprise P\nEnterprise Q\nUser R",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN. It is embedded in the document between the lead and the bullets and the text read drops it. Provider in the middle, Enterprise P and Q on either side, User R below, every arrow pointing outward from the provider. TR visual guidance: \"One large building labelled 'Provider Data Centre' with multiple small logos (different companies) drawing from it over an internet cloud icon.\" TR speaker notes: \"Note that AWS, Azure and Google Cloud Platform (GCP) are the leading public cloud providers offering this shared model. Interviewers often test whether a given scenario needs public or private cloud based on tenancy and control.\"",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Public cloud"
+    },
+    {
+      "n": 8,
+      "title": "Analogy: a shared cab",
+      "body": "Public Cloud\nA shared cab\nPublic cloud\nMany riders share one vehicle",
+      "notes": "TR analogy, verbatim: \"A shared cab is owned by the cab company; many riders book seats and pay only for the ride taken, never owning the vehicle — just as public cloud tenants share provider-owned servers and pay only for the capacity used.\" Say it; the frame plays it. The riders light in turn on the left and the tenants light in the same order on the right.",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Analogy: a shared cab"
+    },
+    {
+      "n": 9,
+      "title": "On-Premise Vs Hosted",
+      "body": "Private Cloud\nPrivate cloud dedicates infrastructure to one organisation only, chosen when compliance, data residency or latency needs rule out shared public hardware.\nOn-Premise Private Cloud\nEnterprise P\nPrivate cloud\nExternally Hosted Private Cloud\nCloud Service Provider\nDedicated for Enterprise P\nOther servers\nEnterprise P",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN, and it is the TR's Visual Guidance as well: \"Split diagram: left shows a building icon inside an organisation's fence (on-premise); right shows the same dedicated building inside a provider's larger data centre fence (hosted).\" The dashed fence is the thing to point at: on the left it is the organisation's own wall, on the right it is the provider's, and the dedicated server inside it is the only lit one.",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Private cloud"
+    },
+    {
+      "n": 10,
+      "title": "On-Premise Vs Hosted",
+      "body": "Private Cloud\nAspect\nOn-Premise Private\nHosted Private\nLocation\nOrganisation's own data centre\nProvider's data centre, dedicated section\nOwned by\nThe organisation itself\nProvider, leased to one customer\nExample\nIn-house VMware or OpenStack cluster\nVMware Cloud on AWS\nControl\nFull physical and logical control\nFull logical control, no physical access",
+      "notes": "Four rows, values exactly as the TR sets them. TR speaker notes: \"Contrast on-premise physical custody against hosted convenience using the table on screen. A frequent interview question asks which private cloud variant suits a bank that must keep servers within its own walls.\"",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Private cloud table"
+    },
+    {
+      "n": 11,
+      "title": "Analogy: a house or a bungalow",
+      "body": "Private Cloud\nBuild a house or rent a bungalow\nOn-premise or hosted private cloud\nBoth are yours alone",
+      "notes": "TR analogy, verbatim: \"Building a house on owned land gives full control forever; renting a private bungalow built by a developer gives the same exclusivity without construction effort — just as on-premise private cloud means owned infrastructure, while hosted private cloud means dedicated but provider-managed infrastructure.\" Left half of each scene is the owned one, right half the provided one.",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Analogy: a house or a bungalow"
+    },
+    {
+      "n": 12,
+      "title": "Cloud Bursting Explained",
+      "body": "Hybrid Cloud\nHybrid cloud links private and public infrastructure so workloads move between them, avoiding the need to size on-premise capacity for rare demand peaks.\nPrivate cloud\nPublic cloud\nEnterprise P\nEnterprise Q\nCloud Service Provider",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN: a private cloud plus a public cloud, with the plus sign carrying the claim. It is embedded between the lead and the bullets and the text read drops it. The next frame says what moves across the link, and when.",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Hybrid cloud"
+    },
+    {
+      "n": 13,
+      "title": "Cloud Bursting Explained",
+      "body": "Hybrid Cloud\nSudden overload bursts into public cloud capacity temporarily\nCloud bursting: automatic overflow triggered by demand thresholds\nExample: AWS Outposts extends AWS infrastructure into on-premise sites\nPrivate Infrastructure\nPublic Cloud\nburst\nthreshold",
+      "notes": "TR visual guidance: \"Two linked boxes, 'Private Infrastructure' and 'Public Cloud', with a dashed arrow labelled 'burst' flowing from private to public only when a load gauge crosses a threshold line.\" The gauge fills, and only after it passes the line does the arrow appear and the public box light. Watch one full loop before talking. TR speaker notes: \"Stress that bursting is temporary and automatic, not a permanent migration of workloads. A common interview question asks how hybrid architecture avoids over-provisioning private capacity for rare peaks.\"",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Cloud bursting"
+    },
+    {
+      "n": 14,
+      "title": "Analogy: a banquet hall",
+      "body": "Hybrid Cloud\nA banquet hall for the rush\nCloud bursting\nExtra capacity only while the rush lasts",
+      "notes": "TR analogy, verbatim: \"A restaurant kitchen handles daily orders alone, but during a wedding rush it hires a banquet hall's ovens for the overflow and releases them once the rush ends — just as cloud bursting shifts excess load to public cloud only during demand spikes.\" The right-hand ovens and the right-hand rack light and fade on the same beat as the gauge swings.",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Analogy: a banquet hall"
+    },
+    {
+      "n": 15,
+      "title": "Shared Among Peers",
+      "body": "Community Cloud\nCommunity cloud is infrastructure shared by several organisations with common regulatory, security or mission needs, rather than opened to the general public.\nGovernance and compliance rules set jointly by member organisations\nCost split among fewer tenants than public, more than solo private\nExample: AWS GovCloud (US), reserved for government agencies and partners\nTypical users: government bodies, healthcare consortiums, research collaborations\nShared infrastructure\nCommunity cloud\nGovernment\nHealthcare\nResearch\nGeneral public: not admitted",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN (its heading reads \"Commmunity Users\", a typo in the source), and the TR's Visual Guidance fits it: one shared block, matching organisation icons for government, healthcare and research, ringed off from the general public. TR speaker notes: \"Position community cloud as narrower than public but broader than private, sized to one sector's shared compliance need. An interviewer may ask why a government agency would pick AWS GovCloud over standard public cloud.\"",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Community cloud"
+    },
+    {
+      "n": 16,
+      "title": "Ownership Tenancy Use Case",
+      "body": "Deployment Models Compared\nChoosing a deployment model trades control for convenience: full ownership costs more effort, full sharing costs less control.\nModel\nOwned By\nTenancy\nTypical Use\nPublic\nProvider\nMulti-tenant\nVariable, public-facing workloads\nPrivate (on-premise)\nOrganisation\nSingle-tenant\nStrict compliance, latency-sensitive systems\nPrivate (hosted)\nProvider, dedicated to one customer\nSingle-tenant\nDedicated capacity without own data centre\nHybrid\nShared: organisation and provider\nMixed\nSteady load with occasional bursts\nCommunity\nMember organisations, or a third party\nShared within group\nSector-specific compliance, for example government",
+      "notes": "Five rows, values as the TR sets them. TR visual guidance: \"the 'Owned By' column colour-coded to visually reinforce the control-versus-sharing spectrum from slide one\": the dot beside each owner is shaded on the same pale-to-deep scale the first frame of this section uses. The TR's cell reads \"e.g. government\"; it reads \"for example\" here (content rule 26). TR speaker notes: \"Use this table to map any given scenario, such as a hospital or a startup, to its best-fit deployment model. A recurring exam pattern gives a scenario and asks which model minimises cost while meeting its compliance need.\"",
+      "tables": [],
+      "section": "Cloud Deployment Models",
+      "label": "Deployment models compared"
+    },
+    {
+      "n": 17,
+      "title": "Section: Multi-Cloud",
+      "body": "",
+      "notes": "TR section 2.",
+      "tables": [],
+      "section": "Multi-Cloud",
+      "label": "Section divider"
+    },
+    {
+      "n": 18,
+      "title": "Multiple Providers Together",
+      "body": "Multi-Cloud Defined\nMulti-cloud means running workloads across two or more independent public providers at once, unlike hybrid cloud, which mixes public with private infrastructure.\nYour company\naws\nAWS handles general-purpose compute and storage workloads\nazure\nAzure serves Microsoft-integrated enterprise applications\ngcp\nGCP powers data analytics and AI/ML pipelines",
+      "notes": "TR visual guidance: \"Diagram: one company icon with three arrows branching to AWS, Azure and GCP logos, each labelled with a workload type.\" The three workload lines ARE the TR's three bullets, beside the marks they belong to, so each string appears once. TR speaker notes: \"Stress that multi-cloud is a deliberate split among public providers, not a synonym for hybrid cloud. A common interview question asks to differentiate multi-cloud from hybrid cloud with an example.\"",
+      "tables": [],
+      "section": "Multi-Cloud",
+      "label": "Multi-cloud defined"
+    },
+    {
+      "n": 19,
+      "title": "Multiple Providers Together",
+      "body": "Multi-Cloud Defined\nMulti-Cloud Strategy\nHybrid Cloud Strategy\nPrivate Cloud\nPublic Cloud",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN AND CORRECTED. The source image captions the Azure mark \"Azure\" and then the Google Cloud mark \"Azure\" as well; here every mark carries its own name, which is the point of the picture. Left: several public providers together. Right: one private cloud linked to a public one.",
+      "tables": [],
+      "section": "Multi-Cloud",
+      "label": "Multi-cloud against hybrid"
+    },
+    {
+      "n": 20,
+      "title": "Analogy: two banks",
+      "body": "Multi-Cloud Defined\nTwo banks for your savings\nMulti-cloud\nOne fails, the work carries on",
+      "notes": "TR analogy, verbatim: \"Spreading savings across two different banks guards against one bank freezing withdrawals or raising fees — just as multi-cloud spreads workloads across providers so one outage or price hike does not stop operations.\" One side goes dark with a padlock on it while the other keeps working, on both scenes at once.",
+      "tables": [],
+      "section": "Multi-Cloud",
+      "label": "Analogy: two banks"
+    },
+    {
+      "n": 21,
+      "title": "Resilience Negotiation Regulation",
+      "body": "Multi-Cloud Motivations\nThree business pressures push organizations toward multiple providers even though it adds complexity.\nResilience\na second provider keeps services running during an outage\nNegotiation leverage\ncomparing quotes across vendors avoids one-sided pricing\nRegulation\nin-country hosting or concentration-risk rules may require a compliant region or a second provider",
+      "notes": "TR visual guidance: \"Three labelled icons (shield, handshake, gavel) mapped to resilience, negotiation and regulation respectively.\" The three bullets are the cards' own lines, split at the colon the TR writes. TR speaker notes: \"Walk through each motivation with a one-line business scenario before naming it. Interviewers frequently ask why a company would choose multi-cloud over a single vendor — resilience, leverage and compliance form the three-part answer.\"",
+      "tables": [],
+      "section": "Multi-Cloud",
+      "label": "Multi-cloud motivations"
+    },
+    {
+      "n": 22,
+      "title": "Managing Multiple Platforms",
+      "body": "Operational Overhead Cost\nMulti-cloud earns its resilience and leverage at a real operational price: every added provider multiplies what must be learned, managed and paid for.\nSeparate consoles, APIs and billing dashboards per provider\nDistinct certifications and skill sets needed for each platform's staff\nCross-cloud data transfer (egress) charges between providers\nDuplicate monitoring, security and IAM (identity and access management) policies to maintain\naws\nazure\ngcp\nSkills\nTooling\nBilling\nSecurity",
+      "notes": "TR visual guidance: \"Table-style graphic: rows for Skills, Tooling, Billing, Security, each row showing duplicated icons across AWS/Azure/GCP columns.\" The same icon three times in a row IS the claim: the work is repeated per provider. The TR writes \"IAM\" without saying what it stands for, so it is expanded here (content rule 24). TR speaker notes: \"Frame overhead as the price paid for multi-cloud's benefits, not a separate flaw. A typical exam question asks to list the operational costs of running a multi-cloud environment.\"",
+      "tables": [],
+      "section": "Multi-Cloud",
+      "label": "Operational overhead"
+    },
+    {
+      "n": 23,
+      "title": "Quiz time",
+      "body": "",
+      "notes": "The first quiz frame, immediately after the second topic (the position the first deck used). It tests the four deployment models and what multi-cloud is, which every later section assumes. It carries no question and no subtitle (content rules 18 and 28): the questions are asked from the quiz tool.",
+      "tables": [],
+      "section": "Multi-Cloud",
+      "label": "Quiz time"
+    },
+    {
+      "n": 24,
+      "title": "Section: Service Models",
+      "body": "",
+      "notes": "TR section 3.",
+      "tables": [],
+      "section": "Service Models",
+      "label": "Section divider"
+    },
+    {
+      "n": 25,
+      "title": "Stack Ownership Map",
+      "body": "Service Model Spectrum\nThe three service models share one technology stack; each shifts the line dividing provider-managed layers from customer-managed layers.\nIaaS\nPaaS\nSaaS\nApplication\nData & access configuration\nRuntime & middleware\nOperating system\nVirtualization, servers, storage, network\nProvider manages\nCustomer manages",
+      "notes": "TR visual guidance: \"Horizontal stack bar split into four layers, shaded by owner colour for IaaS, PaaS and SaaS side by side.\" The TR's own table has five layers, so the stack has five. Blue is the provider and amber is the customer, here and on every frame of this section. Only the ownership line moves; the stack does not. TR speaker notes: \"Point out that only the ownership line moves, not the stack itself. Interviewers often test whether a named service can be placed on the correct layer.\"",
+      "tables": [],
+      "section": "Service Models",
+      "label": "Service model spectrum"
+    },
+    {
+      "n": 26,
+      "title": "Stack Ownership Map",
+      "body": "Service Model Spectrum\nDeployment models say where the infrastructure sits and who owns it; service models say what is abstracted. Any service model can run on any deployment model (for example, private-cloud IaaS, public-cloud SaaS).\nStack Layer\nIaaS\nPaaS\nSaaS\nApplication\nCustomer\n1\nCustomer\n2\nProvider\n3\nData & access configuration\nCustomer\n1\nCustomer\n2\nCustomer\n3\nRuntime & middleware\nCustomer\n1\nProvider\n2\nProvider\n3\nOperating system\nCustomer\n1\nProvider\n2\nProvider\n3\nVirtualization, servers, storage, network\nProvider\n1\nProvider\n2\nProvider\n3",
+      "notes": "The TR's second Content paragraph and its table. The TR runs the two sentences together with no space after the full stop; a space is added. Its \"(e.g. private-cloud IaaS, public-cloud SaaS)\" reads \"for example\" here (content rule 26). Cell values are the TR's. The deployment models from the first section and the service models from this one are two separate questions, and the room should be able to say which question a given word answers.",
+      "tables": [],
+      "section": "Service Models",
+      "label": "Service model table"
+    },
+    {
+      "n": 27,
+      "title": "Raw Infrastructure Rental",
+      "body": "IaaS Explained\nInfrastructure as a Service rents compute, storage and network as raw building blocks, leaving the operating system and everything above it to the customer.\nAbstracts physical hardware, racking and data-centre wiring\nCustomer installs OS, runtime, middleware and application\nRepresentative services: AWS (Amazon Web Services) EC2, EBS, VPC\nAzure Virtual Machines, GCP Compute Engine offer same layer\nIaaS\nCompute\nprovider\nStorage\nprovider\nNetwork\nprovider",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN: a cloud labelled IaaS with three connectors down to storage, compute and network. It is embedded after the bullets and the text read drops it. All three tiles are provider-managed blue, because the rented thing is only the raw blocks. TR speaker notes: \"IaaS gives maximum control at the cost of managing everything above hardware. Interviewers often ask to map EC2 or a virtual machine to this layer.\"",
+      "tables": [],
+      "section": "Service Models",
+      "label": "IaaS"
+    },
+    {
+      "n": 28,
+      "title": "Analogy: a kitchen only",
+      "body": "IaaS Explained\nKitchen space only\nIaaS\nYou bring everything above the oven",
+      "notes": "TR analogy, verbatim: \"Domino's kitchen space and oven are used, but the dough, sauce and toppings are supplied separately and the pizza is cooked from scratch — just as the IaaS provider manages only the physical infrastructure while the customer manages the operating system, runtime and application.\" Amber layers slide in: three of the four are the customer's. The same four layers carry across all three pizza frames.",
+      "tables": [],
+      "section": "Service Models",
+      "label": "Analogy: a kitchen only"
+    },
+    {
+      "n": 29,
+      "title": "Ready-Made Platform",
+      "body": "PaaS Explained\nPlatform as a Service adds a managed operating system and runtime atop infrastructure, so the customer only builds, deploys and runs application code.\nAbstracts OS patching, runtime setup and server scaling\nLess control over OS-level tuning than IaaS allows\nRepresentative services: AWS Elastic Beanstalk, AWS App Runner\nAzure App Service, GCP App Engine offer same layer\nPaaS\nOperating system\nprovider\nRuntime\nprovider\nYour application\ncustomer",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN: a cloud labelled PaaS above the managed pieces and the one thing the customer brings. The provider tiles are blue and the application is amber. TR speaker notes: \"PaaS trades some flexibility for less operational work than IaaS. Interviewers often ask why Elastic Beanstalk beats raw EC2.\"",
+      "tables": [],
+      "section": "Service Models",
+      "label": "PaaS"
+    },
+    {
+      "n": 30,
+      "title": "Analogy: a kitchen with dough ready",
+      "body": "PaaS Explained\nKitchen and dough ready\nPaaS\nYou bring only the toppings",
+      "notes": "TR analogy, verbatim: \"Domino's kitchen, oven and ready dough are already set up, so only assembling and baking the pizza on that setup remains — just as the PaaS provider manages infrastructure, operating system and runtime while the customer manages only the application.\" One amber layer this time, against three on the IaaS frame.",
+      "tables": [],
+      "section": "Service Models",
+      "label": "Analogy: a kitchen with dough ready"
+    },
+    {
+      "n": 31,
+      "title": "Complete Application Delivered",
+      "body": "SaaS Explained\nSoftware as a Service delivers a finished application; the provider manages every layer beneath it, leaving the customer only account setup and data.\nAbstracts the entire stack below the application\nProvider pushes feature updates automatically, no customer action\nRepresentative services: Gmail/Google Workspace, Salesforce, Microsoft 365\nCustomer effort and control both fall sharply toward SaaS\nSaaS\nFinished application\nprovider\nAutomatic updates\nprovider\nYour data\ncustomer",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN: a cloud labelled SaaS delivering a finished application to several devices. The only amber tile is the customer's own data. TR speaker notes: \"SaaS trades all control for zero operational burden, completing the IaaS-PaaS-SaaS spectrum. Interviewers often ask to classify Gmail or a CRM tool by service model.\"",
+      "tables": [],
+      "section": "Service Models",
+      "label": "SaaS"
+    },
+    {
+      "n": 32,
+      "title": "Analogy: a ready-made pizza",
+      "body": "SaaS Explained\nA ready-made pizza\nSaaS\nYou bring nothing but an order",
+      "notes": "TR analogy, verbatim: \"A ready-made pizza is ordered directly from Domino's with no kitchen work at all — just as SaaS provider manages the entire stack while the customer only uses the finished application.\" No amber layer is left: the finished thing is handed over.",
+      "tables": [],
+      "section": "Service Models",
+      "label": "Analogy: a ready-made pizza"
+    },
+    {
+      "n": 33,
+      "title": "Section: Beyond the Big Three",
+      "body": "",
+      "notes": "TR section 4.",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "Section divider"
+    },
+    {
+      "n": 34,
+      "title": "New Service Models",
+      "body": "Beyond The Big Three\nCloud service models did not stop at IaaS, PaaS and SaaS. Two further models push abstraction higher, changing what the provider manages and what the developer retains.\nFunction as a Service (FaaS): runs code per trigger, no visible server\nServerless: broader term covering FaaS plus managed databases and queues\nAI/ML-as-a-Service: consumes pre-built AI and ML models via API\nBoth shift most infrastructure responsibility onto the cloud provider\nIaaS\nPaaS\nSaaS\nFaaS / Serverless\nAI/ML-as-a-Service\nRising abstraction\nUser responsibility shrinks\nProvider\nUser",
+      "notes": "TR visual guidance: \"Spectrum diagram: IaaS -> PaaS -> SaaS -> FaaS/Serverless -> AI/ML-as-a-Service, arrow showing rising abstraction and shrinking user responsibility.\" The bar lengths are a SCHEMATIC of the direction, stepped evenly: they are not measurements, and the table two sections on is where the real split is stated per model. TR speaker notes: \"Position FaaS and AI/ML-as-a-Service as the next step beyond the three classic models, removing the server concept entirely. Interviewers often ask where FaaS sits relative to PaaS on the abstraction ladder.\"",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "Beyond IaaS, PaaS and SaaS"
+    },
+    {
+      "n": 35,
+      "title": "Pay Per Execution",
+      "body": "FaaS And Serverless\nFunction as a Service (FaaS) runs a single function only when triggered, removing any need to provision or manage a server.\nTriggers: HTTP request, scheduled timer, queue message, file upload\nScales automatically from zero to many parallel invocations\nBilled per invocation and execution time, not idle time\nRuns on AWS Lambda; cold start delay if idle first",
+      "notes": "The TR's lead and four bullets, as written. The timeline that draws them is the next frame, because beside four bullets it would have to be squeezed under the width where five stops stay readable. TR speaker notes: \"Emphasise that FaaS removes even the persistent runtime instance PaaS still manages. Interview question: differentiate FaaS from PaaS by billing granularity.\"",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "FaaS and serverless"
+    },
+    {
+      "n": 36,
+      "title": "Pay Per Execution",
+      "body": "FaaS And Serverless\nAWS Lambda\nbilled only while it runs\nIdle\nTrigger event\nFunction instantiated\nExecutes\nTorn down",
+      "notes": "TR visual guidance: \"Timeline: idle -> trigger event -> function instantiated -> executes -> torn down, labelled with AWS Lambda.\" The bracket under the middle three is the third bullet drawn: billing counts the running part and not the idle ends.",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "A function's life"
+    },
+    {
+      "n": 37,
+      "title": "Analogy: a cab for one trip",
+      "body": "FaaS And Serverless\nA cab for one trip\nFunction as a Service\nPay only while it runs",
+      "notes": "TR analogy, verbatim: \"Booking a cab only when travel is needed and paying just for that ride, instead of owning an idle car, mirrors FaaS: code runs only on a trigger and billing counts only execution time.\" The idle owned car and the idle rack are the two dimmed things.",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "Analogy: a cab for one trip"
+    },
+    {
+      "n": 38,
+      "title": "Pre-Built Intelligence APIs",
+      "body": "AI ML As Service\nAI/ML-as-a-Service (Artificial Intelligence, Machine Learning as a Service) exposes pre-trained vision, language and forecasting models through a plain API call.\nRepresentative services: Amazon Rekognition, Comprehend (pre-built APIs)\nProvider manages model training, GPUs (Graphics Processing Units) and hosting\nUser manages input data and API integration only\nUsed in vision, chatbots, fraud and forecasting",
+      "notes": "The TR's lead and four bullets, as written, with the flow that draws them on the next frame. TR speaker notes: \"Distinguish SageMaker, a full ML platform, from Rekognition and Comprehend, narrow pre-built APIs. Interviewers often ask when to call a managed AI service instead of training a custom model.\"",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "AI/ML-as-a-Service"
+    },
+    {
+      "n": 39,
+      "title": "Pre-Built Intelligence APIs",
+      "body": "AI ML As Service\nApplication\nAPI call\nPre-trained model service\nPrediction returned\nAmazon SageMaker\nRekognition",
+      "notes": "TR visual guidance: \"Icon flow: application -> API call -> pre-trained model service -> prediction returned, labelled Amazon SageMaker / Rekognition.\" The user owns the first two boxes and the provider owns the model, which is the third bullet drawn.",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "An API call to a model"
+    },
+    {
+      "n": 40,
+      "title": "Analogy: a specialist doctor",
+      "body": "AI ML As Service\nOne consultation, no hospital\nAI/ML-as-a-Service\nUse the intelligence, skip the building",
+      "notes": "TR analogy, verbatim: \"Consulting a specialist doctor for one diagnosis instead of building a hospital, paying only for that consultation — just as AI/ML-as-a-Service delivers intelligence via API without building the model.\" The faded dashed block on each side is the thing not built.",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "Analogy: a specialist doctor"
+    },
+    {
+      "n": 41,
+      "title": "Provider Vs User",
+      "body": "Full Responsibility Spectrum\nMoving from IaaS toward SaaS steadily shifts management from user to provider; FaaS and AI/ML-as-a-Service remove the server concept, but the user still manages function code or input data respectively.\nModel\nProvider Manages\nUser Manages\nIaaS\nHardware, virtualization, network\n1\nOS, runtime, applications, data\nPaaS\n+ OS, runtime, middleware\n2\nApplication code, data\nSaaS\nEntire application stack\n3\nConfiguration, user data\nFaaS / Serverless\nServers, OS, runtime, scaling\n4\nFunction code, triggers, logic\nAI/ML-as-a-Service\nModel training, hosting, GPUs\n5\nInput data, API integration",
+      "notes": "TR visual guidance: \"Full-width table, one row per model, shading intensity rising left to right to show growing provider responsibility.\" The TR's shading runs across the columns of its table; here it deepens down the Provider Manages column, row by row, because the rows are the models in order and that is where the claim grows. Cell values are the TR's. TR speaker notes: \"Point out this table extends the same responsibility axis used for IaaS, PaaS and SaaS to FaaS and AI/ML-as-a-Service. This full spectrum is a favourite interview format for comparing cloud service models.\"",
+      "tables": [],
+      "section": "Beyond the Big Three",
+      "label": "Responsibility boundaries"
+    },
+    {
+      "n": 42,
+      "title": "Section: Cloud Economics & Providers",
+      "body": "",
+      "notes": "TR section 5.",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Section divider"
+    },
+    {
+      "n": 43,
+      "title": "Costs And Providers",
+      "body": "Cloud Economics Map\nCloud adoption decisions turn on how spending is structured and who supplies the infrastructure.\nCapEx vs OpEx\nhow spend is classified\nTCO\ntrue multi-year cost of a choice\nPricing models\non-demand, committed use, spot\nProviders\nglobal hyperscalers and Indian regional players",
+      "notes": "TR visual guidance: \"Four-quadrant map, one label per quadrant: CapEx/OpEx, TCO, Pricing Models, Providers.\" The four bullets are the four quadrants, split at the colon the TR writes, so each string appears once. TR speaker notes: \"Set up the four building blocks of cloud economics before going deep into each. Exam and interview questions often ask to classify a cost or pick the right pricing model for a scenario.\"",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Cloud economics map"
+    },
+    {
+      "n": 44,
+      "title": "Balance Sheet Impact",
+      "body": "CapEx vs OpEx\nCloud does not just change how much is paid; it changes which financial statement absorbs the cost, reshaping approvals and tax treatment.\nCapEx: capitalised, depreciated over asset life, sits on balance sheet\nOpEx: expensed immediately, hits the income statement same period\nBalance sheet\nCapEx\ndepreciated over time\nIncome statement\nOpEx\nthe same each month",
+      "notes": "TR visual guidance: \"Split panel: balance sheet with a depreciation curve versus income statement with a flat recurring expense line.\" The left bars step down because a capitalised asset is written off over its life; the right bars are level because a monthly expense is the same every month. Both are drawn from arrays, so the shapes are data. The TR has six bullets; this frame carries the two that define the terms and the next carries the four that follow from them.",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "CapEx vs OpEx"
+    },
+    {
+      "n": 45,
+      "title": "Balance Sheet Impact",
+      "body": "CapEx vs OpEx\nCapEx typically needs board-level capital approval\nOpEx approval sits within departmental budgets\nDepreciation deductions (CapEx) shift tax timing versus OpEx's immediate deduction\nAWS Cost and Usage Report classifies spend for finance systems",
+      "notes": "The TR's last four bullets, as written. TR speaker notes: \"Stress that AWS invoices are OpEx by default, which is why finance teams favour the flexibility. Interviewers often ask why cloud shifted budgeting power from capital committees to individual teams.\"",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "CapEx vs OpEx, continued"
+    },
+    {
+      "n": 46,
+      "title": "Analogy: a house on a loan, or rent",
+      "body": "CapEx vs OpEx\nA house on a loan, or rent\nCapEx and OpEx\nOne is an asset, one is a monthly cost",
+      "notes": "TR analogy, verbatim: \"Buying a house needs a large loan and years of EMIs recorded as an asset, while renting is a monthly expense with nothing recorded — just as CapEx locks value on the balance sheet while OpEx flows straight through the income statement.\" On the left a recorded asset shrinks as it is written off; on the right a small payment leaves every beat.",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Analogy: a house on a loan, or rent"
+    },
+    {
+      "n": 47,
+      "title": "Beyond The Price Tag",
+      "body": "Total Cost Ownership\nTotal cost of ownership (TCO) totals every direct and indirect cost of running a workload across its life, not only the sticker price.\nDirect costs: compute, storage, licensing, network transfer\nIndirect costs: staffing, training, downtime, migration effort\nOn-premise adds power, cooling, floor space, hardware refresh\nAWS Pricing Calculator estimates cloud cost\nMigration Evaluator builds the on-premise vs cloud business case\nSticker price\nStaffing\nPower\nDowntime\nTrue cost of ownership",
+      "notes": "TR visual guidance: \"Layered bar: sticker price at the base, staffing/power/downtime stacked above it to show true TCO.\" The fourth bullet's trailing full stop is dropped. TR speaker notes: \"Emphasise that TCO, not sticker price, is the number that should justify a migration. TCO comparisons are a favourite whiteboard question when interviewers test cloud cost reasoning.\"",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Total cost of ownership"
+    },
+    {
+      "n": 48,
+      "title": "Analogy: a smartphone",
+      "body": "Total Cost Ownership\nA phone's price tag\nServer TCO\nThe price tag is only the start",
+      "notes": "TR analogy, verbatim: \"A smartphone's price tag ignores the data plan, repairs and accessories bought over its life — just as a server's purchase price ignores the staffing, power and downtime that TCO adds back in.\" The three blocks stack up one after another beside the price tag on both sides.",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Analogy: a smartphone"
+    },
+    {
+      "n": 49,
+      "title": "On-Demand To Spot",
+      "body": "Three Pricing Models\nProviders meter usage but let buyers trade commitment for discount; three payment patterns cover most cloud spend.\nOn-demand: metered pay-as-used rate, zero commitment\nCommitted use: one to three-year term for lower fixed rate\nSpot: spare capacity at a steep discount; can be reclaimed at short notice\nTrade-off across all three: flexibility versus price\nOn-Demand\nCommitted Use\nSpot\nPrice falls",
+      "notes": "TR visual guidance: \"Three tickets side by side, labelled On-Demand, Committed Use, Spot, with a price arrow decreasing left to right.\" The bar on each ticket is a SCHEMATIC of the order of price, not a quoted figure; the real discounts are on the comparison frame two slides on. TR speaker notes: \"Frame on-demand as the metered billing model already familiar from pay-per-use pricing. Interviewers ask when to pick spot versus reserved capacity for a given workload.\"",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Three pricing models"
+    },
+    {
+      "n": 50,
+      "title": "Analogy: three train tickets",
+      "body": "Three Pricing Models\nThree kinds of train ticket\nOn-demand, committed, spot\nLess flexibility, lower price",
+      "notes": "TR analogy, verbatim: \"A general train ticket costs full fare and needs no planning, a season pass costs less for a fixed daily route, and a standby ticket is cheapest but the seat can be given away — just as on-demand, committed use and spot trade flexibility for price.\" The right-hand ticket and the right-hand rack both flicker: that is the one that can be given away.",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Analogy: three train tickets"
+    },
+    {
+      "n": 51,
+      "title": "Discount And Risk",
+      "body": "Pricing Models Compared\nEach pricing model suits a different workload shape; committed-use discounts deepen with longer terms and more upfront payment.\nModel\nCommitment\nTypical Discount\nKey Risk\nBest For\nOn-Demand\nNone\nBaseline rate\nHighest unit price; cost runs on if left running\nUnpredictable, short-lived workloads\nCommitted Use\n1 or 3 years\nUp to ~70% off on-demand\nUpfront lock-in, must forecast usage\nSteady, predictable baseline load\nSpot\nNone\nUp to ~90% off on-demand\nReclaimed with short notice (~2 min AWS, ~30 sec Azure/GCP)\nFault-tolerant batch, stateless jobs",
+      "notes": "Three rows, values as the TR sets them; the Google Docs escapes before the tildes are dropped. TR speaker notes: \"AWS Reserved Instances and Savings Plans anchor committed use, while EC2 Spot Instances anchor the spot row. A common interview question asks which model fits a CI/CD build farm versus a production database.\"",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Pricing models compared"
+    },
+    {
+      "n": 52,
+      "title": "Discount And Risk",
+      "body": "Pricing Models Compared\nOn-Demand\nBaseline rate\nHighest unit price\nCommitted Use\nUp to ~70% off\nLocked in for 1 or 3 years\nSpot\nUp to ~90% off\nCan be reclaimed at short notice",
+      "notes": "TR visual guidance: \"Three-column bar chart showing discount depth against flexibility surrendered for each model.\" The bar heights are the TR's own numbers, ~70% and ~90%, with the on-demand baseline as a stub; what each model gives up is its Key Risk cell cut down to a few words. Nothing is estimated to make a bar look right.",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Discount against flexibility"
+    },
+    {
+      "n": 53,
+      "title": "AWS Azure GCP",
+      "body": "Global Cloud Providers\nThree hyperscalers dominate global cloud spend, each with a different platform strength that shapes provider choice.\naws\nBreadth\nazure\nEnterprise\ngcp\nData and AI/ML\nProvider\nParent Company\nNotable Strength\nAWS\nAmazon\nBroadest service catalog, largest market share\nAzure\nMicrosoft\nStrong enterprise and hybrid integration (Active Directory)\nGoogle Cloud (GCP)\nGoogle\nData analytics, AI/ML tooling strength",
+      "notes": "TR visual guidance: \"Three logos in a row, one strength keyword under each.\" The marks are the vendors' own files, fetched into the central asset library first (content rules 12 and 13). Each keyword is the first word or two of that provider's Notable Strength cell, so none is invented. TR speaker notes: \"Keep the comparison at strategic strength rather than a feature-by-feature list. Interviewers often ask which provider suits an AI-heavy startup versus a Windows-heavy enterprise.\"",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Global cloud providers"
+    },
+    {
+      "n": 54,
+      "title": "Regional Alternatives",
+      "body": "Indian Cloud Providers\nAlongside global hyperscalers, Indian providers compete on data residency, latency for local users, and rupee-denominated billing.\nCtrlS, Yotta, E2E Networks: private data-centre players\nGovernment's GI Cloud (MeghRaj) hosts public-sector workloads\nBFSI (banking, financial services and insurance) and government workloads often mandate in-country storage\nRegional providers can undercut hyperscaler pricing for local traffic\nInside India\nCtrlS\nYotta\nE2E Networks\nGI Cloud (MeghRaj)\nGlobal hyperscalers",
+      "notes": "TR visual guidance: \"Map of India with data-centre pins beside the hyperscaler logos for scale comparison.\" It is NOT drawn as a map. A map has to draw India's border, a legally contested line, and an outline traced by hand at this size carries no real geography either way; content rule 8 prefers a typographic frame to a misleading picture. Every other element is here: one pin per provider inside an in-country zone, the three hyperscaler marks beside it. TR speaker notes: \"Note that data-residency and sector regulation, not just price, drive some workloads to Indian providers. This regulatory angle is a common follow-up question after any provider-comparison discussion.\" The TR writes \"BFSI\" without expanding it; it is expanded here (content rule 24).",
+      "tables": [],
+      "section": "Cloud Economics & Providers",
+      "label": "Indian cloud providers"
+    },
+    {
+      "n": 55,
+      "title": "Quiz time",
+      "body": "",
+      "notes": "The second quiz frame, in the slot content rule 18 fixes: immediately before Key Takeaways. The takeaways state what the room should now believe, so this is the last chance to find out whether they do while the session is still in the room.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Quiz time"
+    },
+    {
+      "n": 56,
+      "title": "Key takeaways",
+      "body": "",
+      "notes": "The TR's Key Takeaways list, which is its agenda word for word (the TR's agenda adds a parenthetical on the service models item and the takeaways do not; both frames use the takeaways wording). Content rule 20: the room was promised exactly these five, and this frame is the receipt.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Key takeaways"
+    },
+    {
+      "n": 57,
+      "title": "Virtualization & Hypervisors",
+      "body": "Next Session",
+      "notes": "The TR's own upcoming-session line. This is the one slide in the deck allowed to name another session, and it names it by title rather than by number (content rule 2b).",
+      "tables": [],
+      "section": "Closing",
+      "label": "Next session"
+    },
+    {
+      "n": 58,
+      "title": "Feedback",
+      "body": "",
+      "notes": "Leave it on screen while the room fills the form. Read the link out rather than assuming everyone can see it.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Feedback"
+    },
+    {
+      "n": 59,
+      "title": "Thank you",
+      "body": "All the Best",
+      "notes": "The TR closes on \"Thank You | All the Best\", so that is the message. Nothing new goes on this frame, and no \"next up\" line: the slide before it already carries that.",
+      "tables": [],
+      "section": "Closing",
+      "label": "Thank you"
+    }
+  ]
+}

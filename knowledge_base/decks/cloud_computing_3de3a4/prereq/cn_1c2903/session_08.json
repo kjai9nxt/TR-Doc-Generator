@@ -1,0 +1,692 @@
+{
+  "session_no": 8,
+  "source_file": "CN — session 8",
+  "deck_title": "CN — session 8",
+  "n_slides": 72,
+  "summary": "\n    - Slide 2: Wired LANs\n    - Slide 3: Multiple Access Protocols\n    - Slide 4: Wired LANs\n    - Slide 5: Ethernet\n    - Slide 6: Ethernet\n    - Slide 7: Ethernet\n    - Slide 8: Ethernet\n    - Slide 9: Ethernet\n    - Slide 10: Ethernet - History and Evolution\n    - Slide 11: Ethernet - History and Evolution\n    - Slide 12: IEEE 802.3 – The Ethernet Standard\n    - Slide 13: IEEE 802.3 – The Ethernet Standard\n    - Slide 14: CSMA/CD\n    - Slide 15: CSMA/CD\n    - Slide 16: CSMA/CD\n    - Slide 17: CSMA/CD\n    - Slide 18: CSMA/CD\n    - Slide 19: CSMA/CD\n    - Slide 20: CSMA/CD\n    - Slide 21: CSMA/CD\n    - Slide 22: CSMA/CD\n    - Slide 23: CSMA/CD\n    - Slide 24: Ethernet Frame Format\n    - Slide 25: Ethernet Frame Format\n    - Slide 26: Ethernet Frame Format\n    - Slide 27: Ethernet Frame Format\n    - Slide 28: Ethernet Frame Format\n    - Slide 29: Ethernet Frame Format\n    - Slide 30: Ethernet Frame Format\n    - Slide 31: Quiz Time!\n    - Slide 32: Types of Ethernet\n    - Slide 33: Ethernet\n    - Slide 34: Ethernet\n    - Slide 35: Ethernet\n    - Slide 36: Ethernet\n    - Slide 37: Fast Ethernet & Gigabit Ethernet\n    - Slide 38: Fast Ethernet & Gigabit Ethernet\n    - Slide 39: Fast Ethernet & Gigabit Ethernet\n    - Slide 40: Fast Ethernet & Gigabit Ethernet\n    - Slide 41: Bridges\n    - Slide 42: Bridges\n    - Slide 43: Bridges\n    - Slide 44: Bridges\n    - Slide 45: Switches\n    - Slide 46: Switches\n    - Slide 47: Switches\n    - Slide 48: Switches\n    - Slide 49: Switches\n    - Slide 50: Token Ring - IEEE 802.5\n    - Slide 51: Ethernet (IEEE 802.3) Vs Token Ring (IEEE 802.5)\n    - Slide 52: Ethernet (IEEE 802.3) Vs Token Ring (IEEE 802.5)\n    - Slide 53: Ethernet Vs Token Ring\n    - Slide 54: Local Area Network (LAN)\n    - Slide 55: Local Area Network (LAN)\n    - Slide 56: Local Area Network (LAN)\n    - Slide 57: VLANs - Virtual LANs\n    - Slide 58: VLAN - Virtual Local Area Network\n    - Slide 59: VLAN - Virtual Local Area Network\n    - Slide 60: VLAN - Virtual Local Area Network\n    - Slide 61: VLAN - Virtual Local Area Network\n    - Slide 62: VLAN - Virtual Local Area Network\n    - Slide 63: VLAN - Virtual Local Area Network\n    - Slide 64: VLAN - Virtual Local Area Network\n    - Slide 65: IEEE 802.1Q\n    - Slide 66: IEEE 802.1Q - VLAN Tagging Standard\n    - Slide 67: IEEE 802.1Q - VLAN Tagging Standard\n    - Slide 68: Quiz Time!\n    - Slide 69: Wired LANS\n    - Slide 70: Wireless LANS",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Wired LANs",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Multiple Access Protocols",
+      "body": "Multiple Access Protocols\nError Detection  \nParity Check, Checksum, CRC\nError Correction \nHamming Code\nData Link Control  \nLine Discipline, Flow Control, Error Control\nFlow Control Protocols\nStop-and-Wait, Sliding Window\nThe Multiple Access Problem\nShared medium challenges ,  why access control is needed\nRandom Access Protocols\nPure ALOHA, Slotted ALOHA, and \u000bCSMA strategies\nControlled Access Protocols\nReservation, Polling, Token Passing\nChannelization\nFDMA, TDMA, and CDMA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Wired LANs",
+      "body": "Wired LANs\nCSMA/CD \nEthernet Frame Format\nEthernet\nHistory, Evolution & IEEE 802.3 Standard\nTypes of Ethernet\nVLANs: Virtual LANs\nFast Ethernet & Gigabit Ethernet\nBridges, Switches & Token Ring (IEEE 802.5)\nLAN Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Ethernet",
+      "body": "Ethernet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Ethernet",
+      "body": "History\nEthernet was created in 1973 by Robert Metcalfe at Xerox PARC:\nWhile the initial experimental version ran at 2.94 Mbps\nIt was later standardized in 1980 at 10 Mbps using shared coaxial cable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Ethernet",
+      "body": "History & Evolution\nEra\n1973\nStandard\nDIX Ethernet (Original)\nSpeed\n2.94 Mbps\nMedium\nThick Coaxial (10BASE5)\n1985\nIEEE 802.3\n10 Mbps\nCoaxial / Twisted Pair\n1995\nFast Ethernet (802.3u)\n100 Mbps\nTwisted Pair / Fiber",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Ethernet",
+      "body": "History & Evolution \nEra\n1998\nStandard\nGigabit Ethernet (802.3z)\nSpeed\n1 Gbps\nMedium\nFiber Optic\n1999\nGigabit Ethernet (802.3ab)\n1 Gbps\nCat5e Twisted Pair\n2002\n10G Ethernet (802.3ae)\n10 Gbps\nFiber / Cat6/6A",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Era",
+            "Standard",
+            "Speed",
+            "Medium"
+          ],
+          [
+            "1973",
+            "DIX Ethernet (Original)",
+            "2.94 Mbps",
+            "Thick Coaxial (10BASE5)"
+          ],
+          [
+            "1985",
+            "IEEE 802.3",
+            "10 Mbps",
+            "Coaxial / Twisted Pair"
+          ],
+          [
+            "1995",
+            "Fast Ethernet (802.3u)",
+            "100 Mbps",
+            "Twisted Pair / Fiber"
+          ],
+          [
+            "1998",
+            "Gigabit Ethernet (802.3z)",
+            "1 Gbps",
+            "Fiber Optic"
+          ],
+          [
+            "1999",
+            "Gigabit Ethernet (802.3ab)",
+            "1 Gbps",
+            "Cat5e Twisted Pair"
+          ],
+          [
+            "2002",
+            "10G Ethernet (802.3ae)",
+            "10 Gbps",
+            "Fiber / Cat6/6A"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 9,
+      "title": "Ethernet",
+      "body": "Ethernet Evolution\n10Mbps\n100Mbps\n1Gbps\n10Gbps\nEvolution",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Ethernet - History and Evolution",
+      "body": "Ethernet is the \"de facto\" standard for wired networking, powering everything from home routers and corporate offices to massive global data centers\nNote",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Ethernet - History and Evolution",
+      "body": "Analogy\nEarly Ethernet (Shared Medium)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "IEEE 802.3 – The Ethernet Standard",
+      "body": "What the Standard Defines?\nHow data is framed? (frame format)\n01\n02\n03\nPhysical medium specifications (cable types, connectors)\nAccess method: CSMA/CD for shared media\n04\nSpeed variants: 10 Mbps, 100 Mbps, 1 Gbps, 10 Gbps\nIEEE 802.3 is the official standard for Ethernet, It defines:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "IEEE 802.3 – The Ethernet Standard",
+      "body": "Physical layer\nData Link layer\nTransport layer\nNetwork layer\nApplication layer\nEthernet\nWhat the Standard Defines?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "CSMA/CD",
+      "body": "CSMA/CD",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "CSMA/CD",
+      "body": "Introduction\nWhat is CSMA/CD?\nCSMA/CD (Carrier Sense Multiple Access with Collision Detection) improves CSMA by adding collision detection during transmission\nA device not only listens before sending, but also monitors the channel while transmitting\nChannel Monitoring\nCollision detection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "CSMA/CD",
+      "body": "A\nD\nB\nC\nCollision Occurs here\nA’s Collision detection and abortion\nC’s Collision detection and abortion\nTime\nTime\nTransmission Time\nTransmission Time\nt1\nt4\nt2\nt3\nDeep Dive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "CSMA/CD",
+      "body": "While transmitting, it simultaneously listens to the channel\nStep By Step - Process\nThe device senses the channel - if idle, it begins transmitting\nChannel is Idle\nCSMA/CD\nTransmitting Data\nCSMA/CD\nCSMA/CD",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "CSMA/CD",
+      "body": "Step By Step - Process\nIf a mismatch is detected → collision → send a jam signal to alert all devices → stop transmitting\nIf the transmitted signal matches what is received → no collision → continue\nTransmitting Data\nStops Transmitting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "CSMA/CD",
+      "body": "Step By Step - Process\nWait a random back-off time (Binary Exponential Backoff) → try again\nRe-Transmission\nWaits",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "CSMA/CD",
+      "body": "Binary Exponential Backoff\nAfter 1st collision \nWait random time from {0 , 1} slot times\nAfter 2nd collision \nWait random time from {0, 1, 2, 3} slot times\nAfter kth collision \nWait random time from {0, 1, ..., 2^k - 1} slot times\nAfter 16 collisions \nAbort transmission and report failure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "CSMA/CD",
+      "body": "Analogy\nAnalogy: CSMA/CD is like speaking in a conference call. You talk, and also listen to what is coming back. If you hear two voices mixed together (including yours), you know there is a collision — you stop, say 'sorry, you go ahead,' wait a random time, and try again\nTalk and listen\nTalk and Listen\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "CSMA/CD",
+      "body": "Not Used In Wireless Transmission\nA wireless transmitter cannot hear collisions while transmitting,  its own signal drowns out incoming signals\nWireless uses CSMA/CA instead (collision avoidance)\nWhy ?\nWireless Transmittion",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "CSMA/CD",
+      "body": "How Ethernet Applies CSMA/CD\nModern Ethernet: Full-Duplex (Switch): No collisions, CSMA/CD is disabled\nLegacy Networks\nUsed on half-duplex (hub-based) networks where devices share the same channel\nMinimum Frame Size\n64 bytes ensures collision detection works effectively\nSlot Time\n51.2 µs for 10 Mbps Ethernet (round-trip signal time for 2500m)\nGigabit Ethernet\nCarrier Extension pads frames to 512 bytes for CSMA/CD",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Ethernet Frame Format",
+      "body": "Ethernet Frame Format",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Ethernet Frame Format",
+      "body": "The Data Unit of Ethernet\nIn Ethernet, the data unit at the Data Link Layer is called a Frame\nEvery frame follows the same structure regardless of the Ethernet variant\nPhysical layer\nData Link layer\nTransport layer\nNetwork layer\nApplication layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Ethernet Frame Format",
+      "body": "Preamble\nStart Frame Delimiter\nDestination Address\nSource Address\nLength\nData\nFrame Check Sequence (CRC)\n7 byte\n1  byte\n6 byte\n6 byte\n2 byte\n46 to 1500 bytes\n4 byte\nEthernet Header (14 byte)\n64 - 1518 byte\nIEEE 802.3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Ethernet Frame Format",
+      "body": "Field\nPreamble\nSize\n7 bytes (56 bits)\nPurpose\nAlternating 1s and 0s synchronizes the receiver's clock\nStart Frame Delimiter (SFD)\n1 byte (8 bits)\nPattern 10101011 - signals start of the actual frame\nDestination MAC Address\n6 bytes (48 bits)\nMAC address of the receiving device\nSource MAC Address\n6 bytes (48 bits)\nMAC address of the sending device\nKey Fields",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Field",
+            "Size",
+            "",
+            "Purpose"
+          ],
+          [
+            "Preamble",
+            "7 bytes (56 bits)",
+            "",
+            "Alternating 1s and 0s — synchronizes the receiver's clock"
+          ],
+          [
+            "Start Frame Delimiter (SFD)",
+            "1 byte (8 bits)",
+            "",
+            "Pattern 10101011 — signals start of the actual frame"
+          ],
+          [
+            "Destination MAC Address",
+            "6 bytes (48 bits)",
+            "",
+            "MAC address of the receiving device"
+          ],
+          [
+            "Source MAC Address",
+            "6 bytes (48 bits)",
+            "",
+            "MAC address of the sending device"
+          ],
+          [
+            "Type / Length",
+            "2 bytes (16 bits)",
+            "",
+            "Protocol type (e.g., 0x0800 = IPv4) or length of data"
+          ],
+          [
+            "Data (Payload)",
+            "46 – 1500 bytes",
+            "",
+            "Actual data from the Network Layer (IP packet)"
+          ],
+          [
+            "CRC (Frame Check Sequence)",
+            "4 bytes (32 bits)",
+            "",
+            "Error detection using Cyclic Redundancy Check"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 28,
+      "title": "Ethernet Frame Format",
+      "body": "Field\nType / Length\nSize\n2 bytes (16 bits)\nPurpose\nProtocol type (e.g., 0x0800 = IPv4) or length of data\nData (Payload)\n46 – 1500 bytes\nActual data from the Network Layer (IP packet)\nCRC (Frame Check Sequence)\n4 bytes (32 bits)\nError detection using Cyclic Redundancy Check\nKey Fields",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Ethernet Frame Format",
+      "body": "Minimum frame size: 64 bytes (excluding Preamble and SFD)\nMaximum frame size: 1518 bytes (excluding Preamble and SFD)\nMTU (Maximum Transmission Unit) = 1500 bytes (maximum data/payload inside the frame)\nIf data < 46 bytes, padding is added to reach the minimum\nReason for Minimum Size: Ensure collision detection works properly on longest cable runs\nFrame Size Rules",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Ethernet Frame Format",
+      "body": "Recipient’s Address (Destination MAC)\nReturn Address (Source MAC)\nCustoms Declaration (Type/Length)\nLetter Inside → Data (Payload)\nTamper Seal → CRC (Error Check)\nAnalogy",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "🎯 Analogy\nAn Ethernet frame is like a formal letter sent through courier. The envelope has: the recipient's address (Destination MAC), your return address (Source MAC), a customs declaration of contents (Type/Length), the actual letter inside (Data), and a tamper-seal (CRC). If the seal is broken on arrival, the letter is rejected — just like a corrupted frame is discarded."
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 31,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Types of Ethernet",
+      "body": "Types of Ethernet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Ethernet",
+      "body": "Types of Ethernet\nFast Ethernet (100BASE-TX)\nSpeed: 100 Mbps\nMedia: Twisted pair (CAT5) and fiber optic cables\nVariants: 100BASE-TX (twisted pair), 100BASE-FX (fiber), and the rarely used 100BASE-T4 (supports four pairs of CAT3 cables)\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Ethernet",
+      "body": "Gigabit Ethernet (1000BASE-T)\nSpeed: 1 Gbps (1000 Mbps)\nMedia: CAT5e, CAT6 (copper), twisted-pair cables\nCommon Usage: Predominantly used in modern office and home networks, server connections\n2\nTypes of Ethernet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Ethernet",
+      "body": "10-Gigabit Ethernet (10GBASE-T)\nSpeed: 10 Gbps\nMedia: CAT6a, CAT7 (copper), and fiber optic cables\nDistance: Can support distances of up to 10 km with fiber\nCommon Usage: Typically found in data centers, high-speed networks, and enterprise backbones\n3\nTypes of Ethernet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Ethernet",
+      "body": "Switched Ethernet\nPurpose: Uses network switches to enhance data forwarding efficiency, compared to hubs\nKey Feature: Each device is assigned its own collision domain, which reduces collisions\nSpeeds: Ranges from 10 Mbps to 10 Gbps, depending on the Ethernet standard and the switch used\n4\nTypes of Ethernet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Fast Ethernet & Gigabit Ethernet",
+      "body": "Feature\nSpeed\nMeaning\n10 Mbps, Baseband, Twisted Pair\nExample\nStandard Ethernet on Cat3 cable\n100 Mbps, Baseband, Twisted Pair\nFast Ethernet on Cat5 cable\n1000 Mbps (1 Gbps), Twisted Pair\nGigabit Ethernet on Cat5e/6\n1000 Mbps, Short-wavelength fiber\nGigabit Ethernet on MMF fiber\nFast Ethernet (100 Mbps)\n100 Mbps\nGigabit Ethernet (1 Gbps)\n1 Gbps (10 times faster)\nConfiguration\nSimpler to configure\nMore complex setup\nDelay\nHigher delay compared to Gigabit\nLower delay\nCoverage\nUp to 100 meters (Cat5) / Up to 10 km (fiber)\nUp to 100 meters (Cat5e) / Up to 70 km (fiber)\nDifference",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Fast Ethernet & Gigabit Ethernet",
+      "body": "Feature\nRound-trip Delay\nMeaning\n10 Mbps, Baseband, Twisted Pair\nExample\nStandard Ethernet on Cat3 cable\n100 Mbps, Baseband, Twisted Pair\nFast Ethernet on Cat5 cable\n1000 Mbps (1 Gbps), Twisted Pair\nGigabit Ethernet on Cat5e/6\n1000 Mbps, Short-wavelength fiber\nGigabit Ethernet on MMF fiber\nFast Ethernet (100 Mbps)\n100 to 500 bit times\nGigabit Ethernet (1 Gbps)\n4000 bit times\nSuccessor\nSuccessor of 10BASE-T\nSuccessor of Fast Ethernet\nScalability\nLess scalable\nMore scalable (better for large networks)\nFrame Format Compatibility\nSame frame format → backward compatible\nSame frame format → full compatibility\nDifference",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Fast Ethernet & Gigabit Ethernet",
+      "body": "Feature\nDuplex Mode\nFast Ethernet (100 Mbps)\nSupports half & full duplex\nGigabit Ethernet (1 Gbps)\nPrimarily full-duplex → no CSMA/CD\nCSMA/CD\nRequired in half-duplex mode\nNot required (full-duplex)\nCable Types\nCat5 (100BASE-TX), fiber (100BASE-FX)\nCat5e (1000BASE-T), fiber (1000BASE-SX/LX)\nAuto-negotiation\nSupported\nSupported\nDifference",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Fast Ethernet & Gigabit Ethernet",
+      "body": "Analogy\n200 km/h",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Bridges",
+      "body": "Smart Link Between LAN Segments\nA bridge connects two LAN segments and selectively forwards frames based on their MAC addresses, it only passes frames from one segment to another if addressed to a device on the other side\nLAN A\nLAN B\nBridge",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Bridges",
+      "body": "Operation\nLAN A\nLAN B\nThe bridge receives frames from both segments, builds a MAC address table, and forwards frames accordingly\nMAC Address Table\nBridge\nFrames sent within the same segment are discarded not forwarded",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Bridges",
+      "body": "Types of Bridges\nTransparent Bridges\nAutomatically learn and update their MAC address table without manual configuration (plug-and-play)\nSource Routing Bridges:\nThe sender specifies the path the frame should follow through the network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Bridges",
+      "body": "Analogy\n🎯 Analogy\nA Bridge is like a receptionist directing messages to the right office, ensuring they don’t get lost or unnecessarily broadcasted.\nA Bridge is like a receptionist directing messages to the right, ensuring they don’t get lost or unnecessarily broadcasted\nReceptionist Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Switches",
+      "body": "Intelligent Frame Forwarding\nA Switch is a multi-port device that creates a dedicated path between sender and receiver, eliminating collisions on all ports",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Switches",
+      "body": "How a Switch Works?\nSource MAC\nSwitch learns the Source MAC and stores it in the MAC Address Table\nDestination MAC\nSwitch checks if the Destination MAC is in the table\nFound: Forward to specific port\nNot Found: Flood to all ports except source port\nLearning\nOver time, the table grows, forwarding frames efficiently",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Switches",
+      "body": "Key Properties\nCollision Domains\nEach port is its own domain, no CSMA/CD\nBroadcast Domain\nAll ports share, unless VLANs are configured\nFull-Duplex\nSender and receiver can transmit simultaneously\nMAC Address Table Timeout\nStale entries are removed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Switches",
+      "body": "Mode\nStore-and-Forward\nWhen it Forwards?\nAfter receiving entire frame\nLatency\nHigher\nError Checking\nYes - checks CRC before forwarding\nCut-Through\nAfter reading Destination MAC (first 6 bytes)\nLower\nNo - forwards even corrupt frames\nFragment-Free\nAfter receiving first 64 bytes\nMedium\nPartial - catches most collision fragments\nSwitching Modes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Switches",
+      "body": "Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Token Ring - IEEE 802.5",
+      "body": "Access Control (AC)\nStart Delimiter\nFrame Control\nData\nDestination & Source Address\nFrame Check Sequence (FCS)\nFrame Status\nEnd Delimiter\nFrame Structure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Ethernet (IEEE 802.3) Vs Token Ring (IEEE 802.5)",
+      "body": "Feature\n   Access Method\nEthernet (IEEE 802.3)\nCSMA/CD in older shared Ethernet\nToken Ring (IEEE 802.5)\nToken Passing (deterministic)\nTopology\nBus / Star (with hub/switch)\nPhysical Star, Logical Ring\nCollision Handling\nBinary Exponential Backoff\nNo collisions possible\nDifference",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Ethernet (IEEE 802.3)",
+            "Token Ring (IEEE 802.5)"
+          ],
+          [
+            "Access Method",
+            "CSMA/CD (random)",
+            "Token Passing (deterministic)"
+          ],
+          [
+            "Topology",
+            "Bus / Star (with hub/switch)",
+            "Physical Star, Logical Ring"
+          ],
+          [
+            "Collision Handling",
+            "Binary Exponential Backoff",
+            "No collisions possible"
+          ],
+          [
+            "Fairness",
+            "Not guaranteed under load",
+            "Every device gets a guaranteed turn"
+          ],
+          [
+            "Speed",
+            "10/100/1000 Mbps+",
+            "4 or 16 Mbps"
+          ],
+          [
+            "Status",
+            "Dominant standard",
+            "Largely obsolete"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 52,
+      "title": "Ethernet (IEEE 802.3) Vs Token Ring (IEEE 802.5)",
+      "body": "Feature\nFairness\nEthernet (IEEE 802.3)\nNot guaranteed under load\nToken Ring (IEEE 802.5)\nEvery device gets a guaranteed turn\nSpeed\n10/100/1000 Mbps+\n4 or 16 Mbps\nStatus\nDominant standard\nLargely obsolete\nDifference",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Ethernet (IEEE 802.3)",
+            "Token Ring (IEEE 802.5)"
+          ],
+          [
+            "Access Method",
+            "CSMA/CD (random)",
+            "Token Passing (deterministic)"
+          ],
+          [
+            "Topology",
+            "Bus / Star (with hub/switch)",
+            "Physical Star, Logical Ring"
+          ],
+          [
+            "Collision Handling",
+            "Binary Exponential Backoff",
+            "No collisions possible"
+          ],
+          [
+            "Fairness",
+            "Not guaranteed under load",
+            "Every device gets a guaranteed turn"
+          ],
+          [
+            "Speed",
+            "10/100/1000 Mbps+",
+            "4 or 16 Mbps"
+          ],
+          [
+            "Status",
+            "Dominant standard",
+            "Largely obsolete"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 53,
+      "title": "Ethernet Vs Token Ring",
+      "body": "Token Ring\nEthernet\nDifference",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Local Area Network (LAN)",
+      "body": "Definition\nLocal Area Network (LAN) protocols define rules for data transmission, media access, and communication within small areas like homes or offices",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Local Area Network (LAN)",
+      "body": "Key LAN Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Local Area Network (LAN)",
+      "body": "Media Access Methods\nLANs use methods to manage how devices share the network:\nCSMA/CD\nUsed in older/shared Ethernet networks to detect and manage collisions\nToken Passing\nUsed in Token Ring, where devices must hold a \"token\" to transmit data, preventing collisions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "VLANs - Virtual LANs",
+      "body": "VLANs - Virtual LANs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "VLAN - Virtual Local Area Network",
+      "body": "Introduction\nA VLAN is a logical grouping of devices on one or more switches, making them communicate as if on the same physical network, regardless of location",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "VLAN - Virtual Local Area Network",
+      "body": "Problems VLANs Solve\nSecurity\nBroadcast Storms\nInflexibility\nIsolates departments' traffic\nReduces broadcast traffic impact\nEliminates need for physical re-cabling",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "VLAN - Virtual Local Area Network",
+      "body": "VLAN ID Ranges (Cisco)\n0 & 4095\nReserved\n1\nDefault VLAN\n2 - 1001\nConfigurable\n1002 - 1005\nReserved for legacy tech\n1006 - 4094\nExtended for large networks\n1\n2\n3\n4\n5",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "VLAN - Virtual Local Area Network",
+      "body": "Types of VLAN Links\nAccess Link\nConnects end devices to VLAN-aware switches (untagged frames)\nTrunk Link\nSwitch-to-switch link carrying multiple VLANs (tagged frames)\nHybrid Link:\nVendor-specific, supports both tagged and untagged frames",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "VLAN - Virtual Local Area Network",
+      "body": "IDs and inter-VLAN communication\nSwitches assign ports to VLANs (ID 1–4094)\nLayer 3 router/switch needed for inter-VLAN communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "VLAN - Virtual Local Area Network",
+      "body": "Analogy\nWithout VLAN\nWith VLAN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "VLAN - Virtual Local Area Network",
+      "body": "IEEE 802.1Q\nWhen frames need to travel between switches (or between a switch and a router), they carry VLAN information via IEEE 802.1Q tagging\nFrame",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "IEEE 802.1Q",
+      "body": "VLAN Tag Structure\nA 4-byte VLAN tag is inserted into the ethernet frame between the source MAC and the type/Length field\nDestination Address\nSource Address\nVLAN Tag\nType/Length\nData\nFCS (Frame Check Sequence)\n6 bytes\n6  bytes\n4 bytes\n2 bytes\n46 to 1500 bytes\n4 bytes\nTPID\nTCI\nPCP\nDEI\nVID\n2  bytes\n3  bits\n1  bit\n12  bits",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "IEEE 802.1Q - VLAN Tagging Standard",
+      "body": "Port Type\nAccess Port\nWhat It Does\nConnects end devices (PC, printer, phone)\nTags Frames?\nNo - frames are untagged\nUsed Between\nSwitch <–> end device\nTrunk Port\nCarries frames from multiple VLANs\nYes - uses 802.1Q tag\nSwitch <-> Switch/Router\nTrunk vs Access Ports\nNative VLAN: Frames on the native VLAN travel untagged on trunk links (default: VLAN 1)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "IEEE 802.1Q - VLAN Tagging Standard",
+      "body": "Analogy\nPickup from Floors\nLabeled for Transit\nLabel Removed & Delivered\n1\n2\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Wired LANS",
+      "body": "Ethernet\nHistory, Evolution & IEEE 802.3 Standard\nCSMA/CD \nEthernet Frame Format\nTypes of Ethernet\nFast Ethernet & Gigabit Ethernet\nBridges, Switches & Token Ring (IEEE 802.5)\nLAN Protocols\nVLANs: Virtual LANs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Wireless LANS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/18W_3aKaEuNjxejnd0pwQ3-bUFnVJjcFcH_Eg-I86rGs/edit"
+}

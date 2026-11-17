@@ -1,0 +1,381 @@
+{
+  "session_no": 1,
+  "source_file": "CN — session 1",
+  "deck_title": "CN — session 1",
+  "n_slides": 53,
+  "summary": "\n    - Slide 2: Internet Communication Protocols\n    - Slide 3: Web Essentials: WWW, HTTP & DNS\n    - Slide 4: Web Essentials: WWW, HTTP & DNS\n    - Slide 5: Internet Communication Protocols\n    - Slide 6: Web and File Transfer Protocols\n    - Slide 7: Web and File Transfer Protocols\n    - Slide 8: Web and File Transfer Protocols\n    - Slide 9: Web and File Transfer Protocols\n    - Slide 10: Web and File Transfer Protocols\n    - Slide 11: Web and File Transfer Protocols\n    - Slide 12: Web and File Transfer Protocols\n    - Slide 13: Web and File Transfer Protocols\n    - Slide 14: Web and File Transfer Protocols\n    - Slide 15: Web and File Transfer Protocols\n    - Slide 16: Web and File Transfer Protocols\n    - Slide 17:     Email Communication Protocols\n    - Slide 18: Email Communication Protocols\n    - Slide 19: Email Communication Protocols\n    - Slide 20: Email Communication Protocols\n    - Slide 21: Types of Email Servers\n    - Slide 22: Outgoing Email Server (SMTP)\n    - Slide 23: Types of Email Servers\n    - Slide 24: Incoming Email Server (POP/IMAP)\n    - Slide 25: Email Communication Protocols\n    - Slide 26: How Email is Sent and Retrieved ?\n    - Slide 27: How Email is Sent and Retrieved ?\n    - Slide 28: How Email is Sent and Retrieved ?\n    - Slide 29: How Email is Sent and Retrieved ?\n    - Slide 30: How Email is Sent and Retrieved ?\n    - Slide 31: How Email is Sent and Retrieved ?\n    - Slide 32: Quiz Time!\n    - Slide 33: Web Communication: APIs\n    - Slide 34: Web Communication: APIs\n    - Slide 35: Introduction to APIs\n    - Slide 36: Web Communication: APIs\n    - Slide 37: Web Communication: APIs\n    - Slide 38: Web Communication: APIs\n    - Slide 39: Web Communication: APIs\n    - Slide 40: Web Communication: APIs\n    - Slide 41: Web Communication: APIs\n    - Slide 42: Web Communication: APIs\n    - Slide 43: Web Communication: APIs\n    - Slide 44: Web Communication: APIs\n    - Slide 45: Web Communication: APIs\n    - Slide 46: Web Communication: APIs\n    - Slide 47: Web Communication: APIs\n    - Slide 48: Web Communication: APIs\n    - Slide 49: Quiz Time!\n    - Slide 50: Internet Communication Protocols\n    - Slide 51: REST APIs, Cookies & Sessions",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Internet Communication Protocols",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Web Essentials: WWW, HTTP & DNS",
+      "body": "Web Essentials: WWW, HTTP & DNS\nWorld Wide Web (WWW)\nClient–Server Model & HTTP Lifecycle\nApplication Layer\nClient-Server Model\nHTTP Lifecycle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Web Essentials: WWW, HTTP & DNS",
+      "body": "Web Essentials: WWW, HTTP & DNS\nDomain Name System (DNS)  \nName Space\nDomain Name Space\nDNS in Internet\nDNS Resolution\nDNS Message",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Internet Communication Protocols",
+      "body": "Internet Communication Protocols\nWeb Communication – APIs \nEmail Communication Protocols\nWeb and File Transfer Protocols\nHTTP Vs HTTPS, FTP\nSMTP, POP, IMAP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Web and File Transfer Protocols",
+      "body": "Web and File Transfer Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Web and File Transfer Protocols",
+      "body": "Introduction to Protocol\nWhat is a Protocol?\nLanguage/handshake between systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Web and File Transfer Protocols",
+      "body": "Introduction to Protocol\nWithout Protocol\nWith Protocol",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Web and File Transfer Protocols",
+      "body": "Importance of Protocol\nEnsures different devices (Laptop, Phone, Server) understand each other regardless of their manufacturer or OS\nThe Shared Language\nSets the rules for how data \u000bis formatted and the speed at which it is sent\nStructured Transfer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Web and File Transfer Protocols",
+      "body": "Importance of Protocol\nProvides a \"check\" to ensure that the data received \u000bis exactly what was sent, without errors or loss\nVerification\nWithout rules, data would \u000bbe all mixed up and confusing\nReliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Web and File Transfer Protocols",
+      "body": "Web Protocols: HTTP and HTTPS\nEnsures data safety",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Web and File Transfer Protocols",
+      "body": "Example: HTTPS in Action\nData Integrity & Authentication\nEncrypts Data\nProtects sensitive information (e.g., credit card, passwords)\nUses certificates for secure communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Web and File Transfer Protocols",
+      "body": "HTTPS is like talking through a secure phone line. Even if someone \u000btries to listen, they only hear static noise due to encryption\nSecure Communication Online\nJust as HTTPS secures web messages, file transfers also \u000bneed protection over the internet\nNote",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Web and File Transfer Protocols",
+      "body": "File Transfer Protocols: FTP\nFTP stands for File Transfer Protocol\nIt is a standard network protocol used to transfer files between a client and a server over the internet\nclient \nserver\nFTPS / SFTP are secure variations used in modern systems",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Web and File Transfer Protocols",
+      "body": "How Does FTP Work?\nTwo types of FTP connections:\nPassive mode\nActive mode\nServer connects to the client to transfer data\nClient connects to the server for data transfer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Web and File Transfer Protocols",
+      "body": "FTP Functions\nUpload Files: Send files from your computer to the server\nDownload Files: Retrieve files from the server to your computer\nManage Files: You can rename, delete, or organize files on the server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "    Email Communication Protocols",
+      "body": "Email Communication Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Email Communication Protocols",
+      "body": "How Emails Work?\nProtocols involved: SMTP, POP, IMAP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Email Communication Protocols",
+      "body": "Email Server\nWhat is an Email Server?\nEmail server: A machine that sends and receives emails\nA network of servers handles the process behind the scenes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Email Communication Protocols",
+      "body": "Types of Email Servers\nOutgoing Email Server \n(Simple Mail Transfer Protocol [SMTP])\nIncoming Email Server (Post Office Protocol [POP]/Internet Message Access Protocol [IMAP])",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Types of Email Servers",
+      "body": "Sends emails to recipient’s server\nOutgoing Email Server (SMTP)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Outgoing Email Server (SMTP)",
+      "body": "SMTP: The Mail Dispatcher\nPostal dispatch center \u000b(packages and forwards)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Types of Email Servers",
+      "body": "Stores and manages incoming emails\nIncoming Email Server (POP/IMAP)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Incoming Email Server (POP/IMAP)",
+      "body": "POP/IMAP: The Mailbox\nMailbox \n(stores letters until check)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Email Communication Protocols",
+      "body": "Why Not HTTP for Email?\nSMTP, POP, and IMAP: Built for Email Delivery and retrieval\nWhy not HTTP?\nHTTP is for web pages, not designed for message handling\nEmails require more reliability, error handling, and storage",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "How Email is Sent and Retrieved ?",
+      "body": "The Complete Flow\nComposing the Email\nOpen email client \u000b(Gmail, Outlook, etc.)\nCompose message, add recipients, hit ‘Send’\nEmail handed over to SMTP server\nStep 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "How Email is Sent and Retrieved ?",
+      "body": "Step 2\nSMTP Handles Outgoing Mail\nSends message to outgoing SMTP server (e.g., smtp.gmail.com)\nOutgoing Mail\n-------------\nSMTP server\nMessage\nThe Complete Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "How Email is Sent and Retrieved ?",
+      "body": "Step 3\nDNS Helps Find the Recipient’s Server\nSMTP server queries DNS server for recipient’s email server\nSMTP server\nRecipient’s email server query\nDNS server\nDNS provides IP address of recipient’s incoming server\nThe Complete Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "How Email is Sent and Retrieved ?",
+      "body": "Step 4\nStoring the Email:\nRecipient’s incoming server stores email in the mailbox\nRecipient’s incoming server\nStoring\nmailbox\nThe Complete Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "How Email is Sent and Retrieved ?",
+      "body": "Step 5\nFetching Emails\nPOP (Post Office Protocol):\nDownloads emails, deletes from server\nBest for one device, offline use\nPOP\nIMAP\nThe Complete Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "How Email is Sent and Retrieved ?",
+      "body": "Step 5\nFetching Emails\nIMAP (Internet Message Access Protocol):\nSynchronizes across multiple devices\nEmails stored on the server, actions reflected everywhere\nIMAP\nPOP\nThe Complete Flow",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Web Communication: APIs",
+      "body": "Web Communication: APIs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Web Communication: APIs",
+      "body": "Introduction to APIs\nWhat is an API (Application Programming Interface)?\nAPI: Set of rules for software communication\nIt defines how different software applications can interact with each other, request data, and exchange information",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Introduction to APIs",
+      "body": "Analogy\nLike a menu in a restaurant: \u000bIt tells you what you can order and how to place that order",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Web Communication: APIs",
+      "body": "Work within a \u000bsingle app \u000b(e.g., camera API)\nInternal APIs\nThird-Party APIs\nServices to integrate (e.g., payment gateways)\nTypes of APIs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Web Communication: APIs",
+      "body": "Work within a \u000bsingle app \u000b(e.g., camera API)\nInternal APIs\nThird-Party APIs\nServices to integrate (e.g., payment gateways)\nTypes of APIs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Web Communication: APIs",
+      "body": "Importance of Web APIs\nEnable apps to send requests and receive responses\nMake web experiences fast, dynamic, and interactive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Web Communication: APIs",
+      "body": "Understanding HTTP\nHTTP: The standard protocol for data exchange on the internet\nEvery web interaction (e.g., browsing, clicking, submitting forms) involves sending an HTTP request and receiving a response\nThe Foundation of Web Communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Web Communication: APIs",
+      "body": "Structure of an HTTP Request",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Web Communication: APIs",
+      "body": "Anatomy of an HTTP Request\nBody:  The actual data sent with an HTTP request, usually in POST or PUT methods (e.g., JSON, HTML, text, images, files).",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Web Communication: APIs",
+      "body": "HTTP Request Analogy\nHeader:\nContent-Type: Specifies the kind of pizza being ordered. For example, \"large cheese pizza\" or \"veggie pizza.\"\nAuthorization: Here is my payment token to authorize the order\nAccept: Type of pizza or delivery. E.g. \"vegetarian pizza\" or \"delivery”",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Web Communication: APIs",
+      "body": "Example –Get Products API\nMethod: GET → Fetch product details (no changes)\nURL: https://example.com/products → Server address holding product info\nHeaders: Accept: application/json → Expect response in JSON format\nBody: Usually empty for GET requests (only fetching data)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Web Communication: APIs",
+      "body": "Structure of an HTTP Response",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Web Communication: APIs",
+      "body": "Anatomy of an HTTP Response\nBody: Contains the actual content returned by the server (e.g., JSON, HTML, text, images, files, etc.)\nStatus Code: Indicates the result of the request\n200 OK: Successful request\n404 Not Found: The requested resource does not exist",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Web Communication: APIs",
+      "body": "HTTP Response Analogy\nBody: \u000bYour order for a large cheese pizza with extra olives is confirmed and will be delivered to 123 Pizza Street. Thank you for your order\nStatus Code: Your pizza order has been successfully received and confirmed\n200 OK: Successful request\n404 Not Found: The pizza you requested is not available",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Web Communication: APIs",
+      "body": "Example - searching for a product\nStatus Code: \n200 OK: The request was successful, and the product details have been returned\nHeaders:\nContent-Type: application/json\nIndicates that the response is in JSON format\nCache-Control: no-cache\nEnsures that the response is not cached",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Web Communication: APIs",
+      "body": "Why Understanding HTTP Matters ?\nHTTP structure powers web apps\nKey components: \u000bMethod, URL, Headers, Body, Status Codes\nFoundation for REST APIs, enabling seamless, scalable, and interactive web apps",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Internet Communication Protocols",
+      "body": "Web and File Transfer Protocols\nHTTP, HTTPS, FTP\nEmail Communication Protocols\nSMTP, POP, IMAP\nWeb Communication: APIs \nKey Takeaways",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "REST APIs, Cookies & Sessions",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1IyytDx5OvypIlZSIyuBCI3oSk_hDCJmHxmfbI1kzaUA/edit"
+}

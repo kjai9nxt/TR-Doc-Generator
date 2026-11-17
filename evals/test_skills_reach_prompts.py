@@ -36,7 +36,7 @@ TMP = tempfile.mkdtemp(prefix="tr_skills_prompts_test_")
 os.environ["TR_DATA_DIR"] = TMP
 os.environ.pop("TURSO_DATABASE_URL", None)
 os.environ.pop("TURSO_AUTH_TOKEN", None)
-os.environ.setdefault("OPENROUTER_API_KEY", "test-key-not-used")
+os.environ.setdefault("ANTHROPIC_API_KEY", "test-key-not-used")
 
 OK = FAIL = 0
 

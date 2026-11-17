@@ -1,0 +1,662 @@
+{
+  "session_no": 5,
+  "source_file": "CN — session 5",
+  "deck_title": "CN — session 5",
+  "n_slides": 78,
+  "summary": "\n    - Slide 2: Transmission Media & Switching\n    - Slide 3: Physical Layer Part(1/2)\n    - Slide 4: Physical Layer Part(2/2)\n    - Slide 5: Transmission Media & Switching\n    - Slide 6: Guided Media\n    - Slide 7: Transmission Media\n    - Slide 8: Transmission Media\n    - Slide 9: Twisted Pair Cable\n    - Slide 10: Twisted Pair Cable\n    - Slide 11: UTP (Unshielded Twisted Pair)\n    - Slide 12: Twisted Pair Cable\n    - Slide 13: Twisted Pair\n    - Slide 14: Twisted Pair\n    - Slide 15: Coaxial Cable\n    - Slide 16: Coaxial Cable\n    - Slide 17: Coaxial Cable\n    - Slide 18: Coaxial Cable\n    - Slide 19: Coaxial Cable\n    - Slide 20: Optical Fibre Cable\n    - Slide 21: Optical Fibre Cable\n    - Slide 22: Optical Fibre Cable\n    - Slide 23: Optical Fibre Cable\n    - Slide 24: Optical Fibre Cable\n    - Slide 25: Optical Fibre Cable\n    - Slide 26: Unguided Media\n    - Slide 27: Transmission Media\n    - Slide 28: Unguided Media\n    - Slide 29: Radio Waves - 3 kHz to 1 GHz\n    - Slide 30: Radio Waves - 3 kHz to 1 GHz\n    - Slide 31: Unguided Media\n    - Slide 32: Unguided Media\n    - Slide 33: Unguided Media\n    - Slide 34: Microwaves - Line-of-Sight, High Bandwidth\n    - Slide 35: Unguided Media\n    - Slide 36: Infrared\n    - Slide 37: Infrared\n    - Slide 38: Transmission Media\n    - Slide 39: Quiz Time!\n    - Slide 40: Switching\n    - Slide 41: Switching\n    - Slide 42: Switching\n    - Slide 43: Switching\n    - Slide 44: Circuit Switching\n    - Slide 45: Circuit Switching\n    - Slide 46: Circuit Switching\n    - Slide 47: Circuit Switching\n    - Slide 48: Circuit Switching\n    - Slide 49: Message Switching\n    - Slide 50: Message Switching\n    - Slide 51: Message Switching\n    - Slide 52: Packet Switching\n    - Slide 53: Two Flavors of Packet Switching\n    - Slide 54: Two Flavors of Packet Switching\n    - Slide 55: Packet Switching\n    - Slide 56: Packet Switching\n    - Slide 57: Circuit vs Packet Switching\n    - Slide 58: Circuit vs Packet Switching\n    - Slide 59: Circuit vs Packet Switching\n    - Slide 60: Circuit vs Packet Switching\n    - Slide 61: Performance Metrics\n    - Slide 62: Performance Metrics\n    - Slide 63: Performance Metrics\n    - Slide 64: Performance Metrics\n    - Slide 65: Latency\n    - Slide 66: Delay\n    - Slide 67: Throughput Rule\n    - Slide 68: Real-World Performance - RTT and Bandwidth-Delay Product\n    - Slide 69: RTT\n    - Slide 70: BDP\n    - Slide 71: BDP\n    - Slide 72: Performance Metrics\n    - Slide 73: Quiz Time!\n    - Slide 74: Transmission Media and Switching\n    - Slide 75: Transmission Media and Switching\n    - Slide 76: Network Troubleshooting & Real World",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Transmission Media & Switching",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Physical Layer Part(1/2)",
+      "body": "Physical Layer Part(1/2)\nPhysical Layer\nRole & Responsibilities\nTypes of Physical Signals\nDigital & Analog Transmission\nLine Coding\nModulation (ASK, FSK, PSK, QAM)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Physical Layer Part(2/2)",
+      "body": "Physical Layer Part(2/2)\nMedium Limits\nNyquist and Shannon Theorems\nMultiplexing & Spread Spectrum\nMultiplexing (FDM, TDM, WDM)\nSpread Spectrum (FHSS, DSSS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Transmission Media & Switching",
+      "body": "Transmission Media & Switching\nPhysical Layer & Signal Basics : Roles and Analog vs. Digital signals.\nDigital & Analog Transmission : Line Coding (NRZ, Manchester) , Modulation (ASK, FSK, PSK, QAM).\nMedium Limits : Nyquist and Shannon Theorems.\nMultiplexing & Spread Spectrum : Multiplexing (FDM, TDM, WDM) and Spread Spectrum (FHSS, DSSS)\nUnguided Media\nSwitching\nGuided Media\nPerformance Metrics\nRadio Waves, Microwaves, Infrared\nBandwidth, Throughput, Latency, Jitter, BDP\nTwisted Pair, Coaxial, Fiber Optic\nCircuit, Message, and Packet Switching\nAgenda for Today’s Session\n1.  Guided Media — Twisted Pair, Coaxial, Fiber Optic\n2.  Unguided Media — Radio Waves, Microwaves, Infrared\n3.  Switching — Circuit, Message, and Packet Switching\n4.  Performance Metrics — Bandwidth, Throughput, Latency, BDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Guided Media",
+      "body": "Guided Media",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Transmission Media",
+      "body": "Two Broad Categories\nGuided Media (Wired)\nUnguided Media (Wireless)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Transmission Media",
+      "body": "Two Broad Categories\n1. Guided Media (Wired)\nSignals travel through a solid physical conductor — copper or glass\nThe path is fixed and protected from outside interference\n Twisted Pair\nCoaxial Cable\nFiber Optic\nExamples",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Twisted Pair Cable",
+      "body": "Introduction\nWhen two wires run parallel, both pick up the same external noise\nTwisting them ensures that noise affects both wires equally, and at the receiver the noise cancels out (common-mode rejection)\nThe twisting is the key engineering trick\nA twisted pair has two insulated copper wires twisted around each other",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Twisted Pair Cable",
+      "body": "Two types\nNo metal shielding\nCheap, easy to install\nUsed in office and home Ethernet\nUTP (Unshielded Twisted Pair)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "UTP (Unshielded Twisted Pair)",
+      "body": "Cable Categories \nCat 5e\nUp to 1 Gbps, 100 m. Common in older offices\nCat 6 / 6a\nUp to 10 Gbps, the modern standard\nCat 7 / 8\nUsed in data centers, 25–40 Gbps over short distances\n1\n2\n3\nConnector: RJ45 - the familiar 8-pin Ethernet plug",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Twisted Pair Cable",
+      "body": "STP (Shielded Twisted Pair)\nHas metal foil or braid around the pairs\nUsed in noisy industrial environments and high-speed data centers\nTwo Types",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Twisted Pair",
+      "body": "Strengths and Limitations\nLow cost\nFlexible\nEasy to install\nSupports voice\nStrengths\nData\nPower (PoE) on a single cable\nSTP variant resists interference in noisy environments",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Twisted Pair",
+      "body": "Limited to 100 m before signal degrades\nLower bandwidth compared to fiber optic\nSusceptible to EMI and crosstalk, particularly UTP\nStrengths and Limitations\nLimitations",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Coaxial Cable",
+      "body": "Introduction\nA coaxial cable has four layers built around a single axis:\nBoth conductors share the same axis - that is where the name “co-axial” comes from\nCopper Conductor\nInsulator\nBraided Metal Conductor\nProtective Plastic Layer\n1\n2\n3\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Coaxial Cable",
+      "body": "Why This Design Works?\nThe braided shield blocks external electromagnetic interference\nThe shield also stops the signal from leaking out – important at high frequencies\nHigher bandwidth than twisted pair, thanks to better shielding and consistent geometry",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Coaxial Cable",
+      "body": "Two Important Impedance Variants\n50-ohm coax (RG-58)\n1\nUsed in early Ethernet (10BASE2 / Thinnet)\n75-ohm coax (RG-6) \n2\nUsed in cable TV and modern cable internet (DOCSIS)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Coaxial Cable",
+      "body": "Where Coaxial Is Used Today?\nCable broadband internet (DOCSIS 3.0 / 3.1)\nConnecting antennas to radios and TVs\nCable TV distribution",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Coaxial Cable",
+      "body": "Strengths and Limitations\nHigher bandwidth than twisted pair\nExcellent shielding\nGood for video\nGood for broadband\nStrengths\nBulkier\nMore expensive\nLess flexible than twisted pair\nLimitations\nMostly replaced by fiber in the backbone and twisted pair in the LAN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Optical Fibre Cable",
+      "body": "Introduction\nFiber optic cable carries information as pulses of light through a thin glass strand\nIt is the highest-bandwidth, longest-distance medium in use today\nEvery undersea cable connecting continents is fiber",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Optical Fibre Cable",
+      "body": "Optical fiber Cable has Four parts: \nTotal Internal Reflection\nLight entering the core at the right angle keeps reflecting off the core-cladding boundary without escaping\nGlass Core\nGlass Cladding \nBuffer\n1\n2\n3\nOuter Jacket\n4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Optical Fibre Cable",
+      "body": "Total Internal Reflection\nThis is Total Internal Reflection — and it is why light travels many kilometers through a glass thread without significant loss",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Optical Fibre Cable",
+      "body": "Two Types of Fiber\nVery thin core (~8–10 μm)\nCarries one mode of light\nUsed for long-distance backbone and undersea cables\nSingle-Mode Fiber (SMF)\nLight Source",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Optical Fibre Cable",
+      "body": "Thicker core (~50 μm)\nCarries multiple modes at once\nUsed for short distances inside buildings and data centers\nMulti-Mode Fiber (MMF)\nTwo Types of Fiber\nLight Source",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Optical Fibre Cable",
+      "body": "Strengths & Limitations\nEnormous bandwidth\nVery long distance with low signal loss\nImmune to electromagnetic interference\nHard to tap secretly\nStrengths\nHighest cost of all media\nFragile\nSplicing(Joining) requires precision tools and skill\nLimitations",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Unguided Media",
+      "body": "Unguided Media",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Transmission Media",
+      "body": "Two Broad Categories\nSignals travel as electromagnetic waves through free space\nNo physical wire - the path is open\nRadio Waves\nMicrowaves\nInfrared\nExamples:\n2. Unguided Media (Wireless)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Unguided Media",
+      "body": "Radio Waves - 3 kHz to 1 GHz\nLow to medium frequencies, long wavelengths\n1\nOmnidirectional - an antenna sends the signal in all directions\n2\n3\n4\nCan pass through walls and obstacles - good indoor coverage\nA single transmitter covers a large area",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Radio Waves - 3 kHz to 1 GHz",
+      "body": "Uses \nAM/FM radio broadcast\nTV broadcast\ncordless phones\nBaby monitors\nWalkie-talkies\nRFID",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Radio Waves - 3 kHz to 1 GHz",
+      "body": "Components & Drawback\nDrawback\nProne to interference from other sources at the same frequency\nComponents\nTransmitter\nReceiver",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Unguided Media",
+      "body": "Transmitter\nReceiver\nAntenna\nAntenna\nRadio Waves\nRadio Waves - 3 kHz to 1 GHz",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Unguided Media",
+      "body": "Microwaves - 1 GHz to 300 GHz\nMicrowaves have higher frequency and shorter wavelength than radio waves\nThey are unidirectional, so sender and receiver must face each other directly\nThey can be blocked by buildings, hills, and heavy rain",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Unguided Media",
+      "body": "Repeater\nReceiver\nTransmitter\nMicrowaves - 1 GHz to 300 GHz",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Microwaves - Line-of-Sight, High Bandwidth",
+      "body": "Two Sub-Categories\nDrawback:\nstrict line-of-sight - any obstacle blocks the signal",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Unguided Media",
+      "body": "Infrared\nInfrared has the highest frequency among unguided media, with very short wavelengths. \nIt cannot penetrate walls - strict line-of-sight only\nBecause of the high frequency, very large bandwidth is available, but range is limited to a single room\nTelevision\nInfrared Radiations\nRemote",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Infrared",
+      "body": "Properties\nCannot penetrate opaque objects\n01\n02\n03\nVery short range \nHigh bandwidth potential thanks to high frequency\n04\nCannot leak through walls",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Infrared",
+      "body": "Properties\nTV remote controls\nIrDA\nAutomatic doors\nmotion detectors\nPattern across the three bands:\nAs frequency rises (Radio → Microwave → Infrared), bandwidth potential rises, but coverage and obstacle-penetration both drop sharply",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Transmission Media",
+      "body": "Guided vs Unguided Media\nGuided media generally offer higher bandwidth, lower noise, and better security\nUnguided media offer mobility and wide coverage without laying cables - at the cost of lower speed and higher interference\nGuided Media (Wired)\nUnguided Media (Wireless)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Switching",
+      "body": "Switching",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Switching",
+      "body": "Importance\nImagine a network of N devices, If every device needed a direct wire to every other device, \nThe number of links would be N × (N − 1) / 2, For just 100 devices, that is 4,950 cables. For a million users, the number is impossible",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Switching",
+      "body": "Solution - Switching\nA small number of intermediate devices (switches, routers) sit in the middle, Each device connects only to a switch, and the switch decides where to forward the data\nWith N devices, only N links are needed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Switching",
+      "body": "Three Classic Switching Techniques\nCircuit Switching\nA dedicated path is set up before any data flows\nMessage Switching\nThe entire message is sent and stored at each intermediate node, then forwarded- no dedicated path\nPacket Switching\nthe message is broken into small packets; each packet is forwarded independently\nEach method makes different trade-offs in delay, bandwidth efficiency, and reliability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Circuit Switching",
+      "body": "Introduction\nDevice 1 \nDevice 2 \nDevice 3 \nDevice 4 \nDevice 5 \nDevice 6 \nThe full bandwidth of every link on that path is reserved exclusively for this conversation, even when no data is flowing\nOnce the conversation ends, the circuit is torn down",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Circuit Switching",
+      "body": "Three Phases of Session\nSetup\n1\nA signaling message reserves a slot on every link from sender to receiver\nData Transfer\n2\nAll data flows along the reserved path with constant, predictable delay\nTeardown\n3\nwhen either side hangs up, the reservation is released at every switch",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Circuit Switching",
+      "body": "Strengths\nGuaranteed bandwidth\nPredictable delay \nIn-order delivery - perfect for voice calls",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Circuit Switching",
+      "body": "Limitations\nWasteful - bandwidth is reserved even during silence in a phone call\nSetup delay before any data can be sent\nIf any link on the reserved path fails, the entire call drops",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Circuit Switching",
+      "body": "Real World Example\nThe old Public Switched Telephone Network (PSTN) used circuit switching\nWhen someone made a call, the system reserved a path through the network, connecting the caller to the receiver\nDevice 1 \nDevice 2 \nDevice 3 \nDevice 4 \nDevice 5 \nDevice 6",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Message Switching",
+      "body": "Intermediate Node 1 (Router/Switch)\nBuffer/Storage\nFull Message\nSender\nFull Message\nIntermediate Node 2 (Router/Switch)\nBuffer/Storage\nFull Message\nReceiver\nFull Message\nFull Message\nFull Message\nFull Message\nStep 1: Sender sends full message\nStep 2: Node 1 stores then forwards\nStep 3: Receiver gets full message\nIntroduction\nThis pattern is called store-and-forward",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Message Switching",
+      "body": "Key Characteristics\nNo advance setup - data starts moving immediately\nEach switch must store the entire message before forwarding it Switches need significant storage\nDifferent messages may travel through completely different routes\nIf a link fails, the message can be re-routed at the next switch",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Message Switching",
+      "body": "Limitations\nLong delay - a switch cannot start forwarding until the entire message is received\nDelay accumulates over hops\nNot suitable for real-time data like voice or video\nSwitches need huge storage to buffer entire messages",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Packet Switching",
+      "body": "Introduction\nIn Packet Switching, the message is broken into small chunks called packets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Two Flavors of Packet Switching",
+      "body": "1. Datagram Approach\nEvery packet is treated independently and may take a different path\nOrder is not guaranteed, this is what the Internet uses (IP is a datagram service)\nSource\n4\n3\n2\n1\n4\n3\n2\n1\n2\n4\n1\n3\n3\n4\n4\n2\n1\n1\n2\n3\n1\n2\n3\n4\n4\n3\n2\n1\nDestination",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Two Flavors of Packet Switching",
+      "body": "2. Virtual Circuit Approach\nA logical circuit is set up before data flows; all packets follow the same logical path\nBut each is still handled as a packet. Used in MPLS, ATM, Frame Relay\nSource\n4\n3\n2\n1\n4\n3\n2\n1\n4\n3\n2\n1\nDestination\n4\n3\n2\n1\n4\n3\n2\n1\n4\n3\n2\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Packet Switching",
+      "body": "Why Packet Switching Wins?\nPipelining\n1\nwhile one packet is being forwarded by Switch B, the next is being received by Switch A\nStatistical multiplexing\n2\nMany flows share the same link efficiently, silent flows do not waste bandwidth\nRobust\n3\nIf a link fails, packets can be rerouted on the fly\nScalable\n4\nworks equally well for two users or two billion",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Packet Switching",
+      "body": "Trade-offs\nPackets may arrive out of order - receiver reorders them using sequence numbers\nPackets may be lost - handled by upper layers (TCP retransmits, UDP ignores)\nVariable delay (jitter) - each packet may experience different queuing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Circuit vs Packet Switching",
+      "body": "Side-by-Side Comparison\nFeature\nPath\nCircuit Switching\nDedicated end-to-end path\nPacket Switching\nNo dedicated path\nSetup\nRequired before data flows\nNot required (datagram)\nBandwidth\nReserved & guaranteed\nShared (statistical multiplexing)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Circuit vs Packet Switching",
+      "body": "Side-by-Side Comparison\nFeature\nDelay\nCircuit Switching\nConstant, predictable\nPacket Switching\nVariable (jitter)\nOrder\nAlways in order\nMay arrive out of order\nEfficiency\nWastes bandwidth in idle periods\nHigh - uses bandwidth only when needed\nFailure Handling\nCall drops if path fails\nPackets re-routed automatically",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Circuit Switching",
+            "Packet Switching"
+          ],
+          [
+            "Path",
+            "Dedicated end-to-end path",
+            "No dedicated path"
+          ],
+          [
+            "Setup",
+            "Required before data flows",
+            "Not required (datagram)"
+          ],
+          [
+            "Bandwidth",
+            "Reserved & guaranteed",
+            "Shared (statistical multiplexing)"
+          ],
+          [
+            "Delay",
+            "Constant, predictable",
+            "Variable (jitter)"
+          ],
+          [
+            "Order",
+            "Always in order",
+            "May arrive out of order"
+          ],
+          [
+            "Efficiency",
+            "Wastes bandwidth in idle periods",
+            "High — uses bandwidth only when needed"
+          ],
+          [
+            "Failure Handling",
+            "Call drops if path fails",
+            "Packets re-routed automatically"
+          ],
+          [
+            "Best For",
+            "Voice, real-time fixed-rate streams",
+            "Bursty data, web, video, files"
+          ],
+          [
+            "Real-World Example",
+            "Traditional PSTN telephony",
+            "Internet (TCP/IP), 4G/5G data"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 59,
+      "title": "Circuit vs Packet Switching",
+      "body": "Side-by-Side Comparison\nFeature\nBest For\nCircuit Switching\nVoice, real-time fixed-rate streams\nPacket Switching\nBursty data, web, video, files\nReal-World Example\nTraditional PSTN telephony\nInternet (TCP/IP), 4G/5G data",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Circuit Switching",
+            "Packet Switching"
+          ],
+          [
+            "Path",
+            "Dedicated end-to-end path",
+            "No dedicated path"
+          ],
+          [
+            "Setup",
+            "Required before data flows",
+            "Not required (datagram)"
+          ],
+          [
+            "Bandwidth",
+            "Reserved & guaranteed",
+            "Shared (statistical multiplexing)"
+          ],
+          [
+            "Delay",
+            "Constant, predictable",
+            "Variable (jitter)"
+          ],
+          [
+            "Order",
+            "Always in order",
+            "May arrive out of order"
+          ],
+          [
+            "Efficiency",
+            "Wastes bandwidth in idle periods",
+            "High — uses bandwidth only when needed"
+          ],
+          [
+            "Failure Handling",
+            "Call drops if path fails",
+            "Packets re-routed automatically"
+          ],
+          [
+            "Best For",
+            "Voice, real-time fixed-rate streams",
+            "Bursty data, web, video, files"
+          ],
+          [
+            "Real-World Example",
+            "Traditional PSTN telephony",
+            "Internet (TCP/IP), 4G/5G data"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 60,
+      "title": "Circuit vs Packet Switching",
+      "body": "Analogy\nCircuit switching is buying out a private taxi \nPacket switching is a city bus system",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Performance Metrics",
+      "body": "Performance Metrics",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Performance Metrics",
+      "body": "Important Terms\n1\nBandwidth - The theoretical maximum:\nThe maximum data rate a link can carry, in bits per second\nDetermined by the physical medium and the encoding (Nyquist and Shannon)\nExample: A Gigabit Ethernet link has a bandwidth of 1 Gbps",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Performance Metrics",
+      "body": "2\nThroughput - What is actually achieved\nThe actual data rate measured at any moment\nAlways less than or equal to bandwidth\nReduced by congestion, errors, and retransmissions\nExample: On a 1 Gbps link, throughput during a busy office afternoon may be only 350 Mbps\nImportant Terms",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Performance Metrics",
+      "body": "3\nGoodput - Useful Throughput\nThe throughput of useful application data only -excluding headers and retransmissions\nAlways less than or equal to throughput, because every packet carries header overhead\nExample: 350 Mbps throughput, after subtracting headers and retransmissions, may give 320 Mbps of actual file-download speed\nImportant Terms\nThe relationship is always: Goodput  ≤  Throughput  ≤  Bandwidth",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Latency",
+      "body": "Total Delay From Sender - Receiver\nLatency is the total time taken for a packet to travel from sender to receiver, It is the sum of four distinct components \nSource\nDestination\nRouter 1\nRouter 2\nDelays:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Delay",
+      "body": "Jitter is the variation in delay between consecutive packets\nA constant 50 ms latency is fine for voice, a latency that swings between 20 ms and 200 ms breaks voice and video calls even if the average is the same\nSource\nDestination\nInternet\nThis is jitter\nJitter",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "Throughput Rule",
+      "body": "Practical Speed Limit\nThroughput in practice (rule of thumb):\nEffective Throughput  ≈  min ( Bandwidth ,  Window Size / RTT )",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Real-World Performance - RTT and Bandwidth-Delay Product",
+      "body": "RTT & BDP\nTwo derived metrics, RTT and Bandwidth-Delay Product, both of which directly affect TCP performance",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "RTT",
+      "body": "Round-Trip Time\nThe time for a packet to travel from sender to receiver and back, roughly 2 × one-way latency\nMeasured by tools like ping, TCP uses RTT to set timeouts\n1 ms within a city\n30 ms within a country\n150 ms across continents (India to US East)\n600 ms via satellite",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "BDP",
+      "body": "Bandwidth-Delay Product\nFormula:  BDP  =  Bandwidth (bps)  ×  RTT (seconds)\nTells how many bits the network can hold in transit at any moment",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "BDP",
+      "body": "On a transcontinental high-speed link, BDP is huge - even a 10 Gbps link with 150 ms RTT has a BDP of 1.5 Gbits ≈ 187 MB\nModern operating systems use TCP window scaling to keep large BDPs full\nBandwidth-Delay Product",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Performance Metrics",
+      "body": "Reading these Metrics in Real Life\nA typical speedtest result shows three numbers:\nDownload / Upload speed\nPing (this is RTT)\nJitter (variation in RTT)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Transmission Media and Switching",
+      "body": "Agenda for Today’s Session\n1.  Guided Media — Twisted Pair, Coaxial, Fiber Optic\n2.  Unguided Media — Radio Waves, Microwaves, Infrared\n3.  Switching — Circuit, Message, and Packet Switching\n4.  Performance Metrics — Bandwidth, Throughput, Latency, BDP\nGuided Media\nTwisted Pair\nCoaxial\nFiber Optic\nUnguided Media\nRadio Waves\nMicrowaves\nInfrared",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Transmission Media and Switching",
+      "body": "Switching\nCircuit\nMessage\nPacket Switching\nPerformance Metrics\nBandwidth\nThroughput\nLatency ,  Jitter\nBDP\nAgenda for Today’s Session\n1.  Guided Media — Twisted Pair, Coaxial, Fiber Optic\n2.  Unguided Media — Radio Waves, Microwaves, Infrared\n3.  Switching — Circuit, Message, and Packet Switching\n4.  Performance Metrics — Bandwidth, Throughput, Latency, BDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Network Troubleshooting & Real World",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1yPWk-lp60A3jMBpsmwz3dUv2ZWpe1gWodZkqTajeifc/edit"
+}

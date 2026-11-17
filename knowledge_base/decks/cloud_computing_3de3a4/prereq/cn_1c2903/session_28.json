@@ -1,0 +1,507 @@
+{
+  "session_no": 28,
+  "source_file": "CN — session 28",
+  "deck_title": "CN — session 28",
+  "n_slides": 71,
+  "summary": "\n    - Slide 2: REST APIs, Cookies & Sessions\n    - Slide 3: Internet Communication Protocols\n    - Slide 4: REST APIs, Cookies & Sessions\n    - Slide 5: HTTP Headers\n    - Slide 6: How Web Apps Communicate\n    - Slide 7: How Web Apps Communicate\n    - Slide 8: How Web Apps Communicate\n    - Slide 9: How Web Apps Communicate\n    - Slide 10: Ways to Handle Client Interactions by Server\n    - Slide 11: Ways to Handle Client Interactions by Server\n    - Slide 12: Rest APIs\n    - Slide 13: Rest APIs\n    - Slide 14: Rest APIs\n    - Slide 15: Rest APIs\n    - Slide 16: Rest APIs\n    - Slide 17: Status Codes\n    - Slide 18: Status Codes\n    - Slide 19: Rest APIs\n    - Slide 20: REST API in Action (Product Example)\n    - Slide 21: REST API in Action (Product Example)\n    - Slide 22: REST API in Action (Product Example)\n    - Slide 23: API Endpoints\n    - Slide 24: REST API in Action (Product Example)\n    - Slide 25: Rest APIs\n    - Slide 26: Rest APIs\n    - Slide 27: REST API Principles\n    - Slide 28: REST API Principles\n    - Slide 29: REST API Principles\n    - Slide 30: REST API Principles\n    - Slide 31: REST API Principles\n    - Slide 32: REST API Principles\n    - Slide 33: REST API Principles\n    - Slide 34: REST API Principles\n    - Slide 35: REST API Principles\n    - Slide 36: REST API\n    - Slide 37: REST API\n    - Slide 38: API Endpoints\n    - Slide 39: Rest APIs\n    - Slide 40: Rest APIs\n    - Slide 41: Rest APIs\n    - Slide 42: Rest APIs\n    - Slide 43: Ways to Handle Client Interactions by Server\n    - Slide 44: How Web Apps Communicate ?\n    - Slide 45: Quiz Time!\n    - Slide 46: Cookies and Sessions\n    - Slide 47: Cookies\n    - Slide 48: Cookies\n    - Slide 49: Cookies\n    - Slide 50: Cookies\n    - Slide 51: Cookies\n    - Slide 52: Cookies\n    - Slide 53: Cookies\n    - Slide 54: Sessions\n    - Slide 55: Sessions\n    - Slide 56: Sessions\n    - Slide 57: Sessions\n    - Slide 58: Cookies vs Sessions\n    - Slide 59: Cookies vs Sessions\n    - Slide 60: Cookies vs Sessions\n    - Slide 61: Cookies vs Sessions\n    - Slide 62: Cookies vs Sessions\n    - Slide 63: Cookies vs Sessions\n    - Slide 64: Cookies vs Sessions\n    - Slide 65: Cookies vs Sessions\n    - Slide 66: Quiz Time!\n    - Slide 67: REST APIs, Cookies &  Sessions\n    - Slide 68: REST APIs, Cookies &  Sessions\n    - Slide 69: Understanding TLS and HTTPS",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "REST APIs, Cookies & Sessions",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Internet Communication Protocols",
+      "body": "Internet Communication Protocols\n Web and File Transfer Protocols\nHTTP, HTTPS, FTP\nEmail Communication Protocols\nSMTP, POP, IMAP\nWeb Communication: APIs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "REST APIs, Cookies & Sessions",
+      "body": "REST APIs, Cookies & Sessions\nRest APIs\nHTTP Headers\nCookies and Sessions\nHTTP Status Codes, REST Operations, REST Architecture & Principles, API Endpoints\nCookies vs Sessions Integration\nIntroduction , Stateless\nvs Stateful",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "HTTP Headers",
+      "body": "HTTP Headers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "How Web Apps Communicate",
+      "body": "What are Headers ?\nCommon Headers\nContent-Type\nAuthorization\nSet-Cookie\nCache-Control\nHeaders are key–value pairs sent with HTTP requests and responses they provide additional information about the request, response, or data being transferred",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "How Web Apps Communicate",
+      "body": "Content-Type: Specifies the format of the data \u000b(e.g., application/json)\nAuthorization: Provides access control credentials \u000b(e.g., Bearer <token>)\nCache-Control: Controls caching behavior \u000b(e.g., max-age=3600 for 1-hour cache)\nSet-Cookie: Stores session-related data \u000b(e.g., sessionId=xyz123)\nHeaders",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "How Web Apps Communicate",
+      "body": "How Websites Remember Users?\nREST rule\nEvery request is independent\nserver forgets the client after each request\nBut… users add items to cart, close the browser, come back next day → cart is still there\nIf the server forgets everything, how does this work?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "How Web Apps Communicate",
+      "body": "How Websites Remember Users?\nTo answer this, there are two ways a server handles requests — Stateless vs Stateful",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Ways to Handle Client Interactions by Server",
+      "body": "Stateless Communication\nStateless = random helpline agent each call\nServer remembers NOTHING between requests\nEach request carries full context (auth, data, everything)\nUsed by: HTTP, REST APIs, DNS\nPros\nHighly scalable, any server handles any request\nCons\nMore data per request, feels \"forgetful\"",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Ways to Handle Client Interactions by Server",
+      "body": "Stateful Communication\nStateful = dedicated account manager who knows your history\nServer REMEMBERS previous interactions\nClient sends only a reference (session ID), server recalls the rest\nUsed by: FTP, WebSockets, database connections\nPros\nLess data per request, smoother UX\nCons\nHarder to scale, \u000bserver crash = data loss",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Rest APIs",
+      "body": "Rest APIs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Rest APIs",
+      "body": "What is REST APIs?\nREST: Organizes client-server communication in real-world apps\nAPIs",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Rest APIs",
+      "body": "What is REST APIs?\nREST APIs are a set of rules or guidelines for building APIs that allow different applications to communicate over the internet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Rest APIs",
+      "body": "What is REST APIs ?\nRest APIs helps manage how requests and responses are handled between a client and a server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Rest APIs",
+      "body": "Data Exchange and Interaction\nDefines how clients and servers interact using HTTP methods \u000b(GET, POST, PUT, DELETE) and status codes (200 OK, 404 Not Found)\nWeb services\nProvides consistent, predictable data exchange \u000b(e.g., browsing products, posting comments, updating profiles)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Status Codes",
+      "body": "Success\nResource created\nUnderstanding HTTP Status Codes\nSuccess, no data\nMalformed request\n200 OK\n201 Created\n204 No Content\n400 Bad Request",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Status Codes",
+      "body": "Login needed\nNo permission\nResource not found\nServer error\n401 Unauthorized\n403 Forbidden\n404 Not Found\n500 Internal Server Error\nUnderstanding HTTP Status Codes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Rest APIs",
+      "body": "REST API in Action\nGET \u000bFetch data\nPOST \u000bAdd item\nPUT \u000bUpdate data\nDELETE \u000bRemove item\nPATCH \u000bPartially update data",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "REST API in Action (Product Example)",
+      "body": "GET\nExample: You open an online store, the app GETs the product list from the server (no changes)\nBrowsing Products (GET)\nonline store\nServer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "REST API in Action (Product Example)",
+      "body": "POST\nExample: You add a product to your cart, the app POSTs the product to the server (new data)\nAdding Product to Cart (POST)\nonline store\nServer\nCart: 1\nCart: 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "REST API in Action (Product Example)",
+      "body": "PUT\nExample: You change the quantity of a product, the app PUTs the updated quantity to the server (update data)\nUpdating Product Quantity (PUT)\n2\nonline store\nServer\nCart: 1 + 1 =\nCart: 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "API Endpoints",
+      "body": "PUT vs PATCH\nReplaces the ENTIRE resource, Must send all fields\nPUT\nUpdates ONLY the fields you send, Rest stays unchanged\nPATCH\nExample: Product has name, price, description. PUT needs all 3. \u000bPATCH can send just { price: 999 }",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "REST API in Action (Product Example)",
+      "body": "DELETE\nExample: You remove a product, the app DELETEs the product from the server (remove data)\nRemoving Product from Cart (DELETE)\nonline store\nServer\n0\nCart: 2 - 2 =\nCart: 0",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Rest APIs",
+      "body": "How REST Differs from HTTP?\nREST is an architectural style that USES HTTP as its protocol\nREST\nHTTP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Rest APIs",
+      "body": "How REST Builds on HTTP?\nTreats everything as a resource (users, products, orders), \nidentified by a URL\nResource-Based Structure",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "REST API Principles",
+      "body": "6 Constraints\n6 Constraints\n01\n02\n03\n04\n05\n06",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "REST API Principles",
+      "body": "6 Constraints\n01\nClient (UI) and Server (data/logic) are independent\nEither side can change without affecting the other\nCustomer orders from a menu; doesn't need to know how the kitchen works\nClient-Server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "REST API Principles",
+      "body": "6 Constraints\n01\n02\nEach request carries ALL needed info (auth token, data, etc.)\nServer stores NOTHING about previous requests\nNew helpline agent every call — you explain from scratch each time\nStatelessness",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "REST API Principles",
+      "body": "6 Constraints\n01\n02\n03\nResponses must indicate if they can be cached or not\nCacheable: product images, static pages\nNot cacheable: stock prices, live scores\nCacheability",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "REST API Principles",
+      "body": "6 Constraints\n01\n02\n03\n04\nOne standard way to interact with all resources\nSame methods (GET, POST, PUT, DELETE) work the same everywhere\nGET /users/123 means the same from mobile, web, or Tablet\nUniform Interface",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "REST API Principles",
+      "body": "6 Constraints\n01\n02\n03\n04\n05\nClient doesn't know if it's hitting the server directly or going through CDNs, load balancers, firewalls\nLayers can be added/removed without client knowing\nLayered System",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "REST API Principles",
+      "body": "6 Constraints\n01\n02\n03\n04\n05\n06\nServer MAY send executable code, but most modern REST APIs only exchange data\nOnly optional constraint among the six\nCode on Demand (Optional)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "REST API Principles",
+      "body": "Why Each Principle Matters?\nClient-Server → Frontend & backend teams work independently\nStatelessness → Any server can handle any request → easy scaling\nCacheability → Repeated data served from cache → faster responses\nUniform Interface → Learn once, use everywhere → simpler APIs\nLayered System → Add security/caching layers without code changes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "REST API Principles",
+      "body": "Why Each Principle Matters?\nREST principles = traffic rules. Shared rules let millions of vehicles move efficiently\nREST principles\nTraffic rules",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "REST API",
+      "body": "API Endpoints\nDefinition: A specific URL where a client sends a request to access or act on a resource\nEndpoint\nHTTP Method\nURL Path\nBreakdown\nBase URL → root address\nPath → /products/123 (identifies the resource)\nHTTP Method → GET, POST, PUT, DELETE (the operation)\nFull Endpoint → GET /products/123",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "REST API",
+      "body": "Example\nhttps://api.shop.com/v1/products/123?category=electronics\nBase URL\nVersion\nPath\nID\nQuery Parameter",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "API Endpoints",
+      "body": "E-Commerce Examples:\nGET /products \nGET /products/123\nPOST /products\nPUT /products/123\nPATCH /products/123\nDELETE /products/123\nList all products\nGet product details\nCreate a new product\nReplace entire product\nUpdate only specific fields (e.g., price)\nRemove the product",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Rest APIs",
+      "body": "What Are Resources in REST?\nResource: \u000bAny data your app manages (e.g., user profile, product, order)\nAccessed via URLs:\n/products/123, /users/456, /orders/789",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Rest APIs",
+      "body": "HTTP Methods with Resources\nRetrieve data (e.g., /products/123)\nGET\nPOST\nPUT\nDELETE\nCreate data (e.g., /orders)\nUpdate data (e.g., /users/456)\nRemove data (e.g., /cart/items/321)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Rest APIs",
+      "body": "Why REST APIs are effective?\nClear resource interactions, standard rules\nEasier to document, maintain, and scale\nOrganizes complex systems efficiently\nWhy REST Makes APIs Structured and Predictable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Rest APIs",
+      "body": "Other API types built:\nGraphQL: Request specific data\ngRPC: Fast communication for internal services\nSOAP: XML-based, for enterprise systems\nIs REST the only API?\nAPI types\nGraphQL\ngRPC\nSOAP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Ways to Handle Client Interactions by Server",
+      "body": "Each request is independent\nHow Server Remembers You?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "How Web Apps Communicate ?",
+      "body": "HTTPS is Stateless\nThe Problem\n\"Add iPhone to cart\"\nRequest 1\nRequest 2\nServer processes it\nShow my cart\nServer: \"What cart? I don't know you!\"\nEach request is independent, server has zero memory\nSolution : Cookies and Sessions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Cookies and Sessions",
+      "body": "Cookies and Sessions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Cookies",
+      "body": "What Are Cookies?\n Small pieces of data stored in the browser and sent with every request to the server.\nStoring Session ID\nSaving small preferences (theme, language)\nIdentifying users\nuses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Cookies",
+      "body": "Limitations and Security Risks \nSecurity Risk: \u000bCan be stolen if not secured (e.g., no HTTPS encryption)\nData Limitation: \u000bOnly stores small amounts (around 4KB)\nSensitive Data: \u000bNot suitable for sensitive info (e.g., passwords) \u000buse secure session identifiers and encryption",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Cookies",
+      "body": "Cookie Types\nSession Cookies (Temporary)\nSession cookie\nmovie ticket (today only)\n2.  Persistent Cookies (Long-Lasting)\nPersistent cookie\nseason pass \u000b(valid for months)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Cookies",
+      "body": "1. Session Cookies (Temporary)\nDeleted when browser closes\nNo Expires / Max-Age attribute set\nStored in RAM only (not on disk)\nUse cases: shopping cart, temporary login, form navigation\nMore secure, no trace after browser closes\nExample: Set-Cookie: sessionId=abc123",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Cookies",
+      "body": "2. Persistent Cookies (Long-Lasting)\nSurvive browser restarts\nHas Expires or Max-Age attribute\nWritten to disk (persistent storage)\nUse cases: \"Remember Me\", theme/language prefs, analytics\nLess secure — remains on disk, can be stolen\nExample: Set-Cookie: theme=dark, \u000b\t         Max-Age=2592000 (30 days)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Cookies",
+      "body": "Security Attributes\nCookie sent ONLY over HTTPS, Prevents interception\nSecure\nJavaScript cannot access it, Protects against XSS\nHttpOnly\nControls cross-site behavior:\nStrict — Never sent cross-site (most secure)\nLax — Sent on top-level navigations only (default)\nNone — Sent always (requires Secure flag)\nSameSite",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Cookies",
+      "body": "Security Attributes\nWhich domains receive the cookie (e.g., .example.com = all subdomains)\nSecure\nLimits cookie to specific URL path (e.g., /api)\nSet-Cookie: sessionId=xyz; Secure; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600\nPath\nBest Practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Sessions",
+      "body": "What Are Sessions?\nA session is like a temporary workspace on the server where the server keeps track of information about you (such as login status, shopping cart items, etc.) while you're using a website",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Sessions",
+      "body": "How Server Remembers You?\ncookie\nCoat check ticket\nSession\nYour Coat",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Sessions",
+      "body": "Why Sessions Matter?\nContinuity\nServer remembers you across requests\nSecure storage\nSensitive data stays on the server\nSeamless interactions\nMaintains shopping carts, settings, and preferences",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Sessions",
+      "body": "Security Considerations\nUse HTTPS: Encrypt data to prevent unauthorized takeover of the session.\nSecure & HttpOnly Cookies: Protect against attacks (e.g., XSS)\nSet Session Expiration: Timeouts or invalidate after logout",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Cookies vs Sessions",
+      "body": "Analogy\nSession\nLike the locker holding your data securely\nLike a key\nCookie",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Cookies vs Sessions",
+      "body": "Cookies and Sessions\n Store the key in the browser\nCookies \nStore the user data on the server\nSessions\n    Sessions allow websites to remember users even though HTTP is stateless",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Cookies vs Sessions",
+      "body": "Cookies & Sessions Flow\n01\n02\n03\n04\n05\n06\nUser logs in\nBrowser/User: Submits login credentials\nServer: Receives credentials for verification",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Cookies vs Sessions",
+      "body": "Cookies & Sessions Flow\n01\n02\n03\n04\n05\n06\nServer creates a Session\nSession Functionality: Stores user-specific data securely on the server (e.g., username, roles, preferences)\nCookie Functionality: Not yet involved",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Cookies vs Sessions",
+      "body": "Cookies & Sessions Flow\n01\n02\n03\n04\n05\n06\nServer generates a Session ID (e.g., sessionId=xyz123)\nSession Functionality: The ID is a reference to the session stored on the server\nCookie Functionality: Prepares to store this ID in the browser for future requests",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Cookies vs Sessions",
+      "body": "Cookies & Sessions Flow\n01\n02\n03\n04\n05\n06\nServer sends Session ID inside a Cookie\nSession Functionality: Remains on the server; cookie only carries the reference\nCookie Functionality: Browser receives the cookie and stores the Session ID locally",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Cookies vs Sessions",
+      "body": "Cookies & Sessions Flow\n01\n02\n03\n04\n05\n06\nBrowser sends Cookie on every request\nSession Functionality: Remains passive until the server checks it\nCookie Functionality: Automatically attaches the Session ID with each request to the server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Cookies vs Sessions",
+      "body": "Cookies & Sessions Flow\n01\n02\n03\n04\n05\n06\nServer reads Session ID → finds the Session → identifies the user\nSession Functionality: Matches the Session ID with the stored session data → identifies the user and retrieves session info\nCookie Functionality: Simply provides the Session ID for reference; no sensitive data is stored in the cookie itself",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "REST APIs, Cookies &  Sessions",
+      "body": "Key Takeaways (PART 1/2)\nHTTP Headers\nIntroduction\nStateless vs Stateful",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "REST APIs, Cookies &  Sessions",
+      "body": "Key Takeaways (PART 2/2)\nRest APIs\nHTTP Status Codes\nREST Operations\nREST Architecture & Principles\nAPI Endpoints\nCookies and Sessions\nCookies vs Sessions Integration",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Understanding TLS and HTTPS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1XnfQRsiaqPvJIpeWTLKZj3gLIks4t7OZ5UiNYFBMin8/edit"
+}

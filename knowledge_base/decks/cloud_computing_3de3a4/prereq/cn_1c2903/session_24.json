@@ -1,0 +1,652 @@
+{
+  "session_no": 24,
+  "source_file": "CN — session 24",
+  "deck_title": "CN — session 24",
+  "n_slides": 83,
+  "summary": "\n    - Slide 2: Introduction to Transport Layer\n    - Slide 3: Multimedia Networking & VoIP (PART 1/2)\n    - Slide 4: Multimedia Networking & VoIP (PART 2/2)\n    - Slide 5: Introduction to Transport Layer\n    - Slide 6: Transport Layer\n    - Slide 7: Introduction to Transport Layer\n    - Slide 8: Introduction to Transport Layer\n    - Slide 9: Introduction to Transport Layer\n    - Slide 10: Role of the Transport Layer\n    - Slide 11: Role of the Transport Layer\n    - Slide 12: Role of the Transport Layer\n    - Slide 13: Transport Layer\n    - Slide 14: Transport Layer\n    - Slide 15: Transport Layer\n    - Slide 16: Transport Layer\n    - Slide 17: Transport Layer\n    - Slide 18: Transport Layer\n    - Slide 19: Process-to-Process Delivery\n    - Slide 20: The Key Concept\n    - Slide 21: The Key Concept\n    - Slide 22: The Core Problem\n    - Slide 23: The Core Problem\n    - Slide 24: The Core Problem\n    - Slide 25: The Core Problem\n    - Slide 26: Port Numbers - The Key to Process Identification\n    - Slide 27: IANA Ranges (Internet Assigned Numbers Authority)\n    - Slide 28: IANA Ranges (Internet Assigned Numbers Authority)\n    - Slide 29: IANA Ranges (Internet Assigned Numbers Authority)\n    - Slide 30: Port Numbers - The Key to Process Identification\n    - Slide 31: IANA Ranges\n    - Slide 32: IANA Ranges\n    - Slide 33: Socket Address - The Complete Address\n    - Slide 34: Socket Address - The Complete Address\n    - Slide 35: Socket Address - The Complete Address\n    - Slide 36: IP Address + Port Number\n    - Slide 37: Socket Address - The Complete Address\n    - Slide 38: Socket Address - The Complete Address\n    - Slide 39: Client-Server Architecture\n    - Slide 40: Client-Server Model\n    - Slide 41: Client-Server Model\n    - Slide 42: Client-Server Model\n    - Slide 43: Client-Server Model\n    - Slide 44: Client-Server Model\n    - Slide 45: Client-Server Model\n    - Slide 46: Client-Server Model\n    - Slide 47: Client-Server Model\n    - Slide 48: Client-Server Model\n    - Slide 49: Client-Server Model\n    - Slide 50: Client-Server Model\n    - Slide 51: Quiz Time!\n    - Slide 52: Multiplexing & Demultiplexing\n    - Slide 53: Multiplexing at the Transport Layer\n    - Slide 54: Multiplexing\n    - Slide 55: Multiplexing at the Transport Layer\n    - Slide 56: Demultiplexing at the Transport Layer\n    - Slide 57: Demultiplexing\n    - Slide 58: Demultiplexing\n    - Slide 59: Multiplexing vs Demultiplexing\n    - Slide 60: Multiplexing vs Demultiplexing\n    - Slide 61: Multiplexing vs Demultiplexing\n    - Slide 62: Services\n    - Slide 63: Socket Identification in TCP vs UDP\n    - Slide 64: Socket Identification\n    - Slide 65: Types of Services at the Transport Layer\n    - Slide 66: Types of Services at the Transport Layer\n    - Slide 67: 1. Connectionless Service\n    - Slide 68: 1. Connectionless Service\n    - Slide 69: Types of Services at the Transport Layer\n    - Slide 70: 2 . Connection-Oriented Service\n    - Slide 71: 2 . Connection-Oriented Service\n    - Slide 72: 2 . Connection-Oriented Service\n    - Slide 73: 2 . Connection-Oriented Service\n    - Slide 74: 2 . Connection-Oriented Service\n    - Slide 75: Types of Services at the Transport Layer\n    - Slide 76: Types of Services at the Transport Layer\n    - Slide 77: Side-by-Side Comparison\n    - Slide 78: Types of Services at the Transport Layer\n    - Slide 79: Quiz Time!\n    - Slide 80: Introduction to Transport Layer\n    - Slide 81: Understanding TCP and UDP",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Introduction to Transport Layer",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Multimedia Networking & VoIP (PART 1/2)",
+      "body": "Multimedia Networking & VoIP (PART 1/2)\nMultimedia Networking Fundamentals\nDigitization of Multimedia\nDigitizing Audio\nDigitizing Video\nStreaming Media Over Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Multimedia Networking & VoIP (PART 2/2)",
+      "body": "Multimedia Networking & VoIP (PART 2/2)\nReal-Time Media Protocols\nRTP\nRTCP\t\nVoIP (Voice Over IP)\nArchitecture \nProtocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Introduction to Transport Layer",
+      "body": "Introduction to Transport Layer\nProcess-to-Process Delivery\nEnd-to-End Communication\nPort Numbers & Socket Addresses\nTransport Layer\nClient-Server Architecture\nMultiplexing & Demultiplexing\nServices\nConnectionless vs Connection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Transport Layer",
+      "body": "Transport Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Introduction to Transport Layer",
+      "body": "Analogy\nAn apartment building has 50 families.\u000b A delivery person brings packages with the building address — so they reach the correct building.\nBut each package is meant for a different flat.\nSomeone at reception must check the flat number and deliver each package to the correct family.\nWithout reception:\u000b Packages pile up.\u000b No one knows who they belong to.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Introduction to Transport Layer",
+      "body": "Analogy\nRelating to a Computer\nYour computer is the apartment building.\u000b\nThe applications (Chrome, Zoom, Email, Spotify) are the families.\u000b\nThe data packets are the packages.\nSomeone needs to deliver each packet to the\u000bcorrect application . That 'someone' is the Transport Layer.\nThe IP address brings data to the correct computer.\u000b The Transport Layer uses the port number (flat number) to deliver each packet to the correct application.\nTransport Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Introduction to Transport Layer",
+      "body": "Analogy\nThe IP address brings data to the correct computer. The Transport Layer uses the port number (flat number) to deliver each packet to the correct application",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Role of the Transport Layer",
+      "body": "End-to-End Communication\nThe Transport Layer provides end-to-end communication between application processes running on different hosts\nIt ensures that data sent by one application reaches the correct application on another host\nPhysical layer\nData Link layer\nTransport layer\nNetwork layer\nApplication layer\n1\n2\n3\n4\n5\n5\n4\n3\n2\n1\nDefinition",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Role of the Transport Layer",
+      "body": "End-to-End Communication\nThe Transport Layer runs ONLY on the end devices, managing End-to-end communication\nThe devices in between (routers, switches, etc.) do NOT interact with the Transport Layer. They just forward data without looking at Transport Layer information\nImportant Note",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Role of the Transport Layer",
+      "body": "End-to-End Communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Transport Layer",
+      "body": "How does it work?\nActs as a Bridge Between:\nApplication Layer\nNetwork Layer\nMain Responsibility:\nProcess application data\nEnsure correct delivery to the right application\nApplication Layer\nNetwork Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Transport Layer",
+      "body": "Sender Side – What Happens?\nReceives message from Application Layer\nBreaks large message into Segments\nAdds header to each segment\nSource Port Number\nDestination Port Number\nSends segments to Network Layer\nSender Side",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Transport Layer",
+      "body": "Receiver Side – What Happens?\nReceives segments from Network Layer\nReassembles segments into original message\nReads port number from header\nDelivers data to correct application\nReceiver Side",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Transport Layer",
+      "body": "Key Functions\nSegmentation\nSplits large application data into smaller segments for transmission\nProcess-to-\u000bProcess Delivery\nUses port numbers to deliver data to the correct application\nMultiplexing / Demultiplexing\nEnables multiple applications to share a single network interface",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Transport Layer",
+      "body": "Key Functions\nEnd-to-End Error Detection\nUses checksums to detect data corruption\n(TCP) Reliability & Control\nProvides reliable delivery, flow control, and congestion control",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Transport Layer",
+      "body": "Key Functions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Process-to-Process Delivery",
+      "body": "Process-to-Process Delivery",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "The Key Concept",
+      "body": "Process-to-Process Delivery\nEvery device on the internet has an IP address.\u000bThe IP address identifies which computer should receive the data.\nBut it does not identify which application on that computer should handle it.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "The Key Concept",
+      "body": "Process-to-Process Delivery\nThis is the role of the Transport Layer:\nIP Address → Identifies the computer\nPort Number → Identifies the application/process\u000b\nSo, once data reaches the correct computer,\u000b the Transport Layer uses port numbers to deliver it to the correct application.\nThis is the role of the Transport Layer:\nIP Address → Identifies the computer\nPort Number → Identifies the application/process\nIdentifies the host (device)\nIP Address\nThis is the role of the Transport Layer\nIdentifies the application/process\nPort Number\nSo, once data reaches the correct computer, the Transport Layer uses port numbers to deliver it to the correct application",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "The Core Problem",
+      "body": "Data Reaching Right Application\nScenario: Your computer is simultaneously running",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "The Core Problem",
+      "body": "Data Reaching Right Application\nAll of them are sending and receiving data at the same time over the same network connection (your Wi-Fi or Ethernet)\nData packets arrive at computer from the internet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "The Core Problem",
+      "body": "Data Reaching Right Application\nHow does the system know which packet belongs to which application?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "The Core Problem",
+      "body": "Answer: Port Numbers!\nEach application is assigned a unique port number.\nThe Transport Layer reads the port number from the incoming segment and delivers it to the correct application\nData Reaching Right Application\nIdentifies WHICH computer\nIP Address\nIdentifies WHICH application on that computer\nPort Number\nExact delivery address\nBoth together",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Port Numbers - The Key to Process Identification",
+      "body": "What is a Port Number?\nA 16-bit unsigned integer\nRange: 0 to 65,535 (total 65,536 ports)\nUniquely identifies a process/application on a host",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "IANA Ranges (Internet Assigned Numbers Authority)",
+      "body": "Categories of Port Numbers\n1. Well-Known Ports (0 - 1023): Reserved by IANA (Internet Assigned Numbers Authority) for standard protocols. These are fixed and universally agreed upon\nHTTP = 80\nHTTPS = 443\nFTP = 21\nSSH = 22\nDNS = 53\nSMTP = 25\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "IANA Ranges (Internet Assigned Numbers Authority)",
+      "body": "Categories of Port Numbers\n2. Registered Ports (1024 - 49151): Used by specific vendor applications. Companies can register their applications with IANA\nMySQL = 3306\nPostgreSQL = 5432\nExample",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "IANA Ranges (Internet Assigned Numbers Authority)",
+      "body": "3. Dynamic / Ephemeral Ports (49152 - 65535): Temporary ports assigned automatically by the OS to client applications. When your browser opens a connection, the OS picks a random port from this range, Once the connection closes, the port is released and can be reused\nCategories of Port Numbers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Port Numbers - The Key to Process Identification",
+      "body": "IANA Ranges\n1024\n1023\n0\n49152\n49151\n65535\nRegistered\nDynamic\nWell known",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "IANA Ranges",
+      "body": "Analogy\nWell-Known Ports (0-1023)\nRegistered Ports (1024-49151)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "IANA Ranges",
+      "body": "Analogy\nDynamic Ports (49152-65535)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Socket Address - The Complete Address",
+      "body": "IP Address + Port Number\nA socket address is the combination of an IP \u000bAddress and a Port Number, Together, they uniquely identify a specific application on a specific computer \u000bacross the entire internet\nWhat is a Socket Address?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Socket Address - The Complete Address",
+      "body": "IP Address + Port Number\nIP Address : Port Number\nExample: 192.168.1.10:80 means the application running on port 80 of the machine with IP 192.168.1.10\nFormat",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Socket Address - The Complete Address",
+      "body": "IP Address + Port Number\n200.23.56.8\n69\nIP Address\nSocket Address\nPort number\n200.23.56.8\nUDP or TCP header contains the port numbers\n69",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "IP Address + Port Number",
+      "body": "Why both are needed ?\nIP Address alone tells which computer, but not which application.\nPort Number alone tells which application, but not which computer.\nSocket Address (IP + Port) tells which application on which computer. This is the complete address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Socket Address - The Complete Address",
+      "body": "IP Address + Port Number\nKey Point:\nEvery network communication uses two socket addresses:\nSource Socket: Sender's IP + Sender's Port\nDestination Socket: Receiver's IP + Receiver's Port\nKey Point: Every network communication uses two socket addresses\nSender's IP\nSender's Port\nSource Socket\nReceiver's IP\nReceiver's Port\nDestination Socket\nThese four values together (Source IP, Source Port, Destination IP, Destination Port) are called a 4-tuple and they uniquely identify any connection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Socket Address - The Complete Address",
+      "body": "IP Address + Port Number\nIP Address\nPort Number\nSocket Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Client-Server Architecture",
+      "body": "Client-Server Architecture",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate?\nThe process that initiates communication \u000b(e.g., your browser)\nThe process that waits \u000bto be contacted \u000b(e.g., Google's web server)\nTwo Roles in Network Communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate?\nHow Do They Communicate? \nThrough Sockets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate?\nIn the client-server model\nThe server process opens a socket using a well-known port (e.g., port 443) and waits for incoming requests. This is called listening",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate?\nThe client process also opens a socket, but instead of waiting, it initiates a request to the server's socket address\nOnce the server receives the request, it processes it and sends a response back through the same socket connection\nclient\nclient\nServer\nServer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Client-Server Model",
+      "body": "The server binds to a well-known port (e.g., port 443) and starts listening on its socket\nThe client is assigned a dynamic/ephemeral port by the OS (e.g., port 52431) and opens its socket\nHow It Works Step by Step ?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Client-Server Model",
+      "body": "How It Works Step by Step ?\nThe client sends a request to the server's socket (Server IP:443)\nThe server receives the request, processes it, and sends the response back to the client's socket (Client IP:52431)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Client-Server Model",
+      "body": "Example\nYou open Chrome and type www.google.com\nYour IP:52431\nGoogle IP:443\nOutgoing request\nYour IP:52431 --> Google IP:443",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate\nYou open Chrome and type www.google.com\nYour IP:52431\nGoogle IP:443\nResponse comes back\nGoogle IP:443 --> Your IP:52431",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate\nThe server always uses a fixed, well-known port so that clients know where to reach it\nThe client uses a temporary port that the OS assigns automatically\nBoth client and server communicate through their respective sockets\nThe socket is the doorway between the application and the Transport Layer\nKey Observations",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Client-Server Model",
+      "body": "How Two Processes Communicate\nTransport layer\nNetwork layer\nData Link layer\nPhysical layer\nTransport layer\nNetwork layer\nData Link layer\nPhysical layer\nSocket\nWell-Known Port (443)\nSocket\nEphemeral Port (52431)\nClient\nServer\nClient Program (Chrome)\nServer Program (Google Web-Server)\nRequest\nResponse",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Multiplexing & Demultiplexing",
+      "body": "Multiplexing & Demultiplexing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Multiplexing at the Transport Layer",
+      "body": "Introduction\nMultiplexing is the process of collecting data from multiple application processes at the sender, adding appropriate headers (with source and destination port numbers), creating segments, and passing them down to the lower layers for transmission over the network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Multiplexing",
+      "body": "How it works ?\nMultiple applications generate data at the same time, The Transport Layer collects data from each socket, adds a header (with port numbers), and creates segments, These segments are passed to lower layers for transmission",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Multiplexing at the Transport Layer",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Demultiplexing at the Transport Layer",
+      "body": "Introduction\nDemultiplexing is the process of receiving segments at the destination, reading the destination port number from each segment's header, and delivering the data to the correct application socket",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Demultiplexing",
+      "body": "How it works?\nDemultiplexing\nSorting incoming data and delivering it to the correct app\nSegments arrive at the destination computer from the network\nThe Transport Layer examines the destination port number in each segment\nIt delivers each segment to the application that is bound to (listening on) that port number",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Demultiplexing",
+      "body": "Analogy",
+      "notes": "Now look at this analogy.\nPackets arrive like parcels with flat numbers written on them.\nThe Transport Layer reads the flat number — just like reading the port number.\n“Ah, Flat 80” — deliver it there.\n“Ah, Flat 25” — deliver it there.\u000bSo demultiplexing is simply reading the number and sending the data to the correct destination.",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Multiplexing vs Demultiplexing",
+      "body": "Quick Summary\nMultiplexing\nDemultiplexing\nHappens at the SENDER\nHappens at the RECEIVER\nMany apps --> one outgoing network flow\nOne incoming network flow --> many apps\nAdds source and destination port numbers to each segment\nUses destination port number to deliver to the correct app",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Multiplexing vs Demultiplexing",
+      "body": "Quick Summary\nTransport Layer (Multiplexing)\nCollects data chunks\nAdds Headers (Src/Dest Ports)\nCreates Segments\nSocket Port 52431\nSocket Port 58210\nSocket Port 61005\nTo Network Connection\nMultiplexing at the Transport Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Multiplexing vs Demultiplexing",
+      "body": "Quick Summary\nTransport Layer (DeMultiplexing)\nReads Dest Port\nDelivers to Socket\nFrom Network Connection\nDemultiplexing at the Transport Layer\nPort 443\nPort 25\nPort 21",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Services",
+      "body": "Services",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Socket Identification in TCP vs UDP",
+      "body": "An Important Difference\nEvery transport-layer segment carries two critical header fields:\nSource Port Number (16 bits) - identifies the sending process\nDestination Port Number (16 bits) - identifies the receiving process\nBut TCP and UDP identify sockets differently",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Socket Identification",
+      "body": "TCP vs UDP",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "UDP",
+            "TCP"
+          ],
+          [
+            "Socket ID",
+            "2-tuple: (Dest IP, Dest Port)",
+            "4-tuple: (Src IP, Src Port, Dest IP, Dest Port)"
+          ],
+          [
+            "Multiple Clients to Same Port",
+            "All clients share the same socket (single socket handles all datagrams)",
+            "Each client gets a separate socket (enables handling thousands of connections)"
+          ],
+          [
+            "How Clients Are Distinguished",
+            "Application checks source IP & port",
+            "Automatically distinguished by unique 4-tuple"
+          ],
+          [
+            "Example",
+            "DNS (Port 53)",
+            "HTTPS (Port 443)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 65,
+      "title": "Types of Services at the Transport Layer",
+      "body": "1. Connectionless Service\nThe Transport Layer offers two types of services to applications\nConnectionless Service\nConnection\u000bService\n01\n02",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Types of Services at the Transport Layer",
+      "body": "1. Connectionless Service\nNo connection setup \u000bdata is sent immediately\nIndependent messages\u000beach unit is treated separately\nNo delivery guarantee data may be lost\nLightweight & fast minimal overhead\nNo ordering guarantee \u000bdata may arrive \u000bout of order",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "1. Connectionless Service",
+      "body": "Importance\nWhen speed matters more than reliability\nWhen losing a small amount of data is acceptable\nExamples: DNS queries, video calls, online gaming, live streaming",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "1. Connectionless Service",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Types of Services at the Transport Layer",
+      "body": "2 . Connection-Oriented Service\nConnection setup required before data transfer\u000b\nReliable delivery data arrives in order and without duplication\u000b\nRetransmission lost data is sent again\u000b\nFormal connection termination after communication\u000b\nHigher overhead, but more reliable",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "2 . Connection-Oriented Service",
+      "body": "Importance\nWhen would an application choose this?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "2 . Connection-Oriented Service",
+      "body": "Importance\nWhen every piece of data must arrive correctly and in order\nWhen losing even a single piece of data is not acceptable\nWeb browsing (HTTP/HTTPS), email (SMTP, IMAP), file transfer (FTP), remote access (SSH)\nExamples",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "2 . Connection-Oriented Service",
+      "body": "Three Phases\nData Transfer\nBoth sides agree to communicate before sending any data\nConnection Establishment\nConnection Termination\nOnce done, the connection is gracefully closed\nActual data exchange happens reliably",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "2 . Connection-Oriented Service",
+      "body": "Analogy\nConnection setup\nEstablishment\nData transfer\nTermination",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "2 . Connection-Oriented Service",
+      "body": "Note\nTCP (Transmission Control Protocol) is the protocol that provides this service",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Types of Services at the Transport Layer",
+      "body": "Connectionless vs Connection\nNo Setup\nUnreliable-out of order\nFaster\nConnectionless Service\n  1.    No Setup\n  2.    Unreliable - out of order\n  3.   Faster",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Types of Services at the Transport Layer",
+      "body": "Connectionless vs Connection\nConnection-Oriented Service\nSetup required\n  2.    Reliable\n  3.    Inorder\n  4.   Slower",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Side-by-Side Comparison",
+      "body": "Two Service Types at a Glance",
+      "notes": "",
+      "tables": [
+        [
+          [
+            "Feature",
+            "Connectionless",
+            "Connection-Oriented"
+          ],
+          [
+            "Connection Setup",
+            "Not required",
+            "Required"
+          ],
+          [
+            "Reliability",
+            "No guarantee",
+            "Reliable delivery"
+          ],
+          [
+            "Ordering",
+            "Not guaranteed",
+            "Delivered in order"
+          ],
+          [
+            "Speed",
+            "Faster (less overhead)",
+            "Slower (more overhead)"
+          ],
+          [
+            "Best For",
+            "Real-time apps (video, \u000bgaming, DNS)",
+            "Reliability-focused apps\u000b(web, email, file transfer)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 78,
+      "title": "Types of Services at the Transport Layer",
+      "body": "Connectionless vs Connection\nNeither service type is \"better\" than the other. It depends on what the application needs. Speed? Choose connectionless. Reliability? Choose connection-oriented",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 80,
+      "title": "Introduction to Transport Layer",
+      "body": "Transport Layer\nEnd-to-End Communication\nProcess-to-Process Delivery\nPort Numbers & Socket Addresses\nClient-Server Architecture\nMultiplexing & Demultiplexing\nServices\nConnectionless vs Connection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 81,
+      "title": "Understanding TCP and UDP",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 82,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 83,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1l4SOMx6jMfpuC4m36J3lfIJ2EdHkskFSy9LwF069850/edit"
+}

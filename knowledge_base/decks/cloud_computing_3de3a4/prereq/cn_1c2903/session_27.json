@@ -1,0 +1,535 @@
+{
+  "session_no": 27,
+  "source_file": "CN — session 27",
+  "deck_title": "CN — session 27",
+  "n_slides": 75,
+  "summary": "\n    - Slide 2: Understanding\n    - Slide 3: REST APIs, Cookies & Sessions\n    - Slide 4: Understanding TLS and HTTPS \n    - Slide 5: HTTP to HTTPS\n    - Slide 6: HTTP to HTTPS\n    - Slide 7: HTTP to HTTPS\n    - Slide 8: TLS Handshake\n    - Slide 9: TLS Handshake\n    - Slide 10: TLS Handshake – Step by Step\n    - Slide 11: TLS Handshake – Step by Step\n    - Slide 12: TLS Handshake – Step by Step\n    - Slide 13: Cipher Suites: Tools for Secure Communication\n    - Slide 14: TLS Handshake – Step by Step\n    - Slide 15: TLS Handshake – Step by Step\n    - Slide 16: TLS Handshake – Step by Step\n    - Slide 17: Digital certificate\n    - Slide 18: Digital certificate\n    - Slide 19: TLS Handshake\n    - Slide 20: Two Encryption Types\n    - Slide 21: 1. Symmetric Encryption\n    - Slide 22: 1. Symmetric Encryption\n    - Slide 23: 1. Symmetric Encryption\n    - Slide 24: Two Encryption Types\n    - Slide 25: 2. Asymmetric Encryption\n    - Slide 26: 2. Asymmetric Encryption\n    - Slide 27: 2. Asymmetric Encryption\n    - Slide 28: TLS Handshake – Step by Step\n    - Slide 29: What is RSA?\n    - Slide 30: Old Way - RSA\n    - Slide 31: Modern way - Diffie-Hellman (ECDHE)\n    - Slide 32: TLS Handshake – Step By Step\n    - Slide 33: Step 5 - Session Keys\n    - Slide 34: Step 5 - Session Keys\n    - Slide 35: TLS Handshake – Step by Step\n    - Slide 36: TLS Handshake – Step by Step\n    - Slide 37: Step 6 - Secure Communication\n    - Slide 38: Digital Signature\n    - Slide 39: Digital Signature\n    - Slide 40: Digital Signature\n    - Slide 41: Digital Signature\n    - Slide 42: Digital Signature\n    - Slide 43: Digital Signature\n    - Slide 44: Digital Signature\n    - Slide 45: Digital Signature\n    - Slide 46: Digital Signature\n    - Slide 47: Digital Signature\n    - Slide 48: Digital Signature\n    - Slide 49: Digital Signature\n    - Slide 50: Certificate Authorities\n    - Slide 51: Digital Signature\n    - Slide 52: Quick Note on Certificate Authorities\n    - Slide 53: Quick Note on Certificate Authorities\n    - Slide 54: Quick Note on Certificate Authorities\n    - Slide 55: Quick Note on Certificate Authorities\n    - Slide 56: Certificate Chain\n    - Slide 57: Certificate Chain\n    - Slide 58: Self-Signed Certificate\n    - Slide 59: Self-Signed Certificate\n    - Slide 60: Self-Signed Certificate\n    - Slide 61: Quiz Time!\n    - Slide 62: HTTPS Internals\n    - Slide 63: HTTPS Internals\n    - Slide 64: HTTPS Internals\n    - Slide 65: HTTPS Internals\n    - Slide 66: HTTPS Internals\n    - Slide 67: HTTPS Internals\n    - Slide 68: HTTPS Internals\n    - Slide 69: HTTPS Internals\n    - Slide 70: HTTPS Internals\n    - Slide 71: Quiz Time!\n    - Slide 72: Understanding TLS and HTTPS\n    - Slide 73: Remote Logging & NMS",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Understanding",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "REST APIs, Cookies & Sessions",
+      "body": "REST APIs, Cookies & Sessions\nHTTP Headers\nIntroduction\nStateless vs Stateful\nRest APIs\nHTTP Status Codes\nREST Operations\nREST Architecture & Principles\nAPI Endpoints\nCookies and Sessions\nCookies vs Sessions Integration",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Understanding TLS and HTTPS ",
+      "body": "Understanding TLS and HTTPS \nHTTPS Internals\nDigital Signature\nTLS Handshake\n Encryption, Authentication\nCertificate Authorities,Certificate Chain, Self-Signed Certificate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "HTTP to HTTPS",
+      "body": "HTTP to HTTPS",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "HTTP to HTTPS",
+      "body": "HTTP → HTTPS: Why the Shift?\nHTTP (HyperText Transfer Protocol) sends data in plain text\nAnyone in between (ISP, Wi-Fi hotspot, attacker) can read or modify the data\nSensitive information (like passwords) is not safe",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "HTTP to HTTPS",
+      "body": "HTTPS: Secure Communication\nHTTPS\nHTTP\nTLS\nTLS encrypts data before transmission\nCreates a secure connection between browser and server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "TLS Handshake",
+      "body": "TLS Handshake",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "TLS Handshake",
+      "body": "TLS Handshake\nThe TLS Handshake is the process where the client and server agree on a secure way to communicate\nThrough this process, TLS ensures:\nEnsures data is not changed during transfer\nVerifies the server’s identity\nData is unreadable to outsiders\nEncryption\nAuthentication\nIntegrity",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "TLS Handshake – Step by Step",
+      "body": "The client (browser) sends a ClientHello message to the server\nStep 1 - Client Hello\nHello, I want to connect securely",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "TLS Handshake – Step by Step",
+      "body": "Step 1 - Client Hello\nThe client Hello message includes\nA list of supported TLS version (e.g., TLS 1.2 or 1.3)\nA list of supported cipher suites (encryption algorithms)\nA random number (Client Random)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "TLS Handshake – Step by Step",
+      "body": "TLS Versions\nTLS Versions\nA widely used TLS version that encrypts communication data\nSecure but slightly slower compared to TLS 1.3\nFaster and more secure than 1.2 with fewer connection steps\nPreferred for modern websites",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Cipher Suites: Tools for Secure Communication",
+      "body": "Common Cipher Suites\nA cipher suite is a combination of algorithms that define how data will be encrypted and transmitted securely\nAES (Advanced Encryption Standard): Strong encryption used to protect sensitive data\nRSA (Rivest-Shamir-Adleman): An algorithm used to exchange secret keys between the client and server\nECDHE (Elliptic Curve Diffie-Hellman Ephemeral): Securely exchanges keys using mathematics for better privacy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "TLS Handshake – Step by Step",
+      "body": "Step 2 - Server Hello\nThe server responds with a Server Hello message\nServer Hello message",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "TLS Handshake – Step by Step",
+      "body": "Step 2 - Server Hello\nThe Server Hello message containing:\nChosen TLS version\nChosen cipher suite\nAnother random number (Server Random)\nServer’s digital certificate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "TLS Handshake – Step by Step",
+      "body": "What is a Digital certificate?\nVerifies the server’s identity\nIssued by a trusted Certificate Authority (CA)\nContains the server’s public key and important details\nThe Digital certificate is a structured file (often X.509 format)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Digital certificate",
+      "body": "Components of a Digital Certificate\n2\nSubject / Common Name (CN):\nThe domain name (example.com)\nPublic Key:\nThe server’s public encryption key (used in TLS handshake)\nValidity Period:\nStart and expiry dates",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Digital certificate",
+      "body": "Issuer:\nThe CA that issued the certificate (e.g., DigiCert, Let’s Encrypt)\nExtensions:\nExtra info like allowed usages\nDigital Signature:\nThe CA’s cryptographic seal, proving this certificate is genuine\nComponents of a Digital Certificate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "TLS Handshake",
+      "body": "Two Encryption Types\nSymmetric \u000bEncryption\nAsymmetric Encryption",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Two Encryption Types",
+      "body": "1. Symmetric Encryption\nSymmetric Encryption\nUses the same key to encrypt and decrypt\nFaster but the key must be kept secret",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "1. Symmetric Encryption",
+      "body": "Analogy\nAnalogy: Shared locker with identical keys\nBoth parties have the same key\nEither party can lock or unlock\nProblem: How to securely share the key initially?\nProcess:\nEncrypt: Data + Key → Ciphertext\nDecrypt: Ciphertext + Same Key → Data\nShared locker with identical keys\nBoth parties have the same key\nEither party can lock or unlock\nProblem: How to securely share the key initially?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "1. Symmetric Encryption",
+      "body": "Analogy\nProcess\nEncrypt\nData\nKey\nCiphertext\nDecrypt\nCiphertext\nSame Key\nData",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "1. Symmetric Encryption",
+      "body": "Pros and Cons\nAdvantages\nDisadvantages\nFast and efficient performance\nKey distribution problem\nPractical for encrypting large data volumes\nScalability issues\nAES, ChaCha20, DES\nExamples",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Two Encryption Types",
+      "body": "2. Asymmetric Encryption\nAsymmetric Encryption\nFor anyone to use\nKept secret\nSlow but very secure\nUses two keys: one public (for anyone to use) and one private (kept secret)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "2. Asymmetric Encryption",
+      "body": "Analogy\nTwo mathematically related keys - public and private\nPublic key\nMail slot\nPrivate key\nMailbox key\n(anyone can insert)\n(only owner retrieves)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "2. Asymmetric Encryption",
+      "body": "Analogy\nProcess\nEncrypt\nData\nPublic Key\nCiphertext\nDecrypt\nCiphertext\nPrivate Key\nData",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "2. Asymmetric Encryption",
+      "body": "Pros and Cons\nAdvantages\nDisadvantages\nSolves key distribution\nMuch slower than symmetric\nSecure communication without prior key exchange\nNot practical for large data volumes\nRSA\nExamples",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "TLS Handshake – Step by Step",
+      "body": "Is the certificate signed by a trusted CA?\nIs the certificate still valid?\nThis is how TLS prevents “man-in-the-middle” attacks\nStep 3 - Certificate Verification\n Public Key\nUsed to lock the message (encrypt)\nPrivate Key\nUsed to unlock the message (decrypt)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "What is RSA?",
+      "body": "Step 4 - Key Exchange\nWhat is RSA\nIt is an old encryption method where the client encrypts a secret using the server’s public key, and only the server can decrypt it using its private key\nRSA is one asymmetric algorithm TLS uses during handshake, This represents the earlier approach before ECDHE",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Old Way - RSA",
+      "body": "Only the server, with its private key can decrypt it\nStep 4 - Key Exchange\nThe client generates a random pre-master key\nEncrypts it using the server’s public key \n(from the certificate)\n1\n2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Modern way - Diffie-Hellman (ECDHE)",
+      "body": "Step 4 - Key Exchange\nAn Interceptor/spying party who sees only the partial keys cannot compute the secret\nThe client and server exchange partial keys (mathematical values)\nEach side combines the partial key with their own private value to compute the same shared secret",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "TLS Handshake – Step By Step",
+      "body": "Step 5 - Session Keys\nOnce the shared secret is established, both sides generate a session key\nThis session key is used for fast encryption (e.g., AES) for the rest of the communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Step 5 - Session Keys",
+      "body": "Hybrid Strategy\nAsymmetric encryption is slow, so after the secure connection is made, we switch to symmetric encryption for faster communication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Step 5 - Session Keys",
+      "body": "Hybrid Strategy\nHandshake (Asymmetric)\nHandshake (Symmetric)\nRSA or ECDHE\nAES or ChaCha20\nSecurely establish shared session key\nEncrypt all communication data\n~150ms (once per connection)\nContinuous, high-speed\nUses\nPurpose\nDuration\nTopic",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "TLS Handshake – Step by Step",
+      "body": "Step 6 - Secure Communication\nOkay, let’s talk securely from here\nOkay (The server agrees)\nThe handshake is complete",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "TLS Handshake – Step by Step",
+      "body": "Step 6 - Secure Communication\nFrom now on:\nData is also protected with integrity checks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Step 6 - Secure Communication",
+      "body": "Example\nGET /index.html → encrypted with the session key\nThe server responds with the HTML page → also encrypted",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Digital Signature",
+      "body": "Digital Signature",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Digital Signature",
+      "body": "Introduction\nA digital signature is like a tamper-proof seal on a document",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Digital Signature",
+      "body": "Introduction\nIt proves two things\nAuthenticity \nThe certificate was indeed issued by the CA who claims to have issued it\nIntegrity\nThe certificate hasn’t been changed since the CA signed it",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Digital Signature",
+      "body": "Analogy\nThink of a paper contract sealed with a wax stamp\nIf someone changes the text, the seal is broken\nOnly the trusted authority (CA) could have created the original seal",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Digital Signature",
+      "body": "How a Digital Signature Works?\nCA (Certificate Authority) takes the contents of the certificate, excluding the actual signature field\"\nSubject (example.com)\nValidity dates\nPublic key of the server\nExtensions\nCA",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Digital Signature",
+      "body": "How a Digital Signature Works?\nComputes a hash of all this data using a cryptographic hash function\nHash of data \nCryptographic hash function\nSmoothie\nThis process is one-way, meaning you can't reverse it to get back the original data",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Digital Signature",
+      "body": "How a Digital Signature Works?\nA cryptographic hash is a function that turns input data (like a file or message) into a fixed-length string of characters, called a hash\nInput data\nHash\nHash Function",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Digital Signature",
+      "body": "How a Digital Signature Works?\nCA then encrypts the hash using its private key\nThis Encrypted hash  =  The Digital signature",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "Digital Signature",
+      "body": "How a Digital Signature Works?\nOnly the CA’s private key can produce this signature\nCertificate (with the signature attached) is sent to the client\nCA Private Key",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Digital Signature",
+      "body": "Client Verifies the Signature\nComputes the hash of the certificate contents\nDecrypts the digital signature using the CA’s public key\nThe certificate is authentic and unchanged\nIf Decrypted Hash matches Client computed Hash\nYour connection is not private\nIf Decrypted Hash doesn't matches Client computed Hash",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Digital Signature",
+      "body": "Analogy\nEncrypting signature with CA’s private key = Trusted Authority’s stamp\nIf the stamp matches → trusted\nDecrypting signature with CA’s public key = checking the stamp\nStamp matches\nTrusted",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Digital Signature",
+      "body": "What is a CA Certificate?\nCA certificate is basically the ID card of the CA itself\nCA certificate\nPublic key\nName\nOther metadata",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Certificate Authorities",
+      "body": "Example\nYour browser connects to a secure website like https://google.com",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Digital Signature",
+      "body": "Certificate Authorities (CA)\nCA verifies that a server owns a domain name and then issues it a digital certificate\nWell-known CAs are DigiCert, Let’s Encrypt, GlobalSign, Sectigo.\nCertificate Verification\nCA\u000bPassport office\nverifies\nServer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Quick Note on Certificate Authorities",
+      "body": "Quick Note on Certificate Authorities\nA server certificate proves the identity of a website\nA CA certificate proves the identity of the Certificate Authority that vouched \u000bfor that website\nThat’s the trust chain starting to form\nServer\nCA certificate\nIdentity of a website\nIdentity of the Certificate Authority",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Quick Note on Certificate Authorities",
+      "body": "Certificate Chain\nWhen a server presents its certificate, it usually doesn’t send just one certificate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Quick Note on Certificate Authorities",
+      "body": "What is a CA Certificate?\nIts own server certificate (e.g., for www.google.com)\nStep-1\nOne or more intermediate CA certificates\nStep-2\nAnd finally, your browser already has the root CA certificate in its trust store\nStep-3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Quick Note on Certificate Authorities",
+      "body": "Certificate Chain\nServer Certificate\nIntermediate CA Certificate(s)\nRoot CA Certificate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Certificate Chain",
+      "body": "Why do we need Intermediate CAs?\nRoot CA private keys are extremely valuable\nRoot keys are kept offline, in secure vaults, and almost never used\nThe root CA signs one or more Intermediate CA certificates\nIntermediates then take on the job of issuing and signing server certificates for millions of websites",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Certificate Chain",
+      "body": "Example\nThe server certificate is your college ID\nThe intermediate certificate is the university registrar who issued that ID\nThe root CA certificate is the government body that authorized the university\nRoot CA certificate \nIntermediate certificate\nserver certificate",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Self-Signed Certificate",
+      "body": "Introduction\nUnlike the certificates just discussed, which are signed by a trusted Certificate Authority (CA), a self-signed certificate is signed by the server itself\nSelf-signed certificate\nServer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Self-Signed Certificate",
+      "body": "Importance\nwhy do we even use them? \nSelf-signed certificates are perfect for testing, development, or internal networks\nTesting\nDevelopment\nInternal networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Self-Signed Certificate",
+      "body": "Point to Remember\nWhen running a server on localhost (your own machine) and connecting to it with a browser also on the same machine, HTTPS still works",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "HTTPS Internals",
+      "body": "HTTPS Internals",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "HTTPS Internals",
+      "body": "Introduction\nOnce the TLS handshake is done, both sides share a symmetric session key",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "HTTPS Internals",
+      "body": "Encryption\nEncryption converts the HTTP message into unreadable form(e.g., GET/profile)\nThis ensures privacy and prevents unauthorized access",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "HTTPS Internals",
+      "body": "MAC (Message Authentication Code)\nHTTPS ensures that data is not tampered with during transmission\nThis is done using a Message Authentication Code (MAC)\nA MAC is like a cryptographic checksum shared by both sides",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "HTTPS Internals",
+      "body": "MAC (Message Authentication Code)\nMAC is computed using a secret session key\u000b\nBoth sender and receiver can generate the same MAC\nLogic\nIntegrity (no tampering)\nAuthentication (sender knows the session key)\nGuarantees\nMAC matches → message is genuine and unchanged\nMAC mismatch → message is rejected",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "HTTPS Internals",
+      "body": "MAC (Message Authentication Code)\nModern TLS (1.3) uses AEAD algorithms like \u000bAES-GCM or ChaCha20-Poly1305 \nAEAD does encryption + authentication together, \u000bso you don’t need a separate MAC\nEncryption\nAuthentication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "HTTPS Internals",
+      "body": "Authentication with MAC/AEAD\nAuthentication with MAC/AEAD\n(Authenticated Encryption with Associated Data)\nImagine an attacker\nCan flip some bits\nMaybe amount = 1000 turns into amount = 9000\nCorrupt or exploit data\nThis is where Message Authentication Codes (MACs) or AEAD come in",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "HTTPS Internals",
+      "body": "Why TLS Matters ?\nWith TLS\nThey capture packets, but it’s just random gibberish\nWithout TLS\nAttackers can sniff traffic",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "HTTPS Internals",
+      "body": "Quick Recap\nTLS handshake\nBrowser\nServer\nSetup phase\nHTTPS = HTTP requests and responses traveling inside this encrypted tunnel\nAgree on protocol + cipher suite\nVerify server’s identity (via certificates)\nGenerate a shared session key",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "Understanding TLS and HTTPS",
+      "body": "TLS Handshake\nDigital Signature\nCertificate Authorities\nCertificate Chain\nSelf-Signed Certificate\n         HTTPS Internals\nEncryption, Authentication",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Remote Logging & NMS",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1CF3Th7lMSFZsw8jox139EqMum2C0PhIkmS7AK_74Nu8/edit"
+}

@@ -1,0 +1,283 @@
+{
+  "session_no": 21,
+  "source_file": "CN — session 21",
+  "deck_title": "CN — session 21",
+  "n_slides": 39,
+  "summary": "\n    - Slide 2: TCP State Diagram & Connection\n    - Slide 3: TCP Handshakes and States\n    - Slide 4: TCP State Diagram & Connection\n    - Slide 5: TCP State Diagram\n    - Slide 6: TCP State Diagram\n    - Slide 7: TCP State Diagram\n    - Slide 8: TCP States\n    - Slide 9: TCP States\n    - Slide 10: TCP States\n    - Slide 11: TCP State Transitions— Client Side vs Server Side\n    - Slide 12: TIME_WAIT State\n    - Slide 13: TIME_WAIT State\n    - Slide 14: TIME_WAIT State\n    - Slide 15: TIME_WAIT State\n    - Slide 16: TIME_WAIT State\n    - Slide 17: TIME_WAIT State\n    - Slide 18: Quiz Time!\n    - Slide 19: Connections\n    - Slide 20: Half-Open Connection\n    - Slide 21: Half-Open Connection\n    - Slide 22: Crashed Half-Open Connection\n    - Slide 23: Crashed Half-Open Connection\n    - Slide 24: Half-Close Connection\n    - Slide 25: Half-Close Connection\n    - Slide 26: Half-Close Connection\n    - Slide 27: Half-Close Connection\n    - Slide 28: Half-Close Connection\n    - Slide 29: Half-Close Connection\n    - Slide 30: Half-Close Connection\n    - Slide 31: Special Cases in TCP\n    - Slide 32: Special Cases in TCP\n    - Slide 33: Special Cases in TCP\n    - Slide 34: Simultaneous Close\n    - Slide 35: Quiz Time!\n    - Slide 36: TCP State Diagram and Connection\n    - Slide 37: TCP Header, Lifecycle & Key Concepts",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "TCP State Diagram & Connection",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "TCP Handshakes and States",
+      "body": "TCP Handshakes and States\nTCP Connection Establishment\n3-Way Handshake(SYN, SYN-ACK, ACK)\nTCP Connection Termination\n4-Way Teardown(FIN, ACK)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "TCP State Diagram & Connection",
+      "body": "TCP State Diagram & Connection\nConnections\nTCP State Diagram\nHalf-Open & Half-Close Connections",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "TCP State Diagram",
+      "body": "TCP State Diagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "TCP State Diagram",
+      "body": "How TCP Tracks Every Connection?\nTotal TCP states: 11",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "TCP State Diagram",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "TCP States",
+      "body": "All 11 States and Their Meaning\nState\nCLOSED\nLISTEN\nSYN_SENT\nWho is in This State\nBoth sides\nServer only\nClient only\nDescription\nNo connection exists. Default starting state\nThe server is waiting for an incoming SYN from any client\nClient sent SYN. Waiting for SYN-ACK from the server\nSYN_RECEIVED\nServer only\nServer received SYN, sent SYN-ACK. Waiting for the final ACK\nESTABLISHED\nBoth sides\nThe connection is fully open. Data transfer is active in both directions\nFIN_WAIT_1\nClosing side\nFIN sent. Waiting for ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "TCP States",
+      "body": "All 11 States and Their Meaning\nState\nFIN_WAIT_2\nCLOSE_WAIT\nLAST_ACK\nWho is in This State\nClosing side\nOther side\nOther side\nDescription\nReceived ACK for FIN. Waiting for FIN from the other side\nReceived FIN and sent ACK. The application still has data to send\nSent own FIN. Waiting for the final ACK from the closing side\nTIME_WAIT\nClosing side\nReceived final FIN, sent ACK. Waiting 2 × MSL before closing\nCLOSING\nBoth sides\nBoth sent FIN simultaneously. Waiting for each other’s ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "TCP States",
+      "body": "11 States",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "TCP State Transitions— Client Side vs Server Side",
+      "body": "Key Observations\nOnly the client enters this state to resend the final ACK if needed\nTIME_WAIT\nOnly the server enters this state to finish sending remaining data before its FIN\nCLOSE_WAIT\nExists only on the server side\nLISTEN\nThe only state shared by both sides during normal communication\nESTABLISHED",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "TIME_WAIT State",
+      "body": "Introduction\nAfter sending the final ACK in Step 4 of the teardown, the closing side does not move directly to CLOSED — it enters TIME_WAIT\nCLOSING SIDE\nOTHER SIDE\nENTERS TIME_WAIT\nFIN\nACK\nFinal ACK in Step 4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "TIME_WAIT State",
+      "body": "What is TIME_WAIT State?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "TIME_WAIT State",
+      "body": "What is TIME_WAIT State?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "TIME_WAIT State",
+      "body": "Why does TIME_WAIT exist?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "TIME_WAIT State",
+      "body": "Why does TIME_WAIT exist?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "TIME_WAIT State",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Connections",
+      "body": "Connections",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Half-Open Connection",
+      "body": "Two Meanings\nEmbryonic Half-Open (During the Handshake)\nThe term half-open is used in two different situations in TCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Half-Open Connection",
+      "body": "Two Meanings\nCrashed Half-Open (After ESTABLISHED)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Crashed Half-Open Connection",
+      "body": "Detection\nTCP sends small empty probe packets on an idle connection. If no response comes after a set number of retries, TCP sends RST and closes the connection\n1.  TCP Keepalive",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Crashed Half-Open Connection",
+      "body": "Many applications implement their own periodic ping messages to detect dead connections faster than TCP Keepalive\n2. Application Heartbeats\nDetection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Half-Close Connection",
+      "body": "Introduction\nA half-close occurs when one side finishes sending its data and closes its sending direction, while the other side's sending direction remains open. This is a valid operation in TCP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Half-Close Connection",
+      "body": "How It Works?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Half-Close Connection",
+      "body": "How It Works?\nReal-World Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Half-Close Connection",
+      "body": "Introduction\nReal-World Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Half-Close Connection",
+      "body": "Summary\nDirection\nClient → Server\nServer → Client\nStatus in Half-Close\nCLOSED — client sent FIN\nSTILL OPEN — server still sending",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Half-Close Connection",
+      "body": "Key Point\nThe 4-way teardown studied earlier is essentially two independent half-closes happening one after the other — first the client’s half-close, then the server’s half-close",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Half-Close Connection",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Special Cases in TCP",
+      "body": "Simultaneous Open and Close\nBoth sides send SYN at the same time, enter SYN_SENT, then move to SYN_RECEIVED after receiving SYN, and finally reach ESTABLISHED\nSimultaneous Open",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Special Cases in TCP",
+      "body": "Simultaneous Open and Close\n It uses 4 segments instead of the normal 3 because both sides pass through SYN_SENT → SYN_RECEIVED → ESTABLISHED after sending SYN simultaneously\n This occurs mainly in peer-to-peer systems where both sides know each other's IP and port\nSimultaneous Open",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Special Cases in TCP",
+      "body": "Simultaneous Open and Close\nBoth sides send FIN simultaneously → both enter FIN_WAIT_1\nBoth receive the other's FIN → send ACK → both enter CLOSING\nBoth receive ACK → TIME_WAIT → CLOSED\nSimultaneous Close",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Simultaneous Close",
+      "body": "Key Observation\nIn simultaneous close, both sides go through TIME_WAIT and the CLOSING state, unlike normal teardown",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "TCP State Diagram and Connection",
+      "body": "TCP State Diagram\nConnections\nHalf-Open and Half-Close Connections",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "TCP Header, Lifecycle & Key Concepts",
+      "body": "TCP Header, Lifecycle & Key Concepts",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1cNyj8HLpK95g-3T0wkanC1sV0KsIemV4zgHkpEJOCm4/edit"
+}

@@ -1,0 +1,155 @@
+{
+  "session_no": 3,
+  "source_file": "virtualization-and-hypervisors.html",
+  "source_link": "",
+  "source_kind": "web",
+  "deck_title": "Virtualization & Hypervisors",
+  "n_slides": 16,
+  "summary": "Virtualization & Hypervisors\n    - Slide 1: Brand\n    - Slide 2: Welcome\n    - Slide 3: Deployment & Service Models\n    - Slide 4: What We Will Cover\n    - Slide 5: Physical To Virtual\n    - Slide 6: Mechanism And Effect\n    - Slide 7: Full OS For Each VM\n    - Slide 8: Full OS For Each VM\n    - Slide 9: Pooled Virtual Volumes\n    - Slide 10: A Bank's Shared Pool\n    - Slide 11: Logical Nets Over Physical\n    - Slide 12: Logical Nets Over Physical\n    - Slide 13: A Wi-Fi For Each Company\n    - Slide 14: Remote Access Delivery\n    - Slide 15: A Channel Or One Show\n    - Slide 16: Side-By-Side Summary",
+  "slides": [
+    {
+      "n": 1,
+      "title": "Brand",
+      "body": "Welcome!",
+      "notes": "The opening mark. Content rule 21 keeps \"Welcome to today's session\" for the next frame.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Brand"
+    },
+    {
+      "n": 2,
+      "title": "Welcome",
+      "body": "",
+      "notes": "The session name, in minimal mode.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Welcome"
+    },
+    {
+      "n": 3,
+      "title": "Deployment & Service Models",
+      "body": "Recap",
+      "notes": "The TR's recap block, the five agenda items of the previous session in its words, in the takeaways layout as the earlier decks did. It names the topic, never a session number (content rule 2b). Ask which one the room is least sure of.",
+      "tables": [],
+      "section": "Opening",
+      "label": "Recap"
+    },
+    {
+      "n": 4,
+      "title": "What We Will Cover",
+      "body": "",
+      "notes": "The TR's agenda, all five items, split at its colon. The same strings come back on Key Takeaways (content rule 20).",
+      "tables": [],
+      "section": "Opening",
+      "label": "Agenda"
+    },
+    {
+      "n": 5,
+      "title": "Physical To Virtual",
+      "body": "Virtualization Landscape\nVirtualization uses software to create virtual versions of computing resources, allowing physical hardware to be shared efficiently while keeping workloads isolated.\nServer\nMultiple virtual machines run on one physical server\nStorage\nVirtual storage is created from shared physical disks\nNetwork\nVirtual networks are created over shared physical network hardware\nDesktop\nVirtual desktops can be accessed remotely from different devices\nApplication\nApplications can run in isolated virtual environments\nHypervisor\nthe software layer that creates and manages VMs\nPhysical server",
+      "notes": "TR visual guidance: \"physical server block at bottom, hypervisor layer above it, five branches on top labelled Server, Storage, Network, Desktop, Application, each leading to a virtual icon.\" The five TR bullets are the five branch cards, so each string appears once. The TR's closing line (\"A hypervisor, the software layer that creates and manages VMs, sits between the physical hardware and each virtual resource\") is the middle layer: the figure shows \"sits between\". TR speaker notes: \"Emphasise that virtualization applies one abstraction principle to five different resource categories, not just computation. Interviewers often ask for all five types in order, so list server, storage, network, desktop and application together.\"",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Virtualization landscape"
+    },
+    {
+      "n": 6,
+      "title": "Mechanism And Effect",
+      "body": "Three Core Benefits\nBefore virtualization, each physical server typically ran one operating system and one application, leaving most capacity idle.\n1fr 300px\nBenefit\nHow Achieved\nEffect\nConsolidation\nMultiple VMs share one physical host\nFewer physical servers needed for same workload\nIsolation\nHypervisor enforces separate memory and CPU for each VM\nA fault in one VM cannot affect others\nUtilization\nIdle CPU/memory cycles reassigned across VMs on demand\nAverage server utilization rises sharply versus one-app-per-server\nServer utilization\nBefore\none app per server\nLow\nAfter\nmany VMs per server\nHigh",
+      "notes": "TR visual guidance: \"Small bar icon beside the table contrasting low utilization before virtualization with high utilization after.\" The TR gives no numbers, so the bars are schematic and say Low and High rather than a percentage. TR speaker notes: \"Note that hypervisor-enforced isolation is what stops a crashed or compromised VM from affecting others sharing the host. Interviewers frequently ask why virtualization raises utilization: tie the answer to dynamic reallocation of idle cycles.\"",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Three core benefits"
+    },
+    {
+      "n": 7,
+      "title": "Full OS For Each VM",
+      "body": "Server Virtualization\nServer virtualization means running multiple virtual servers on a single physical server, so its CPU, memory, and storage are shared instead of sitting idle. Each virtual server is called a virtual machine (VM) and works like an independent computer.\nServer Virtualization\nSERVER\nVM\nAPP\nOS\nHypervisor\nStorage\nCPU\nRAM\nNetwork\nInternet\nUser\nCloud Computing",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN (course rule 3): one SERVER holding four VMs, each with three apps on its own OS, on one hypervisor, on the server's storage, CPU, RAM and network; the server reaches users over the internet, which is cloud computing. Same boxes, same places, same names as the source, filed in the central asset library under illustrations, cloud_computing, 3_virtualization_and_hypervisors.",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Server virtualization"
+    },
+    {
+      "n": 8,
+      "title": "Full OS For Each VM",
+      "body": "Server Virtualization\n1fr 540px\nIntroduced to end one-app-per-server hardware waste\nGuest OS is fully independent of host OS\nCommon use: dev/test environments, legacy app hosting\nAWS example: Amazon EC2 (Elastic Compute Cloud) launches VM instances\nHardware\nHypervisor\nOne VM\nApp\nFull guest OS\nIts own kernel\nIts own drivers\nIts own system files\nVirtual CPU, memory, disk\nAmazon EC2 instance",
+      "notes": "TR visual guidance: \"Reuse the physical-to-hypervisor-to-VMs diagram from the overview, zoomed into one VM box showing a full guest OS inside it.\" The small stack on the left is that diagram, one VM lit; the large box is the zoom. TR speaker notes: \"Server virtualization is the type already met through the hypervisor, now framed formally as one of five categories. Interview note: the guest OS, not just the application, is what gets virtualized here.\"",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Server virtualization: one VM"
+    },
+    {
+      "n": 9,
+      "title": "Pooled Virtual Volumes",
+      "body": "Storage Virtualization\nStorage virtualization pools capacity from multiple physical disks into logical volumes, letting applications see storage independent of the hardware beneath.\n1fr 470px\nApplications do not need to know which disk holds their data\nVolumes can be resized without moving data manually\nSnapshots: point-in-time copies for quick recovery\nReplication: copies kept in another location for safety\nAWS example: Amazon EBS provides virtual disks for EC2\nDisk 1\nDisk 2\nDisk 3\nDisk 4\nVirtual Volume\nApplication\nAmazon EBS",
+      "notes": "TR visual guidance: \"several physical disk icons feeding into a single pooled cylinder labelled Virtual Volume, with an application drawing from the cylinder.\" TR speaker notes: \"Storage virtualization lets a volume resize or migrate without touching the physical array. Contrast with RAID, which protects fixed disks rather than pooling them.\"",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Storage virtualization"
+    },
+    {
+      "n": 10,
+      "title": "A Bank's Shared Pool",
+      "body": "Storage Virtualization",
+      "notes": "TR analogy, verbatim: \"A bank combines money from multiple branches into a shared pool that customers can access from anywhere. Similarly, storage virtualization combines capacity from multiple physical disks into a single logical storage pool that applications can use without needing to know where the data is physically stored.\" The markers light 1, 2, 3 on both sides together: branches are disks, the pool is the virtual volume, the customer at any ATM is the application that never asks which branch.",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Analogy: a bank's shared pool"
+    },
+    {
+      "n": 11,
+      "title": "Logical Nets Over Physical",
+      "body": "Network Virtualization\nNetwork virtualization uses software to create multiple separate virtual networks on top of one shared physical network. Each virtual network has its own addressing and settings.\nPHYSICAL SERVER\nVM\nVM network\nHypervisor kernel\nPhysical network\nClient\nStorage array\npNIC\nvNIC\npNIC: Physical NIC\nvNIC: Virtual NIC\nNetwork virtualization in a virtual data centre (VDC)",
+      "notes": "THE TR DOC'S OWN DIAGRAM, REDRAWN (course rule 3), with its caption \"Network Virtualization In VDC\" (VDC expanded, content rule 24): two physical servers, each with three VMs joined through virtual NICs to a VM network beside the hypervisor kernel; each server leaves through its physical NIC to one physical network, which also reaches a client and a storage array. NIC is the network interface card. Point at the two layers: the VM network inside each server is software, the physical network between them is cable.",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Network virtualization"
+    },
+    {
+      "n": 12,
+      "title": "Logical Nets Over Physical",
+      "body": "Network Virtualization\n1fr 500px\nVirtual switches replace physical wiring changes\nOverlay networks tunnel traffic across shared links\nIsolation prevents one tenant's traffic reaching another's\nAWS example: Amazon VPC (Virtual Private Cloud) isolated network\nOne physical network cable\nAmazon VPC\nNetwork A\n10.0.1.0/24\nNetwork B\n10.0.2.0/24\nNetwork C\n10.0.3.0/24",
+      "notes": "TR visual guidance: \"one physical network cable branching into several coloured logical network loops, each labelled with its own address range.\" The three ranges are example private address ranges, one per network, to make \"its own addressing\" visible; the TR names none. The padlocks between loops are the isolation bullet. TR speaker notes: \"Network virtualization is the basis of software-defined networking (SDN), separating logical topology from physical cabling. A VPC is a fully isolated virtual network, unlike a VLAN which only segments one physical LAN.\"",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Network virtualization: logical networks"
+    },
+    {
+      "n": 13,
+      "title": "A Wi-Fi For Each Company",
+      "body": "Network Virtualization",
+      "notes": "SHARPENED FROM THE TR, which reads, verbatim: \"A building can use one shared electricity connection while separate meters track each tenant's usage. Similarly, network virtualization uses one physical network to create multiple separate logical networks, each with its own addressing and access rules.\" Meters show separate measurement but not separate addressing or access, which is what the slide is about. One building, one cable in, and a Wi-Fi network for each company with its own name and its own password, maps all three: the cable is the physical network, each Wi-Fi is a virtual network with its own addressing, the password is the access rule. Say the TR sentence too if the room prefers it.",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Analogy: a Wi-Fi for each company"
+    },
+    {
+      "n": 14,
+      "title": "Remote Access Delivery",
+      "body": "Desktop & App Virtualization\nDesktop virtualization delivers a full desktop from a remote host; application virtualization streams or isolates without local installation.\n1fr 520px\nDesktop: full OS session streamed remotely\nApplication: only the app runs remotely\nBoth remove dependency on local hardware\nAWS examples: Amazon WorkSpaces desktops, AppStream 2.0 apps\nRemote data centre\nFull Desktop\nSingle App\nAmazon WorkSpaces\nAppStream 2.0",
+      "notes": "TR visual guidance: \"a remote data-centre icon streaming two outputs to a local screen: one labelled Full Desktop, one labelled Single App.\" The AppStream 2.0 mark is not in the current AWS architecture icon package, so that line carries the AWS mark. TR speaker notes: \"Desktop virtualization, or virtual desktop infrastructure (VDI), delivers a whole session, while application virtualization streams just one app, a common interview mix-up. Both remove local installation and local hardware dependence.\"",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Desktop and app virtualization"
+    },
+    {
+      "n": 15,
+      "title": "A Channel Or One Show",
+      "body": "Desktop & App Virtualization",
+      "notes": "TR analogy, verbatim: \"Cable TV delivers a channel without a studio at home, just as desktop and app virtualization deliver a desktop or an app from a remote host without local installation.\" Kept, and split in two so it maps the difference the slide is about: the whole channel on the TV is the full desktop, one show on a tablet is the single app. The studio is never in the house.",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Analogy: cable TV"
+    },
+    {
+      "n": 16,
+      "title": "Side-By-Side Summary",
+      "body": "Virtualization Types Compared\nEach virtualization type abstracts a different physical resource, but all follow the same pattern of separating logical use from physical ownership.\nType\nWhat Is Virtualized\nReal AWS Example\nServer\nPhysical machine into VMs\nAmazon EC2\nStorage\nPhysical disks into volumes\nAmazon EBS\nNetwork\nPhysical wiring into virtual nets\nAmazon VPC\nDesktop\nPhysical workstation into remote session\nAmazon WorkSpaces\nApplication\nRemotely streamed or isolated app\nAWS AppStream 2.0",
+      "notes": "TR visual guidance: \"Full-width table as the sole visual; no additional diagram needed on this slide.\" The TR's last cell starts lower case (\"remotely streamed or isolated app\"); capitalised to match its column. TR speaker notes: \"This table maps each type to its resource and a real AWS example, useful for fast recall. Only server virtualization runs a full guest OS; the other four abstract a resource without running one.\"",
+      "tables": [],
+      "section": "Virtualization Basics",
+      "label": "Five types compared"
+    }
+  ]
+}

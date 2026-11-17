@@ -1,0 +1,436 @@
+{
+  "session_no": 11,
+  "source_file": "Session 11 _ Cloud Provider Comparison.docx",
+  "source_kind": "trdoc",
+  "source_hash": "6e6bf83df2b15c475311eed03037ab36",
+  "deck_title": "Session 11 : Cloud Provider Comparison",
+  "n_slides": 24,
+  "summary": "Session 11 : Cloud Provider Comparison\n    - Slide 1: Five Providers in the Cloud Landscape\n    - Slide 2: Hyperscaler Market Position and Use Cases\n    - Slide 3: IBM Cloud and Oracle Cloud Explained\n    - Slide 4: Five Providers Side by Side\n    - Slide 5: Provider Landscape Before Service Mapping\n    - Slide 6: Four Service Categories Across Providers\n    - Slide 7: Why The Same Service Has Three Names\n    - Slide 8: Compute Equivalents Named\n    - Slide 9: Storage Equivalents Named\n    - Slide 10: Database Equivalents Named\n    - Slide 11: Networking Equivalents Named\n    - Slide 12: Naming Pattern Across All Categories\n    - Slide 13: Managed ML Platforms Beyond Pre-Built APIs\n    - Slide 14: SageMaker vs Azure ML vs Vertex AI\n    - Slide 15: Pre-Built AI API Name Mapping\n    - Slide 16: Choosing Platform or API\n    - Slide 17: One Task, Three Consoles\n    - Slide 18: AWS Launch Wizard Walkthrough\n    - Slide 19: Azure Portal And GCP Console Compared\n    - Slide 20: Console Layout Is Cosmetic\n    - Slide 21: Real vs Cosmetic Differences\n    - Slide 22: Factors That Actually Decide\n    - Slide 23: Cosmetic Differences and Checklist\n    - Slide 24: Key Takeaways",
+  "slides": [
+    {
+      "n": 1,
+      "title": "Five Providers in the Cloud Landscape",
+      "body": "Cloud Provider Landscape\nSubheading: Five Key Players\nA cloud provider is a company that offers computing resources such as servers, storage, databases and networking over the internet, on a pay-as-you-go basis. AWS, Azure and Google Cloud lead the market, while IBM Cloud and Oracle Cloud serve specific enterprise needs.\nAmazon Web Services (AWS), Microsoft Azure (Azure), Google Cloud (GCP): the three hyperscalers\nIBM Cloud: enterprise and hybrid-cloud focused provider\nOracle Cloud Infrastructure (OCI): database and enterprise-application focused provider\nMarket position ranges from broad general-purpose platforms to niche enterprise specialists\nVisual Guidance: Five logo boxes sized by relative market position: AWS largest, Azure and GCP mid-sized, IBM Cloud and OCI smaller specialist boxes.",
+      "notes": "Name all five providers together before going into any one of them. Point out that size in the diagram reflects market position, not technical capability. Interviewers often ask for all five by name, not just the top three.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Hyperscaler Market Position and Use Cases",
+      "body": "Hyperscaler Market Position\nSubheading: Share and Use Case\nVisual Guidance: Horizontal bar chart beside the table showing relative market share order: AWS, then Azure, then GCP.",
+      "notes": "Point to the AWS Management Console already used in earlier demos as the home base for the largest provider. Mention that Azure Portal and GCP Console mirror the same services under different names. An interviewer may ask why a Microsoft-heavy enterprise defaults to Azure.",
+      "tables": [
+        [
+          [
+            "AWS, Azure and GCP together hold the majority of the cloud market, but each one is stronger for different kinds of workloads."
+          ]
+        ],
+        [
+          [
+            "Provider",
+            "Market Position",
+            "Typical Use Case"
+          ],
+          [
+            "AWS",
+            "Largest market share, broadest service catalog",
+            "General-purpose workloads, startups to enterprises"
+          ],
+          [
+            "Azure",
+            "Second-largest, strong enterprise and hybrid adoption",
+            "Microsoft-stack enterprises, hybrid cloud deployments"
+          ],
+          [
+            "GCP",
+            "Third-largest, strength in data and AI/ML",
+            "Data analytics, machine learning, Kubernetes-native applications"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 3,
+      "title": "IBM Cloud and Oracle Cloud Explained",
+      "body": "IBM And Oracle Cloud\nSubheading: Enterprise Specialists\nSome organisations need a provider built around decades of existing enterprise systems rather than service breadth; IBM Cloud and Oracle Cloud Infrastructure (OCI) serve exactly that need.\nIBM Cloud: hybrid cloud and mainframe migration for regulated industries\nOCI: built around Oracle database and ERP workloads, and now a major provider of large-scale AI/GPU infrastructure\nChosen for existing vendor relationships rather than broad service catalogs\nAnalogy: A general physician treats most common ailments, but a patient with a specific heart condition goes to a cardiologist — just as IBM Cloud and Oracle Cloud specialise in enterprise and database workloads rather than general-purpose breadth.\nVisual Guidance: Two-column diagram: generalist hyperscalers on the left, specialist enterprise providers (IBM Cloud, OCI) on the right, with an arrow showing narrower focus.",
+      "notes": "Explain that lower market share does not mean lower capability, only a narrower target customer. A bank already running mainframes is the classic IBM Cloud example to mention aloud. Expect an interview question on why a company would ever pick a smaller provider.",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Five Providers Side by Side",
+      "body": "Five Providers Compared\nSubheading: Position Vs Use Case\nPlacing all five providers in one table shows the spectrum from broad hyperscale platforms to narrow enterprise specialists.\nVisual Guidance: Single consolidated table with the top three rows shaded darker to mark the dominant hyperscalers against the lighter-shaded specialist rows.",
+      "notes": "Read the table left to right rather than row by row so the market-position column and use-case column are compared across all five at once. This single table is the one worth memorising for a provider-selection question.",
+      "tables": [
+        [
+          [
+            "Provider",
+            "Market Position",
+            "Typical Use Case"
+          ],
+          [
+            "AWS",
+            "Market leader, broadest catalog",
+            "General-purpose, startups to enterprise"
+          ],
+          [
+            "Azure",
+            "Strong #2, deep Microsoft integration",
+            "Enterprises on Microsoft stack, hybrid cloud"
+          ],
+          [
+            "GCP",
+            "#3, data and AI/ML strength",
+            "Analytics, ML, Kubernetes-native apps"
+          ],
+          [
+            "IBM Cloud",
+            "Niche enterprise specialist",
+            "Mainframe migration, regulated industries"
+          ],
+          [
+            "Oracle Cloud (OCI)",
+            "Niche enterprise specialist",
+            "Oracle database and ERP workloads"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 5,
+      "title": "Provider Landscape Before Service Mapping",
+      "body": "Provider Landscape Recap\nSubheading: Bridge To Services\nChoosing among the five starts with matching market position and typical use case to a workload's own constraints, not with the underlying service concepts, which stay the same.\nThree hyperscalers cover general-purpose breadth: AWS, Azure, GCP\nTwo enterprise specialists serve niche needs: IBM Cloud, OCI\nMarket position differs across providers\nUnderlying services map onto one another across providers\nVisual Guidance: Fade the five-provider diagram from slide one back in, with an arrow pointing toward a generic compute/storage/database icon set.",
+      "notes": "Close by noting that every provider offers the same core building blocks under different names. That mapping is what gets taught immediately after this point. A learner should leave this slide able to name all five providers unprompted.",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Four Service Categories Across Providers",
+      "body": "Four Service Categories\nSubheading: Same Capability Renamed\nEvery provider sells the same four building blocks — a virtual machine, object storage, a managed database and a network boundary — under its own product name.\nCompute: rentable virtual machines for running applications\nStorage: object storage for files accessed by key\nDatabase: managed relational and NoSQL engines\nNetworking: an isolated virtual network plus traffic distribution\nVisual Guidance: Four-row map on screen: Compute, Storage, Database, Networking, each with one AWS icon, one Azure icon, one GCP icon beside it.",
+      "notes": "Set up the pattern before naming any product: the capability is identical, only the label changes. Ask: why would a company moving from one provider to another need a naming map rather than a new architecture?",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why The Same Service Has Three Names",
+      "body": "Service Equivalence Idea\nSubheading: Translating The Label\nWhen a capability already known on one provider exists on another under a different brand name, that matching is called a service equivalent — the core function is the same, though features and details can differ.\nCore capability and typical use case stay the same\nLearning one provider’s services makes the others much faster to learn\nAnalogy: Three telecom companies sell the same prepaid data-and-calls recharge under three different plan names — just as three cloud providers sell the same virtual machine capability under three different product names.\nVisual Guidance: Single slide: one grey box labelled 'capability' with three coloured arrows pointing to AWS, Azure, GCP product name tags.",
+      "notes": "Say the everyday version first — same plan, different brand — before naming it 'service equivalence'. Point out this is exactly the skill an interviewer tests when asking to map an AWS service to its Azure or GCP counterpart.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Compute Equivalents Named",
+      "body": "Compute Equivalents\nSubheading: Virtual Machines Named\nThe raw virtual machine capability appears on each provider's console under a different product name.\nVisual Guidance: Three-row table on screen, one logo per provider row.",
+      "notes": "Point to the EC2 Dashboard label and note that Virtual Machines and Compute Engine are the same screen in spirit. A frequent interview question asks exactly this mapping by name.",
+      "tables": [
+        [
+          [
+            "Provider",
+            "Compute Service",
+            "Console Label"
+          ],
+          [
+            "AWS",
+            "EC2 (Elastic Compute Cloud)",
+            "EC2 Dashboard"
+          ],
+          [
+            "Azure",
+            "Azure Virtual Machines",
+            "Virtual Machines"
+          ],
+          [
+            "GCP",
+            "Compute Engine",
+            "Compute Engine"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 9,
+      "title": "Storage Equivalents Named",
+      "body": "Storage Equivalents\nSubheading: Object Storage Named\nObject storage for files stored as objects, not disks, carries a different brand on each provider's console.\nVisual Guidance: Three-row table, each row with its provider logo and bucket icon.",
+      "notes": "Point to the S3 bucket list and note Blob Storage sits inside a Storage Account, while Cloud Storage uses buckets directly. Flag this naming difference as a common interview trap.",
+      "tables": [
+        [
+          [
+            "Provider",
+            "Object Storage Service",
+            "Console Label"
+          ],
+          [
+            "AWS",
+            "S3 (Simple Storage Service)",
+            "S3 Buckets"
+          ],
+          [
+            "Azure",
+            "Blob Storage",
+            "Storage Accounts"
+          ],
+          [
+            "GCP",
+            "Cloud Storage",
+            "Cloud Storage Buckets"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 10,
+      "title": "Database Equivalents Named",
+      "body": "Database Equivalents\nSubheading: Relational And NoSQL\nRelational Database Service (RDS) is AWS's managed SQL engine; NoSQL (\"not only SQL\") stores flexible, schema-less data instead of fixed tables.\nDatabase equivalence splits into two lines: managed relational engines and managed NoSQL stores, each renamed separately by provider.\nRelational engines support fixed table schemas and joins\nNoSQL stores scale horizontally without a fixed schema\nChoice depends on data structure needed, not provider preference\nVisual Guidance: Two-row table split by category; small icon distinguishing table rows (SQL) from document rows (NoSQL).",
+      "notes": "Point to the RDS row and ask which workload needs fixed schema versus flexible documents. This exact table is a standard interview ask: name the NoSQL equivalent of DynamoDB on Azure.",
+      "tables": [
+        [
+          [
+            "Category",
+            "AWS",
+            "Azure",
+            "GCP"
+          ],
+          [
+            "Relational (SQL)",
+            "RDS",
+            "Azure SQL Database",
+            "Cloud SQL"
+          ],
+          [
+            "NoSQL (document/key-value)",
+            "DynamoDB",
+            "Cosmos DB",
+            "Firestore"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 11,
+      "title": "Networking Equivalents Named",
+      "body": "Networking Equivalents\nSubheading: Load Balancer Named\nThe isolated virtual network carries its own renamed line per provider; the service that spreads traffic across servers is renamed the same way.\nVisual Guidance: Table beside a small reminder icon labelled 'VPC naming already mapped'.",
+      "notes": "Mention briefly that the virtual-network naming was mapped earlier, then focus attention on the load balancer row shown here. Interviewers often ask for the AWS name of a generic 'load balancer' term.",
+      "tables": [
+        [
+          [
+            "Provider",
+            "Load Balancing Service"
+          ],
+          [
+            "AWS",
+            "Elastic Load Balancing (ELB)"
+          ],
+          [
+            "Azure",
+            "Azure Load Balancer"
+          ],
+          [
+            "GCP",
+            "Cloud Load Balancing"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 12,
+      "title": "Naming Pattern Across All Categories",
+      "body": "Equivalents Recap\nSubheading: Pattern Repeats Higher Up\nAcross compute, storage, database and networking, the architecture stays constant while only the product label changes between providers.\nCompute renamed across providers: EC2, Azure VM, Compute Engine\nStorage renamed across providers: S3, Blob Storage, Cloud Storage\nRelational database renamed: RDS, Azure SQL Database, Cloud SQL\nNoSQL database renamed: DynamoDB, Cosmos DB, Firestore\nPortability means relearning names, not re-learning concepts\nProvider choice weighs ecosystem, pricing and skills, not features\nThe same renaming pattern continues into managed machine learning services\nVisual Guidance: One combined grid recapping all four categories side by side, fading into a fifth placeholder row labelled machine learning.",
+      "notes": "Close by tying the four rows together as one repeating pattern across the cloud stack. Point out this naming-translation skill is exactly what the next comparison, on machine learning services, will reuse.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Managed ML Platforms Beyond Pre-Built APIs",
+      "body": "Managed ML Platforms\nSubheading: Beyond Pre-Built APIs\nPre-trained AI (Artificial Intelligence) APIs answer only fixed tasks. A managed Machine Learning (ML) platform gives one workspace to prepare data, train, tune and deploy a custom model without managing servers. AWS, Azure and GCP each package this workspace under their own platform name at a high level.\nBuilt-in notebooks and GPU-backed training environments\nExperiment tracking records accuracy across training runs\nOne-click hosting turns a trained model into an endpoint\nAutoML cuts the coding needed to reach a trained model\nAnalogy: A ready-made shirt off the rack is a pre-built AI API; a tailor who takes measurements and stitches to order is the managed ML platform — just as the tailor needs fabric, measurements and time, the platform needs data, training and tuning before it delivers a custom model.\nVisual Guidance: Two boxes side by side: 'Pre-built API: input to output' versus 'ML platform: data to train to tune to deploy', connected by arrows.",
+      "notes": "Contrast calling Amazon Comprehend with building a custom fraud model from the organisation's own data. Mention AWS SageMaker Studio as the console where this workspace lives. Interview hook: ask when a pre-built API is insufficient for a use case.",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "SageMaker vs Azure ML vs Vertex AI",
+      "body": "Full ML Platforms\nSubheading: AWS Azure GCP\nEach hyperscaler packages the full train-to-deploy workflow under one flagship platform name, reachable from its own console.\nVisual Guidance: Three-column table on screen, one logo per provider column, highlight the AWS SageMaker row since students already know the AWS console.",
+      "notes": "Point out that SageMaker is reached from the AWS console search bar, same pattern as EC2 (Elastic Compute Cloud) used earlier. Say the platform name aloud, then its one capability. Exam hook: naming the three flagship ML platforms is a common interview question.",
+      "tables": [
+        [
+          [
+            "Provider",
+            "Platform",
+            "Key Capability"
+          ],
+          [
+            "AWS",
+            "Amazon SageMaker",
+            "Unified studio: notebooks, training jobs, hosted endpoints"
+          ],
+          [
+            "Azure",
+            "Azure Machine Learning",
+            "Visual designer, automated ML, MLOps pipelines"
+          ],
+          [
+            "GCP",
+            "Vertex AI",
+            "Single console for AutoML and custom model training"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Pre-Built AI API Name Mapping",
+      "body": "Pre-Built AI APIs\nSubheading: Service Name Mapping\nAlongside full platforms, each provider also exposes specialised pre-trained models for common tasks through a single API call.\nSame underlying task, different service name per provider\nNo training data needed, model is already trained\nCalled over REST, response returned as structured JSON\nVisual Guidance: Four-column table on screen; circle the AWS column since Rekognition and Comprehend are the familiar names.",
+      "notes": "Remind that Rekognition and Comprehend were named earlier as AWS examples; now place the Azure and GCP equivalents beside them. Point at the task column first, then read across the row. Exam hook: matching a task to its three provider-specific service names is commonly asked.",
+      "tables": [
+        [
+          [
+            "Task",
+            "AWS",
+            "Azure",
+            "GCP"
+          ],
+          [
+            "Image analysis",
+            "Amazon Rekognition",
+            "Azure AI Vision",
+            "Cloud Vision AI"
+          ],
+          [
+            "Text analysis",
+            "Amazon Comprehend",
+            "Azure AI Language",
+            "Cloud Natural Language AI"
+          ],
+          [
+            "Speech",
+            "Amazon Polly / Transcribe",
+            "Azure AI Speech",
+            "Cloud Speech-to-Text"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 16,
+      "title": "Choosing Platform or API",
+      "body": "Platform Vs API\nSubheading: Choosing The Service\nThe two layers answer different needs: a ready model for a standard task, or a workspace to build one that is genuinely custom.\nPre-built API fits when the task matches an existing model\nFull platform fits when training is needed on private data\nAutoML sits between the two, inside the platform console\nCatalogue and model maturity still vary by provider and task\nVisual Guidance: Simple two-box decision flow: 'standard task' arrow to pre-built API box, 'custom data' arrow to platform box, AutoML label bridging the two.",
+      "notes": "Close by framing the choice as standard task versus custom data, not as one provider being universally better. This same AWS console reasoning carries into the live console walkthrough coming next. Exam hook: ask when AutoML is the right middle choice.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "One Task, Three Consoles",
+      "body": "Same Task Three Ways\nSubheading: Console Entry Points\nThe AWS console is already familiar as the known reference point, so launching a compute instance there anchors the comparison.\nLaunching a compute instance follows the same decisions everywhere; each provider's console simply places those decisions on a different screen.\nAWS Console: EC2 dashboard, Launch Instance wizard\nAzure Portal: Create a resource, Virtual Machine blade\nGCP Console: Compute Engine, VM instances page\nGCP Cloud Shell: browser-based command-line alternative\nVisual Guidance: Three browser windows side by side: AWS EC2 console, Azure Portal, GCP Console — same 'Create VM' action highlighted in each.",
+      "notes": "Open the actual AWS EC2 console live and name the launch wizard as the reference point. Mention that Azure and GCP will perform the identical task next.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "AWS Launch Wizard Walkthrough",
+      "body": "AWS Launch Wizard\nSubheading: EC2 Decision Flow\nThe EC2 launch wizard, reached from the EC2 dashboard's Launch Instance button, lines up every provisioning decision in one linear screen.\nName and tags: identifies the instance for billing and search\nAmazon Machine Image (AMI): picks the pre-configured operating system\nInstance type: sets vCPU and memory for the workload\nKey pair: sets the credential used for SSH login\nNetwork and security group: places the instance and opens ports\nLaunch: confirms the choices and starts provisioning\nVisual Guidance: Screen capture of the EC2 Launch Instance wizard with each of the six sections numbered 1 to 6 down the page.",
+      "notes": "Walk the live EC2 console top to bottom, pointing at each wizard section as it is named. Ask: which field here decides the operating system versus the one that decides sizing?",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Azure Portal And GCP Console Compared",
+      "body": "Azure And GCP Flow\nSubheading: Same Decisions Mapped\nAzure Portal and Google Cloud Platform (GCP) Console reach the identical decisions through their own blade and page layouts, confirming the task never changes.\nVisual Guidance: Six-row comparison table on screen; browser recording shows the Azure VM creation blade, then the GCP VM instances creation page, matched row by row against the table.",
+      "notes": "Demo the Azure VM creation blade and the GCP Compute Engine create-instance page back to back, pointing at the same row of the table for each. Note GCP Cloud Shell opens inside the browser with no local install, unlike a local terminal.",
+      "tables": [
+        [
+          [
+            "Decision",
+            "AWS Console",
+            "Azure Portal",
+            "GCP Console"
+          ],
+          [
+            "Entry point",
+            "EC2 > Launch Instance",
+            "Create a resource > Virtual Machine",
+            "Compute Engine > Create Instance"
+          ],
+          [
+            "OS image",
+            "AMI picker",
+            "Image selection step",
+            "Boot disk image picker"
+          ],
+          [
+            "Sizing",
+            "Instance type picker",
+            "VM size step",
+            "Machine type picker"
+          ],
+          [
+            "Access credential",
+            "Key pair",
+            "SSH public key field",
+            "SSH key or Cloud Shell key"
+          ],
+          [
+            "Network",
+            "Security group",
+            "Networking step",
+            "Firewall rule / VPC network"
+          ],
+          [
+            "CLI alternative",
+            "AWS CloudShell",
+            "Azure Cloud Shell",
+            "GCP Cloud Shell"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 20,
+      "title": "Console Layout Is Cosmetic",
+      "body": "Layout Versus Task\nSubheading: What Stayed Constant\nAcross AWS, Azure and GCP the same six decisions appear in different screen layouts, which shows console design is cosmetic while the provisioning task stays constant.\nEvery provider offers a browser-based shell, no local install needed\nWizard-style, step-by-step flows dominate all three console designs\nButton names and screen order differ across providers\nVisual Guidance: Side-by-side thumbnails of the three consoles fading into one arrow pointing to a single label: 'same task'.",
+      "notes": "Close by stating that layout differences are only naming and navigation, setting up the next discussion on what genuinely differs between providers. Interview hook: ask what stays identical across clouds versus what a team must relearn per provider.",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Real vs Cosmetic Differences",
+      "body": "Choosing A Provider\nSubheading: Real Vs Cosmetic\nPicking among AWS, Azure and GCP is not a matter of which console looks friendlier; a small set of factors actually changes cost or capability, while many more only change labels on screen.\nVisual Guidance: Two-column split screen: left labelled 'Changes the outcome', right labelled 'Just a different label' with icons for each factor.",
+      "notes": "Frame the whole section as a filter: ask of every difference, does it move cost or capability, or only the screen. Point out that this filter is what an interviewer is really testing when they ask 'why AWS over Azure'.",
+      "tables": [
+        [
+          [
+            "Category",
+            "What It Covers"
+          ],
+          [
+            "Decision-changing",
+            "Pricing model, region footprint, service maturity, team skills"
+          ],
+          [
+            "Cosmetic only",
+            "Service names, console menu layout, dashboard arrangement"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 22,
+      "title": "Factors That Actually Decide",
+      "body": "Real Differentiators\nSubheading: Price Region Skill\nEach factor below changes total spend, latency guarantees or hiring effort, which is why it belongs in a provider decision rather than a preference.\nPricing: on-demand rates, discount tiers and data-egress fees vary by provider\nRegions: AWS currently offers the largest region and availability-zone count\nMaturity: a newer provider service may lack features an older one already shipped\nSkills: certification pools and job-market depth differ sharply across the three\nChecked in practice on the AWS Pricing Calculator and the AWS Regions page\nVisual Guidance: Four labelled pillars (Pricing, Regions, Maturity, Skills) under one heading 'Decision Factors', each with a one-icon cue.",
+      "notes": "Explain that region count affects latency and data-residency compliance, not just marketing. Mention that service maturity means checking whether a needed feature is generally available or still in preview. Interview angle: ask why egress cost alone can flip a multi-cloud decision.",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "Cosmetic Differences and Checklist",
+      "body": "Cosmetic Surface\nSubheading: Naming And Layout\nThe same underlying service appears under a different name and menu path on each console, a pattern already seen with networking building blocks; it changes nothing about cost or capability.\nEC2, Virtual Machines, Compute Engine: one compute concept, three labels\nConsole menu order and dashboard layout differ with no effect on behaviour\nSwitching this surface costs only relearning time, not architecture or budget\nA provider choice is settled by pricing fit, region coverage, service maturity and team skill; naming and layout are familiarity, not criteria, and sit outside that checklist.\nVisual Guidance: Side-by-side console screenshots style icons for AWS, Azure, GCP showing the identical compute icon under three different labels.",
+      "notes": "Stress that a learner fluent in AWS is not starting over on Azure or GCP, only relearning where things sit. Tie this to the shared-responsibility and security foundations coming up, which apply the same way across all three consoles.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Key Takeaways",
+      "body": "1. Major Cloud Providers: AWS, Azure & GCP as the primary players; IBM Cloud and Oracle Cloud as additional enterprise cloud providers — market position & typical use cases\n2. Service Equivalents Across Providers: Compute, storage, database & networking — same concept, different names (EC2/VM/Compute Engine; S3/Blob/Cloud Storage; RDS/Azure SQL/Cloud SQL for relational, DynamoDB/Cosmos DB/Firestore for NoSQL)\n3. Machine Learning Service Comparison: Managed ML/AI offerings across AWS, Azure & GCP at a high level\n4. Live Walkthrough: The AWS console already familiar to students, shown alongside Azure Portal and GCP Console/Cloud Shell — the same task, back to back\n5. Choosing a Provider: What genuinely differs (pricing, regions, service maturity, skills) vs what's cosmetic (naming, console layout)\nUpcoming Session : Cloud Security & Shared Responsibility\nThank You  |  All the Best",
+      "notes": "",
+      "tables": []
+    }
+  ]
+}

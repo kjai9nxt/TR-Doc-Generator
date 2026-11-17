@@ -1753,13 +1753,15 @@ meta:
 # MODEL / API
 # ----------------------------------------------------------------------------
 model:
-  # Provider: "openrouter" (OpenAI-compatible HTTP) or "anthropic" (native SDK).
-  provider: "openrouter"
-  base_url: "https://openrouter.ai/api/v1"
-  api_key_env: "OPENROUTER_API_KEY"   # env var holding the key (see .env)
-  # Model ids use the provider's naming. OpenRouter's Claude Sonnet slug:
-  generator: "anthropic/claude-sonnet-5"   # drafting + revision
-  judge: "anthropic/claude-haiku-4.5"      # LLM-as-judge grader — Haiku: ~3x faster/cheaper than Sonnet for scoring
+  # Provider: "anthropic" (native SDK, direct to the Anthropic API) or "openrouter"
+  # (OpenAI-compatible HTTP). To go back to OpenRouter: provider "openrouter",
+  # base_url "https://openrouter.ai/api/v1", api_key_env "OPENROUTER_API_KEY", and
+  # prefix the model ids with "anthropic/" (OpenRouter writes Haiku as claude-haiku-4.5).
+  provider: "anthropic"
+  api_key_env: "ANTHROPIC_API_KEY"   # env var holding the key (see .env)
+  # Model ids use the provider's naming (Anthropic API ids, no prefix):
+  generator: "claude-sonnet-5"       # drafting + revision
+  judge: "claude-haiku-4-5"          # LLM-as-judge grader — Haiku: ~3x faster/cheaper than Sonnet for scoring
   # 1.70: the model that LOOKS at attached screenshots (describe once at upload; check
   # each placed picture against the text beside it). Blank = the judge model, which
   # reads images. A fraction of a cent per picture.
@@ -1786,8 +1788,9 @@ model:
   # with the most to say about it. Cheap on Haiku, so the margin is worth having.
   judge_max_tokens: 16000
   temperature: 0.4                  # low-ish: correctness over creativity
-  # Live market + recency check via OpenRouter's ":online" web search on the JUDGE
-  # call (uses this same OPENROUTER_API_KEY; small extra per-call cost). When true,
+  # Live market + recency check via web search on the JUDGE call (Anthropic's
+  # server-side web search tool — $10 per 1,000 searches, capped at 12 per call; on
+  # OpenRouter, the ":online" model variant). When true,
   # the judge web-verifies the market_parity and content_recency dimensions against
   # GFG/TutorialsPoint/Scaler and current standards. Set false to save cost/latency.
   enable_web_market_check: true

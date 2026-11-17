@@ -1,0 +1,479 @@
+{
+  "session_no": 17,
+  "source_file": "CN — session 17",
+  "deck_title": "CN — session 17",
+  "n_slides": 67,
+  "summary": "\n    - Slide 2: Network Layer & IP Addressing\n    - Slide 3: SCTP & Quality of Service\n    - Slide 4: Network Layer & IP Addressing\n    - Slide 5: Network Layer\n    - Slide 6: From Process to Machine - The Missing Piece\n    - Slide 7: From Process to Machine - The Missing Piece\n    - Slide 8: Why the Network Layer Exists?\n    - Slide 9: The Network Layer\n    - Slide 10: The Network Layer\n    - Slide 11: The Network Layer\n    - Slide 12: Logical Addressing\n    - Slide 13: Logical Addressing\n    - Slide 14: Logical Addressing\n    - Slide 15: What Makes an Address \"Logical\"?\n    - Slide 16: Logical Addressing\n    - Slide 17: Logical Addressing\n    - Slide 18: Logical Addressing\n    - Slide 19: Logical Addressing\n    - Slide 20: IPv4 - Internet Protocol Version 4\n    - Slide 21: IPv4 - Internet Protocol Version 4\n    - Slide 22: The Five Classes of IPv4\n    - Slide 23: The Five Classes of IPv4\n    - Slide 24: The Five Classes of IPv4\n    - Slide 25: The Five Classes of IPv4\n    - Slide 26: The Five Classes of IPv4\n    - Slide 27: The Five Classes of IPv4\n    - Slide 28: The Five Classes of IPv4\n    - Slide 29: CIDR and Subnetting\n    - Slide 30: CIDR : Classless Inter-Domain Routing\n    - Slide 31: CIDR\n    - Slide 32: CIDR\n    - Slide 33: CIDR\n    - Slide 34: CIDR\n    - Slide 35: CIDR\n    - Slide 36: CIDR\n    - Slide 37: CIDR\n    - Slide 38: Subnet Mask\n    - Slide 39: Subnet Mask\n    - Slide 40: Subnet Mask\n    - Slide 41: Subnetting\n    - Slide 42: Subnetting\n    - Slide 43: Subnetting\n    - Slide 44: Subnetting\n    - Slide 45: Quiz Time!\n    - Slide 46: IPv4 Datagram Format\n    - Slide 47: Internet Protocol - IPv4 Datagram\n    - Slide 48: Header Fields\n    - Slide 49: Header Fields\n    - Slide 50: Internet Protocol - IPv4 Datagram\n    - Slide 51: Internet Protocol - IPv4 Datagram\n    - Slide 52: Fragmentation\n    - Slide 53: Fragmentation\n    - Slide 54: Internet Protocol - IPv4 Datagram\n    - Slide 55: Internet Protocol - IPv4 Datagram\n    - Slide 56: Special Addresses\n    - Slide 57: Reserved & Special Addresses\n    - Slide 58: Reserved & Special Addresses\n    - Slide 59: Reserved & Special Addresses\n    - Slide 60: Reserved & Special Addresses\n    - Slide 61: Reserved & Special Addresses\n    - Slide 62: Reserved & Special Addresses\n    - Slide 63: Quiz Time!\n    - Slide 64: Network Layer & IP Addressing\n    - Slide 65: DHCP and IP Address Assignment",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Network Layer & IP Addressing",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "SCTP & Quality of Service",
+      "body": "SCTP & Quality of Service\nSCTP\nFeatures, Multi-Streaming & Multi-Homing\nSCTP vs TCP vs UDP\nQuality of Service (QoS)\nParameters & Techniques\nIntServ, DiffServ & Switched Networks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Network Layer & IP Addressing",
+      "body": "Network Layer & IP Addressing\nLogical Addressing\nCIDR and Subnetting\nNetwork Layer\nRole & Responsibilities\nIPv4 Datagram Format\nIPv4 Structure, Classful Addressing\nKey Fields\nSpecial Addresses\nLoopback, Broadcast & Private",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Network Layer",
+      "body": "Network Layer",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "From Process to Machine - The Missing Piece",
+      "body": "Why the Network Layer Exists?\nHow does a packet know which machine to go to - across cities, countries, and thousands of routers?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "From Process to Machine - The Missing Piece",
+      "body": "Why the Network Layer Exists?\nThe Transport Layer does not answer this. It hands the data down and assumes the network will figure out delivery. That job belongs to the Network Layer\nTwo different problems. Two different layers\nLayer\nTransport Layer\nNetwork Layer\nDelivery Type\nProcess → Process\nHost → Host\nAddress Used\nPort Number\nIP Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Why the Network Layer Exists?",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "The Network Layer",
+      "body": "Definition\nNetwork Layer\nPhysical layer\nData Link layer\nTransport layer\nNetwork layer\nApplication layer\n1\n2\n3\n4\n5\n5\n4\n3\n2\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "The Network Layer",
+      "body": "What is Network Layer?\nNetwork 2\nNetwork 1\nSegment\nIP1  IP2\nNetwork Layer\nTransport Layer\nSegments\nPackets\nSender\nReceiver",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "The Network Layer",
+      "body": "3. Forwarding\n1. Logical Addressing\n2. Routing\nMoves packets from a router's input to the correct output port\nAssigns unique IP addresses to every device\nDetermines the best path for packets from source to destination\n4. Packetizing\nWraps transport layer segments into IP datagrams\nBreaks large packets into smaller pieces if needed, reassembles at destination\n5. Fragmentation & Reassembly\nKey Responsibilities",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Logical Addressing",
+      "body": "Logical Addressing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Logical Addressing",
+      "body": "What Makes an Address \"Logical\"?\nEvery device needs a unique address at the Network Layer - one that works globally, across every network and every country. This is called a Logical Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Logical Addressing",
+      "body": "What Makes an Address \"Logical\"?\nThe word \"logical\" means this address is not tied to hardware - it is assigned by the network, and it can change when the device moves to a different network\nLayer\nIdentifies\nPort Number\nTransport\nApplication/Process\nIP Address\nNetwork\nDevice/Machine\nScope\nLocal to one machine\nGlobal across internet\nParameter",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "What Makes an Address \"Logical\"?",
+      "body": "Analogy\nIP Address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Logical Addressing",
+      "body": "IPv4 - Internet Protocol Version 4\nIPv4 address",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Logical Addressing",
+      "body": "IPv4 - Internet Protocol Version 4\nKey Properties\n32 bits long (4 bytes)\nWritten in Dotted Decimal Notation - four numbers separated by dots (e.g., 192.168.1.100)\nEach number (octet) ranges from 0 to 255",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Logical Addressing",
+      "body": "IPv4 - Internet Protocol Version 4\nKey Properties\nTotal possible addresses: 2(32) = 4,294,967,296 (approx. 4.3 billion)\nEvery IP address has two parts:                Network ID + Host ID",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Logical Addressing",
+      "body": "IPv4 - Internet Protocol Version 4\nAddress Classes\nClass A\nClass B\nClass C\nClass D\nClass E\n192.168.1.5\nConnectionless Protocol\n32-Bit Addressing\nDot-decimal notation\nIPv4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "IPv4 - Internet Protocol Version 4",
+      "body": "Network ID and Host ID\nNetwork ID and Host ID:\nThe split between Network ID and Host ID depends on the address class or subnet mask\nNetwork ID\nIdentifies which network the device belongs to\nHost ID\nIdentifies the specific device within that network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "IPv4 - Internet Protocol Version 4",
+      "body": "Analogy\n+91 98765 43210\n+91\n98765 43210\nNetwork ID\n(Area code)\nHost ID\n(Local number)\nIP address ( Phone number)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "The Five Classes of IPv4",
+      "body": "Class A, B, C, D, E\nNetwork / Host Bits\n16 / 16\n24 / 8\nN/A (Multicasting)\n8 / 24\nFirst Octet Range\n128 – 191\n192 – 223\n224 – 239\n0 – 127\nClass\nB\nC\nD\nA\nDefault Mask\n255.255.0.0 (/16)\n255.255.255.0 (/24)\nN/A\n255.0.0.0 (/8)\nHosts per Network\n65,534\n254\nN/A\n16,777,214\nN/A (Reserved)\n240 – 255\nE\nN/A\nN/A",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "The Five Classes of IPv4",
+      "body": "Class A, B, C, D, E",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "The Five Classes of IPv4",
+      "body": "Class A, B, C, D, E\nNET ID\nMULTICAST ADDRESS\nRESERVED\nNET ID\nNET ID\nHOST ID\nHOST ID\nHOST ID\nClass A\nClass B\nClass C\nClass D\nClass E\nByte 1\nByte 2\nByte 3\nByte 4",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "The Five Classes of IPv4",
+      "body": "Class A, B, C, D, E\nByte 1\nByte 2\nByte 3\nByte 4\n/8\nClass A\nHOST ID\n0\n1\n0\n0\n0\n0\n0\nClass B\nHOST ID\n10\n1\n0\n1\n1\n1\n1\n0\n1\nClass C\nHOST ID\n110\n1\n0\n1\n1\n1\n1\n0\n1\n1\n0\n1\n1\n1\n1\nClass D\n1110\nMULTICAST ADDRESS\nClass E\n1111\nRESERVED\n8 bits Network\n24 bits Host\n16 bits Network\n16 bits Host\n24 bits Network\n8 bits Host\n28 bits\n/16\n/24\nN/A\nN/A",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "The Five Classes of IPv4",
+      "body": "Class A, B, C, D, E\nWhy Subtract 2 from Host Count?\nAll host bits = 0. Identifies the network itself (e.g., 192.168.1.0)\nNetwork Address\nAll host bits = 1. Sends data to all hosts (e.g., 192.168.1.255)\nBroadcast Address\nUsable Hosts = 2(host bits)  - 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "The Five Classes of IPv4",
+      "body": "Problem with Classful Addressing:\nToo rigid - need 500 hosts? Class C (254) is too small, Class B (65,534) wastes 65,000+ addresses\nLed to IP address exhaustion and huge routing tables\nSolution → CIDR (Classless Inter-Domain Routing)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "The Five Classes of IPv4",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "CIDR and Subnetting",
+      "body": "CIDR and Subnetting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "CIDR : Classless Inter-Domain Routing",
+      "body": "Flexible IP Allocation\nCIDR",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "CIDR",
+      "body": "Flexible IP Allocation\nCIDR Notation\nFormulas:\nTotal addresses = 2(32 - prefix_length)\nUsable hosts = 2(32 - prefix_length) - 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "CIDR",
+      "body": "Rules for a Valid CIDR Block\nRules for a Valid CIDR Block\nWhy It Exists?\nOnly power-of-2 blocks align with binary boundaries - any other size cannot be expressed as a single /prefix\nEnsures the block starts at a clean binary boundary - routers match prefixes in binary, not decimal\nA block with gaps cannot be represented by a single prefix - you would need multiple routing entries\nRule\nBlock size must be a power of 2\nFirst IP must be divisible by block size\nAll IPs must be contiguous",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "CIDR",
+      "body": "Prefix = 32 − log₂(block size)\nHow to Find the Prefix from a Block?\nHow to Find the Prefix from a Block:\nPrefix\n/27\n/26\n/25\n/28\nlog₂\n5\n6\n7\n4\nBlock Size\n32\n64\n128\n16",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "CIDR",
+      "body": "Why CIDR is Better?\nNeed 500 hosts? Use /23 (510 usable)\nFlexible\nRoute aggregation\nSmaller Routing Tables\nAddresses allocated based on actual need\nEfficient",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "CIDR",
+      "body": "Checking a Valid CIDR Block\nContiguous? \nBlock size = 16 = 2⁴ \nFirst IP = 100.1.2.32 → 32 ÷ 16 = 2, remainder = 0 \nValid\n100.1.2.32/28",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "CIDR",
+      "body": "Checking a Valid CIDR Block\nContiguous? \nBlock size = 16 = 2⁴ \nFirst IP = 100.1.2.33 → 33 ÷ 16 = 2, remainder = 1 \nInvalid\nfirst IP not divisible by block size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "CIDR",
+      "body": "Analogy\nClassful Addressing\nCIDR",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Subnet Mask",
+      "body": "Identifying Network vs Host\nSubnet Mask",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Subnet Mask",
+      "body": "Identifying Network vs Host\nFinding Network Address — Bitwise AND Operation:\nNetwork Address = IP Address AND Subnet Mask\n11111111\n11111111\n11111111\n00000000\n255\n255\n255\n0\n255.255.255\n0\n.\n.\n.\n.\n.\n.\n.\nNetwork\nHost",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Subnet Mask",
+      "body": "Identifying Network vs Host\nAND Result → Network Address: 192.168.5.128\nBroadcast Address: 192.168.5.191\nUsable Range: 192.168.5.129 to 192.168.5.190 (62 hosts)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Subnetting",
+      "body": "Dividing Networks into Smaller Parts\nSubnetting",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Subnetting",
+      "body": "Step-by-Step Example\nBits to borrow → 2n > = 4 → n = 2 bits\n1\nGiven: 192.168.10.0/24. Create 4 subnets\nNew mask → /24 + 2 = /26 (255.255.255.192)\n2\nHosts per subnet → 26 - 2 = 62 usable\n3",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Subnetting",
+      "body": "Dividing Networks into Smaller Parts\nFirst Host\n192.168.10.65\n192.168.10.129\n192.168.10.193\n192.168.10.1\nNetwork Address\n192.168.10.64\n192.168.10.128\n192.168.10.192\n192.168.10.0\nSubnet\n2\n3\n4\n1\nLast Host\n192.168.10.126\n192.168.10.190\n192.168.10.254\n192.168.10.62\nBroadcast\n192.168.10.127\n192.168.10.191\n192.168.10.255\n192.168.10.63",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "Subnetting",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "IPv4 Datagram Format",
+      "body": "IPv4 Datagram Format",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Internet Protocol - IPv4 Datagram",
+      "body": "Header Fields\nIPv4 Datagram",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Header Fields",
+      "body": "IPv4 Header Fields\nSize\n4 bits\n8 bits\n16 bits\n4 bits\nField\nHeader Length (IHL)\nType of Service (ToS)\nTotal Length\nVersion\nDescription\nHeader length in 4-byte words. Min = 5 (20 bytes), Max = 15 (60 bytes)\nPriority and QoS for traffic management\nTotal datagram size (header + data). Max = 65,535 bytes\nAlways 4 for IPv4\n16 bits\n3 bits\nIdentification\nFlags\nUnique ID to group fragments together\nBit 0: Reserved (always 0). Bit 1: DF — do not fragment. Bit 2: MF — more fragments coming",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Header Fields",
+      "body": "IPv4 Header Fields\nSize\n8 bits\n8 bits\n16 bits\n13 bits\nField\nTime to Live (TTL)\nProtocol\nHeader Checksum\nFragment Offset\nDescription\nMax hops. Decremented by 1 at each router. Discarded at 0\n6 = TCP, 17 = UDP, 1 = ICMP\nError detection for header. Recalculated at every router\nPosition of fragment in original datagram (in 8-byte units)\n32 bits\n32 bits\nSource IP Address\nDestination IP Address\nSender's IP address\nReceiver's IP address\n0–40 bytes\nOptions + Padding\nOptional fields. Rarely used in practice",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Internet Protocol - IPv4 Datagram",
+      "body": "Key Fields to Remember\nHeader Size: Minimum 20 bytes. Maximum 60 bytes\nTTL\nPrevents infinite loops. Decremented at each router. Packet discarded at TTL = 0. Default: Windows = 128, Linux = 64\nProtocol\nTells destination whether to hand data to TCP (6), UDP (17), or ICMP (1)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Internet Protocol - IPv4 Datagram",
+      "body": "Key Fields to Remember\nHeader Size: Minimum 20 bytes. Maximum 60 bytes\nFragmentation\nIf datagram exceeds link MTU (Ethernet = 1500 bytes), it is split. Fragments share the same Identification. MF flag = 1 for all except the last fragment. Reassembly happens only at the final destination\nHeader Size: Minimum 20 bytes. Maximum 60 bytes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Fragmentation",
+      "body": "Example\nFragmentation Example",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "Fragmentation",
+      "body": "Example\nFragment Offset\n185 (1480 ÷ 8)\n370 (2960 ÷ 8)\n0\nData Carried\n1480 bytes\n1020 bytes\n1480 bytes\nFragment\nFragment 2\nFragment 3\nFragment 1\nMF Flag\n1 (more coming)\n0 (last fragment)\n1 (more coming)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "Internet Protocol - IPv4 Datagram",
+      "body": "Fragmentation\nThe Fragment Offset field is only 13 bits. To represent larger byte positions, it counts in units of 8 bytes instead of 1 byte\nAll three fragments carry the same Identification number so the destination knows they belong to the same original datagram and reassembles them in order",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "Internet Protocol - IPv4 Datagram",
+      "body": "Analogy\nSource IP\nDestination IP\nIdentification\nFlags\nToS\nTTL",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "Special Addresses",
+      "body": "Special Addresses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "Reserved & Special Addresses",
+      "body": "Roles and Use Cases\n1. Loopback Address (127.0.0.0/8)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Reserved & Special Addresses",
+      "body": "Roles and Use Cases\nCIDR\n/12\n/16\n/8\nPrivate Range\n172.16.0.0 – 172.31.255.255\n192.168.0.0 – 192.168.255.255\n10.0.0.0 – 10.255.255.255\nRange\nRange 2\nRange 3\nRange 1\n2. Private IP Addresses (RFC 1918)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "Reserved & Special Addresses",
+      "body": "Roles and Use Cases\n3. Link-Local / APIPA (169.254.0.0/16)\n3. Link-Local / APIPA (169.254.0.0/16)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Reserved & Special Addresses",
+      "body": "Roles and Use Cases\n4. Broadcast Addresses\n4. Broadcast Addresses",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Reserved & Special Addresses",
+      "body": "Roles and Use Cases\n5. Network Address\n6. Default Route (0.0.0.0/0)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Reserved & Special Addresses",
+      "body": "Roles and Use Cases\n7. Multicast Addresses (224.0.0.0/4)\n7. Multicast Addresses (224.0.0.0/4)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Network Layer & IP Addressing",
+      "body": "Network Layer\nRole & Responsibilities\nLogical Addressing\nIPv4 Structure, Classful Addressing \nCIDR and Subnetting\nIPv4 Datagram Format \nKey Fields\nSpecial Addresses \nLoopback, Broadcast & Private",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "DHCP and IP Address Assignment",
+      "body": "DHCP and IP Address Assignment",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1Jg8bNLUFA4wEDydnzVzmwdyzfd_IkylB4IhFOdXH3a8/edit"
+}

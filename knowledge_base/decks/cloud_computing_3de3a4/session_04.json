@@ -1,0 +1,385 @@
+{
+  "session_no": 4,
+  "source_file": "4. Containers vs Virtual Machines .docx",
+  "source_kind": "trdoc",
+  "source_hash": "16c46a9bb1f080b8e87eeb34f30aacfe",
+  "deck_title": "Session 4 : Containers vs Virtual Machines",
+  "n_slides": 27,
+  "summary": "Session 4 : Containers vs Virtual Machines\n    - Slide 1: What Is A Container\n    - Slide 2: Linux Namespaces Explained\n    - Slide 3: Cgroups And Union Filesystem\n    - Slide 4: Docker Architecture Overview\n    - Slide 5: Installing And Verifying Docker\n    - Slide 6: Image vs Container Distinction\n    - Slide 7: Pulling From A Registry\n    - Slide 8: Part A Practical Steps\n    - Slide 9: Running A Container\n    - Slide 10: Layers And Build Caching\n    - Slide 11: Building A Custom Image\n    - Slide 12: Comparing Containers And Virtual Machines\n    - Slide 13: Boot Time And Memory Footprint\n    - Slide 14: Image Size And Container Density\n    - Slide 15: Isolation Strength Containers Versus VMs\n    - Slide 16: Security Trade-offs Between Containers And VMs\n    - Slide 17: Choosing Containers Or VMs\n    - Slide 18: Container Use Cases\n    - Slide 19: Virtual Machine Use Cases\n    - Slide 20: Decision Criteria Compared\n    - Slide 21: Virtualization And Container Tooling Overview\n    - Slide 22: Comparing VirtualBox, KVM, Hyper-V And VMware\n    - Slide 23: Containerd And Podman Beneath Docker\n    - Slide 24: Docker Vs Podman Vs Containerd\n    - Slide 25: Public Vs Private Container Registries\n    - Slide 26: Tagging Strategy For Container Images\n    - Slide 27: Key Takeaways",
+  "slides": [
+    {
+      "n": 1,
+      "title": "What Is A Container",
+      "body": "Container Isolation Basics\nSubheading: Process-Level Isolation\nA container is a running process that shares the host machine's kernel but gets its own isolated view of files, network and other processes, with no separate guest operating system of its own.\nNamespaces (covered next): limit WHAT a process can see\nControl groups (covered next): limit HOW MUCH it can use\nUnion filesystem (covered next): layers that build the image itself\nAnalogy: A large building holds many separate flats: each flat has its own rooms and lock, but all share one foundation, electricity and water line — exactly as containers share one host kernel while each gets its own isolated view through namespaces.\nVisual Guidance: Single host kernel box at bottom; three container boxes on top, each labelled with a small lock icon and tagged Namespaces / cgroups / Union FS.",
+      "notes": "Stress that isolation here is logical, enforced by the kernel, not a separate virtual hardware layer. Interviewers often ask what actually makes a container 'isolated' — the answer is these three kernel features, not a hypervisor.",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Linux Namespaces Explained",
+      "body": "Linux Namespaces\nSubheading: Isolating Process Views\nA namespace hides a shared system resource from a process and shows it a private copy instead, so each container feels like a separate machine.\nVisual Guidance: Six small labelled boxes around a central kernel icon, each box pointing to a different resource type from the table.",
+      "notes": "A common interview trap is confusing PID namespace isolation with resource limiting — namespaces only change what is visible, not how much can be used. Mention that chroot was an early, narrower ancestor of the mount namespace idea.",
+      "tables": [
+        [
+          [
+            "Namespace",
+            "Isolates"
+          ],
+          [
+            "PID (process ID)",
+            "Own process tree, own PID 1"
+          ],
+          [
+            "Network",
+            "Own interfaces, IP address, ports"
+          ],
+          [
+            "Mount",
+            "Own filesystem view and mount points"
+          ],
+          [
+            "UTS (UNIX time-sharing)",
+            "Own hostname and domain name"
+          ],
+          [
+            "IPC (inter-process communication)",
+            "Own message queues, semaphores"
+          ],
+          [
+            "User",
+            "Own user and group ID mapping"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 3,
+      "title": "Cgroups And Union Filesystem",
+      "body": "Cgroups And Union FS\nSubheading: Resource Limits Layers\nTwo more kernel features complete container isolation: control groups, known as cgroups, cap resource use, and a union filesystem builds the image itself from layers.\nCPU controller: caps processor time share per group\nMemory controller: breach triggers an out-of-memory kill\nBlock I/O controller: caps disk read and write speed\nUnion filesystem merges read-only layers; OverlayFS is the current standard driver\nCopy-on-write duplicates a file only when it is modified\nVisual Guidance: One cgroup boundary box with CPU/Memory/Disk meter icons, beside a layered stack merging into one view with a writable top layer.",
+      "notes": "A process crossing its memory ceiling is killed by the kernel, not slowed down. Layer caching from the union filesystem is why rebuilding an image after a small change is fast.",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Docker Architecture Overview",
+      "body": "Docker Architecture Map\nSubheading: Five Core Parts\nDocker runs as a client-server system: a command-line client talks to a background daemon that builds and runs containers using images pulled from a registry.\nDocker client — CLI issuing commands like docker run\nDocker daemon (dockerd) — service building and managing containers\nImages — read-only templates stored locally or in a registry\nContainers — running instances created from images\nRegistry — remote store such as Docker Hub for images\nFull installation steps and the two verification commands are covered next, on Slide 5.\nVisual Guidance: Diagram: client box with arrow to daemon box; daemon connects to an images store, a container box, and a registry cloud icon.",
+      "notes": "Point out dockerd as the process name learners will see in ps output. Interviewers often ask to name all five Docker architecture pieces and how they interact.",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Installing And Verifying Docker",
+      "body": "Docker Installation Steps\nSubheading: Setup Per OS\nDocker installs differently per operating system, but every path ends with the same two verification commands before any practical work begins.\ndocker --version\ndocker run hello-world\nLine 1 — Confirms the client can reach a running daemon.\nLine 2 — Expected: Hello from Docker! confirms the daemon pulled and ran an image.\nLinux commands need a sudo prefix, for example sudo docker --version and sudo docker run hello-world.\nStep 1 — Confirm WSL 2 Is Enabled (Windows)\nPowerShell confirms WSL is installed/updated and the Virtual Machine Platform feature is Enabled — required before Docker Desktop will run on Windows\nStep 2 — Choose Installation Options\nDocker Desktop installer — Configuration screen, per-user installation with the WSL 2 backend\nStep 3 — Installation Completes\nDocker Desktop installer confirms “Installation succeeded”\nStep 4 — Sign In Or Skip\nFirst launch — Docker prompts to sign in or create a Docker Hub account; signing in is optional for local use and can be skipped\nStep 5 — Redirected To The Desktop App\nAfter sign-in (or skip), Docker redirects back to the desktop app\nStep 6 — Confirm The Redirect\nWindows asks permission to open Docker Desktop — confirms the handoff from browser back to the installed app\nStep 7 — Docker Desktop Opens\nDocker Desktop's Containers tab on first launch — empty, since nothing has been run yet\nStep 8 — Verify From The Terminal\ndocker --version confirms the client is reachable; docker run hello-world confirms the daemon pulled and ran an image — “Hello from Docker!” confirms success\nVisual Guidance: See the 8-step screenshot walkthrough above — Windows install path shown end to end, from enabling WSL 2 through the docker run hello-world verification.",
+      "notes": "Treat the final verification step as the gate before any practical work begins. A missing WSL 2 backend (Step 1) is the most common installation failure asked about. Docker Hub sign-in (Steps 4–6) is optional for local use — mention this so students don’t think an account is mandatory.",
+      "tables": [
+        [
+          [
+            "OS",
+            "Key Setup Steps"
+          ],
+          [
+            "Windows",
+            "Install VS Code; wsl --install; Docker Desktop (WSL 2 backend); open Docker Desktop"
+          ],
+          [
+            "macOS",
+            "Install VS Code; Docker Desktop (Apple Silicon or Intel build); open Docker Desktop"
+          ],
+          [
+            "Linux / Ubuntu",
+            "Install VS Code; sudo apt install docker.io; sudo systemctl start docker"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 6,
+      "title": "Image vs Container Distinction",
+      "body": "Image Vs Container\nSubheading: Template Vs Instance\nAn image is a frozen, read-only template; a container is that template brought to life with its own writable layer on top.\nImage: built once, never changes, stored by ID and tag\nContainer: created from an image, has a thin writable layer\nOne image can start many independent containers\nDeleting a container never deletes its source image\nAnalogy: A cake recipe card is reused to bake many separate cakes — just as one Docker image can start many independent containers.\nVisual Guidance: Side-by-side: image box with locked layers next to a container box showing the same layers plus a writable top layer.",
+      "notes": "Tags like nginx:alpine name images, not containers. Interviews often ask what survives container removal — the image.",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Pulling From A Registry",
+      "body": "Client Daemon Registry\nSubheading: Pull And Run Flow\nRunning an image that the daemon does not have locally triggers a pull from a registry — Docker Hub by default — before a container starts.\nExplicit pull: docker pull nginx:alpine fetches an image with no container created — the same mechanism docker run triggers automatically\ndocker run hello-world: no flags — image name only, pulled if absent locally\nClient sends the request over the daemon's local API socket\nDaemon checks its local image cache first by name and tag\nPulled layers are cached, so a repeat run skips the registry\nVisual Guidance: Arrow sequence: client -> daemon -> registry (dashed, only on cache miss) -> container created.",
+      "notes": "Explain that a one-shot container exits once its process finishes, which is normal. Interviewers often ask why a stopped container still appears in docker ps -a.",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Part A Practical Steps",
+      "body": "Part A Practical Steps\nSubheading: Images To Containers\nPart A works with an existing image, tracing every command from an explicit pull to removing a running web server container.\nStep 1: docker pull nginx:alpine fetches the image explicitly, before any container runs\nStep 2: docker images lists images already pulled\nStep 3: docker run hello-world; expected Hello from Docker!\nStep 4: docker ps shows currently running containers\nStep 5: docker ps -a shows hello-world as Exited (0)\nStep 6: docker run -d --name web-demo -p 8080:80 nginx:alpine starts a server\nStep 7: docker ps confirms web-demo running with its port mapping\nStep 8: browser at localhost:8080 shows Welcome to nginx!\nStep 9: docker stop web-demo halts the container\nStep 10: docker rm web-demo removes it; docker ps -a confirms it is gone\nVisual Guidance: Numbered step strip 1 to 10, icons for terminal, container box, and browser window at the matching steps.",
+      "notes": "This full trace is the baseline practical before the custom build in Part B. Exited (0) on hello-world is expected, not an error.",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Running A Container",
+      "body": "Container Lifecycle Commands\nSubheading: Run Check Stop Remove\nA long-running service container is started, mapped to a host port, then checked, stopped and removed through the client-daemon flow.\nNginx is used only to demonstrate a web application running inside a container, not as a production choice.\ndocker run -d --name web-demo -p 8080:80 nginx:alpine\nLine 1 — -d: run in background. --name web-demo: name the container. -p 8080:80: map host port 8080 to container port 80. nginx:alpine: the image used.\ndocker images: lists cached images before running\ndocker ps: expected web-demo Up, PORTS 0.0.0.0:8080->80/tcp\nBrowser at port 8080: expected the Welcome to nginx! page\ndocker stop web-demo: expected the container name echoed back\ndocker rm web-demo: expected web-demo absent from docker ps -a\nBrowser Check — Step 8\nBrowser at localhost:8080 — “Welcome to nginx!” confirms web-demo is serving traffic\nVisual Guidance: Timeline strip: run -> ps -> browser -> stop -> rm, each step labelled with its command. Only the browser-result screenshot above is currently available.",
+      "notes": "Nginx here is only a convenient web server to prove the container is serving traffic. Removing the container frees its name but the nginx:alpine image stays cached. [Instructor note: only the browser-result screenshot (Step 8) is currently available for this slide. Steps 1, 2, 4, 5, 6, 7, 9 and 10 still need to be captured from a live run — Step 3 (hello-world) is already shown on Slide 5 and does not need a separate capture here.]",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Layers And Build Caching",
+      "body": "Layers Build Caching\nSubheading: Dockerfile To Layers\nEach Dockerfile instruction adds one layer on top of the base image; a rebuild reuses an unchanged layer instead of redoing its work.\nFROM nginx:alpine\nCOPY index.html /usr/share/nginx/html/index.html\nEXPOSE 80\nLine 1 — FROM sets the base layer.\nLine 2 — COPY adds the HTML layer.\nLine 3 — EXPOSE documents port 80, not published yet.\nCache key: instruction plus the files it touches\nA changed instruction invalidates it and every layer after\nStable instructions first, frequently changing ones last\nAnalogy: Stacked transparency sheets — redrawing only the top sheet leaves every sheet below untouched — just as Docker reuses cached layers below an unchanged instruction.\nVisual Guidance: Vertical stack of layer blocks labelled FROM, COPY, EXPOSE, with a cache tick mark on the unchanged ones.",
+      "notes": "EXPOSE only documents a port; -p at runtime actually publishes it. Interviews often ask why instruction order affects build speed.",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Building A Custom Image",
+      "body": "Build Run Verify\nSubheading: Custom Image Trace\nPart B builds a custom image from a Dockerfile, confirming the same image-container relationship already seen with pulled images.\ncloud-docker-demo/\n├── index.html\n└── Dockerfile\nLines 1-3 — A project folder holding the page content and the build instructions.\n<!DOCTYPE html>\n<html>\n<head>\n<title>My Docker App</title>\n</head>\n<body>\n<h1>Hello from Docker!</h1>\n<p>This web application is running inside a Docker container.</p>\n</body>\n</html>\nLines 6-7 — The heading and paragraph this page serves, shown by the container once built and run.\nStep 1: create folder cloud-docker-demo/ with index.html and Dockerfile\nStep 2: write index.html with the page content above\nStep 3: write Dockerfile with FROM, COPY and EXPOSE\nStep 4: docker build -t cloud-docker-demo . builds the image\nStep 5: docker images confirms cloud-docker-demo stored locally\nStep 6: docker run -d --name cloud-web -p 8080:80 cloud-docker-demo starts it\nStep 7: docker ps expected cloud-web with 0.0.0.0:8080->80/tcp\nStep 8: browser at port 8080 expected the custom page\nStep 9: docker stop cloud-web and docker rm cloud-web remove it\nStep 10: docker images still lists cloud-docker-demo after removal\nStep 1 — Project Folder Created\nVS Code — cloud-docker-demo folder created in the file explorer\nStep 2 — index.html Written\nVS Code — index.html content: the custom page this container will serve\nStep 3 — Dockerfile Written\nVS Code — Dockerfile content: FROM, COPY and EXPOSE directives\nStep 6 — Container Started\nTerminal after docker run — cloud-web container ID printed\nStep 7 — Port Mapping Confirmed\ndocker ps — cloud-web mapped to 0.0.0.0:8080->80/tcp\nStep 8 — Custom Page Verified\nBrowser at localhost:8080 — the custom “Hello from Docker!” page\nVisual Guidance: Flow strip: Dockerfile -> docker build -> image -> docker run -> container -> browser output, matching the 6 screenshots above (Steps 1, 2, 3, 6, 7, 8).",
+      "notes": "The same build-run-remove pattern applies to any custom image. Interviews often ask which flag tags an image during build. [Instructor note: screenshots for Steps 4, 5, 9 and 10 (docker build output, docker images before and after removal, and the stop/rm confirmation) still need to be captured — not available in the current set.]",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Comparing Containers And Virtual Machines",
+      "body": "Four Comparison Dimensions\nSubheading: Boot Memory Size Security\nContainers and virtual machines isolate workloads differently, and that difference shows up in four measurable areas before any use case is chosen.\nBoot time: how quickly each starts and becomes usable\nMemory footprint: RAM consumed per workload at idle\nImage size and density: how many instances fit per host\nIsolation strength: kernel-level sharing versus hardware-level separation\nSecurity trade-offs: what fails if the boundary is breached\nVisual Guidance: Two stacks side by side: left hardware to hypervisor to guest OS to VMs; right hardware to host OS kernel to container engine to containers.",
+      "notes": "Set up the four comparison dimensions before any numbers appear on the following slides. Interviewers often open this exact topic by asking for these four axes directly.",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Boot Time And Memory Footprint",
+      "body": "Boot Time And Memory\nSubheading: Startup Speed Compared\nStarting a virtual machine boots a full guest operating system; starting a container launches one process on a kernel already running.\nCause: VM repeats bootloader, kernel init and service startup\nContainer skips straight to launching the application process\nLower per-instance memory lets more workloads run concurrently\nVisual Guidance: Bar chart: boot time in seconds, VM bar far taller than container bar; second bar chart for idle memory, same proportion.",
+      "notes": "Tie the boot-time gap to the OS boot sequence, not to raw hardware speed. The seconds-versus-tens-of-seconds contrast is a standard interview comparison point.",
+      "tables": [
+        [
+          [
+            "Metric",
+            "Virtual Machine",
+            "Container"
+          ],
+          [
+            "Boot time",
+            "Tens of seconds (full OS boot)",
+            "Under a few seconds (process start)"
+          ],
+          [
+            "Memory footprint (idle)",
+            "Several hundred MB to a few GB (guest OS overhead)",
+            "A few MB to tens of MB (app plus runtime)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 14,
+      "title": "Image Size And Container Density",
+      "body": "Image Size Density\nSubheading: Packing Workloads Tighter\nImage size sets how many workload copies fit on one host, so container images routinely pack far denser than VM images.\nSmaller images pull and deploy faster across a cluster\nHigher density lowers infrastructure cost per workload on identical hardware\nShared base layers cut total storage across many container images\nVisual Guidance: Grid diagram: one host square packed with few large VM blocks versus the same size host packed with many small container blocks.",
+      "notes": "Density is the number behind why a host runs far more containers than VMs side by side. Expect a question on why container density beats VM density on identical hardware.",
+      "tables": [
+        [
+          [
+            "Metric",
+            "Virtual Machine",
+            "Container"
+          ],
+          [
+            "Image size",
+            "Several GB (full guest OS plus app)",
+            "Tens of MB to a few hundred MB (app layers only)"
+          ],
+          [
+            "Typical density per host",
+            "Tens of VMs",
+            "Hundreds of containers"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 15,
+      "title": "Isolation Strength Containers Versus VMs",
+      "body": "Isolation Strength Compared\nSubheading: Kernel Versus Hardware\nA virtual machine isolates at the hardware boundary with its own kernel; a container isolates at the process boundary on one shared kernel.\nVM: separate guest kernel per instance, hypervisor enforces the boundary\nContainer: namespaces separate the view, cgroups cap the resources\nShared kernel means one kernel vulnerability can reach every container\nVM isolation survives a single guest crash without affecting siblings\nVisual Guidance: Boundary diagram: VM boundary drawn around hardware layer (per guest); container boundary drawn around process layer (one shared kernel line beneath all).",
+      "notes": "This single fact explains why containers are called less isolated than VMs — shared kernel, not weaker code. Interviewers test this by asking what a kernel exploit can reach in each model.",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Security Trade-offs Between Containers And VMs",
+      "body": "Security Trade-offs\nSubheading: Blast Radius Differs\nStronger isolation does not mean fewer attacks; it changes how far a successful attack can spread once the boundary is crossed.\nVM breakout needs a hypervisor flaw: rare, high severity\nContainer breakout exploits the shared kernel: mitigated by seccomp, SELinux, non-root users\nUntrusted or multi-tenant code favours VM-grade isolation\nTrusted internal services accept container isolation for speed and density\nVisual Guidance: Two circles labelled blast radius: small circle around one VM after a breakout, large circle around the whole host after a container breakout.",
+      "notes": "Link blast radius back to the kernel-sharing fact from the isolation comparison just taught. This security-versus-density trade-off is a frequent systems-design interview question.",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Choosing Containers Or VMs",
+      "body": "Choosing Between Them\nSubheading: Use Cases And Criteria\nContainer and virtual machine strengths point to different workloads; matching the right one to the job is the real skill, not finding one universal winner.\nWorkload type: stateless microservices vs full-stack legacy apps\nIsolation need: process-level sharing vs hardware-level separation\nOS requirement: same kernel vs mixed operating systems\nScale and density: many light instances vs fewer, heavier ones\nVisual Guidance: Diagram: a fork from one question mark — left arrow to a container icon tagged with workload types, right arrow to a VM icon tagged with workload types.",
+      "notes": "Frame this as a workload-driven decision rather than a technology preference, since that is the real trade-off teams make daily. This exact mapping is what interviewers probe when testing container-versus-VM judgment.",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Container Use Cases",
+      "body": "Container Use Cases\nSubheading: Where Containers Fit Best\nContainers suit workloads that restart often, scale horizontally, and ship as small, repeatable units — the opposite of a slow-booting, heavyweight guest.\nMicroservices: independently deployable services communicating over APIs\nCI/CD pipelines: identical images carried from build to production\nCloud-native apps: run at scale on AWS ECS, EKS or Fargate\nStateless, short-lived tasks: batch jobs and queue workers\nHigh-density hosting: many app instances packed onto one host\nVisual Guidance: Row of icons: microservice mesh, CI/CD pipeline arrow, ECS/EKS logo, batch-job icon, stacked boxes for density.",
+      "notes": "Tie each case back to the density and startup-speed advantages already established, applied here to real workload choices. Expect interview questions phrased as which workload suits a container — these five cases are the answer key.",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Virtual Machine Use Cases",
+      "body": "VM Use Cases\nSubheading: Where VMs Fit Best\nVirtual machines earn their heavier footprint when a workload needs a full, isolated operating system or hardware access the host runtime cannot provide.\nLegacy applications: tied to a specific OS version or kernel module\nMixed operating systems: Windows and Linux guests on one host\nStrong multi-tenant isolation: separate kernels for untrusted workloads\nKernel-level or driver work: needs direct hardware or kernel access\nFull-stack test labs: AWS EC2 instances cloning a production server exactly\nVisual Guidance: Icons: Windows and Linux logos side by side, a lock for isolation, EC2 logo for the test-lab case.",
+      "notes": "Connect each case back to the full-OS isolation and boot-time cost already established, now framed as the reason to choose a VM. A classic interview probe asks why not containerise everything — kernel dependency and tenant isolation are the answer.",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Decision Criteria Compared",
+      "body": "Decision Criteria Map\nSubheading: Workload Fit Checklist\nNo single criterion decides the choice; the table weighs isolation, OS diversity, density and workload lifetime side by side.\nProduction systems often combine both — containers scheduled onto VM-based hosts — using the VM as the security boundary and containers for density within it.\nVisual Guidance: Keep the table as the slide centrepiece; below it, a small nested box showing container icons inside one VM icon to depict the hybrid pattern.",
+      "notes": "Use this table as a quick checklist when justifying an architecture choice, since most real decisions weigh several rows together. Interview panels often ask for a one-line justification per row, which this table trains directly.",
+      "tables": [
+        [
+          [
+            "Criterion",
+            "Favours Container",
+            "Favours VM"
+          ],
+          [
+            "Isolation strength",
+            "Process-level, shared kernel",
+            "Hardware-level, separate kernel"
+          ],
+          [
+            "OS diversity",
+            "Same kernel for all apps",
+            "Multiple OS types on one host"
+          ],
+          [
+            "Density / footprint",
+            "Many instances per host",
+            "Fewer, heavier instances per host"
+          ],
+          [
+            "Workload lifetime",
+            "Short-lived, redeployed often",
+            "Long-running, rarely restarted"
+          ],
+          [
+            "Tenant isolation",
+            "Lower guarantee, shared kernel",
+            "Strict guarantee for untrusted tenants"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 21,
+      "title": "Virtualization And Container Tooling Overview",
+      "body": "Tooling Landscape\nSubheading: Four Areas Mapped\nRunning virtual machines or containers in production means picking a hypervisor or engine, then a registry to distribute the resulting images.\nVirtualization tools: VirtualBox, KVM, Hyper-V, VMware\nContainer engines: Docker, Podman, containerd\nRegistries: public vs private\nTagging: naming scheme for image versions\nVisual Guidance: Two-column diagram: VM tools column, container tools column, both arrows pointing down into one shared Registry box.",
+      "notes": "Set up these four areas before going tool by tool. Interviewers often ask for alternatives to Docker or VirtualBox by name.",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Comparing VirtualBox, KVM, Hyper-V And VMware",
+      "body": "VM Tooling Compared\nSubheading: Four Hypervisor Products\nEach virtualization product fits a different deployment, from a laptop test lab to a production data centre.\nVisual Guidance: Four-row table, one small vendor logo icon beside each tool name.",
+      "notes": "Tie each product back to the Type 1 versus Type 2 split already taught. Interviewers often ask which hypervisor backs a named cloud platform.",
+      "tables": [
+        [
+          [
+            "Tool",
+            "Type",
+            "Platform",
+            "Typical Use"
+          ],
+          [
+            "VirtualBox",
+            "Type 2 hosted",
+            "Windows macOS Linux",
+            "Desktop testing, dev labs"
+          ],
+          [
+            "KVM",
+            "Type 1, kernel module",
+            "Linux hosts",
+            "AWS Nitro, OpenStack clouds"
+          ],
+          [
+            "Hyper-V",
+            "Type 1 bare-metal",
+            "Windows Server, 10/11 Pro",
+            "Microsoft Azure, enterprise"
+          ],
+          [
+            "VMware",
+            "Type 1 (ESXi) / Type 2 (Workstation)",
+            "Cross-platform",
+            "Enterprise data centres"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 23,
+      "title": "Containerd And Podman Beneath Docker",
+      "body": "Beneath Docker's Daemon\nSubheading: Containerd And Podman\nDocker's own daemon delegates actual container execution to containerd, a lower-level runtime that Kubernetes also calls directly, bypassing Docker entirely.\ncontainerd: split out of Docker in 2016, now a separate project\ncontainerd runs the OCI Runtime Spec through runc underneath\nPodman removes the central daemon altogether; each container is a direct process\nPodman's rootless mode starts containers without any root privilege\nAnalogy: A city bus needs a central depot dispatching every trip, while an auto-rickshaw driver picks up a passenger directly with no depot involved — exactly as Podman starts a container directly, with no daemon standing between the command and the running process.\nVisual Guidance: Diagram: Docker box with arrow down to containerd box; separate Podman box with no daemon, arrow straight to container.",
+      "notes": "Containerd living inside Docker, and now also standalone, is a common interview trick question. Note that Podman's daemonless design is the security motivation, not a performance one.",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Docker Vs Podman Vs Containerd",
+      "body": "Engines Compared\nSubheading: Architecture And Role\nThe three tools sit at different layers of one stack, and that layering decides which one fits a given deployment.\nVisual Guidance: Four-row comparison table, highlight the Primary Role row in a contrasting colour.",
+      "notes": "This table is the one most asked about in container-tooling interviews. Stress that containerd, not Docker, is the runtime a Kubernetes node actually calls.",
+      "tables": [
+        [
+          [
+            "Aspect",
+            "Docker",
+            "Podman",
+            "containerd"
+          ],
+          [
+            "Daemon required",
+            "Yes, dockerd",
+            "No",
+            "Yes, lower-level service"
+          ],
+          [
+            "Rootless by default",
+            "No",
+            "Yes",
+            "No, root-level service"
+          ],
+          [
+            "Native CLI",
+            "Yes, full-featured",
+            "Yes, Docker-compatible",
+            "No, uses ctr/nerdctl"
+          ],
+          [
+            "Primary role",
+            "Dev workstation, CI",
+            "Secure, rootless hosts",
+            "Kubernetes CRI runtime (EKS, GKE)"
+          ]
+        ]
+      ]
+    },
+    {
+      "n": 25,
+      "title": "Public Vs Private Container Registries",
+      "body": "Public Vs Private\nSubheading: Image Registries\nA registry stores and distributes container images; which kind is used decides who is able to pull a given image.\nPublic registry: Docker Hub, open to any pull request\nPrivate registry: Amazon ECR, Azure Container Registry, Google Artifact Registry\nSelf-hosted option: Harbor, run inside an organisation's own network\nChosen for security, compliance or protecting proprietary images\nAnalogy: A public registry is like a library open to any visitor, while a private registry is like an office cupboard that opens only with an employee's key — exactly as a private registry demands authentication before an image can be pulled.\nVisual Guidance: Split diagram: public registry with an open padlock icon, private registry with a closed padlock, both feeding a docker pull arrow.",
+      "notes": "Distinguish a registry, the service, from a repository, one image's set of tags, if asked in an interview. Private registries are the default choice for any proprietary production image.",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Tagging Strategy For Container Images",
+      "body": "Tagging Strategy\nSubheading: Naming Image Versions\nEvery image push attaches a tag, and the tag chosen decides whether that exact build can be found and redeployed later.\nSemantic versioning: major.minor.patch, for example app:2.3.1\nlatest tag: moves with every push, unsafe for production rollback\nImmutable tag: git-commit hash, for example app:a1b2c3d, never overwritten\nEnvironment tags: app:staging, app:prod mark the pipeline stage\nVisual Guidance: Timeline of three pushes to one repository, each landing a different immutable tag, with the latest pointer jumping between them.",
+      "notes": "Flag latest as the most common cause of a failed production rollback when this comes up in interviews. Immutable, hash-based tags are what real CI/CD pipelines rely on for traceability.\nHeads-Up: Start Your AWS Account Setup Now\nWhy now: Lab L1 (Working with Docker Images and Containers), conducted right after this session, needs a working AWS account to launch an EC2 instance — account creation and identity verification can take a day or more to clear.\nCreate the AWS account before the next session, not the morning of the lab\nIdentity and payment verification can take time to process — this is the usual delay, not an error\nA free-tier account is sufficient for L1; no charges are expected if usage stays within free-tier limits",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Key Takeaways",
+      "body": "1. Container Fundamentals: Process-level isolation; Linux namespaces & control groups (cgroups); union filesystem & layered images\n2. Docker Architecture: Client, daemon, images, containers & registries; image vs container; layers & build caching\n3. Containers vs VMs: Boot time, memory footprint, image size & density; isolation strength & security trade-offs\n4. Choosing Between Them: Container use cases; VM use cases; decision criteria\n5. Tooling & Registries: VirtualBox, KVM, Hyper-V & VMware; Docker, Podman & containerd; public vs private registries; tagging strategy\nUpcoming Session : Cloud Networking & VPC\nThank You  |  All the Best",
+      "notes": "",
+      "tables": []
+    }
+  ]
+}

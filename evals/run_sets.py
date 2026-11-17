@@ -548,7 +548,7 @@ def _llm_score(doc, session, sset, *, enforce_time: bool = True) -> tuple[int, s
     model = m["judge"]
     web = ""
     if sset["id"] in ("market_coverage_completeness", "content_recency") \
-            and m.get("enable_web_market_check") and m.get("provider", "openrouter").lower() == "openrouter":
+            and m.get("enable_web_market_check") and m.get("provider", "anthropic").lower() in ("anthropic", "openrouter"):
         if not model.endswith(":online"):
             model += ":online"
         web = "\nUse a web search to verify current standards/versions and mainstream coverage."

@@ -1,0 +1,563 @@
+{
+  "session_no": 3,
+  "source_file": "CN — session 3",
+  "deck_title": "CN — session 3",
+  "n_slides": 79,
+  "summary": "\n    - Slide 2: Network Security Essentials\n    - Slide 3: Network Troubleshooting & Real World\n    - Slide 4: Network Troubleshooting & Real World\n    - Slide 5: Network Security Essentials\n    - Slide 6: Firewalls\n    - Slide 7: Why Network Security Matters?\n    - Slide 8: Why Network Security Matters?\n    - Slide 9: Why Network Security Matters?\n    - Slide 10: Firewall\n    - Slide 11: Firewall\n    - Slide 12: Firewall\n    - Slide 13: Firewall\n    - Slide 14: Firewall\n    - Slide 15: Firewall - Types of firewalls\n    - Slide 16: Firewall - Types of firewalls\n    - Slide 17: Firewall\n    - Slide 18: Firewall Types\n    - Slide 19: Firewall Types\n    - Slide 20: Firewall Types\n    - Slide 21: Firewall Types\n    - Slide 22: Firewall Types\n    - Slide 23: 3. Application-Level Gateway\n    - Slide 24: Packet Filter, Stateful Inspection, Application-Level Gateway\n    - Slide 25: Network Segmentation\n    - Slide 26: Network Segmentation\n    - Slide 27: Network Segmentation\n    - Slide 28: Network Segmentation\n    - Slide 29: Network Segmentation\n    - Slide 30: Network Segmentation\n    - Slide 31: Network Segmentation\n    - Slide 32: Network Segmentation\n    - Slide 33: Proxy Servers\n    - Slide 34: Proxy Server\n    - Slide 35: Proxy Server\n    - Slide 36: Forward Proxy\n    - Slide 37: Proxy Server\n    - Slide 38: Proxy Server\n    - Slide 39: Proxy Server\n    - Slide 40: Reverse Proxy\n    - Slide 41: Reverse Proxy\n    - Slide 42: Proxy Servers\n    - Slide 43: Quiz Time!\n    - Slide 44: VPNs and IPsec\n    - Slide 45: VPN - Virtual Private Network\n    - Slide 46: VPN - Virtual Private Network\n    - Slide 47: VPN - Virtual Private Network\n    - Slide 48: VPN - Virtual Private Network\n    - Slide 49: VPN - Virtual Private Network\n    - Slide 50: VPN - Virtual Private Network\n    - Slide 51: VPN - Virtual Private Network\n    - Slide 52: IPsec\n    - Slide 53: IPsec\n    - Slide 54: IPsec\n    - Slide 55: IPsec\n    - Slide 56: IPsec\n    - Slide 57: IPsec\n    - Slide 58: Key Exchange\n    - Slide 59: IPsec\n    - Slide 60: Common Network Attacks\n    - Slide 61: Network Attacks\n    - Slide 62: Network Attacks\n    - Slide 63: Network Attacks\n    - Slide 64: Network Attacks\n    - Slide 65: Network Attacks\n    - Slide 66: Network Attacks\n    - Slide 67: 2. Man-in-the-Middle (MITM) Attack\n    - Slide 68: Denial of Service (DoS) Attack\n    - Slide 69: Network Attacks\n    - Slide 70: Network Attacks\n    - Slide 71: Network Attacks\n    - Slide 72: DoS\n    - Slide 73: Distributed Denial of Service (DDoS)\n    - Slide 74: Network Attacks\n    - Slide 75: Quiz Time!\n    - Slide 76: Network Security Essentials\n    - Slide 77: Modern Internet Infrastructure",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "Network Security Essentials",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Network Troubleshooting & Real World",
+      "body": "Network Troubleshooting & Real World\nReal-World Network Issues \nPacket Loss, Latency, Jitter\nSignal Problems \nNoise, Attenuation, Distortion\nNetworking Devices \nRepeater, Hub, Switch, Router",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "Network Troubleshooting & Real World",
+      "body": "Network Troubleshooting & Real World\nDebugging Tools in Action \nping, traceroute, nslookup, netstat & Wireshark Basics\nCase Studies\nReal-World Debugging Scenarios",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "Network Security Essentials",
+      "body": "Network Security Essentials\nNetwork Segmentation\nProxy Servers\nFirewalls\nPacket Filter, Stateful Inspection, Application-Level Gateway\nVPNs and IPsec\nCollision Domains vs Broadcast Domains\nForward Proxy and Reverse Proxy\nEncrypted Tunnels for Secure Communication\nCommon Network Attacks\nPacket Sniffing, MITM, DoS/DDoS and Their Prevention",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "Firewalls",
+      "body": "Firewalls",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "Why Network Security Matters?",
+      "body": "The CIA Triad\nModern networks carry sensitive data like banking details, medical records, passwords, and private messages\nNetwork Security protects this data from being read, changed, or blocked by attackers\nIt mainly focuses on three core properties, called the CIA Triad",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "Why Network Security Matters?",
+      "body": "The CIA Triad\nConfidentiality: Only authorised parties can read the data; achieved through encryption\nIntegrity: data is not altered during transmission; achieved through hashing and message authentication codes\nAvailability: authorised users can access the network and services when needed; achieved through redundancy, load balancing, and DoS protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "Why Network Security Matters?",
+      "body": "Passive attacks: Attacker silently observes traffic (e.g., packet sniffing). Hard to detect; prevented through encryption\nActive attacks: Attacker modifies, injects, or blocks traffic (e.g., MITM, DoS). \u000bEasier to detect; harder to prevent\nCategories of Network Threats",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "Firewall",
+      "body": "Introduction\nA firewall is a network security device, hardware, software, or a combination, that sits between a trusted internal network and an untrusted external network (typically the internet)\nIt examines every packet that tries to enter or leave the network and permits or blocks it based on a configured set of rules",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "Firewall",
+      "body": "Rule-Based Traffic Filtering\nModem\nFirewall\nPublic Network\nInternet\nDustbin\nSource Private Local Area Network\nSpecified Traffic Allowed\nRestricted Unknown Traffic",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "Firewall",
+      "body": "Importance\nWhy a firewall is needed?\nThe internet is open by default, any packet can theoretically reach any reachable device\nWithout filtering, a server could receive malicious traffic on every open port\nA firewall enforces a security policy: which traffic is allowed, which is blocked, and under what conditions",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "Firewall",
+      "body": "Position in Network\nA firewall is usually placed between the internal LAN and the internet, often with the gateway router.\nHost-based firewalls can also run on individual devices for extra protection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "Firewall",
+      "body": "Firewall b/w LAN & WAN",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "Firewall - Types of firewalls",
+      "body": "Based On Traffic Filtering Method\nExamines packet headers only (Network and Transport layers)\nPacket Filtering Firewall\nTracks the state of active connections\nStateful Inspection Firewall\nInspects packet contents at the Application layer\nApplication-Level Gateway (Proxy Firewall)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "Firewall - Types of firewalls",
+      "body": "Based On Traffic Filtering Method",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "Firewall",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Firewall Types",
+      "body": "1. Packet Filtering Firewall (Stateless)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "Firewall Types",
+      "body": "1. Packet Filtering Firewall (Stateless)\nLocal Area Network\nPacket Filtering FW\nInternet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "Firewall Types",
+      "body": "2. Stateful Inspection Firewall\nOperates at: Network and Transport layers\nTracks: Active connections using a connection state table\nAllows: Return packets only if they match an existing connection\nSpeed: Slightly slower than packet filtering, but still fast\nStrength: Blocks unwanted inbound traffic and most spoofed \u000bpackets",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "Firewall Types",
+      "body": "2. Stateful Inspection Firewall",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "Firewall Types",
+      "body": "Operates at: Application layer\nInspects: Actual data like HTTP requests, FTP commands, \u000band emails\nSpeed: Slowest, because it checks full content\nStrength: Blocks specific actions, like allowing FTP get but \u000bblocking FTP put, and detects malicious content\n3. Application-Level Gateway",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "3. Application-Level Gateway",
+      "body": "Proxy Firewall",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "Packet Filter, Stateful Inspection, Application-Level Gateway",
+      "body": "Key Difference\nType\nPacket Filter\nLayer\nNetwork and Transport Layer\nWhat It Inspects\nHeaders only\nStateful Inspection\nNetwork and Transport Layer \n+ state\nHeaders and connection state\nApplication Gateway\nApplication Layer\nFull application payload\nSpeed\nFastest\nBest For\nHigh-volume, low-sensitivity traffic\nMedium\nGeneral enterprise networks\nSlowest\nHigh-sensitivity (banks, govt.)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "Network Segmentation",
+      "body": "Network Segmentation",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "Network Segmentation",
+      "body": "Two Domain Types",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "Network Segmentation",
+      "body": "Two Domain Types\nA network segment where two devices transmitting at the same time can cause a collision\nOnly one device can transmit at a time without corrupting data\nSmaller collision domain = fewer collisions = better performance\nBroken by: Switches and Routers (each port creates its own collision domain)\nNot broken by: Hubs and Repeaters — all ports share one collision domain\nCollision Domain:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "Network Segmentation",
+      "body": "Two Domain Types \nA set of devices that receive each other’s broadcast frames\nBroadcast frames are sent to MAC address FF:FF:FF:FF:FF:FF and reach every device in the domain\nLarger broadcast domain = more broadcast traffic = larger attack surface\nBroken by: Routers and VLANs (Layer 3 or logical segmentation)\nNot broken by: Hubs, Switches, or Bridges by default\nBroadcast Domain:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Network Segmentation",
+      "body": "Broadcast & Collision Domain\nBroadcast Domain\nCollision Domain",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "Network Segmentation",
+      "body": "Examples",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "Network Segmentation",
+      "body": "Broadcast & Collision Domain\nBreaks Collision Domain\nNo (all ports share one)\nBreaks Broadcast Domain\nNo\nYes (per segment)\nNo\nDevice\nHub / Repeater\nBridge\nYes (each port = separate)\nNo (single by default)\nSwitch\nYes\nYes\nRouter\nYes\nYes (logical separation)\nVLAN (on a switch)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "Network Segmentation",
+      "body": "Why This Matters For Security?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "Proxy Servers",
+      "body": "Proxy Servers",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "Proxy Server",
+      "body": "Introduction\nA proxy server is an intermediary that sits between a client and a server, forwarding requests on behalf of one or the other.",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "Proxy Server",
+      "body": "1. Forward Proxy\nA Forward Proxy sits between the client and the public internet. The client’s request goes to the proxy first, and the proxy forwards it to the destination server. The destination server sees only the proxy’s IP address, never the client’s",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "Forward Proxy",
+      "body": "How A Forward Proxy Works?\nThe client is configured to send all outbound traffic through the proxy\n01\n02\n03\n04\nThe client sends a request (for example, an HTTP GET), it goes to the proxy\nThe proxy applies its rules: is the site allowed; is the content appropriate?\nIf allowed, the proxy fetches the content from the destination server using its own IP\n05\nThe proxy returns the response to the client. The destination never sees the client",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "Proxy Server",
+      "body": "Forward Proxy\nPrivacy and anonymity\nAccess control\nContent filtering\nCaching\nBypassing geo-restrictions\nCommon uses of a Forward Proxy:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "Proxy Server",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "Proxy Server",
+      "body": "Reverse Proxy\nA Reverse Proxy is the opposite,  it sits between the public internet and a set of backend servers. External clients connect to the reverse proxy, believing it is the server. The reverse proxy then routes the request to the appropriate backend server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "Reverse Proxy",
+      "body": "How A Reverse Proxy Works?\nThe client makes a request to www.example.com, which actually points to the reverse proxy\n01\n02\n03\n04\nThe reverse proxy receives the request and decides which backend server should handle it\nThe chosen backend server processes the request and returns the response to the proxy\nThe proxy returns the response to the client. The client never knows the backend server’s IP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "Reverse Proxy",
+      "body": "Common Uses Of Reverse Proxy\nDMZ\nReverse Proxy\nExternal Clients\nInternal Network\nReverse Proxy Server\nLoad balancing\nSSL/TLS termination\nCaching\nSecurity\nCompression & optimisation\nInternet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "Proxy Servers",
+      "body": "Forward Proxy\nClient\nReverse Proxy\nServer\nNear the clients\nNear the servers\nProperty\nActs on behalf of\nPosition\nClients\nBackend servers\nHides identity of\nEach client\nServer-side gateway\nConfigured on\nSquid, corporate proxy\nNginx, HAProxy, Cloudflare\nCommon examples\nForward & Reverse Proxy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "VPNs and IPsec",
+      "body": "VPNs and IPsec",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "VPN - Virtual Private Network",
+      "body": "Introduction\nA VPN (Virtual Private Network) creates a secure, encrypted connection, called a tunnel, between a user’s device and a remote network across the public internet. It makes \u000bthe user appear as if they are physically inside the remote network",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "VPN - Virtual Private Network",
+      "body": "Remote Access VPN: A single user connects to an office network from home or a public location\nTwo Primary Use Cases",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "VPN - Virtual Private Network",
+      "body": "Site-to-Site VPN: Two corporate offices in different cities connect their LANs through a VPN tunnel over the public internet.\nTwo Primary Use Cases",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "VPN - Virtual Private Network",
+      "body": "How a VPN Works (High-Level Steps)?\nUser connects and logs in to the VPN server\n01\n02\n03\n04\nVPN creates encryption keys\nUser’s data is wrapped and encrypted\nEncrypted data travels through the public internet\n05\nVPN server decrypts it and forwards it to the destination",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "VPN - Virtual Private Network",
+      "body": "Encrypted Tunnels Over a Public Network\nSite A\nSite B\nR1\nR2\nInternet",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "VPN - Virtual Private Network",
+      "body": "Encapsulation and Encryption\nTwo key building blocks: Encapsulation and Encryption\nEncapsulation alone hides the original packet inside another packet, but does not make it unreadable\nEncryption scrambles the data so that even if intercepted, it cannot be understood\nA VPN combines both, the original packet is encapsulated in a secure, encrypted wrapper",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "VPN - Virtual Private Network",
+      "body": "Description\nOldest, simple, weak encryption - largely obsolete\nL2TP creates the tunnel; IPsec provides encryption\nProtocol\nPPTP\nL2TP/IPsec\nOpen-source; uses SSL/TLS; highly configurable\nOpenVPN\nFast reconnects when switching networks - mobile-friendly\nIKEv2/IPsec\nModern, lightweight, fast - newer industry standard\nWireGuard\nBrowser-based; no client install needed\nSSL/TLS VPN\nCommon VPN Tunneling Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "IPsec",
+      "body": "Introduction\nIPsec (Internet Protocol Security) is a suite of protocols that provides authentication, integrity, and confidentiality at the Network Layer\nUnlike TLS (which secures application-layer traffic) or WPA (which secures wireless), IPsec secures every IP packet, regardless of the application above",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "IPsec",
+      "body": "Two Main Protocols\nAuthentication Header (AH):\nProvides: Authentication and Integrity (no encryption)\nAdds an AH header with a packet hash.The receiver checks this hash to verify the sender and ensure the packet was not changed.\nDoes not provide confidentiality, the data is still readable by anyone who intercepts it\nIP protocol number: 51\n1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "IPsec",
+      "body": "Encapsulating Security Payload (ESP):\nProvides: Authentication, Integrity, and Encryption (confidentiality)\nAdds an ESP header and trailer; the payload is encrypted\nMost commonly used IPsec protocol — covers all three security goals\nIP protocol number: 50\n2\nTwo Main Protocols",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "IPsec",
+      "body": "Two Operational Modes\nTransport Mode:\nEncrypts and authenticates only the payload of the \u000bIP packet\nThe original IP header is left unchanged, routing information remains visible\nUsed for end-to-end communication between two hosts (host-to-host)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "IPsec",
+      "body": "Tunnel Mode:\nEncrypts and authenticates the entire original IP packet (header plus payload)\nA new outer IP header is added, the original packet is hidden inside\nUsed for site-to-site VPNs between routers or firewalls (gateway-to-gateway)\nTwo Operational Modes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 57,
+      "title": "IPsec",
+      "body": "Two Operational Modes",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 58,
+      "title": "Key Exchange",
+      "body": "Before IPsec can encrypt, both ends need a shared key\nIKE handles key negotiation in two phases: Phase 1 sets up a secure channel; Phase 2 negotiates the actual IPsec keys\nThe result is a Security Association (SA) - the agreed parameters for the secure session\nIKE (Internet Key Exchange)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 59,
+      "title": "IPsec",
+      "body": "Architecture\nDOI\nKey Management\nArchitecture",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 60,
+      "title": "Common Network Attacks",
+      "body": "Common Network Attacks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 61,
+      "title": "Network Attacks",
+      "body": "Three Broad Categories\nNetwork attacks fall into three broad categories \u000bbased on what the attacker wants",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 62,
+      "title": "Network Attacks",
+      "body": "Goal\nRead private data\nType\nPassive\nModify data in transit\nActive\nCategory\nConfidentiality attack\nIntegrity attack\nExamples\nPacket Sniffing\nMITM\nBlock legitimate access\nActive\nAvailability attack\nDoS, DDoS\nThree Broad Categories",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 63,
+      "title": "Network Attacks",
+      "body": "Passive = listens silently, leaves no trace, hard to detect, easy to prevent (encryption)\nActive = touches the traffic, easier to detect, harder to prevent\nRule of Thumb",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 64,
+      "title": "Network Attacks",
+      "body": "1. Packet Sniffing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 65,
+      "title": "Network Attacks",
+      "body": "1. Packet Sniffing",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 66,
+      "title": "Network Attacks",
+      "body": "2. Man-in-the-Middle (MITM) Attack",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 67,
+      "title": "2. Man-in-the-Middle (MITM) Attack",
+      "body": "Common Techniques\nARP Spoofing\nDNS Spoofing\nRogue WiFi\nSSL Stripping\nDefence: Verify TLS certificates, use PKI and digital signatures, \u000buse a VPN on untrusted networks, enable HSTS to block SSL stripping",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 68,
+      "title": "Denial of Service (DoS) Attack",
+      "body": "Introduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 69,
+      "title": "Network Attacks",
+      "body": "Common DoS Attack Categories\nSYN Flood\nAttacker sends TCP SYN packets without completing the handshake; the server fills its connection table with half-open connections\nUDP Flood\nAttacker sends huge volumes of UDP packets; the server wastes CPU responding with ICMP “port unreachable” replies\nICMP Flood (Ping Flood)\nOverwhelms the server with ping requests\nVolume-based (Flood) Attacks: Overwhelm bandwidth or connection tables",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 70,
+      "title": "Network Attacks",
+      "body": "Ping of Death\nSends a malformed or oversized ping packet; older systems crashed\nSmurf Attack\nSends ICMP echo to a broadcast address with a spoofed source IP; the entire network replies to the victim\nProtocol Attacks: Exploit weaknesses in protocol implementations\nCommon DoS Attack Categories",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 71,
+      "title": "Network Attacks",
+      "body": "Common DoS Attack Categories\nHTTP Flood\nSends many seemingly legitimate HTTP requests; harder to detect\nSlowloris\nHolds many incomplete HTTP connections open, exhausting server resources\nApplication Layer Attacks, target specific services:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 72,
+      "title": "DoS",
+      "body": "Volume-Based Attacks\nProtocol Attacks\nApplication Layer Attacks\nTypes of DoS Attacks",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 73,
+      "title": "Distributed Denial of Service (DDoS)",
+      "body": "Introduction",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 74,
+      "title": "Network Attacks",
+      "body": "Defence Against DoS/DDoS Attacks\nFirewalls and Rate Limiting\nIntrusion Detection / Prevention Systems (IDS/IPS)\nCloud-based DDoS Mitigation\nHow to defend against DoS and DDoS:\nLoad Balancers\nAnycast Routing\nCAPTCHA and Bot Detection",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 75,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 76,
+      "title": "Network Security Essentials",
+      "body": "Firewalls\nPacket Filter, Stateful Inspection, Application-Level Gateway\nNetwork Segmentation\nCollision Domains vs Broadcast Domains\nProxy Servers\nForward Proxy and Reverse Proxy\nVPNs and IPsec\nEncrypted Tunnels for Secure Communication\nCommon Network Attacks\nPacket Sniffing, MITM, DoS/DDoS and Their Prevention",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 77,
+      "title": "Modern Internet Infrastructure",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 78,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 79,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/14pqMAst4WjrFY1mtR50fNg5hTkuTPaia3me4L8mTtEU/edit"
+}

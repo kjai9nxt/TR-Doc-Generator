@@ -160,11 +160,11 @@ def grade(doc: dict, session, time_estimate: dict, *, page_estimate: dict | None
     if not _brief.strip():
         exclude = exclude + (DIMENSION_BRIEF,)
     web_note = ""
-    # Live web check for market_parity + content_recency: OpenRouter's ":online"
-    # variant gives the judge web search (uses the existing OpenRouter key). Only
-    # meaningful for the openrouter provider.
+    # Live web check for market_parity + content_recency. A judge model id ending
+    # ":online" asks for web search: OpenRouter serves its ":online" variant, and the
+    # Anthropic path (llm._anthropic_call) attaches the server-side web search tool.
     if (m.get("enable_web_market_check") and web_check is not False
-            and m.get("provider", "openrouter").lower() == "openrouter"):
+            and m.get("provider", "anthropic").lower() in ("anthropic", "openrouter")):
         if not judge_model.endswith(":online"):
             judge_model = judge_model + ":online"
         web_note = (

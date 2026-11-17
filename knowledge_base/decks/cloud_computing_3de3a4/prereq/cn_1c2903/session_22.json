@@ -1,0 +1,402 @@
+{
+  "session_no": 22,
+  "source_file": "CN — session 22",
+  "deck_title": "CN — session 22",
+  "n_slides": 56,
+  "summary": "\n    - Slide 2: TCP Handshakes and States\n    - Slide 3: Understanding TCP and UDP\n    - Slide 4: TCP Handshakes & States\n    - Slide 5: TCP Connection Establishment\n    - Slide 6: TCP\n    - Slide 7: TCP\n    - Slide 8: TCP\n    - Slide 9: A Connection Must Be Set Up Before Any Data Flows\n    - Slide 10: TCP 3-Way Handshake\n    - Slide 11: TCP 3-Way Handshake\n    - Slide 12: TCP 3-Way Handshake\n    - Slide 13: TCP 3-Way Handshake\n    - Slide 14: TCP 3-Way Handshake\n    - Slide 15: TCP 3-Way Handshake\n    - Slide 16: TCP 3-Way Handshake\n    - Slide 17: TCP 3-Way Handshake\n    - Slide 18: Why A 2-Way Handshake is Not Enough\n    - Slide 19: The Logic Behind 3 Steps\n    - Slide 20: The Logic Behind 3 Steps\n    - Slide 21: The Logic Behind 3 Steps\n    - Slide 22: The Logic Behind 3 Steps\n    - Slide 23: SYN Flood Attack\n    - Slide 24: SYN Flood Attack\n    - Slide 25: SYN Flood Attack\n    - Slide 26: SYN Flood Attack\n    - Slide 27: SYN Flood Attack\n    - Slide 28: SYN Flood Attack\n    - Slide 29: Quiz Time!\n    - Slide 30: TCP Connection Termination\n    - Slide 31: TCP Connection Termination\n    - Slide 32: TCP Connection Termination\n    - Slide 33: TCP 4-Way Teardown\n    - Slide 34: TCP 4-Way Teardown\n    - Slide 35: TCP 4-Way Teardown\n    - Slide 36: TCP 4-Way Teardown\n    - Slide 37: TCP 4-Way Teardown\n    - Slide 38: TCP 4-Way Teardown\n    - Slide 39: TCP 4-Way Teardown\n    - Slide 40: TCP Connection Termination\n    - Slide 41: 1. Abrupt Connection Release\n    - Slide 42: 1. Abrupt Connection Release\n    - Slide 43: 1. Abrupt Connection Release\n    - Slide 44: 2. Graceful Connection Release\n    - Slide 45: 2. Graceful Connection Release\n    - Slide 46: 2. Graceful Connection Release\n    - Slide 47: Graceful Close vs Abrupt Close\n    - Slide 48: Introduction to TCP States\n    - Slide 49: Introduction to TCP States\n    - Slide 50: Introduction to TCP States\n    - Slide 51: Introduction to TCP States\n    - Slide 52: Quiz Time!\n    - Slide 53: TCP Handshakes & States\n    - Slide 54: TCP State Diagram & Connection",
+  "slides": [
+    {
+      "n": 1,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 2,
+      "title": "TCP Handshakes and States",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 3,
+      "title": "Understanding TCP and UDP",
+      "body": "Understanding TCP and UDP\nUDP\nIntroduction\nUse Cases\nTCP \nIntroduction\nUse Cases\nTCP Vs UDP",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 4,
+      "title": "TCP Handshakes & States",
+      "body": "TCP Handshakes & States\nTCP Connection Termination\nTCP Connection Establishment\n3-Way Handshake (SYN, SYN-ACK, ACK)\n4-Way Teardown (FIN, ACK)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 5,
+      "title": "TCP Connection Establishment",
+      "body": "TCP Connection Establishment",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 6,
+      "title": "TCP",
+      "body": "Connection-Oriented\nBoth sides agree on starting Sequence Numbers — so data can be tracked in order\nBoth sides negotiate MSS (Maximum Segment Size) and Window Size — so each side knows how much data the other can handle",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 7,
+      "title": "TCP",
+      "body": "Connection-Oriented\nBoth sides confirm the path works in both directions — sending and receiving are both functional",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 8,
+      "title": "TCP",
+      "body": "All three of these happen inside a single process called the 3-Way Handshake\nThe TCP 3-Way Handshake is a process used by the Transmission Control Protocol (TCP) to establish a reliable connection between a client and a server prior to data transfer\nConnection-Oriented",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 9,
+      "title": "A Connection Must Be Set Up Before Any Data Flows",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 10,
+      "title": "TCP 3-Way Handshake",
+      "body": "Step 1 — SYN (Client → Server)\nStep 1\nThe client is the one that starts the connection. The very first step is called SYN\nThe client sends a TCP segment with the SYN flag set to 1\nThe client picks a random number as its Initial Sequence Number (ISN) — for example, ISN = 100\nThis segment also carries the client’s MSS and Window Size",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 11,
+      "title": "TCP 3-Way Handshake",
+      "body": "Step 1 — SYN (Client → Server)\nStep 1\nThe client is the one that starts the connection. The very first step is called SYN\nMessage conveyed: “I want to connect. My starting sequence number is 100.”\nAfter sending this, the client enters the SYN_SENT state — it is waiting for a response from the server",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 12,
+      "title": "TCP 3-Way Handshake",
+      "body": "Step 1 — SYN (Client → Server)\nThe SYN flag counts as 1 byte in the sequence space even though it carries no application data. This matters in Step 2",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 13,
+      "title": "TCP 3-Way Handshake",
+      "body": "Step 2 — SYN-ACK (Server → Client)\nStep 2\nThe server receives the SYN from the client and responds. This response is called SYN-ACK\nThe server sends a segment with both SYN and ACK flags set\nACK Number = 101 (client’s ISN + 1) — this tells the client: “I received your byte 100. Now send me byte 101.”\nThe SYN flag counts as 1 byte — that is why the ACK number is ISN + 1 and not ISN itself",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 14,
+      "title": "TCP 3-Way Handshake",
+      "body": "Step 2 — SYN-ACK (Server → Client)\nStep 2\nThe server receives the SYN from the client and responds. This response is called SYN-ACK\nThe server picks its own random ISN — for example, ISN = 300\nThe server also sends its own MSS and Window Size in this segment\nMessage conveyed: “Connection accepted. Got your byte 100. My starting sequence number is 300.”\nAfter sending this, the server enters the SYN_RECEIVED state",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 15,
+      "title": "TCP 3-Way Handshake",
+      "body": "Step 3 — ACK (Client → Server)\nStep 3\nThe client receives the SYN-ACK from the server and sends the final confirmation. This is the ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 16,
+      "title": "TCP 3-Way Handshake",
+      "body": "Step 3 — ACK (Client → Server)\nStep 3\nConnection is now fully open. Data can flow in both directions\nThe client receives the SYN-ACK from the server and sends the final confirmation. This is the ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 17,
+      "title": "TCP 3-Way Handshake",
+      "body": "Analogy\nYes , I can hear you loud and clear. Let us begin the meeting \nThe caller says\nBoth people are now confirmed to be hearing each other, the actual conversation starts",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 18,
+      "title": "Why A 2-Way Handshake is Not Enough",
+      "body": "Two Reasons",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 19,
+      "title": "The Logic Behind 3 Steps",
+      "body": "Why 2-Way Handshake is Not Enough?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 20,
+      "title": "The Logic Behind 3 Steps",
+      "body": "Why 2-Way Handshake is Not Enough?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 21,
+      "title": "The Logic Behind 3 Steps",
+      "body": "Why 2-Way Handshake is Not Enough?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 22,
+      "title": "The Logic Behind 3 Steps",
+      "body": "Analogy\nThe 3-Way Handshake is the minimum number of messages needed to confirm a reliable full-duplex connection AND reject old duplicate connections",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 23,
+      "title": "SYN Flood Attack",
+      "body": "Consequence of 3-Way Handshake\nWhen a server receives a SYN, it sends SYN-ACK and enters SYN_RECEIVED state\nThe server allocates memory and a connection entry, waiting for the final ACK\nIn a SYN Flood Attack, an attacker sends thousands of SYN packets with fake source IP addresses — and never sends the final ACK\nThe 3-way handshake has a well-known vulnerability called the SYN Flood Attack\nHow the Attack Works:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 24,
+      "title": "SYN Flood Attack",
+      "body": "Consequence of 3-Way Handshake\nThe server’s SYN queue fills up with half-open connections that will never complete\nReal or authorized clients cannot connect — the server has no capacity left\nThis is a Denial of Service (DoS) attack\nThe 3-way handshake has a well-known vulnerability called the SYN Flood Attack\nHow the Attack Works:",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 25,
+      "title": "SYN Flood Attack",
+      "body": "Direct\nReal IP used. Easy to detect and block\nSpoofed\nFake source IP on each packet. Harder to trace\nDistributed (DDoS)\nUses a botnet. Nearly untraceable\nSpoofed SYN Packet\nSpoofed SYN Packet\nSYN-ACK\nSYN-ACK\nSYN-ACK\nSYN-ACK\nBot\nAttacker\nTarget\nThree Attack Variants",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 26,
+      "title": "SYN Flood Attack",
+      "body": "SYN Cookies\nThe server does not allocate memory on receiving a SYN. Instead it encodes connection information into the SYN-ACK as a cryptographic cookie. Memory is only allocated when a valid final ACK arrives with the correct cookie\nHow is it Defended ?\nSpoofed SYN Packet\nSpoofed SYN Packet\nSYN-ACK\nSYN-ACK\nSYN-ACK\nSYN-ACK\nBot\nAttacker\nTarget",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 27,
+      "title": "SYN Flood Attack",
+      "body": "Firewall Rate Limiting\nLimits SYN packets accepted per second from a single IP\nTimeout Cleanup\nConnection requests that never complete are automatically removed after a set time\nHow is it Defended ?\nSpoofed SYN Packet\nSpoofed SYN Packet\nSYN-ACK\nSYN-ACK\nSYN-ACK\nSYN-ACK\nBot\nAttacker\nTarget",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 28,
+      "title": "SYN Flood Attack",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 29,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 30,
+      "title": "TCP Connection Termination",
+      "body": "TCP Connection Termination",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 31,
+      "title": "TCP Connection Termination",
+      "body": "Why 4 Steps Are Needed?\nTCP uses 3 steps to open a connection\nConnection setup\nIt uses 4 steps because TCP is full-duplex\nConnection close\nEach direction (Client → Server and Server → Client) must close separately\nReason\nOne side sends FIN, the other ACKs, then sends its FIN, which is finally ACKed\nProcess",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 32,
+      "title": "TCP Connection Termination",
+      "body": "Why 4 Steps Are Needed?\nBefore teardown\nClose direction A\nB keeps flowing\nClose direction B\nBoth lanes open\nSteps 1-2 FIN, ACK\nServer still sending\nSteps 3-4 FIN, ACK\n1\n2\n3\n4\nA\nB\nA\nB\nA\nB\nA\nB",
+      "notes": "Lets see an analogy to understand why 4 steps are needed..\u000bA two-lane road carries traffic in both directions independently.\u000b Closing one lane does not close the other. Each lane must be closed separately. \u000bSimilarly, The 4-way teardown closes each direction one at a time.",
+      "tables": []
+    },
+    {
+      "n": 33,
+      "title": "TCP 4-Way Teardown",
+      "body": "The client has finished sending all its data\nThe client sends a segment with the FIN flag set, Seq = X\nMessage: “Done sending. Closing my sending direction.”\nClient enters state: FIN_WAIT_1\nStep 1 \n1\nFIN (Client → Server)\nClient\nServer\nFIN_WAIT_1\nFIN = 1",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 34,
+      "title": "TCP 4-Way Teardown",
+      "body": "Step 2\nThe server receives the FIN and sends an acknowledgment: ACK = X + 1.\nMessage: “Received your FIN. But still may have data to send.”\nClient enters state: FIN_WAIT_2 \nServer enters state: CLOSE_WAIT\n2\nACK (Server → Client)\nClient\nServer\nFIN_WAIT_1\nCLOSE_WAIT\nFIN = 1\nACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 35,
+      "title": "TCP 4-Way Teardown",
+      "body": "What Happens After Step 2?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 36,
+      "title": "TCP 4-Way Teardown",
+      "body": "Step 3\nThe server has now finished sending all its data\nThe server sends a segment with the FIN flag set, Seq = Y\nMessage: “Done sending now. Closing my sending direction.”\nServer enters state: LAST_ACK — waiting for the final ACK from the client\n3\nFIN (Server → Client)\nClient\nServer\nFIN_WAIT_1\nFIN_WAIT_2\nCLOSE_WAIT\nFIN = 1\nACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 37,
+      "title": "TCP 4-Way Teardown",
+      "body": "Step 4\nThe client receives the server’s FIN and sends the final acknowledgment: ACK = Y + 1\nMessage: “Received your FIN. Connection fully closed.”\nClient enters state: TIME_WAIT → then moves to CLOSED after a timer expires\n4\nACK (Client → Server)\nClient\nServer\nFIN_WAIT_1\nFIN_WAIT_2\nCLOSE_WAIT\nFIN = 1\nACK\nFIN = 1\nTIME WAIT\nLAST_ACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 38,
+      "title": "TCP 4-Way Teardown",
+      "body": "Step 4\nServer enters state: CLOSED as soon as it receives this final ACK\nConnection is now fully closed on both sides\n4\nACK (Client → Server)\nClient\nServer\nFIN_WAIT_1\nFIN_WAIT_2\nCLOSE_WAIT\nFIN = 1\nACK\nFIN = 1\nTIME WAIT\nLAST_ACK\nCLOSED\nCLOSED\nACK",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 39,
+      "title": "TCP 4-Way Teardown",
+      "body": "Can the 4-Way Teardown be 3-Way?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 40,
+      "title": "TCP Connection Termination",
+      "body": "Types of TCP Connection Release\nTCP supports two types of connection releases like most connection-oriented transport protocols:\n1\nAbrupt Release\n2\nGraceful Release",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 41,
+      "title": "1. Abrupt Connection Release",
+      "body": "Closing Without 4-Way Teardown\nThe 4-way teardown is the graceful way to close a TCP connection. But TCP also supports an immediate forced close using the RST (Reset) flag",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 42,
+      "title": "1. Abrupt Connection Release",
+      "body": "Closing Without 4-Way Teardown\nWhat is an Abrupt Connection Release?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 43,
+      "title": "1. Abrupt Connection Release",
+      "body": "When does TCP send RST?\nSYN arrives on a port with no listening service\nSegment received for a non-existent connection (wrong IP/port)\nInvalid sequence number causes the connection to go out of sync\nFirewall or application forcibly terminates the connection\nDuring handshake: Client detects invalid SYN-ACK (ACK ≠ ISN) and sends RST",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 44,
+      "title": "2. Graceful Connection Release",
+      "body": "Closing Using 4-Way Teardown\nThe 4-way teardown is the standard method to gracefully close a TCP connection. It ensures both sides finish sending data before the connection is closed",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 45,
+      "title": "2. Graceful Connection Release",
+      "body": "Definition\nWhat is Graceful Connection Release?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 46,
+      "title": "2. Graceful Connection Release",
+      "body": "When TCP Uses Graceful Release?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 47,
+      "title": "Graceful Close vs Abrupt Close",
+      "body": "Analogy",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 48,
+      "title": "Introduction to TCP States",
+      "body": "How TCP Tracks Every Connection?\nTCP is a stateful protocol. At every moment, TCP knows exactly which phase each connection is in. These phases are called states",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 49,
+      "title": "Introduction to TCP States",
+      "body": "Why Does TCP Need States?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 50,
+      "title": "Introduction to TCP States",
+      "body": "Why Does TCP Need States?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 51,
+      "title": "Introduction to TCP States",
+      "body": "What Does a State Tell TCP?",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 52,
+      "title": "Quiz Time!",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 53,
+      "title": "TCP Handshakes & States",
+      "body": "TCP Connection Establishment\n3-Way Handshake(SYN, SYN-ACK, ACK)\nTCP Connection Termination\n4-Way Teardown(FIN, ACK)",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 54,
+      "title": "TCP State Diagram & Connection",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 55,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    },
+    {
+      "n": 56,
+      "title": "",
+      "body": "",
+      "notes": "",
+      "tables": []
+    }
+  ],
+  "source_link": "https://docs.google.com/presentation/d/1P6E4Gnop-Mv0x4UJ6LC3swcyHJ7JsgkqkV3r4iuW0mk/edit"
+}
